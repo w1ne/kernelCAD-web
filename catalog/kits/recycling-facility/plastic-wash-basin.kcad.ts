@@ -1,56 +1,98 @@
 // SPDX-License-Identifier: CC0-1.0
-// Plastic wash basin: its machine, access door and feed chute. Low-poly visualization geometry in millimetres, Z up.
+// Plastic wash basin: the float-sink tank of a plastics wash line. Shredded
+// PET sinks while PP/PE flakes float, so the tank separates them by density.
+// What makes it that machine rather than a water trough: a long V-bottomed
+// tank full of water with flakes on the surface, a row of paddle drums across
+// the top pushing the floating fraction toward the outlet, a screw trough in
+// the bottom of the V carrying the sinking fraction out, an inclined
+// dewatering screw lifting the floats out at the far end, and a feed chute at
+// the near end.
+// Generic visualization geometry at about real size (8 m long, 1.6 m wide,
+// 3.6 m to the dewatering screw), millimetres, Z up, flow runs -X to +X with
+// paddle drives on the -Y side facing the camera.
 
 meta({
   name: "plastic-wash-basin",
   license: 'CC0-1.0',
   title: "Plastic wash basin",
-  description: "Plastic wash basin: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
-  tags: ["recycling", "materials recovery", "waste management", "glass plastics", "low poly", "scene prop"],
+  description: "Float-sink separation tank at about real size: long V-bottom stainless tank on legs, wash water with floating flakes, four paddle drums with drive motors along the top, bottom screw trough for the sinking fraction, inclined dewatering screw with motor and discharge chute at the outlet end, and an inclined feed chute at the inlet. Material controls: stainless tank, frame paint, paddles and wash water. plant, weathered, petLine and highVisibility presets.",
+  tags: ["recycling", "plastics", "float sink tank", "wash line", "pet", "flakes", "dewatering screw", "materials recovery", "waste management", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
   origin: 'base',
   compat: ['recycling-facility', 'materials-recovery', 'waste-management', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 3000,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const paintedSteel = param('paintedSteel', '#4a7980', { label: 'Painted steel' });
-const stainlessSteel = param('stainlessSteel', '#a8b4b6', { label: 'Stainless steel' });
+const tank = param('tank', '#c2c9cb', { label: 'Tank, screws and chutes (stainless)' });
+const frame = param('frame', '#2f5d8a', { label: 'Legs and drive motors (paint)' });
+const paddles = param('paddles', '#e0a526', { label: 'Paddle drums (HDPE)' });
+const water = param('water', '#4f8a96', { label: 'Wash water' });
+
 presets({
-  weathered: { paintedSteel: '#567574', stainlessSteel: '#9ea7a5' },
-  highVisibility: { paintedSteel: '#d77632' },
+  plant: { tank: '#c2c9cb', frame: '#2f5d8a', paddles: '#e0a526', water: '#4f8a96' },
+  weathered: { tank: '#a4a8a3', frame: '#4b5860', paddles: '#b48a3d', water: '#6c7d6a' },
+  petLine: { tank: '#d3d8da', frame: '#3a3f44', paddles: '#2f7fc1', water: '#6fa8b8' },
+  highVisibility: { tank: '#e3e6e6', frame: '#d4572a', paddles: '#f2d21b', water: '#3f8fb0' },
 });
-const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const ngon = (r:number,s:number) => {
-  let p = path().moveTo(r * Math.cos(Math.PI / 2), r * Math.sin(Math.PI / 2));
-  for (let k = 1; k < s; k++) {
-    const a = Math.PI / 2 + (2 * Math.PI * k) / s;
-    p = p.lineTo(r * Math.cos(a), r * Math.sin(a));
-  }
-  return p.close();
-};
-const loftCylinder = (h:number,r:number,s:number) => {
-  const levels = [0, h * 0.06, h * 0.94, h];
-  const radii = [r * 0.9, r, r, r * 0.9];
-  const profiles = levels.map((_, i) => ngon(radii[i], s));
-  return profiles[0].loft(profiles.slice(1), {
-    planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
-    ruled: true,
-  });
-};
-const c = (x:number,y:number,z:number,h:number,r:number,s:number) => loftCylinder(h,r,s).translate(x,y,z).scale(scale);
-const cy = (x:number,y:number,z:number,h:number,r:number,s:number) => loftCylinder(h,r,s).rotateX(90).translate(x,y,z).scale(scale);
 
 const p = assembly("plastic-wash-basin");
-p.part("base-frame", b(0,0,0,1440,990,140).color(paintedSteel));
-p.part("machine-body", b(0,0,140,1180.8,772.2,1054.0).color(paintedSteel));
-p.part("front-access-door", b(0,-415.8,220,748.8000000000001,60,682.0).color(paintedSteel));
-p.part("feed-chute", b(0,-534.6,837.0,1036.8,260,542.5).color(paintedSteel));
-p.part("outlet-chute", b(0,495.0,160,662.4,210,558.0).color(paintedSteel));
-p.part("service-panel", b(720.0,0,434.00000000000006,75,396.0,527.0).color(paintedSteel));
-p.part("control-pedestal", b(835.1999999999999,-297.0,0,240,260,868.0000000000001).color(paintedSteel));
-p.part("drive-drum", c(-792.0000000000001,0,651.0,370,120,10).color(stainlessSteel));
-p.part("transfer-roller", cy(0,-376.2,543.4,100,518.4,10).color(stainlessSteel));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+// A (y, z) cross-section extruded along X over length t, centred on x = 0.
+const profileYZ = (pts: number[][], t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0).rotateZ(90);
+// An (x, z) side profile extruded along Y over width t, centred on y = 0.
+const profileXZ = (pts: number[][], t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0);
+
+const L = 6000, ZTOP = 2400, ZW = 2250, W = 800;
+
+// V-bottom tank shell (hollow) with end plates, water and floating flakes.
+add("tank-shell", profileYZ([[-W, ZTOP], [-W + 40, ZTOP], [-W + 40, 1210], [-130, 560], [130, 560], [W - 40, 1210], [W - 40, ZTOP], [W, ZTOP], [W, 1200], [150, 500], [-150, 500], [-W, 1200]], L).color(tank));
+for (const s of [-1, 1]) add(`end-plate-${s}`, profileYZ([[-W, ZTOP], [W, ZTOP], [W, 1200], [150, 500], [-150, 500], [-W, 1200]], 40).translate(s * (L / 2 - 20), 0, 0).color(tank));
+add("water", profileYZ([[-W + 40, ZW], [W - 40, ZW], [W - 40, 1210], [130, 560], [-130, 560], [-W + 40, 1210]], L - 80).color(water));
+add("top-flange", blk(0, -W - 30, ZTOP - 80, L, 60, 80).color(tank));
+add("top-flange-back", blk(0, W + 30, ZTOP - 80, L, 60, 80).color(tank));
+const flakes = [[-2300, -300], [-1900, 250], [-1500, -100], [-700, 380], [-350, -420], [200, 120], [650, -260], [1100, 330], [1600, -50], [2100, 260], [2450, -380]];
+flakes.forEach(([x, y], k) => add(`flake-${k}`, blk(x, y, ZW, 260, 180, 14).rotateZ(k * 37).color(k % 3 === 0 ? '#e8e4d8' : k % 3 === 1 ? '#3f7fbf' : '#d9d2c0')));
+
+// Legs: four pairs under the V, with ties.
+for (const x of [-2700, -900, 900, 2700]) {
+  for (const s of [-1, 1]) {
+    add(`leg-${x}-${s}`, blk(x, s * (W - 80), 0, 140, 140, 1250).color(frame));
+    add(`foot-${x}-${s}`, blk(x, s * (W - 80), 0, 260, 260, 20).color(tank));
+  }
+  add(`tie-${x}`, blk(x, 0, 1100, 120, 2 * W - 20, 120).color(frame));
+}
+
+// Bottom screw trough for the sinking fraction, out through the +X end plate.
+add("sink-screw-trough", cylinder(L + 700, 170, 14).rotateY(90).translate(-L / 2, 0, 400).color(tank));
+add("sink-screw-motor", cylinder(450, 140, 14).rotateY(-90).translate(-L / 2, 0, 400).color(frame));
+add("sink-discharge", blk(L / 2 + 550, 0, 0, 380, 380, 230).color(tank));
+
+// Paddle drums across the top: shaft, four blades, drive motor on -Y.
+for (const x of [-2100, -700, 700, 2100]) {
+  add(`paddle-shaft-${x}`, cylinder(2 * W + 160, 55, 10).rotateX(90).translate(x, W + 80, ZTOP + 80).color(tank));
+  for (let k = 0; k < 4; k++) add(`paddle-${x}-${k}`, box(560, 2 * W - 160, 24, true).rotateY(k * 45).translate(x, 0, ZTOP + 80).color(paddles));
+  for (const s of [-1, 1]) add(`bearing-${x}-${s}`, blk(x, s * (W + 40), ZTOP, 180, 120, 140).color(frame));
+  add(`paddle-gearbox-${x}`, blk(x, -W - 220, ZTOP - 60, 260, 200, 280).color(frame));
+  add(`paddle-motor-${x}`, cylinder(340, 110, 14).rotateY(90).translate(x + 130, -W - 220, ZTOP + 80).color(frame));
+}
+
+// Inclined dewatering screw lifting the floating fraction out at +X.
+const SX = L / 2 - 300, SZ = 1700, SA = 35, SL = 3000;
+const ca = Math.cos((SA * Math.PI) / 180), sa = Math.sin((SA * Math.PI) / 180);
+add("dewater-screw", cylinder(SL, 210, 16).rotateY(90 - SA).translate(SX, 0, SZ).color(tank));
+add("dewater-motor", cylinder(500, 150, 14).rotateY(90 - SA).translate(SX + SL * ca, 0, SZ + SL * sa).color(frame));
+add("dewater-discharge", blk(SX + SL * ca - 150, 0, SZ + SL * sa - 700, 360, 360, 500).color(tank));
+add("dewater-chute", profileXZ([[SX + SL * ca - 330, SZ + SL * sa - 700], [SX + SL * ca + 600, SZ + SL * sa - 1500], [SX + SL * ca + 600, SZ + SL * sa - 1620], [SX + SL * ca - 330, SZ + SL * sa - 820]], 340).color(tank));
+add("dewater-leg", blk(SX + SL * ca - 150, 0, 0, 160, 160, SZ + SL * sa - 700).color(frame));
+add("dewater-leg-foot", blk(SX + SL * ca - 150, 0, 0, 300, 300, 20).color(tank));
+
+// Inclined feed chute dropping shredded flake in at -X.
+add("feed-chute", profileXZ([[-L / 2 - 1400, ZTOP + 900], [-L / 2 + 500, ZTOP + 200], [-L / 2 + 500, ZTOP + 80], [-L / 2 - 1400, ZTOP + 780]], 700).color(tank));
+for (const s of [-1, 1]) add(`feed-chute-side-${s}`, profileXZ([[-L / 2 - 1400, ZTOP + 900], [-L / 2 + 500, ZTOP + 200], [-L / 2 + 500, ZTOP + 380], [-L / 2 - 1400, ZTOP + 1080]], 24).translate(0, s * 360, 0).color(tank));
+add("feed-stand", blk(-L / 2 - 1200, 0, 0, 140, 140, ZTOP + 760).color(frame));
+add("feed-stand-foot", blk(-L / 2 - 1200, 0, 0, 280, 280, 20).color(tank));
 
 return p.model();

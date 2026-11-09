@@ -219030,14 +219030,18 @@
       "id": "bottle-cleaning-line",
       "kit": "recycling-facility",
       "title": "Bottle cleaning line",
-      "description": "Bottle cleaning line: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Bottle tunnel washer at about real size: slat belt on a six-leg frame, arched stainless spray tunnel with strip curtains and front inspection windows, roof spray manifold with drop pipes, recirculation tank and pump under the deck, guided infeed and outfeed lanes carrying bottles, and a control pedestal. Material controls: frame paint, stainless tunnel, belt rubber and bottle glass. plant, weathered, petLine and foodGrade presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "bottle washer",
+        "tunnel washer",
+        "glass",
+        "pet bottles",
+        "conveyor",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -219050,8 +219054,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/bottle-cleaning-line.kcad.ts",
       "preview": "/assets/recycling-facility-bottle-cleaning-line.png",
-      "sourceSha256": "791268cdd9b0ea7755da0a3aa3a64ed3335225fb96b5a96a78021516bfb7ed32",
-      "triangleBudget": 1800,
+      "sourceSha256": "60a220919969b881e84a0808813d91697e49ed1dd55ca42dee336ae322154646",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -219063,79 +219067,216 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#77715b",
-          "label": "Painted steel"
+          "default": "#2f6f8f",
+          "label": "Frame and tank (painted steel)"
         },
         {
-          "name": "rubber",
+          "name": "stainless",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#c3cacc",
+          "label": "Spray tunnel and guides (stainless)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "belt",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2c3133",
+          "label": "Slat belt and curtains (rubber)"
+        },
+        {
+          "name": "bottleGlass",
+          "type": "color",
+          "default": "#3f8a55",
+          "label": "Bottle glass"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#756f5a",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+        "plant": {
+          "frame": "#2f6f8f",
+          "stainless": "#c3cacc",
+          "belt": "#2c3133",
+          "bottleGlass": "#3f8a55"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "weathered": {
+          "frame": "#4f5e63",
+          "stainless": "#a2a7a3",
+          "belt": "#3a3d3c",
+          "bottleGlass": "#6a7f52"
+        },
+        "petLine": {
+          "frame": "#3a3f44",
+          "stainless": "#d0d6d8",
+          "belt": "#1f5f9f",
+          "bottleGlass": "#9fd1e6"
+        },
+        "foodGrade": {
+          "frame": "#e6e8e6",
+          "stainless": "#d8dddf",
+          "belt": "#2a6fb0",
+          "bottleGlass": "#8a5a2b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 3388,
         "sizeM": [
-          1.065895,
-          0.85,
-          1.6
+          4.465,
+          1.745,
+          1.26
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#77715b",
+          "name": "frame",
+          "color": "#2f6f8f",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
-            "drive-motor"
+            "leg--2000--1",
+            "leg--2000-1",
+            "leg-0--1",
+            "leg-0-1",
+            "leg-2000--1",
+            "leg-2000-1",
+            "stringer--1",
+            "stringer-1",
+            "cross-tie--2000",
+            "cross-tie-0",
+            "cross-tie-2000",
+            "drive-gearbox",
+            "drive-motor",
+            "wash-tank",
+            "pump-volute",
+            "pump-motor",
+            "pedestal-post",
+            "pedestal-base"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "stainless",
+          "color": "#c3cacc",
           "parts": [
-            "belt-surface"
+            "foot--2000--1",
+            "foot--2000-1",
+            "foot-0--1",
+            "foot-0-1",
+            "foot-2000--1",
+            "foot-2000-1",
+            "pulley--2140",
+            "pulley-2140",
+            "tunnel",
+            "window-frame--800",
+            "window-frame-0",
+            "window-frame-800",
+            "manifold",
+            "drop-0",
+            "drop-1",
+            "drop-2",
+            "drop-3",
+            "drop-4",
+            "drop-5",
+            "drop-6",
+            "manifold-end-cap",
+            "tank-lid",
+            "riser",
+            "riser-elbow",
+            "riser-run",
+            "riser-tee",
+            "guide--1--1",
+            "guide--1-0",
+            "guide--1-1",
+            "guide-1--1",
+            "guide-1-0",
+            "guide-1-1",
+            "guide-post--1--1--1",
+            "guide-post--1--1-1",
+            "guide-post--1-1--1",
+            "guide-post--1-1-1",
+            "guide-post-1--1--1",
+            "guide-post-1--1-1",
+            "guide-post-1-1--1",
+            "guide-post-1-1-1",
+            "guide-arm--1--1",
+            "guide-arm--1-1",
+            "guide-arm-1--1",
+            "guide-arm-1-1",
+            "control-box"
           ],
-          "param": "rubber"
+          "param": "stainless"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "belt",
+          "color": "#2c3133",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "belt",
+            "curtain--1-0",
+            "curtain--1-1",
+            "curtain--1-2",
+            "curtain--1-3",
+            "curtain--1-4",
+            "curtain--1-5",
+            "curtain-1-0",
+            "curtain-1-1",
+            "curtain-1-2",
+            "curtain-1-3",
+            "curtain-1-4",
+            "curtain-1-5"
           ],
-          "param": "stainlessSteel"
+          "param": "belt"
+        },
+        {
+          "name": "window--800",
+          "color": "#2a3a44",
+          "parts": [
+            "window--800",
+            "window-0",
+            "window-800"
+          ]
+        },
+        {
+          "name": "pump-plinth",
+          "color": "#8d8f8a",
+          "parts": [
+            "pump-plinth"
+          ]
+        },
+        {
+          "name": "bottleGlass",
+          "color": "#3f8a55",
+          "parts": [
+            "bottle--1--1-0",
+            "bottle--1--1-1",
+            "bottle--1--1-2",
+            "bottle--1--1-3",
+            "bottle--1-1-0",
+            "bottle--1-1-1",
+            "bottle--1-1-2",
+            "bottle--1-1-3",
+            "bottle-1--1-0",
+            "bottle-1--1-1",
+            "bottle-1--1-2",
+            "bottle-1--1-3",
+            "bottle-1-1-0",
+            "bottle-1-1-1",
+            "bottle-1-1-2",
+            "bottle-1-1-3"
+          ],
+          "param": "bottleGlass"
+        },
+        {
+          "name": "hmi-screen",
+          "color": "#1d2a33",
+          "parts": [
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "e-stop",
+          "color": "#c8312b",
+          "parts": [
+            "e-stop"
+          ]
         }
       ]
     },
@@ -223602,14 +223743,18 @@
       "id": "digestate-separator",
       "kit": "recycling-facility",
       "title": "Digestate separator",
-      "description": "Digestate separator: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Screw-press digestate separator at about real size: stainless press body with a perforated screen section on a tall braced frame, feed hopper and pump pipe, end-mounted gearmotor, counterweighted outlet flap dropping pressed fibre onto a heap, liquor tray with drain pipe and feed pump on a plinth. Material controls: stainless press, frame paint, drive and separated fibre. plant, weathered, farmBiogas and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
-        "waste management",
+        "anaerobic digestion",
+        "biogas",
+        "digestate",
+        "screw press",
+        "separator",
         "organics",
+        "waste management",
         "low poly",
         "scene prop"
       ],
@@ -223622,8 +223767,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/digestate-separator.kcad.ts",
       "preview": "/assets/recycling-facility-digestate-separator.png",
-      "sourceSha256": "7be03400e43c3c519d385454ab912c4230cdcc49e2e7be06005c2688035247eb",
-      "triangleBudget": 1800,
+      "sourceSha256": "4a2d78ec56425bfe9806208e899d12723d43c96c209dffbf4e52ed1ac325377b",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -223635,60 +223780,158 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "stainless",
           "type": "color",
-          "default": "#5e7759",
-          "label": "Painted steel"
+          "default": "#c6cdcf",
+          "label": "Press body, hopper and pipework (stainless)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3d6b45",
+          "label": "Support frame (paint)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#2f5ea8",
+          "label": "Gearmotor and pump"
+        },
+        {
+          "name": "fibre",
+          "type": "color",
+          "default": "#6b5233",
+          "label": "Separated fibre heap"
         }
       ],
       "presets": {
+        "plant": {
+          "stainless": "#c6cdcf",
+          "frame": "#3d6b45",
+          "drive": "#2f5ea8",
+          "fibre": "#6b5233"
+        },
         "weathered": {
-          "paintedSteel": "#647359",
-          "stainlessSteel": "#9ea7a5"
+          "stainless": "#a5a9a4",
+          "frame": "#55604f",
+          "drive": "#4f6178",
+          "fibre": "#5a4a35"
+        },
+        "farmBiogas": {
+          "stainless": "#d3d8da",
+          "frame": "#b33a2a",
+          "drive": "#2f7d3f",
+          "fibre": "#8a6a3c"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "stainless": "#e3e6e6",
+          "frame": "#f0b429",
+          "drive": "#d4572a",
+          "fibre": "#6b5233"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1650,
         "sizeM": [
-          1.420627,
-          1.513,
-          1.119
+          5.57,
+          2.99,
+          2.25
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5e7759",
+          "name": "stainless",
+          "color": "#c6cdcf",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "inlet-housing",
+            "screen-ring-0",
+            "screen-ring-1",
+            "screen-ring-2",
+            "screen-ring-3",
+            "screen-ring-4",
+            "screen-ring-5",
+            "press-housing",
+            "flange--1600",
+            "flange--720",
+            "flange-800",
+            "flange-1500",
+            "outlet-flap",
+            "feed-hopper",
+            "feed-neck",
+            "feed-pipe-drop",
+            "feed-pipe-over",
+            "feed-elbow",
+            "feed-riser",
+            "liquor-tray",
+            "drain-pipe",
+            "foot--1900--1",
+            "foot--1900-1",
+            "foot-1300--1",
+            "foot-1300-1",
+            "pump-outlet",
+            "pump-inlet"
           ],
-          "param": "paintedSteel"
+          "param": "stainless"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "screen",
+          "color": "#7f888b",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "screen"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#3d6b45",
+          "parts": [
+            "weight-arm--1",
+            "weight-arm-1",
+            "motor-fan-cover",
+            "drive-bracket",
+            "leg--1900--1",
+            "leg--1900-1",
+            "leg-1300--1",
+            "leg-1300-1",
+            "top-rail--1",
+            "top-rail-1",
+            "cross-rail--1900",
+            "cross-rail-1300",
+            "brace--1--1",
+            "brace--1-1",
+            "brace-1--1",
+            "brace-1-1"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "drive",
+          "color": "#2f5ea8",
+          "parts": [
+            "counterweight--1",
+            "counterweight-1",
+            "gearbox",
+            "motor",
+            "pump-body",
+            "pump-motor"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "fibre",
+          "color": "#6b5233",
+          "parts": [
+            "fibre-heap"
+          ],
+          "param": "fibre"
+        },
+        {
+          "name": "pump-plinth",
+          "color": "#9e9a90",
+          "parts": [
+            "pump-plinth"
+          ]
         }
       ]
     },
@@ -230130,14 +230373,18 @@
       "id": "glass-washing-tank",
       "kit": "recycling-facility",
       "title": "Glass washing tank",
-      "description": "Glass washing tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Agitated cullet wash tank at about real size: open-top stainless tank on four braced legs with a cone bottom and knife-gate drain, wash water at the rim, overflow launder ring with skim pipe, bridge beam and walkway carrying the agitator gearmotor, inclined cullet feed chute and access ladder. Material controls: stainless tank, support structure, drive and wash water. plant, weathered, labelWash and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "cullet",
+        "glass",
+        "wash tank",
+        "agitator",
+        "cone tank",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -230150,8 +230397,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-washing-tank.kcad.ts",
       "preview": "/assets/recycling-facility-glass-washing-tank.png",
-      "sourceSha256": "b54c9b2413c6b0d0053b085f81585115d1121d7ecf5e695eecbab2d12bbc26c2",
-      "triangleBudget": 1800,
+      "sourceSha256": "d859caa546d1277bcd30e07e864823988bee01437e0a6d90f49d91e2a67f758e",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -230163,64 +230410,153 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c4cbcd",
+          "label": "Tank and launder (stainless)"
         },
         {
-          "name": "paintedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#5f7484",
-          "label": "Painted steel"
+          "default": "#3b5f7a",
+          "label": "Legs, bridge and walkway"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#2e7d4f",
+          "label": "Agitator drive and valve actuator"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#5e8f8a",
+          "label": "Wash water"
         }
       ],
       "presets": {
+        "plant": {
+          "tank": "#c4cbcd",
+          "structure": "#3b5f7a",
+          "drive": "#2e7d4f",
+          "water": "#5e8f8a"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#647176"
+          "tank": "#a6aaa4",
+          "structure": "#4f5a5e",
+          "drive": "#56695a",
+          "water": "#6f7a5c"
+        },
+        "labelWash": {
+          "tank": "#d3d8da",
+          "structure": "#5a5f66",
+          "drive": "#2f5ea8",
+          "water": "#8fa39a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#e3e6e6",
+          "structure": "#d4572a",
+          "drive": "#f0b429",
+          "water": "#4d8fa6"
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 2356,
         "sizeM": [
-          0.8495,
-          2.29,
-          0.817
+          4.065,
+          4.64,
+          3.26
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "tank",
+          "color": "#c4cbcd",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle"
+            "tank-body",
+            "rim",
+            "band-1700",
+            "band-2550",
+            "launder",
+            "skim-pipe",
+            "skim-elbow",
+            "skim-run",
+            "base-plate--1--1",
+            "base-plate--1-1",
+            "base-plate-1--1",
+            "base-plate-1-1",
+            "knife-gate",
+            "drain-spout",
+            "agitator-shaft",
+            "feed-chute",
+            "chute-side--1",
+            "chute-side-1",
+            "chute-stand-foot"
           ],
-          "param": "stainlessSteel"
+          "param": "tank"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5f7484",
+          "name": "water",
+          "color": "#5e8f8a",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack"
+            "wash-water"
           ],
-          "param": "paintedSteel"
+          "param": "water"
+        },
+        {
+          "name": "structure",
+          "color": "#3b5f7a",
+          "parts": [
+            "leg--1--1",
+            "leg--1-1",
+            "leg-1--1",
+            "leg-1-1",
+            "girt-x--1",
+            "girt-y--1",
+            "girt-x-1",
+            "girt-y-1",
+            "bridge",
+            "bridge-seat--1",
+            "bridge-seat-1",
+            "motor-fan-cover",
+            "walkway",
+            "chute-stand",
+            "ladder-stile--1",
+            "ladder-stile-1",
+            "rung-300",
+            "rung-600",
+            "rung-900",
+            "rung-1200",
+            "rung-1500",
+            "rung-1800",
+            "rung-2100",
+            "rung-2400",
+            "rung-2700",
+            "rung-3000",
+            "rung-3300",
+            "ladder-tie-1200",
+            "ladder-tie-2400"
+          ],
+          "param": "structure"
+        },
+        {
+          "name": "drive",
+          "color": "#2e7d4f",
+          "parts": [
+            "gate-actuator",
+            "gearbox",
+            "motor",
+            "rail-post--1300",
+            "rail-post--550",
+            "rail-post-0",
+            "rail-post-550",
+            "rail-post-1300",
+            "handrail",
+            "midrail"
+          ],
+          "param": "drive"
         }
       ]
     },
@@ -240249,14 +240585,19 @@
       "id": "plastic-wash-basin",
       "kit": "recycling-facility",
       "title": "Plastic wash basin",
-      "description": "Plastic wash basin: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Float-sink separation tank at about real size: long V-bottom stainless tank on legs, wash water with floating flakes, four paddle drums with drive motors along the top, bottom screw trough for the sinking fraction, inclined dewatering screw with motor and discharge chute at the outlet end, and an inclined feed chute at the inlet. Material controls: stainless tank, frame paint, paddles and wash water. plant, weathered, petLine and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "plastics",
+        "float sink tank",
+        "wash line",
+        "pet",
+        "flakes",
+        "dewatering screw",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -240269,8 +240610,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/plastic-wash-basin.kcad.ts",
       "preview": "/assets/recycling-facility-plastic-wash-basin.png",
-      "sourceSha256": "33045c35878f865dcd2e482fe3787917e21bdd0f89c718f6c2d2f93b8f1e8be0",
-      "triangleBudget": 1800,
+      "sourceSha256": "2b1cb3a5a1d0dbc053fe11fa0fd58154a9d02c1cd057b5fb4fd2865a2cff5d79",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -240282,60 +240623,199 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#4a7980",
-          "label": "Painted steel"
+          "default": "#c2c9cb",
+          "label": "Tank, screws and chutes (stainless)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f5d8a",
+          "label": "Legs and drive motors (paint)"
+        },
+        {
+          "name": "paddles",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Paddle drums (HDPE)"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#4f8a96",
+          "label": "Wash water"
         }
       ],
       "presets": {
+        "plant": {
+          "tank": "#c2c9cb",
+          "frame": "#2f5d8a",
+          "paddles": "#e0a526",
+          "water": "#4f8a96"
+        },
         "weathered": {
-          "paintedSteel": "#567574",
-          "stainlessSteel": "#9ea7a5"
+          "tank": "#a4a8a3",
+          "frame": "#4b5860",
+          "paddles": "#b48a3d",
+          "water": "#6c7d6a"
+        },
+        "petLine": {
+          "tank": "#d3d8da",
+          "frame": "#3a3f44",
+          "paddles": "#2f7fc1",
+          "water": "#6fa8b8"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#e3e6e6",
+          "frame": "#d4572a",
+          "paddles": "#f2d21b",
+          "water": "#3f8fb0"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1484,
         "sizeM": [
-          1.861327,
-          1.3795,
-          1.2646
+          10.157456,
+          3.83039,
+          2.519228
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#4a7980",
+          "name": "tank",
+          "color": "#c2c9cb",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
+            "tank-shell",
+            "end-plate--1",
+            "end-plate-1",
+            "top-flange",
+            "top-flange-back",
+            "foot--2700--1",
+            "foot--2700-1",
+            "foot--900--1",
+            "foot--900-1",
+            "foot-900--1",
+            "foot-900-1",
+            "foot-2700--1",
+            "foot-2700-1",
+            "sink-screw-trough",
+            "sink-discharge",
+            "paddle-shaft--2100",
+            "paddle-shaft--700",
+            "paddle-shaft-700",
+            "paddle-shaft-2100",
+            "dewater-screw",
+            "dewater-discharge",
+            "dewater-chute",
+            "dewater-leg-foot",
             "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "feed-chute-side--1",
+            "feed-chute-side-1",
+            "feed-stand-foot"
           ],
-          "param": "paintedSteel"
+          "param": "tank"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "water",
+          "color": "#4f8a96",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "water"
           ],
-          "param": "stainlessSteel"
+          "param": "water"
+        },
+        {
+          "name": "flake-0",
+          "color": "#e8e4d8",
+          "parts": [
+            "flake-0",
+            "flake-3",
+            "flake-6",
+            "flake-9"
+          ]
+        },
+        {
+          "name": "flake-1",
+          "color": "#3f7fbf",
+          "parts": [
+            "flake-1",
+            "flake-4",
+            "flake-7",
+            "flake-10"
+          ]
+        },
+        {
+          "name": "flake-2",
+          "color": "#d9d2c0",
+          "parts": [
+            "flake-2",
+            "flake-5",
+            "flake-8"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#2f5d8a",
+          "parts": [
+            "leg--2700--1",
+            "leg--2700-1",
+            "tie--2700",
+            "leg--900--1",
+            "leg--900-1",
+            "tie--900",
+            "leg-900--1",
+            "leg-900-1",
+            "tie-900",
+            "leg-2700--1",
+            "leg-2700-1",
+            "tie-2700",
+            "sink-screw-motor",
+            "bearing--2100--1",
+            "bearing--2100-1",
+            "paddle-gearbox--2100",
+            "paddle-motor--2100",
+            "bearing--700--1",
+            "bearing--700-1",
+            "paddle-gearbox--700",
+            "paddle-motor--700",
+            "bearing-700--1",
+            "bearing-700-1",
+            "paddle-gearbox-700",
+            "paddle-motor-700",
+            "bearing-2100--1",
+            "bearing-2100-1",
+            "paddle-gearbox-2100",
+            "paddle-motor-2100",
+            "dewater-motor",
+            "dewater-leg",
+            "feed-stand"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "paddles",
+          "color": "#e0a526",
+          "parts": [
+            "paddle--2100-0",
+            "paddle--2100-1",
+            "paddle--2100-2",
+            "paddle--2100-3",
+            "paddle--700-0",
+            "paddle--700-1",
+            "paddle--700-2",
+            "paddle--700-3",
+            "paddle-700-0",
+            "paddle-700-1",
+            "paddle-700-2",
+            "paddle-700-3",
+            "paddle-2100-0",
+            "paddle-2100-1",
+            "paddle-2100-2",
+            "paddle-2100-3"
+          ],
+          "param": "paddles"
         }
       ]
     },
@@ -248895,14 +249375,18 @@
       "id": "wheel-wash-reclaim-tank",
       "kit": "recycling-facility",
       "title": "Wheel-wash reclaim tank",
-      "description": "Wheel-wash reclaim tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Wheel-wash water reclaim unit at about real size: open steel settling tank with muddy water, inclined drag-chain sludge conveyor with head drive discharging into a skip, recirculation pump on a plinth piped to a portal spray frame with nozzles, drain channel inlet and edge handrail. Material controls: tank steel, conveyor and frame paint, skip and wash water. site, weathered, quarry and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "landfill",
+        "wheel wash",
+        "settling tank",
+        "sludge conveyor",
+        "skip",
+        "water recycling",
         "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -248915,8 +249399,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/wheel-wash-reclaim-tank.kcad.ts",
       "preview": "/assets/recycling-facility-wheel-wash-reclaim-tank.png",
-      "sourceSha256": "c97955cd037bc5487348a72d3ab8fad0aaf2b6ab1a55269d930c2862328d68a1",
-      "triangleBudget": 1800,
+      "sourceSha256": "909ede8f053c18f3746fe34959fc00f7a9f0d32d6cae3648500f6f8654c6939c",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -248928,64 +249412,158 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#8f979b",
+          "label": "Tank and pipework (galvanised steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "conveyor",
           "type": "color",
-          "default": "#65765e",
-          "label": "Painted steel"
+          "default": "#e0a526",
+          "label": "Sludge conveyor, pump and spray frame"
+        },
+        {
+          "name": "skip",
+          "type": "color",
+          "default": "#2f6aa3",
+          "label": "Sludge skip"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#7a6a4c",
+          "label": "Muddy wash water"
         }
       ],
       "presets": {
+        "site": {
+          "tank": "#8f979b",
+          "conveyor": "#e0a526",
+          "skip": "#2f6aa3",
+          "water": "#7a6a4c"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#69725c"
+          "tank": "#7b7f7a",
+          "conveyor": "#a68a4a",
+          "skip": "#4b5c6a",
+          "water": "#6b5c45"
+        },
+        "quarry": {
+          "tank": "#9a9c96",
+          "conveyor": "#3d7a4a",
+          "skip": "#c9572b",
+          "water": "#9a8d70"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#c9ced1",
+          "conveyor": "#f2d21b",
+          "skip": "#d4572a",
+          "water": "#5f7d84"
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 1322,
         "sizeM": [
-          0.8495,
-          2.41,
-          0.817
+          9.216189,
+          3.717736,
+          3.98
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "tank",
+          "color": "#8f979b",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle"
+            "tank-side--1",
+            "tank-side-1",
+            "tank-floor",
+            "tank-end",
+            "stiffener--1100--1",
+            "stiffener--1100-1",
+            "stiffener--100--1",
+            "stiffener--100-1",
+            "stiffener-900--1",
+            "stiffener-900-1",
+            "flight-1",
+            "flight-2",
+            "flight-3",
+            "flight-4",
+            "flight-5",
+            "flight-6",
+            "flight-7",
+            "head-motor",
+            "skip-runner--1",
+            "skip-lug--1--1",
+            "skip-lug--1-1",
+            "skip-runner-1",
+            "skip-lug-1--1",
+            "skip-lug-1-1",
+            "suction-pipe",
+            "delivery-riser",
+            "delivery-elbow",
+            "delivery-run",
+            "spray-header",
+            "nozzle--1300",
+            "nozzle--650",
+            "nozzle-0",
+            "nozzle-650",
+            "nozzle-1300",
+            "drain-grate",
+            "drain-spout"
           ],
-          "param": "stainlessSteel"
+          "param": "tank"
         },
         {
-          "name": "paintedSteel",
-          "color": "#65765e",
+          "name": "water",
+          "color": "#7a6a4c",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack"
+            "water",
+            "skip-sludge"
           ],
-          "param": "paintedSteel"
+          "param": "water"
+        },
+        {
+          "name": "conveyor",
+          "color": "#e0a526",
+          "parts": [
+            "conveyor-casing",
+            "head-shaft",
+            "head-gearbox",
+            "head-chute",
+            "head-leg--1",
+            "head-leg-1",
+            "pump-volute",
+            "pump-motor",
+            "spray-post--1",
+            "spray-post-1",
+            "rail-post--1900",
+            "rail-post--700",
+            "rail-post-500",
+            "handrail",
+            "midrail"
+          ],
+          "param": "conveyor"
+        },
+        {
+          "name": "skip",
+          "color": "#2f6aa3",
+          "parts": [
+            "skip-body",
+            "skip-end--1",
+            "skip-end-1"
+          ],
+          "param": "skip"
+        },
+        {
+          "name": "pump-plinth",
+          "color": "#9e9a90",
+          "parts": [
+            "pump-plinth",
+            "drain-channel"
+          ]
         }
       ]
     },
