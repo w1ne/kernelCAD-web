@@ -129421,13 +129421,16 @@
       "id": "greenhouse-climate-sensor-post",
       "kit": "hydroponics",
       "title": "Greenhouse climate sensor post",
-      "description": "Freestanding sensor mast with radiation shield discs, junction box and cross-arm mount. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "Freestanding greenhouse climate post at about real size: weighted cast foot, galvanised mast, louvred radiation-shield stack for the temperature/RH probe, aspirated measuring tube with fan housing, PAR sensor dome, small solar panel and a junction box with cable glands. Material controls: mast steel, shield and tube polymer, enclosure and solar panel, plus shield plates (8 or 5). galvanised, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "climate sensor",
+        "weather station",
+        "radiation shield",
+        "PAR sensor",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -129440,8 +129443,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-climate-sensor-post.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-climate-sensor-post.png",
-      "sourceSha256": "bc3e8c05b0cb16020b2879fe629a1aa1c494eb65f71c21483b77be0ad721e079",
-      "triangleBudget": 1800,
+      "sourceSha256": "e0d5288e3b83f63331525551b7a67248890eb26890f0c5a9f35b40e1bf4a863b",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -129453,62 +129456,172 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "mastSteel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a4abae",
+          "label": "Mast, foot and arms (galvanised steel)"
         },
         {
-          "name": "polymer",
+          "name": "shieldPolymer",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#f1f0ea",
+          "label": "Radiation shield and measuring tube (UV-stable polymer)"
+        },
+        {
+          "name": "enclosure",
+          "type": "color",
+          "default": "#7d8589",
+          "label": "Junction box and fan housing (grey ABS)"
+        },
+        {
+          "name": "solarPanel",
+          "type": "color",
+          "default": "#1f3554",
+          "label": "Solar panel cells"
+        },
+        {
+          "name": "shieldPlates",
+          "type": "choice",
+          "default": "8",
+          "label": "Shield plates",
+          "choices": [
+            "8",
+            "5"
+          ]
         }
       ],
       "presets": {
+        "galvanised": {
+          "mastSteel": "#a4abae",
+          "shieldPolymer": "#f1f0ea",
+          "enclosure": "#7d8589",
+          "solarPanel": "#1f3554"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+          "mastSteel": "#7f8480",
+          "shieldPolymer": "#d2cfc2",
+          "enclosure": "#666b68",
+          "solarPanel": "#2c3a48"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+          "mastSteel": "#e87832",
+          "shieldPolymer": "#fbfaf4",
+          "enclosure": "#f2c84b",
+          "solarPanel": "#1b2f4f"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1634,
         "sizeM": [
-          0.72,
-          1.765,
-          0.4
+          1.12,
+          2.276,
+          0.538
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot",
+          "color": "#4a4f52",
           "parts": [
-            "weighted-foot",
-            "mast"
-          ],
-          "param": "powderCoatedSteel"
+            "foot"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "mastSteel",
+          "color": "#a4abae",
           "parts": [
-            "junction-box",
+            "mast",
+            "mast-cap",
+            "jbox-bracket",
             "cross-arm",
-            "sensor-head",
-            "rain-shield-top",
-            "rain-shield-mid",
-            "rain-shield-low",
-            "aspiration-cap",
-            "cable-gland"
+            "arm-clamp",
+            "shield-mount",
+            "shield-rod-0",
+            "shield-rod-120",
+            "shield-rod-240",
+            "tube-hanger",
+            "par-arm",
+            "solar-bracket"
           ],
-          "param": "polymer"
+          "param": "mastSteel"
+        },
+        {
+          "name": "enclosure",
+          "color": "#7d8589",
+          "parts": [
+            "jbox",
+            "fan-housing"
+          ],
+          "param": "enclosure"
+        },
+        {
+          "name": "jbox-door",
+          "color": "#9aa1a4",
+          "parts": [
+            "jbox-door"
+          ]
+        },
+        {
+          "name": "jbox-latch",
+          "color": "#3a3d40",
+          "parts": [
+            "jbox-latch"
+          ]
+        },
+        {
+          "name": "gland--70",
+          "color": "#2a2c2e",
+          "parts": [
+            "gland--70",
+            "gland-0",
+            "gland-70",
+            "cable-up",
+            "probe-tail",
+            "fan-grille"
+          ]
+        },
+        {
+          "name": "shieldPolymer",
+          "color": "#f1f0ea",
+          "parts": [
+            "shield-plate-0",
+            "shield-plate-1",
+            "shield-plate-2",
+            "shield-plate-3",
+            "shield-plate-4",
+            "shield-plate-5",
+            "shield-plate-6",
+            "shield-plate-7",
+            "shield-cap",
+            "measuring-tube",
+            "tube-intake",
+            "par-body"
+          ],
+          "param": "shieldPolymer"
+        },
+        {
+          "name": "par-dome",
+          "color": "#e8f1f4",
+          "parts": [
+            "par-dome"
+          ]
+        },
+        {
+          "name": "solar-frame",
+          "color": "#b9bec1",
+          "parts": [
+            "solar-frame"
+          ]
+        },
+        {
+          "name": "solarPanel",
+          "color": "#1f3554",
+          "parts": [
+            "solar-cells"
+          ],
+          "param": "solarPanel"
         }
       ]
     },
@@ -134151,13 +134264,17 @@
       "id": "overhead-grow-light-frame",
       "kit": "hydroponics",
       "title": "Overhead grow light frame",
-      "description": "Raised horticultural lighting gantry with paired rails, cross beams and hanging light bars. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "Freestanding grow-light gantry at about real size: square-tube legs and rails, a multi-bar LED fixture with finned aluminium bars, diode strips, cross-rails and driver box hung on ratchet ropes, over a grow bench with a flood tray of lettuce. Material controls: frame steel, LED housing, diode glow and crop, plus bar count (6 or 8). fullSpectrum, redBlue, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "grow light",
+        "LED fixture",
+        "light frame",
+        "gantry",
+        "horticultural lighting",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -134170,8 +134287,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/overhead-grow-light-frame.kcad.ts",
       "preview": "/assets/hydroponics-overhead-grow-light-frame.png",
-      "sourceSha256": "f14ebc79bd690374c0c98c410c87cc735bb5989931b4cbf3151f0aab642dfa90",
-      "triangleBudget": 1800,
+      "sourceSha256": "ef66c39a655bc155aee300226777835e7c6e813fa04ec789327128b3ae9696f9",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -134183,66 +134300,221 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e6e7e3",
+          "label": "Frame (white powder-coated steel)"
         },
         {
-          "name": "polymer",
+          "name": "ledHousing",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#3b3f44",
+          "label": "LED bars and driver (anodised aluminium)"
+        },
+        {
+          "name": "diodeGlow",
+          "type": "color",
+          "default": "#f3e6d0",
+          "label": "Diode strips (light colour)"
+        },
+        {
+          "name": "crop",
+          "type": "color",
+          "default": "#6fae3f",
+          "label": "Lettuce crop"
+        },
+        {
+          "name": "barCount",
+          "type": "choice",
+          "default": "8",
+          "label": "LED bars",
+          "choices": [
+            "8",
+            "6"
+          ]
         }
       ],
       "presets": {
+        "fullSpectrum": {
+          "frameSteel": "#e6e7e3",
+          "ledHousing": "#3b3f44",
+          "diodeGlow": "#f3e6d0",
+          "crop": "#6fae3f"
+        },
+        "redBlue": {
+          "frameSteel": "#d9dbd8",
+          "ledHousing": "#2a2d31",
+          "diodeGlow": "#d14fb6",
+          "crop": "#8a3f5e"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+          "frameSteel": "#a9aba3",
+          "ledHousing": "#55595c",
+          "diodeGlow": "#d8ccb4",
+          "crop": "#7d9a4a"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+          "frameSteel": "#e87832",
+          "ledHousing": "#2d3034",
+          "diodeGlow": "#fff4c2",
+          "crop": "#79c043"
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 2856,
         "sizeM": [
-          1.9,
-          2.55,
-          1.4
+          1.94,
+          2.29,
+          1.44
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frameSteel",
+          "color": "#e6e7e3",
           "parts": [
-            "foot-left-front",
-            "foot-right-front",
-            "foot-left-back",
-            "foot-right-back",
-            "leg-left-front",
-            "leg-right-front",
-            "leg-left-back",
-            "leg-right-back",
-            "top-beam-front",
-            "top-beam-back",
-            "hanger-left",
-            "hanger-right"
+            "foot--900--650",
+            "leg--900--650",
+            "brace--900--650",
+            "foot--900-650",
+            "leg--900-650",
+            "brace--900-650",
+            "foot-900--650",
+            "leg-900--650",
+            "brace-900--650",
+            "foot-900-650",
+            "leg-900-650",
+            "brace-900-650",
+            "rail--650",
+            "rail-650",
+            "purlin--900",
+            "purlin--300",
+            "purlin-300",
+            "purlin-900"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frameSteel"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "ledHousing",
+          "color": "#3b3f44",
           "parts": [
-            "light-bar-a",
-            "light-bar-b"
+            "bar-0",
+            "bar-1",
+            "bar-2",
+            "bar-3",
+            "bar-4",
+            "bar-5",
+            "bar-6",
+            "bar-7",
+            "cross-rail--380",
+            "cross-rail-380",
+            "driver"
           ],
-          "param": "polymer"
+          "param": "ledHousing"
+        },
+        {
+          "name": "fins-0",
+          "color": "#5b6066",
+          "parts": [
+            "fins-0",
+            "fins-1",
+            "fins-2",
+            "fins-3",
+            "fins-4",
+            "fins-5",
+            "fins-6",
+            "fins-7"
+          ]
+        },
+        {
+          "name": "diodeGlow",
+          "color": "#f3e6d0",
+          "parts": [
+            "diodes-0",
+            "diodes-1",
+            "diodes-2",
+            "diodes-3",
+            "diodes-4",
+            "diodes-5",
+            "diodes-6",
+            "diodes-7",
+            "driver-label"
+          ],
+          "param": "diodeGlow"
+        },
+        {
+          "name": "driver-cord",
+          "color": "#1e2023",
+          "parts": [
+            "driver-cord"
+          ]
+        },
+        {
+          "name": "rope--300--380",
+          "color": "#24262a",
+          "parts": [
+            "rope--300--380",
+            "ratchet--300--380",
+            "rope--300-380",
+            "ratchet--300-380",
+            "rope-300--380",
+            "ratchet-300--380",
+            "rope-300-380",
+            "ratchet-300-380"
+          ]
+        },
+        {
+          "name": "bench-leg--700--450",
+          "color": "#8f969a",
+          "parts": [
+            "bench-leg--700--450",
+            "bench-leg--700-450",
+            "bench-leg-700--450",
+            "bench-leg-700-450",
+            "bench-frame"
+          ]
+        },
+        {
+          "name": "flood-tray",
+          "color": "#2b2d30",
+          "parts": [
+            "flood-tray",
+            "tray-lip--525",
+            "tray-lip-525",
+            "tray-end--795",
+            "tray-end-795"
+          ]
+        },
+        {
+          "name": "raft",
+          "color": "#eceae2",
+          "parts": [
+            "raft"
+          ]
+        },
+        {
+          "name": "crop",
+          "color": "#6fae3f",
+          "parts": [
+            "lettuce-0-0",
+            "lettuce-0-1",
+            "lettuce-0-2",
+            "lettuce-1-0",
+            "lettuce-1-1",
+            "lettuce-1-2",
+            "lettuce-2-0",
+            "lettuce-2-1",
+            "lettuce-2-2",
+            "lettuce-3-0",
+            "lettuce-3-1",
+            "lettuce-3-2",
+            "lettuce-4-0",
+            "lettuce-4-1",
+            "lettuce-4-2"
+          ],
+          "param": "crop"
         }
       ]
     },
@@ -134879,13 +135151,18 @@
       "id": "plant-support-clip-rack",
       "kit": "hydroponics",
       "title": "Plant support clip rack",
-      "description": "Compact pegboard organizer with stacked clip rails, end brackets and a freestanding foot. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "Freestanding greenhouse pegboard for crop-training hardware at about real size: steel frame on splayed feet, perforated board, pegs loaded with bundles of round truss and stem clips, a row of rollerhooks with twine spools, and a shelf bin of loose clips. Material controls: frame steel, board, clips and twine, plus rollerhook row (on or off). greenhouse, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "plant clips",
+        "truss clips",
+        "rollerhook",
+        "twine",
+        "crop training",
+        "pegboard",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -134898,8 +135175,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/plant-support-clip-rack.kcad.ts",
       "preview": "/assets/hydroponics-plant-support-clip-rack.png",
-      "sourceSha256": "49b99a40c75b0206d409e20c44ff72a31b6a0f2403d863fde2eb36d257d00488",
-      "triangleBudget": 1800,
+      "sourceSha256": "dbfab16ec4d22063a1613f0f7cf1943e368074ba4bb1f0a73c3f4f6717fb419a",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -134911,64 +135188,268 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#4f6d63",
+          "label": "Frame and pegs (powder-coated steel)"
         },
         {
-          "name": "polymer",
+          "name": "board",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e9e6dc",
+          "label": "Perforated board (HDPE)"
+        },
+        {
+          "name": "clipPolymer",
+          "type": "color",
+          "default": "#3f9a4a",
+          "label": "Truss and stem clips (polymer)"
+        },
+        {
+          "name": "twine",
+          "type": "color",
+          "default": "#d8c79a",
+          "label": "Rollerhook twine (polypropylene)"
+        },
+        {
+          "name": "rollerhooks",
+          "type": "choice",
+          "default": "on",
+          "label": "Rollerhook row",
+          "choices": [
+            "on",
+            "off"
+          ]
         }
       ],
       "presets": {
+        "greenhouse": {
+          "frameSteel": "#4f6d63",
+          "board": "#e9e6dc",
+          "clipPolymer": "#3f9a4a",
+          "twine": "#d8c79a"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+          "frameSteel": "#5d625e",
+          "board": "#c9c3b2",
+          "clipPolymer": "#6f8c58",
+          "twine": "#b5a57d"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+          "frameSteel": "#e87832",
+          "board": "#f6f4ec",
+          "clipPolymer": "#f2c84b",
+          "twine": "#ffffff"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 5128,
         "sizeM": [
-          0.85,
-          0.875,
-          0.3
+          0.97,
+          1.54,
+          0.525
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "frameSteel",
+          "color": "#4f6d63",
           "parts": [
-            "backboard",
-            "top-cap",
-            "clip-left-low",
-            "clip-mid-low",
-            "clip-right-low",
-            "hanging-eye"
+            "foot--450",
+            "upright--450",
+            "brace--450",
+            "foot-450",
+            "upright-450",
+            "brace-450",
+            "top-rail",
+            "peg-0-0",
+            "peg-0-1",
+            "peg-0-2",
+            "peg-0-3",
+            "peg-1-0",
+            "peg-1-1",
+            "peg-1-2",
+            "peg-1-3",
+            "hook-rail",
+            "shelf"
           ],
-          "param": "polymer"
+          "param": "frameSteel"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot-cap-front--450",
+          "color": "#2a2c2e",
           "parts": [
-            "base-foot",
-            "left-bracket",
-            "right-bracket",
-            "clip-rail-low",
-            "clip-rail-mid",
-            "clip-rail-high"
+            "foot-cap-front--450",
+            "foot-cap-front-450",
+            "spool-cheek-a--300",
+            "spool-cheek-b--300",
+            "spool-cheek-a--150",
+            "spool-cheek-b--150",
+            "spool-cheek-a-0",
+            "spool-cheek-b-0",
+            "spool-cheek-a-150",
+            "spool-cheek-b-150",
+            "spool-cheek-a-300",
+            "spool-cheek-b-300"
+          ]
+        },
+        {
+          "name": "board",
+          "color": "#e9e6dc",
+          "parts": [
+            "board"
           ],
-          "param": "powderCoatedSteel"
+          "param": "board"
+        },
+        {
+          "name": "hole-0-0",
+          "color": "#5a5d5f",
+          "parts": [
+            "hole-0-0",
+            "hole-0-1",
+            "hole-0-2",
+            "hole-0-3",
+            "hole-0-4",
+            "hole-0-5",
+            "hole-0-6",
+            "hole-0-7",
+            "hole-0-8",
+            "hole-1-0",
+            "hole-1-1",
+            "hole-1-2",
+            "hole-1-3",
+            "hole-1-4",
+            "hole-1-5",
+            "hole-1-6",
+            "hole-1-7",
+            "hole-1-8",
+            "hole-2-0",
+            "hole-2-1",
+            "hole-2-2",
+            "hole-2-3",
+            "hole-2-4",
+            "hole-2-5",
+            "hole-2-6",
+            "hole-2-7",
+            "hole-2-8",
+            "hole-3-0",
+            "hole-3-1",
+            "hole-3-2",
+            "hole-3-3",
+            "hole-3-4",
+            "hole-3-5",
+            "hole-3-6",
+            "hole-3-7",
+            "hole-3-8",
+            "hole-4-0",
+            "hole-4-1",
+            "hole-4-2",
+            "hole-4-3",
+            "hole-4-4",
+            "hole-4-5",
+            "hole-4-6",
+            "hole-4-7",
+            "hole-4-8",
+            "hole-5-0",
+            "hole-5-1",
+            "hole-5-2",
+            "hole-5-3",
+            "hole-5-4",
+            "hole-5-5",
+            "hole-5-6",
+            "hole-5-7",
+            "hole-5-8",
+            "hole-6-0",
+            "hole-6-1",
+            "hole-6-2",
+            "hole-6-3",
+            "hole-6-4",
+            "hole-6-5",
+            "hole-6-6",
+            "hole-6-7",
+            "hole-6-8",
+            "hole-7-0",
+            "hole-7-1",
+            "hole-7-2",
+            "hole-7-3",
+            "hole-7-4",
+            "hole-7-5",
+            "hole-7-6",
+            "hole-7-7",
+            "hole-7-8"
+          ]
+        },
+        {
+          "name": "clipPolymer",
+          "color": "#3f9a4a",
+          "parts": [
+            "clip-0-0-0",
+            "clip-0-0-1",
+            "clip-0-1-0",
+            "clip-0-1-1",
+            "clip-0-2-0",
+            "clip-0-2-1",
+            "clip-0-3-0",
+            "clip-0-3-1",
+            "clip-1-0-0",
+            "clip-1-1-0",
+            "clip-1-2-0",
+            "clip-1-3-0",
+            "bin-fill",
+            "loose--230",
+            "loose--80"
+          ],
+          "param": "clipPolymer"
+        },
+        {
+          "name": "hook--300",
+          "color": "#b9bec1",
+          "parts": [
+            "hook--300",
+            "hook-top--300",
+            "hook--150",
+            "hook-top--150",
+            "hook-0",
+            "hook-top-0",
+            "hook-150",
+            "hook-top-150",
+            "hook-300",
+            "hook-top-300"
+          ]
+        },
+        {
+          "name": "twine",
+          "color": "#d8c79a",
+          "parts": [
+            "spool--300",
+            "twine-tail--300",
+            "spool--150",
+            "twine-tail--150",
+            "spool-0",
+            "twine-tail-0",
+            "spool-150",
+            "twine-tail-150",
+            "spool-300",
+            "twine-tail-300",
+            "twine-box-label"
+          ],
+          "param": "twine"
+        },
+        {
+          "name": "bin",
+          "color": "#2f5e8c",
+          "parts": [
+            "bin"
+          ]
+        },
+        {
+          "name": "twine-box",
+          "color": "#b08a55",
+          "parts": [
+            "twine-box"
+          ]
         }
       ]
     },
@@ -136469,13 +136950,18 @@
       "id": "seedling-transplant-tool",
       "kit": "hydroponics",
       "title": "Seedling transplant tool",
-      "description": "Hand tool with a tapered dibber body, broad grip and protective collar. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
+      "description": "Hand dibber for transplanting seedlings at about real size: turned hardwood handle with palm bulge and leather hanging loop, brass ferrule and a tapered stainless spike with depth rings, or a narrow widger spoon blade. Material controls: handle wood, stainless steel, ferrule brass and depth markings, plus tip (dibber or widger). beech, walnut, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "dibber",
+        "widger",
+        "transplant tool",
+        "hand tool",
+        "seedling",
+        "propagation",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -136488,8 +136974,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/seedling-transplant-tool.kcad.ts",
       "preview": "/assets/hydroponics-seedling-transplant-tool.png",
-      "sourceSha256": "c53b0a3370b4fe4823de5a71a7733ef758bd5d36e7067c05fd564c7ee66f4b3e",
-      "triangleBudget": 1800,
+      "sourceSha256": "6766640e4b010bdd6366c060bda744fd5eede0c7c94a1db5b9774de76cf3c911",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -136501,75 +136987,118 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "handleWood",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#c99a62",
+          "label": "Handle (turned hardwood)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#c4cacd",
+          "label": "Spike or blade (stainless steel)"
         },
         {
-          "name": "polymer",
+          "name": "ferruleBrass",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#c49a3c",
+          "label": "Ferrule (brass)"
+        },
+        {
+          "name": "depthMarks",
+          "type": "color",
+          "default": "#c8332b",
+          "label": "Depth rings and hanging loop"
+        },
+        {
+          "name": "tip",
+          "type": "choice",
+          "default": "dibber",
+          "label": "Tip",
+          "choices": [
+            "dibber",
+            "widger"
+          ]
         }
       ],
       "presets": {
+        "beech": {
+          "handleWood": "#c99a62",
+          "stainlessSteel": "#c4cacd",
+          "ferruleBrass": "#c49a3c",
+          "depthMarks": "#c8332b"
+        },
+        "walnut": {
+          "handleWood": "#6b4528",
+          "stainlessSteel": "#d0d5d8",
+          "ferruleBrass": "#b8862f",
+          "depthMarks": "#2c2a28"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa"
+          "handleWood": "#9a8264",
+          "stainlessSteel": "#9fa3a0",
+          "ferruleBrass": "#8f7440",
+          "depthMarks": "#8c4a3c"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b"
+          "handleWood": "#f2c84b",
+          "stainlessSteel": "#dfe3e5",
+          "ferruleBrass": "#e87832",
+          "depthMarks": "#e83a2e"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 930,
         "sizeM": [
-          0.395,
-          0.77,
-          0.18
+          0.303042,
+          0.042221,
+          0.038
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
-          "parts": [
-            "grip",
-            "grip-end-left",
-            "grip-end-right",
-            "collar",
-            "hanging-eye"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "color": "#c4cacd",
           "parts": [
-            "shaft",
-            "tip"
+            "spike"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "depthMarks",
+          "color": "#c8332b",
           "parts": [
-            "guard"
+            "depth-ring-30",
+            "depth-ring-50",
+            "depth-ring-70",
+            "hanging-loop"
           ],
-          "param": "powderCoatedSteel"
+          "param": "depthMarks"
+        },
+        {
+          "name": "ferruleBrass",
+          "color": "#c49a3c",
+          "parts": [
+            "ferrule"
+          ],
+          "param": "ferruleBrass"
+        },
+        {
+          "name": "handleWood",
+          "color": "#c99a62",
+          "parts": [
+            "handle"
+          ],
+          "param": "handleWood"
+        },
+        {
+          "name": "grip-groove",
+          "color": "#8a6438",
+          "parts": [
+            "grip-groove"
+          ]
         }
       ]
     },
@@ -137154,13 +137683,18 @@
       "id": "substrate-grow-gutter",
       "kit": "hydroponics",
       "title": "Substrate grow gutter",
-      "description": "Long raised crop gutter with end caps, support saddles, drain pickup and parallel feed tube. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Raised greenhouse substrate gutter at about real size: galvanised channel with flared sides, lips and V drain groove on three cradle stands, film-wrapped slabs with propagation cubes and young plants, black feed line with drip stakes, end cap and drain outlet into a PVC collection pipe. Material controls: gutter steel, slab wrap, substrate and crop, plus plants (young or none). rockwool, coir, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "grow gutter",
+        "substrate",
+        "rockwool",
+        "coir",
+        "drip irrigation",
+        "high wire",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -137173,8 +137707,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/substrate-grow-gutter.kcad.ts",
       "preview": "/assets/hydroponics-substrate-grow-gutter.png",
-      "sourceSha256": "c785669c1aa0dc7e3de2cf9fc5febe37d426bbd3be454f18c5b1e8e6dd767447",
-      "triangleBudget": 1800,
+      "sourceSha256": "6d53b9298b62710bf185c4c2bbcd5ddb438978188e977d0c9ac57daa9b5b9c7b",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -137186,77 +137720,198 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "gutterSteel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b3b9bc",
+          "label": "Gutter and stands (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "slabWrap",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#f2f1ec",
+          "label": "Slab wrap (white film)"
         },
         {
-          "name": "polymer",
+          "name": "substrate",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#c9b98a",
+          "label": "Propagation cubes (rockwool or coir)"
+        },
+        {
+          "name": "crop",
+          "type": "color",
+          "default": "#4f9a3a",
+          "label": "Young plants"
+        },
+        {
+          "name": "plants",
+          "type": "choice",
+          "default": "young",
+          "label": "Plants",
+          "choices": [
+            "young",
+            "none"
+          ]
         }
       ],
       "presets": {
+        "rockwool": {
+          "gutterSteel": "#b3b9bc",
+          "slabWrap": "#f2f1ec",
+          "substrate": "#c9b98a",
+          "crop": "#4f9a3a"
+        },
+        "coir": {
+          "gutterSteel": "#aab0b3",
+          "slabWrap": "#e6e4dc",
+          "substrate": "#7a5435",
+          "crop": "#5ea343"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+          "gutterSteel": "#8a8e8a",
+          "slabWrap": "#cfccbf",
+          "substrate": "#a8976c",
+          "crop": "#6c8c45"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+          "gutterSteel": "#e87832",
+          "slabWrap": "#ffffff",
+          "substrate": "#f2c84b",
+          "crop": "#5fbf3a"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 2232,
         "sizeM": [
-          2.185,
-          0.705,
-          0.505
+          2.606,
+          1.103,
+          0.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "gutterSteel",
+          "color": "#b3b9bc",
           "parts": [
-            "trough",
-            "front-rim",
-            "back-rim",
-            "end-cap-left",
-            "end-cap-right"
+            "gutter",
+            "end-cap",
+            "stand-foot--1000",
+            "stand-post--1000",
+            "cradle--1000",
+            "cradle-arm--1000--180",
+            "cradle-arm--1000-180",
+            "stand-foot-0",
+            "stand-post-0",
+            "cradle-0",
+            "cradle-arm-0--180",
+            "cradle-arm-0-180",
+            "stand-foot-1000",
+            "stand-post-1000",
+            "cradle-1000",
+            "cradle-arm-1000--180",
+            "cradle-arm-1000-180",
+            "drain-spout"
           ],
-          "param": "polymer"
+          "param": "gutterSteel"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "slabWrap",
+          "color": "#f2f1ec",
           "parts": [
-            "support-left",
-            "support-middle",
-            "support-right"
+            "slab-0",
+            "slab-1"
           ],
-          "param": "powderCoatedSteel"
+          "param": "slabWrap"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "slab-print-0",
+          "color": "#2d2f31",
           "parts": [
-            "feed-tube",
-            "drain-pickup"
+            "slab-print-0",
+            "slab-print-1"
+          ]
+        },
+        {
+          "name": "substrate",
+          "color": "#c9b98a",
+          "parts": [
+            "cube-0-0",
+            "cube-0-1",
+            "cube-0-2",
+            "cube-0-3",
+            "cube-1-0",
+            "cube-1-1",
+            "cube-1-2",
+            "cube-1-3"
           ],
-          "param": "pvc"
+          "param": "substrate"
+        },
+        {
+          "name": "stem-0-0",
+          "color": "#3f7a2e",
+          "parts": [
+            "stem-0-0",
+            "stem-0-1",
+            "stem-0-2",
+            "stem-0-3",
+            "stem-1-0",
+            "stem-1-1",
+            "stem-1-2",
+            "stem-1-3"
+          ]
+        },
+        {
+          "name": "crop",
+          "color": "#4f9a3a",
+          "parts": [
+            "leaves-0-0",
+            "leaves-0-1",
+            "leaves-0-2",
+            "leaves-0-3",
+            "leaves-1-0",
+            "leaves-1-1",
+            "leaves-1-2",
+            "leaves-1-3"
+          ],
+          "param": "crop"
+        },
+        {
+          "name": "drip-tube-0-0",
+          "color": "#1e2023",
+          "parts": [
+            "drip-tube-0-0",
+            "drip-stake-0-0",
+            "drip-tube-0-1",
+            "drip-stake-0-1",
+            "drip-tube-0-2",
+            "drip-stake-0-2",
+            "drip-tube-0-3",
+            "drip-stake-0-3",
+            "drip-tube-1-0",
+            "drip-stake-1-0",
+            "drip-tube-1-1",
+            "drip-stake-1-1",
+            "drip-tube-1-2",
+            "drip-stake-1-2",
+            "drip-tube-1-3",
+            "drip-stake-1-3",
+            "feed-line",
+            "feed-clip--1000",
+            "feed-clip-0",
+            "feed-clip-1000"
+          ]
+        },
+        {
+          "name": "collection-funnel",
+          "color": "#7f878b",
+          "parts": [
+            "collection-funnel",
+            "collection-pipe",
+            "collection-elbow",
+            "collection-run"
+          ]
         }
       ]
     },

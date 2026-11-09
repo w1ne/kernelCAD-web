@@ -1,56 +1,96 @@
 // SPDX-License-Identifier: CC0-1.0
-// Greenhouse climate sensor post: Freestanding sensor mast with radiation shield discs, junction box and cross-arm mount. Low-poly visualization geometry in millimetres, Z up.
+// Greenhouse climate sensor post: a freestanding mast that carries the
+// sensors a climate computer reads to run vents, heating and screens.
+// What makes it a climate post: a weighted cast foot and galvanised mast,
+// a louvred stack of white radiation-shield plates on one arm (keeps the
+// sun off the temperature/RH probe), an aspirated measuring tube with a
+// fan housing on the other arm, a PAR light sensor dome and small solar
+// panel on top, and a grey junction box with cable glands half way up.
+// Generic visualization geometry at about real size (about 2.2 m tall),
+// millimetres, Z up, front -Y.
 
 meta({
   name: "greenhouse-climate-sensor-post",
   license: 'CC0-1.0',
   title: "Greenhouse climate sensor post",
-  description: "Freestanding sensor mast with radiation shield discs, junction box and cross-arm mount. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
-  tags: ['hydroponics', 'greenhouse', 'controlled environment agriculture', 'low poly', 'scene prop'],
+  description: "Freestanding greenhouse climate post at about real size: weighted cast foot, galvanised mast, louvred radiation-shield stack for the temperature/RH probe, aspirated measuring tube with fan housing, PAR sensor dome, small solar panel and a junction box with cable glands. Material controls: mast steel, shield and tube polymer, enclosure and solar panel, plus shield plates (8 or 5). galvanised, weathered and highVisibility presets.",
+  tags: ['climate sensor', 'weather station', 'radiation shield', 'PAR sensor', 'greenhouse', 'hydroponics', 'low poly', 'scene prop'],
   kit: 'hydroponics',
   category: 'prop',
   origin: 'base',
   compat: ['hydroponics', 'greenhouse', 'controlled-environment-agriculture', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 2400,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const powderCoatedSteel=param('powderCoatedSteel','#557b70',{label:'Powder-coated steel'});
-const polymer=param('polymer','#ddd8c7',{label:'Polymer'});
+const mast = param('mastSteel', '#a4abae', { label: 'Mast, foot and arms (galvanised steel)' });
+const shield = param('shieldPolymer', '#f1f0ea', { label: 'Radiation shield and measuring tube (UV-stable polymer)' });
+const enclosure = param('enclosure', '#7d8589', { label: 'Junction box and fan housing (grey ABS)' });
+const solar = param('solarPanel', '#1f3554', { label: 'Solar panel cells' });
+const plates = param('shieldPlates', '8', { choices: ['8', '5'], label: 'Shield plates' });
+
 presets({
-  weathered: {powderCoatedSteel:'#69766e', polymer:'#b4b5aa'},
-  highVisibility: {powderCoatedSteel:'#e87832', polymer:'#f2c84b'},
+  galvanised: { mastSteel: '#a4abae', shieldPolymer: '#f1f0ea', enclosure: '#7d8589', solarPanel: '#1f3554' },
+  weathered: { mastSteel: '#7f8480', shieldPolymer: '#d2cfc2', enclosure: '#666b68', solarPanel: '#2c3a48' },
+  highVisibility: { mastSteel: '#e87832', shieldPolymer: '#fbfaf4', enclosure: '#f2c84b', solarPanel: '#1b2f4f' },
 });
-const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const section=(radius:number,sides:number)=>{
-  let outline=path().moveTo(radius*Math.cos(Math.PI/2),radius*Math.sin(Math.PI/2));
-  for(let k=1;k<sides;k++){
-    const angle=Math.PI/2+(2*Math.PI*k)/sides;
-    outline=outline.lineTo(radius*Math.cos(angle),radius*Math.sin(angle));
-  }
-  return outline.close();
-};
-const loftCylinder=(height:number,radius:number,sides:number)=>{
-  const levels=[0,height*0.08,height*0.92,height];
-  const radii=[radius*0.9,radius,radius,radius*0.9];
-  const profiles=levels.map((_,index)=>section(radii[index],sides));
-  return profiles[0].loft(profiles.slice(1),{
-    planes:levels.map((z)=>({plane:'XY' as const,origin:[0,0,z] as [number,number,number]})),
-    ruled:true,
-  });
-};
-const c=(x:number,y:number,z:number,h:number,r:number,s:number)=>loftCylinder(h,r,s).translate(x,y,z).scale(scale);
 
 const p = assembly("greenhouse-climate-sensor-post");
-p.part("weighted-foot", b(0,0,0,400,400,100).color(powderCoatedSteel));
-p.part("junction-box", b(170,0,680,210,170,240).color(polymer));
-p.part("cross-arm", b(0,0,1540,700,50,50).color(polymer));
-p.part("sensor-head", b(-230,0,1530,200,180,140).color(polymer));
-p.part("rain-shield-top", b(230,0,1260,280,280,28).color(polymer));
-p.part("rain-shield-mid", b(230,0,1200,280,280,28).color(polymer));
-p.part("rain-shield-low", b(230,0,1140,280,280,28).color(polymer));
-p.part("mast", c(0,0,100,1460,35,10).color(powderCoatedSteel));
-p.part("aspiration-cap", c(-230,0,1670,95,78,10).color(polymer));
-p.part("cable-gland", c(170,-100,680,100,30,10).color(polymer));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).translate(x, y, z);
+const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
+const turned = (pts: [number, number][], seg = 16) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve(360, seg);
+};
+
+// Weighted cast foot and mast.
+add("foot", turned([[0, 0], [230, 0], [230, 30], [150, 70], [50, 90], [0, 90]]).color('#4a4f52'));
+add("mast", cylZ(0, 0, 80, 2050, 30, 14).color(mast));
+add("mast-cap", cylZ(0, 0, 2130, 20, 34, 14).color(mast));
+
+// Junction box half way up, door facing the camera, glands underneath.
+add("jbox-bracket", blk(0, -45, 880, 90, 30, 300).color(mast));
+add("jbox", extrudeRoundedRect(240, 300, 20, 120, { axis: 'y' }).translate(0, -180, 1030).color(enclosure));
+add("jbox-door", extrudeRoundedRect(210, 270, 14, 8, { axis: 'y' }).translate(0, -188, 1030).color('#9aa1a4'));
+add("jbox-latch", blk(80, -194, 1020, 14, 10, 40).color('#3a3d40'));
+for (const x of [-70, 0, 70]) add(`gland-${x}`, cylZ(x, -120, 850, 30, 13, 8).color('#2a2c2e'));
+add("cable-up", cylZ(0, -60, 1180, 330, 7, 6).color('#2a2c2e'));
+
+// Cross-arm with the shield on +X and the aspirated tube on -X.
+const AZ = 1500;
+add("cross-arm", cylX(-560, 0, AZ, 1120, 18, 10).color(mast));
+add("arm-clamp", blk(0, 0, AZ - 50, 90, 90, 100).color(mast));
+
+// Louvred radiation shield: conical plates stacked on three rods.
+const n = Number(plates.value);
+const SX = 420, top = AZ - 30;
+add("shield-mount", blk(SX, 0, AZ - 30, 60, 60, 50).color(mast));
+const plate: [number, number][] = [[0, 0], [110, -26], [110, -32], [0, -8]];
+for (let k = 0; k < n; k++) add(`shield-plate-${k}`, turned(plate).translate(SX, 0, top - k * 32).color(shield));
+add("shield-cap", turned([[0, 30], [125, -6], [125, -14], [0, 16]]).translate(SX, 0, top).color(shield));
+for (const a of [0, 120, 240]) {
+  const r = 80, ax = SX + r * Math.cos((a * Math.PI) / 180), ay = r * Math.sin((a * Math.PI) / 180);
+  add(`shield-rod-${a}`, cylZ(ax, ay, top - n * 32 - 10, n * 32 + 20, 4, 6).color(mast));
+}
+add("probe-tail", cylZ(SX, 0, top - n * 32 - 90, 80, 9, 8).color('#2a2c2e'));
+
+// Aspirated measuring tube with fan housing (front intake toward -Y).
+const TX = -420;
+add("tube-hanger", cylZ(TX, 0, AZ - 120, 120, 8, 8).color(mast));
+add("measuring-tube", cylinder(380, 60, 18).rotateX(90).translate(TX, 190, AZ - 180).color(shield));
+add("tube-intake", turned([[60, 0], [72, 0], [72, 30], [60, 30]], 18).rotateX(90).translate(TX, -160, AZ - 180).color(shield));
+add("fan-housing", extrudeRoundedRect(170, 170, 30, 110, { axis: 'y' }).translate(TX, 190, AZ - 180).color(enclosure));
+add("fan-grille", cylinder(8, 62, 18).rotateX(90).translate(TX, 308, AZ - 180).color('#2a2c2e'));
+
+// PAR sensor dome and small solar panel on top.
+add("par-arm", blk(0, 0, 2130, 40, 40, 90).color(mast));
+add("par-body", cylZ(0, 0, 2220, 30, 32, 14).color(shield));
+add("par-dome", sphere(24).translate(0, 0, 2252).color('#e8f1f4'));
+add("solar-bracket", blk(0, 60, 1960, 40, 70, 120).color(mast));
+add("solar-frame", box(320, 240, 22, true).rotateX(35).translate(0, 120, 2070).color('#b9bec1'));
+add("solar-cells", box(296, 216, 6, true).rotateX(35).translate(0, 116, 2085).color(solar));
 
 return p.model();
