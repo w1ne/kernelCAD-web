@@ -119,7 +119,7 @@ xs.forEach((x, i) => {
     add(`${v}-${tag}-gauge-stem`, cylY(gx, gy, z, 70, 10, 8).color('#c9a84a'));
     add(`${v}-${tag}-gauge`, cylY(gx, gy - 70, z, 30, 55, 18).color('#d9dcde'));
     add(`${v}-${tag}-gauge-face`, cylY(gx, gy - 100, z, 3, 46, 18).color('#f4f4ee'));
-    add(`${v}-${tag}-gauge-needle`, blk(gx + 10, gy - 104, z - 2, 36, 2, 5).rotateY(-35).color('#c0392b'));
+    add(`${v}-${tag}-gauge-needle`, box(36, 2, 5, true).translate(14, 0, 0).rotateY(-35).translate(gx, gy - 104, z).color('#c0392b'));
   }
   // Bottom drain valve.
   add(`${v}-drain-pipe`, rod([x + 80, -60, Z0 - 140], [x + 200, -240, 110], 25).color(pipe));

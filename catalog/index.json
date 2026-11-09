@@ -129247,7 +129247,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/media-filter-vessel.kcad.ts",
       "preview": "/assets/hydroponics-media-filter-vessel.png",
-      "sourceSha256": "7bbd10b54567a4a78fced6ecd7bc374aa309ce5507c531a5b315db993de513ca",
+      "sourceSha256": "9de25a1879e039406ca2facb0dea08441fdd3b3359bdf5166b6d0ae15a2fc741",
       "triangleBudget": 4800,
       "params": [
         {
@@ -130496,13 +130496,18 @@
       "id": "nutrient-solution-chiller",
       "kit": "hydroponics",
       "title": "Nutrient solution chiller",
-      "description": "Compact process cooler with front grille bars, top controls and paired pipe connections. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Reservoir chiller at about real size: compact cabinet on rubber feet with a louvred front condenser intake, side vent slots, top fan guard with fan blades, thermostat panel with temperature readout and keys, and barbed inlet and outlet fittings on the back whose hoses loop to a submersible pump in a lidded reservoir tote. Material controls: cabinet, grilles and trim, hoses, reservoir, plus a with/without reservoir choice. aquaBlue, labWhite, blackOut and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "chiller",
+        "water chiller",
+        "reservoir chiller",
+        "refrigeration",
+        "cooling",
+        "nutrient solution",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -130515,8 +130520,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-solution-chiller.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-solution-chiller.png",
-      "sourceSha256": "b436ecb1e87a98025995abb2dadf8d8b08e069ce0364cf6a99b4d26a2e7075de",
-      "triangleBudget": 1800,
+      "sourceSha256": "acc1920e35f0685a5ec879f16689522ffea5b96c9bb184ccdb51c9af3e011cbb",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -130528,78 +130533,252 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "cabinet",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#2c5d8f",
+          "label": "Cabinet (powder-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "grille",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2a2d30",
+          "label": "Grilles and trim (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "hose",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#cfd8d2",
+          "label": "Hoses (clear vinyl)"
+        },
+        {
+          "name": "reservoir",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Reservoir tote (polyethylene)"
+        },
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "with reservoir",
+          "label": "Layout",
+          "choices": [
+            "chiller only",
+            "with reservoir"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "aquaBlue": {
+          "cabinet": "#2c5d8f",
+          "grille": "#2a2d30",
+          "hose": "#cfd8d2",
+          "reservoir": "#2b2e30"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "labWhite": {
+          "cabinet": "#e9ebe7",
+          "grille": "#5a6066",
+          "hose": "#d7e2dc",
+          "reservoir": "#3a6fa0"
+        },
+        "blackOut": {
+          "cabinet": "#26292c",
+          "grille": "#121416",
+          "hose": "#1c1c1c",
+          "reservoir": "#1f2224"
+        },
+        "weathered": {
+          "cabinet": "#4f6a80",
+          "grille": "#3e403c",
+          "hose": "#c9c4a6",
+          "reservoir": "#45484a"
         }
       },
       "stats": {
-        "triangles": 324,
+        "triangles": 2104,
         "sizeM": [
-          0.74,
-          0.87,
-          0.741
+          1.256213,
+          0.528,
+          0.643778
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot-0",
+          "color": "#1b1b1b",
           "parts": [
-            "base"
-          ],
-          "param": "powderCoatedSteel"
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3",
+            "power-cord-0",
+            "power-cord-1",
+            "power-cord-2",
+            "grommet-0",
+            "grommet-1"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "cabinet",
+          "color": "#2c5d8f",
           "parts": [
-            "chiller-body",
-            "top-panel",
-            "front-door",
-            "grille-a",
-            "grille-b",
-            "grille-c",
-            "control-pod",
-            "service-knob"
+            "cabinet",
+            "lid"
           ],
-          "param": "polymer"
+          "param": "cabinet"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "grille",
+          "color": "#2a2d30",
           "parts": [
-            "inlet-port",
-            "outlet-port"
+            "base-trim",
+            "intake-bezel",
+            "panel",
+            "vent-l-0",
+            "vent-l-1",
+            "vent-l-2",
+            "vent-l-3",
+            "vent-l-4",
+            "vent-l-5",
+            "vent-r-0",
+            "vent-r-1",
+            "vent-r-2",
+            "vent-r-3",
+            "vent-r-4",
+            "vent-r-5",
+            "fan-shroud",
+            "inlet-boss",
+            "outlet-boss",
+            "power-cord-socket"
           ],
-          "param": "pvc"
+          "param": "grille"
+        },
+        {
+          "name": "louvre-0",
+          "color": "#3a3f44",
+          "parts": [
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "louvre-5",
+            "louvre-6",
+            "louvre-7",
+            "louvre-8",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#14281d",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "digit-0",
+          "color": "#6fe08a",
+          "parts": [
+            "digit-0",
+            "digit-1",
+            "digit-2",
+            "unit-c",
+            "power-led"
+          ]
+        },
+        {
+          "name": "key-0",
+          "color": "#c0392b",
+          "parts": [
+            "key-0",
+            "inlet-ring"
+          ]
+        },
+        {
+          "name": "key-1",
+          "color": "#d9dcde",
+          "parts": [
+            "key-1",
+            "key-2",
+            "badge",
+            "reservoir-fill-mark"
+          ]
+        },
+        {
+          "name": "guard-ring-0",
+          "color": "#5a6066",
+          "parts": [
+            "guard-ring-0",
+            "guard-ring-1",
+            "guard-ring-2",
+            "guard-spoke-0",
+            "guard-spoke-1",
+            "guard-spoke-2",
+            "guard-spoke-3",
+            "fan-hub"
+          ]
+        },
+        {
+          "name": "guard-ring-fill",
+          "color": "#1b1d1f",
+          "parts": [
+            "guard-ring-fill"
+          ]
+        },
+        {
+          "name": "inlet-barb",
+          "color": "#c9ccce",
+          "parts": [
+            "inlet-barb",
+            "outlet-barb",
+            "hose-clamp-0",
+            "hose-clamp-1"
+          ]
+        },
+        {
+          "name": "outlet-ring",
+          "color": "#2f6fa8",
+          "parts": [
+            "outlet-ring"
+          ]
+        },
+        {
+          "name": "reservoir",
+          "color": "#2b2e30",
+          "parts": [
+            "reservoir-body",
+            "reservoir-lid",
+            "reservoir-lid-rim"
+          ],
+          "param": "reservoir"
+        },
+        {
+          "name": "reservoir-label",
+          "color": "#e0a21c",
+          "parts": [
+            "reservoir-label"
+          ]
+        },
+        {
+          "name": "hose",
+          "color": "#cfd8d2",
+          "parts": [
+            "hose-in-0",
+            "hose-in-1",
+            "hose-in-2",
+            "hose-in-3",
+            "hose-out-0",
+            "hose-out-1",
+            "hose-out-2",
+            "hose-out-3"
+          ],
+          "param": "hose"
         }
       ]
     },
@@ -131830,13 +132009,18 @@
       "id": "screen-filter-housing",
       "kit": "hydroponics",
       "title": "Screen filter housing",
-      "description": "Inline filter body with clamp collars, removable cap, inlet and outlet unions. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Inline irrigation screen filter at about real size: cast head with flow arrow and in-line inlet and outlet unions, ribbed bowl hanging on a clamp ring, inlet and outlet pressure gauges, flush ball valve with drain elbow, and PVC line on two pipe stands; 2 in or 3 in size. Material controls: bowl, head and clamp, PVC pipework and stands. redBowl, blueBowl, blackGrey and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "screen filter",
+        "irrigation filter",
+        "mesh filter",
+        "inline filter",
+        "filtration",
+        "drip irrigation",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -131849,8 +132033,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/screen-filter-housing.kcad.ts",
       "preview": "/assets/hydroponics-screen-filter-housing.png",
-      "sourceSha256": "8d1403fa2c88ac5d1b7157c81da51f9f01679c4542dedf83f76f1aedf7bd7eb3",
-      "triangleBudget": 1800,
+      "sourceSha256": "e29b73c0f1f70cb2c62f4b8891a04b5740ddac680099950bf57d190153b650d5",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -131862,78 +132046,196 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "bowl",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b3262b",
+          "label": "Bowl (glass-filled polymer)"
         },
         {
-          "name": "pvc",
+          "name": "head",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2a2d30",
+          "label": "Head and clamp ring (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "pipe",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8e9497",
+          "label": "Pipework (PVC)"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#3d4347",
+          "label": "Pipe stands (galvanised steel)"
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "2in",
+          "label": "Line size",
+          "choices": [
+            "2in",
+            "3in"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "redBowl": {
+          "bowl": "#b3262b",
+          "head": "#2a2d30",
+          "pipe": "#8e9497",
+          "stand": "#3d4347"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blueBowl": {
+          "bowl": "#2f6fa8",
+          "head": "#2a2d30",
+          "pipe": "#dcdcd4",
+          "stand": "#5a6066"
+        },
+        "blackGrey": {
+          "bowl": "#2a2d30",
+          "head": "#6b7176",
+          "pipe": "#8e9497",
+          "stand": "#3d4347"
+        },
+        "weathered": {
+          "bowl": "#8a4a42",
+          "head": "#3e403c",
+          "pipe": "#a9a99c",
+          "stand": "#5c5a52"
         }
       },
       "stats": {
-        "triangles": 388,
+        "triangles": 1502,
         "sizeM": [
-          1.34,
-          0.915,
-          0.5325
+          1.53,
+          0.894,
+          0.29
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "head",
+          "color": "#2a2d30",
           "parts": [
-            "mounting-skid",
-            "support-left",
-            "support-right"
+            "head-body",
+            "head-cap",
+            "port-boss-in",
+            "port-boss-out",
+            "clamp-ring",
+            "clamp-wheel",
+            "in-union-nut",
+            "out-union-nut"
           ],
-          "param": "powderCoatedSteel"
+          "param": "head"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "air-release",
+          "color": "#c9ccce",
           "parts": [
-            "left-union",
-            "right-union",
-            "inlet-port",
-            "outlet-port"
-          ],
-          "param": "pvc"
+            "air-release",
+            "clamp-screw",
+            "flush-valve"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "flow-arrow-shaft",
+          "color": "#f2f2ec",
           "parts": [
-            "front-label",
-            "cap-tab",
-            "filter-canister",
-            "top-cap"
+            "flow-arrow-shaft",
+            "flow-arrow-head",
+            "bowl-label"
+          ]
+        },
+        {
+          "name": "bowl",
+          "color": "#b3262b",
+          "parts": [
+            "bowl",
+            "grip-rib-0",
+            "grip-rib-1",
+            "grip-rib-2",
+            "grip-rib-3",
+            "grip-rib-4",
+            "grip-rib-5",
+            "grip-rib-6",
+            "grip-rib-7",
+            "grip-rib-8",
+            "grip-rib-9",
+            "grip-rib-10",
+            "grip-rib-11"
           ],
-          "param": "polymer"
+          "param": "bowl"
+        },
+        {
+          "name": "mesh-mark",
+          "color": "#2a8a4a",
+          "parts": [
+            "mesh-mark"
+          ]
+        },
+        {
+          "name": "pipe",
+          "color": "#8e9497",
+          "parts": [
+            "flush-nipple",
+            "drain-drop",
+            "drain-elbow",
+            "in-pipe",
+            "in-pipe-end",
+            "out-pipe",
+            "out-pipe-end"
+          ],
+          "param": "pipe"
+        },
+        {
+          "name": "flush-lever",
+          "color": "#c0392b",
+          "parts": [
+            "flush-lever",
+            "in-gauge-needle",
+            "out-gauge-needle"
+          ]
+        },
+        {
+          "name": "in-gauge-stem",
+          "color": "#c9a84a",
+          "parts": [
+            "in-gauge-stem",
+            "out-gauge-stem"
+          ]
+        },
+        {
+          "name": "in-gauge",
+          "color": "#d9dcde",
+          "parts": [
+            "in-gauge",
+            "out-gauge"
+          ]
+        },
+        {
+          "name": "in-gauge-face",
+          "color": "#f4f4ee",
+          "parts": [
+            "in-gauge-face",
+            "out-gauge-face"
+          ]
+        },
+        {
+          "name": "stand",
+          "color": "#3d4347",
+          "parts": [
+            "in-stand-post",
+            "in-stand-foot",
+            "in-stand-saddle",
+            "out-stand-post",
+            "out-stand-foot",
+            "out-stand-saddle"
+          ],
+          "param": "stand"
         }
       ]
     },
@@ -132556,13 +132858,19 @@
       "id": "stock-solution-tank",
       "kit": "hydroponics",
       "title": "Stock solution tank",
-      "description": "Compact concentrate vessel with a broad cap, metering port and raised base ring. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Nutrient concentrate tank at about real size: ribbed upright polyethylene tank with domed top, wide screw lid, lid-mounted stirrer motor, front level sight tube with graduations, bottom bulkhead outlet with ball valve and PVC line to the dosing header, and a large A or B label; single tank or an A/B pair in a steel spill bund. Material controls: tank, lid and stirrer, bund and stand, PVC fittings. naturalPoly, blackPoly, bluePoly and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stock solution tank",
+        "concentrate tank",
+        "nutrient tank",
+        "a b tank",
+        "fertigation",
+        "dosing",
+        "mixing",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -132575,8 +132883,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/stock-solution-tank.kcad.ts",
       "preview": "/assets/hydroponics-stock-solution-tank.png",
-      "sourceSha256": "ba343e8879070b4622f73705545c4c8df0daa9cc21c4d5d9b2159bd4003ad17f",
-      "triangleBudget": 1800,
+      "sourceSha256": "af332ee8adaef72805123438ad05fa211170f4db89e6b0a37468b274984c2c7b",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -132588,76 +132896,247 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e4dfcc",
+          "label": "Tank (natural polyethylene)"
         },
         {
-          "name": "pvc",
+          "name": "lid",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2f6fa8",
+          "label": "Lid and stirrer (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "bund",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#3d4347",
+          "label": "Spill bund (powder-coated steel)"
+        },
+        {
+          "name": "fitting",
+          "type": "color",
+          "default": "#8e9497",
+          "label": "Fittings and pipe (PVC)"
+        },
+        {
+          "name": "tanks",
+          "type": "choice",
+          "default": "A/B pair",
+          "label": "Tanks",
+          "choices": [
+            "single",
+            "A/B pair"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "naturalPoly": {
+          "tank": "#e4dfcc",
+          "lid": "#2f6fa8",
+          "bund": "#3d4347",
+          "fitting": "#8e9497"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blackPoly": {
+          "tank": "#2a2d30",
+          "lid": "#c0392b",
+          "bund": "#5a6066",
+          "fitting": "#8e9497"
+        },
+        "bluePoly": {
+          "tank": "#3a73a8",
+          "lid": "#e6e6e0",
+          "bund": "#3d4347",
+          "fitting": "#dcdcd4"
+        },
+        "weathered": {
+          "tank": "#c9c1a2",
+          "lid": "#4f6a80",
+          "bund": "#5c5a52",
+          "fitting": "#a9a99c"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2556,
         "sizeM": [
-          0.77,
-          1.03,
-          0.807
+          1.96,
+          1.63,
+          1.4025
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "bund",
+          "color": "#3d4347",
           "parts": [
-            "tank",
-            "top-cap",
-            "cap-grip",
-            "front-label-panel",
-            "side-rib-left",
-            "side-rib-right"
+            "bund-floor",
+            "bund-wall-front",
+            "bund-wall-back",
+            "bund-wall-left",
+            "bund-wall-right"
           ],
-          "param": "polymer"
+          "param": "bund"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "grating-0",
+          "color": "#5a6066",
           "parts": [
-            "base-ring"
-          ],
-          "param": "powderCoatedSteel"
+            "grating-0",
+            "grating-1",
+            "grating-2",
+            "grating-3",
+            "grating-4",
+            "grating-5",
+            "grating-6",
+            "grating-7",
+            "grating-8",
+            "grating-deck"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "bund-warning-stripe",
+          "color": "#e0a21c",
           "parts": [
-            "metering-valve",
-            "dip-tube"
+            "bund-warning-stripe"
+          ]
+        },
+        {
+          "name": "tank",
+          "color": "#e4dfcc",
+          "parts": [
+            "tank-a-shell",
+            "tank-a-rib-0",
+            "tank-a-rib-1",
+            "tank-a-rib-2",
+            "tank-b-shell",
+            "tank-b-rib-0",
+            "tank-b-rib-1",
+            "tank-b-rib-2"
           ],
-          "param": "pvc"
+          "param": "tank"
+        },
+        {
+          "name": "lid",
+          "color": "#2f6fa8",
+          "parts": [
+            "tank-a-lid",
+            "tank-a-lid-lug-0",
+            "tank-a-lid-lug-1",
+            "tank-a-lid-lug-2",
+            "tank-a-lid-lug-3",
+            "tank-a-lid-lug-4",
+            "tank-a-lid-lug-5",
+            "tank-a-lid-lug-6",
+            "tank-a-lid-lug-7",
+            "tank-a-stirrer-plate",
+            "tank-a-stirrer-motor",
+            "tank-b-lid",
+            "tank-b-lid-lug-0",
+            "tank-b-lid-lug-1",
+            "tank-b-lid-lug-2",
+            "tank-b-lid-lug-3",
+            "tank-b-lid-lug-4",
+            "tank-b-lid-lug-5",
+            "tank-b-lid-lug-6",
+            "tank-b-lid-lug-7",
+            "tank-b-stirrer-plate",
+            "tank-b-stirrer-motor"
+          ],
+          "param": "lid"
+        },
+        {
+          "name": "tank-a-stirrer-fan-cap",
+          "color": "#2a2d30",
+          "parts": [
+            "tank-a-stirrer-fan-cap",
+            "tank-a-stirrer-box",
+            "tank-a-grad-0",
+            "tank-a-grad-1",
+            "tank-a-grad-2",
+            "tank-a-grad-3",
+            "tank-a-grad-4",
+            "tank-a-grad-5",
+            "tank-b-stirrer-fan-cap",
+            "tank-b-stirrer-box",
+            "tank-b-grad-0",
+            "tank-b-grad-1",
+            "tank-b-grad-2",
+            "tank-b-grad-3",
+            "tank-b-grad-4",
+            "tank-b-grad-5"
+          ]
+        },
+        {
+          "name": "fitting",
+          "color": "#8e9497",
+          "parts": [
+            "tank-a-vent",
+            "tank-a-vent-cap",
+            "tank-a-sight-bracket-0",
+            "tank-a-sight-bracket-1",
+            "tank-a-bulkhead",
+            "tank-a-outlet-nipple",
+            "tank-a-valve-body",
+            "tank-a-outlet-run",
+            "tank-b-vent",
+            "tank-b-vent-cap",
+            "tank-b-sight-bracket-0",
+            "tank-b-sight-bracket-1",
+            "tank-b-bulkhead",
+            "tank-b-outlet-nipple",
+            "tank-b-valve-body",
+            "tank-b-outlet-run",
+            "dosing-header",
+            "header-tee--470",
+            "header-tee-470",
+            "header-cap",
+            "header-to-doser",
+            "header-elbow"
+          ],
+          "param": "fitting"
+        },
+        {
+          "name": "tank-a-sight-tube",
+          "color": "#cfd8d2",
+          "parts": [
+            "tank-a-sight-tube",
+            "tank-b-sight-tube"
+          ]
+        },
+        {
+          "name": "tank-a-sight-level",
+          "color": "#2a8a4a",
+          "parts": [
+            "tank-a-sight-level",
+            "tank-a-label-panel",
+            "tank-a-valve-handle"
+          ]
+        },
+        {
+          "name": "tank-a-letter-l",
+          "color": "#f2f2ec",
+          "parts": [
+            "tank-a-letter-l",
+            "tank-a-letter-r",
+            "tank-a-letter-bar",
+            "tank-b-letter-stem",
+            "tank-b-letter-bar-545",
+            "tank-b-letter-bar-645",
+            "tank-b-letter-bar-745",
+            "tank-b-letter-bowl-575",
+            "tank-b-letter-bowl-675"
+          ]
+        },
+        {
+          "name": "tank-b-sight-level",
+          "color": "#c0392b",
+          "parts": [
+            "tank-b-sight-level",
+            "tank-b-label-panel",
+            "tank-b-valve-handle"
+          ]
         }
       ]
     },
@@ -132886,13 +133365,19 @@
       "id": "uv-treatment-chamber",
       "kit": "hydroponics",
       "title": "UV treatment chamber",
-      "description": "Horizontal-looking treatment skid with a vertical chamber body, control box and paired pipe stubs. Parameters: overall scale, powder-coated steel, pvc, polymer, instrument glass; weathered and highVisibility presets.",
+      "description": "UV steriliser for recirculated nutrient solution at about real size: polished stainless chamber on clamp saddles with domed blind end, lamp gland and connector cap on the service end, glowing UV sight port, top inlet and outlet ports with unions and PVC risers, drain plug, and a ballast box with lamp-status lights and an hour meter cabled to the lamp; single or twin chambers. Material controls: chamber, stand, PVC pipework and ballast housing. stainless, whitePoly, blueTrim and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "uv steriliser",
+        "uv sterilizer",
+        "ultraviolet",
+        "disinfection",
+        "pathogen control",
+        "water treatment",
+        "recirculation",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -132905,8 +133390,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/uv-treatment-chamber.kcad.ts",
       "preview": "/assets/hydroponics-uv-treatment-chamber.png",
-      "sourceSha256": "8a0498b609120bf4eb9710f6d11b949ac46cd03a77a2750c1952b380af0ed475",
-      "triangleBudget": 1800,
+      "sourceSha256": "5d6f7b34568f75804f25bb00c9a2045603c3c189c413ce5ca334030b536c9167",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -132918,92 +133403,198 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "chamber",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#c3c8cc",
+          "label": "Chamber (stainless steel)"
         },
         {
-          "name": "pvc",
+          "name": "stand",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#3d4347",
+          "label": "Stand and saddles (steel)"
         },
         {
-          "name": "polymer",
+          "name": "pipe",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#dcdcd4",
+          "label": "Pipework (PVC)"
         },
         {
-          "name": "glass",
+          "name": "ballast",
           "type": "color",
-          "default": "#51afc1",
-          "label": "Instrument glass"
+          "default": "#e6e6e0",
+          "label": "Ballast housing (polymer)"
+        },
+        {
+          "name": "chambers",
+          "type": "choice",
+          "default": "single",
+          "label": "Chambers",
+          "choices": [
+            "single",
+            "twin"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa",
-          "glass": "#548e98"
+        "stainless": {
+          "chamber": "#c3c8cc",
+          "stand": "#3d4347",
+          "pipe": "#dcdcd4",
+          "ballast": "#e6e6e0"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b",
-          "glass": "#38c5dc"
+        "whitePoly": {
+          "chamber": "#eef0ec",
+          "stand": "#5a6066",
+          "pipe": "#8e9497",
+          "ballast": "#2f6fa8"
+        },
+        "blueTrim": {
+          "chamber": "#b9c0c4",
+          "stand": "#2f5f8f",
+          "pipe": "#e6e6e0",
+          "ballast": "#2a2d30"
+        },
+        "weathered": {
+          "chamber": "#9ea2a0",
+          "stand": "#5c5a52",
+          "pipe": "#bdb9aa",
+          "ballast": "#b9b5a4"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1450,
         "sizeM": [
-          1.25,
-          0.815,
-          0.444
+          1.376265,
+          0.79,
+          0.60593
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "stand",
+          "color": "#3d4347",
           "parts": [
-            "skid-base",
-            "left-support",
-            "right-support"
+            "leg-0-f",
+            "leg-0-b",
+            "foot-0",
+            "saddle-beam-0",
+            "leg-1-f",
+            "leg-1-b",
+            "foot-1",
+            "saddle-beam-1",
+            "tie-rail",
+            "chamber-0-clamp-0",
+            "chamber-0-clamp-1",
+            "ballast-post",
+            "ballast-post-foot"
           ],
-          "param": "powderCoatedSteel"
+          "param": "stand"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "chamber",
+          "color": "#c3c8cc",
           "parts": [
-            "control-box",
-            "service-door",
-            "treatment-canister",
-            "sample-tap"
+            "chamber-0-shell",
+            "chamber-0-in-port",
+            "chamber-0-out-port"
           ],
-          "param": "polymer"
+          "param": "chamber"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "chamber-0-clamp-bolt-0",
+          "color": "#9aa0a4",
           "parts": [
-            "pipe-left",
-            "pipe-right"
-          ],
-          "param": "pvc"
+            "chamber-0-clamp-bolt-0",
+            "chamber-0-clamp-bolt-1",
+            "chamber-0-gland-nut",
+            "chamber-0-sight-ring",
+            "chamber-0-drain-plug",
+            "ballast-lid-seam"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#51afc1",
+          "name": "ballast",
+          "color": "#e6e6e0",
           "parts": [
-            "lamp-cap"
+            "chamber-0-lamp-cap",
+            "ballast-box"
           ],
-          "param": "glass"
+          "param": "ballast"
+        },
+        {
+          "name": "chamber-0-cap-boot",
+          "color": "#2a2d30",
+          "parts": [
+            "chamber-0-cap-boot",
+            "chamber-0-rating-plate",
+            "lamp-cable-0-a",
+            "lamp-cable-0-b",
+            "mains-gland",
+            "mains-cable"
+          ]
+        },
+        {
+          "name": "chamber-0-sight-port",
+          "color": "#9a8cff",
+          "parts": [
+            "chamber-0-sight-port"
+          ]
+        },
+        {
+          "name": "pipe",
+          "color": "#dcdcd4",
+          "parts": [
+            "chamber-0-in-union",
+            "chamber-0-in-riser",
+            "chamber-0-in-elbow",
+            "chamber-0-out-union",
+            "chamber-0-out-riser",
+            "chamber-0-out-elbow",
+            "inlet-header",
+            "outlet-header"
+          ],
+          "param": "pipe"
+        },
+        {
+          "name": "inlet-flow-arrow",
+          "color": "#c0392b",
+          "parts": [
+            "inlet-flow-arrow",
+            "fault-led"
+          ]
+        },
+        {
+          "name": "outlet-flow-arrow",
+          "color": "#2a8a4a",
+          "parts": [
+            "outlet-flow-arrow"
+          ]
+        },
+        {
+          "name": "hour-meter",
+          "color": "#14281d",
+          "parts": [
+            "hour-meter"
+          ]
+        },
+        {
+          "name": "hour-meter-digits",
+          "color": "#e0a21c",
+          "parts": [
+            "hour-meter-digits",
+            "warning-label"
+          ]
+        },
+        {
+          "name": "lamp-led-0",
+          "color": "#6fe08a",
+          "parts": [
+            "lamp-led-0"
+          ]
         }
       ]
     },
@@ -133011,13 +133602,19 @@
       "id": "venturi-injector-assembly",
       "kit": "hydroponics",
       "title": "Venturi injector assembly",
-      "description": "Inline injector assembly with a central throat body, bypass pipe and adjustment knob. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Venturi fertiliser injector bypass at about real size: PVC main line on pipe stands with a throttling ball valve, a U-shaped bypass loop with two isolation ball valves and an hourglass injector body, inlet and outlet pressure gauges, throat suction port with a metering valve, clear suction tube and foot strainer into a capped fertiliser drum. Material controls: PVC pipework, injector body, valve handles and drum, plus a drum size choice. greyPvc, whitePvc, acidDosing and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "venturi injector",
+        "fertilizer injector",
+        "fertiliser injector",
+        "mazzei",
+        "fertigation",
+        "bypass",
+        "irrigation",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -133030,8 +133627,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/venturi-injector-assembly.kcad.ts",
       "preview": "/assets/hydroponics-venturi-injector-assembly.png",
-      "sourceSha256": "ae93e029bfbcd2cd45d8ae526d9e7ed684cf35982c2c8fe8085ed3a1aa06ed1a",
-      "triangleBudget": 1800,
+      "sourceSha256": "f76e7ffb41ca10a55d2a102bbc05f6501feb4be0279eee4183d94af8355d5845",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -133043,77 +133640,219 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "pipe",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#8e9497",
+          "label": "Pipework (PVC)"
         },
         {
-          "name": "pvc",
+          "name": "injector",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2a2d30",
+          "label": "Injector body (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "handle",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#c0392b",
+          "label": "Valve handles"
+        },
+        {
+          "name": "drum",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Fertiliser drum (polyethylene)"
+        },
+        {
+          "name": "drumSize",
+          "type": "choice",
+          "default": "60 L",
+          "label": "Drum size",
+          "choices": [
+            "25 L",
+            "60 L"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greyPvc": {
+          "pipe": "#8e9497",
+          "injector": "#2a2d30",
+          "handle": "#c0392b",
+          "drum": "#2f6fa8"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "whitePvc": {
+          "pipe": "#e2e2da",
+          "injector": "#2a2d30",
+          "handle": "#2f6fa8",
+          "drum": "#e6e3d6"
+        },
+        "acidDosing": {
+          "pipe": "#8e9497",
+          "injector": "#d9d4c2",
+          "handle": "#e0a21c",
+          "drum": "#c0392b"
+        },
+        "weathered": {
+          "pipe": "#a9a99c",
+          "injector": "#3e403c",
+          "handle": "#9a4a3a",
+          "drum": "#4f6a80"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 2404,
         "sizeM": [
-          1.28,
-          0.66,
-          0.5
+          1.8,
+          0.822,
+          0.67
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "pipe",
+          "color": "#8e9497",
           "parts": [
-            "support-base"
+            "main-line",
+            "main-end-l",
+            "tee-l",
+            "tee-branch-l",
+            "main-end-r",
+            "tee-r",
+            "tee-branch-r",
+            "throttle-valve-body",
+            "throttle-valve-ball",
+            "riser-in",
+            "elbow-in",
+            "in-valve-body",
+            "in-valve-ball",
+            "riser-out",
+            "elbow-out",
+            "out-valve-body",
+            "out-valve-ball",
+            "top-run-l",
+            "top-run-r"
           ],
-          "param": "powderCoatedSteel"
+          "param": "pipe"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "stand-post-l",
+          "color": "#3d4347",
           "parts": [
-            "left-pipe",
-            "right-pipe"
-          ],
-          "param": "pvc"
+            "stand-post-l",
+            "stand-foot-l",
+            "stand-saddle-l",
+            "stand-post-r",
+            "stand-foot-r",
+            "stand-saddle-r"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "throttle-valve-stem",
+          "color": "#c9ccce",
           "parts": [
-            "body-center",
-            "bypass-bridge",
-            "bypass-left",
-            "bypass-right",
-            "injector-throat",
-            "adjustment-knob",
-            "suction-port"
+            "throttle-valve-stem",
+            "in-valve-stem",
+            "out-valve-stem"
+          ]
+        },
+        {
+          "name": "handle",
+          "color": "#c0392b",
+          "parts": [
+            "throttle-valve-handle",
+            "in-valve-handle",
+            "out-valve-handle",
+            "in-gauge-needle",
+            "out-gauge-needle",
+            "metering-knob"
           ],
-          "param": "polymer"
+          "param": "handle"
+        },
+        {
+          "name": "flow-arrow",
+          "color": "#f2f2ec",
+          "parts": [
+            "flow-arrow",
+            "drum-hazard-label"
+          ]
+        },
+        {
+          "name": "injector",
+          "color": "#2a2d30",
+          "parts": [
+            "union-in",
+            "union-out",
+            "injector-body",
+            "suction-port",
+            "drum-cap",
+            "drum-vent",
+            "foot-strainer"
+          ],
+          "param": "injector"
+        },
+        {
+          "name": "suction-check",
+          "color": "#5a6066",
+          "parts": [
+            "suction-check",
+            "metering-valve"
+          ]
+        },
+        {
+          "name": "injector-label",
+          "color": "#e0a21c",
+          "parts": [
+            "injector-label",
+            "drum-hazard-mark"
+          ]
+        },
+        {
+          "name": "in-gauge-stem",
+          "color": "#c9a84a",
+          "parts": [
+            "in-gauge-stem",
+            "out-gauge-stem"
+          ]
+        },
+        {
+          "name": "in-gauge",
+          "color": "#d9dcde",
+          "parts": [
+            "in-gauge",
+            "out-gauge"
+          ]
+        },
+        {
+          "name": "in-gauge-face",
+          "color": "#f4f4ee",
+          "parts": [
+            "in-gauge-face",
+            "out-gauge-face"
+          ]
+        },
+        {
+          "name": "drum",
+          "color": "#2f6fa8",
+          "parts": [
+            "drum-body",
+            "drum-rib-0",
+            "drum-rib-1",
+            "drum-handle"
+          ],
+          "param": "drum"
+        },
+        {
+          "name": "tube-0",
+          "color": "#cfd8d2",
+          "parts": [
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-in-drum"
+          ]
         }
       ]
     },
