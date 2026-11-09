@@ -45,6 +45,11 @@ describe('exportSvgDrawing', () => {
     expect(svg).not.toContain('>30</text>');
     expect((svg.match(/class="dim"/g) ?? []).length).toBe(2);
     expect(svg).toContain('>1:2</text>');
+    const checked = renderSvgDrawing([part], { format: 'svg-drawing', sheet: 'a3', views: ['front'] });
+    expect(checked.report?.sheetPlacement).toEqual({
+      status: 'clear', checkedViews: ['front'], issues: [],
+    });
+    expect(checked.diagnostics.map(d => d.code)).not.toContain('drawing.view.placement');
   });
 
   it('rejects isometric overlays on a front-only sheet', () => {

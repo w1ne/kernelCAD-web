@@ -55,6 +55,13 @@ export const DRAWING_CODES = {
     group: 'drawing',
     description: 'A building-sized model (footprint at least 2.5 m × 2.5 m, at least 2 m tall) was drawn with the default mechanical drawing style.',
   },
+  'drawing.view.placement': {
+    hintTemplate: 'A projected drawing view leaves the sheet frame or conflicts with another view or a reserved title-block region. Increase options.sheet (or use auto), re-export, and inspect the resulting drawing.',
+    nextAction: { kind: 'fix-arg', field: 'options.sheet' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'A projected drawing view occupies invalid sheet space; this does not assess annotation glyphs or manufacturing tolerances.',
+  },
   'drawing.annotation.overlap': {
     hintTemplate:
       'Two drawing annotations overlap on the sheet. Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',

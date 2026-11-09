@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReview } from '../../../../shared/intent/drawingReview';
+import type { SheetPlacementReview } from '../drawingSheetPreflight';
 // src/kernel/backends/occt/drawingAuto/contracts.ts
 
 import type { OcctBackend } from '../occtBackend';
@@ -29,6 +30,8 @@ export interface DrawingReportAnnotation {
 
 export interface DrawingReport {
   review?: DrawingReview;
+  /** Geometry-box preflight only; clear does not certify annotations or manufacturing readiness. */
+  sheetPlacement?: SheetPlacementReview;
   /** Annotations rendered clear of geometry, other labels and the frame. */
   placed: number;
   /** Annotations rendered but still colliding with something. */

@@ -81,6 +81,7 @@ import {
 } from './drawingAuto';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { generalToleranceCell, sheetTitleBlock, FULL_TITLE_BLOCK } from './drawingTitleBlock';
+import { reviewSheetViewPlacement } from './drawingSheetPreflight';
 import type { DrawingDeclarations } from '../../../shared/intent/drawingGdtRecord';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../../shared/intent/drafting';
 import { applyDraftingProfile, authoredAnnotationIds, invalidReview, resolveDraftingProfile } from './draftingReview';
@@ -426,11 +427,24 @@ export function renderSvgDrawing(
   const usesHatchPattern = pass.sectionStage.usesHatchPattern;
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
-  const report = pass.autoStage.report ?? (reviewPlans.length ? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] } : undefined);
-  finalizeDrawingReview(report, options, diagnosticsOut);
   const generalTolerance = pass.autoStage.generalTolerance;
+  const visibleViews = frontOnly ? (['front'] as const) : VIEW_NAMES;
+  const sheetPlacement = reviewSheetViewPlacement(layout, effSheet, visibleViews, generalTolerance !== undefined);
+  if (sheetPlacement.issues.length) {
+    const summary = sheetPlacement.issues.map(issue => `${issue.kind} (${issue.views.join('/')})`).join(', ');
+    diagnosticsOut.push({
+      target: 'export-occt', code: 'drawing.view.placement', severity: 'warn',
+      message: `svg-drawing: projected view placement has ${sheetPlacement.issues.length} geometric issue(s): ${summary}.`,
+      hint: 'Increase options.sheet (or use auto), then re-export and inspect the sheet. Check projected view placement and title-block clearance.',
+      nextAction: NEXT_ACTIONS['drawing.view.placement'],
+      details: { issueCount: sheetPlacement.issues.length },
+    });
+  }
+  const report = pass.autoStage.report ?? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
+  report.sheetPlacement = sheetPlacement;
+  finalizeDrawingReview(report, options, diagnosticsOut);
 
-  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape, frontOnly ? ['front'] : VIEW_NAMES);
+  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape, visibleViews);
 
   const explodeSvg = renderExplodeOverlays({
     options,
