@@ -11,13 +11,13 @@ import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 
-async function lowerScript(code: string): Promise<{
+async function lowerScript(code: string, includeParamTable = true): Promise<{
   shape: OcctBackend;
   diagnostics: ReturnType<RecomputeEngine['_diagnosticsForTest']> | unknown[];
 }> {
   const { records, paramTable } = await runScript({ code, fileName: 'test.kcad.ts' });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records, { paramTable });
+  const r = await engine.run(records, includeParamTable ? { paramTable } : undefined);
   const lastRecord = records[records.length - 1];
   const shape = r.shapes.get(lastRecord.id) as OcctBackend;
   return { shape, diagnostics: r.diagnostics };
@@ -64,6 +64,25 @@ describe('cutoutLowerer — basic shapes', () => {
     const { shape, diagnostics } = await lowerScript(code);
     expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
     expect(shape.volume()).toBeCloseTo(10_975, 2);
+  });
+
+  it('rejects unresolved ParamRef coordinates when recompute has no parameter table', async () => {
+    const code = `
+      const a = param('a', 7.25);
+      let base = box(50, 45, 5).translate(-25, 0, 0);
+      const slot = path().moveTo(a, -5.5).lineTo(a, 4.5).lineTo(12.75, 4.5).lineTo(12.75, -5.5).close();
+      return base.cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { diagnostics } = await lowerScript(code, false);
+    const errs = (diagnostics as { severity: string; code: string; message: string; hint: string }[])
+      .filter(d => d.severity === 'error');
+    expect(errs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'feature.invalid-args',
+        message: expect.stringContaining('unresolved parameter reference'),
+        hint: expect.stringContaining('parameter table'),
+      }),
+    ]));
   });
 
   it('resolves arithmetic ParamRefs embedded in cutout sketch commands', async () => {

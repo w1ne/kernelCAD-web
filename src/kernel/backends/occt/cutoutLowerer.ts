@@ -30,6 +30,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { collectParamRefs } from '../../../shared/runtime/resolveParams';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
 import { faceFrameOrigin } from './faceFrame';
@@ -230,6 +231,22 @@ function resolveProfileCommands(
   const profileRecord = rawProfileRecord && resolveRecord
     ? resolveRecord(rawProfileRecord)
     : rawProfileRecord;
+  const rawCommands = ((rawProfileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
+  if (rawProfileRecord && profileRecord === rawProfileRecord) {
+    const unresolvedRefs = [...collectParamRefs(rawCommands)];
+    if (unresolvedRefs.length > 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          featureId: feature.id,
+          severity: 'error',
+          message: `cutout: profile sketch has unresolved parameter reference(s): ${unresolvedRefs.join(', ')}.`,
+          hint: "Recompute with the script's current parameter table so every profile coordinate is evaluated before cutout lowering.",
+        },
+      };
+    }
+  }
   const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
   if (commands.length === 0) {
     return {
