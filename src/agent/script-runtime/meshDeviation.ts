@@ -5,11 +5,17 @@ import type { Shape3D } from 'replicad';
 import { TriangleBvh, type DfmMesh } from '../../modeling/runtime/dfm/meshBvh';
 import type { MeshData } from '../../kernel/backends/occt/exportStlBinary';
 import type { MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
+import type { Vec3 } from '../../shared/intent/types';
 
 // 4k capped samples keeps large multi-part manufacturing models measurable
 // within the normal evaluator memory budget while matching the existing
 // large-assembly export baseline.
 export const MESH_DEVIATION_SAMPLE_CAP = 4_000;
+/** A single BVH index is built at a time; peak index memory is independent of
+ *  the export's total triangle count. */
+export const MESH_DEVIATION_TRIANGLE_CHUNK_SIZE = 8_192;
+
+type DeviationPoint = [number, number, number];
 
 /** Read the triangles a binary STL actually stores (including Float32
  *  coordinate rounding) into the indexed mesh shape used by the BVH. */
@@ -49,66 +55,22 @@ export function measureBrepSurfaceDeviation(
   requestedMm: number,
   sampleCap = MESH_DEVIATION_SAMPLE_CAP,
 ): MeshDeviationReport {
-  const indexes = outputMeshes.map((mesh) => new TriangleBvh(mesh as DfmMesh));
   const triangleCount = outputMeshes.reduce((sum, mesh) => sum + Math.floor(mesh.triangles.length / 3), 0);
-  if (indexes.length === 0 || indexes.every(index => index.triangleCount === 0)) {
+  if (outputMeshes.length === 0 || triangleCount === 0) {
     throw new Error('Mesh-deviation measurement needs at least one export triangle.');
   }
 
-  let candidateCount = 0;
-  for (const shape of shapes) {
-    for (const face of shape.faces) {
-      const tri = face.triangulation(0);
-      if (tri) candidateCount += Math.floor(tri.trianglesIndexes.length / 3) * 4;
-    }
-  }
+  const candidateCount = countBrepSamples(shapes);
   if (candidateCount === 0) throw new Error('Mesh-deviation measurement found no triangulated B-rep face samples.');
   const stride = Math.max(1, Math.ceil(candidateCount / Math.max(1, sampleCap)));
+  const samplesByShape = collectBrepSamples(shapes, stride);
+  const queries = outputMeshes.length === shapes.length
+    ? samplesByShape.map((points, shapeIndex) => ({ points, meshes: [outputMeshes[shapeIndex]!] }))
+    : [{ points: samplesByShape.flat(), meshes: outputMeshes }];
   const distances: number[] = [];
-  let candidate = 0;
-
-  for (let shapeIndex = 0; shapeIndex < shapes.length; shapeIndex++) {
-    const shape = shapes[shapeIndex]!;
-    // Multi-object formats keep one mesh per input part; compare each B-rep
-    // only with its own serialized mesh. A single fused STL triangle soup is
-    // shared across all source shapes and is indexed as one candidate set.
-    const candidateIndexes = outputMeshes.length === shapes.length
-      ? [indexes[shapeIndex]!]
-      : indexes;
-    for (const face of shape.faces) {
-      const tri = face.triangulation(0);
-      if (!tri) continue;
-      const vertices = tri.vertices;
-      const indices = tri.trianglesIndexes;
-      for (let i = 0; i + 2 < indices.length; i += 3) {
-        const a = indices[i]! * 3;
-        const b = indices[i + 1]! * 3;
-        const c = indices[i + 2]! * 3;
-        const points: Array<[number, number, number]> = [
-          midpoint(vertices, a, b),
-          midpoint(vertices, b, c),
-          midpoint(vertices, c, a),
-          [
-            (vertices[a]! + vertices[b]! + vertices[c]!) / 3,
-            (vertices[a + 1]! + vertices[b + 1]! + vertices[c + 1]!) / 3,
-            (vertices[a + 2]! + vertices[b + 2]! + vertices[c + 2]!) / 3,
-          ],
-        ];
-        for (const point of points) {
-          if (candidate % stride === 0) {
-            const surfacePoint = projectToFace(face, point);
-            if (surfacePoint) {
-              let nearest = Infinity;
-              for (const index of candidateIndexes) {
-                const hit = index.closestPoint(surfacePoint);
-                if (hit && hit.distance < nearest) nearest = hit.distance;
-              }
-              if (Number.isFinite(nearest)) distances.push(nearest);
-            }
-          }
-          candidate++;
-        }
-      }
+  for (const query of queries) {
+    for (const distance of nearestTriangleDistancesChunked(query.points, query.meshes)) {
+      if (Number.isFinite(distance)) distances.push(distance);
     }
   }
   if (distances.length === 0) throw new Error('Mesh-deviation measurement could not project any B-rep samples onto their owning faces.');
@@ -122,6 +84,106 @@ export function measureBrepSurfaceDeviation(
     measurement: 'sampled_brep_surface_to_export_triangles',
     global_max_certified: false,
   };
+}
+
+/** Exact nearest distance for each point, scanning every triangle through
+ *  bounded-size BVHs. The chunk-size override keeps cross-chunk behavior
+ *  directly testable with small deterministic meshes. */
+export function nearestTriangleDistancesChunked(
+  points: readonly DeviationPoint[],
+  meshes: readonly MeshData[],
+  chunkSize = MESH_DEVIATION_TRIANGLE_CHUNK_SIZE,
+): number[] {
+  if (!Number.isSafeInteger(chunkSize) || chunkSize < 1) {
+    throw new Error('Mesh-deviation triangle chunk size must be a positive safe integer.');
+  }
+  const nearest = new Float64Array(points.length);
+  nearest.fill(Infinity);
+  for (const mesh of meshes) {
+    const meshTriangleCount = Math.floor(mesh.triangles.length / 3);
+    for (let start = 0; start < meshTriangleCount; start += chunkSize) {
+      const count = Math.min(chunkSize, meshTriangleCount - start);
+      const bvh = new TriangleBvh(indexedTriangleChunk(mesh, start, count));
+      for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
+        const hit = bvh.closestPoint(points[pointIndex]! as Vec3);
+        if (hit && hit.distance < nearest[pointIndex]!) nearest[pointIndex] = hit.distance;
+      }
+    }
+  }
+  return Array.from(nearest);
+}
+
+function indexedTriangleChunk(mesh: MeshData, start: number, count: number): DfmMesh {
+  const vertices = new Float64Array(count * 9);
+  const triangles = new Uint32Array(count * 3);
+  for (let triangle = 0; triangle < count; triangle++) {
+    for (let corner = 0; corner < 3; corner++) {
+      const source = mesh.triangles[(start + triangle) * 3 + corner]! * 3;
+      const target = triangle * 9 + corner * 3;
+      vertices[target] = mesh.vertices[source]!;
+      vertices[target + 1] = mesh.vertices[source + 1]!;
+      vertices[target + 2] = mesh.vertices[source + 2]!;
+      triangles[triangle * 3 + corner] = triangle * 3 + corner;
+    }
+  }
+  return { vertices, triangles };
+}
+
+function countBrepSamples(shapes: readonly Shape3D[]): number {
+  let count = 0;
+  for (const shape of shapes) {
+    for (const face of shape.faces) {
+      const tri = face.triangulation(0);
+      if (tri) count += Math.floor(tri.trianglesIndexes.length / 3) * 4;
+    }
+  }
+  return count;
+}
+
+function collectBrepSamples(shapes: readonly Shape3D[], stride: number): DeviationPoint[][] {
+  const samplesByShape: DeviationPoint[][] = [];
+  let candidate = 0;
+  for (const shape of shapes) {
+    const samples: DeviationPoint[] = [];
+    for (const face of shape.faces) candidate = collectFaceSamples(face, candidate, stride, samples);
+    samplesByShape.push(samples);
+  }
+  return samplesByShape;
+}
+
+function collectFaceSamples(
+  face: Shape3D['faces'][number],
+  candidateStart: number,
+  stride: number,
+  samples: DeviationPoint[],
+): number {
+  const tri = face.triangulation(0);
+  if (!tri) return candidateStart;
+  const { vertices, trianglesIndexes } = tri;
+  let candidate = candidateStart;
+  for (let i = 0; i + 2 < trianglesIndexes.length; i += 3) {
+    const a = trianglesIndexes[i]! * 3;
+    const b = trianglesIndexes[i + 1]! * 3;
+    const c = trianglesIndexes[i + 2]! * 3;
+    const points: DeviationPoint[] = [
+      midpoint(vertices, a, b),
+      midpoint(vertices, b, c),
+      midpoint(vertices, c, a),
+      [
+        (vertices[a]! + vertices[b]! + vertices[c]!) / 3,
+        (vertices[a + 1]! + vertices[b + 1]! + vertices[c + 1]!) / 3,
+        (vertices[a + 2]! + vertices[b + 2]! + vertices[c + 2]!) / 3,
+      ],
+    ];
+    for (const point of points) {
+      if (candidate % stride === 0) {
+        const surfacePoint = projectToFace(face, point);
+        if (surfacePoint) samples.push(surfacePoint);
+      }
+      candidate++;
+    }
+  }
+  return candidate;
 }
 
 function midpoint(vertices: readonly number[], a: number, b: number): [number, number, number] {
