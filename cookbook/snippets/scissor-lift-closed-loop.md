@@ -1,6 +1,6 @@
 ---
 id: scissor-lift-closed-loop
-title: Scissor-lift table — open-chain lift DOF + mid-pose X-links (production pattern)
+title: Scissor-lift table — open-chain layout scaffold with a swept collision
 tags: [assembly, connector, mate, prismatic, joint, kinematic, plate, parameter, scissor, lift]
 keywords:
   - scissor lift
@@ -11,30 +11,28 @@ keywords:
   - joint.scissorLift
   - raising platform animationView
   - X-pattern lift table
-  - production scissor lift mechanism=real
+  - scissor-lift open-chain collision check
 when_to_use: >-
-  Prompt asks for a scissor-lift / scissor-jack table with base, platform,
-  X-pattern links, mechanism=real, and animationView raising the platform.
-  This is the production table pattern. A true closed-loop scissor (crossed
-  links + base/platform sliders, the lift angle driven, both sliders solved)
-  is supported by the loop-closure solver — see the kernelcad-kinematic
-  cookbook 04-scissor-jack-swept for that mechanism. Do NOT invent
-  joint.scissorLift(...). For the table, use this open-chain pattern: one
-  prismatic platform DOF (+ mechanicalJoint)
-  driven by platformZ, industrial X-links fused into base-frame at a
-  representative mid pose, animationView raising the platform. Keep the
-  actuator-mount fastener on solid (center pad under the actuator) so
-  evaluate_script mechanism=real — dry-run / cookbook:evaluate alone miss
-  joint-mesh-gap. Prefer design_loop until green. Gallery
+  Prompt asks for a scissor-like table layout scaffold with a single prismatic
+  platform DOF and X-links fused into the frame at a representative mid pose.
+  This is not a sweep-clean production mechanism: the fixed links intersect
+  the platform at platform-lift=80, so full evaluate_script correctly reports
+  mechanism.interpenetration even though solvedModel declares the pair in
+  ignore. Replace the fixed links with moving geometry and recheck the full
+  travel before describing a mechanism as real. This open-chain scaffold is
+  distinct from the closed-loop mechanism in the kernelcad-kinematic cookbook
+  04-scissor-jack-swept. Do NOT invent joint.scissorLift(...). Gallery
   examples/gallery/scissor-lift.kcad.ts is fastened pose-only (not
   mechanism-driven).
 ---
 
 ```typescript
-// Open-chain industrial scissor table. One prismatic DOF raises the platform;
-// X-links are fused into base-frame at a mid working pose (ParamRef cannot
-// drive Math.sqrt link geometry). A solved closed-loop scissor (crossed links
-// + sliders, lift angle driven) is the kernelcad-kinematic cookbook 04.
+// Open-chain scissor-table layout scaffold. One prismatic DOF raises the
+// platform; X-links are fused into base-frame at a mid working pose (ParamRef
+// cannot drive Math.sqrt link geometry), so they stay still as the platform
+// moves and intersect it at the lower travel limit. A solved closed-loop
+// scissor (crossed links + sliders, lift angle driven) is the separate
+// kernelcad-kinematic cookbook 04.
 // Do not invent joint.scissorLift.
 
 const platformZ = param('platformZ', 110, { min: 80, max: 150 });

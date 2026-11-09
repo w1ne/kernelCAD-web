@@ -78,6 +78,16 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
     statement: { type: 'string', description: 'One line. Quote it instead of calling the mechanism working.' },
     checked: { type: 'array', items: { type: 'string' }, description: "What ran and held (verdict 'real')." },
     skipped: { type: 'array', items: { type: 'string' }, description: "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)." },
+    ignoredPairs: {
+      type: 'array',
+      items: {
+        type: 'array',
+        items: { type: 'string' },
+        minItems: 2,
+        maxItems: 2,
+      },
+      description: '`solvedModel({ ignore })` pair declarations. They do not suppress mechanism collision checks during joint travel; an unverified sweep does not certify them clear.',
+    },
     failures: {
       type: 'array',
       description: "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
