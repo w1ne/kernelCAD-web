@@ -32,6 +32,26 @@ describe('exported drawing visual QA', () => {
     }
   }, 60_000);
 
+  it('runs only the canonical visualQA loop for auto-size drawings', async () => {
+    const r = await runAndExport({
+      code: 'return box(80,50,12);', fileName: 'auto-sheet.kcad.ts',
+      format: 'pdf-drawing',
+      options: { format: 'pdf-drawing', sheet: 'auto',
+        autoAnnotate: false, visualQa: { autoRepair: true } },
+    });
+    expect(r.drawingReport?.visualQa).toBeDefined();
+    expect(r.drawingReport?.sheetRepair).toBeUndefined();
+  }, 60_000);
+
+  it('rejects simultaneous legacy and canonical repair controls', async () => {
+    await expect(runAndExport({
+      code: 'return box(80,50,12);', fileName: 'conflict.kcad.ts',
+      format: 'pdf-drawing',
+      options: { format: 'pdf-drawing', sheet: 'a4',
+        layoutRepair: true, visualQa: { autoRepair: true } },
+    })).rejects.toThrow(/do not combine.*layoutRepair/i);
+  }, 60_000);
+
   it('inspects actual vector PDF output of a real bracket', async () => {
     const result = await runAndExport({
       code: plate,

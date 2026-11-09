@@ -188,7 +188,14 @@ async function renderDrawingSheet(
   featureCount: number,
 ): Promise<ExportResult> {
   const visualQaOptions = validateDrawingVisualQaOptions(opts.visualQa);
-  const initial = await renderDrawingSheetOnce(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
+  if (visualQaOptions && opts.layoutRepair === true) {
+    throw new Error('Drawing options conflict: use visualQa.autoRepair; do not combine it with legacy layoutRepair.');
+  }
+  // Never run two independent repair loops. A visual QA request takes
+  // precedence over auto-sheet legacy repair, even when layoutRepair was not
+  // explicitly supplied (auto sheets used to enable it by default).
+  const effectiveOpts = visualQaOptions ? { ...opts, layoutRepair: false } : opts;
+  const initial = await renderDrawingSheetOnce(effectiveOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
   if (!visualQaOptions || initial.bytes.length === 0) return initial;
   if (opts.style === 'architectural') {
     const report = {
@@ -216,7 +223,7 @@ async function renderDrawingSheet(
     defaultSheet,
     readSvg: artifact => new TextDecoder().decode(artifact.bytes),
     readReport: artifact => artifact.drawingReport,
-    render: sheet => renderDrawingSheetOnce({ ...opts, sheet }, fileName, lowered, targetId, run, diagnostics, featureCount),
+    render: sheet => renderDrawingSheetOnce({ ...effectiveOpts, sheet }, fileName, lowered, targetId, run, diagnostics, featureCount),
     renderWithAnnotationOffsets: (sheet, increments) => {
       const annotationOverrides = { ...opts.annotationOverrides };
       for (const [id, delta] of Object.entries(increments)) {
@@ -225,7 +232,7 @@ async function renderDrawingSheet(
           offset: (opts.annotationOverrides?.[id]?.offset ?? 0) + delta,
         };
       }
-      return renderDrawingSheetOnce({ ...opts, sheet, annotationOverrides }, fileName, lowered, targetId, run, diagnostics, featureCount);
+      return renderDrawingSheetOnce({ ...effectiveOpts, sheet, annotationOverrides }, fileName, lowered, targetId, run, diagnostics, featureCount);
     },
   });
   const report = result.artifact.drawingReport ?? emptyDrawingReport();

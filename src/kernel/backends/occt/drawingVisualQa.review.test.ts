@@ -161,6 +161,33 @@ describe('independent review regressions for drawing QA', () => {
     expect(qa.issues.map(i => i.code)).not.toContain('view-overflow');
   });
 
+  it('does not report verified when the independent view preflight found a defect', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(''), {
+      requestedViews: ['front'],
+      drawingReport: { annotations: [], sheetPlacement: {
+        status: 'issues', checkedViews: ['front'],
+        issues: [{ kind: 'outside-frame', views: ['front'] }],
+      } } as never,
+    });
+    expect(qa.status).toBe('needs-review');
+    expect(qa.issues.map(i => i.code)).toContain('view-overflow');
+    expect(qa.checks).toContainEqual(expect.objectContaining({
+      id: 'kernel-preflight', status: 'failed',
+    }));
+  });
+
+  it('does not ignore a text measuring failure from the independent PDF-metric preflight', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(''), {
+      requestedViews: ['front'],
+      drawingReport: { annotations: [], renderedText: {
+        status: 'issues', checkedText: 1,
+        issues: [{ kind: 'text-unmeasurable', texts: ['unparsed label'] }],
+      } } as never,
+    });
+    expect(qa.status).toBe('needs-review');
+    expect(qa.issues.map(i => i.code)).toContain('exported-sheet-invalid');
+  });
+
   it('does not claim dimensional completeness when no critical review was declared (P1)', () => {
     const qa = analyzeExportedDrawingSvg(fixture(''), { requestedViews: ['front'] });
     expect(qa.status).toBe('incomplete');

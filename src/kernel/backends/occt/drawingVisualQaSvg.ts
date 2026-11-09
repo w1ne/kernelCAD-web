@@ -448,6 +448,44 @@ function inspectAnnotations(ctx: SvgInspection): void {
     message: total + ' crowded or overlapping annotations.' });
 }
 
+const SHEET_PREFLIGHT_CODES: Readonly<Record<NonNullable<DrawingReport['sheetPlacement']>['issues'][number]['kind'], DrawingVisualQaIssueCode>> = {
+  'non-finite-view': 'exported-sheet-invalid',
+  'outside-frame': 'view-overflow',
+  'view-overlap': 'view-overlap',
+  'title-block-overlap': 'title-block-obstruction',
+  'general-tolerance-overlap': 'title-block-obstruction',
+};
+
+const TEXT_PREFLIGHT_CODES: Readonly<Record<NonNullable<DrawingReport['renderedText']>['issues'][number]['kind'], DrawingVisualQaIssueCode>> = {
+  'text-outside-page': 'text-clipping',
+  'text-in-title-block': 'title-block-obstruction',
+  'text-in-tolerance-block': 'title-block-obstruction',
+  'annotation-text-overlap': 'annotation-collision',
+  'text-unmeasurable': 'exported-sheet-invalid',
+};
+
+/** Fold both independent kernel preflights into the single agent-facing verdict. */
+function inspectKernelPreflight(ctx: SvgInspection): void {
+  const sheet = ctx.report?.sheetPlacement?.issues ?? [];
+  const text = ctx.report?.renderedText?.issues ?? [];
+  for (const finding of sheet) {
+    const code = SHEET_PREFLIGHT_CODES[finding.kind];
+    if (ctx.issues.some(item => item.code === code)) continue;
+    ctx.issues.push(issue(code, 'Geometry preflight: ' + finding.kind + ' (' + finding.views.join('/') + ').',
+      'Correct the projected view placement, then inspect the re-exported PDF.'));
+  }
+  for (const finding of text) {
+    const code = TEXT_PREFLIGHT_CODES[finding.kind];
+    if (ctx.issues.some(item => item.code === code)) continue;
+    ctx.issues.push(issue(code, 'Rendered text preflight: ' + finding.kind + ' (' + finding.texts.join('; ') + ').',
+      'Adjust annotation offsets or use a larger sheet, then rerun PDF QA.'));
+  }
+  const covered = ctx.report?.sheetPlacement !== undefined && ctx.report.renderedText !== undefined;
+  ctx.checks.push({ id: 'kernel-preflight',
+    status: sheet.length + text.length > 0 ? 'failed' : covered ? 'passed' : 'not-declared',
+    message: sheet.length + ' geometry issues, ' + text.length + ' text issues.' });
+}
+
 function inspectReview(ctx: SvgInspection): void {
   const review = ctx.report?.review;
   if (!review || review.status === 'not-declared') {
@@ -496,6 +534,7 @@ export function analyzeExportedDrawingSvg(
   checkDimensionGeometry({ all: ctx.all, sheet, titleRect: title, issues: ctx.issues, checks: ctx.checks });
   inspectText(ctx);
   inspectAnnotations(ctx);
+  inspectKernelPreflight(ctx);
   inspectReview(ctx);
   const review = ctx.report?.review;
   const complete = review?.status === 'complete' && review.criticalCount > 0 &&

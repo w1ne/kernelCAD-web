@@ -62,6 +62,10 @@ The response includes `drawing_report.visualQa`, with detected sheet issues,
 attempted repairs and PDF readback evidence. An agent can adjust annotation
 placement or choose a larger standard sheet only when measured defects decrease.
 It does not invent dimensions, tolerances or manufacturing requirements.
+The older `layoutRepair` option is retained for compatibility with existing
+export callers; use `visualQa` for new agent workflows. The two repair controls
+must not be enabled together. A `visualQa` request disables the implicit legacy
+sheet-size repair pass so the same drawing is not repaired twice.
 
 **A successful PDF export is not engineering approval.** A drawing without
 declared critical requirements remains `incomplete`. Check and approve the
