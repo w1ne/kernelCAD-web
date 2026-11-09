@@ -332,6 +332,35 @@ function coverageWithIgnoredPairs(
   return ignoredPairs.length > 0 ? { ...coverage, ignoredPairs } : coverage;
 }
 
+async function emptySolveResult(
+  arm: Assembly,
+  failures: CompilerDiagnostic[],
+  joints: number,
+  scope: { fastened: number; limitsChecked: number; matesChecked: boolean; skipped: readonly string[] },
+  opts: MechanismTruthOptions,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): Promise<MechanismTruthResult> {
+  if (opts.physicsCheck === true) {
+    const physics = await runPhysicsCriteria(arm, [], undefined, opts.physicsSessionFactory, opts.physicsBudget);
+    failures.push(...physics.failures);
+  }
+  const coverage = coverageWithIgnoredPairs({ poses: 0, joints, ...scope, sweep: false, physics: false }, ignoredPairs);
+  const mechanism = failures.some((failure) => failure.severity === 'error')
+    ? 'broken'
+    : opts.physicsCheck === true ? 'unverified' : 'real';
+  return { mechanism, failures, coverage };
+}
+
+function mechanismVerdict(
+  failures: CompilerDiagnostic[],
+  sweepSkipped: boolean,
+  physics: { ran: boolean } | undefined,
+): 'real' | 'broken' | 'unverified' {
+  if (failures.some((d) => d.severity === 'error')) return 'broken';
+  if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
+  return 'real';
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -390,21 +419,7 @@ export async function checkMechanismTruth(
   const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
   const ignoredPairs = arm.__ignoreInterference().map(([a, b]) => [a, b] as const);
   if (solved.length === 0) {
-    if (opts.physicsCheck === true) {
-      const physics = await runPhysicsCriteria(arm, solved, undefined, opts.physicsSessionFactory, opts.physicsBudget);
-      failures.push(...physics.failures);
-    }
-    const coverage = coverageWithIgnoredPairs({
-      poses: 0,
-      joints,
-      ...scope,
-      sweep: false,
-      physics: false,
-    }, ignoredPairs);
-    const mechanism = failures.some((failure) => failure.severity === 'error')
-      ? 'broken'
-      : opts.physicsCheck === true ? 'unverified' : 'real';
-    return { mechanism, failures, coverage };
+    return emptySolveResult(arm, failures, joints, scope, opts, ignoredPairs);
   }
 
   // BREP-sweep budget gate (issue #348). Criteria 2/3/8 re-pose the rest
@@ -438,17 +453,17 @@ export async function checkMechanismTruth(
   // that lives in `failures` so consumers surface it — but it must NOT make
   // the verdict 'broken'. Only an error-severity criterion failure means
   // 'broken'.
-  const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
-  const mechanism: 'real' | 'broken' | 'unverified' =
-    hasDefinitiveFailure ? 'broken' : sweepSkipped || (physics !== undefined && !physics.ran) ? 'unverified' : 'real';
-  const coverage = coverageWithIgnoredPairs({
-    poses: solved.length,
-    joints,
-    ...scope,
-    sweep: !sweepSkipped,
-    physics: physics?.ran ?? false,
-  }, ignoredPairs);
-  return { mechanism, failures, coverage };
+  return {
+    mechanism: mechanismVerdict(failures, sweepSkipped, physics),
+    failures,
+    coverage: coverageWithIgnoredPairs({
+      poses: solved.length,
+      joints,
+      ...scope,
+      sweep: !sweepSkipped,
+      physics: physics?.ran ?? false,
+    }, ignoredPairs),
+  };
 }
 
 /**

@@ -336,6 +336,40 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
 }
 
 /** Every mate whose two parts do not meet at rest. */
+function restPoseMateGapFor(
+  mate: MateRecord,
+  byName: Map<string, SceneBackend['parts'][number]>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+): RestMateGap | undefined {
+  let a: string;
+  let b: string;
+  try {
+    a = parseConnectorRef(mate.a).partName;
+    b = parseConnectorRef(mate.b).partName;
+  } catch {
+    return undefined;
+  }
+  if (a === b) return undefined;
+  const pa = byName.get(a);
+  const pb = byName.get(b);
+  if (pa === undefined || pb === undefined) return undefined;
+  if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) return undefined;
+  const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
+  if (!seen.has(key)) {
+    const meshContact = restMeshContact(pa, pb, 'analysis');
+    seen.set(key, meshContact !== undefined && Math.abs(meshContact.distanceMm - toleranceMm) > 0.25
+      ? meshContact.distanceMm
+      : measureBodyToBodyGap(
+        analysisBodyOf(pa.shape) as OcctBackend, pa.worldTransform,
+        analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
+      ));
+  }
+  const gap = seen.get(key);
+  if (gap !== undefined && gap > toleranceMm) return { mateName: mate.name, a, b, gapMm: gap };
+  return undefined;
+}
+
 export function restPoseMateGaps(
   arm: Assembly,
   scene: SceneBackend,
@@ -347,31 +381,8 @@ export function restPoseMateGaps(
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
     if (!includeMate(mate)) continue;
-    let a: string;
-    let b: string;
-    try {
-      a = parseConnectorRef(mate.a).partName;
-      b = parseConnectorRef(mate.b).partName;
-    } catch {
-      continue;
-    }
-    if (a === b) continue;
-    const pa = byName.get(a);
-    const pb = byName.get(b);
-    if (pa === undefined || pb === undefined) continue;
-    if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) continue;
-    const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
-    if (!seen.has(key)) {
-      const meshContact = restMeshContact(pa, pb, 'analysis');
-      seen.set(key, meshContact !== undefined && Math.abs(meshContact.distanceMm - toleranceMm) > 0.25
-        ? meshContact.distanceMm
-        : measureBodyToBodyGap(
-          analysisBodyOf(pa.shape) as OcctBackend, pa.worldTransform,
-          analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
-        ));
-    }
-    const gap = seen.get(key);
-    if (gap !== undefined && gap > toleranceMm) out.push({ mateName: mate.name, a, b, gapMm: gap });
+    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm);
+    if (gap !== undefined) out.push(gap);
   }
   return out;
 }

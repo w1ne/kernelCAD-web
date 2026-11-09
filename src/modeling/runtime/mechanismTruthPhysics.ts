@@ -92,6 +92,28 @@ export interface PhysicsCriteriaResult {
  * will reshape). For now, criterion 5 reports a finite-torque failure
  * only.
  */
+
+function invalidPhysicsBudgetReason(budget: unknown): string | undefined {
+  if (typeof budget !== 'number') return 'the physics budget has an invalid type';
+  if (budget === 0) return 'the physics budget is 0 (force skip)';
+  if (Number.isNaN(budget) || budget < 0 || budget === -Infinity) return `the physics budget ${budget} is invalid`;
+  return undefined;
+}
+
+function physicsMeshWorkSkipReason(
+  arm: Assembly,
+  restScene: SceneBackend | undefined,
+  budget: number,
+): string | undefined {
+  if (arm.__parts().some((part) => part.collisionShapes.length > 0)) {
+    return 'custom collision shapes have mesh work that cannot be measured from the lowered rest scene';
+  }
+  const work = physicsMeshWork(arm, restScene);
+  if (work === undefined) return 'the lowered rest-scene mesh work could not be measured';
+  if (work > budget) return `estimated mesh work ${work} triangles exceeds the budget ${budget}`;
+  return undefined;
+}
+
 export async function runPhysicsCriteria(
   arm: Assembly,
   solved: readonly SolvedSample[],
@@ -111,23 +133,13 @@ export async function runPhysicsCriteria(
   });
 
   // The test seam must short-circuit before even reading a rest mesh.
-  if (typeof budget !== 'number') return skipped('the physics budget has an invalid type');
-  if (budget === 0) return skipped('the physics budget is 0 (force skip)');
-  if (Number.isNaN(budget) || budget < 0 || budget === -Infinity) return skipped(`the physics budget ${budget} is invalid`);
+  const invalidBudget = invalidPhysicsBudgetReason(budget);
+  if (invalidBudget !== undefined) return skipped(invalidBudget);
   // A rigid assembly has no generalized coordinates to hold or drop.
   // Preserve the vacuous physics result without requiring a rest mesh.
   if (arm.__mates().every((mate) => mate.type === 'fastened')) return { failures: out, ran: true };
-  if (arm.__parts().some((part) => part.collisionShapes.length > 0)) {
-    return skipped('custom collision shapes have mesh work that cannot be measured from the lowered rest scene');
-  }
-
-  const work = physicsMeshWork(arm, restScene);
-  if (work === undefined || work > budget) {
-    const reason = work === undefined
-      ? 'the lowered rest-scene mesh work could not be measured'
-      : `estimated mesh work ${work} triangles exceeds the budget ${budget}`;
-    return skipped(reason);
-  }
+  const workSkip = physicsMeshWorkSkipReason(arm, restScene, budget);
+  if (workSkip !== undefined) return skipped(workSkip);
 
   let mjcfResult: Awaited<ReturnType<typeof assemblyToMjcf>>;
   try {

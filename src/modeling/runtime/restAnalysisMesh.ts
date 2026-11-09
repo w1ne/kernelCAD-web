@@ -90,23 +90,25 @@ export function cachedRestWorldMesh(part: SceneBackend['parts'][number], source:
 
 /** Coordinate-welded edge incidence: every edge must belong to two faces.
  *  A 1 nm coordinate grid joins duplicated OCCT face-boundary vertices. */
-export function watertightWorldMesh(mesh: WorldMesh): boolean {
-  const { positions: P, indices: I } = mesh;
-  if (!mesh.closed || P.length % 3 !== 0 || I.length % 3 !== 0 || I.length === 0) return false;
-  const welded = new Int32Array(P.length / 3);
+function weldMeshVertices(positions: WorldMesh['positions']): Int32Array | undefined {
+  const welded = new Int32Array(positions.length / 3);
   const ids = new Map<string, number>();
   for (let i = 0; i < welded.length; i++) {
-    const x = P[3 * i], y = P[3 * i + 1], z = P[3 * i + 2];
-    if (![x, y, z].every(Number.isFinite)) return false;
+    const x = positions[3 * i], y = positions[3 * i + 1], z = positions[3 * i + 2];
+    if (![x, y, z].every(Number.isFinite)) return undefined;
     const key = `${Math.round(x * 1e6)},${Math.round(y * 1e6)},${Math.round(z * 1e6)}`;
     let id = ids.get(key);
     if (id === undefined) { id = ids.size; ids.set(key, id); }
     welded[i] = id;
   }
+  return welded;
+}
+
+function manifoldClosedEdges(indices: WorldMesh['indices'], welded: Int32Array): boolean {
   const edges = new Map<string, number>();
-  for (let t = 0; t < I.length; t += 3) {
-    if (I[t] >= welded.length || I[t + 1] >= welded.length || I[t + 2] >= welded.length) return false;
-    const a = welded[I[t]], b = welded[I[t + 1]], c = welded[I[t + 2]];
+  for (let t = 0; t < indices.length; t += 3) {
+    if (indices[t] >= welded.length || indices[t + 1] >= welded.length || indices[t + 2] >= welded.length) return false;
+    const a = welded[indices[t]], b = welded[indices[t + 1]], c = welded[indices[t + 2]];
     if (a === b || b === c || c === a) return false;
     for (const [u, v] of [[a, b], [b, c], [c, a]]) {
       const key = u < v ? `${u},${v}` : `${v},${u}`;
@@ -117,6 +119,13 @@ export function watertightWorldMesh(mesh: WorldMesh): boolean {
   }
   for (const count of edges.values()) if (count !== 2) return false;
   return true;
+}
+
+export function watertightWorldMesh(mesh: WorldMesh): boolean {
+  const { positions: P, indices: I } = mesh;
+  if (!mesh.closed || P.length % 3 !== 0 || I.length % 3 !== 0 || I.length === 0) return false;
+  const welded = weldMeshVertices(P);
+  return welded !== undefined && manifoldClosedEdges(I, welded);
 }
 
 /** Build a proximity BVH only if this body's mesh supports parity. */

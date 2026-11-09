@@ -591,64 +591,85 @@ export class TriangleBvh {
    *  distance to prune triangle-pair work. */
   closestPoints(other: TriangleBvh): BvhClosestPair | null {
     if (this.triangleCount === 0 || other.triangleCount === 0) return null;
-    let best2 = Infinity;
-    let best: BvhClosestPair | null = null;
+    const state: { best2: number; best: BvhClosestPair | null } = { best2: Infinity, best: null };
     const stack: Array<[number, number]> = [[0, 0]];
     while (stack.length) {
       const [nodeA, nodeB] = stack.pop()!;
-      if (this.nodePairDistanceSquared(nodeA, other, nodeB) > best2) continue;
+      if (this.nodePairDistanceSquared(nodeA, other, nodeB) > state.best2) continue;
       const leafA = this.count[nodeA] > 0, leafB = other.count[nodeB] > 0;
       if (leafA && leafB) {
-        const endA = this.start[nodeA] + this.count[nodeA];
-        const endB = other.start[nodeB] + other.count[nodeB];
-        for (let ka = this.start[nodeA]; ka < endA; ka++) {
-          const sa = this.triOrder[ka], oa = sa * 9;
-          const av: Vec3[] = [
-            [this.triVerts[oa], this.triVerts[oa+1], this.triVerts[oa+2]],
-            [this.triVerts[oa+3], this.triVerts[oa+4], this.triVerts[oa+5]],
-            [this.triVerts[oa+6], this.triVerts[oa+7], this.triVerts[oa+8]],
-          ];
-          for (let kb = other.start[nodeB]; kb < endB; kb++) {
-            const sb = other.triOrder[kb], ob = sb * 9;
-            const bv: Vec3[] = [
-              [other.triVerts[ob], other.triVerts[ob+1], other.triVerts[ob+2]],
-              [other.triVerts[ob+3], other.triVerts[ob+4], other.triVerts[ob+5]],
-              [other.triVerts[ob+6], other.triVerts[ob+7], other.triVerts[ob+8]],
-            ];
-            const consider = (pa: Vec3, pb: Vec3): void => {
-              const d2 = distanceSquared(pa, pb);
-              if (d2 < best2) {
-                best2 = d2;
-                best = { pointA: pa, pointB: pb, distance: Math.sqrt(d2),
-                  triIndexA: this.srcIndex[sa], triIndexB: other.srcIndex[sb] };
-              }
-            };
-            for (const p of av) consider(p, closestPointOnTriangle(p, bv[0], bv[1], bv[2]));
-            if (best2 === 0) return best;
-            for (const p of bv) consider(closestPointOnTriangle(p, av[0], av[1], av[2]), p);
-            if (best2 === 0) return best;
-            for (let ea = 0; ea < 3; ea++) for (let eb = 0; eb < 3; eb++) {
-              const pair = closestSegmentPair(av[ea], av[(ea+1)%3], bv[eb], bv[(eb+1)%3]);
-              consider(pair[0], pair[1]);
-              if (best2 === 0) return best;
-            }
-            for (let edge = 0; edge < 3; edge++) {
-              const hitB = segmentTriangleIntersection(av[edge], av[(edge+1)%3], bv[0], bv[1], bv[2]);
-              if (hitB) consider(hitB, hitB);
-              if (best2 === 0) return best;
-              const hitA = segmentTriangleIntersection(bv[edge], bv[(edge+1)%3], av[0], av[1], av[2]);
-              if (hitA) consider(hitA, hitA);
-              if (best2 === 0) return best;
-            }
-          }
-        }
+        if (this.refineClosestFromLeaves(other, nodeA, nodeB, state)) return state.best;
       } else if (!leafA && (leafB || this.nodeExtentSquared(nodeA) >= other.nodeExtentSquared(nodeB))) {
         stack.push([nodeA + 1, nodeB], [this.rightChild[nodeA], nodeB]);
       } else {
         stack.push([nodeA, nodeB + 1], [nodeA, other.rightChild[nodeB]]);
       }
     }
-    return best;
+    return state.best;
+  }
+
+  private refineClosestFromLeaves(
+    other: TriangleBvh,
+    nodeA: number,
+    nodeB: number,
+    state: { best2: number; best: BvhClosestPair | null },
+  ): boolean {
+    const endA = this.start[nodeA] + this.count[nodeA];
+    const endB = other.start[nodeB] + other.count[nodeB];
+    for (let ka = this.start[nodeA]; ka < endA; ka++) {
+      const sa = this.triOrder[ka], oa = sa * 9;
+      const av: Vec3[] = [
+        [this.triVerts[oa], this.triVerts[oa+1], this.triVerts[oa+2]],
+        [this.triVerts[oa+3], this.triVerts[oa+4], this.triVerts[oa+5]],
+        [this.triVerts[oa+6], this.triVerts[oa+7], this.triVerts[oa+8]],
+      ];
+      for (let kb = other.start[nodeB]; kb < endB; kb++) {
+        const sb = other.triOrder[kb], ob = sb * 9;
+        const bv: Vec3[] = [
+          [other.triVerts[ob], other.triVerts[ob+1], other.triVerts[ob+2]],
+          [other.triVerts[ob+3], other.triVerts[ob+4], other.triVerts[ob+5]],
+          [other.triVerts[ob+6], other.triVerts[ob+7], other.triVerts[ob+8]],
+        ];
+        if (this.considerClosestTrianglePair(other, av, bv, sa, sb, state)) return true;
+      }
+    }
+    return false;
+  }
+
+  private considerClosestTrianglePair(
+    other: TriangleBvh,
+    av: Vec3[],
+    bv: Vec3[],
+    sa: number,
+    sb: number,
+    state: { best2: number; best: BvhClosestPair | null },
+  ): boolean {
+    const consider = (pa: Vec3, pb: Vec3): void => {
+      const d2 = distanceSquared(pa, pb);
+      if (d2 < state.best2) {
+        state.best2 = d2;
+        state.best = { pointA: pa, pointB: pb, distance: Math.sqrt(d2),
+          triIndexA: this.srcIndex[sa], triIndexB: other.srcIndex[sb] };
+      }
+    };
+    for (const p of av) consider(p, closestPointOnTriangle(p, bv[0], bv[1], bv[2]));
+    if (state.best2 === 0) return true;
+    for (const p of bv) consider(closestPointOnTriangle(p, av[0], av[1], av[2]), p);
+    if (state.best2 === 0) return true;
+    for (let ea = 0; ea < 3; ea++) for (let eb = 0; eb < 3; eb++) {
+      const pair = closestSegmentPair(av[ea], av[(ea+1)%3], bv[eb], bv[(eb+1)%3]);
+      consider(pair[0], pair[1]);
+      if (state.best2 === 0) return true;
+    }
+    for (let edge = 0; edge < 3; edge++) {
+      const hitB = segmentTriangleIntersection(av[edge], av[(edge+1)%3], bv[0], bv[1], bv[2]);
+      if (hitB) consider(hitB, hitB);
+      if (state.best2 === 0) return true;
+      const hitA = segmentTriangleIntersection(bv[edge], bv[(edge+1)%3], av[0], av[1], av[2]);
+      if (hitA) consider(hitA, hitA);
+      if (state.best2 === 0) return true;
+    }
+    return false;
   }
 
   private nodePairDistanceSquared(node: number, other: TriangleBvh, otherNode: number): number {
