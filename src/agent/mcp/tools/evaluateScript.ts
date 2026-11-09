@@ -133,9 +133,11 @@ export interface EvaluateScriptOutput extends McpViewerResult {
   /**
    * Mechanism-truth verdict (T3), present ONLY for a full (non-dry)
    * evaluation of an assembly-built scene with `skipMechanismCheck` unset.
-   *   - 'real'       — every criterion held at every sampled pose.
-   *   - 'broken'     — a definitive failure (self-collision, fastened
-   *                    drift, dof-mismatch, …); makes `ok: false`.
+   *   - 'real'       — every checked criterion held, including connector
+   *                    seating on modeled material.
+   *   - 'broken'     — a definitive failure (connector outside material,
+   *                    self-collision, fastened drift, dof-mismatch, …);
+   *                    makes `ok: false`.
    *   - 'unverified' — the articulated sweep was skipped (budget); `ok`
    *                    is left as the build/dfm outcome and a loud
    *                    `mechanism.unverified-budget-exceeded` diagnostic
@@ -227,8 +229,16 @@ export async function evaluateScriptTool(
   // NOTE: this is the agent-facing surface ONLY. The RecomputeEngine
   // recompute path (Studio's per-keystroke lower) deliberately does NOT run
   // this sweep and is untouched here.
-  const { mechanism, mechanismFailures, coverage } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
-  const mechanismSummary = await summaryWithLoads(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
+  const sceneMechanism = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
+  const connectorErrors = await connectorGate(model, buildSucceeded && input.skipMechanismCheck !== true);
+  if (connectorErrors.length > 0) {
+    // Connector seating is a definitive mechanical failure, even when the
+    // kinematic/rest-pose probe alone would call a static assembly real.
+    sceneMechanism.mechanism = 'broken';
+    sceneMechanism.mechanismFailures.push(...connectorErrors);
+  }
+  const { mechanism, mechanismFailures } = sceneMechanism;
+  const mechanismSummary = await summaryWithLoads(model, buildSucceeded, sceneMechanism);
 
   // Merge mechanism diagnostics into the surfaced list (de-duped against
   // what's already there by reference). Derive `ok` honestly: a 'broken'
@@ -237,8 +247,7 @@ export async function evaluateScriptTool(
   // diagnostic + verdict.
   // Publish gate = review gate: a mate connector far from its part's
   // material is a review_cad error, so it is an evaluate_script error too.
-  const connectorErrors = await connectorGate(model, buildSucceeded && input.skipMechanismCheck !== true);
-  const { mergedDiagnostics, ok } = gateOutcome(r, mechanism, [...mechanismFailures, ...connectorErrors], connectorErrors.length > 0);
+  const { mergedDiagnostics, ok } = gateOutcome(r, mechanism, mechanismFailures, connectorErrors.length > 0);
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
   const viewer = await publishBuiltViewer(model, buildSucceeded, { mechanism, mechanismFailures, mechanismSummary });
