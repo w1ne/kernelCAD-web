@@ -337777,16 +337777,17 @@
       "id": "anesthesia-machine",
       "kit": "vet-clinic",
       "title": "Veterinary anesthesia machine",
-      "description": "Mobile anesthesia workstation with gas cylinders, absorber canister, flow controls and monitor. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Mobile veterinary anaesthesia workstation at real size: castored drawer cabinet with stainless worktop and accessory rail, flowmeter bank with glass tubes and colour-coded knobs, agent-coloured vaporizer, pressure gauges, side CO2 absorber with soda lime, reservoir bag, blue corrugated breathing hoses to a Y-piece, rear oxygen cylinders on yokes and a top patient monitor. Agent choice (isoflurane, sevoflurane) recolours the vaporizer. Material controls: cabinet paint, stainless trim, rubber and monitor glass. clinicClean, softTeal and graphite presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
-        "animal health",
         "anesthesia",
-        "machine",
-        "low poly",
+        "anaesthesia machine",
+        "vaporizer",
+        "flowmeter",
+        "surgery",
         "CC0"
       ],
       "compat": [
@@ -337799,8 +337800,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/anesthesia-machine.kcad.ts",
       "preview": "/assets/vet-clinic-anesthesia-machine.png",
-      "sourceSha256": "ace94da7404d9c6cf97a7fb00a7675045d097d4fe5b250d88f10a7d7fb9725ff",
-      "triangleBudget": 1800,
+      "sourceSha256": "8287b320e2afa35e612c9ebc318e87b7b4efce9c854cd87ed731eb0ee388941b",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -337812,94 +337813,264 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#718b89",
-          "label": "Powder-coated steel"
+          "name": "agent",
+          "type": "choice",
+          "default": "isoflurane",
+          "label": "Vaporizer agent",
+          "choices": [
+            "isoflurane",
+            "sevoflurane"
+          ]
         },
         {
-          "name": "glassColor",
+          "name": "cabinet",
           "type": "color",
-          "default": "#4e8290",
-          "label": "Tinted glass and displays"
+          "default": "#e3e8e6",
+          "label": "Cabinet paint"
         },
         {
-          "name": "rubberColor",
+          "name": "trim",
           "type": "color",
-          "default": "#30383b",
+          "default": "#b9c2c4",
+          "label": "Stainless trim"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#26292b",
           "label": "Rubber"
         },
         {
-          "name": "stainlessSteelColor",
+          "name": "glass",
           "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "default": "#2b4652",
+          "label": "Monitor glass"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "cabinet": "#f1f3f1",
+          "trim": "#c8cfd0"
         },
         "softTeal": {
-          "paintedSteelColor": "#4d858d",
-          "glassColor": "#3f7480"
+          "cabinet": "#7fb0b2",
+          "trim": "#a9bbbd",
+          "glass": "#22404a"
+        },
+        "graphite": {
+          "cabinet": "#4a5054",
+          "trim": "#9aa3a6",
+          "rubber": "#1d1f20",
+          "glass": "#1c2a31"
         }
       },
       "stats": {
-        "triangles": 492,
+        "triangles": 2952,
         "sizeM": [
-          0.716,
-          1.2025,
-          0.515
+          0.9325,
+          1.863037,
+          1.045
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#718b89",
+          "name": "trim",
+          "color": "#b9c2c4",
           "parts": [
-            "base",
-            "tower",
-            "upper-shelf",
-            "monitor",
-            "flow-control-a",
-            "flow-control-b",
-            "breathing-circuit-block"
+            "castor-fork-0",
+            "castor-fork-1",
+            "castor-fork-2",
+            "castor-fork-3",
+            "drawer-pull-0",
+            "drawer-pull-1",
+            "drawer-pull-2",
+            "worktop",
+            "worktop-lip-back",
+            "worktop-lip-left",
+            "worktop-lip-right",
+            "accessory-rail",
+            "upright-left",
+            "upright-right",
+            "vaporizer-mount",
+            "vaporizer-dial-grip",
+            "vaporizer-fill-port",
+            "gauge-bezel-0",
+            "gauge-bezel-1",
+            "absorber-pole",
+            "absorber-arm",
+            "bag-arm",
+            "cylinder-yoke-0",
+            "cylinder-valve-0",
+            "cylinder-yoke-1",
+            "cylinder-valve-1",
+            "monitor-post"
           ],
-          "param": "paintedSteelColor"
+          "param": "trim"
         },
         {
-          "name": "rubberColor",
-          "color": "#30383b",
+          "name": "rubber",
+          "color": "#26292b",
           "parts": [
-            "wheel-a",
-            "wheel-b"
+            "castor-wheel-0",
+            "castor-wheel-1",
+            "castor-wheel-2",
+            "castor-wheel-3",
+            "bumper",
+            "bag-neck",
+            "reservoir-bag",
+            "cylinder-strap-0",
+            "cylinder-strap-1"
           ],
-          "param": "rubberColor"
+          "param": "rubber"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "cabinet",
+          "color": "#e3e8e6",
           "parts": [
-            "wheel-bracket-a",
-            "wheel-bracket-b",
-            "oxygen-cylinder-left",
-            "oxygen-cylinder-right",
-            "oxygen-valve-left",
-            "oxygen-valve-right"
+            "plinth",
+            "cabinet-body",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "back-panel",
+            "top-shelf",
+            "flowmeter-housing",
+            "absorber-base",
+            "absorber-head",
+            "monitor-housing"
           ],
-          "param": "stainlessSteelColor"
+          "param": "cabinet"
         },
         {
-          "name": "glassColor",
-          "color": "#4e8290",
+          "name": "glass",
+          "color": "#2b4652",
           "parts": [
-            "absorber-canister",
+            "flowmeter-window",
+            "vaporizer-sight-glass",
             "monitor-screen"
           ],
-          "param": "glassColor"
+          "param": "glass"
+        },
+        {
+          "name": "flow-tube-0",
+          "color": "#d6e6ea",
+          "parts": [
+            "flow-tube-0",
+            "flow-tube-1",
+            "flow-tube-2"
+          ]
+        },
+        {
+          "name": "flow-bobbin-0",
+          "color": "#2e8b4a",
+          "parts": [
+            "flow-bobbin-0",
+            "flow-knob-0",
+            "o2-flush-button",
+            "oxygen-cylinder-0",
+            "oxygen-cylinder-1"
+          ]
+        },
+        {
+          "name": "flow-bobbin-1",
+          "color": "#e6c229",
+          "parts": [
+            "flow-bobbin-1",
+            "flow-knob-1"
+          ]
+        },
+        {
+          "name": "flow-bobbin-2",
+          "color": "#3d6fb5",
+          "parts": [
+            "flow-bobbin-2",
+            "flow-knob-2"
+          ]
+        },
+        {
+          "name": "vaporizer-body",
+          "color": "#7a4fa3",
+          "parts": [
+            "vaporizer-body",
+            "vaporizer-dial"
+          ]
+        },
+        {
+          "name": "gauge-face-0",
+          "color": "#f4f4ee",
+          "parts": [
+            "gauge-face-0",
+            "gauge-face-1"
+          ]
+        },
+        {
+          "name": "gauge-needle-0",
+          "color": "#c0392b",
+          "parts": [
+            "gauge-needle-0",
+            "gauge-needle-1"
+          ]
+        },
+        {
+          "name": "absorber-canister-lower",
+          "color": "#9b7cc4",
+          "parts": [
+            "absorber-canister-lower"
+          ]
+        },
+        {
+          "name": "absorber-canister-upper",
+          "color": "#ece8f0",
+          "parts": [
+            "absorber-canister-upper"
+          ]
+        },
+        {
+          "name": "apl-valve",
+          "color": "#d9d9d2",
+          "parts": [
+            "apl-valve",
+            "y-piece"
+          ]
+        },
+        {
+          "name": "inspiratory-hose-0",
+          "color": "#5b8fc4",
+          "parts": [
+            "inspiratory-hose-0",
+            "inspiratory-hose-1",
+            "inspiratory-hose-2",
+            "inspiratory-hose-joint-1",
+            "inspiratory-hose-joint-2",
+            "expiratory-hose-0",
+            "expiratory-hose-1",
+            "expiratory-hose-2",
+            "expiratory-hose-joint-1",
+            "expiratory-hose-joint-2"
+          ]
+        },
+        {
+          "name": "monitor-trace-0",
+          "color": "#38d36b",
+          "parts": [
+            "monitor-trace-0"
+          ]
+        },
+        {
+          "name": "monitor-trace-1",
+          "color": "#f0d33a",
+          "parts": [
+            "monitor-trace-1"
+          ]
+        },
+        {
+          "name": "monitor-trace-2",
+          "color": "#41b6e6",
+          "parts": [
+            "monitor-trace-2"
+          ]
         }
       ]
     },
@@ -339310,17 +339481,17 @@
       "id": "grooming-bath-tub",
       "kit": "vet-clinic",
       "title": "Veterinary grooming bath tub",
-      "description": "Raised wash tub with splash rim, access ramp, faucet and handheld sprayer support. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Walk-in stainless grooming tub at real size: deep open tub with tall back and side splash walls, front walk-in door swung open, rubber floor mat and drain, gooseneck mixer tap with handheld sprayer on a looped hose, grooming arm with restraint loop, stainless leg frame with storage shelf and a cleated walk-up ramp. Access choice (ramp, stowed) adds or removes the ramp. Material controls: tub steel, floor mat, hose and restraint loop. clinicClean, softTeal and salon presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
-        "animal health",
         "grooming",
-        "bath",
-        "tub",
-        "low poly",
+        "dog bath",
+        "wash tub",
+        "walk-in tub",
+        "stainless",
         "CC0"
       ],
       "compat": [
@@ -339333,8 +339504,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/grooming-bath-tub.kcad.ts",
       "preview": "/assets/vet-clinic-grooming-bath-tub.png",
-      "sourceSha256": "ca042b92189890bec637c493cf2ab14b133e1a6e8a3e21584598b043799970d9",
-      "triangleBudget": 1800,
+      "sourceSha256": "0032b0041842802a4ee9cbe5af051535e39e874f7ce6d9a9ea7f105eb4f6f9e5",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -339346,64 +339517,198 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#6e8994",
-          "label": "Powder-coated steel"
+          "name": "access",
+          "type": "choice",
+          "default": "ramp",
+          "label": "Walk-up ramp",
+          "choices": [
+            "ramp",
+            "stowed"
+          ]
         },
         {
-          "name": "stainlessSteelColor",
+          "name": "tubSteel",
           "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "default": "#c5cdcf",
+          "label": "Tub stainless steel"
+        },
+        {
+          "name": "mat",
+          "type": "color",
+          "default": "#3f6f8e",
+          "label": "Floor mat rubber"
+        },
+        {
+          "name": "hose",
+          "type": "color",
+          "default": "#2c3033",
+          "label": "Sprayer hose"
+        },
+        {
+          "name": "loop",
+          "type": "color",
+          "default": "#c0392b",
+          "label": "Restraint loop"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "mat": "#5b6a72",
+          "loop": "#3d6fb5"
         },
         "softTeal": {
-          "paintedSteelColor": "#4d858d",
-          "stainlessSteelColor": "#8daeb0"
+          "tubSteel": "#b4c6c7",
+          "mat": "#2f8b8a",
+          "loop": "#e0b21e"
+        },
+        "salon": {
+          "mat": "#c45d8e",
+          "hose": "#e9e4ea",
+          "loop": "#7a4fa3"
         }
       },
       "stats": {
-        "triangles": 188,
+        "triangles": 2036,
         "sizeM": [
-          1.38,
-          1.37,
-          1.262051
+          1.32,
+          1.898,
+          1.93
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#6e8994",
+          "name": "tubSteel",
+          "color": "#c5cdcf",
           "parts": [
             "tub-shell",
-            "access-ramp"
+            "back-splash",
+            "side-splash-left",
+            "side-splash-right",
+            "front-rim-left",
+            "front-rim-right",
+            "door",
+            "leg-0-0",
+            "leg-0-1",
+            "leg-1-0",
+            "leg-1-1",
+            "shelf",
+            "mixer-body",
+            "gooseneck-0",
+            "gooseneck-1",
+            "gooseneck-2",
+            "gooseneck-3",
+            "gooseneck-bend-1",
+            "gooseneck-bend-2",
+            "gooseneck-bend-3",
+            "sprayer-hook",
+            "grooming-arm-0",
+            "grooming-arm-1",
+            "grooming-arm-bend-1",
+            "ramp"
           ],
-          "param": "paintedSteelColor"
+          "param": "tubSteel"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "mat",
+          "color": "#3f6f8e",
           "parts": [
-            "inner-basin",
-            "front-rim",
-            "rear-rim",
-            "left-rim",
-            "right-rim",
-            "leg-left-front",
-            "leg-right-front",
-            "leg-left-back",
-            "leg-right-back",
-            "faucet-riser",
-            "sprayer-handle"
+            "floor-mat",
+            "mat-rib--5",
+            "mat-rib--4",
+            "mat-rib--3",
+            "mat-rib--2",
+            "mat-rib--1",
+            "mat-rib-0",
+            "mat-rib-1",
+            "mat-rib-2",
+            "mat-rib-3",
+            "mat-rib-4",
+            "mat-rib-5",
+            "ramp-cleat-1",
+            "ramp-cleat-2",
+            "ramp-cleat-3",
+            "ramp-cleat-4",
+            "ramp-cleat-5",
+            "ramp-cleat-6",
+            "ramp-cleat-7",
+            "ramp-cleat-8",
+            "ramp-cleat-9"
           ],
-          "param": "stainlessSteelColor"
+          "param": "mat"
+        },
+        {
+          "name": "drain",
+          "color": "#8e989b",
+          "parts": [
+            "drain",
+            "door-latch",
+            "arm-clamp",
+            "ramp-hook"
+          ]
+        },
+        {
+          "name": "hose",
+          "color": "#2c3033",
+          "parts": [
+            "door-gasket",
+            "foot-0-0",
+            "foot-0-1",
+            "foot-1-0",
+            "foot-1-1",
+            "sprayer-hose-0",
+            "sprayer-hose-1",
+            "sprayer-hose-2",
+            "sprayer-hose-bend-1",
+            "sprayer-hose-bend-2"
+          ],
+          "param": "hose"
+        },
+        {
+          "name": "towel-stack",
+          "color": "#f1ede2",
+          "parts": [
+            "towel-stack"
+          ]
+        },
+        {
+          "name": "shampoo-jug",
+          "color": "#e8a33d",
+          "parts": [
+            "shampoo-jug"
+          ]
+        },
+        {
+          "name": "shampoo-cap",
+          "color": "#3a3d40",
+          "parts": [
+            "shampoo-cap"
+          ]
+        },
+        {
+          "name": "loop",
+          "color": "#c0392b",
+          "parts": [
+            "tap-handle-hot",
+            "loop-strap",
+            "loop"
+          ],
+          "param": "loop"
+        },
+        {
+          "name": "tap-handle-cold",
+          "color": "#3d6fb5",
+          "parts": [
+            "tap-handle-cold"
+          ]
+        },
+        {
+          "name": "sprayer-head",
+          "color": "#d9d9d2",
+          "parts": [
+            "sprayer-head"
+          ]
         }
       ]
     },
@@ -340393,17 +340698,17 @@
       "id": "mobile-surgical-light",
       "kit": "vet-clinic",
       "title": "Mobile surgical light",
-      "description": "Mobile multi-head procedure light with a floor mast and articulated overhead arm. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Mobile LED procedure light at real size: five-star castor base, column, spring-balanced parallelogram arm, curved yoke and tilted domed head with two rings of LED lens pods round a central sterile handle. Heads choice (single, dual) adds a smaller satellite head on a second arm. Material controls: frame paint, head shell, LED lens and castor rubber. clinicClean, softTeal and graphite presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
-        "animal health",
+        "surgical light",
+        "procedure light",
+        "led",
         "mobile",
-        "surgical",
-        "light",
-        "low poly",
+        "surgery",
         "CC0"
       ],
       "compat": [
@@ -340416,8 +340721,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mobile-surgical-light.kcad.ts",
       "preview": "/assets/vet-clinic-mobile-surgical-light.png",
-      "sourceSha256": "5e5f84b263b0c277dfa9f9755069b8a9c8f406312ebf0c903838f4fdd2f5c5ef",
-      "triangleBudget": 1800,
+      "sourceSha256": "1316377c55385b9b79578fc7419ba5ef8984695226946fd010e38c103684148b",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -340429,91 +340734,161 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#6e8994",
-          "label": "Powder-coated steel"
+          "name": "heads",
+          "type": "choice",
+          "default": "single",
+          "label": "Light heads",
+          "choices": [
+            "single",
+            "dual"
+          ]
         },
         {
-          "name": "glassColor",
+          "name": "frame",
           "type": "color",
-          "default": "#4e8290",
-          "label": "Tinted glass and displays"
+          "default": "#e6e9e8",
+          "label": "Frame paint"
         },
         {
-          "name": "rubberColor",
+          "name": "headShell",
           "type": "color",
-          "default": "#30383b",
-          "label": "Rubber"
+          "default": "#f4f5f3",
+          "label": "Head shell"
         },
         {
-          "name": "stainlessSteelColor",
+          "name": "lens",
           "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "default": "#cfeaf2",
+          "label": "LED lens"
+        },
+        {
+          "name": "castor",
+          "type": "color",
+          "default": "#2a2e30",
+          "label": "Castor rubber"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "frame": "#f2f3f1",
+          "headShell": "#ffffff"
         },
         "softTeal": {
-          "paintedSteelColor": "#4d858d",
-          "glassColor": "#3f7480"
+          "frame": "#7fb0b2",
+          "headShell": "#e9f1f0",
+          "lens": "#bfe6ee"
+        },
+        "graphite": {
+          "frame": "#4a5054",
+          "headShell": "#c9cdcd",
+          "castor": "#1b1d1e"
         }
       },
       "stats": {
-        "triangles": 488,
+        "triangles": 2220,
         "sizeM": [
-          1.48,
-          1.641,
-          0.56
+          1.465855,
+          1.95,
+          0.72315
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#6e8994",
+          "name": "frame",
+          "color": "#e6e9e8",
           "parts": [
-            "base-cross-x",
-            "base-cross-y",
-            "light-head"
+            "base-hub",
+            "base-leg-0",
+            "base-leg-1",
+            "base-leg-2",
+            "base-leg-3",
+            "base-leg-4",
+            "column",
+            "column-collar",
+            "arm-link-upper",
+            "arm-link-lower",
+            "arm-spring-cover",
+            "head-yoke-down",
+            "head-yoke-arc-a",
+            "head-yoke-arc-b"
           ],
-          "param": "paintedSteelColor"
+          "param": "frame"
         },
         {
-          "name": "rubberColor",
-          "color": "#30383b",
+          "name": "castor-swivel-0",
+          "color": "#b8c0c2",
           "parts": [
-            "caster-a",
-            "caster-b",
-            "caster-c"
-          ],
-          "param": "rubberColor"
+            "castor-swivel-0",
+            "castor-swivel-1",
+            "castor-swivel-2",
+            "castor-swivel-3",
+            "castor-swivel-4",
+            "arm-pivot",
+            "arm-elbow",
+            "head-rim"
+          ]
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "castor",
+          "color": "#2a2e30",
           "parts": [
-            "mast",
-            "arm-lower",
-            "arm-upper",
-            "lamp-yoke"
+            "castor-wheel-0",
+            "castor-wheel-1",
+            "castor-wheel-2",
+            "castor-wheel-3",
+            "castor-wheel-4",
+            "handle-ring"
           ],
-          "param": "stainlessSteelColor"
+          "param": "castor"
         },
         {
-          "name": "glassColor",
-          "color": "#4e8290",
+          "name": "headShell",
+          "color": "#f4f5f3",
           "parts": [
-            "lamp-lens-1",
-            "lamp-lens-2",
-            "lamp-lens-3",
-            "lamp-lens-4"
+            "head-shell"
           ],
-          "param": "glassColor"
+          "param": "headShell"
+        },
+        {
+          "name": "head-face",
+          "color": "#d8dcdc",
+          "parts": [
+            "head-face"
+          ]
+        },
+        {
+          "name": "lens",
+          "color": "#cfeaf2",
+          "parts": [
+            "head-led-6-0",
+            "head-led-6-1",
+            "head-led-6-2",
+            "head-led-6-3",
+            "head-led-6-4",
+            "head-led-6-5",
+            "head-led-12-0",
+            "head-led-12-1",
+            "head-led-12-2",
+            "head-led-12-3",
+            "head-led-12-4",
+            "head-led-12-5",
+            "head-led-12-6",
+            "head-led-12-7",
+            "head-led-12-8",
+            "head-led-12-9",
+            "head-led-12-10",
+            "head-led-12-11"
+          ],
+          "param": "lens"
+        },
+        {
+          "name": "head-sterile-handle",
+          "color": "#7fa8c9",
+          "parts": [
+            "head-sterile-handle"
+          ]
         }
       ]
     },
@@ -342059,18 +342434,18 @@
       "id": "stainless-kennel-bank",
       "kit": "vet-clinic",
       "title": "Three-bay stainless kennel bank",
-      "description": "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Clinic recovery kennel bank at real size, three bays per tier: welded stainless cage boxes with barred doors on framed hinges, slam latches and cage cards, polymer floor grates over drain pans, bowls and bedding inside, on a castor plinth. Tiers choice (stacked, single) adds a row of small cat cages above the dog bays; door choice opens the middle door. Material controls: cabinet steel, door bars, floor grate polymer and bedding fabric. clinicClean, softTeal and kennelBlue presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
-        "animal health",
-        "three-bay",
-        "stainless",
         "kennel",
-        "bank",
-        "low poly",
+        "cage bank",
+        "recovery ward",
+        "stainless",
+        "dog cage",
+        "cat cage",
         "CC0"
       ],
       "compat": [
@@ -342083,8 +342458,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/stainless-kennel-bank.kcad.ts",
       "preview": "/assets/vet-clinic-stainless-kennel-bank.png",
-      "sourceSha256": "8a13a7333d9717d55b368ca5c5a3753905df943f8f27e904d8355da8fe4b13cb",
-      "triangleBudget": 1800,
+      "sourceSha256": "373ea1e7f4e60b3ad9582716460dd5205c53aa611a73ad95d28f3a93452da987",
+      "triangleBudget": 6500,
       "params": [
         {
           "name": "scale",
@@ -342096,82 +342471,329 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteelColor",
-          "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "name": "tiers",
+          "type": "choice",
+          "default": "stacked",
+          "label": "Tiers",
+          "choices": [
+            "stacked",
+            "single"
+          ]
         },
         {
-          "name": "polymerColor",
+          "name": "door",
+          "type": "choice",
+          "default": "closed",
+          "label": "Middle door",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "cabinetSteel",
           "type": "color",
-          "default": "#d3dfdc",
-          "label": "Molded polymer"
+          "default": "#c3cbcd",
+          "label": "Cabinet stainless steel"
+        },
+        {
+          "name": "doorBars",
+          "type": "color",
+          "default": "#9ea8ab",
+          "label": "Door bars"
+        },
+        {
+          "name": "grate",
+          "type": "color",
+          "default": "#d9dfdc",
+          "label": "Floor grate polymer"
+        },
+        {
+          "name": "bedding",
+          "type": "color",
+          "default": "#4f7fb3",
+          "label": "Bedding fabric"
         }
       ],
       "presets": {
         "clinicClean": {
-          "stainlessSteelColor": "#e1e6e3"
+          "doorBars": "#d3d9da",
+          "grate": "#eef1ef",
+          "bedding": "#8fb3cf"
         },
         "softTeal": {
-          "stainlessSteelColor": "#8daeb0",
-          "polymerColor": "#9bbfc0"
+          "cabinetSteel": "#b4c6c7",
+          "grate": "#9bc4c2",
+          "bedding": "#2f8b8a"
+        },
+        "kennelBlue": {
+          "doorBars": "#3d6fb5",
+          "grate": "#a9c1de",
+          "bedding": "#e0b21e"
         }
       },
       "stats": {
-        "triangles": 372,
+        "triangles": 4928,
         "sizeM": [
-          1.74,
-          1.26,
-          0.712
+          1.7,
+          1.55,
+          0.7
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymerColor",
-          "color": "#d3dfdc",
+          "name": "cabinetSteel",
+          "color": "#c3cbcd",
           "parts": [
-            "base-plinth"
+            "plinth",
+            "lower-top",
+            "lower-floor",
+            "lower-back",
+            "lower-wall-0",
+            "lower-wall-1",
+            "lower-wall-2",
+            "lower-wall-3",
+            "upper-top",
+            "upper-floor",
+            "upper-back",
+            "upper-wall-0",
+            "upper-wall-1",
+            "upper-wall-2",
+            "upper-wall-3"
           ],
-          "param": "polymerColor"
+          "param": "cabinetSteel"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "doorBars",
+          "color": "#9ea8ab",
           "parts": [
-            "roof",
-            "rear-panel",
-            "left-side",
-            "right-side",
-            "partition-left",
-            "partition-right",
-            "door-post-0",
-            "door-post-1",
-            "door-post-2",
-            "door-post-3",
-            "door-bar-0",
-            "door-bar-1",
-            "door-bar-2",
-            "door-bar-3",
-            "door-bar-4",
-            "door-bar-5",
-            "door-bar-6",
-            "door-bar-7",
-            "door-bar-8",
-            "door-bar-9",
-            "door-bar-10",
-            "door-bar-11",
-            "door-bar-12",
-            "door-bar-13",
-            "door-bar-14",
-            "door-bar-15",
-            "door-bar-16",
-            "tray-left",
-            "tray-center",
-            "tray-right"
+            "kick-plate",
+            "lower-pan-0",
+            "lower-door-0-frame-left",
+            "lower-door-0-frame-right",
+            "lower-door-0-frame-bottom",
+            "lower-door-0-frame-top",
+            "lower-door-0-cross-bar",
+            "lower-door-0-bar-1",
+            "lower-door-0-bar-2",
+            "lower-door-0-bar-3",
+            "lower-door-0-bar-4",
+            "lower-door-0-bar-5",
+            "lower-door-0-bar-6",
+            "lower-door-0-bar-7",
+            "lower-door-0-bar-8",
+            "lower-pan-1",
+            "lower-door-1-frame-left",
+            "lower-door-1-frame-right",
+            "lower-door-1-frame-bottom",
+            "lower-door-1-frame-top",
+            "lower-door-1-cross-bar",
+            "lower-door-1-bar-1",
+            "lower-door-1-bar-2",
+            "lower-door-1-bar-3",
+            "lower-door-1-bar-4",
+            "lower-door-1-bar-5",
+            "lower-door-1-bar-6",
+            "lower-door-1-bar-7",
+            "lower-door-1-bar-8",
+            "lower-pan-2",
+            "lower-door-2-frame-left",
+            "lower-door-2-frame-right",
+            "lower-door-2-frame-bottom",
+            "lower-door-2-frame-top",
+            "lower-door-2-cross-bar",
+            "lower-door-2-bar-1",
+            "lower-door-2-bar-2",
+            "lower-door-2-bar-3",
+            "lower-door-2-bar-4",
+            "lower-door-2-bar-5",
+            "lower-door-2-bar-6",
+            "lower-door-2-bar-7",
+            "lower-door-2-bar-8",
+            "upper-pan-0",
+            "upper-door-0-frame-left",
+            "upper-door-0-frame-right",
+            "upper-door-0-frame-bottom",
+            "upper-door-0-frame-top",
+            "upper-door-0-cross-bar",
+            "upper-door-0-bar-1",
+            "upper-door-0-bar-2",
+            "upper-door-0-bar-3",
+            "upper-door-0-bar-4",
+            "upper-door-0-bar-5",
+            "upper-door-0-bar-6",
+            "upper-door-0-bar-7",
+            "upper-door-0-bar-8",
+            "upper-pan-1",
+            "upper-door-1-frame-left",
+            "upper-door-1-frame-right",
+            "upper-door-1-frame-bottom",
+            "upper-door-1-frame-top",
+            "upper-door-1-cross-bar",
+            "upper-door-1-bar-1",
+            "upper-door-1-bar-2",
+            "upper-door-1-bar-3",
+            "upper-door-1-bar-4",
+            "upper-door-1-bar-5",
+            "upper-door-1-bar-6",
+            "upper-door-1-bar-7",
+            "upper-door-1-bar-8",
+            "upper-pan-2",
+            "upper-door-2-frame-left",
+            "upper-door-2-frame-right",
+            "upper-door-2-frame-bottom",
+            "upper-door-2-frame-top",
+            "upper-door-2-cross-bar",
+            "upper-door-2-bar-1",
+            "upper-door-2-bar-2",
+            "upper-door-2-bar-3",
+            "upper-door-2-bar-4",
+            "upper-door-2-bar-5",
+            "upper-door-2-bar-6",
+            "upper-door-2-bar-7",
+            "upper-door-2-bar-8"
           ],
-          "param": "stainlessSteelColor"
+          "param": "doorBars"
+        },
+        {
+          "name": "castor-plate--750--220",
+          "color": "#5b6266",
+          "parts": [
+            "castor-plate--750--220",
+            "castor-plate--750-240",
+            "castor-plate-750--220",
+            "castor-plate-750-240",
+            "lower-vent-0",
+            "lower-door-0-latch",
+            "lower-hinge-0-300",
+            "lower-hinge-0-880",
+            "lower-vent-1",
+            "lower-door-1-latch",
+            "lower-hinge-1-300",
+            "lower-hinge-1-880",
+            "lower-vent-2",
+            "lower-door-2-latch",
+            "lower-hinge-2-300",
+            "lower-hinge-2-880",
+            "upper-vent-0",
+            "upper-door-0-latch",
+            "upper-hinge-0-1100",
+            "upper-hinge-0-1440",
+            "upper-vent-1",
+            "upper-door-1-latch",
+            "upper-hinge-1-1100",
+            "upper-hinge-1-1440",
+            "upper-vent-2",
+            "upper-door-2-latch",
+            "upper-hinge-2-1100",
+            "upper-hinge-2-1440"
+          ]
+        },
+        {
+          "name": "castor--750--220",
+          "color": "#26292b",
+          "parts": [
+            "castor--750--220",
+            "castor--750-240",
+            "castor-750--220",
+            "castor-750-240"
+          ]
+        },
+        {
+          "name": "grate",
+          "color": "#d9dfdc",
+          "parts": [
+            "lower-grate-0-0",
+            "lower-grate-0-1",
+            "lower-grate-0-2",
+            "lower-grate-0-3",
+            "lower-grate-0-4",
+            "lower-grate-0-5",
+            "lower-grate-0-6",
+            "lower-grate-0-7",
+            "lower-grate-0-8",
+            "lower-grate-rails-0",
+            "lower-grate-1-0",
+            "lower-grate-1-1",
+            "lower-grate-1-2",
+            "lower-grate-1-3",
+            "lower-grate-1-4",
+            "lower-grate-1-5",
+            "lower-grate-1-6",
+            "lower-grate-1-7",
+            "lower-grate-1-8",
+            "lower-grate-rails-1",
+            "lower-grate-2-0",
+            "lower-grate-2-1",
+            "lower-grate-2-2",
+            "lower-grate-2-3",
+            "lower-grate-2-4",
+            "lower-grate-2-5",
+            "lower-grate-2-6",
+            "lower-grate-2-7",
+            "lower-grate-2-8",
+            "lower-grate-rails-2",
+            "upper-grate-0-0",
+            "upper-grate-0-1",
+            "upper-grate-0-2",
+            "upper-grate-0-3",
+            "upper-grate-0-4",
+            "upper-grate-0-5",
+            "upper-grate-rails-0",
+            "upper-grate-1-0",
+            "upper-grate-1-1",
+            "upper-grate-1-2",
+            "upper-grate-1-3",
+            "upper-grate-1-4",
+            "upper-grate-1-5",
+            "upper-grate-rails-1",
+            "upper-grate-2-0",
+            "upper-grate-2-1",
+            "upper-grate-2-2",
+            "upper-grate-2-3",
+            "upper-grate-2-4",
+            "upper-grate-2-5",
+            "upper-grate-rails-2"
+          ],
+          "param": "grate"
+        },
+        {
+          "name": "lower-bowl-0",
+          "color": "#d4dadb",
+          "parts": [
+            "lower-bowl-0",
+            "lower-bowl-1",
+            "lower-bowl-2",
+            "upper-bowl-0",
+            "upper-bowl-1",
+            "upper-bowl-2"
+          ]
+        },
+        {
+          "name": "bedding",
+          "color": "#4f7fb3",
+          "parts": [
+            "lower-blanket-0",
+            "lower-blanket-2",
+            "upper-blanket-0",
+            "upper-blanket-1",
+            "upper-blanket-2"
+          ],
+          "param": "bedding"
+        },
+        {
+          "name": "lower-door-0-card-holder",
+          "color": "#f4f3ec",
+          "parts": [
+            "lower-door-0-card-holder",
+            "lower-door-1-card-holder",
+            "lower-door-2-card-holder",
+            "upper-door-0-card-holder",
+            "upper-door-1-card-holder",
+            "upper-door-2-card-holder"
+          ]
         }
       ]
     },
@@ -342939,16 +343561,17 @@
       "id": "veterinary-surgery-table",
       "kit": "vet-clinic",
       "title": "Veterinary surgery table",
-      "description": "Height-lift operating table with drainage tray, adjustable side ledges and support frame. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Veterinary operating table at real size: two hinged stainless top leaves with upturned edges that tilt into a V cradle, limb tie-down cleats, end drain with hose to a hanging stainless bucket, tilt head on a two-stage telescoping lift column with painted cover, heavy chamfered base and rubber foot pedals. Top choice (vTop, flat) tilts or flattens the leaves. Material controls: top steel, column cover, base paint and rubber. clinicClean, softTeal and graphite presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
-        "animal health",
         "surgery",
-        "table",
-        "low poly",
+        "operating table",
+        "v-top",
+        "lift table",
+        "stainless",
         "CC0"
       ],
       "compat": [
@@ -342961,8 +343584,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/veterinary-surgery-table.kcad.ts",
       "preview": "/assets/vet-clinic-veterinary-surgery-table.png",
-      "sourceSha256": "3371d71cb59b01713b69aa4c8f3213c5a79eae1a09876debb7f35bb65e071ced",
-      "triangleBudget": 1800,
+      "sourceSha256": "00417bab3cc8e56d0de0998a43765926f51e0319320450684589bea2726030de",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -342974,74 +343597,148 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#7d8d96",
-          "label": "Powder-coated steel"
+          "name": "top",
+          "type": "choice",
+          "default": "vTop",
+          "label": "Table top",
+          "choices": [
+            "vTop",
+            "flat"
+          ]
         },
         {
-          "name": "rubberColor",
+          "name": "topSteel",
           "type": "color",
-          "default": "#30383b",
+          "default": "#c3cbcd",
+          "label": "Top stainless steel"
+        },
+        {
+          "name": "columnCover",
+          "type": "color",
+          "default": "#e7eae8",
+          "label": "Column cover"
+        },
+        {
+          "name": "basePaint",
+          "type": "color",
+          "default": "#56636b",
+          "label": "Base paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#26292b",
           "label": "Rubber"
-        },
-        {
-          "name": "stainlessSteelColor",
-          "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "columnCover": "#f3f4f2",
+          "basePaint": "#9aa5aa"
         },
         "softTeal": {
-          "paintedSteelColor": "#4d858d",
-          "rubberColor": "#34464a"
+          "columnCover": "#7fb0b2",
+          "basePaint": "#3f6d72"
+        },
+        "graphite": {
+          "topSteel": "#a8b0b2",
+          "columnCover": "#4a5054",
+          "basePaint": "#2c3134",
+          "rubber": "#1b1d1e"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1234,
         "sizeM": [
-          1.665564,
-          0.861533,
-          0.636
+          1.49,
+          0.938887,
+          0.65206
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#7d8d96",
+          "name": "basePaint",
+          "color": "#56636b",
           "parts": [
-            "base-plate",
-            "lift-column"
+            "base",
+            "pedal-arm-0",
+            "pedal-arm-1",
+            "column-collar",
+            "tilt-head"
           ],
-          "param": "paintedSteelColor"
+          "param": "basePaint"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "rubber",
+          "color": "#26292b",
           "parts": [
-            "table-center",
-            "table-wing-left",
-            "table-wing-right",
-            "drain-channel",
-            "side-ledge-left",
-            "side-ledge-right"
+            "base-glide-left",
+            "base-glide-right",
+            "pedal-0",
+            "pedal-1",
+            "cleat--1-0",
+            "cleat-post--1-0",
+            "cleat--1-1",
+            "cleat-post--1-1",
+            "cleat--1-2",
+            "cleat-post--1-2",
+            "cleat--1-3",
+            "cleat-post--1-3",
+            "cleat-1-0",
+            "cleat-post-1-0",
+            "cleat-1-1",
+            "cleat-post-1-1",
+            "cleat-1-2",
+            "cleat-post-1-2",
+            "cleat-1-3",
+            "cleat-post-1-3"
           ],
-          "param": "stainlessSteelColor"
+          "param": "rubber"
         },
         {
-          "name": "rubberColor",
-          "color": "#30383b",
+          "name": "topSteel",
+          "color": "#c3cbcd",
           "parts": [
-            "leveling-foot-a",
-            "leveling-foot-b"
+            "pedal-guard",
+            "column-upper",
+            "hinge-rod",
+            "hinge-knuckle--560",
+            "hinge-knuckle-0",
+            "hinge-knuckle-560",
+            "leaf--1",
+            "leaf-edge--1",
+            "leaf-end-head--1",
+            "strut--1",
+            "strut-b--1",
+            "leaf-1",
+            "leaf-edge-1",
+            "leaf-end-head-1",
+            "strut-1",
+            "strut-b-1",
+            "drain-funnel",
+            "bucket-hook",
+            "bucket",
+            "bucket-handle"
           ],
-          "param": "rubberColor"
+          "param": "topSteel"
+        },
+        {
+          "name": "columnCover",
+          "color": "#e7eae8",
+          "parts": [
+            "column-lower"
+          ],
+          "param": "columnCover"
+        },
+        {
+          "name": "drain-hose",
+          "color": "#9fb3b6",
+          "parts": [
+            "drain-hose",
+            "drain-hose-lower"
+          ]
         }
       ]
     },
