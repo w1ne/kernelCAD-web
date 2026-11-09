@@ -65798,12 +65798,13 @@
       "id": "portable-material-hoist",
       "kit": "construction-equipment",
       "title": "Portable material hoist",
-      "description": "Compact construction hoist with mast, carriage platform, winch and stabilizing feet. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Compact construction material hoist with a braced twin-rail mast, toothed rack, guided load platform and carriage, drive unit, overhead sheave, transport wheels and stabilizing outriggers. Choose short or standard mast and open or guarded platform. Material controls: equipment enamel, structural steel, hoist cable steel and tire rubber; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "construction equipment",
-        "roadworks",
+        "material hoist",
+        "site logistics",
         "jobsite",
         "low poly",
         "CC0"
@@ -65817,8 +65818,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-material-hoist.kcad.ts",
       "preview": "/assets/construction-equipment-portable-material-hoist.png",
-      "sourceSha256": "129eaaaffd58a385f3e6ff6a318faa61c9149c758ce89dd58967bdb5fd12670a",
-      "triangleBudget": 2200,
+      "sourceSha256": "4952e2e16c531a93baa0d81ba0308d984cd070eb4fcc8831a45d93198ce5ddc5",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -65830,58 +65831,172 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "mastHeight",
+          "type": "choice",
+          "default": "standard",
+          "label": "Mast height",
+          "choices": [
+            "short",
+            "standard"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "platformStyle",
+          "type": "choice",
+          "default": "guarded",
+          "label": "Load platform",
+          "choices": [
+            "open",
+            "guarded"
+          ]
+        },
+        {
+          "name": "equipmentEnamel",
+          "type": "color",
+          "default": "#e1a31b",
+          "label": "Equipment enamel"
+        },
+        {
+          "name": "structuralSteel",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "hoistCableSteel",
+          "type": "color",
+          "default": "#4f595d",
+          "label": "Hoist cable and drive steel"
+        },
+        {
+          "name": "tireRubber",
+          "type": "color",
+          "default": "#25292b",
+          "label": "Transport tire rubber"
         }
       ],
       "presets": {
         "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "equipmentEnamel": "#a87b36",
+          "structuralSteel": "#716b61",
+          "hoistCableSteel": "#454b4d",
+          "tireRubber": "#302d2a"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "equipmentEnamel": "#f06b26",
+          "structuralSteel": "#c1c7c2",
+          "hoistCableSteel": "#536064",
+          "tireRubber": "#202326"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1384,
         "sizeM": [
-          0.858,
-          1.57,
-          0.7572
+          1.146,
+          1.96,
+          0.681
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteelColor",
+          "name": "structuralSteel",
           "color": "#89969a",
           "parts": [
-            "ground-frame",
-            "mast",
-            "carriage",
-            "winch"
+            "base-crossbeam-front",
+            "base-crossbeam-rear",
+            "outrigger--1",
+            "wheel-hub--1--168",
+            "wheel-hub--1-172",
+            "outrigger-1",
+            "wheel-hub-1--168",
+            "wheel-hub-1-172",
+            "mast-guide--1",
+            "rear-brace--1",
+            "mast-guide-1",
+            "rear-brace-1",
+            "mast-cross-tie-250",
+            "mast-cross-tie-490",
+            "mast-cross-tie-730",
+            "mast-cross-tie-970",
+            "mast-cross-tie-1210",
+            "mast-cross-tie-1450",
+            "mast-cross-tie-1690",
+            "carriage-backplate",
+            "platform-toe-front",
+            "platform-toe-left",
+            "platform-toe-right",
+            "guide-clamp--1",
+            "guide-clamp-1",
+            "cage-rail--1-750",
+            "cage-rail--1-920",
+            "cage-rail-1-750",
+            "cage-rail-1-920",
+            "cage-front-rail-750",
+            "cage-front-rail-920",
+            "cage-front-rail-1114",
+            "sheave-axis",
+            "control-switch"
           ],
-          "param": "structuralSteelColor"
+          "param": "structuralSteel"
         },
         {
-          "name": "equipmentPaintColor",
+          "name": "equipmentEnamel",
           "color": "#e1a31b",
           "parts": [
-            "stabilizer--1",
-            "stabilizer-1"
+            "base-side-rail-left",
+            "base-side-rail-right",
+            "outrigger-foot--1",
+            "outrigger-foot-1",
+            "mast-rail--1",
+            "mast-rail-1",
+            "mast-top-crosshead",
+            "platform-deck",
+            "pinion-gearbox--1",
+            "pinion-gearbox-1",
+            "cage-post--1--382",
+            "cage-post--1-25",
+            "cage-top-side--1",
+            "cage-post-1--382",
+            "cage-post-1-25",
+            "cage-top-side-1",
+            "drive-cover",
+            "service-control-box"
           ],
-          "param": "equipmentPaintColor"
+          "param": "equipmentEnamel"
+        },
+        {
+          "name": "hoistCableSteel",
+          "color": "#4f595d",
+          "parts": [
+            "outrigger-jack--1",
+            "outrigger-jack-1",
+            "rack-tooth-250",
+            "rack-tooth-490",
+            "rack-tooth-730",
+            "rack-tooth-970",
+            "rack-tooth-1210",
+            "rack-tooth-1450",
+            "rack-tooth-1690",
+            "carriage-guide-roller--1",
+            "carriage-guide-roller-1",
+            "sheave-wheel",
+            "hoist-cable",
+            "drive-motor"
+          ],
+          "param": "hoistCableSteel"
+        },
+        {
+          "name": "tireRubber",
+          "color": "#25292b",
+          "parts": [
+            "transport-tire--1--168",
+            "transport-tire--1-172",
+            "transport-tire-1--168",
+            "transport-tire-1-172"
+          ],
+          "param": "tireRubber"
         }
       ]
     },
@@ -65980,12 +66095,14 @@
       "id": "rebar-bending-machine",
       "kit": "construction-equipment",
       "title": "Rebar bending machine",
-      "description": "Portable rebar bender with flat work table, rotary pin plate and control pedal. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Portable table rebar bender with a roller-pin bending disc, geared motor, feed rollers, two-sided support table, guarded stop switch and separate foot pedal. Choose a hook or stirrup bar form and compact or extended table. Material controls: equipment enamel, structural steel, rebar steel and grip rubber; highVisibility and siteBlue presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "construction equipment",
-        "roadworks",
+        "rebar",
+        "steel bending",
+        "reinforcement",
         "jobsite",
         "low poly",
         "CC0"
@@ -65999,8 +66116,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/rebar-bending-machine.kcad.ts",
       "preview": "/assets/construction-equipment-rebar-bending-machine.png",
-      "sourceSha256": "2a35ee7f556167b4262112ae1c3a0827837ef577fc19c3a82fd1d1fc6be74038",
-      "triangleBudget": 2200,
+      "sourceSha256": "cd68dd7e4f031a86a65206d6c4f0a7c16f82e7947d63d80f59d830433dce101b",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -66012,61 +66129,143 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "workTable",
+          "type": "choice",
+          "default": "compact",
+          "label": "Feed table reach",
+          "choices": [
+            "compact",
+            "extended"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "barForm",
+          "type": "choice",
+          "default": "hook",
+          "label": "Bent rebar form",
+          "choices": [
+            "hook",
+            "stirrup"
+          ]
+        },
+        {
+          "name": "equipmentEnamel",
+          "type": "color",
+          "default": "#e1a31b",
+          "label": "Equipment enamel"
+        },
+        {
+          "name": "structuralSteel",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "rebarSteel",
+          "type": "color",
+          "default": "#596267",
+          "label": "Rebar steel"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#24282a",
+          "label": "Control pedal rubber"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
-        },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "equipmentEnamel": "#f06b26",
+          "structuralSteel": "#c1c7c2",
+          "rebarSteel": "#596267",
+          "gripRubber": "#202326"
+        },
+        "siteBlue": {
+          "equipmentEnamel": "#2a63a8",
+          "structuralSteel": "#b8c1c2",
+          "rebarSteel": "#464e51",
+          "gripRubber": "#222628"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 1376,
         "sizeM": [
-          0.76,
-          0.3668,
-          0.4368
+          0.836,
+          0.571,
+          0.67
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
-          "parts": [
-            "machine-base",
-            "work-table",
-            "motor-case"
-          ],
-          "param": "equipmentPaintColor"
-        },
-        {
-          "name": "structuralSteelColor",
+          "name": "structuralSteel",
           "color": "#89969a",
           "parts": [
-            "bending-disc",
-            "bend-pin-0",
-            "bend-pin-1",
-            "bend-pin-2",
-            "bend-pin-3",
-            "bend-pin-4"
+            "stand-leg--300--205",
+            "leveling-foot--300--205",
+            "stand-leg--300-205",
+            "leveling-foot--300-205",
+            "stand-leg-300--205",
+            "leveling-foot-300--205",
+            "stand-leg-300-205",
+            "leveling-foot-300-205",
+            "lower-crossrail--205",
+            "lower-crossrail-205",
+            "working-table",
+            "motor-fan-grille",
+            "emergency-stop-body",
+            "disc-rim",
+            "center-mandrel",
+            "bending-roller-0",
+            "bending-roller-1",
+            "bending-roller-2",
+            "bending-roller-3",
+            "bending-roller-4",
+            "feed-roller--1",
+            "feed-roller-1",
+            "pedal-cable",
+            "pedal-base"
           ],
-          "param": "structuralSteelColor"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "equipmentEnamel",
+          "color": "#e1a31b",
+          "parts": [
+            "front-table-edge",
+            "drive-cabinet",
+            "gearbox-cover",
+            "emergency-stop-mushroom",
+            "bending-disc",
+            "roller-cap-0",
+            "roller-cap-1",
+            "roller-cap-2",
+            "roller-cap-3",
+            "roller-cap-4",
+            "feed-guide--1",
+            "feed-guide-1",
+            "pedal-guard"
+          ],
+          "param": "equipmentEnamel"
+        },
+        {
+          "name": "rebarSteel",
+          "color": "#596267",
+          "parts": [
+            "formed-rebar-0",
+            "formed-rebar-1",
+            "formed-rebar-2"
+          ],
+          "param": "rebarSteel"
+        },
+        {
+          "name": "gripRubber",
+          "color": "#24282a",
+          "parts": [
+            "foot-pedal"
+          ],
+          "param": "gripRubber"
         }
       ]
     },
@@ -68917,12 +69116,13 @@
       "id": "vibrating-concrete-screed",
       "kit": "construction-equipment",
       "title": "Vibrating concrete screed",
-      "description": "Finishing beam with engine housing, end handles and a straight leveling blade. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Hand-guided concrete screed with a faceted extruded leveling profile, central eccentric exciter, paired vibration-isolated handle arms and rubber grips. Choose short, standard or wide profile and working or folded handle. Material controls: extruded aluminum, equipment enamel, structural steel and grip rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "construction equipment",
-        "roadworks",
+        "concrete finishing",
+        "vibrating screed",
         "jobsite",
         "low poly",
         "CC0"
@@ -68936,8 +69136,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/vibrating-concrete-screed.kcad.ts",
       "preview": "/assets/construction-equipment-vibrating-concrete-screed.png",
-      "sourceSha256": "f209f75f725600cf97389f8e20e24683d67a1920cda2d9ed0f61228d40fd1993",
-      "triangleBudget": 2200,
+      "sourceSha256": "b5a798edbcb5ad47df1df8bf96ae06fe53751d27b1d9d27729b08b13ddba4d2a",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -68949,57 +69149,126 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "profileSize",
+          "type": "choice",
+          "default": "standard",
+          "label": "Screed profile length",
+          "choices": [
+            "short",
+            "standard",
+            "wide"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "handlePosition",
+          "type": "choice",
+          "default": "working",
+          "label": "Handle position",
+          "choices": [
+            "working",
+            "folded"
+          ]
+        },
+        {
+          "name": "extrudedAluminum",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#aeb9bc",
+          "label": "Extruded aluminum profile"
+        },
+        {
+          "name": "equipmentEnamel",
+          "type": "color",
+          "default": "#e1a31b",
+          "label": "Equipment enamel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#6f7d82",
+          "label": "Structural steel"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#24282a",
+          "label": "Handle grip rubber"
         }
       ],
       "presets": {
         "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "extrudedAluminum": "#899294",
+          "equipmentEnamel": "#a87b36",
+          "structuralSteel": "#716b61",
+          "gripRubber": "#302d2a"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "extrudedAluminum": "#c7d0cf",
+          "equipmentEnamel": "#f06b26",
+          "structuralSteel": "#c1c7c2",
+          "gripRubber": "#202326"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 804,
         "sizeM": [
-          0.4142,
-          0.39,
-          1.55
+          0.544,
+          0.861,
+          2.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "extrudedAluminum",
+          "color": "#aeb9bc",
           "parts": [
-            "screed-beam",
-            "handle-left",
-            "handle-right"
+            "extruded-screed-profile"
           ],
-          "param": "structuralSteelColor"
+          "param": "extrudedAluminum"
         },
         {
-          "name": "equipmentPaintColor",
+          "name": "structuralSteel",
+          "color": "#6f7d82",
+          "parts": [
+            "end-cap--612",
+            "end-cap-612",
+            "exciter-mount",
+            "engine-head",
+            "starter-guard",
+            "eccentric-shaft",
+            "eccentric-weight-left",
+            "eccentric-weight-right",
+            "handle-arm--1",
+            "handle-brace--1",
+            "handle-arm-1",
+            "handle-brace-1",
+            "operator-yoke",
+            "engine-switch"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "gripRubber",
+          "color": "#24282a",
+          "parts": [
+            "end-damper--612",
+            "end-damper-612",
+            "vibration-isolator--1",
+            "grip--1",
+            "vibration-isolator-1",
+            "grip-1"
+          ],
+          "param": "gripRubber"
+        },
+        {
+          "name": "equipmentEnamel",
           "color": "#e1a31b",
           "parts": [
             "vibrator-housing",
-            "eccentric-weight"
+            "throttle-trigger"
           ],
-          "param": "equipmentPaintColor"
+          "param": "equipmentEnamel"
         }
       ]
     },
@@ -69242,12 +69511,13 @@
       "id": "walk-behind-power-trowel",
       "kit": "construction-equipment",
       "title": "Walk-behind power trowel",
-      "description": "Concrete finishing tool with circular blade guard, engine block and long control handle. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Walk-behind concrete finisher with a circular safety ring, exposed four-blade spider, compact engine and long two-rail control handle. Choose compact, standard or wide guard size. Material controls: equipment enamel, structural steel, engine metal and grip rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "construction equipment",
-        "roadworks",
+        "concrete finishing",
+        "power trowel",
         "jobsite",
         "low poly",
         "CC0"
@@ -69261,8 +69531,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/walk-behind-power-trowel.kcad.ts",
       "preview": "/assets/construction-equipment-walk-behind-power-trowel.png",
-      "sourceSha256": "c1f3b516f1b7438bc784c2a96bacd49994e939ed4ea708ac5e8b86924ef88505",
-      "triangleBudget": 2200,
+      "sourceSha256": "4da37cee10d60da52b3a378bcd228551e9b1c7bcf9910d75f6fcb1bcd01f9cc8",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -69274,57 +69544,120 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "guardSize",
+          "type": "choice",
+          "default": "standard",
+          "label": "Guard and blade diameter",
+          "choices": [
+            "compact",
+            "standard",
+            "wide"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "equipmentEnamel",
+          "type": "color",
+          "default": "#e1a31b",
+          "label": "Equipment enamel"
+        },
+        {
+          "name": "structuralSteel",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "engineMetal",
+          "type": "color",
+          "default": "#353b3f",
+          "label": "Engine metal"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#24282a",
+          "label": "Handle grip rubber"
         }
       ],
       "presets": {
         "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "equipmentEnamel": "#a87b36",
+          "structuralSteel": "#716b61",
+          "engineMetal": "#393c3b",
+          "gripRubber": "#302d2a"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "equipmentEnamel": "#f06b26",
+          "structuralSteel": "#c1c7c2",
+          "engineMetal": "#30363a",
+          "gripRubber": "#202326"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 920,
         "sizeM": [
-          0.5948,
-          0.517,
-          0.504
+          0.912,
+          0.743712,
+          1.422
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteelColor",
+          "name": "structuralSteel",
           "color": "#89969a",
           "parts": [
-            "trowel-guard",
-            "handle-post",
-            "control-handle",
-            "blade-guard"
+            "circular-safety-ring",
+            "spider-arm-0",
+            "spider-arm-90",
+            "pitched-blade-0",
+            "pitched-blade-1",
+            "pitched-blade-2",
+            "pitched-blade-3",
+            "starter-cover",
+            "handle-rail--1",
+            "handle-brace--1",
+            "handle-rail-1",
+            "handle-brace-1",
+            "operator-crossbar"
           ],
-          "param": "structuralSteelColor"
+          "param": "structuralSteel"
         },
         {
-          "name": "equipmentPaintColor",
+          "name": "engineMetal",
+          "color": "#353b3f",
+          "parts": [
+            "blade-adjuster-0",
+            "blade-adjuster-1",
+            "blade-adjuster-2",
+            "blade-adjuster-3",
+            "gearbox",
+            "engine-cylinder-head",
+            "air-cleaner",
+            "exhaust-muffler",
+            "deadman-control"
+          ],
+          "param": "engineMetal"
+        },
+        {
+          "name": "equipmentEnamel",
           "color": "#e1a31b",
           "parts": [
-            "engine"
+            "engine-crankcase",
+            "fuel-tank",
+            "throttle-lever"
           ],
-          "param": "equipmentPaintColor"
+          "param": "equipmentEnamel"
+        },
+        {
+          "name": "gripRubber",
+          "color": "#24282a",
+          "parts": [
+            "grip--1",
+            "grip-1"
+          ],
+          "param": "gripRubber"
         }
       ]
     },

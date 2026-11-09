@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-09",
+  "kit": "construction-equipment",
+  "assets": [
+    "walk-behind-power-trowel",
+    "vibrating-concrete-screed",
+    "rebar-bending-machine",
+    "portable-material-hoist"
+  ],
+  "variants": [
+    { "id": "trowel-standard", "asset": "walk-behind-power-trowel", "choices": { "guardSize": "standard" } },
+    { "id": "trowel-compact-hi-vis", "asset": "walk-behind-power-trowel", "choices": { "guardSize": "compact" }, "preset": "highVisibility" },
+    { "id": "screed-standard-working", "asset": "vibrating-concrete-screed", "choices": { "profileSize": "standard", "handlePosition": "working" } },
+    { "id": "screed-short-folded-hi-vis", "asset": "vibrating-concrete-screed", "choices": { "profileSize": "short", "handlePosition": "folded" }, "preset": "highVisibility" },
+    { "id": "rebar-compact-hook", "asset": "rebar-bending-machine", "choices": { "workTable": "compact", "barForm": "hook" } },
+    { "id": "rebar-extended-stirrup-hi-vis", "asset": "rebar-bending-machine", "choices": { "workTable": "extended", "barForm": "stirrup" }, "preset": "highVisibility" },
+    { "id": "hoist-standard-guarded", "asset": "portable-material-hoist", "choices": { "mastHeight": "standard", "platformStyle": "guarded" } },
+    { "id": "hoist-short-open-hi-vis", "asset": "portable-material-hoist", "choices": { "mastHeight": "short", "platformStyle": "open" }, "preset": "highVisibility" }
+  ],
+  "video": {
+    "path": "construction-equipment-machines.mp4",
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "durationSeconds": 15,
+    "codec": "H.264",
+    "slides": [
+      "before-vs-promoted",
+      "trowel-guard-choice",
+      "screed-handle-choice",
+      "rebar-table-and-form-choice",
+      "hoist-platform-choice",
+      "high-visibility-presets"
+    ]
+  },
+  "claimLimits": [
+    "Local source render and catalog preview only; branch is not deployed.",
+    "No product fit, capacity, safety, concrete finishing performance, or physical acceptance is claimed."
+  ]
+}

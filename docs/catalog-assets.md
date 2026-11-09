@@ -12,6 +12,17 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 9 construction-equipment silhouette follow-up rebuilt four existing
+machine assets in place: walk-behind power trowel, vibrating concrete screed,
+rebar bending machine, and portable material hoist. Their material controls and
+named presets now describe the component finishes, and selectable sizes or
+layouts change the actual geometry. The kit still has 60 assets; the global
+quality gate remains **2,402/2,402 (100.00%; 50 rich kits, 0 thin kits)**. The
+[construction-equipment handoff](../artifacts/catalog-demos/construction-equipment-machines-20261109/README.md)
+records the source variants, rebuilt previews and index, checks and inspected
+MP4. This remains local branch evidence and is not a deployment or physical
+acceptance claim.
+
 The Nov 9 garden follow-up refined the existing `compost-bin` in place. Its
 `frontAccess` choice now builds open, lower-access, and closed removable-slat
 fronts; the exposed compost is a rounded, independently colored mound, with
