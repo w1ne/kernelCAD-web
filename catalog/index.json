@@ -221086,14 +221086,17 @@
       "id": "compost-bagging-machine",
       "kit": "recycling-facility",
       "title": "Compost bagging machine",
-      "description": "Compost bagging machine: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Open-mouth compost bagger at about real size: tall surge hopper heaped with compost on a four-leg stand with a service ladder, weigh hopper on load cells, tapered fill spout with a clamped open sack, bag belt conveyor running under a column-mounted sewing head, control cabinet, and a pallet stacked with filled printed sacks. Material controls: machine paint, stainless spout and weigh hopper, sack plastic, compost. garden, weathered, highVisibility and peat presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "composting",
+        "bagging machine",
+        "open mouth bagger",
+        "packaging",
+        "compost",
         "materials recovery",
-        "waste management",
-        "organics",
         "low poly",
         "scene prop"
       ],
@@ -221106,8 +221109,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/compost-bagging-machine.kcad.ts",
       "preview": "/assets/recycling-facility-compost-bagging-machine.png",
-      "sourceSha256": "ba6e0d9c89792eee45a7fbce96dbd0112eecd835a454456ee01eb06bb28123b4",
-      "triangleBudget": 1800,
+      "sourceSha256": "0d9b1744bcb3ee5f6e457d5a06493a6a7d5a97e255cb45f80d9a9ae4ca4d32e7",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -221119,60 +221122,220 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "machine",
           "type": "color",
-          "default": "#71804f",
-          "label": "Painted steel"
+          "default": "#2d4f7c",
+          "label": "Machine frame paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "stainless",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c3c9cc",
+          "label": "Spout and weigh hopper (stainless steel)"
+        },
+        {
+          "name": "sacks",
+          "type": "color",
+          "default": "#4f8a3a",
+          "label": "Sack plastic"
+        },
+        {
+          "name": "compost",
+          "type": "color",
+          "default": "#4a3424",
+          "label": "Compost"
         }
       ],
       "presets": {
+        "garden": {
+          "machine": "#2d4f7c",
+          "stainless": "#c3c9cc",
+          "sacks": "#4f8a3a",
+          "compost": "#4a3424"
+        },
         "weathered": {
-          "paintedSteel": "#717952",
-          "stainlessSteel": "#9ea7a5"
+          "machine": "#56636b",
+          "stainless": "#a5abab",
+          "sacks": "#5f7a4c",
+          "compost": "#55402f"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "machine": "#e0a21c",
+          "stainless": "#c9cfd1",
+          "sacks": "#2f6fb0",
+          "compost": "#3f2c1f"
+        },
+        "peat": {
+          "machine": "#7c2f2a",
+          "stainless": "#c3c9cc",
+          "sacks": "#d8c45a",
+          "compost": "#2f2219"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1316,
         "sizeM": [
-          1.567527,
-          1.246,
-          1.119
+          5.45,
+          3.35,
+          1.72
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#71804f",
+          "name": "machine",
+          "color": "#2d4f7c",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "leg--1--1",
+            "leg-foot--1--1",
+            "leg--1-1",
+            "leg-foot--1-1",
+            "ring-x--1",
+            "ring-y--1",
+            "knee-rail--1",
+            "leg-1--1",
+            "leg-foot-1--1",
+            "leg-1-1",
+            "leg-foot-1-1",
+            "ring-x-1",
+            "ring-y-1",
+            "knee-rail-1",
+            "hopper-cone",
+            "hopper-bin",
+            "hopper-rim",
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "load-cell-arm--1",
+            "load-cell-arm-1",
+            "bag-clamp",
+            "conveyor-frame",
+            "conv-leg--1250--1",
+            "conv-leg--1250-1",
+            "conv-leg--50--1",
+            "conv-leg--50-1",
+            "conv-leg-1150--1",
+            "conv-leg-1150-1",
+            "sewing-column",
+            "sewing-arm",
+            "control-cabinet"
           ],
-          "param": "paintedSteel"
+          "param": "machine"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "compost",
+          "color": "#4a3424",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "compost-heap"
           ],
-          "param": "stainlessSteel"
+          "param": "compost"
+        },
+        {
+          "name": "slide-gate",
+          "color": "#2a2e31",
+          "parts": [
+            "slide-gate",
+            "load-cell--1",
+            "load-cell-1",
+            "bag-belt",
+            "sewing-motor",
+            "control-panel"
+          ]
+        },
+        {
+          "name": "stainless",
+          "color": "#c3c9cc",
+          "parts": [
+            "gate-cylinder",
+            "weigh-hopper",
+            "fill-spout",
+            "end-roller--1400",
+            "end-roller-1300",
+            "bag-guide--1",
+            "bag-guide-1",
+            "sewing-head"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "sacks",
+          "color": "#4f8a3a",
+          "parts": [
+            "open-sack",
+            "sack-on-belt-a",
+            "sack-on-belt-b",
+            "stacked-sack-0-0",
+            "stacked-sack-0-1",
+            "stacked-sack-0-2",
+            "stacked-sack-0-3",
+            "stacked-sack-1-0",
+            "stacked-sack-1-1",
+            "stacked-sack-1-2",
+            "stacked-sack-1-3",
+            "stacked-sack-2-0",
+            "stacked-sack-2-1",
+            "stacked-sack-2-2",
+            "stacked-sack-2-3"
+          ],
+          "param": "sacks"
+        },
+        {
+          "name": "open-sack-label",
+          "color": "#efe9d6",
+          "parts": [
+            "open-sack-label",
+            "sack-on-belt-a-label",
+            "sack-on-belt-b-label",
+            "stack-label"
+          ]
+        },
+        {
+          "name": "button-0",
+          "color": "#c83a2c",
+          "parts": [
+            "button-0"
+          ]
+        },
+        {
+          "name": "button-1",
+          "color": "#3fa34d",
+          "parts": [
+            "button-1",
+            "button-2"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f0a020",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "pallet-deck",
+          "color": "#b88b55",
+          "parts": [
+            "pallet-deck"
+          ]
+        },
+        {
+          "name": "pallet-runner--1",
+          "color": "#a27a49",
+          "parts": [
+            "pallet-runner--1",
+            "pallet-runner-0",
+            "pallet-runner-1"
+          ]
         }
       ]
     },
@@ -222273,14 +222436,17 @@
       "id": "cover-soil-spreader",
       "kit": "recycling-facility",
       "title": "Cover-soil spreader",
-      "description": "Cover-soil spreader: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Towed landfill cover-soil spreader at about real size: flared steel hopper heaped with soil on a box-section chassis, tandem axle with four wide flotation tyres and mudguards, rear metering door over twin finned spinner discs, drawbar with hitch eye and parking jack, rear light bar and side ladder. Material controls: hopper paint, chassis paint, tyres, soil. landfill, weathered, highVisibility and sandCover presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "landfill",
+        "daily cover",
+        "spreader",
+        "trailer",
+        "soil",
         "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -222293,8 +222459,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cover-soil-spreader.kcad.ts",
       "preview": "/assets/recycling-facility-cover-soil-spreader.png",
-      "sourceSha256": "9455eb107d0fb312851b6640eaeb452c32e09b43518cbd691406237ee4dbab82",
-      "triangleBudget": 1800,
+      "sourceSha256": "9cae59fa0e3a19c64250785a1179ac585dc74562c1d79fd3a111f9dbb9455e6a",
+      "triangleBudget": 2700,
       "params": [
         {
           "name": "scale",
@@ -222306,60 +222472,230 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#6e775d",
-          "label": "Painted steel"
+          "default": "#c8571e",
+          "label": "Hopper paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chassis",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2b2f33",
+          "label": "Chassis and drawbar paint"
+        },
+        {
+          "name": "tyres",
+          "type": "color",
+          "default": "#1c1d1f",
+          "label": "Tyres (rubber)"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#6b4f32",
+          "label": "Cover soil"
         }
       ],
       "presets": {
+        "landfill": {
+          "body": "#c8571e",
+          "chassis": "#2b2f33",
+          "tyres": "#1c1d1f",
+          "soil": "#6b4f32"
+        },
         "weathered": {
-          "paintedSteel": "#6f735c",
-          "stainlessSteel": "#9ea7a5"
+          "body": "#9a5a36",
+          "chassis": "#3b3a36",
+          "tyres": "#2a2927",
+          "soil": "#7a6248"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#e8c020",
+          "chassis": "#2b2f33",
+          "tyres": "#1c1d1f",
+          "soil": "#5f4630"
+        },
+        "sandCover": {
+          "body": "#2f7a46",
+          "chassis": "#4a4f54",
+          "tyres": "#1c1d1f",
+          "soil": "#c7a36a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2260,
         "sizeM": [
-          1.567527,
-          1.513,
-          1.2646
+          7.585,
+          2.82,
+          2.56
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#6e775d",
+          "name": "chassis",
+          "color": "#2b2f33",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "rail-f",
+            "rail-b",
+            "cross--1500",
+            "cross-0",
+            "cross-1300",
+            "cross-2500",
+            "drawbar-arm-f",
+            "drawbar-arm-b",
+            "drawbar-nose",
+            "jack-tube",
+            "jack-foot",
+            "axle-600",
+            "hub-f-600",
+            "hub-b-600",
+            "spring-hanger-600",
+            "axle-1800",
+            "hub-f-1800",
+            "hub-b-1800",
+            "spring-hanger-1800",
+            "spinner-deck",
+            "spinner-gearbox-f",
+            "spinner-gearbox-b",
+            "light-bar",
+            "beacon-post",
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-stay"
           ],
-          "param": "paintedSteel"
+          "param": "chassis"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "hitch-eye",
+          "color": "#9aa1a5",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "hitch-eye",
+            "jack-inner",
+            "jack-crank",
+            "rim-f-600",
+            "rim-b-600",
+            "rim-f-1800",
+            "rim-b-1800",
+            "door-ram",
+            "spinner-disc-f",
+            "spinner-fin-f-0",
+            "spinner-fin-f-1",
+            "spinner-fin-f-2",
+            "spinner-fin-f-3",
+            "spinner-disc-b",
+            "spinner-fin-b-0",
+            "spinner-fin-b-1",
+            "spinner-fin-b-2",
+            "spinner-fin-b-3"
+          ]
+        },
+        {
+          "name": "tyres",
+          "color": "#1c1d1f",
+          "parts": [
+            "tyre-f-600",
+            "tread-f-600-0",
+            "tread-f-600-1",
+            "tread-f-600-2",
+            "tread-f-600-3",
+            "tread-f-600-4",
+            "tread-f-600-5",
+            "tread-f-600-6",
+            "tread-f-600-7",
+            "tread-f-600-8",
+            "tyre-b-600",
+            "tread-b-600-0",
+            "tread-b-600-1",
+            "tread-b-600-2",
+            "tread-b-600-3",
+            "tread-b-600-4",
+            "tread-b-600-5",
+            "tread-b-600-6",
+            "tread-b-600-7",
+            "tread-b-600-8",
+            "tyre-f-1800",
+            "tread-f-1800-0",
+            "tread-f-1800-1",
+            "tread-f-1800-2",
+            "tread-f-1800-3",
+            "tread-f-1800-4",
+            "tread-f-1800-5",
+            "tread-f-1800-6",
+            "tread-f-1800-7",
+            "tread-f-1800-8",
+            "tyre-b-1800",
+            "tread-b-1800-0",
+            "tread-b-1800-1",
+            "tread-b-1800-2",
+            "tread-b-1800-3",
+            "tread-b-1800-4",
+            "tread-b-1800-5",
+            "tread-b-1800-6",
+            "tread-b-1800-7",
+            "tread-b-1800-8"
           ],
-          "param": "stainlessSteel"
+          "param": "tyres"
+        },
+        {
+          "name": "body",
+          "color": "#c8571e",
+          "parts": [
+            "mudguard-f",
+            "mudguard-b",
+            "hopper",
+            "hopper-rim",
+            "metering-door",
+            "deflector"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "soil",
+          "color": "#6b4f32",
+          "parts": [
+            "soil-heap",
+            "clod-1",
+            "clod-2",
+            "clod-4",
+            "clod-5",
+            "clod-7",
+            "clod-8",
+            "soil-throw-f",
+            "soil-throw-b"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "clod-0",
+          "color": "#5a4029",
+          "parts": [
+            "clod-0",
+            "clod-3",
+            "clod-6",
+            "clod-9"
+          ]
+        },
+        {
+          "name": "tail-lamp-f",
+          "color": "#c8302a",
+          "parts": [
+            "tail-lamp-f",
+            "tail-lamp-b"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f0a020",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -222741,14 +223077,17 @@
       "id": "cullet-feed-hopper",
       "kit": "recycling-facility",
       "title": "Cullet feed hopper",
-      "description": "Cullet feed hopper: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Elevated cullet feed hopper at about real size: open-top square bin with a steep pyramid outlet heaped with green, amber and flint glass, four braced legs, caged access ladder and railed top walkway, slide gate over a stainless vibratory feeder tray on coil springs with a vibrator motor, and an inclined belt conveyor carrying glass chips away. Material controls: hopper paint, structure paint, stainless feeder, glass cullet. glassworks, weathered, highVisibility and amberCullet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "glass recycling",
+        "cullet",
+        "feed hopper",
+        "vibratory feeder",
+        "surge bin",
         "materials recovery",
-        "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -222761,8 +223100,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cullet-feed-hopper.kcad.ts",
       "preview": "/assets/recycling-facility-cullet-feed-hopper.png",
-      "sourceSha256": "044e9fd0393b52de2e137fdde73a3c210a2406d8de1671fc852a2bb9fc8b02a7",
-      "triangleBudget": 1800,
+      "sourceSha256": "187916d7359f7ce8e5bbde6245fa7fc5a9e93ab9844e22bb63599255da1d6bae",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -222774,60 +223113,237 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "hopper",
           "type": "color",
-          "default": "#4a7980",
-          "label": "Painted steel"
+          "default": "#3d6f8e",
+          "label": "Hopper paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d2a12a",
+          "label": "Legs, ladder and rail paint"
+        },
+        {
+          "name": "feeder",
+          "type": "color",
+          "default": "#b9c1c4",
+          "label": "Vibratory feeder (stainless steel)"
+        },
+        {
+          "name": "cullet",
+          "type": "color",
+          "default": "#3f8f5a",
+          "label": "Glass cullet"
         }
       ],
       "presets": {
+        "glassworks": {
+          "hopper": "#3d6f8e",
+          "structure": "#d2a12a",
+          "feeder": "#b9c1c4",
+          "cullet": "#3f8f5a"
+        },
         "weathered": {
-          "paintedSteel": "#567574",
-          "stainlessSteel": "#9ea7a5"
+          "hopper": "#4f6670",
+          "structure": "#a38b4f",
+          "feeder": "#9da3a3",
+          "cullet": "#4c7d5c"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "hopper": "#2b2f33",
+          "structure": "#e8c22a",
+          "feeder": "#c8cfd2",
+          "cullet": "#4fa36a"
+        },
+        "amberCullet": {
+          "hopper": "#6e3b2c",
+          "structure": "#3d6f8e",
+          "feeder": "#b9c1c4",
+          "cullet": "#a8662a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 4564,
         "sizeM": [
-          1.861327,
-          1.246,
-          1.4102
+          6.661443,
+          5.07,
+          3.352
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#4a7980",
+          "name": "hopper",
+          "color": "#3d6f8e",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "hopper-cone",
+            "hopper-bin",
+            "stiffener-3430",
+            "stiffener-3760",
+            "conveyor-stringer"
           ],
-          "param": "paintedSteel"
+          "param": "hopper"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "cullet",
+          "color": "#3f8f5a",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "cullet-heap"
           ],
-          "param": "stainlessSteel"
+          "param": "cullet"
+        },
+        {
+          "name": "chip-0",
+          "color": "#8a5a26",
+          "parts": [
+            "chip-0",
+            "chip-3",
+            "chip-6",
+            "chip-9",
+            "chip-12",
+            "tray-chip-0",
+            "tray-chip-3",
+            "tray-chip-6",
+            "belt-chip-0",
+            "belt-chip-3",
+            "belt-chip-6"
+          ]
+        },
+        {
+          "name": "chip-1",
+          "color": "#d8e4df",
+          "parts": [
+            "chip-1",
+            "chip-4",
+            "chip-7",
+            "chip-10",
+            "chip-13",
+            "tray-chip-1",
+            "tray-chip-4",
+            "tray-chip-7",
+            "belt-chip-1",
+            "belt-chip-4"
+          ]
+        },
+        {
+          "name": "chip-2",
+          "color": "#2f6f45",
+          "parts": [
+            "chip-2",
+            "chip-5",
+            "chip-8",
+            "chip-11",
+            "tray-chip-2",
+            "tray-chip-5",
+            "belt-chip-2",
+            "belt-chip-5"
+          ]
+        },
+        {
+          "name": "structure",
+          "color": "#d2a12a",
+          "parts": [
+            "leg--1--1",
+            "leg-foot--1--1",
+            "leg--1-1",
+            "leg-foot--1-1",
+            "brace-xz--1",
+            "brace-xz-r--1",
+            "tie-x--1",
+            "tie-y--1",
+            "leg-1--1",
+            "leg-foot-1--1",
+            "leg-1-1",
+            "leg-foot-1-1",
+            "brace-xz-1",
+            "brace-xz-r-1",
+            "tie-x-1",
+            "tie-y-1",
+            "walkway",
+            "rail-post--2650",
+            "rail-post--1400",
+            "rail-post--150",
+            "handrail-4550",
+            "handrail-5020",
+            "walkway-bracket",
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "ladder-rung-10",
+            "ladder-rung-11",
+            "ladder-rung-12",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2",
+            "cage-hoop-3",
+            "cage-hoop-4",
+            "cage-hoop-5",
+            "cage-strap--1",
+            "cage-strap-0",
+            "cage-strap-1",
+            "spring-f--1700-0",
+            "spring-f--1700-1",
+            "spring-f--1700-2",
+            "spring-post-f--1700",
+            "spring-f--100-0",
+            "spring-f--100-1",
+            "spring-f--100-2",
+            "spring-post-f--100",
+            "spring-b--1700-0",
+            "spring-b--1700-1",
+            "spring-b--1700-2",
+            "spring-post-b--1700",
+            "spring-b--100-0",
+            "spring-b--100-1",
+            "spring-b--100-2",
+            "spring-post-b--100",
+            "conv-leg-500-f",
+            "conv-leg-500-b",
+            "conv-leg-2600-f",
+            "conv-leg-2600-b"
+          ],
+          "param": "structure"
+        },
+        {
+          "name": "slide-gate",
+          "color": "#2a2e31",
+          "parts": [
+            "slide-gate",
+            "vibrator-motor",
+            "conveyor-belt"
+          ]
+        },
+        {
+          "name": "feeder",
+          "color": "#b9c1c4",
+          "parts": [
+            "gate-ram",
+            "feeder-tray",
+            "tray-side-f",
+            "tray-side-b",
+            "tray-back",
+            "tray-inlet",
+            "tray-hanger-f--1700",
+            "tray-hanger-f--100",
+            "tray-hanger-b--1700",
+            "tray-hanger-b--100",
+            "conveyor-skirt-f",
+            "conveyor-skirt-b",
+            "head-pulley",
+            "tail-pulley"
+          ],
+          "param": "feeder"
         }
       ]
     },
@@ -233958,14 +234474,16 @@
       "id": "magnet-cleanout-drum",
       "kit": "recycling-facility",
       "title": "Magnet clean-out drum",
-      "description": "Magnet clean-out drum: a faceted rotating screen drum, feed hopper and opposed discharge chute. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Magnetic drum separator at about real size: vibrating feed pan on coil springs with twin vibrator motors, horizontal stainless drum on bearing posts with a side gear motor, curved hood, splitter plate, product chute into a non-ferrous bin and ferrous chute into a steel scrap bin, with steel pieces held on the drum underside. Material controls: frame paint, stainless drum, hood paint, steel scrap. plant, weathered, highVisibility and stainless presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "magnetic separator",
+        "drum magnet",
+        "ferrous recovery",
+        "tramp metal",
         "materials recovery",
-        "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -233978,8 +234496,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/magnet-cleanout-drum.kcad.ts",
       "preview": "/assets/recycling-facility-magnet-cleanout-drum.png",
-      "sourceSha256": "9a0a19ef74be540c5d4e087061f1eb735a530dd75836616a177d96a4094886c2",
-      "triangleBudget": 1800,
+      "sourceSha256": "a85023c042b03799484b4214f5bd6383c9da00c890c7518e1a8a969ca432796d",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -233991,59 +234509,214 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f5f8f",
+          "label": "Frame, feeder and bin paint"
         },
         {
-          "name": "paintedSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#b9c3c7",
+          "label": "Drum shell (stainless steel)"
+        },
+        {
+          "name": "hood",
+          "type": "color",
+          "default": "#d9a521",
+          "label": "Hood and ferrous bin paint"
+        },
+        {
+          "name": "scrap",
+          "type": "color",
+          "default": "#8a5636",
+          "label": "Steel scrap (rusty)"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#2f5f8f",
+          "drum": "#b9c3c7",
+          "hood": "#d9a521",
+          "scrap": "#8a5636"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6c63"
+          "frame": "#4c5d66",
+          "drum": "#9aa1a2",
+          "hood": "#a68745",
+          "scrap": "#6e4a33"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#2b2f33",
+          "drum": "#c9d0d3",
+          "hood": "#e8542a",
+          "scrap": "#94603c"
+        },
+        "stainless": {
+          "frame": "#8d969b",
+          "drum": "#d4dadc",
+          "hood": "#3c7d5a",
+          "scrap": "#7d5236"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 3768,
         "sizeM": [
-          0.914637,
-          0.8554,
-          2.3392
+          4.53,
+          2.27,
+          2.365
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drum",
+          "color": "#b9c3c7",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "screen-drum",
-            "drive-ring-front",
-            "drive-ring-back"
+            "drum-shell",
+            "drum-end-f",
+            "splitter"
           ],
-          "param": "stainlessSteel"
+          "param": "drum"
         },
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "drum-hub-f",
+          "color": "#2a2e31",
           "parts": [
-            "feed-hopper",
-            "discharge-chute",
-            "drive-motor"
+            "drum-hub-f",
+            "drum-end-b",
+            "drum-shaft",
+            "bearing-f",
+            "bearing-b",
+            "gear-motor",
+            "motor-fan-cover",
+            "vibrator-f",
+            "vibrator-b"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#2f5f8f",
+          "parts": [
+            "post-f",
+            "post-foot-f",
+            "post-b",
+            "post-foot-b",
+            "post-tie",
+            "gearbox",
+            "motor-stand",
+            "product-chute",
+            "product-bin",
+            "pan-floor",
+            "pan-wall-f",
+            "leg-f--2300",
+            "leg-foot-f--2300",
+            "spring-bracket-f--2300",
+            "leg-f--300",
+            "leg-foot-f--300",
+            "spring-bracket-f--300",
+            "pan-wall-b",
+            "leg-b--2300",
+            "leg-foot-b--2300",
+            "spring-bracket-b--2300",
+            "leg-b--300",
+            "leg-foot-b--300",
+            "spring-bracket-b--300",
+            "pan-back"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "hood",
+          "color": "#d9a521",
+          "parts": [
+            "hood",
+            "hood-front-lip",
+            "hood-cheek-f",
+            "hood-cheek-b",
+            "ferrous-chute",
+            "ferrous-bin",
+            "spring-f--2300-0",
+            "spring-f--2300-1",
+            "spring-f--2300-2",
+            "spring-f--300-0",
+            "spring-f--300-1",
+            "spring-f--300-2",
+            "spring-b--2300-0",
+            "spring-b--2300-1",
+            "spring-b--2300-2",
+            "spring-b--300-0",
+            "spring-b--300-1",
+            "spring-b--300-2"
+          ],
+          "param": "hood"
+        },
+        {
+          "name": "feed-0",
+          "color": "#c9c2b0",
+          "parts": [
+            "feed-0",
+            "feed-4",
+            "feed-8",
+            "feed-12",
+            "product-load-2",
+            "product-load-3",
+            "product-load-6",
+            "product-load-7"
+          ]
+        },
+        {
+          "name": "scrap",
+          "color": "#8a5636",
+          "parts": [
+            "feed-1",
+            "feed-5",
+            "feed-9",
+            "feed-13",
+            "held-steel-0",
+            "held-steel-1",
+            "held-steel-2",
+            "held-steel-3",
+            "held-steel-4",
+            "held-steel-5",
+            "held-steel-6",
+            "ferrous-load-0",
+            "ferrous-load-1",
+            "ferrous-load-2",
+            "ferrous-load-3",
+            "ferrous-load-4",
+            "ferrous-load-5",
+            "ferrous-load-6",
+            "ferrous-load-7",
+            "ferrous-load-8"
+          ],
+          "param": "scrap"
+        },
+        {
+          "name": "feed-2",
+          "color": "#a83c32",
+          "parts": [
+            "feed-2",
+            "feed-6",
+            "feed-10",
+            "feed-14",
+            "product-load-0",
+            "product-load-4",
+            "product-load-8"
+          ]
+        },
+        {
+          "name": "feed-3",
+          "color": "#d8d2c0",
+          "parts": [
+            "feed-3",
+            "feed-7",
+            "feed-11",
+            "feed-15",
+            "product-load-1",
+            "product-load-5"
+          ]
         }
       ]
     },
@@ -234913,14 +235586,17 @@
       "id": "metering-drum-feeder",
       "kit": "recycling-facility",
       "title": "Metering drum feeder",
-      "description": "Metering drum feeder: a faceted rotating screen drum, feed hopper and opposed discharge chute. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Live-bottom metering drum feeder at about real size: open-ended steel bunker on six legs with flared loading skirts, chain-floor slats at the discharge lip, spiked levelling drum across the outlet with bearing blocks and a gear motor, cross takeaway belt conveyor with an even ridge of shredded waste, and a heaped load in the bunker. Material controls: bunker paint, drum and roller steel, conveyor belt rubber, shredded material. plant, weathered, highVisibility and woodChip presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "metering feeder",
+        "live bottom bunker",
+        "walking floor",
+        "RDF",
+        "shredded waste",
         "materials recovery",
-        "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -234933,8 +235609,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/metering-drum-feeder.kcad.ts",
       "preview": "/assets/recycling-facility-metering-drum-feeder.png",
-      "sourceSha256": "b2a4905f7cb7490e1447889379b4edddc9d45802465db4f7eb986992e0a53dfe",
-      "triangleBudget": 1800,
+      "sourceSha256": "45079a1d72e77d724f04a77f8b89a013315bde8aca663f76eda4615672dfba13",
+      "triangleBudget": 1700,
       "params": [
         {
           "name": "scale",
@@ -234946,59 +235622,218 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "bunker",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2e6e4f",
+          "label": "Bunker and frame paint"
         },
         {
-          "name": "paintedSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#8f969a",
+          "label": "Drum, tines and rollers (steel)"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#262a2c",
+          "label": "Conveyor belt (rubber)"
+        },
+        {
+          "name": "material",
+          "type": "color",
+          "default": "#b9a77f",
+          "label": "Shredded material"
         }
       ],
       "presets": {
+        "plant": {
+          "bunker": "#2e6e4f",
+          "steel": "#8f969a",
+          "belt": "#262a2c",
+          "material": "#b9a77f"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6c63"
+          "bunker": "#4f6155",
+          "steel": "#7a7470",
+          "belt": "#33302d",
+          "material": "#9c8f74"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "bunker": "#e0b021",
+          "steel": "#9da4a8",
+          "belt": "#1f2224",
+          "material": "#c0b089"
+        },
+        "woodChip": {
+          "bunker": "#7a3b2a",
+          "steel": "#8f969a",
+          "belt": "#262a2c",
+          "material": "#a8763f"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 1368,
         "sizeM": [
-          1.104637,
-          0.9414,
-          2.3392
+          5.169053,
+          2.404079,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "bunker",
+          "color": "#2e6e4f",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "screen-drum",
-            "drive-ring-front",
-            "drive-ring-back"
+            "bunker-body",
+            "skirt-f",
+            "rib-f",
+            "leg-f--2400",
+            "leg-foot-f--2400",
+            "leg-f--800",
+            "leg-foot-f--800",
+            "leg-f-800",
+            "leg-foot-f-800",
+            "brace-f",
+            "skirt-b",
+            "rib-b",
+            "leg-b--2400",
+            "leg-foot-b--2400",
+            "leg-b--800",
+            "leg-foot-b--800",
+            "leg-b-800",
+            "leg-foot-b-800",
+            "brace-b",
+            "skirt-back",
+            "bearing-plate-f",
+            "bearing-plate-b",
+            "drum-gearbox",
+            "conveyor-bed",
+            "conv-leg-f--1500",
+            "conv-leg-f-0",
+            "conv-leg-f-1500",
+            "conv-leg-b--1500",
+            "conv-leg-b-0",
+            "conv-leg-b-1500",
+            "discharge-hood"
           ],
-          "param": "stainlessSteel"
+          "param": "bunker"
         },
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "steel",
+          "color": "#8f969a",
           "parts": [
-            "feed-hopper",
-            "discharge-chute",
-            "drive-motor"
+            "floor-slat-0",
+            "floor-slat-1",
+            "floor-slat-2",
+            "floor-slat-3",
+            "floor-slat-4",
+            "floor-slat-5",
+            "drum-tube",
+            "tine-0-0",
+            "tine-0-1",
+            "tine-0-2",
+            "tine-0-3",
+            "tine-1-0",
+            "tine-1-1",
+            "tine-1-2",
+            "tine-1-3",
+            "tine-2-0",
+            "tine-2-1",
+            "tine-2-2",
+            "tine-2-3",
+            "tine-3-0",
+            "tine-3-1",
+            "tine-3-2",
+            "tine-3-3",
+            "tine-4-0",
+            "tine-4-1",
+            "tine-4-2",
+            "tine-4-3",
+            "tine-5-0",
+            "tine-5-1",
+            "tine-5-2",
+            "tine-5-3",
+            "end-pulley-f",
+            "belt-skirt-f",
+            "end-pulley-b",
+            "belt-skirt-b"
           ],
-          "param": "paintedSteel"
+          "param": "steel"
+        },
+        {
+          "name": "chain-sprocket-shaft",
+          "color": "#2a2e31",
+          "parts": [
+            "chain-sprocket-shaft",
+            "drum-shaft",
+            "bearing-f",
+            "bearing-b",
+            "drum-motor",
+            "conveyor-motor"
+          ]
+        },
+        {
+          "name": "belt",
+          "color": "#262a2c",
+          "parts": [
+            "conveyor-belt"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "material",
+          "color": "#b9a77f",
+          "parts": [
+            "bunker-heap",
+            "levelled-bed",
+            "belt-ridge"
+          ],
+          "param": "material"
+        },
+        {
+          "name": "flake-0",
+          "color": "#d9d4c4",
+          "parts": [
+            "flake-0",
+            "flake-4",
+            "flake-8",
+            "flake-12",
+            "flake-16"
+          ]
+        },
+        {
+          "name": "flake-1",
+          "color": "#5f86a8",
+          "parts": [
+            "flake-1",
+            "flake-5",
+            "flake-9",
+            "flake-13",
+            "flake-17"
+          ]
+        },
+        {
+          "name": "flake-2",
+          "color": "#b84d3a",
+          "parts": [
+            "flake-2",
+            "flake-6",
+            "flake-10",
+            "flake-14"
+          ]
+        },
+        {
+          "name": "flake-3",
+          "color": "#8a8f5a",
+          "parts": [
+            "flake-3",
+            "flake-7",
+            "flake-11",
+            "flake-15"
+          ]
         }
       ]
     },
