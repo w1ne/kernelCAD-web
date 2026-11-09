@@ -221,11 +221,15 @@ function attachCreatedRefs(
 function resolveProfileCommands(
   feature: FeatureRecord,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): SketchCommand[] | { error: CompilerDiagnostic } {
   // The profile sketch's commands live in the sketch FeatureRecord's metadata.
   const profileRef = feature.inputs.profile;
   const profileFeatureId = profileRef && profileRef.kind === 'feature' ? profileRef.id : undefined;
-  const profileRecord = records?.find(r => r.id === profileFeatureId);
+  const rawProfileRecord = records?.find(r => r.id === profileFeatureId);
+  const profileRecord = rawProfileRecord && resolveRecord
+    ? resolveRecord(rawProfileRecord)
+    : rawProfileRecord;
   const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
   if (commands.length === 0) {
     return {
@@ -382,6 +386,7 @@ export function lowerCutout(
   target: OcctBackend,
   profileBackend: OcctBackend | undefined,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): CutoutLowerResult {
   const diagnostics: CompilerDiagnostic[] = [];
   const entryRes = resolveEntry(feature, target, records);
@@ -391,7 +396,7 @@ export function lowerCutout(
   }
   const entry = entryRes;
 
-  const commandsRes = resolveProfileCommands(feature, records);
+  const commandsRes = resolveProfileCommands(feature, records, resolveRecord);
   if ('error' in commandsRes) {
     diagnostics.push(commandsRes.error);
     return { backend: target, diagnostics };

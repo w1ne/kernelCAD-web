@@ -15,9 +15,9 @@ async function lowerScript(code: string): Promise<{
   shape: OcctBackend;
   diagnostics: ReturnType<RecomputeEngine['_diagnosticsForTest']> | unknown[];
 }> {
-  const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+  const { records, paramTable } = await runScript({ code, fileName: 'test.kcad.ts' });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
+  const r = await engine.run(records, { paramTable });
   const lastRecord = records[records.length - 1];
   const shape = r.shapes.get(lastRecord.id) as OcctBackend;
   return { shape, diagnostics: r.diagnostics };
@@ -52,6 +52,30 @@ describe('cutoutLowerer — basic shapes', () => {
     const expected = 40 * 40 * 8 - 6 * 6 * 8;
     expect(vol).toBeGreaterThan(expected - 1);
     expect(vol).toBeLessThan(expected + 1);
+  });
+
+  it('resolves ParamRef coordinates before building a through-cut profile', async () => {
+    const code = `
+      const a = param('a', 7.25);
+      let base = box(50, 45, 5).translate(-25, 0, 0);
+      const slot = path().moveTo(a, -5.5).lineTo(a, 4.5).lineTo(12.75, 4.5).lineTo(12.75, -5.5).close();
+      return base.cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape.volume()).toBeCloseTo(10_975, 2);
+  });
+
+  it('resolves arithmetic ParamRefs embedded in cutout sketch commands', async () => {
+    const code = `
+      const left = param('left', 7.25);
+      const right = left.add(5.5);
+      const slot = path().moveTo(left, -5.5).lineTo(left, 4.5).lineTo(right, 4.5).lineTo(right, -5.5).close();
+      return box(50, 45, 5).translate(-25, 0, 0).cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape.volume()).toBeCloseTo(10_975, 2);
   });
 
   it('cuts through the whole body when an unrelated underside pocket has a nearer floor', async () => {
