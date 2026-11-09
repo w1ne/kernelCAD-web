@@ -41,6 +41,7 @@ import { detectMissingReturn } from '../modeling/validation/missingReturn';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import { detectDetachedMaterial } from '../modeling/validation/booleanIntegrity';
+import { Scene } from '../modeling/validation/scene';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
@@ -310,6 +311,24 @@ export async function evaluateAndBuildScript(
   const built = await buildModelForInput(input, apiFactory);
   if ('evaluation' in built) return { evaluation: built.evaluation };
   const model = built.model;
+  // Strict solvedModel validation defers overlap-only failures so the
+  // evaluator can finish lowering and report mechanism.rest-interpenetration.
+  // Keep the original validator diagnostic on the shared evaluation surface
+  // as well; other strict validation errors still fail during capture.
+  if (model.returnValue instanceof Scene) {
+    model.diagnostics.push(...model.returnValue.__deferredValidationDiagnostics()
+      .filter((d) => d.code === 'assembly.interference.overlap')
+      .map((d): CompilerDiagnostic => ({
+        target: 'export-occt',
+        code: d.code,
+        severity: 'error',
+        message: d.message,
+        hint: d.hint,
+        ...(d.partA !== undefined && d.partB !== undefined
+          ? { details: { partA: d.partA, partB: d.partB, ...(d.volumeMm3 !== undefined ? { volumeMm3: d.volumeMm3 } : {}) } }
+          : {}),
+      })));
+  }
   if (input.baseline !== undefined) model.diagnostics.push(...selectionDriftDiagnostics(input.baseline, model.selections));
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
