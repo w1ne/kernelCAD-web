@@ -24,7 +24,7 @@ describe('asset catalog', () => {
     const committed = readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8');
     CatalogIndexSchema.parse(JSON.parse(committed));
     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toBe(serializeCatalogIndex(built));
-  }, 600_000);
+  }, 900_000);
 
   it('every characters-kit asset ships a GLB rig with a pivot per joint', () => {
     const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')));

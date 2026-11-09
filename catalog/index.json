@@ -130418,12 +130418,15 @@
       "id": "greenhouse-tunnel-bay",
       "kit": "hydroponics",
       "title": "Greenhouse tunnel bay",
-      "description": "Compact hoop-house bay with perimeter posts, a ridge beam, front-door opening, vent curb and curved polyethylene roof. Parameters: overall scale, powder-coated steel, pvc, polymer, greenhouse polyethylene; weathered and highVisibility presets.",
+      "description": "Polytunnel bay at about real size (3 m x 4 m, 2.7 m crown): galvanised round-top hoops on ground posts with a ridge purlin, polyethylene film locked into hip wiggle-wire channels, roll-up side curtains on a crank pipe, timber hip boards, framed end walls with a hinged door, and raised crop beds inside. Material controls: hoop steel, poly film, timber and crops, plus side curtains (rolled up or closed). galvanised, weathered, whiteFilm and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "polytunnel",
+        "hoop house",
         "greenhouse",
+        "roll-up sides",
+        "hydroponics",
         "controlled environment agriculture",
         "low poly",
         "scene prop"
@@ -130437,8 +130440,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-tunnel-bay.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-tunnel-bay.png",
-      "sourceSha256": "14cf4f8f78454a6a9e1d86674ebe51ef743a5894f86b9b8dac44aa7d373a40d8",
-      "triangleBudget": 1800,
+      "sourceSha256": "a5d4b920242aa8da384dbdffb69ffdaf5ad85fd9d058a95166dddbba74b8a570",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -130450,93 +130453,207 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "hoopSteel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a7aeb1",
+          "label": "Hoops, posts and purlin (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "polyFilm",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#cfe3dc",
+          "label": "Polyethylene film"
         },
         {
-          "name": "polymer",
+          "name": "timber",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#9a6f45",
+          "label": "Hip boards, end-wall framing and door"
         },
         {
-          "name": "polyethylene",
+          "name": "crop",
           "type": "color",
-          "default": "#bddbd0",
-          "label": "Greenhouse polyethylene"
+          "default": "#4f8f3a",
+          "label": "Crops in the raised beds"
+        },
+        {
+          "name": "sideCurtains",
+          "type": "choice",
+          "default": "rolled up",
+          "label": "Side curtains",
+          "choices": [
+            "rolled up",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "galvanised": {
+          "hoopSteel": "#a7aeb1",
+          "polyFilm": "#cfe3dc",
+          "timber": "#9a6f45",
+          "crop": "#4f8f3a"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa",
-          "polyethylene": "#a9bdb5"
+          "hoopSteel": "#83888a",
+          "polyFilm": "#b9c4b4",
+          "timber": "#6f6253",
+          "crop": "#6a8a45"
+        },
+        "whiteFilm": {
+          "hoopSteel": "#a7aeb1",
+          "polyFilm": "#eef0ec",
+          "timber": "#b3895c",
+          "crop": "#3f7f34"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b",
-          "polyethylene": "#e0f2e9"
+          "hoopSteel": "#e87832",
+          "polyFilm": "#d9f0e6",
+          "timber": "#f2c84b",
+          "crop": "#3c9a3a"
         }
       },
       "stats": {
-        "triangles": 316,
+        "triangles": 4404,
         "sizeM": [
-          1.555,
-          3.015,
-          3
+          3.25,
+          2.726,
+          4.928705
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "hoopSteel",
+          "color": "#a7aeb1",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "front-post-left",
-            "front-post-right",
-            "rear-post-left",
-            "rear-post-right",
-            "ridge-beam",
-            "ridge-support"
+            "hoop-0",
+            "hoop-1",
+            "hoop-2",
+            "hoop-3",
+            "ridge-purlin",
+            "hip-rail--1485",
+            "hip-rail-1485",
+            "roll-pipe-end--1",
+            "crank-arm--1",
+            "roll-pipe-end-1",
+            "crank-arm-1"
           ],
-          "param": "powderCoatedSteel"
+          "param": "hoopSteel"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "ground-post-0--1500",
+          "color": "#6d7275",
           "parts": [
-            "front-door-header"
-          ],
-          "param": "pvc"
+            "ground-post-0--1500",
+            "ground-post-0-1500",
+            "ground-post-1--1500",
+            "ground-post-1-1500",
+            "ground-post-2--1500",
+            "ground-post-2-1500",
+            "ground-post-3--1500",
+            "ground-post-3-1500"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "timber",
+          "color": "#9a6f45",
           "parts": [
-            "vent-curb"
+            "hip-board--1490",
+            "hip-board-1490",
+            "door-post--545",
+            "door-post-545",
+            "door-header",
+            "end-stud--1000",
+            "end-stud-1000",
+            "door-frame-0",
+            "door-frame-1",
+            "door-frame-2",
+            "door-frame-3",
+            "door-frame-4",
+            "bed--1",
+            "bed-1"
           ],
-          "param": "polymer"
+          "param": "timber"
         },
         {
-          "name": "polyethylene",
-          "color": "#bddbd0",
+          "name": "polyFilm",
+          "color": "#cfe3dc",
           "parts": [
-            "polyethylene-roof"
+            "film-crown",
+            "curtain-roll--1",
+            "curtain-roll-1",
+            "rear-wall-film",
+            "front-gable-film",
+            "front-side-film--1",
+            "front-side-film-1",
+            "door-film"
           ],
-          "param": "polyethylene"
+          "param": "polyFilm"
+        },
+        {
+          "name": "wiggle-channel--1530",
+          "color": "#7d8386",
+          "parts": [
+            "wiggle-channel--1530",
+            "wiggle-channel-1530"
+          ]
+        },
+        {
+          "name": "crank-handle--1",
+          "color": "#2f3234",
+          "parts": [
+            "crank-handle--1",
+            "crank-handle-1",
+            "door-handle"
+          ]
+        },
+        {
+          "name": "bed-soil--1",
+          "color": "#4a3626",
+          "parts": [
+            "bed-soil--1",
+            "bed-soil-1"
+          ]
+        },
+        {
+          "name": "crop",
+          "color": "#4f8f3a",
+          "parts": [
+            "plant--1-0--220",
+            "plant--1-0-220",
+            "plant--1-1--220",
+            "plant--1-1-220",
+            "plant--1-2--220",
+            "plant--1-2-220",
+            "plant--1-3--220",
+            "plant--1-3-220",
+            "plant--1-4--220",
+            "plant--1-4-220",
+            "plant--1-5--220",
+            "plant--1-5-220",
+            "plant-1-0--220",
+            "plant-1-0-220",
+            "plant-1-1--220",
+            "plant-1-1-220",
+            "plant-1-2--220",
+            "plant-1-2-220",
+            "plant-1-3--220",
+            "plant-1-3-220",
+            "plant-1-4--220",
+            "plant-1-4-220",
+            "plant-1-5--220",
+            "plant-1-5-220"
+          ],
+          "param": "crop"
+        },
+        {
+          "name": "path-mat",
+          "color": "#5d5f58",
+          "parts": [
+            "path-mat"
+          ]
         }
       ]
     },
@@ -138951,13 +139068,16 @@
       "id": "wall-mounted-co2-sensor",
       "kit": "hydroponics",
       "title": "Wall-mounted CO2 sensor",
-      "description": "Compact wall enclosure with a vented cover, mounting lugs and short cable gland. Parameters: overall scale, stainless steel, polymer; weathered and highVisibility presets.",
+      "description": "Wall-mounted NDIR CO2 transmitter at about real size: slim rounded housing on a screw-down wall plate, backlit ppm LCD with status LED and calibration buttons, slotted front and side vent grilles over the diffusion chamber, and a bottom cable gland feeding signal cable into conduit. Material controls: housing, vent and plate trim, LCD backlight and cable, plus display (LCD or blind). standard, darkHousing, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "CO2 sensor",
+        "NDIR",
+        "transmitter",
+        "grow room",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -138970,8 +139090,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/wall-mounted-co2-sensor.kcad.ts",
       "preview": "/assets/hydroponics-wall-mounted-co2-sensor.png",
-      "sourceSha256": "90fe67b502a6a395974c6b52cd5e32069c474838bda27d2473822f98e2c2142c",
-      "triangleBudget": 1800,
+      "sourceSha256": "cb06c4b0f1d5fa1598fbccadef8e10ecacfbdac56da29eba8eb843030e7bfa1c",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -138983,61 +139103,171 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#eceae4",
+          "label": "Housing (white ABS)"
         },
         {
-          "name": "polymer",
+          "name": "trim",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#6f777c",
+          "label": "Vent grille, wall plate and gland (grey polymer)"
+        },
+        {
+          "name": "lcdBacklight",
+          "type": "color",
+          "default": "#9fd0a8",
+          "label": "LCD backlight"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#26282a",
+          "label": "Signal cable and conduit"
+        },
+        {
+          "name": "display",
+          "type": "choice",
+          "default": "LCD",
+          "label": "Display",
+          "choices": [
+            "LCD",
+            "blind"
+          ]
         }
       ],
       "presets": {
+        "standard": {
+          "housing": "#eceae4",
+          "trim": "#6f777c",
+          "lcdBacklight": "#9fd0a8",
+          "cable": "#26282a"
+        },
+        "darkHousing": {
+          "housing": "#3a3f44",
+          "trim": "#1f2326",
+          "lcdBacklight": "#7fc4e8",
+          "cable": "#26282a"
+        },
         "weathered": {
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa"
+          "housing": "#cfc9b8",
+          "trim": "#5e6463",
+          "lcdBacklight": "#a9bb8f",
+          "cable": "#3a3a36"
         },
         "highVisibility": {
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b"
+          "housing": "#f2c84b",
+          "trim": "#e87832",
+          "lcdBacklight": "#c8f0b0",
+          "cable": "#1b1b1b"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1034,
         "sizeM": [
-          0.38,
-          0.395,
-          0.154
+          0.104,
+          0.265,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "trim",
+          "color": "#6f777c",
           "parts": [
-            "backplate",
-            "sensor-case",
-            "top-vent",
-            "middle-vent",
-            "bottom-vent",
-            "left-lug",
-            "right-lug",
-            "cable-gland"
+            "wall-plate",
+            "button-10",
+            "button-28",
+            "grille-panel",
+            "gland-nut",
+            "gland-dome",
+            "conduit-clip"
           ],
-          "param": "polymer"
+          "param": "trim"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "screw-35",
+          "color": "#b8bcbe",
           "parts": [
-            "sensor-cap"
+            "screw-35",
+            "screw-185"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#eceae4",
+          "parts": [
+            "housing",
+            "bezel"
           ],
-          "param": "stainlessSteel"
+          "param": "housing"
+        },
+        {
+          "name": "lcdBacklight",
+          "color": "#9fd0a8",
+          "parts": [
+            "lcd-window"
+          ],
+          "param": "lcdBacklight"
+        },
+        {
+          "name": "digit-0-0",
+          "color": "#1d2a22",
+          "parts": [
+            "digit-0-0",
+            "digit-0-1",
+            "digit-0-2",
+            "digit-0-3",
+            "digit-0-4",
+            "digit-1-0",
+            "digit-1-1",
+            "digit-1-2",
+            "digit-1-3",
+            "digit-2-0",
+            "digit-2-1",
+            "digit-2-2",
+            "digit-2-3",
+            "ppm-tag"
+          ]
+        },
+        {
+          "name": "status-led",
+          "color": "#46d46a",
+          "parts": [
+            "status-led"
+          ]
+        },
+        {
+          "name": "grille-slot-0",
+          "color": "#2a2e31",
+          "parts": [
+            "grille-slot-0",
+            "grille-slot-1",
+            "grille-slot-2",
+            "grille-slot-3",
+            "grille-slot-4",
+            "side-slot--46-0",
+            "side-slot--46-1",
+            "side-slot--46-2",
+            "side-slot--46-3",
+            "side-slot-46-0",
+            "side-slot-46-1",
+            "side-slot-46-2",
+            "side-slot-46-3"
+          ]
+        },
+        {
+          "name": "cable",
+          "color": "#26282a",
+          "parts": [
+            "signal-cable",
+            "conduit-coupler",
+            "conduit"
+          ],
+          "param": "cable"
         }
       ]
     },

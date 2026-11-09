@@ -1,0 +1,7 @@
+{
+  "kitCommand": "python3 scripts/checkCatalogQuality.py --kit hydroponics",
+  "kitResult": "52/52 PASS",
+  "overallCommand": "python3 scripts/checkCatalogQuality.py",
+  "overallResult": "2402/2402 PASS",
+  "passRate": "100%"
+}

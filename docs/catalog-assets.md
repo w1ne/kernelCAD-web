@@ -355,6 +355,14 @@ pages, package boundary audit, and inspected MP4. The kit is for visualization;
 catalog checks do not establish crop performance, equipment ratings, chemical
 compatibility, sensor calibration, or physical acceptance.
 
+The 2026-11-09 detail refinement updates two existing models in place: the
+greenhouse tunnel now exposes hoop steel, film, timber and crop colors plus
+rolled/closed side curtains; the wall CO2 transmitter exposes housing, trim,
+display and cable colors plus LCD/blind variants. The [detail-refinement
+handoff](../artifacts/catalog-demos/hydroponics-detail-refinement-20261109/README.md)
+records the refreshed kit previews, rebuilt index, preset/choice renders, local
+checks and inspected MP4. No new catalog IDs were added.
+
 ## Space exploration assets
 
 The [space exploration kit](../catalog/kits/space-exploration/README.md) contains
