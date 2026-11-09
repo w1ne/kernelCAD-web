@@ -175652,16 +175652,18 @@
       "id": "core-drill-rig",
       "kit": "mining",
       "title": "Exploration core drill rig",
-      "description": "Portable exploration drill with anchor frame, mast, crown block, rod rack, and control cabinet. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Skid-mounted diamond core drill at about real size: 9.5 m lattice mast on raising rams with a hydraulic drill head on a feed cylinder, drill string through the foot clamp into a collar casing, crown and wireline sheaves with wireline winch, louvred engine power pack with radiator and exhaust stack, hydraulic tank, tilted operator panel with gauges, mud tank and water pump, rod rack of drill rods on trestles and three core trays of grey core on a stand. Material controls: rig coating, mast and skid steel, drill rods and chrome, timber core trays, plus a mast angle choice (vertical, angled 60 degrees). weathered, highVisibility and redRig presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "exploration",
+        "core drilling",
+        "diamond drill",
+        "drill rig",
+        "geology",
+        "core tray",
+        "drilling"
       ],
       "compat": [
         "mining",
@@ -175672,8 +175674,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/core-drill-rig.kcad.ts",
       "preview": "/assets/mining-core-drill-rig.png",
-      "sourceSha256": "b1df3bf440e41aa1485279c4b1c979a953c76dc8d4a5b7e40e6b1de2108e070c",
-      "triangleBudget": 1800,
+      "sourceSha256": "962ff0a9cb75967f9d6d71dcc3ba2dd7674ca7c921164bf025b7a50b8bade685",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -175687,40 +175689,64 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#85a865",
-          "label": "Coated equipment steel"
+          "default": "#e8c21a",
+          "label": "Rig coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Mast and skid steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Drill rods and chrome"
+        },
+        {
+          "name": "coreTray",
+          "type": "color",
+          "default": "#b88a55",
+          "label": "Core tray timber"
+        },
+        {
+          "name": "mastAngle",
+          "type": "choice",
+          "default": "vertical",
+          "label": "Mast angle",
+          "choices": [
+            "vertical",
+            "angled"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#9a8a55",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "stainlessSteel": "#969f9e",
+          "coreTray": "#8d7356"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "stainlessSteel": "#c5ccca",
+          "coreTray": "#c49a62"
+        },
+        "redRig": {
+          "coatedSteel": "#b8322a",
+          "structuralSteel": "#3b4248",
+          "stainlessSteel": "#c5ccca",
+          "coreTray": "#9b7a50"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 2172,
         "sizeM": [
-          1.005,
-          1.03,
-          0.685
+          8.3,
+          11.131977,
+          6.4
         ],
         "minUpM": 0,
         "materials": 1
@@ -175728,32 +175754,178 @@
       "palette": [
         {
           "name": "structuralSteel",
-          "color": "#566168",
+          "color": "#4f5b62",
           "parts": [
-            "base-frame",
-            "left-upright",
-            "right-upright"
+            "skid-runner-f",
+            "skid-runner-b",
+            "skid-nose",
+            "deck",
+            "mast-rail-f",
+            "mast-rail-b",
+            "mast-rung-600",
+            "mast-rung-1700",
+            "mast-rung-2800",
+            "mast-rung-3900",
+            "mast-rung-5000",
+            "mast-rung-6100",
+            "mast-rung-7200",
+            "mast-rung-8300",
+            "mast-rung-9400",
+            "mast-support-frame",
+            "head-carriage",
+            "mud-tank",
+            "pump-skid",
+            "tray-stand"
           ],
           "param": "structuralSteel"
         },
         {
           "name": "coatedSteel",
-          "color": "#85a865",
+          "color": "#e8c21a",
           "parts": [
-            "crosshead",
-            "control-cabinet"
+            "engine-enclosure",
+            "enclosure-roof",
+            "hydraulic-tank",
+            "panel-stand",
+            "foot-clamp",
+            "crown-block",
+            "raise-ram-f",
+            "raise-ram-b",
+            "drill-head",
+            "wireline-flanges",
+            "trestle--2800",
+            "trestle--400"
           ],
           "param": "coatedSteel"
+        },
+        {
+          "name": "louvre--3100",
+          "color": "#26292b",
+          "parts": [
+            "louvre--3100",
+            "louvre--2900",
+            "louvre--2700",
+            "louvre--2500",
+            "louvre--2300",
+            "louvre--2100",
+            "louvre--1900",
+            "louvre--1700",
+            "louvre--1500",
+            "radiator-grille",
+            "exhaust-stack",
+            "exhaust-cap",
+            "control-panel",
+            "head-motor",
+            "collar-casing",
+            "wireline-drum"
+          ]
         },
         {
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "drill-spindle",
-            "rod-rack",
-            "hydraulic-pack"
+            "tank-filler",
+            "mast-pivot",
+            "crown-sheave",
+            "raise-ram-rod-f",
+            "raise-ram-rod-b",
+            "feed-cylinder",
+            "head-chuck",
+            "drill-string",
+            "drill-rod-0-0",
+            "drill-rod-0-1",
+            "drill-rod-0-2",
+            "drill-rod-0-3",
+            "drill-rod-0-4",
+            "drill-rod-0-5",
+            "drill-rod-1-0",
+            "drill-rod-1-1",
+            "drill-rod-1-2",
+            "drill-rod-1-3",
+            "drill-rod-1-4",
+            "drill-rod-2-0",
+            "drill-rod-2-1",
+            "drill-rod-2-2",
+            "drill-rod-2-3"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "gauge-0",
+          "color": "#e9ece8",
+          "parts": [
+            "gauge-0",
+            "gauge-1",
+            "gauge-2",
+            "gauge-3"
+          ]
+        },
+        {
+          "name": "lever-0",
+          "color": "#c0392b",
+          "parts": [
+            "lever-0",
+            "lever-1",
+            "lever-2",
+            "lever-3",
+            "lever-4",
+            "water-pump"
+          ]
+        },
+        {
+          "name": "head-hose-a",
+          "color": "#1f2224",
+          "parts": [
+            "head-hose-a",
+            "head-hose-b",
+            "wireline",
+            "water-hose"
+          ]
+        },
+        {
+          "name": "drill-pad",
+          "color": "#a6a196",
+          "parts": [
+            "drill-pad"
+          ]
+        },
+        {
+          "name": "mud",
+          "color": "#6f6252",
+          "parts": [
+            "mud"
+          ]
+        },
+        {
+          "name": "coreTray",
+          "color": "#b88a55",
+          "parts": [
+            "core-tray-0",
+            "core-tray-1",
+            "core-tray-2"
+          ],
+          "param": "coreTray"
+        },
+        {
+          "name": "core-0-0",
+          "color": "#7d7a72",
+          "parts": [
+            "core-0-0",
+            "core-0-1",
+            "core-0-2",
+            "core-0-3",
+            "core-0-4",
+            "core-1-0",
+            "core-1-1",
+            "core-1-2",
+            "core-1-3",
+            "core-1-4",
+            "core-2-0",
+            "core-2-1",
+            "core-2-2",
+            "core-2-3",
+            "core-2-4"
+          ]
         }
       ]
     },
@@ -178904,16 +179076,18 @@
       "id": "mine-skip",
       "kit": "mining",
       "title": "Mine skip conveyance",
-      "description": "Compact ore skip with reinforced side walls, guide rails, a top bail, and a discharge gate. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Bottom-dump shaft skip at about real size: 7 m open-topped vessel with stiffening bands and a floor sloping to a hinged front dump door with cam roller, manganese wear liners on the rim, bridle with side stiles, crosshead and transom, guide shoes and rollers on two steel shaft guides tied to buntons, cappel socket and head rope, landing keps on a concrete station floor. Material controls: skip body coating, bridle and guide steel, manganese wear liners, ore, plus a gate choice (loaded with the door shut, or dumping with the door open and ore pouring onto a pile). weathered, highVisibility and blueHoist presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
+        "shaft hoisting",
+        "mine skip",
+        "hoist conveyance",
+        "headframe",
         "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground mining",
+        "shaft"
       ],
       "compat": [
         "mining",
@@ -178924,8 +179098,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-skip.kcad.ts",
       "preview": "/assets/mining-mine-skip.png",
-      "sourceSha256": "b9d6b7399095fcbcf0db66577b52547be1037e48ae302dd6821c3a6c0ae581d1",
-      "triangleBudget": 1800,
+      "sourceSha256": "3adc6876caaae1e111165e47ca36d470494411f1d124479eac606b465020cc96",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -178939,59 +179113,178 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#a89365",
-          "label": "Coated equipment steel"
+          "default": "#c9a227",
+          "label": "Skip body coating"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#4f5b62",
+          "label": "Bridle and guide steel"
+        },
+        {
+          "name": "manganeseSteel",
+          "type": "color",
+          "default": "#8a8f8c",
+          "label": "Manganese wear liners"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#8c7c6a",
+          "label": "Ore"
+        },
+        {
+          "name": "gate",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Skip state",
+          "choices": [
+            "loaded",
+            "dumping"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e"
+          "coatedSteel": "#8a7a55",
+          "structuralSteel": "#666a66",
+          "manganeseSteel": "#77706a",
+          "ore": "#7d7062"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca"
+          "structuralSteel": "#465159",
+          "manganeseSteel": "#9aa09c",
+          "ore": "#a99b88"
+        },
+        "blueHoist": {
+          "coatedSteel": "#2f6f9e",
+          "structuralSteel": "#3b4248",
+          "manganeseSteel": "#b5bab6",
+          "ore": "#6f4a3a"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1490,
         "sizeM": [
-          0.595,
-          0.69,
-          0.4575
+          5.2,
+          16,
+          5.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#a89365",
+          "name": "station-floor",
+          "color": "#a6a196",
           "parts": [
-            "floor",
-            "side-left",
-            "side-right",
-            "front-wall",
-            "back-wall",
-            "guide-left",
-            "guide-right",
-            "gate"
+            "station-floor"
+          ]
+        },
+        {
+          "name": "floor-edge-stripe",
+          "color": "#e8c21a",
+          "parts": [
+            "floor-edge-stripe",
+            "cappel",
+            "guide-roller-l-1200-f",
+            "guide-roller-l-1200-b",
+            "guide-roller-l-10200-f",
+            "guide-roller-l-10200-b",
+            "guide-roller-r-1200-f",
+            "guide-roller-r-1200-b",
+            "guide-roller-r-10200-f",
+            "guide-roller-r-10200-b",
+            "landing-kep-l",
+            "landing-kep-r"
+          ]
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#c9a227",
+          "parts": [
+            "vessel",
+            "dump-door"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "structuralSteel",
+          "color": "#4f5b62",
           "parts": [
-            "lifting-pin"
+            "stiffening-band-3300",
+            "stiffening-band-4700",
+            "stiffening-band-6100",
+            "stiffening-band-7500",
+            "door-ribs",
+            "door-hinge",
+            "cam-arm",
+            "stile-l",
+            "stile-stay-l",
+            "stile-stay-rear-l",
+            "stile-r",
+            "stile-stay-r",
+            "stile-stay-rear-r",
+            "crosshead",
+            "transom",
+            "guide-l",
+            "bunton-bracket-l-3500",
+            "bunton-bracket-l-7500",
+            "bunton-bracket-l-11500",
+            "bunton-bracket-l-15000",
+            "guide-r",
+            "bunton-bracket-r-3500",
+            "bunton-bracket-r-7500",
+            "bunton-bracket-r-11500",
+            "bunton-bracket-r-15000",
+            "bunton-3500",
+            "bunton-7500",
+            "bunton-11500",
+            "bunton-15000"
           ],
-          "param": "stainlessSteel"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "manganeseSteel",
+          "color": "#8a8f8c",
+          "parts": [
+            "rim-liner",
+            "door-sill",
+            "suspension-link-l",
+            "suspension-link-r"
+          ],
+          "param": "manganeseSteel"
+        },
+        {
+          "name": "cam-roller",
+          "color": "#26292b",
+          "parts": [
+            "cam-roller",
+            "guide-shoe-l-1200",
+            "guide-shoe-l-10200",
+            "guide-shoe-r-1200",
+            "guide-shoe-r-10200"
+          ]
+        },
+        {
+          "name": "ore",
+          "color": "#8c7c6a",
+          "parts": [
+            "ore-load",
+            "ore-lump-0",
+            "ore-lump-1",
+            "ore-lump-2"
+          ],
+          "param": "ore"
+        },
+        {
+          "name": "head-rope",
+          "color": "#3a3c3d",
+          "parts": [
+            "head-rope"
+          ]
         }
       ]
     },
@@ -179793,16 +180086,18 @@
       "id": "radial-stacker",
       "kit": "mining",
       "title": "Radial stacker conveyor",
-      "description": "Mobile radial stacker with long trussed boom, wheeled pivot base, feed hopper, and discharge hood. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
+      "description": "Pivoting radial stacker at about real size: 30 m trussed boom with chords, verticals and diagonals, troughed belt carrying a ridge of ore up to a head pulley under a discharge hood with drive gearbox and motor, side walkway with handrail, feed hopper and skirt board over the tail pulley on a pinned pivot base, wheeled undercarriage with A-frame legs, lift ram and tyres aligned to the swing arc, and a conical stockpile under the discharge. Material controls: boom coating, undercarriage and walkway steel, belt and tyre rubber, stockpile ore, plus a boom angle choice (10, 14, 18 degrees) that resizes the pile. weathered, highVisibility and ironOre presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
         "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "radial stacker",
+        "conveyor",
+        "stockpile",
+        "bulk materials",
+        "aggregate"
       ],
       "compat": [
         "mining",
@@ -179813,8 +180108,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/radial-stacker.kcad.ts",
       "preview": "/assets/mining-radial-stacker.png",
-      "sourceSha256": "bd96f9f6b9ce9aeffc6d0dc572f5a46ec62409a5226ef2b4373471d63202bb62",
-      "triangleBudget": 1800,
+      "sourceSha256": "31212034973fd618f1212342fa3301be9d563393399fde647387d61f39ee1a5b",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -179828,90 +180123,234 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#b98434",
-          "label": "Coated equipment steel"
+          "default": "#e0a526",
+          "label": "Boom truss coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
           "default": "#566168",
-          "label": "Structural steel"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Undercarriage and walkway steel"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292d2f",
-          "label": "Rubber"
+          "label": "Belt and tyre rubber"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#9a8a78",
+          "label": "Stockpile ore"
+        },
+        {
+          "name": "boomAngle",
+          "type": "choice",
+          "default": "14",
+          "label": "Boom angle (degrees)",
+          "choices": [
+            "10",
+            "14",
+            "18"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#8d7d58",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e",
-          "rubber": "#393a38"
+          "rubber": "#393a38",
+          "ore": "#857868"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca",
-          "rubber": "#24282a"
+          "rubber": "#24282a",
+          "ore": "#a99b88"
+        },
+        "ironOre": {
+          "coatedSteel": "#2f6f9e",
+          "structuralSteel": "#4f5b62",
+          "rubber": "#1f2224",
+          "ore": "#7a4532"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 2324,
         "sizeM": [
-          1.75,
-          0.75,
-          0.75
+          37.130265,
+          9.679699,
+          12.426724
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "coatedSteel",
+          "color": "#e0a526",
           "parts": [
-            "pivot-base",
-            "boom-left-truss",
-            "boom-right-truss",
-            "support-leg"
+            "top-chord-f",
+            "bottom-chord-f",
+            "vertical-f-0",
+            "diagonal-f-0",
+            "vertical-f-1",
+            "diagonal-f-1",
+            "vertical-f-2",
+            "diagonal-f-2",
+            "vertical-f-3",
+            "diagonal-f-3",
+            "vertical-f-4",
+            "diagonal-f-4",
+            "vertical-f-5",
+            "diagonal-f-5",
+            "vertical-f-6",
+            "diagonal-f-6",
+            "vertical-f-7",
+            "diagonal-f-7",
+            "vertical-f-8",
+            "diagonal-f-8",
+            "vertical-f-9",
+            "diagonal-f-9",
+            "vertical-f-10",
+            "diagonal-f-10",
+            "vertical-f-11",
+            "top-chord-b",
+            "bottom-chord-b",
+            "vertical-b-0",
+            "diagonal-b-0",
+            "vertical-b-1",
+            "diagonal-b-1",
+            "vertical-b-2",
+            "diagonal-b-2",
+            "vertical-b-3",
+            "diagonal-b-3",
+            "vertical-b-4",
+            "diagonal-b-4",
+            "vertical-b-5",
+            "diagonal-b-5",
+            "vertical-b-6",
+            "diagonal-b-6",
+            "vertical-b-7",
+            "diagonal-b-7",
+            "vertical-b-8",
+            "diagonal-b-8",
+            "vertical-b-9",
+            "diagonal-b-9",
+            "vertical-b-10",
+            "diagonal-b-10",
+            "vertical-b-11",
+            "tail-end-frame",
+            "discharge-hood",
+            "feed-hopper",
+            "skirt-board-f",
+            "skirt-board-b"
           ],
-          "param": "structuralSteel"
+          "param": "coatedSteel"
         },
         {
           "name": "rubber",
           "color": "#292d2f",
           "parts": [
-            "left-wheel",
-            "right-wheel",
-            "boom-belt"
+            "belt-centre",
+            "belt-wing-f",
+            "belt-wing-b",
+            "tyre-f-a",
+            "tyre-f-b",
+            "tyre-b-a",
+            "tyre-b-b"
           ],
           "param": "rubber"
         },
         {
-          "name": "coatedSteel",
-          "color": "#b98434",
+          "name": "ore",
+          "color": "#9a8a78",
           "parts": [
-            "feed-hopper"
+            "ore-ridge",
+            "hopper-ore",
+            "stockpile",
+            "ore-stream"
           ],
-          "param": "coatedSteel"
+          "param": "ore"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "discharge-hood",
-            "pivot-bearing"
+            "idler-frame-1500",
+            "idler-frame-4500",
+            "idler-frame-7500",
+            "idler-frame-10500",
+            "idler-frame-13500",
+            "idler-frame-16500",
+            "idler-frame-19500",
+            "idler-frame-22500",
+            "idler-frame-25500",
+            "idler-frame-28500",
+            "head-pulley",
+            "head-gearbox",
+            "head-motor",
+            "walkway-deck",
+            "tail-pulley",
+            "pivot-pedestal",
+            "tail-leg-f",
+            "tail-leg-b",
+            "axle-beam",
+            "bogie-f",
+            "a-leg-f",
+            "bogie-b",
+            "a-leg-b",
+            "lift-ram-barrel"
           ],
-          "param": "stainlessSteel"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "hood-roof",
+          "color": "#e8c21a",
+          "parts": [
+            "hood-roof",
+            "handrail-top",
+            "handrail-mid",
+            "handrail-post-800",
+            "handrail-post-3300",
+            "handrail-post-5800",
+            "handrail-post-8300",
+            "handrail-post-10800",
+            "handrail-post-13300",
+            "handrail-post-15800",
+            "handrail-post-18300",
+            "handrail-post-20800",
+            "handrail-post-23300",
+            "handrail-post-25800",
+            "handrail-post-28300",
+            "pivot-pin"
+          ]
+        },
+        {
+          "name": "motor-fan-cowl",
+          "color": "#26292b",
+          "parts": [
+            "motor-fan-cowl"
+          ]
+        },
+        {
+          "name": "pivot-pad",
+          "color": "#a6a196",
+          "parts": [
+            "pivot-pad"
+          ]
+        },
+        {
+          "name": "rim-f-a",
+          "color": "#c9cdc8",
+          "parts": [
+            "rim-f-a",
+            "rim-f-b",
+            "rim-b-a",
+            "rim-b-b",
+            "lift-ram-rod"
+          ]
         }
       ]
     },
@@ -181583,16 +182022,18 @@
       "id": "spiral-concentrator",
       "kit": "mining",
       "title": "Spiral concentrator bank",
-      "description": "Gravity separation bank with support column, stacked spiral trays, feed box, and concentrate launders. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Bank of gravity spiral concentrators at about real size: helical fibreglass troughs winding four turns down round central columns, slurry spread across each trough with a dark heavy-mineral band on the inner edge, a feed box at the top of each spiral fed by hoses from a round feed distributor on the top beam, product splitter boxes at the foot with concentrate, middlings and tailings hoses into three launders, and a steel bay frame on a concrete plinth. Material controls: trough fibreglass, frame steel, slurry, heavy-mineral concentrate, plus a spiral count choice (2, 3, 4). weathered, highVisibility and ilmeniteSand presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "gravity separation",
+        "spiral concentrator",
+        "mineral sands",
+        "concentrator",
+        "slurry",
+        "launder"
       ],
       "compat": [
         "mining",
@@ -181603,8 +182044,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/spiral-concentrator.kcad.ts",
       "preview": "/assets/mining-spiral-concentrator.png",
-      "sourceSha256": "8ad35c160eacbfc1ddc09b99076a65351004f081e612edddae114a954a423c0a",
-      "triangleBudget": 1800,
+      "sourceSha256": "6d4280d9a4fa1867a97d020c2d61d1ffb4ba8e205d11175cb318eb5fe7cda175",
+      "triangleBudget": 8400,
       "params": [
         {
           "name": "scale",
@@ -181618,77 +182059,189 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a897",
-          "label": "Coated equipment steel"
+          "default": "#dfe3dc",
+          "label": "Trough fibreglass"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#3f6f96",
+          "label": "Frame steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "slurry",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#b49a74",
+          "label": "Slurry"
+        },
+        {
+          "name": "concentrate",
+          "type": "color",
+          "default": "#2b2a2c",
+          "label": "Heavy-mineral concentrate"
+        },
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "3",
+          "label": "Spirals in bank",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#b9b5a6",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "slurry": "#8e7c66",
+          "concentrate": "#3a3634"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "coatedSteel": "#f0f0ea",
+          "structuralSteel": "#e48a1e",
+          "slurry": "#c2ab84",
+          "concentrate": "#1f2022"
+        },
+        "ilmeniteSand": {
+          "coatedSteel": "#d8dde4",
+          "structuralSteel": "#2f5a8a",
+          "slurry": "#d6c29a",
+          "concentrate": "#4a2f2a"
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 6190,
         "sizeM": [
-          0.9,
-          1.17,
-          0.66
+          5.9,
+          5.41,
+          2.625
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "plinth",
+          "color": "#a6a196",
           "parts": [
-            "base-skid"
+            "plinth"
+          ]
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#3f6f96",
+          "parts": [
+            "frame-post-0-f",
+            "frame-post-0-b",
+            "frame-post-1-b",
+            "frame-post-2-b",
+            "frame-post-3-f",
+            "frame-post-3-b",
+            "top-beam-f",
+            "top-beam-b",
+            "base-beam",
+            "cross-tie",
+            "column-0",
+            "column-1",
+            "column-2",
+            "distributor-deck",
+            "distributor-feed-pipe",
+            "distributor-feed-bend",
+            "top-beam-cap-f",
+            "top-beam-cap-b",
+            "launder-0",
+            "launder-leg-0-l",
+            "launder-leg-0-r",
+            "launder-1",
+            "launder-leg-1-l",
+            "launder-leg-1-r",
+            "launder-2",
+            "launder-leg-2-l",
+            "launder-leg-2-r"
           ],
           "param": "structuralSteel"
         },
         {
           "name": "coatedSteel",
-          "color": "#65a897",
+          "color": "#dfe3dc",
           "parts": [
-            "central-column",
-            "spiral-tray-0",
-            "spiral-tray-1",
-            "spiral-tray-2",
-            "spiral-tray-3",
-            "spiral-tray-4",
-            "spiral-tray-5",
-            "feed-box",
-            "concentrate-launder"
+            "trough-0",
+            "feed-box-0",
+            "splitter-box-0",
+            "trough-1",
+            "feed-box-1",
+            "splitter-box-1",
+            "trough-2",
+            "feed-box-2",
+            "splitter-box-2",
+            "distributor-pot"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "slurry",
+          "color": "#b49a74",
           "parts": [
-            "product-spout-a",
-            "product-spout-b"
+            "slurry-0",
+            "feed-slurry-0",
+            "slurry-1",
+            "feed-slurry-1",
+            "slurry-2",
+            "feed-slurry-2",
+            "launder-flow-2"
           ],
-          "param": "stainlessSteel"
+          "param": "slurry"
+        },
+        {
+          "name": "concentrate",
+          "color": "#2b2a2c",
+          "parts": [
+            "concentrate-band-0",
+            "splitter-blades-0",
+            "concentrate-band-1",
+            "splitter-blades-1",
+            "concentrate-band-2",
+            "splitter-blades-2",
+            "launder-flow-0"
+          ],
+          "param": "concentrate"
+        },
+        {
+          "name": "feed-hose-0",
+          "color": "#26292b",
+          "parts": [
+            "feed-hose-0",
+            "product-hose-0-1",
+            "product-hose-0-2",
+            "feed-hose-1",
+            "product-hose-1-1",
+            "product-hose-1-2",
+            "feed-hose-2",
+            "product-hose-2-1",
+            "product-hose-2-2",
+            "distributor-hose-0",
+            "distributor-hose-1",
+            "distributor-hose-2"
+          ]
+        },
+        {
+          "name": "product-hose-0-0",
+          "color": "#1f2224",
+          "parts": [
+            "product-hose-0-0",
+            "product-hose-1-0",
+            "product-hose-2-0"
+          ]
+        },
+        {
+          "name": "launder-flow-1",
+          "color": "#8e7a5c",
+          "parts": [
+            "launder-flow-1"
+          ]
         }
       ]
     },
@@ -182616,16 +183169,18 @@
       "id": "trommel-screen",
       "kit": "mining",
       "title": "Rotary trommel screen",
-      "description": "Trommel screening unit with perforated-look drum, support frame, feed box, and drive enclosure. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, spray-water bar with drop nozzles, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
         "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "trommel",
+        "rotary screen",
+        "screening",
+        "gravel",
+        "washing plant"
       ],
       "compat": [
         "mining",
@@ -182636,8 +183191,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/trommel-screen.kcad.ts",
       "preview": "/assets/mining-trommel-screen.png",
-      "sourceSha256": "f78843ab3c3be97f659680c2010569a36141d8d8990801e88def33ec7532f70e",
-      "triangleBudget": 1800,
+      "sourceSha256": "acec3569dc0ef8ffa8532cd4a9ba577ebda92920ab836006ee6ddfcaa7123c5f",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -182651,74 +183206,193 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#a89a65",
-          "label": "Coated equipment steel"
+          "default": "#2e7d4f",
+          "label": "Drum and hopper coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
           "default": "#566168",
-          "label": "Structural steel"
+          "label": "Frame steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#7c8589",
+          "label": "Screen panels"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#9c8d7a",
+          "label": "Ore and fines"
+        },
+        {
+          "name": "mounting",
+          "type": "choice",
+          "default": "fixed",
+          "label": "Mounting",
+          "choices": [
+            "fixed",
+            "mobile"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#5f6d5f",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "stainlessSteel": "#6b6f6c",
+          "ore": "#857868"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "stainlessSteel": "#8d969a",
+          "ore": "#a99b88"
+        },
+        "gravelWash": {
+          "coatedSteel": "#2f6f9e",
+          "structuralSteel": "#4f5b62",
+          "stainlessSteel": "#b5c0c0",
+          "ore": "#b9a789"
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 2160,
         "sizeM": [
-          1.33,
-          0.86,
-          0.84
+          14.5,
+          5.608729,
+          12.314457
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "coatedSteel",
+          "color": "#2e7d4f",
           "parts": [
-            "base-skid",
-            "support-left",
-            "support-right",
-            "drive-guard"
+            "feed-section",
+            "feed-end-plate",
+            "stiffening-ring--1900",
+            "stiffening-ring--700",
+            "stiffening-ring-500",
+            "stiffening-ring-1700",
+            "strake-0",
+            "strake-1",
+            "strake-2",
+            "strake-3",
+            "strake-4",
+            "strake-5",
+            "strake-6",
+            "strake-7",
+            "strake-8",
+            "discharge-lip",
+            "feed-chute",
+            "feed-hopper",
+            "undersize-hopper",
+            "oversize-chute"
           ],
-          "param": "structuralSteel"
+          "param": "coatedSteel"
         },
         {
           "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "color": "#7c8589",
           "parts": [
-            "drum-front-ring",
-            "drum-body",
-            "drum-rear-ring"
+            "screen-panels",
+            "spray-bar",
+            "spray-nozzle--2200",
+            "spray-nozzle--1200",
+            "spray-nozzle--200",
+            "spray-nozzle-800",
+            "spray-nozzle-1800",
+            "spray-nozzle-2800"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#a89a65",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "feed-box",
-            "oversize-chute"
+            "riding-tyre-feed",
+            "riding-tyre-discharge",
+            "trunnion-roller-feed-f",
+            "trunnion-roller-feed-b",
+            "roller-deck-feed",
+            "trunnion-roller-discharge-f",
+            "trunnion-roller-discharge-b",
+            "roller-deck-discharge",
+            "drive-motor",
+            "hopper-leg-0",
+            "hopper-leg-1",
+            "hopper-leg-2",
+            "hopper-leg-3",
+            "cross-conveyor-frame",
+            "frame-leg-feed-f",
+            "frame-leg-feed-b",
+            "frame-leg-discharge-f",
+            "frame-leg-discharge-b",
+            "frame-tie-f",
+            "frame-tie-b"
           ],
-          "param": "coatedSteel"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "roller-bearing-feed-f",
+          "color": "#26292b",
+          "parts": [
+            "roller-bearing-feed-f",
+            "roller-bearing-feed-b",
+            "roller-bearing-discharge-f",
+            "roller-bearing-discharge-b",
+            "drive-motor-cowl"
+          ]
+        },
+        {
+          "name": "drive-gearbox",
+          "color": "#e8c21a",
+          "parts": [
+            "drive-gearbox"
+          ]
+        },
+        {
+          "name": "spray-supply",
+          "color": "#9fc6d8",
+          "parts": [
+            "spray-supply"
+          ]
+        },
+        {
+          "name": "ore",
+          "color": "#9c8d7a",
+          "parts": [
+            "hopper-ore",
+            "fines-on-belt",
+            "fines-pile",
+            "oversize-pile",
+            "oversize-rock-0",
+            "oversize-rock-1",
+            "oversize-rock-2",
+            "oversize-rock-3"
+          ],
+          "param": "ore"
+        },
+        {
+          "name": "cross-conveyor-belt",
+          "color": "#1f2224",
+          "parts": [
+            "cross-conveyor-belt"
+          ]
+        },
+        {
+          "name": "plinth-feed",
+          "color": "#a6a196",
+          "parts": [
+            "plinth-feed",
+            "plinth-discharge",
+            "hopper-plinth"
+          ]
         }
       ]
     },
