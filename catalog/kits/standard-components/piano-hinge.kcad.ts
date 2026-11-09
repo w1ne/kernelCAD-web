@@ -35,7 +35,7 @@ a.part('left-leaf',left.color(steel));
 a.part('right-leaf',right.color(steel));
 for (let i=0;i<10;i++) {
   const x=(-45+i*9)*s;
-  let knuckle=cylinder(9*s,4*s,12).subtract(cylinder(11*s,2.2*s,12).translate(0,0,-s));
+  const knuckle=cylinder(9*s,4*s,12).subtract(cylinder(11*s,2.2*s,12).translate(0,0,-s));
   a.part(`hinge-knuckle-${i}`,knuckle.rotateY(90).translate(x,0,5*s).color(steel));
 }
 a.part('hinge-pin',cylinder(90*s,2*s,16).rotateY(90).translate(-45*s,0,5*s).color(stainless));

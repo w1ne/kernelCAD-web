@@ -252223,7 +252223,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
       "preview": "/assets/standard-components-caster-wheel.png",
-      "sourceSha256": "564f3a088dd95ff0c21d3118db38fb2b5c86af7ee4721fa4c674f3c8345b5aa9",
+      "sourceSha256": "a4ce57050b2d81e1a25af52667010c87e06318eca7736cb377dcf194e6efb79e",
       "triangleBudget": 520,
       "params": [
         {
@@ -252277,10 +252277,10 @@
         "triangles": 428,
         "sizeM": [
           0.05,
-          0.049,
+          0.051,
           0.038
         ],
-        "minUpM": 0.002,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [
@@ -253568,7 +253568,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
       "preview": "/assets/standard-components-jaw-coupling.png",
-      "sourceSha256": "ef1c1c854389e8590d2388f6017fceeef47ac9d763771960c8bb1560f70ec7f4",
+      "sourceSha256": "ace285ea7862a81465665e856227d92eeaee46d50cf4f2f887a2971f7a3731d2",
       "triangleBudget": 520,
       "params": [
         {
@@ -254225,7 +254225,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
       "preview": "/assets/standard-components-piano-hinge.png",
-      "sourceSha256": "a910b874476e4a3ad8e81797cd6e10ea93df70f5720420dcaa7fa51b3c20effe",
+      "sourceSha256": "4cacc597acb24b5f89ee37f62921688020f5b4e753f4afd578d98d75028e2a0d",
       "triangleBudget": 1550,
       "params": [
         {
@@ -254328,7 +254328,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
       "preview": "/assets/standard-components-pillow-block-housing.png",
-      "sourceSha256": "877539961ff296f86585fe54e14b67e8c8ff0d381e9ed213f4a4a05f8103599e",
+      "sourceSha256": "8dba052a2df41e0247203a1310f0f2d648cd8381ec0e8a68710b6464b5881bc2",
       "triangleBudget": 480,
       "params": [
         {

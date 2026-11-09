@@ -26,8 +26,8 @@ const block = (x: number, y: number, z: number, w: number, d: number, h: number)
 const a = assembly('jaw-coupling');
 // Two interleaved three-jaw hubs and a six-lobed elastomer spider.
 // The jaws are visible geometry; the assembly remains an illustrative prop.
-let hubA=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
-let hubB=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+const hubA=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+const hubB=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
 a.part('drive-hub',hubA.color(steel));
 a.part('driven-hub',hubB.translate(0,0,24*s).color(steel));
 for (let i=0;i<3;i++) {
