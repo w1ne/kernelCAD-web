@@ -72,6 +72,25 @@ return rotor;` },
     expect(result.drawingReport?.visualQa?.issues.filter(issue => issue.severity === 'error')).toEqual([]);
   }, 60_000);
 
+  it('rejects a seeded curved-path overflow in a real exported OCCT sheet', async () => {
+    const source = await runAndExport({
+      code: 'return box(80,50,12);', fileName: 'fixture.kcad.ts',
+      format: 'svg-drawing', options: { format: 'svg-drawing', sheet: 'a4',
+        autoAnnotate: false, date: '2026-11-09' },
+    });
+    const cleanSvg = new TextDecoder().decode(source.bytes);
+    const faultySvg = cleanSvg.replace(/(<g id="view-front"[^>]*>)/,
+      '$1<path d="M 15 30 C 90 50 345 60 350 70" stroke="#d22"/>');
+    expect(faultySvg).not.toBe(cleanSvg);
+    const baseline = analyzeExportedDrawingSvg(cleanSvg,
+      { drawingReport: source.drawingReport });
+    const faulty = analyzeExportedDrawingSvg(faultySvg,
+      { drawingReport: source.drawingReport });
+    expect(baseline.issues.map(i => i.code)).not.toContain('view-overflow');
+    expect(faulty.issues.map(i => i.code)).toContain('view-overflow');
+    expect(faulty.status).toBe('needs-review');
+  }, 60_000);
+
   it('detects serialized collisions in real exported SVG even if every placer flag is cleared', async () => {
     // A thirteenth note returns to the same leader direction as the first:
     // identical anchor/position but two different authored annotation IDs.

@@ -128,6 +128,39 @@ describe('independent review regressions for drawing QA', () => {
     expect(qa.issues.map(i => i.code)).not.toContain('annotation-collision');
   });
 
+  it('checks cubic view curves, not just M/L endpoints', () => {
+    const svg = fixture('<g data-view="front"><path d="M 20 20 C 80 30 340 45 350 50"/></g>');
+    const qa = analyzeExportedDrawingSvg(svg, { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('view-overflow');
+  });
+
+  it('checks parent transforms on projected view geometry', () => {
+    const svg = fixture('<g data-view="front" transform="translate(240 0)">' +
+      '<path d="M 20 20 L 90 80"/></g>');
+    const qa = analyzeExportedDrawingSvg(svg, { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('view-overflow');
+  });
+
+  it('detects dimension overflow from a quadratic path command', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g id="dimensions"><path d="M 20 10 Q 180 40 340 20"/></g>'), { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('dimension-overflow');
+  });
+
+  it('fails closed when a visible path command cannot be measured', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g data-view="front"><path d="M 20 20 R 30 30"/></g>'), { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('exported-sheet-invalid');
+    expect(qa.status).toBe('needs-review');
+  });
+
+  it('does not reject a valid Bézier whose control points exceed the page but curve stays inside', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g data-view="front"><path d="M 20 100 C 90 350 190 -150 270 100"/></g>'),
+    { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).not.toContain('view-overflow');
+  });
+
   it('does not claim dimensional completeness when no critical review was declared (P1)', () => {
     const qa = analyzeExportedDrawingSvg(fixture(''), { requestedViews: ['front'] });
     expect(qa.status).toBe('incomplete');
