@@ -129785,13 +129785,18 @@
       "id": "greenhouse-fogger-header",
       "kit": "hydroponics",
       "title": "Greenhouse fogger header",
-      "description": "Suspended misting line with repeated nozzle drops, end feed and a simple support hanger. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "High-pressure greenhouse fog line at about real size: stainless line hung from a support wire between two posts, nozzle drops with brass anti-drip valves and four-way or single nozzle heads, fog plumes, and a floor-standing high-pressure pump unit with motor, pump head, cartridge filter, gauge and braided hose riser. Material controls: posts and wire, high-pressure line, nozzle brass, pump unit and fog, plus nozzle head (cross or single) and fogging (on or off). stainless, blackNozzle, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "fogger",
+        "fog line",
+        "misting",
+        "high pressure",
+        "humidification",
+        "evaporative cooling",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -129804,8 +129809,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-fogger-header.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-fogger-header.png",
-      "sourceSha256": "04e57e14af49803cc3b7b52cf5528237934dc210a77f60b4c97286538eb00acd",
-      "triangleBudget": 1800,
+      "sourceSha256": "8641841b5f526b81ae3f4583725a5a606684ac87eb7a14140bd2bed251ca3ebc",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -129817,78 +129822,255 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "posts",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#9aa3a6",
+          "label": "Posts and support wire (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "highPressureLine",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#d4d8da",
+          "label": "High-pressure line (stainless)"
         },
         {
-          "name": "polymer",
+          "name": "nozzleBrass",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#c49a3c",
+          "label": "Anti-drip valves and nozzles (brass)"
+        },
+        {
+          "name": "pumpUnit",
+          "type": "color",
+          "default": "#2e6aa6",
+          "label": "Pump unit (painted)"
+        },
+        {
+          "name": "fog",
+          "type": "color",
+          "default": "#eef3f5",
+          "label": "Fog plume"
+        },
+        {
+          "name": "nozzleHead",
+          "type": "choice",
+          "default": "cross",
+          "label": "Nozzle head",
+          "choices": [
+            "cross",
+            "single"
+          ]
+        },
+        {
+          "name": "fogging",
+          "type": "choice",
+          "default": "on",
+          "label": "Fogging",
+          "choices": [
+            "on",
+            "off"
+          ]
         }
       ],
       "presets": {
+        "stainless": {
+          "posts": "#9aa3a6",
+          "highPressureLine": "#d4d8da",
+          "nozzleBrass": "#c49a3c",
+          "pumpUnit": "#2e6aa6",
+          "fog": "#eef3f5"
+        },
+        "blackNozzle": {
+          "posts": "#8f979a",
+          "highPressureLine": "#c9cdcf",
+          "nozzleBrass": "#26282a",
+          "pumpUnit": "#c23b2b",
+          "fog": "#e8eef1"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+          "posts": "#7a7f7c",
+          "highPressureLine": "#a9aca6",
+          "nozzleBrass": "#8f7440",
+          "pumpUnit": "#4d6378",
+          "fog": "#dfe4e2"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+          "posts": "#e87832",
+          "highPressureLine": "#e3e5e6",
+          "nozzleBrass": "#f2c84b",
+          "pumpUnit": "#e8b21f",
+          "fog": "#f6f8f9"
         }
       },
       "stats": {
-        "triangles": 516,
+        "triangles": 4352,
         "sizeM": [
           2.02,
-          0.6,
-          0.072
+          2.372,
+          0.755
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "posts",
+          "color": "#9aa3a6",
           "parts": [
-            "header-rail",
-            "nozzle-1",
-            "nozzle-2",
-            "nozzle-3",
-            "nozzle-4",
-            "feed-riser"
+            "base--900",
+            "post--900",
+            "wire-anchor--900",
+            "base-900",
+            "post-900",
+            "wire-anchor-900",
+            "support-wire",
+            "hanger--600",
+            "hanger-0",
+            "hanger-600"
           ],
-          "param": "pvc"
+          "param": "posts"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "highPressureLine",
+          "color": "#d4d8da",
           "parts": [
-            "hanger-left",
-            "hanger-right",
-            "brace-left",
-            "brace-right"
+            "hp-line",
+            "tee-0",
+            "drop-0",
+            "tee-1",
+            "drop-1",
+            "tee-2",
+            "drop-2",
+            "tee-3",
+            "drop-3",
+            "tee-4",
+            "drop-4",
+            "tee-5",
+            "drop-5",
+            "pump-gauge-ring",
+            "hose-out",
+            "hose-run",
+            "hose-riser"
           ],
-          "param": "powderCoatedSteel"
+          "param": "highPressureLine"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "nozzleBrass",
+          "color": "#c49a3c",
           "parts": [
-            "end-cap"
+            "end-plug",
+            "valve-0",
+            "hub-0",
+            "arm-x-0",
+            "arm-y-0",
+            "tip-0--44-0",
+            "tip-0-44-0",
+            "tip-0-0--44",
+            "tip-0-0-44",
+            "valve-1",
+            "hub-1",
+            "arm-x-1",
+            "arm-y-1",
+            "tip-1--44-0",
+            "tip-1-44-0",
+            "tip-1-0--44",
+            "tip-1-0-44",
+            "valve-2",
+            "hub-2",
+            "arm-x-2",
+            "arm-y-2",
+            "tip-2--44-0",
+            "tip-2-44-0",
+            "tip-2-0--44",
+            "tip-2-0-44",
+            "valve-3",
+            "hub-3",
+            "arm-x-3",
+            "arm-y-3",
+            "tip-3--44-0",
+            "tip-3-44-0",
+            "tip-3-0--44",
+            "tip-3-0-44",
+            "valve-4",
+            "hub-4",
+            "arm-x-4",
+            "arm-y-4",
+            "tip-4--44-0",
+            "tip-4-44-0",
+            "tip-4-0--44",
+            "tip-4-0-44",
+            "valve-5",
+            "hub-5",
+            "arm-x-5",
+            "arm-y-5",
+            "tip-5--44-0",
+            "tip-5-44-0",
+            "tip-5-0--44",
+            "tip-5-0-44",
+            "pump-manifold",
+            "pump-gauge-stem",
+            "hose-elbow"
           ],
-          "param": "polymer"
+          "param": "nozzleBrass"
+        },
+        {
+          "name": "hanger-clip--600",
+          "color": "#3a3d40",
+          "parts": [
+            "hanger-clip--600",
+            "hanger-clip-0",
+            "hanger-clip-600",
+            "pump-skid"
+          ]
+        },
+        {
+          "name": "fog",
+          "color": "#eef3f5",
+          "parts": [
+            "plume-0",
+            "plume-1",
+            "plume-2",
+            "plume-3",
+            "plume-4",
+            "plume-5"
+          ],
+          "param": "fog"
+        },
+        {
+          "name": "pumpUnit",
+          "color": "#2e6aa6",
+          "parts": [
+            "pump-motor",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-cradle",
+            "motor-terminal",
+            "filter-cap"
+          ],
+          "param": "pumpUnit"
+        },
+        {
+          "name": "pump-head",
+          "color": "#b9bec1",
+          "parts": [
+            "pump-head"
+          ]
+        },
+        {
+          "name": "pump-gauge",
+          "color": "#e9ebe8",
+          "parts": [
+            "pump-gauge"
+          ]
+        },
+        {
+          "name": "filter-housing",
+          "color": "#dfe5e6",
+          "parts": [
+            "filter-housing"
+          ]
         }
       ]
     },
@@ -131761,13 +131943,18 @@
       "id": "irrigation-lateral-header",
       "kit": "hydroponics",
       "title": "Irrigation lateral header",
-      "description": "Drip irrigation header with parallel distribution bar, end cap and repeated emitter drops. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Drip irrigation lateral header at about real size: inlet train with ball valve, disc filter, pressure regulator and solenoid valve, PVC header on saddle stands, start connectors with mini lever valves, and black drip laterals with inline drippers and wet spots, ending in folded flush ends. Material controls: header PVC, drip line, valves and filter, plus lateral count (4, 6 or 8). standard, purpleReclaim, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "drip irrigation",
+        "lateral header",
+        "drip line",
+        "disc filter",
+        "pressure regulator",
+        "solenoid valve",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -131780,8 +131967,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/irrigation-lateral-header.kcad.ts",
       "preview": "/assets/hydroponics-irrigation-lateral-header.png",
-      "sourceSha256": "ad7d8f6bfd91be55f3fe3239c0371f3ae22f0955adf217ea8e57ca6ddcb8b766",
-      "triangleBudget": 1800,
+      "sourceSha256": "fe1555ccbc117814550182eb95feb8ae60fa92bc3ecb996b557602678c8180ec",
+      "triangleBudget": 6800,
       "params": [
         {
           "name": "scale",
@@ -131793,77 +131980,281 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "headerPvc",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e6e8e3",
+          "label": "Header and inlet pipe (PVC)"
         },
         {
-          "name": "pvc",
+          "name": "dripLine",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#202326",
+          "label": "Drip laterals (polyethylene)"
         },
         {
-          "name": "polymer",
+          "name": "valves",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2f6fa8",
+          "label": "Valve bodies"
+        },
+        {
+          "name": "filterHousing",
+          "type": "color",
+          "default": "#c8372d",
+          "label": "Disc filter housing"
+        },
+        {
+          "name": "laterals",
+          "type": "choice",
+          "default": "6",
+          "label": "Drip laterals",
+          "choices": [
+            "4",
+            "6",
+            "8"
+          ]
         }
       ],
       "presets": {
+        "standard": {
+          "headerPvc": "#e6e8e3",
+          "dripLine": "#202326",
+          "valves": "#2f6fa8",
+          "filterHousing": "#c8372d"
+        },
+        "purpleReclaim": {
+          "headerPvc": "#7b4d93",
+          "dripLine": "#2a2230",
+          "valves": "#5a3a6e",
+          "filterHousing": "#e0a32a"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+          "headerPvc": "#c8c6b8",
+          "dripLine": "#33302c",
+          "valves": "#4b6a84",
+          "filterHousing": "#93473d"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+          "headerPvc": "#f4f4ef",
+          "dripLine": "#1a1c1e",
+          "valves": "#e87832",
+          "filterHousing": "#f2c84b"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 5032,
         "sizeM": [
           1.75,
-          0.635,
-          0.415
+          0.316,
+          2.57
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "headerPvc",
+          "color": "#e6e8e3",
           "parts": [
-            "main-bar",
-            "end-cap"
+            "header",
+            "end-cap",
+            "inlet-elbow",
+            "inlet-pipe"
           ],
-          "param": "polymer"
+          "param": "headerPvc"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "stand-foot--680",
+          "color": "#8d9497",
           "parts": [
-            "front-mount",
-            "rear-mount"
-          ],
-          "param": "powderCoatedSteel"
+            "stand-foot--680",
+            "stand-post--680",
+            "stand-saddle--680",
+            "stand-clamp--680",
+            "stand-foot-0",
+            "stand-post-0",
+            "stand-saddle-0",
+            "stand-clamp-0",
+            "stand-foot-680",
+            "stand-post-680",
+            "stand-saddle-680",
+            "stand-clamp-680",
+            "filter-foot"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "valves",
+          "color": "#2f6fa8",
           "parts": [
-            "drop-rail",
-            "drop-left",
-            "drop-mid-left",
-            "drop-mid-right",
-            "drop-right",
-            "flush-valve"
+            "flush-valve",
+            "solenoid-body",
+            "regulator-cap",
+            "ball-valve",
+            "start-0",
+            "start-1",
+            "start-2",
+            "start-3",
+            "start-4",
+            "start-5"
           ],
-          "param": "pvc"
+          "param": "valves"
+        },
+        {
+          "name": "flush-handle",
+          "color": "#d23a2c",
+          "parts": [
+            "flush-handle",
+            "ball-valve-lever",
+            "mini-valve-0",
+            "mini-valve-1",
+            "mini-valve-2",
+            "mini-valve-3",
+            "mini-valve-4",
+            "mini-valve-5"
+          ]
+        },
+        {
+          "name": "solenoid-coil",
+          "color": "#222527",
+          "parts": [
+            "solenoid-coil",
+            "solenoid-cable"
+          ]
+        },
+        {
+          "name": "regulator",
+          "color": "#c9ccc7",
+          "parts": [
+            "regulator",
+            "ball-valve-stem"
+          ]
+        },
+        {
+          "name": "filterHousing",
+          "color": "#c8372d",
+          "parts": [
+            "filter-body",
+            "filter-cap"
+          ],
+          "param": "filterHousing"
+        },
+        {
+          "name": "filter-clamp",
+          "color": "#2a2c2e",
+          "parts": [
+            "filter-clamp",
+            "filter-drain",
+            "supply-coupling"
+          ]
+        },
+        {
+          "name": "dripLine",
+          "color": "#202326",
+          "parts": [
+            "riser-0",
+            "lateral-0",
+            "flush-end-0",
+            "riser-1",
+            "lateral-1",
+            "flush-end-1",
+            "riser-2",
+            "lateral-2",
+            "flush-end-2",
+            "riser-3",
+            "lateral-3",
+            "flush-end-3",
+            "riser-4",
+            "lateral-4",
+            "flush-end-4",
+            "riser-5",
+            "lateral-5",
+            "flush-end-5"
+          ],
+          "param": "dripLine"
+        },
+        {
+          "name": "dripper-0--140",
+          "color": "#6a3d8e",
+          "parts": [
+            "dripper-0--140",
+            "dripper-0-120",
+            "dripper-0-380",
+            "dripper-0-640",
+            "dripper-0-900",
+            "dripper-0-1160",
+            "dripper-1--140",
+            "dripper-1-120",
+            "dripper-1-380",
+            "dripper-1-640",
+            "dripper-1-900",
+            "dripper-1-1160",
+            "dripper-2--140",
+            "dripper-2-120",
+            "dripper-2-380",
+            "dripper-2-640",
+            "dripper-2-900",
+            "dripper-2-1160",
+            "dripper-3--140",
+            "dripper-3-120",
+            "dripper-3-380",
+            "dripper-3-640",
+            "dripper-3-900",
+            "dripper-3-1160",
+            "dripper-4--140",
+            "dripper-4-120",
+            "dripper-4-380",
+            "dripper-4-640",
+            "dripper-4-900",
+            "dripper-4-1160",
+            "dripper-5--140",
+            "dripper-5-120",
+            "dripper-5-380",
+            "dripper-5-640",
+            "dripper-5-900",
+            "dripper-5-1160"
+          ]
+        },
+        {
+          "name": "wet-0--140",
+          "color": "#5b4a3a",
+          "parts": [
+            "wet-0--140",
+            "wet-0-120",
+            "wet-0-380",
+            "wet-0-640",
+            "wet-0-900",
+            "wet-0-1160",
+            "wet-1--140",
+            "wet-1-120",
+            "wet-1-380",
+            "wet-1-640",
+            "wet-1-900",
+            "wet-1-1160",
+            "wet-2--140",
+            "wet-2-120",
+            "wet-2-380",
+            "wet-2-640",
+            "wet-2-900",
+            "wet-2-1160",
+            "wet-3--140",
+            "wet-3-120",
+            "wet-3-380",
+            "wet-3-640",
+            "wet-3-900",
+            "wet-3-1160",
+            "wet-4--140",
+            "wet-4-120",
+            "wet-4-380",
+            "wet-4-640",
+            "wet-4-900",
+            "wet-4-1160",
+            "wet-5--140",
+            "wet-5-120",
+            "wet-5-380",
+            "wet-5-640",
+            "wet-5-900",
+            "wet-5-1160"
+          ]
         }
       ]
     },
@@ -132687,13 +133078,19 @@
       "id": "nutrient-feed-manifold",
       "kit": "hydroponics",
       "title": "Nutrient feed manifold",
-      "description": "Header rail with five evenly spaced outlet branches, isolation blocks and a vertical supply riser. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
+      "description": "Fertigation zone manifold at about real size: grey PVC header on a galvanised strut frame, floor supply riser with check valve, pressure gauge, and a row of zone drops each with a true-union ball valve, clear rotameter flow meter with float, hose barb, floor hose and zone tag. Material controls: strut frame, header PVC, valve handles and zone hoses, plus zone count (3, 5 or 7). schedule80, whitePvc, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "nutrient manifold",
+        "fertigation",
+        "zone valves",
+        "ball valve",
+        "rotameter",
+        "flow meter",
+        "pressure gauge",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -132706,8 +133103,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-feed-manifold.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-feed-manifold.png",
-      "sourceSha256": "ff5c4aaa7fa208a9fa94961f52b9d3d92b43fd5d71e27ef9922a0eac4b9901ba",
-      "triangleBudget": 1800,
+      "sourceSha256": "2707977b138511938acbca9cd403c738db279a4dac55685e1dea0bfc46dc7ef3",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -132719,67 +133116,273 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "strutFrame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a7aeb1",
+          "label": "Strut frame (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "headerPvc",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#7f878c",
+          "label": "Header and drops (PVC)"
+        },
+        {
+          "name": "valveHandles",
+          "type": "color",
+          "default": "#d23a2c",
+          "label": "Valve handles"
+        },
+        {
+          "name": "zoneHoses",
+          "type": "color",
+          "default": "#2f5d3a",
+          "label": "Zone hoses"
+        },
+        {
+          "name": "zones",
+          "type": "choice",
+          "default": "5",
+          "label": "Zones",
+          "choices": [
+            "3",
+            "5",
+            "7"
+          ]
         }
       ],
       "presets": {
+        "schedule80": {
+          "strutFrame": "#a7aeb1",
+          "headerPvc": "#7f878c",
+          "valveHandles": "#d23a2c",
+          "zoneHoses": "#2f5d3a"
+        },
+        "whitePvc": {
+          "strutFrame": "#b8bec0",
+          "headerPvc": "#ecedea",
+          "valveHandles": "#2f6fa8",
+          "zoneHoses": "#1f2225"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae"
+          "strutFrame": "#828680",
+          "headerPvc": "#6c7172",
+          "valveHandles": "#9a4a3c",
+          "zoneHoses": "#3d4a3a"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789"
+          "strutFrame": "#e87832",
+          "headerPvc": "#8a9196",
+          "valveHandles": "#f2c84b",
+          "zoneHoses": "#2a6fb0"
         }
       },
       "stats": {
-        "triangles": 564,
+        "triangles": 3152,
         "sizeM": [
-          1.85,
-          0.59,
-          0.12
+          2.33,
+          1.46,
+          0.906
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "strutFrame",
+          "color": "#a7aeb1",
           "parts": [
-            "header",
-            "valve-left",
-            "valve-mid-left",
-            "valve-mid",
-            "valve-mid-right",
-            "valve-right",
-            "branch-1",
-            "branch-2",
-            "branch-3",
-            "branch-4",
-            "branch-5",
-            "supply-riser"
+            "foot--1000",
+            "upright--1000",
+            "foot-1000",
+            "upright-1000",
+            "strut-1079",
+            "strut-700",
+            "clamp--860",
+            "clamp--300",
+            "clamp-300",
+            "clamp-860"
           ],
-          "param": "pvc"
+          "param": "strutFrame"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "headerPvc",
+          "color": "#7f878c",
           "parts": [
-            "mount-rail",
-            "support-left",
-            "support-right"
+            "header",
+            "header-cap",
+            "riser-flange",
+            "riser",
+            "riser-elbow",
+            "check-valve",
+            "riser-valve",
+            "tee-0",
+            "drop-0",
+            "union-top-0",
+            "valve-body-0",
+            "union-bottom-0",
+            "valve-stem-0",
+            "tee-1",
+            "drop-1",
+            "union-top-1",
+            "valve-body-1",
+            "union-bottom-1",
+            "valve-stem-1",
+            "tee-2",
+            "drop-2",
+            "union-top-2",
+            "valve-body-2",
+            "union-bottom-2",
+            "valve-stem-2",
+            "tee-3",
+            "drop-3",
+            "union-top-3",
+            "valve-body-3",
+            "union-bottom-3",
+            "valve-stem-3",
+            "tee-4",
+            "drop-4",
+            "union-top-4",
+            "valve-body-4",
+            "union-bottom-4",
+            "valve-stem-4"
           ],
-          "param": "powderCoatedSteel"
+          "param": "headerPvc"
+        },
+        {
+          "name": "gauge-stem",
+          "color": "#c49a3c",
+          "parts": [
+            "gauge-stem",
+            "barb-0",
+            "barb-1",
+            "barb-2",
+            "barb-3",
+            "barb-4"
+          ]
+        },
+        {
+          "name": "gauge-case",
+          "color": "#2a2c2e",
+          "parts": [
+            "gauge-case",
+            "check-valve-cap",
+            "meter-top-0",
+            "meter-scale-0",
+            "meter-bottom-0",
+            "meter-top-1",
+            "meter-scale-1",
+            "meter-bottom-1",
+            "meter-top-2",
+            "meter-scale-2",
+            "meter-bottom-2",
+            "meter-top-3",
+            "meter-scale-3",
+            "meter-bottom-3",
+            "meter-top-4",
+            "meter-scale-4",
+            "meter-bottom-4"
+          ]
+        },
+        {
+          "name": "gauge-face",
+          "color": "#eef0ec",
+          "parts": [
+            "gauge-face"
+          ]
+        },
+        {
+          "name": "gauge-needle",
+          "color": "#c0392b",
+          "parts": [
+            "gauge-needle",
+            "meter-float-0",
+            "meter-float-1",
+            "meter-float-2",
+            "meter-float-3",
+            "meter-float-4"
+          ]
+        },
+        {
+          "name": "valveHandles",
+          "color": "#d23a2c",
+          "parts": [
+            "riser-valve-lever",
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4"
+          ],
+          "param": "valveHandles"
+        },
+        {
+          "name": "tag-0",
+          "color": "#3f8f4a",
+          "parts": [
+            "tag-0"
+          ]
+        },
+        {
+          "name": "meter-tube-0",
+          "color": "#b9ddd0",
+          "parts": [
+            "meter-tube-0",
+            "meter-tube-1",
+            "meter-tube-2",
+            "meter-tube-3",
+            "meter-tube-4"
+          ]
+        },
+        {
+          "name": "zoneHoses",
+          "color": "#2f5d3a",
+          "parts": [
+            "hose-down-0",
+            "hose-bend-0",
+            "hose-out-0",
+            "hose-down-1",
+            "hose-bend-1",
+            "hose-out-1",
+            "hose-down-2",
+            "hose-bend-2",
+            "hose-out-2",
+            "hose-down-3",
+            "hose-bend-3",
+            "hose-out-3",
+            "hose-down-4",
+            "hose-bend-4",
+            "hose-out-4"
+          ],
+          "param": "zoneHoses"
+        },
+        {
+          "name": "tag-1",
+          "color": "#2f6fa8",
+          "parts": [
+            "tag-1"
+          ]
+        },
+        {
+          "name": "tag-2",
+          "color": "#e0a32a",
+          "parts": [
+            "tag-2"
+          ]
+        },
+        {
+          "name": "tag-3",
+          "color": "#8e4fa0",
+          "parts": [
+            "tag-3"
+          ]
+        },
+        {
+          "name": "tag-4",
+          "color": "#d0582c",
+          "parts": [
+            "tag-4"
+          ]
         }
       ]
     },
@@ -134724,13 +135327,19 @@
       "id": "return-water-header",
       "kit": "hydroponics",
       "title": "Return water header",
-      "description": "Raised collection header with four return inlets, end support saddles and a cleanout cap. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
+      "description": "NFT gravity return header at about real size: closed white channels with lettuce ending over open funnel inlets with falling solution, a large PVC collection pipe in cut-out saddle stands, a cleanout cap and an outlet elbow dropping into an open sump tank. Material controls: header PVC, NFT channels, stands and solution, plus channel count (4 or 6) and flow (running or dry). standard, greyPvc, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "return header",
+        "drain header",
+        "gravity return",
+        "nft",
+        "funnel inlet",
+        "sump",
+        "recirculating",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -134743,8 +135352,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/return-water-header.kcad.ts",
       "preview": "/assets/hydroponics-return-water-header.png",
-      "sourceSha256": "ae3b06ad0592cc5bd6844e6c29576a3d1970c91ac31eb8287832dbfc9d49222c",
-      "triangleBudget": 1800,
+      "sourceSha256": "fe3ee11a16a2a112d718b7e04868763d3cae0127901c7706c18c2f7b23adda9b",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -134756,62 +135365,211 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "headerPvc",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e3e5e0",
+          "label": "Collection header and funnels (PVC)"
         },
         {
-          "name": "pvc",
+          "name": "nftChannels",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#f4f4f0",
+          "label": "NFT channels"
+        },
+        {
+          "name": "stands",
+          "type": "color",
+          "default": "#6f777b",
+          "label": "Saddle stands and bench legs"
+        },
+        {
+          "name": "solution",
+          "type": "color",
+          "default": "#4f9fc4",
+          "label": "Nutrient solution"
+        },
+        {
+          "name": "channels",
+          "type": "choice",
+          "default": "4",
+          "label": "NFT channels",
+          "choices": [
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "flow",
+          "type": "choice",
+          "default": "running",
+          "label": "Flow",
+          "choices": [
+            "running",
+            "dry"
+          ]
         }
       ],
       "presets": {
+        "standard": {
+          "headerPvc": "#e3e5e0",
+          "nftChannels": "#f4f4f0",
+          "stands": "#6f777b",
+          "solution": "#4f9fc4"
+        },
+        "greyPvc": {
+          "headerPvc": "#7f878c",
+          "nftChannels": "#ecedea",
+          "stands": "#3d4245",
+          "solution": "#5aa88e"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae"
+          "headerPvc": "#c9c6b6",
+          "nftChannels": "#d9d6c8",
+          "stands": "#6b665c",
+          "solution": "#6b8f7a"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789"
+          "headerPvc": "#f2f2ee",
+          "nftChannels": "#ffffff",
+          "stands": "#e87832",
+          "solution": "#2a7fd0"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 2822,
         "sizeM": [
-          1.922798,
-          0.445,
-          0.24
+          2.55,
+          0.992,
+          1.63
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "headerPvc",
+          "color": "#e3e5e0",
           "parts": [
-            "header-pipe",
-            "inlet-left",
-            "inlet-mid-left",
-            "inlet-mid-right",
-            "inlet-right",
-            "cleanout"
+            "header",
+            "cleanout-socket",
+            "outlet-run",
+            "outlet-elbow",
+            "outlet-drop",
+            "inlet-riser-0",
+            "funnel-0",
+            "inlet-riser-1",
+            "funnel-1",
+            "inlet-riser-2",
+            "funnel-2",
+            "inlet-riser-3",
+            "funnel-3"
           ],
-          "param": "pvc"
+          "param": "headerPvc"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "stands",
+          "color": "#6f777b",
           "parts": [
-            "support-left",
-            "support-center-left",
-            "support-center-right",
-            "support-right"
+            "saddle--650",
+            "saddle-foot--650",
+            "strap--650",
+            "saddle-0",
+            "saddle-foot-0",
+            "strap-0",
+            "saddle-650",
+            "saddle-foot-650",
+            "strap-650",
+            "bench-bar-380",
+            "bench-leg-380--720",
+            "bench-leg-380-720",
+            "bench-bar-1150",
+            "bench-leg-1150--720",
+            "bench-leg-1150-720"
           ],
-          "param": "powderCoatedSteel"
+          "param": "stands"
+        },
+        {
+          "name": "cleanout-cap",
+          "color": "#c7cac5",
+          "parts": [
+            "cleanout-cap",
+            "cleanout-nut"
+          ]
+        },
+        {
+          "name": "sump",
+          "color": "#2f3437",
+          "parts": [
+            "sump",
+            "sump-rim"
+          ]
+        },
+        {
+          "name": "solution",
+          "color": "#4f9fc4",
+          "parts": [
+            "sump-solution",
+            "stream-0",
+            "stream-1",
+            "stream-2",
+            "stream-3"
+          ],
+          "param": "solution"
+        },
+        {
+          "name": "nftChannels",
+          "color": "#f4f4f0",
+          "parts": [
+            "channel-0",
+            "channel-cap-0",
+            "spout-0",
+            "channel-1",
+            "channel-cap-1",
+            "spout-1",
+            "channel-2",
+            "channel-cap-2",
+            "spout-2",
+            "channel-3",
+            "channel-cap-3",
+            "spout-3"
+          ],
+          "param": "nftChannels"
+        },
+        {
+          "name": "lettuce-0-0",
+          "color": "#5fae3e",
+          "parts": [
+            "lettuce-0-0",
+            "lettuce-0-1",
+            "lettuce-0-2",
+            "lettuce-1-0",
+            "lettuce-1-1",
+            "lettuce-1-2",
+            "lettuce-2-0",
+            "lettuce-2-1",
+            "lettuce-2-2",
+            "lettuce-3-0",
+            "lettuce-3-1",
+            "lettuce-3-2"
+          ]
+        },
+        {
+          "name": "heart-0-0",
+          "color": "#a6d468",
+          "parts": [
+            "heart-0-0",
+            "heart-0-1",
+            "heart-0-2",
+            "heart-1-0",
+            "heart-1-1",
+            "heart-1-2",
+            "heart-2-0",
+            "heart-2-1",
+            "heart-2-2",
+            "heart-3-0",
+            "heart-3-1",
+            "heart-3-2"
+          ]
         }
       ]
     },
@@ -134819,13 +135577,19 @@
       "id": "root-zone-heating-loop",
       "kit": "hydroponics",
       "title": "Root-zone heating loop",
-      "description": "Compact bench loop manifold with three parallel heating runs, end headers and two service risers. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Hot-water root-zone bench heating at about real size: open bench tray with sand heat bed and serpentine PEX loops with U-bends, seedling trays on the bed, and a mixing station with red supply and blue return manifold bars, circulator pump, three-way mixing valve with actuator and dial thermometers. Material controls: bench frame, heat bed, PEX pipe and circulator, plus loop count (2, 3 or 4) and seedling trays (on or off). standard, blackPex, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "root zone heating",
+        "bench heating",
+        "propagation",
+        "pex loop",
+        "manifold",
+        "circulator pump",
+        "mixing valve",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -134838,8 +135602,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/root-zone-heating-loop.kcad.ts",
       "preview": "/assets/hydroponics-root-zone-heating-loop.png",
-      "sourceSha256": "aed1db416bf7bb7e6fcac87d2216240e0ff963742cc2c54dc8edb24357ec3791",
-      "triangleBudget": 1800,
+      "sourceSha256": "43afd315afaaa88e3e93d94f19d017a05d08a22d3f8937dd5fb0d519273e62a0",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -134851,79 +135615,237 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "benchFrame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#9ea6a9",
+          "label": "Bench frame and tray (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "heatBed",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#cdb98c",
+          "label": "Heat bed (sand)"
         },
         {
-          "name": "polymer",
+          "name": "pexPipe",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#d0532c",
+          "label": "Heating loops (PEX)"
+        },
+        {
+          "name": "circulator",
+          "type": "color",
+          "default": "#c23b2b",
+          "label": "Circulator pump"
+        },
+        {
+          "name": "loops",
+          "type": "choice",
+          "default": "3",
+          "label": "Heating loops",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "seedlingTrays",
+          "type": "choice",
+          "default": "on",
+          "label": "Seedling trays",
+          "choices": [
+            "on",
+            "off"
+          ]
         }
       ],
       "presets": {
+        "standard": {
+          "benchFrame": "#9ea6a9",
+          "heatBed": "#cdb98c",
+          "pexPipe": "#d0532c",
+          "circulator": "#c23b2b"
+        },
+        "blackPex": {
+          "benchFrame": "#8d9497",
+          "heatBed": "#b9a77e",
+          "pexPipe": "#25282a",
+          "circulator": "#3d7a3a"
+        },
         "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+          "benchFrame": "#7d817c",
+          "heatBed": "#a8946c",
+          "pexPipe": "#9c5a3e",
+          "circulator": "#7a4a40"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+          "benchFrame": "#e87832",
+          "heatBed": "#e8d6a2",
+          "pexPipe": "#e0b21f",
+          "circulator": "#2a6fb0"
         }
       },
       "stats": {
-        "triangles": 336,
+        "triangles": 3552,
         "sizeM": [
-          1.314944,
-          0.275,
-          1.077
+          2.304,
+          0.852,
+          1.04
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "benchFrame",
+          "color": "#9ea6a9",
           "parts": [
-            "left-header",
-            "right-header",
-            "inlet-riser",
-            "outlet-riser",
-            "control-valve"
+            "leg--960--460",
+            "leg--960-460",
+            "leg-960--460",
+            "leg-960-460",
+            "rail--460",
+            "rail-460",
+            "tray",
+            "station-plate",
+            "floor-flange--480",
+            "floor-flange--340"
           ],
-          "param": "pvc"
+          "param": "benchFrame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "heatBed",
+          "color": "#cdb98c",
           "parts": [
-            "run-front",
-            "run-center",
-            "run-back"
+            "heat-bed"
           ],
-          "param": "polymer"
+          "param": "heatBed"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "pexPipe",
+          "color": "#d0532c",
           "parts": [
-            "support-front-left",
-            "support-front-right",
-            "support-back-left",
-            "support-back-right"
+            "run-0-0",
+            "run-0-1",
+            "run-0-2",
+            "run-0-3",
+            "bend-0-a",
+            "bend-0-b",
+            "bend-0-c",
+            "tail-out-0",
+            "tail-back-0",
+            "tail-down-s-0",
+            "tail-down-r-0",
+            "run-1-0",
+            "run-1-1",
+            "run-1-2",
+            "run-1-3",
+            "bend-1-a",
+            "bend-1-b",
+            "bend-1-c",
+            "tail-out-1",
+            "tail-back-1",
+            "tail-down-s-1",
+            "tail-down-r-1",
+            "run-2-0",
+            "run-2-1",
+            "run-2-2",
+            "run-2-3",
+            "bend-2-a",
+            "bend-2-b",
+            "bend-2-c",
+            "tail-out-2",
+            "tail-back-2",
+            "tail-down-s-2",
+            "tail-down-r-2"
           ],
-          "param": "powderCoatedSteel"
+          "param": "pexPipe"
+        },
+        {
+          "name": "supply-bar",
+          "color": "#c8372d",
+          "parts": [
+            "supply-bar",
+            "thermo-mark-600",
+            "supply-drop"
+          ]
+        },
+        {
+          "name": "return-bar",
+          "color": "#2f6fa8",
+          "parts": [
+            "return-bar",
+            "thermo-mark-500",
+            "bypass",
+            "return-drop"
+          ]
+        },
+        {
+          "name": "thermo-stem-600",
+          "color": "#c49a3c",
+          "parts": [
+            "thermo-stem-600",
+            "thermo-stem-500",
+            "mix-valve"
+          ]
+        },
+        {
+          "name": "thermo-dial-600",
+          "color": "#2a2c2e",
+          "parts": [
+            "thermo-dial-600",
+            "thermo-dial-500",
+            "pump-cap",
+            "pump-box",
+            "mix-knob",
+            "seed-tray-250",
+            "seed-tray-650"
+          ]
+        },
+        {
+          "name": "thermo-face-600",
+          "color": "#eef0ec",
+          "parts": [
+            "thermo-face-600",
+            "thermo-face-500"
+          ]
+        },
+        {
+          "name": "circulator",
+          "color": "#c23b2b",
+          "parts": [
+            "pump-volute",
+            "pump-motor"
+          ],
+          "param": "circulator"
+        },
+        {
+          "name": "mix-actuator",
+          "color": "#e3e4df",
+          "parts": [
+            "mix-actuator"
+          ]
+        },
+        {
+          "name": "seedlings-250",
+          "color": "#5fae3e",
+          "parts": [
+            "seedlings-250",
+            "seedlings-650"
+          ]
+        },
+        {
+          "name": "seedling-tuft-250--150",
+          "color": "#8ccf5a",
+          "parts": [
+            "seedling-tuft-250--150",
+            "seedling-tuft-250-0",
+            "seedling-tuft-250-150",
+            "seedling-tuft-650--150",
+            "seedling-tuft-650-0",
+            "seedling-tuft-650-150"
+          ]
         }
       ]
     },
