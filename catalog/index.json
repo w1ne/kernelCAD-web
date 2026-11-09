@@ -174873,16 +174873,17 @@
       "id": "assay-sample-divider",
       "kit": "mining",
       "title": "Assay sample divider",
-      "description": "Bench sample divider with feed hopper, splitting chute, collection bins, and compact drive enclosure. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open sample jars partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Jar count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel, sample ore and jar plastic. weathered, labWhite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "laboratory",
+        "assay",
+        "sample preparation",
+        "sample divider",
+        "riffle splitter",
+        "drill core"
       ],
       "compat": [
         "mining",
@@ -174893,8 +174894,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/assay-sample-divider.kcad.ts",
       "preview": "/assets/mining-assay-sample-divider.png",
-      "sourceSha256": "4d995bd71399cca3b639f3c90234171af256b3085c9bf54b1a971f6e65232653",
-      "triangleBudget": 1800,
+      "sourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -174906,62 +174907,174 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "housingPaint",
           "type": "color",
-          "default": "#a89465",
-          "label": "Coated equipment steel"
+          "default": "#2f6fa8",
+          "label": "Housing paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#b9c1c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "sampleOre",
+          "type": "color",
+          "default": "#8a6a4c",
+          "label": "Sample ore"
+        },
+        {
+          "name": "jarPlastic",
+          "type": "color",
+          "default": "#e4e1d4",
+          "label": "Jar plastic"
+        },
+        {
+          "name": "divider",
+          "type": "choice",
+          "default": "rotary",
+          "label": "Divider type",
+          "choices": [
+            "rotary",
+            "riffle"
+          ]
+        },
+        {
+          "name": "jars",
+          "type": "choice",
+          "default": "eight",
+          "label": "Sample jars (rotary)",
+          "choices": [
+            "eight",
+            "twelve"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "housingPaint": "#4f6577",
+          "stainlessSteel": "#979d9c",
+          "sampleOre": "#6f5a46",
+          "jarPlastic": "#c9c3ae"
+        },
+        "labWhite": {
+          "housingPaint": "#e6e6e0",
+          "stainlessSteel": "#c3cacc",
+          "sampleOre": "#5d5b57",
+          "jarPlastic": "#3d6fa8"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "housingPaint": "#e48a1e",
+          "stainlessSteel": "#c5ccca",
+          "sampleOre": "#9b5a3a",
+          "jarPlastic": "#f2efe2"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 2032,
         "sizeM": [
-          0.74,
-          0.765,
-          0.5725
+          0.69,
+          0.82,
+          0.504868
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "foot-0",
+          "color": "#1f2224",
           "parts": [
-            "base",
-            "support-post-left",
-            "support-post-right"
-          ],
-          "param": "structuralSteel"
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3",
+            "speed-knob",
+            "vibrator-spring"
+          ]
         },
         {
-          "name": "coatedSteel",
-          "color": "#a89465",
+          "name": "housingPaint",
+          "color": "#2f6fa8",
           "parts": [
-            "left-bin",
-            "right-bin",
-            "splitter-housing",
-            "feed-hopper",
-            "rotary-splitter",
-            "drive-box",
-            "collection-lip"
+            "drive-base",
+            "vibrator"
           ],
-          "param": "coatedSteel"
+          "param": "housingPaint"
+        },
+        {
+          "name": "panel-face",
+          "color": "#d6d8d4",
+          "parts": [
+            "panel-face"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#1d2f3a",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "start-button",
+          "color": "#3fae4a",
+          "parts": [
+            "start-button"
+          ]
+        },
+        {
+          "name": "stop-button",
+          "color": "#d23a2a",
+          "parts": [
+            "stop-button"
+          ]
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b9c1c4",
+          "parts": [
+            "turntable-hub",
+            "turntable",
+            "column",
+            "hopper-arm",
+            "hopper",
+            "feeder-trough"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "jarPlastic",
+          "color": "#e4e1d4",
+          "parts": [
+            "jar-0",
+            "jar-1",
+            "jar-2",
+            "jar-3",
+            "jar-4",
+            "jar-5",
+            "jar-6",
+            "jar-7"
+          ],
+          "param": "jarPlastic"
+        },
+        {
+          "name": "sampleOre",
+          "color": "#8a6a4c",
+          "parts": [
+            "jar-ore-0",
+            "jar-ore-1",
+            "jar-ore-2",
+            "jar-ore-3",
+            "jar-ore-4",
+            "jar-ore-5",
+            "jar-ore-6",
+            "jar-ore-7",
+            "hopper-ore",
+            "feeder-ore"
+          ],
+          "param": "sampleOre"
         }
       ]
     },
@@ -176108,16 +176221,17 @@
       "id": "conveyor-take-up-station",
       "kit": "mining",
       "title": "Conveyor take-up station",
-      "description": "Belt take-up frame with paired guide rails, tension carriage, counterweight block, and return drum. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Vertical gravity take-up tower for a 1200 mm conveyor at about real size: four-column braced steel tower, two bend pulleys on bearings at the top, return belt led down round a rubber-lagged take-up pulley and back up, take-up carriage with bearing blocks on two vertical guide rails, concrete counterweight box hung under the carriage, grated head platform with handrails and toe boards, access ladder, guard fence round the counterweight and the return belt continuing on idlers both sides. Take-up travel choice (high, mid, low) moves the carriage along its rails. Material controls: frame steel, pulley paint, belt rubber and counterweight concrete. weathered, mineGreen and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "conveyor",
+        "belt conveyor",
+        "take-up",
+        "counterweight",
+        "pulley",
+        "materials handling"
       ],
       "compat": [
         "mining",
@@ -176128,8 +176242,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/conveyor-take-up-station.kcad.ts",
       "preview": "/assets/mining-conveyor-take-up-station.png",
-      "sourceSha256": "f8f19e399997c4bfbd704c52abe29c799585b8ac4292fa5e8da56e495dad74bd",
-      "triangleBudget": 1800,
+      "sourceSha256": "b7bde6018570895a3c1c472192677f042ad90d45e8ec5f7702db5b3aa5e43be9",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -176141,76 +176255,266 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
-          "type": "color",
-          "default": "#74a865",
-          "label": "Coated equipment steel"
+          "name": "travel",
+          "type": "choice",
+          "default": "mid",
+          "label": "Take-up travel (low = stretched belt)",
+          "choices": [
+            "high",
+            "mid",
+            "low"
+          ]
         },
         {
-          "name": "structuralSteel",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#5e6a72",
+          "label": "Frame steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "pulleyPaint",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#2f6f4a",
+          "label": "Pulley paint"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#26292b",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "counterweight",
+          "type": "color",
+          "default": "#a7a297",
+          "label": "Counterweight concrete"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "frameSteel": "#6a645c",
+          "pulleyPaint": "#5a5f52",
+          "beltRubber": "#33312e",
+          "counterweight": "#8f8a80"
+        },
+        "mineGreen": {
+          "frameSteel": "#3f7a4a",
+          "pulleyPaint": "#d8a32a",
+          "beltRubber": "#222527",
+          "counterweight": "#b0aba0"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "frameSteel": "#e48a1e",
+          "pulleyPaint": "#2d3a45",
+          "beltRubber": "#26292b",
+          "counterweight": "#c4bfb3"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 2864,
         "sizeM": [
-          1.33035,
-          0.835,
-          0.68
+          8.6,
+          7.922,
+          3.26
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "frameSteel",
+          "color": "#5e6a72",
           "parts": [
-            "base",
-            "rail-left",
-            "rail-right",
-            "tower-left",
-            "tower-right",
-            "guardrail"
+            "column-0-0",
+            "base-plate-0-0",
+            "column-0-1",
+            "base-plate-0-1",
+            "tie-y-0-0",
+            "tie-y-0-1",
+            "column-1-0",
+            "base-plate-1-0",
+            "column-1-1",
+            "base-plate-1-1",
+            "tie-y-1-0",
+            "tie-y-1-1",
+            "tie-x-0-0",
+            "tie-x-0-1",
+            "brace-a-0",
+            "brace-b-0",
+            "head-beam-0",
+            "tie-x-1-0",
+            "tie-x-1-1",
+            "brace-a-1",
+            "brace-b-1",
+            "head-beam-1",
+            "guide-rail-0",
+            "guide-tie-0",
+            "guide-rail-1",
+            "guide-tie-1",
+            "counterweight-frame",
+            "counterweight-lid",
+            "idler-stand-0-0",
+            "idler-stand-b-0-0",
+            "idler-stand-0-1",
+            "idler-stand-b-0-1",
+            "idler-stand-1-0",
+            "idler-stand-b-1-0",
+            "idler-stand-1-1",
+            "idler-stand-b-1-1",
+            "platform"
           ],
-          "param": "structuralSteel"
+          "param": "frameSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#74a865",
+          "name": "pulleyPaint",
+          "color": "#2f6f4a",
           "parts": [
-            "counterweight",
-            "carriage"
+            "carriage-plate-0",
+            "guide-shoe-0-0",
+            "guide-shoe-0-1",
+            "carriage-plate-1",
+            "guide-shoe-1-0",
+            "guide-shoe-1-1",
+            "carriage-crossbeam",
+            "bend-pulley-in-drum",
+            "bend-pulley-in-disc-0",
+            "bend-pulley-in-disc-1",
+            "bend-pulley-in-bearing-0",
+            "bend-pulley-in-bearing-1",
+            "bend-pulley-out-drum",
+            "bend-pulley-out-disc-0",
+            "bend-pulley-out-disc-1",
+            "bend-pulley-out-bearing-0",
+            "bend-pulley-out-bearing-1",
+            "take-up-pulley-drum",
+            "take-up-pulley-disc-0",
+            "take-up-pulley-disc-1",
+            "take-up-pulley-bearing-0",
+            "take-up-pulley-bearing-1",
+            "return-idler-0-0",
+            "return-idler-0-1",
+            "return-idler-1-0",
+            "return-idler-1-1"
           ],
-          "param": "coatedSteel"
+          "param": "pulleyPaint"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "hanger-0",
+          "color": "#9aa2a6",
           "parts": [
-            "take-up-drum"
+            "hanger-0",
+            "hanger-1",
+            "bend-pulley-in-shaft",
+            "bend-pulley-out-shaft",
+            "take-up-pulley-shaft"
+          ]
+        },
+        {
+          "name": "counterweight",
+          "color": "#a7a297",
+          "parts": [
+            "counterweight-box"
           ],
-          "param": "stainlessSteel"
+          "param": "counterweight"
+        },
+        {
+          "name": "beltRubber",
+          "color": "#26292b",
+          "parts": [
+            "bend-pulley-in-lagging",
+            "bend-pulley-out-lagging",
+            "take-up-pulley-lagging",
+            "belt-drop-0",
+            "belt-run-0",
+            "belt-drop-1",
+            "belt-run-1",
+            "belt-wrap",
+            "belt-over-0",
+            "belt-over-1"
+          ],
+          "param": "beltRubber"
+        },
+        {
+          "name": "rail-x-0-0",
+          "color": "#e8c21e",
+          "parts": [
+            "rail-x-0-0",
+            "rail-x-0-1",
+            "rail-post-0-0",
+            "rail-post-0-1",
+            "rail-post-0-2",
+            "toe-board-0",
+            "rail-x-1-0",
+            "rail-x-1-1",
+            "rail-post-1-0",
+            "rail-post-1-1",
+            "rail-post-1-2",
+            "toe-board-1",
+            "ladder-stile-0",
+            "ladder-stile-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "ladder-rung-10",
+            "ladder-rung-11",
+            "ladder-rung-12",
+            "ladder-rung-13",
+            "ladder-rung-14",
+            "ladder-rung-15",
+            "ladder-rung-16",
+            "ladder-rung-17",
+            "ladder-rung-18",
+            "ladder-rung-19",
+            "ladder-rung-20",
+            "ladder-rung-21",
+            "fence-post-0",
+            "fence-post-1",
+            "fence-post-2",
+            "fence-post-3",
+            "fence-post-4",
+            "fence-post-5",
+            "fence-rail-0-0",
+            "fence-rail-0-1",
+            "fence-bar-0-0",
+            "fence-bar-0-1",
+            "fence-bar-0-2",
+            "fence-bar-0-3",
+            "fence-bar-0-4",
+            "fence-bar-0-5",
+            "fence-bar-0-6",
+            "fence-bar-0-7",
+            "fence-bar-0-8",
+            "fence-bar-0-9",
+            "fence-bar-0-10",
+            "fence-bar-0-11",
+            "fence-bar-0-12",
+            "fence-bar-0-13",
+            "fence-bar-0-14",
+            "fence-rail-1-0",
+            "fence-rail-1-1",
+            "fence-bar-1-0",
+            "fence-bar-1-1",
+            "fence-bar-1-2",
+            "fence-bar-1-3",
+            "fence-bar-1-4",
+            "fence-bar-1-5",
+            "fence-bar-1-6",
+            "fence-bar-1-7",
+            "fence-bar-1-8",
+            "fence-bar-1-9",
+            "fence-bar-1-10",
+            "fence-bar-1-11",
+            "fence-bar-1-12",
+            "fence-bar-1-13",
+            "fence-bar-1-14"
+          ]
         }
       ]
     },
@@ -177418,16 +177722,17 @@
       "id": "flotation-conditioning-tank",
       "kit": "mining",
       "title": "Flotation conditioning tank",
-      "description": "Conditioning vessel with mixer gearbox, central shaft, paddle set, rim, and feed pipe. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Agitated flotation conditioning tank at about real size: 3.5 m open-topped steel tank with stiffener rings, slurry surface and four wall baffles, bridge beams with grated walkway and handrails, vertical agitator motor with fan cowl on a gearbox, agitator shaft, feed pipe over the rim, yellow reagent dosing lines, overflow box with discharge pipe, and a caged access ladder. Support choice: flat bottom on a concrete ring plinth, or cone bottom with drain valve on four braced legs. Material controls: tank paint, walkway steel, drive paint and slurry. weathered, processBlue and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "flotation",
+        "conditioning tank",
+        "agitator",
+        "slurry",
+        "reagents"
       ],
       "compat": [
         "mining",
@@ -177438,8 +177743,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/flotation-conditioning-tank.kcad.ts",
       "preview": "/assets/mining-flotation-conditioning-tank.png",
-      "sourceSha256": "bccf5d7c1ef219e911f6eaff82551271d3be73688cf6aef09b046ab3908a4a0e",
-      "triangleBudget": 1800,
+      "sourceSha256": "89ad696c31c1875c60f679baa72f646f9a85bb2ee45109aea321046e37fee759",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -177451,61 +177756,198 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "tankPaint",
           "type": "color",
-          "default": "#65a88a",
-          "label": "Coated equipment steel"
+          "default": "#4f8a6a",
+          "label": "Tank paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "walkwaySteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#8b9497",
+          "label": "Walkway steel (galvanised)"
+        },
+        {
+          "name": "drivePaint",
+          "type": "color",
+          "default": "#2f5f8f",
+          "label": "Drive paint"
+        },
+        {
+          "name": "slurry",
+          "type": "color",
+          "default": "#6f6c62",
+          "label": "Slurry"
+        },
+        {
+          "name": "support",
+          "type": "choice",
+          "default": "plinth",
+          "label": "Support",
+          "choices": [
+            "plinth",
+            "legs"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e"
+          "tankPaint": "#5d6b60",
+          "walkwaySteel": "#767a76",
+          "drivePaint": "#4c5e70",
+          "slurry": "#5f5a4e"
+        },
+        "processBlue": {
+          "tankPaint": "#3a6f9e",
+          "walkwaySteel": "#9aa3a6",
+          "drivePaint": "#d8d4c8",
+          "slurry": "#77746a"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca"
+          "tankPaint": "#e48a1e",
+          "walkwaySteel": "#8b9497",
+          "drivePaint": "#2d3a45",
+          "slurry": "#6f6c62"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 3256,
         "sizeM": [
-          0.71,
-          0.985,
-          0.777
+          6.8,
+          5.77,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#65a88a",
+          "name": "tankPaint",
+          "color": "#4f8a6a",
           "parts": [
-            "tank",
-            "rim",
-            "gearbox",
-            "mixer-arm-left",
-            "mixer-arm-right",
-            "feed-nozzle"
+            "tank-shell",
+            "rim-angle",
+            "stiffener-ring-0",
+            "stiffener-ring-1",
+            "baffle-0",
+            "baffle-1",
+            "baffle-2",
+            "baffle-3",
+            "overflow-box",
+            "overflow-pipe",
+            "overflow-drop"
           ],
-          "param": "coatedSteel"
+          "param": "tankPaint"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "slurry",
+          "color": "#6f6c62",
           "parts": [
-            "shaft",
-            "paddle-left",
-            "paddle-right"
+            "slurry"
           ],
-          "param": "stainlessSteel"
+          "param": "slurry"
+        },
+        {
+          "name": "plinth",
+          "color": "#a39e94",
+          "parts": [
+            "plinth",
+            "plinth-core"
+          ]
+        },
+        {
+          "name": "walkwaySteel",
+          "color": "#8b9497",
+          "parts": [
+            "bridge-beam-0",
+            "bridge-beam-1",
+            "walkway-deck-a",
+            "walkway-deck-b",
+            "drive-plate",
+            "fan-cowl",
+            "feed-pipe",
+            "feed-elbow",
+            "feed-downcomer",
+            "feed-support",
+            "ladder-landing"
+          ],
+          "param": "walkwaySteel"
+        },
+        {
+          "name": "rail-post-0-0",
+          "color": "#e8c21e",
+          "parts": [
+            "rail-post-0-0",
+            "rail-post-0-1",
+            "rail-post-0-2",
+            "rail-post-0-3",
+            "rail-0-0",
+            "rail-0-1",
+            "toe-board-0",
+            "rail-post-1-0",
+            "rail-post-1-1",
+            "rail-post-1-2",
+            "rail-post-1-3",
+            "rail-1-0",
+            "rail-1-1",
+            "toe-board-1",
+            "ladder-stile-0",
+            "ladder-stile-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "ladder-rung-10",
+            "ladder-rung-11",
+            "ladder-rung-12",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2"
+          ]
+        },
+        {
+          "name": "drivePaint",
+          "color": "#2f5f8f",
+          "parts": [
+            "gearbox",
+            "gearbox-input",
+            "motor-flange",
+            "motor",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "terminal-box"
+          ],
+          "param": "drivePaint"
+        },
+        {
+          "name": "agitator-shaft",
+          "color": "#a9b0b3",
+          "parts": [
+            "agitator-shaft",
+            "shaft-collar"
+          ]
+        },
+        {
+          "name": "reagent-line-0",
+          "color": "#e0b52a",
+          "parts": [
+            "reagent-line-0",
+            "reagent-drop-0",
+            "reagent-line-1",
+            "reagent-drop-1"
+          ]
         }
       ]
     },
@@ -180027,16 +180469,17 @@
       "id": "mill-feed-chute",
       "kit": "mining",
       "title": "Mill feed chute",
-      "description": "Wear-lined transfer chute with feed collar, sloped body panels, support saddle, and inspection hatch. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "SAG mill feed chute at about real size: mill feed conveyor end with belt, ore load, troughed idlers, stringers and head pulley inside a head hood, sloped open trough with rubber wear liners and an ore stream, drop box with inspection doors and handles, feed spout on a wheeled trolley on rails entering the mill trunnion, process water pipe to the spout, support columns and an access platform with handrail. The mill feed end is shown for context: trunnion, bearing pedestal, feed-end cone and shell. Spout choice: in service (pushed into the trunnion) or retracted for relining. Material controls: chute paint, wear liner rubber, mill shell and ore. weathered, mineGreen and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "grinding",
+        "SAG mill",
+        "feed chute",
+        "wear liner",
+        "conveyor"
       ],
       "compat": [
         "mining",
@@ -180047,8 +180490,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mill-feed-chute.kcad.ts",
       "preview": "/assets/mining-mill-feed-chute.png",
-      "sourceSha256": "54f8ec6aba68321388925edfa70da1ad24fa137bdad5c1e8a9148430087943c4",
-      "triangleBudget": 1800,
+      "sourceSha256": "3b5fdb644b473ab6b6b1bf28023c13a5bb8805ef1c4812278045e5e4d02af283",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -180060,62 +180503,219 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "chutePaint",
           "type": "color",
-          "default": "#a89965",
-          "label": "Coated equipment steel"
+          "default": "#5b7f98",
+          "label": "Chute paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "wearLiner",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#2b2d2e",
+          "label": "Wear liner rubber"
+        },
+        {
+          "name": "millShell",
+          "type": "color",
+          "default": "#d0a128",
+          "label": "Mill shell"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#7a6650",
+          "label": "Ore"
+        },
+        {
+          "name": "spout",
+          "type": "choice",
+          "default": "inService",
+          "label": "Feed spout",
+          "choices": [
+            "inService",
+            "retracted"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e"
+          "chutePaint": "#6a6e6a",
+          "wearLiner": "#34312d",
+          "millShell": "#9a7f45",
+          "ore": "#6a5a48"
+        },
+        "mineGreen": {
+          "chutePaint": "#3f7a4a",
+          "wearLiner": "#262829",
+          "millShell": "#c9c6bc",
+          "ore": "#7d7466"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca"
+          "chutePaint": "#e48a1e",
+          "wearLiner": "#2b2d2e",
+          "millShell": "#2f5f8f",
+          "ore": "#8a6a4c"
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 2184,
         "sizeM": [
-          0.735,
-          0.86,
-          0.658
+          16.2,
+          8.9,
+          5.830062
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#a89965",
+          "name": "millShell",
+          "color": "#d0a128",
           "parts": [
-            "top-collar",
-            "front-panel",
-            "rear-panel",
-            "left-panel",
-            "right-panel",
-            "outlet-neck",
-            "saddle-left",
-            "saddle-right",
-            "inspection-hatch"
+            "trunnion",
+            "feed-head",
+            "mill-shell",
+            "shell-flange-0",
+            "shell-flange-1"
           ],
-          "param": "coatedSteel"
+          "param": "millShell"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "trunnion-mouth",
+          "color": "#1b1e20",
           "parts": [
-            "access-boss"
+            "trunnion-mouth",
+            "trolley-wheel-0-0",
+            "trolley-wheel-0-1",
+            "trolley-wheel-1-0",
+            "trolley-wheel-1-1"
+          ]
+        },
+        {
+          "name": "bearing-cap",
+          "color": "#4d555b",
+          "parts": [
+            "bearing-cap",
+            "head-shaft",
+            "stringer-0",
+            "stringer-1",
+            "idler-centre-0",
+            "idler-wing-0-0",
+            "idler-wing-0-1",
+            "idler-frame-0",
+            "conveyor-leg-0-0",
+            "conveyor-leg-0-1",
+            "idler-centre-1",
+            "idler-wing-1-0",
+            "idler-wing-1-1",
+            "idler-frame-1",
+            "idler-centre-2",
+            "idler-wing-2-0",
+            "idler-wing-2-1",
+            "idler-frame-2",
+            "conveyor-leg-2-0",
+            "conveyor-leg-2-1",
+            "trolley-frame",
+            "trolley-post",
+            "spout-saddle",
+            "trolley-rail-0",
+            "trolley-rail-1",
+            "rail-deck",
+            "deck-column-0-0",
+            "deck-column-0-1",
+            "deck-column-1-0",
+            "deck-column-1-1",
+            "chute-column-0-0",
+            "chute-column-0-1",
+            "chute-bearer-0",
+            "chute-column-1-0",
+            "chute-column-1-1",
+            "chute-bearer-1",
+            "platform",
+            "platform-leg-0",
+            "platform-leg-1"
+          ]
+        },
+        {
+          "name": "bearing-pedestal",
+          "color": "#9f9a90",
+          "parts": [
+            "bearing-pedestal"
+          ]
+        },
+        {
+          "name": "wearLiner",
+          "color": "#2b2d2e",
+          "parts": [
+            "belt-carry",
+            "belt-return",
+            "wear-liner-0",
+            "liner-side-0",
+            "wear-liner-1",
+            "liner-side-1",
+            "wear-liner-2",
+            "liner-side-2",
+            "wear-liner-3",
+            "liner-side-3",
+            "wear-liner-4",
+            "liner-side-4",
+            "spout-liner"
           ],
-          "param": "stainlessSteel"
+          "param": "wearLiner"
+        },
+        {
+          "name": "ore",
+          "color": "#7a6650",
+          "parts": [
+            "ore-on-belt",
+            "ore-stream",
+            "spout-ore"
+          ],
+          "param": "ore"
+        },
+        {
+          "name": "chutePaint",
+          "color": "#5b7f98",
+          "parts": [
+            "head-pulley",
+            "head-bearing-0",
+            "head-bearing-1",
+            "head-hood",
+            "hood-skirt",
+            "hood-door",
+            "trough",
+            "trough-stiffener-1",
+            "trough-stiffener-2",
+            "trough-stiffener-3",
+            "drop-box",
+            "inspection-door-0",
+            "inspection-door-1",
+            "spout-hopper",
+            "spout"
+          ],
+          "param": "chutePaint"
+        },
+        {
+          "name": "hood-door-handle",
+          "color": "#e8c21e",
+          "parts": [
+            "hood-door-handle",
+            "door-handle-0",
+            "door-handle-1",
+            "platform-post-0",
+            "platform-post-1",
+            "platform-post-2",
+            "platform-rail-0",
+            "platform-rail-1"
+          ]
+        },
+        {
+          "name": "water-pipe",
+          "color": "#2f6fb0",
+          "parts": [
+            "water-pipe",
+            "water-drop"
+          ]
         }
       ]
     },
@@ -180512,16 +181112,17 @@
       "id": "mine-refuge-chamber",
       "kit": "mining",
       "title": "Mine refuge chamber",
-      "description": "Underground refuge pod with reinforced shell, access door, roof rails, and external air bottles. Controls: overall scale, coated equipment steel, structural steel, instrument glass; weathered and highVisibility presets.",
+      "description": "Portable underground refuge chamber at about real size: chamfered steel shell with stiffener ribs on a sled skid with upturned runners and tow eyes, pressure door with porthole, locking wheel and hinges (closed or open showing the dark airlock), side portholes, reflective bands, green REFUGE sign, breathing-air cylinder rack, roof air conditioning and scrubber unit with fan, strobe beacon, aerial and lifting lugs, and a compressed-air and phone connection panel. Size choice: eight-person (4.2 m) or twenty-person (7.2 m). Material controls: shell paint, skid steel, air cylinder paint and window glass. weathered, mineGreen and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "mine safety",
+        "refuge chamber",
+        "rescue",
+        "breathing air",
+        "shelter"
       ],
       "compat": [
         "mining",
@@ -180532,8 +181133,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-refuge-chamber.kcad.ts",
       "preview": "/assets/mining-mine-refuge-chamber.png",
-      "sourceSha256": "a982112e71e83c54d8205274677d1943823a1de061e7efad229dcaa6c130fbd2",
-      "triangleBudget": 1800,
+      "sourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -180545,75 +181146,219 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "shellPaint",
           "type": "color",
-          "default": "#70a865",
-          "label": "Coated equipment steel"
+          "default": "#e8781e",
+          "label": "Shell paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "skidSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4d5459",
+          "label": "Skid steel"
         },
         {
-          "name": "instrumentGlass",
+          "name": "airCylinder",
           "type": "color",
-          "default": "#5c929c",
-          "label": "Instrument glass"
+          "default": "#3b3f44",
+          "label": "Air cylinder paint"
+        },
+        {
+          "name": "windowGlass",
+          "type": "color",
+          "default": "#6fa6b8",
+          "label": "Window glass"
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "eightPerson",
+          "label": "Size",
+          "choices": [
+            "eightPerson",
+            "twentyPerson"
+          ]
+        },
+        {
+          "name": "door",
+          "type": "choice",
+          "default": "closed",
+          "label": "Door",
+          "choices": [
+            "closed",
+            "open"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "instrumentGlass": "#55787d"
+          "shellPaint": "#a8683a",
+          "skidSteel": "#5a554e",
+          "airCylinder": "#4a4740",
+          "windowGlass": "#5d7c80"
+        },
+        "mineGreen": {
+          "shellPaint": "#3f8a4c",
+          "skidSteel": "#3f464b",
+          "airCylinder": "#2f3438",
+          "windowGlass": "#6fa6b8"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "instrumentGlass": "#5fb6c1"
+          "shellPaint": "#f2c21a",
+          "skidSteel": "#2f363b",
+          "airCylinder": "#2a6fb0",
+          "windowGlass": "#7cc0d2"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 3468,
         "sizeM": [
-          1.05,
-          0.72,
-          0.747
+          5.637268,
+          3.2,
+          2.683988
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "skidSteel",
+          "color": "#4d5459",
           "parts": [
-            "floor-skid",
-            "roof-rail"
+            "runner-0",
+            "runner-1",
+            "cross-member-0",
+            "cross-member-1",
+            "cross-member-2",
+            "cross-member-3",
+            "tow-eye-0",
+            "tow-eye-1",
+            "porthole-rim-0",
+            "porthole-rim-1",
+            "door-frame",
+            "door-1",
+            "hinge-0",
+            "hinge-1",
+            "rack-base",
+            "rack-top-rail",
+            "rack-post-0",
+            "rack-post-1",
+            "aircon-grille",
+            "lifting-lug-0-0",
+            "lifting-lug-0-1",
+            "lifting-lug-1-0",
+            "lifting-lug-1-1",
+            "service-panel"
           ],
-          "param": "structuralSteel"
+          "param": "skidSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#70a865",
+          "name": "shellPaint",
+          "color": "#e8781e",
           "parts": [
-            "pod-body",
-            "roof-cap",
-            "entry-door",
-            "air-bottle-left",
-            "air-bottle-right"
+            "shell",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "door-0"
           ],
-          "param": "coatedSteel"
+          "param": "shellPaint"
         },
         {
-          "name": "instrumentGlass",
-          "color": "#5c929c",
+          "name": "reflective-band-0",
+          "color": "#e9e9de",
           "parts": [
-            "window-panel"
+            "reflective-band-0",
+            "reflective-band-low-0",
+            "reflective-band-1",
+            "reflective-band-low-1",
+            "sign-cross-v",
+            "sign-cross-h",
+            "aircon-unit"
+          ]
+        },
+        {
+          "name": "windowGlass",
+          "color": "#6fa6b8",
+          "parts": [
+            "porthole-0",
+            "porthole-1",
+            "door-2"
           ],
-          "param": "instrumentGlass"
+          "param": "windowGlass"
+        },
+        {
+          "name": "doorway",
+          "color": "#16191b",
+          "parts": [
+            "doorway",
+            "door-3",
+            "door-4",
+            "aircon-fan",
+            "beacon-base",
+            "aerial"
+          ]
+        },
+        {
+          "name": "refuge-sign",
+          "color": "#1f8a4c",
+          "parts": [
+            "refuge-sign"
+          ]
+        },
+        {
+          "name": "airCylinder",
+          "color": "#3b3f44",
+          "parts": [
+            "air-cylinder-0",
+            "air-cylinder-1",
+            "air-cylinder-2",
+            "air-cylinder-3",
+            "air-cylinder-4"
+          ],
+          "param": "airCylinder"
+        },
+        {
+          "name": "cylinder-valve-0",
+          "color": "#b8a64a",
+          "parts": [
+            "cylinder-valve-0",
+            "cylinder-valve-1",
+            "cylinder-valve-2",
+            "cylinder-valve-3",
+            "cylinder-valve-4",
+            "air-manifold"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f2a516",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "coupler-0",
+          "color": "#c9b13a",
+          "parts": [
+            "coupler-0",
+            "coupler-1"
+          ]
+        },
+        {
+          "name": "coupler-2",
+          "color": "#2b6fd0",
+          "parts": [
+            "coupler-2"
+          ]
+        },
+        {
+          "name": "air-hose",
+          "color": "#2a2d30",
+          "parts": [
+            "air-hose"
+          ]
         }
       ]
     },
