@@ -87,25 +87,12 @@ import { applyDraftingProfile, authoredAnnotationIds, invalidReview, resolveDraf
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import type { DrawingVisualQaOptions } from './drawingVisualQa';
-export type {
-  DrawingVisualQaOptions,
-  DrawingVisualQaReport,
-  DrawingVisualQaIssue,
-  DrawingVisualQaCheck,
-  DrawingVisualQaAttempt,
-  DrawingVisualQaPdfCheck,
-} from './drawingVisualQa';
+export type { DrawingVisualQaOptions, DrawingVisualQaReport, DrawingVisualQaIssue, DrawingVisualQaCheck, DrawingVisualQaAttempt, DrawingVisualQaPdfCheck } from './drawingVisualQa';
 
 export type { DrawingBomRow } from './drawingExplode';
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
-export type {
-  AutoAnnotateKind,
-  AutoAnnotateOptions,
-  DrawingReport,
-  DrawingReportAnnotation,
-  Iso2768Class,
-} from './drawingAuto';
+export type { AutoAnnotateKind, AutoAnnotateOptions, DrawingReport, DrawingReportAnnotation, Iso2768Class } from './drawingAuto';
 
 export type { DrawingSheetSize, ProjectionAngle } from './drawingLayout';
 

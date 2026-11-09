@@ -23,6 +23,7 @@ import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
 import { readPdfPageVectors } from '../drawing/pdfVectors';
 import {
   attachDrawingPdfReadback,
+  extractDrawingDimensionLabels,
   readDrawingSvgPageSize,
   runDrawingVisualQa,
   validateDrawingVisualQaOptions,
@@ -101,6 +102,7 @@ export async function exportPdfDrawing(
       imageCount: page.imageCount,
       text: page.texts.map(row => row.text),
       requestedViews: svgOpts.views,
+      dimensionLabels: extractDrawingDimensionLabels(svg),
     });
     return { ...sheet, bytes, drawingReport: { ...sheet.drawingReport, visualQa } };
   } catch (error) {

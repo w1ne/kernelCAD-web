@@ -80,20 +80,22 @@ return rotor;` },
   });
 
   it('repairs an actual exported PDF with a misplaced dimension by moving from A4 to A3', async () => {
-    const code = "return box(80,50,10).dimension({id:'width',kind:'linear',from:[0,0,10],to:[80,0,10]});";
+    const plan = { id: 'sheet', requirements: [{ id: 'width', featureId: 'box',
+      annotationId: 'authored:width', expectedKind: 'linear', role: 'critical', reason: 'Mating size' }], decisions: [] };
+    const code = "return box(80,50,10).dimension({id:'width',kind:'linear',from:[0,0,10],to:[80,0,10]}).drawingReview(" +
+      JSON.stringify(plan) + ");";
     const baseline = { format: 'pdf-drawing' as const, sheet: 'a4' as const, autoAnnotate: false,
       annotationOverrides: { 'authored:width': { offset: 45 } } };
     const broken = await runAndExport({ code, fileName: 'repair.kcad.ts', format: 'pdf-drawing',
       options: { ...baseline, visualQa: { autoRepair: false } } });
     const repaired = await runAndExport({ code, fileName: 'repair.kcad.ts', format: 'pdf-drawing',
       options: { ...baseline, visualQa: { autoRepair: true, maxAttempts: 3 } } });
-    expect(broken.drawingReport?.visualQa?.issues.map(issue => issue.code)).toContain('annotation-collision');
+    expect(broken.drawingReport?.visualQa?.issues.map(issue => issue.code)).toContain('title-block-obstruction');
     expect(broken.drawingReport?.visualQa?.status).toBe('needs-review');
     expect(repaired.drawingReport?.visualQa?.status).toBe('verified');
     expect(repaired.drawingReport?.visualQa?.repaired).toBe(true);
     expect(repaired.drawingReport?.visualQa?.attempts).toMatchObject([
       { sheet: 'a4', accepted: true },
-      { sheet: 'a4', strategy: 'annotation-offset', accepted: false },
       { sheet: 'a3', strategy: 'larger-sheet', accepted: true },
     ]);
     expect(repaired.drawingReport?.visualQa?.pdf).toMatchObject({ status: 'passed', pageCount: 1 });
@@ -121,7 +123,7 @@ return rotor;` },
       render: async () => initial,
       renderWithAnnotationOffsets: async (_sheet, offsets) => ({ svg, crowded: !offsets['authored:width'] }),
     });
-    expect(result.report.status).toBe('verified');
+    expect(result.report.status).toBe('incomplete');
     expect(result.report.repaired).toBe(true);
     expect(result.report.attemptCount).toBe(1);
     expect(result.report.attempts[1]).toMatchObject({ sheet: 'a4', strategy: 'annotation-offset', accepted: true });
@@ -138,7 +140,7 @@ return rotor;` },
       readReport: () => undefined,
       render: async sheet => sheet === 'a3' ? generate(420, 180) : generate(594, 200),
     });
-    expect(result.report.status).toBe('verified');
+    expect(result.report.status).toBe('incomplete');
     expect(result.report.repaired).toBe(true);
     expect(result.report.attemptCount).toBe(1);
     expect(result.artifact).toContain('viewBox="0 0 420 210"');

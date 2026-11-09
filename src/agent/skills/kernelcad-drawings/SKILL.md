@@ -51,8 +51,11 @@ The default export path remains unchanged unless `visualQa` is supplied.
 Read `drawingReport.visualQa` from the export result. The report includes
 `status` (`verified`, `needs-review`, or `incomplete`), issue codes and
 sheet locations, the list of rejected/accepted attempts, and a separate PDF
-readback report. A `verified` result means the declared checks passed; it is
-**not** proof of tolerance, physical fit, or manufacturing-standard compliance.
+readback report. A `verified` result requires a **complete declared critical-dimension review**
+and passing layout checks. Without a declared critical-dimension contract, the
+result remains `incomplete` even if every layout check passes. An unresolved
+critical dimension or drawing decision results in `needs-review`. None of these
+statuses certifies physical fit, tolerances, or manufacturing-standard compliance.
 
 The repair loop first moves annotations already reported as crowded using the
 existing offset option, then tries progressively larger ISO/ANSI sheet sizes.
