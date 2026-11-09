@@ -4,22 +4,25 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
-## Catalog quality snapshot (2026-11-06)
+## Catalog quality snapshot (2026-11-09)
 
-The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
-across 49 rich kits, with no failing assets. The latest visual follow-up
-refined three existing construction-equipment assets whose previews still read
-as stacked primitives. The towable tower now has a wheeled generator trailer,
-four screw jacks, a telescoping mast and a selectable lamp bank; the ride-on
-trowel separates its two open blade guards, engine, seat and paired controls;
-the batch plant shows its aggregate hoppers, feed conveyor, mixer and framed
-silo. Each asset retains two named palettes, adds four material controls and
-has two real shape choices beyond scale. The [construction-equipment
-silhouette handoff](../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md)
+The current catalog quality gate reports **2,402/2,402 assets passing
+(100.00%) across 50 rich kits**, with no failing assets. The recycling-facility
+kit contains 153 assets, all passing; all 153 have kit-local rendered previews
+and matching source hashes in the generated index. This is a local branch
+snapshot, not a deployment or hardware-acceptance claim.
+
+The Nov 6 construction-equipment visual follow-up refined three existing
+assets whose previews still read as stacked primitives. The towable tower now
+has a wheeled generator trailer, four screw jacks, a telescoping mast and a
+selectable lamp bank; the ride-on trowel separates its two open blade guards,
+engine, seat and paired controls; the batch plant shows its aggregate hoppers,
+feed conveyor, mixer and framed silo. Each asset retains two named palettes,
+adds four material controls and has two real shape choices beyond scale. The
+[construction-equipment silhouette handoff](../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md)
 records source-driven variants, regenerated previews and index, local checks
-and the inspected MP4. It adds no asset IDs; the pass rate remains
-2,390/2,390 (100.00%). This branch is not deployed, so no live-site or
-equipment-acceptance claim is made.
+and the inspected MP4. It added no asset IDs. This branch is not deployed, so
+no live-site or equipment-acceptance claim is made.
 repaired the existing `office/scissors` default view by adding two polymer
 handle tangs between the finger loops and brass pivot. Its stainless-steel,
 polymer, and brass controls and `professional` / `classroom` presets remain;
