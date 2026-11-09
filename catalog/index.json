@@ -227657,15 +227657,19 @@
     {
       "id": "front-load-dumpster-lid",
       "kit": "recycling-facility",
-      "title": "Front-load wheeled container",
-      "description": "Front-load wheeled container: a tall cart body with a separate raised lid, visible rear push handle and four ground-contact wheels. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "title": "Front-load dumpster",
+      "description": "Front-load commercial dumpster at about real size: steel body with slanted lower front and reinforcing top rail, square fork pockets on both sides, two split plastic lids hinged at the back (one flipped open over the cavity), drain plug, stencilled panel and four swivel casters. Material controls: body (painted steel), lids (HDPE), fork pockets and rails, casters. municipal, weathered, cardboard and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "dumpster",
+        "front load",
+        "commercial bin",
+        "waste container",
+        "containers",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -227678,8 +227682,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/front-load-dumpster-lid.kcad.ts",
       "preview": "/assets/recycling-facility-front-load-dumpster-lid.png",
-      "sourceSha256": "471f5882bd36045ccb5954aabc208960c35273cc82182446c32f2f4289df6572",
-      "triangleBudget": 1800,
+      "sourceSha256": "57e458670753b6059d7f6dbf9bc4c39152bf2ba1c018068fb91964d22907ef2b",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -227691,78 +227695,168 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#806d5d",
-          "label": "Painted steel"
+          "default": "#2f6b45",
+          "label": "Body (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "lids",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#24282b",
+          "label": "Lids (HDPE)"
         },
         {
-          "name": "rubber",
+          "name": "pockets",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#3d4448",
+          "label": "Fork pockets and rails (steel)"
+        },
+        {
+          "name": "casters",
+          "type": "color",
+          "default": "#c9ced1",
+          "label": "Casters and drain (zinc/rubber)"
         }
       ],
       "presets": {
+        "municipal": {
+          "body": "#2f6b45",
+          "lids": "#24282b",
+          "pockets": "#3d4448",
+          "casters": "#c9ced1"
+        },
         "weathered": {
-          "paintedSteel": "#7b6c5c",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "body": "#5d5a48",
+          "lids": "#3a3a36",
+          "pockets": "#6a4a36",
+          "casters": "#8f8a80"
+        },
+        "cardboard": {
+          "body": "#2f5d9a",
+          "lids": "#2f5d9a",
+          "pockets": "#30363a",
+          "casters": "#c9ced1"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#d77632",
+          "lids": "#24282b",
+          "pockets": "#2b2e30",
+          "casters": "#e8e6dc"
         }
       },
       "stats": {
-        "triangles": 412,
+        "triangles": 1336,
         "sizeM": [
-          1.205,
-          1.32,
-          0.8486
+          2.19,
+          2.519636,
+          1.831058
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#806d5d",
+          "name": "body",
+          "color": "#2f6b45",
           "parts": [
-            "top-lid",
-            "cart-body",
-            "front-lip"
+            "body",
+            "front-rib--560",
+            "front-rib-0",
+            "front-rib-560",
+            "stencil-band"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "pockets",
+          "color": "#3d4448",
           "parts": [
-            "lid-hinge",
-            "front-rib-left",
-            "front-rib-right",
-            "push-handle-left",
-            "push-handle-right"
+            "top-rail-front",
+            "top-rail-back",
+            "top-rail-side--1",
+            "top-rail-side-1",
+            "front-skirt",
+            "fork-pocket--1",
+            "gusset--1--350",
+            "gusset--1-380",
+            "fork-pocket-1",
+            "gusset-1--350",
+            "gusset-1-380",
+            "hinge--462--260",
+            "hinge--462-260",
+            "hinge-462--260",
+            "hinge-462-260"
           ],
-          "param": "stainlessSteel"
+          "param": "pockets"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "stencil-panel",
+          "color": "#e8e6dc",
           "parts": [
-            "handle-grip",
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "stencil-panel"
+          ]
+        },
+        {
+          "name": "lids",
+          "color": "#24282b",
+          "parts": [
+            "lid-closed",
+            "lid-open"
           ],
-          "param": "rubber"
+          "param": "lids"
+        },
+        {
+          "name": "bag--650--250",
+          "color": "#d9dcd6",
+          "parts": [
+            "bag--650--250",
+            "bag-neck--650--250",
+            "bag--160-230",
+            "bag-neck--160-230"
+          ]
+        },
+        {
+          "name": "bag--250--330",
+          "color": "#3a3f44",
+          "parts": [
+            "bag--250--330",
+            "bag-neck--250--330"
+          ]
+        },
+        {
+          "name": "bag--500-200",
+          "color": "#4b79b8",
+          "parts": [
+            "bag--500-200",
+            "bag-neck--500-200"
+          ]
+        },
+        {
+          "name": "casters",
+          "color": "#c9ced1",
+          "parts": [
+            "caster-plate--765-475",
+            "caster-fork--765-475",
+            "caster-plate--765--230",
+            "caster-fork--765--230",
+            "caster-plate-765-475",
+            "caster-fork-765-475",
+            "caster-plate-765--230",
+            "caster-fork-765--230",
+            "drain-plug"
+          ],
+          "param": "casters"
+        },
+        {
+          "name": "caster-wheel--765-475",
+          "color": "#2b2e30",
+          "parts": [
+            "caster-wheel--765-475",
+            "caster-wheel--765--230",
+            "caster-wheel-765-475",
+            "caster-wheel-765--230"
+          ]
         }
       ]
     },
@@ -243541,14 +243635,20 @@
       "id": "sample-material-tote",
       "kit": "recycling-facility",
       "title": "Sample material tote",
-      "description": "Sample material tote: its skids, top cover and access. Low-poly visualization prop. Material controls: stainless steel, painted steel, rubber.",
+      "description": "Attached-lid sample tote on a dolly at about real size: tapered ribbed polypropylene crate with hand-hold slots, two split lids folded open on side hinges, clipped sample tag, a mixed recyclables sample inside (cans, PET bottles, a carton) and a four-castor dolly. Material controls: tote, lids, sample tag and dolly. audit, weathered, foodGrade and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "tote",
+        "crate",
+        "sample",
+        "waste audit",
+        "composition",
+        "containers",
+        "dolly",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -243561,8 +243661,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/sample-material-tote.kcad.ts",
       "preview": "/assets/recycling-facility-sample-material-tote.png",
-      "sourceSha256": "b2d89e95ebd4ce4b04af52884a7f56fc0c09b64500aac858ab50cf8994b1c48f",
-      "triangleBudget": 1800,
+      "sourceSha256": "3f98e7fc95faf9da4c415e5266ed8eec2faf4b5a7da3d1e511d3620847b6ed99",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -243574,75 +243674,168 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tote",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6fb0",
+          "label": "Tote (polypropylene)"
         },
         {
-          "name": "paintedSteel",
+          "name": "lids",
           "type": "color",
-          "default": "#60766f",
-          "label": "Painted steel"
+          "default": "#24577f",
+          "label": "Lids (polypropylene)"
         },
         {
-          "name": "rubber",
+          "name": "tag",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#f0b429",
+          "label": "Sample tag"
+        },
+        {
+          "name": "dolly",
+          "type": "color",
+          "default": "#3b3f42",
+          "label": "Dolly and castors"
         }
       ],
       "presets": {
+        "audit": {
+          "tote": "#2f6fb0",
+          "lids": "#24577f",
+          "tag": "#f0b429",
+          "dolly": "#3b3f42"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#657268",
-          "rubber": "#3c403e"
+          "tote": "#4f6878",
+          "lids": "#3f5260",
+          "tag": "#c9b48a",
+          "dolly": "#4a4540"
+        },
+        "foodGrade": {
+          "tote": "#e8e6dc",
+          "lids": "#cfd2cc",
+          "tag": "#2f8a5a",
+          "dolly": "#8f989c"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tote": "#d4402a",
+          "lids": "#a83224",
+          "tag": "#f2efe6",
+          "dolly": "#24282b"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 1096,
         "sizeM": [
-          1.29,
-          1.055,
-          0.9725
+          0.743629,
+          0.513907,
+          0.426496
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "dolly",
+          "color": "#3b3f42",
           "parts": [
-            "base-skids",
-            "handle-left",
-            "handle-right"
+            "dolly-frame",
+            "castor-horn--1--1",
+            "castor-horn--1-1",
+            "castor-horn-1--1",
+            "castor-horn-1-1",
+            "tag-clip"
           ],
-          "param": "stainlessSteel"
+          "param": "dolly"
         },
         {
-          "name": "paintedSteel",
-          "color": "#60766f",
+          "name": "castor-wheel--1--1",
+          "color": "#24282b",
           "parts": [
-            "body",
-            "top-cover",
-            "access-panel"
-          ],
-          "param": "paintedSteel"
+            "castor-wheel--1--1",
+            "castor-wheel--1-1",
+            "castor-wheel-1--1",
+            "castor-wheel-1-1",
+            "tag-line"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "tote",
+          "color": "#2f6fb0",
           "parts": [
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "crate",
+            "rim",
+            "front-rib--200",
+            "front-rib--100",
+            "front-rib-0",
+            "front-rib-100",
+            "front-rib-200",
+            "side-rib--1--100",
+            "side-rib--1-0",
+            "side-rib--1-100",
+            "side-rib-1--100",
+            "side-rib-1-0",
+            "side-rib-1-100"
           ],
-          "param": "rubber"
+          "param": "tote"
+        },
+        {
+          "name": "lids",
+          "color": "#24577f",
+          "parts": [
+            "lid--1",
+            "hinge--1--120",
+            "hinge--1-120",
+            "lid-1",
+            "hinge-1--120",
+            "hinge-1-120"
+          ],
+          "param": "lids"
+        },
+        {
+          "name": "tag",
+          "color": "#f0b429",
+          "parts": [
+            "tag-card"
+          ],
+          "param": "tag"
+        },
+        {
+          "name": "sample-bed",
+          "color": "#8f8a80",
+          "parts": [
+            "sample-bed"
+          ]
+        },
+        {
+          "name": "can--180",
+          "color": "#c9ced1",
+          "parts": [
+            "can--180",
+            "can--90",
+            "can-120"
+          ]
+        },
+        {
+          "name": "bottle-60",
+          "color": "#7fc4c9",
+          "parts": [
+            "bottle-60"
+          ]
+        },
+        {
+          "name": "bottle-200",
+          "color": "#3f8f5a",
+          "parts": [
+            "bottle-200"
+          ]
+        },
+        {
+          "name": "carton",
+          "color": "#e8e6dc",
+          "parts": [
+            "carton"
+          ]
         }
       ]
     },
@@ -243650,14 +243843,19 @@
       "id": "scrap-steel-stillage",
       "kit": "recycling-facility",
       "title": "Scrap-steel stillage",
-      "description": "Scrap-steel stillage: its cart, lip and push handle. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Stackable steel stillage at about real size: square corner posts on raised fork-entry feet, stacking cones, galvanised rod-mesh walls, a front half-gate dropped open on its hinges, steel floor, load plate and a pile of rusty plate, angle and pipe offcuts. Material controls: frame (painted steel), mesh (galvanised), scrap and rating plate. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "stillage",
+        "scrap metal",
+        "ferrous",
+        "cage pallet",
+        "containers",
+        "forklift",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -243670,8 +243868,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/scrap-steel-stillage.kcad.ts",
       "preview": "/assets/recycling-facility-scrap-steel-stillage.png",
-      "sourceSha256": "7b16301ad5869e9d490e1ac22f18b15ea863b19f0aacff6c5ead3a6fa0b9c948",
-      "triangleBudget": 1800,
+      "sourceSha256": "d0b6cac97e12c4405d71fd49bb18be48411acae2741eaec8025948abd6c357ee",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -243683,74 +243881,170 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#4f7080",
-          "label": "Painted steel"
+          "default": "#2f5d9a",
+          "label": "Frame (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "mesh",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#a8b0b0",
+          "label": "Mesh walls (galvanised)"
         },
         {
-          "name": "rubber",
+          "name": "scrap",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#8a5a3c",
+          "label": "Scrap (rusty steel)"
+        },
+        {
+          "name": "plate",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Rating plate"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#2f5d9a",
+          "mesh": "#a8b0b0",
+          "scrap": "#8a5a3c",
+          "plate": "#f0b429"
+        },
         "weathered": {
-          "paintedSteel": "#5a6e74",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "frame": "#4b5560",
+          "mesh": "#7f8580",
+          "scrap": "#6e4630",
+          "plate": "#b89a4a"
+        },
+        "stainless": {
+          "frame": "#3b3f42",
+          "mesh": "#c9ced1",
+          "scrap": "#b8bec2",
+          "plate": "#e8e6dc"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e0b020",
+          "mesh": "#a8b0b0",
+          "scrap": "#8a5a3c",
+          "plate": "#d4402a"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 2014,
         "sizeM": [
-          1.0414,
-          0.7474,
-          0.8486
+          1.28,
+          1.07,
+          1.186
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#4f7080",
+          "name": "frame",
+          "color": "#2f5d9a",
           "parts": [
-            "cart-body",
-            "front-lip"
+            "foot--1--1",
+            "post--1--1",
+            "cone--1--1",
+            "foot--1-1",
+            "post--1-1",
+            "cone--1-1",
+            "foot-1--1",
+            "post-1--1",
+            "cone-1--1",
+            "foot-1-1",
+            "post-1-1",
+            "cone-1-1",
+            "base-rail-y--1",
+            "base-rail-y-1",
+            "base-rail-x--1",
+            "base-rail-x-1",
+            "floor",
+            "top-rail-x--1",
+            "top-rail-x-1",
+            "top-rail-back",
+            "gate-sill",
+            "drop-gate"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "mesh",
+          "color": "#a8b0b0",
           "parts": [
-            "push-handle-left",
-            "push-handle-right"
+            "mesh-back--442",
+            "mesh-back--344",
+            "mesh-back--245",
+            "mesh-back--147",
+            "mesh-back--49",
+            "mesh-back-49",
+            "mesh-back-147",
+            "mesh-back-245",
+            "mesh-back-344",
+            "mesh-back-442",
+            "mesh-side--1--342",
+            "mesh-side--1--244",
+            "mesh-side--1--147",
+            "mesh-side--1--49",
+            "mesh-side--1-49",
+            "mesh-side--1-147",
+            "mesh-side--1-244",
+            "mesh-side--1-342",
+            "mesh-side-1--342",
+            "mesh-side-1--244",
+            "mesh-side-1--147",
+            "mesh-side-1--49",
+            "mesh-side-1-49",
+            "mesh-side-1-147",
+            "mesh-side-1-244",
+            "mesh-side-1-342",
+            "mesh-hrail-back-400",
+            "mesh-hrail-side--1-400",
+            "mesh-hrail-side-1-400",
+            "mesh-hrail-back-640",
+            "mesh-hrail-side--1-640",
+            "mesh-hrail-side-1-640",
+            "mesh-front--442",
+            "mesh-front--344",
+            "mesh-front--245",
+            "mesh-front--147",
+            "mesh-front--49",
+            "mesh-front-49",
+            "mesh-front-147",
+            "mesh-front-245",
+            "mesh-front-344",
+            "mesh-front-442",
+            "gate-hinge--1",
+            "gate-hinge-1",
+            "pipe-100",
+            "pipe--220"
           ],
-          "param": "stainlessSteel"
+          "param": "mesh"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "plate",
+          "color": "#f0b429",
           "parts": [
-            "handle-grip",
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "rating-plate"
           ],
-          "param": "rubber"
+          "param": "plate"
+        },
+        {
+          "name": "scrap",
+          "color": "#8a5a3c",
+          "parts": [
+            "scrap-heap",
+            "plate--250--120",
+            "plate-180--80",
+            "plate-40-220",
+            "plate--330-200",
+            "angle--80",
+            "angle-280"
+          ],
+          "param": "scrap"
         }
       ]
     },
@@ -245188,14 +245482,19 @@
       "id": "textile-donation-cage",
       "kit": "recycling-facility",
       "title": "Textile donation cage",
-      "description": "Textile donation cage: its cart, lip and push handle. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Wheeled textile donation roll cage at about real size: zinc wire-mesh walls on a low deck with four castors, front gate swung wide open, header sign board on posts, tied clothing bags stacked inside and a strapped pair of shoes on the top. Material controls: cage (zinc wire), bags, sign board and castors. charity, weathered, municipal and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "textiles",
+        "clothing donation",
+        "reuse",
+        "roll cage",
+        "containers",
+        "drop-off",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -245208,8 +245507,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/textile-donation-cage.kcad.ts",
       "preview": "/assets/recycling-facility-textile-donation-cage.png",
-      "sourceSha256": "a9c021c1f2a0738e8a9b0558e44bb488d1d0db82938e2300e5a489e811616ce7",
-      "triangleBudget": 1800,
+      "sourceSha256": "43e6f5e75168e61734ff0aaadb66b870b62f237b5d8b5ce600872dac0c728151",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -245221,74 +245520,216 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cage",
           "type": "color",
-          "default": "#60766f",
-          "label": "Painted steel"
+          "default": "#b4bcbf",
+          "label": "Cage (zinc wire)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "bags",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#7a4fa0",
+          "label": "Clothing bags"
         },
         {
-          "name": "rubber",
+          "name": "sign",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2f8a5a",
+          "label": "Header sign"
+        },
+        {
+          "name": "castors",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Castors (rubber)"
         }
       ],
       "presets": {
+        "charity": {
+          "cage": "#b4bcbf",
+          "bags": "#7a4fa0",
+          "sign": "#2f8a5a",
+          "castors": "#2b2e30"
+        },
         "weathered": {
-          "paintedSteel": "#657268",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "cage": "#8c918d",
+          "bags": "#5a4a5e",
+          "sign": "#4f6b58",
+          "castors": "#3c403e"
+        },
+        "municipal": {
+          "cage": "#5f6a70",
+          "bags": "#2f5d9a",
+          "sign": "#d77632",
+          "castors": "#2b2e30"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "cage": "#e0b020",
+          "bags": "#d4402a",
+          "sign": "#24282b",
+          "castors": "#2b2e30"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 3258,
         "sizeM": [
-          1.189,
-          0.7978,
-          0.8486
+          1.041231,
+          2.17,
+          1.60815
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#60766f",
+          "name": "cage",
+          "color": "#b4bcbf",
           "parts": [
-            "cart-body",
-            "front-lip"
+            "deck",
+            "castor-horn--1--1",
+            "castor-horn--1-1",
+            "castor-horn-1--1",
+            "castor-horn-1-1",
+            "corner--1--1",
+            "corner--1-1",
+            "corner-1--1",
+            "corner-1-1",
+            "wire-back--326",
+            "wire-back--217",
+            "wire-back--109",
+            "wire-back-0",
+            "wire-back-109",
+            "wire-back-218",
+            "wire-back-326",
+            "wire-side--1--257",
+            "wire-side--1--154",
+            "wire-side--1--51",
+            "wire-side--1-51",
+            "wire-side--1-154",
+            "wire-side--1-257",
+            "wire-side-1--257",
+            "wire-side-1--154",
+            "wire-side-1--51",
+            "wire-side-1-51",
+            "wire-side-1-154",
+            "wire-side-1-257",
+            "hwire-back-396",
+            "hwire-side--1-396",
+            "hwire-side-1-396",
+            "hwire-back-621",
+            "hwire-side--1-621",
+            "hwire-side-1-621",
+            "hwire-back-847",
+            "hwire-side--1-847",
+            "hwire-side-1-847",
+            "hwire-back-1073",
+            "hwire-side--1-1073",
+            "hwire-side-1-1073",
+            "hwire-back-1299",
+            "hwire-side--1-1299",
+            "hwire-side-1-1299",
+            "hwire-back-1524",
+            "hwire-side--1-1524",
+            "hwire-side-1-1524",
+            "hwire-back-1740",
+            "hwire-side--1-1740",
+            "hwire-side-1-1740",
+            "front-gate",
+            "gate-hinge-370",
+            "gate-hinge-1450",
+            "sign-post--1",
+            "sign-post-1"
           ],
-          "param": "paintedSteel"
+          "param": "cage"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "castors",
+          "color": "#2b2e30",
           "parts": [
-            "push-handle-left",
-            "push-handle-right"
+            "castor-wheel--1--1",
+            "castor-wheel--1-1",
+            "castor-wheel-1--1",
+            "castor-wheel-1-1"
           ],
-          "param": "stainlessSteel"
+          "param": "castors"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "castor-brake--1",
+          "color": "#d4402a",
           "parts": [
-            "handle-grip",
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "castor-brake--1",
+            "castor-brake-1",
+            "gate-latch"
+          ]
+        },
+        {
+          "name": "sign",
+          "color": "#2f8a5a",
+          "parts": [
+            "sign-board"
           ],
-          "param": "rubber"
+          "param": "sign"
+        },
+        {
+          "name": "sign-band",
+          "color": "#f2efe6",
+          "parts": [
+            "sign-band",
+            "sign-icon"
+          ]
+        },
+        {
+          "name": "bags",
+          "color": "#7a4fa0",
+          "parts": [
+            "bag--220--120-210",
+            "bag-knot--220--120-210",
+            "bag-220-160-210",
+            "bag-knot-220-160-210",
+            "bag--230--110-600",
+            "bag-knot--230--110-600",
+            "bag--150-120-880",
+            "bag-knot--150-120-880"
+          ],
+          "param": "bags"
+        },
+        {
+          "name": "bag-200--150-210",
+          "color": "#d9dcd6",
+          "parts": [
+            "bag-200--150-210",
+            "bag-knot-200--150-210",
+            "bag-230-110-590",
+            "bag-knot-230-110-590"
+          ]
+        },
+        {
+          "name": "bag--200-170-210",
+          "color": "#3a3f44",
+          "parts": [
+            "bag--200-170-210",
+            "bag-knot--200-170-210",
+            "bag-180--130-860",
+            "bag-knot-180--130-860",
+            "shoe-sole--1",
+            "shoe-sole-1"
+          ]
+        },
+        {
+          "name": "bag-0-0-560",
+          "color": "#c9b48a",
+          "parts": [
+            "bag-0-0-560",
+            "bag-knot-0-0-560"
+          ]
+        },
+        {
+          "name": "shoe-upper--1",
+          "color": "#a8704a",
+          "parts": [
+            "shoe-upper--1",
+            "shoe-upper-1"
+          ]
         }
       ]
     },
@@ -245525,14 +245966,19 @@
       "id": "trommel-residue-bin",
       "kit": "recycling-facility",
       "title": "Trommel residue bin",
-      "description": "Trommel residue bin: its skids, top cover and access. Low-poly visualization prop. Material controls: stainless steel, painted steel, rubber.",
+      "description": "Self-dumping forklift hopper for trommel oversize at about real size: steel body with vertical back, rounded belly and sloped front on a rocker base with curved cradles, fork pockets, latch lever with release cord, lifting lugs, rolled top rim and a lumpy residue heap of film, wood and stones. Material controls: hopper (painted steel), base frame, residue and latch. plant, weathered, galvanised and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "trommel",
+        "residue",
+        "self-dumping hopper",
+        "tipping skip",
+        "forklift",
+        "containers",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -245545,8 +245991,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/trommel-residue-bin.kcad.ts",
       "preview": "/assets/recycling-facility-trommel-residue-bin.png",
-      "sourceSha256": "cbda032e7b457a9e14d83ec2b7a7b6ba2c8890e86d16227446232222c61ed711",
-      "triangleBudget": 1800,
+      "sourceSha256": "4596d17c0eb55125f766002ab3350cd58280a0adf73016f29d3bdd112adf6b3f",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -245558,75 +246004,159 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "hopper",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e0b020",
+          "label": "Hopper (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#4f7080",
-          "label": "Painted steel"
+          "default": "#3b3f42",
+          "label": "Base frame (steel)"
         },
         {
-          "name": "rubber",
+          "name": "residue",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#6b5a45",
+          "label": "Residue heap"
+        },
+        {
+          "name": "latch",
+          "type": "color",
+          "default": "#d4402a",
+          "label": "Latch and lever"
         }
       ],
       "presets": {
+        "plant": {
+          "hopper": "#e0b020",
+          "frame": "#3b3f42",
+          "residue": "#6b5a45",
+          "latch": "#d4402a"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6e74",
-          "rubber": "#3c403e"
+          "hopper": "#9a8240",
+          "frame": "#4a4540",
+          "residue": "#5a4a3a",
+          "latch": "#8a4a36"
+        },
+        "galvanised": {
+          "hopper": "#a8b0b0",
+          "frame": "#6a7276",
+          "residue": "#6b5a45",
+          "latch": "#f0b429"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "hopper": "#2f5d9a",
+          "frame": "#24282b",
+          "residue": "#7a6a52",
+          "latch": "#f0b429"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 852,
         "sizeM": [
-          1.47,
-          0.985,
-          0.9725
+          1.525905,
+          1.625565,
+          1.726
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
-          "parts": [
-            "base-skids",
-            "handle-left",
-            "handle-right"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "paintedSteel",
-          "color": "#4f7080",
+          "name": "hopper",
+          "color": "#e0b020",
           "parts": [
             "body",
-            "top-cover",
-            "access-panel"
+            "rim-back",
+            "rim-side--1",
+            "side-stiffener--1",
+            "rim-side-1",
+            "side-stiffener-1"
           ],
-          "param": "paintedSteel"
+          "param": "hopper"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "frame",
+          "color": "#3b3f42",
           "parts": [
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "lug--1",
+            "lug-1",
+            "cradle--1",
+            "cradle-1",
+            "cross--80",
+            "cross-420",
+            "fork-pocket--1",
+            "fork-pocket-1"
           ],
-          "param": "rubber"
+          "param": "frame"
+        },
+        {
+          "name": "latch",
+          "color": "#d4402a",
+          "parts": [
+            "latch-block",
+            "latch-lever",
+            "warning-plate"
+          ],
+          "param": "latch"
+        },
+        {
+          "name": "lever-grip",
+          "color": "#24282b",
+          "parts": [
+            "lever-grip"
+          ]
+        },
+        {
+          "name": "release-cord",
+          "color": "#e8e6dc",
+          "parts": [
+            "release-cord"
+          ]
+        },
+        {
+          "name": "residue",
+          "color": "#6b5a45",
+          "parts": [
+            "heap"
+          ],
+          "param": "residue"
+        },
+        {
+          "name": "timber--380",
+          "color": "#a8704a",
+          "parts": [
+            "timber--380",
+            "timber--120"
+          ]
+        },
+        {
+          "name": "timber-150",
+          "color": "#8a5a3c",
+          "parts": [
+            "timber-150"
+          ]
+        },
+        {
+          "name": "stone--480",
+          "color": "#8f8a80",
+          "parts": [
+            "stone--480",
+            "stone-80",
+            "stone-260",
+            "stone--300"
+          ]
+        },
+        {
+          "name": "film--50",
+          "color": "#d9dcd6",
+          "parts": [
+            "film--50",
+            "film--560"
+          ]
         }
       ]
     },
