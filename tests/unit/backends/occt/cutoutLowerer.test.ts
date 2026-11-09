@@ -73,7 +73,7 @@ describe('cutoutLowerer — basic shapes', () => {
       const slot = path().moveTo(a, -5.5).lineTo(a, 4.5).lineTo(12.75, 4.5).lineTo(12.75, -5.5).close();
       return base.cutout(slot, { face: 'top', depth: 'through' });
     `;
-    const { diagnostics } = await lowerScript(code, false);
+    const { shape, diagnostics } = await lowerScript(code, false);
     const errs = (diagnostics as { severity: string; code: string; message: string; hint: string }[])
       .filter(d => d.severity === 'error');
     expect(errs).toEqual(expect.arrayContaining([
@@ -83,6 +83,7 @@ describe('cutoutLowerer — basic shapes', () => {
         hint: expect.stringContaining('parameter table'),
       }),
     ]));
+    expect(shape).toBeUndefined();
   });
 
   it('resolves arithmetic ParamRefs embedded in cutout sketch commands', async () => {
