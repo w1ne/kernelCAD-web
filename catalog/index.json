@@ -226046,10 +226046,17 @@
       "id": "feed-spreader",
       "kit": "recycling-facility",
       "title": "Feed spreader",
-      "description": "Feed spreader: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Vibratory feed spreader at about real size: lofted infeed chute, stainless flared pan tilted downhill on coil springs, twin out-of-balance vibrator motors on angled brackets, spreading fingers at the discharge lip, and a wide belt conveyor carrying the spread layer of bottles, cans and board away. Material controls: painted steel stand, stainless pan, rubber belt and mixed recyclables. linePaint, stainless, highVisibility and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "feed spreader",
+        "vibratory feeder",
+        "vibrating pan",
+        "spreader pan",
+        "sort line",
+        "belt conveyor",
+        "optical sorter feed",
         "recycling",
         "materials recovery",
         "waste management",
@@ -226066,8 +226073,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/feed-spreader.kcad.ts",
       "preview": "/assets/recycling-facility-feed-spreader.png",
-      "sourceSha256": "80eaf9f32fb9840b5e4078fa71afe2e651da787e1d43fe63bda72af4d6d7861d",
-      "triangleBudget": 1800,
+      "sourceSha256": "8823e9bbae5fa1ad893344fbcea5e438944a07f3634f5442007e3553d9690336",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -226079,64 +226086,220 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6fa8",
+          "label": "Stand and conveyor frame (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "pan",
           "type": "color",
-          "default": "#566d83",
-          "label": "Painted steel"
+          "default": "#b8c2c6",
+          "label": "Pan, chute and fingers (stainless steel)"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#26292b",
+          "label": "Belt and spring mounts (rubber)"
+        },
+        {
+          "name": "material",
+          "type": "color",
+          "default": "#7a9a5a",
+          "label": "Mixed recyclables on the line"
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5e6c76"
+        "linePaint": {
+          "frame": "#2f6fa8",
+          "pan": "#b8c2c6",
+          "rubber": "#26292b",
+          "material": "#7a9a5a"
+        },
+        "stainless": {
+          "frame": "#8f989c",
+          "pan": "#cfd6d8",
+          "rubber": "#2e3133",
+          "material": "#b38a55"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#f0b429",
+          "pan": "#a8b0b4",
+          "rubber": "#1e2022",
+          "material": "#5f8fc0"
+        },
+        "weathered": {
+          "frame": "#5a6a72",
+          "pan": "#8a8f86",
+          "rubber": "#3a3c3a",
+          "material": "#7a6a4a"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 4112,
         "sizeM": [
-          0.7428,
-          0.745,
-          2.7172
+          4.31,
+          2.09,
+          1.74
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "pan",
+          "color": "#b8c2c6",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "pan-floor",
+            "pan-side--1",
+            "pan-side-lip--1",
+            "pan-side-1",
+            "pan-side-lip-1",
+            "pan-back",
+            "finger-0",
+            "finger-1",
+            "finger-2",
+            "finger-3",
+            "finger-4",
+            "finger-5",
+            "finger-6",
+            "finger-7",
+            "finger-8",
+            "finger-9",
+            "finger-10",
+            "finger-11",
+            "finger-12",
+            "pan-rib--800",
+            "pan-rib--200",
+            "pan-rib-400",
+            "chute",
+            "pulley-600",
+            "pulley-2800"
           ],
-          "param": "stainlessSteel"
+          "param": "pan"
         },
         {
-          "name": "paintedSteel",
-          "color": "#566d83",
+          "name": "frame",
+          "color": "#2f6fa8",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "motor-bracket--1",
+            "motor-bracket-1",
+            "leg--1050--480",
+            "foot--1050--480",
+            "leg--1050-480",
+            "foot--1050-480",
+            "leg-450--760",
+            "foot-450--760",
+            "leg-450-760",
+            "foot-450-760",
+            "stand-rail-a",
+            "stand-rail-b",
+            "stand-cross",
+            "stand-cross-front",
+            "stand-brace",
+            "chute-rim",
+            "chute-post--1",
+            "chute-post-1",
+            "chute-arm--1",
+            "chute-arm-1",
+            "conv-stringer--1",
+            "conv-stringer-1",
+            "conv-leg-1400--1",
+            "conv-leg-1400-1",
+            "conv-leg-2600--1",
+            "conv-leg-2600-1"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "vibrator-motor--1",
+          "color": "#3f7f4a",
+          "parts": [
+            "vibrator-motor--1",
+            "motor-weight-cover--1--1",
+            "motor-weight-cover--1-1",
+            "vibrator-motor-1",
+            "motor-weight-cover-1--1",
+            "motor-weight-cover-1-1"
+          ]
+        },
+        {
+          "name": "material",
+          "color": "#7a9a5a",
+          "parts": [
+            "pan-layer",
+            "pan-lump--950",
+            "pan-lump--850",
+            "belt-item-1700",
+            "belt-item-2300"
+          ],
+          "param": "material"
+        },
+        {
+          "name": "pan-item--950",
+          "color": "#b38a55",
+          "parts": [
+            "pan-item--950",
+            "pan-item--100",
+            "pan-item-500",
+            "belt-item-1300",
+            "belt-item-1900",
+            "belt-item-2600"
+          ]
+        },
+        {
+          "name": "pan-item--850",
+          "color": "#7fb3d5",
+          "parts": [
+            "pan-item--850",
+            "pan-item--300",
+            "pan-item-400",
+            "belt-item-1500",
+            "belt-item-2100",
+            "belt-item-2500"
+          ]
+        },
+        {
+          "name": "pan-item--500",
+          "color": "#c0392b",
+          "parts": [
+            "pan-item--500",
+            "pan-item-150"
+          ]
+        },
+        {
+          "name": "rubber",
+          "color": "#26292b",
+          "parts": [
+            "spring-mount--1050--480",
+            "spring-mount--1050-480",
+            "spring-mount-450--760",
+            "spring-mount-450-760",
+            "chute-curtain",
+            "belt",
+            "skirt--1",
+            "skirt-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "spring-coil--1050--480-0",
+          "color": "#d0a020",
+          "parts": [
+            "spring-coil--1050--480-0",
+            "spring-coil--1050--480-1",
+            "spring-coil--1050--480-2",
+            "spring-coil--1050-480-0",
+            "spring-coil--1050-480-1",
+            "spring-coil--1050-480-2",
+            "spring-coil-450--760-0",
+            "spring-coil-450--760-1",
+            "spring-coil-450--760-2",
+            "spring-coil-450-760-0",
+            "spring-coil-450-760-1",
+            "spring-coil-450-760-2"
+          ]
         }
       ]
     },
@@ -234275,12 +234438,22 @@
       "id": "leachate-recirculation-pump",
       "kit": "recycling-facility",
       "title": "Leachate recirculation pump",
-      "description": "Leachate recirculation pump: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Landfill leachate recirculation pump set at about real size: concrete wet-well riser with steel hatch, HDPE suction line with gate valve and handwheel, end-suction centrifugal pump with volute and bearing frame, orange coupling guard, finned motor with fan cowl and terminal box on a fabricated baseplate, discharge riser with check valve, pressure gauge and elbow, and a control panel on a post with lamps and beacon. Material controls: cast iron pump and motor, HDPE pipework, concrete wet well, safety orange guard. plantBlue, sewageGreen, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "leachate",
+        "pump",
+        "centrifugal pump",
+        "recirculation",
+        "landfill",
+        "wet well",
+        "sump",
+        "HDPE pipe",
+        "gate valve",
+        "check valve",
+        "control panel",
         "recycling",
-        "materials recovery",
         "waste management",
         "organics",
         "low poly",
@@ -234295,8 +234468,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/leachate-recirculation-pump.kcad.ts",
       "preview": "/assets/recycling-facility-leachate-recirculation-pump.png",
-      "sourceSha256": "8fa83a946e9e56a77cfd07693c729c4493811c0344e8d077872ae536677d3870",
-      "triangleBudget": 1800,
+      "sourceSha256": "526857f6f7b7ad53e27aaaad5c564f468f6c5852c5ccb290fc3cf7357ed17073",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -234308,60 +234481,241 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "castIron",
           "type": "color",
-          "default": "#5e7759",
-          "label": "Painted steel"
+          "default": "#2f5fa8",
+          "label": "Pump, motor and baseplate (painted cast iron)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "hdpe",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#26292b",
+          "label": "Suction and discharge pipe (HDPE)"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a9a59b",
+          "label": "Wet-well riser (concrete)"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f07a1a",
+          "label": "Coupling guard and beacon (safety paint)"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#647359",
-          "stainlessSteel": "#9ea7a5"
+        "plantBlue": {
+          "castIron": "#2f5fa8",
+          "hdpe": "#26292b",
+          "concrete": "#a9a59b",
+          "safety": "#f07a1a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "sewageGreen": {
+          "castIron": "#3f7f4a",
+          "hdpe": "#2a2d2f",
+          "concrete": "#b3afa5",
+          "safety": "#f2c230"
+        },
+        "stainless": {
+          "castIron": "#a8b0b4",
+          "hdpe": "#3a3e40",
+          "concrete": "#c2bdb1",
+          "safety": "#e85d3a"
+        },
+        "weathered": {
+          "castIron": "#4a5a6a",
+          "hdpe": "#3a3a36",
+          "concrete": "#8a857a",
+          "safety": "#a8623a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2786,
         "sizeM": [
-          1.420627,
-          1.1125,
-          1.4102
+          3.78,
+          2,
+          2.195
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5e7759",
+          "name": "concrete",
+          "color": "#a9a59b",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "wet-well",
+            "wet-well-slab",
+            "plinth",
+            "pipe-support"
           ],
-          "param": "paintedSteel"
+          "param": "concrete"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "hatch",
+          "color": "#7f8a8c",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "hatch",
+            "panel-post",
+            "panel-foot"
+          ]
+        },
+        {
+          "name": "hatch-hinge",
+          "color": "#5d6366",
+          "parts": [
+            "hatch-hinge",
+            "hatch-tread-0",
+            "hatch-tread-1",
+            "hatch-tread-2",
+            "hatch-tread-3",
+            "hatch-tread-4",
+            "anchor--450--1",
+            "anchor--450-1",
+            "anchor-1250--1",
+            "anchor-1250-1",
+            "fan-cowl",
+            "flow-meter",
+            "flow-meter-display",
+            "conduit"
+          ]
+        },
+        {
+          "name": "hatch-padlock",
+          "color": "#c9a640",
+          "parts": [
+            "hatch-padlock"
+          ]
+        },
+        {
+          "name": "castIron",
+          "color": "#2f5fa8",
+          "parts": [
+            "baseplate",
+            "volute",
+            "volute-boss",
+            "volute-foot",
+            "suction-nozzle",
+            "suction-flange",
+            "discharge-nozzle",
+            "discharge-flange",
+            "bearing-frame",
+            "bearing-foot",
+            "motor",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "terminal-box",
+            "motor-foot-620",
+            "motor-foot-1140",
+            "gate-valve",
+            "valve-bonnet",
+            "valve-flange--980",
+            "valve-flange--720",
+            "check-valve",
+            "check-valve-cap"
           ],
-          "param": "stainlessSteel"
+          "param": "castIron"
+        },
+        {
+          "name": "safety",
+          "color": "#f07a1a",
+          "parts": [
+            "coupling-guard",
+            "guard-skirt",
+            "beacon"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "fan-grille",
+          "color": "#2f3437",
+          "parts": [
+            "fan-grille",
+            "cable-gland",
+            "gauge-body",
+            "beacon-base"
+          ]
+        },
+        {
+          "name": "nameplate",
+          "color": "#d8dcdc",
+          "parts": [
+            "nameplate",
+            "control-panel"
+          ]
+        },
+        {
+          "name": "hdpe",
+          "color": "#26292b",
+          "parts": [
+            "suction-pipe",
+            "suction-drop",
+            "suction-elbow",
+            "suction-elbow-run",
+            "discharge-pipe",
+            "discharge-elbow",
+            "discharge-run",
+            "discharge-drop",
+            "discharge-elbow-2"
+          ],
+          "param": "hdpe"
+        },
+        {
+          "name": "valve-stem",
+          "color": "#c9ced1",
+          "parts": [
+            "valve-stem",
+            "gauge-tee"
+          ]
+        },
+        {
+          "name": "handwheel",
+          "color": "#c0392b",
+          "parts": [
+            "handwheel",
+            "handwheel-spoke-0",
+            "handwheel-spoke-60",
+            "handwheel-spoke-120",
+            "gauge-needle",
+            "lamp-fault",
+            "isolator-handle"
+          ]
+        },
+        {
+          "name": "gauge-dial",
+          "color": "#f2f2ec",
+          "parts": [
+            "gauge-dial"
+          ]
+        },
+        {
+          "name": "panel-door-seam",
+          "color": "#b8bcbc",
+          "parts": [
+            "panel-door-seam"
+          ]
+        },
+        {
+          "name": "lamp-run",
+          "color": "#2e9a63",
+          "parts": [
+            "lamp-run"
+          ]
+        },
+        {
+          "name": "isolator",
+          "color": "#f2c230",
+          "parts": [
+            "isolator"
+          ]
         }
       ]
     },
@@ -235062,12 +235416,20 @@
       "id": "litter-control-cannon",
       "kit": "recycling-facility",
       "title": "Litter control cannon",
-      "description": "Litter control cannon: its mobile chassis, turntable and elevation. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Towed mist cannon for dust and litter control at about real size: open fan barrel on a slewing yoke tilted up 25 degrees, spray nozzle ring round the mouth, fan blades, drive motor and rear guard inside, elevation ram, single-axle trailer with A-frame drawbar, jockey wheel, mudguards and rear stabiliser legs, water tank and generator set with exhaust. Material controls: painted body, water tank, stainless nozzles and fittings, rubber tyres. siteYellow, councilGreen, hireRed and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "mist cannon",
+        "fog cannon",
+        "dust suppression",
+        "litter control",
+        "odour control",
+        "landfill",
+        "tipping face",
+        "trailer",
+        "spray",
         "recycling",
-        "materials recovery",
         "waste management",
         "residuals",
         "low poly",
@@ -235082,8 +235444,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/litter-control-cannon.kcad.ts",
       "preview": "/assets/recycling-facility-litter-control-cannon.png",
-      "sourceSha256": "dbb65d434eaa3766cdb899314626d208e0bb69e1dfa4a742db89c295c30b4969",
-      "triangleBudget": 1800,
+      "sourceSha256": "a1310a8c218cced41648caa0105a19d8996b6911413500380dbfc58b8d0417a5",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -235095,74 +235457,207 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#7c6955",
-          "label": "Painted steel"
+          "default": "#e8b020",
+          "label": "Barrel, trailer and generator (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6fa8",
+          "label": "Water tank (polyethylene)"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9ced1",
+          "label": "Nozzle ring, wheel rims and fittings (stainless)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#26292b",
+          "label": "Tyres and hoses (rubber)"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#786a56",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+        "siteYellow": {
+          "body": "#e8b020",
+          "tank": "#2f6fa8",
+          "metal": "#c9ced1",
+          "rubber": "#26292b"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "councilGreen": {
+          "body": "#3f7f4a",
+          "tank": "#e8e6dc",
+          "metal": "#b8c0c4",
+          "rubber": "#2a2d2f"
+        },
+        "hireRed": {
+          "body": "#c0392b",
+          "tank": "#2a2d2f",
+          "metal": "#d8dcdc",
+          "rubber": "#1e2022"
+        },
+        "weathered": {
+          "body": "#a8823a",
+          "tank": "#5a7a8a",
+          "metal": "#8f9496",
+          "rubber": "#3a3c3a"
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 3848,
         "sizeM": [
-          1.12,
-          0.7958,
-          1.1294
+          3.585,
+          2.141106,
+          1.718789
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#7c6955",
+          "name": "body",
+          "color": "#e8b020",
           "parts": [
-            "mobile-chassis",
-            "turntable",
-            "elevation-frame-left",
-            "elevation-frame-right",
-            "spray-barrel",
-            "fan-hub"
+            "chassis-rail--1",
+            "chassis-rail-1",
+            "chassis-cross--950",
+            "chassis-cross-200",
+            "chassis-cross-1350",
+            "drawbar--1",
+            "drawbar-1",
+            "mudguard--1",
+            "mudguard-1",
+            "stabiliser--1",
+            "stabiliser-1",
+            "tank-band",
+            "generator",
+            "generator-roof",
+            "slew-turret",
+            "yoke-arm--1",
+            "yoke-arm-1",
+            "yoke-cross",
+            "barrel",
+            "barrel-bead-front",
+            "motor-strut--1",
+            "motor-strut-1",
+            "ram-cylinder",
+            "pump-motor"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "deck",
+          "color": "#5d6366",
           "parts": [
-            "fan-ring"
+            "deck",
+            "hitch",
+            "axle",
+            "stabiliser-pad--1",
+            "stabiliser-pad-1",
+            "exhaust",
+            "exhaust-cap",
+            "slew-ring",
+            "fan-hub",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5"
+          ]
+        },
+        {
+          "name": "metal",
+          "color": "#c9ced1",
+          "parts": [
+            "hitch-eye",
+            "jockey-tube",
+            "rim--1",
+            "rim-1",
+            "stabiliser-pin--1",
+            "stabiliser-pin-1",
+            "trunnion--1",
+            "trunnion-1",
+            "nozzle-ring",
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3",
+            "nozzle-4",
+            "nozzle-5",
+            "nozzle-6",
+            "nozzle-7",
+            "nozzle-8",
+            "nozzle-9",
+            "nozzle-10",
+            "nozzle-11",
+            "rear-guard--3",
+            "rear-guard--2",
+            "rear-guard--1",
+            "rear-guard-0",
+            "rear-guard-1",
+            "rear-guard-2",
+            "rear-guard-3",
+            "elevation-ram"
           ],
-          "param": "stainlessSteel"
+          "param": "metal"
         },
         {
           "name": "rubber",
-          "color": "#303638",
+          "color": "#26292b",
           "parts": [
-            "wheel-left",
-            "wheel-right"
+            "jockey-handle",
+            "jockey-wheel",
+            "tyre--1",
+            "tyre-1",
+            "tank-lid",
+            "feed-hose"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "tank",
+          "color": "#2f6fa8",
+          "parts": [
+            "water-tank"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "louvre-0",
+          "color": "#2f3437",
+          "parts": [
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d8dcdc",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "fan-motor",
+          "color": "#3a4044",
+          "parts": [
+            "fan-motor"
+          ]
+        },
+        {
+          "name": "pump",
+          "color": "#3f7f4a",
+          "parts": [
+            "pump"
+          ]
         }
       ]
     },
@@ -239182,10 +239677,17 @@
       "id": "paper-bale-transport-frame",
       "kit": "recycling-facility",
       "title": "Paper bale transport frame",
-      "description": "Paper bale transport frame: its pallet, corner post and rail. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Stackable paper bale transport frame at about real size: welded base with two enclosed fork pockets, four corner posts with conical stacking pins and foot cups, X-braced ends, two ratchet straps, and a strapped paper bale with offset pressed layers, baling wires and a grade tag. Load choice (bale, empty). Material controls: painted steel frame, paper bale, polyester straps, ID plate and tag. millRed, galvanised, mixedPaper and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bale frame",
+        "bale cradle",
+        "transport frame",
+        "stacking frame",
+        "paper bale",
+        "fork pockets",
+        "ratchet strap",
         "recycling",
         "materials recovery",
         "waste management",
@@ -239202,8 +239704,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/paper-bale-transport-frame.kcad.ts",
       "preview": "/assets/recycling-facility-paper-bale-transport-frame.png",
-      "sourceSha256": "5aaa4ca815ac7309ea59be39c5ed367f92fe7622f0934e438993a27afa7f1e7e",
-      "triangleBudget": 1800,
+      "sourceSha256": "f5b04de445a440dcb7fed5a8454343a02cd0b9789967ca215cc860d1715f9ef5",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -239215,66 +239717,208 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#806d5d",
-          "label": "Painted steel"
+          "default": "#b8402f",
+          "label": "Frame, posts and braces (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "paper",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c9b48a",
+          "label": "Paper bale"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#f08c1a",
+          "label": "Ratchet straps (polyester)"
+        },
+        {
+          "name": "plate",
+          "type": "color",
+          "default": "#f2d23a",
+          "label": "ID plate and grade tag"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "bale",
+          "label": "Load",
+          "choices": [
+            "bale",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#7b6c5c",
-          "stainlessSteel": "#9ea7a5"
+        "millRed": {
+          "frame": "#b8402f",
+          "paper": "#c9b48a",
+          "strap": "#f08c1a",
+          "plate": "#f2d23a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "frame": "#a5adb0",
+          "paper": "#b38a55",
+          "strap": "#2f6fa8",
+          "plate": "#ffffff"
+        },
+        "mixedPaper": {
+          "frame": "#2f5fa8",
+          "paper": "#d8d2c2",
+          "strap": "#e0c020",
+          "plate": "#e85d3a"
+        },
+        "weathered": {
+          "frame": "#6a4a3a",
+          "paper": "#9a8a6a",
+          "strap": "#8a6a3a",
+          "plate": "#b9a44a"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 2576,
         "sizeM": [
-          1.27,
-          1.175,
-          0.9
+          1.34,
+          1.462,
+          0.99
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#806d5d",
+          "name": "frame",
+          "color": "#b8402f",
           "parts": [
-            "pallet-base"
+            "foot-cup--1-1",
+            "foot-cup-1-1",
+            "foot-cup--11",
+            "foot-cup-11",
+            "base-front",
+            "base-back",
+            "base-left",
+            "base-right",
+            "fork-pocket--1",
+            "fork-pocket-1",
+            "deck-slat-0",
+            "deck-slat-1",
+            "deck-slat-2",
+            "deck-slat-3",
+            "deck-slat-4",
+            "post--1-1",
+            "post-cap--1-1",
+            "post-1-1",
+            "post-cap-1-1",
+            "post--11",
+            "post-cap--11",
+            "post-11",
+            "post-cap-11",
+            "end-brace-a--1",
+            "end-brace-b--1",
+            "end-top-rail--1",
+            "end-brace-a-1",
+            "end-brace-b-1",
+            "end-top-rail-1",
+            "side-top-rail--1",
+            "side-top-rail-1"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "plate",
+          "color": "#f2d23a",
           "parts": [
-            "corner-post-left-front",
-            "corner-post-right-front",
-            "corner-post-left-back",
-            "corner-post-right-back",
-            "front-rail-1",
-            "rear-rail-1",
-            "front-rail-2",
-            "rear-rail-2",
-            "front-rail-3",
-            "rear-rail-3",
-            "side-rail-left",
-            "side-rail-right",
-            "corner-cap-a",
-            "corner-cap-b"
+            "id-plate",
+            "grade-tag"
           ],
-          "param": "stainlessSteel"
+          "param": "plate"
+        },
+        {
+          "name": "id-plate-text",
+          "color": "#2f3437",
+          "parts": [
+            "id-plate-text",
+            "ratchet-handle--1",
+            "ratchet-handle-1"
+          ]
+        },
+        {
+          "name": "stack-pin--1-1",
+          "color": "#5d6366",
+          "parts": [
+            "stack-pin--1-1",
+            "stack-pin-1-1",
+            "stack-pin--11",
+            "stack-pin-11",
+            "lash-ring--1-1",
+            "lash-ring-1-1",
+            "lash-ring--11",
+            "lash-ring-11",
+            "bale-wire-top-0",
+            "bale-wire-side-0--1",
+            "bale-wire-side-0-1",
+            "bale-wire-top-1",
+            "bale-wire-side-1--1",
+            "bale-wire-side-1-1",
+            "bale-wire-top-2",
+            "bale-wire-side-2--1",
+            "bale-wire-side-2-1",
+            "bale-wire-top-3",
+            "bale-wire-side-3--1",
+            "bale-wire-side-3-1"
+          ]
+        },
+        {
+          "name": "paper",
+          "color": "#c9b48a",
+          "parts": [
+            "bale-layer-0",
+            "bale-layer-3",
+            "bale-layer-5",
+            "bale-layer-8"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "bale-layer-1",
+          "color": "#e6e1d4",
+          "parts": [
+            "bale-layer-1",
+            "bale-layer-4",
+            "bale-layer-7",
+            "scrap-sheet"
+          ]
+        },
+        {
+          "name": "bale-layer-2",
+          "color": "#8f6e46",
+          "parts": [
+            "bale-layer-2",
+            "bale-layer-6"
+          ]
+        },
+        {
+          "name": "strap",
+          "color": "#f08c1a",
+          "parts": [
+            "strap-top--1",
+            "strap-side--1--1",
+            "strap-side--1-1",
+            "strap-top-1",
+            "strap-side-1--1",
+            "strap-side-1-1"
+          ],
+          "param": "strap"
+        },
+        {
+          "name": "ratchet--1",
+          "color": "#4a4f52",
+          "parts": [
+            "ratchet--1",
+            "ratchet-1"
+          ]
         }
       ]
     },
@@ -245993,14 +246637,21 @@
       "id": "stormwater-settling-basin",
       "kit": "recycling-facility",
       "title": "Stormwater settling basin",
-      "description": "Stormwater settling basin: its basin floor, berm and walkway. Low-poly visualization prop. Material controls: concrete, painted steel, stainless steel.",
+      "description": "Yard stormwater settling basin at about real size: grassed earth berm with a sloped concrete lining, inlet headwall with drain pipe and riprap apron, forebay baffle wall, square outlet riser with steel trash rack and outlet pipe, banded staff gauge, concrete maintenance ramp and inlet handrail. Material controls: grassed berm, concrete, standing water, steelwork. summer, dryWeather, algae and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stormwater",
+        "settling basin",
+        "sediment pond",
+        "detention basin",
+        "run-off",
+        "drainage",
+        "outlet riser",
+        "trash rack",
         "recycling",
         "materials recovery",
         "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -246013,8 +246664,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/stormwater-settling-basin.kcad.ts",
       "preview": "/assets/recycling-facility-stormwater-settling-basin.png",
-      "sourceSha256": "cb9af60441bee068b0ed3de501670a442dfa373e20a7c408f1a6da89ca8ea306",
-      "triangleBudget": 1800,
+      "sourceSha256": "a84ca001c9bebbd2644662050c2c5fe6a8192b505fb57a5dfb73707987c95a81",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -246026,73 +246677,178 @@
           "step": 0.05
         },
         {
+          "name": "berm",
+          "type": "color",
+          "default": "#6f8f4a",
+          "label": "Berm (grass)"
+        },
+        {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#b3afa5",
+          "label": "Lining, headwall and riser (concrete)"
         },
         {
-          "name": "paintedSteel",
+          "name": "water",
           "type": "color",
-          "default": "#64757a",
-          "label": "Painted steel"
+          "default": "#4f7f86",
+          "label": "Standing water"
         },
         {
-          "name": "stainlessSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d8a92a",
+          "label": "Trash rack, gauge post and handrail (steel)"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#68726f",
-          "stainlessSteel": "#9ea7a5"
+        "summer": {
+          "berm": "#6f8f4a",
+          "concrete": "#b3afa5",
+          "water": "#4f7f86",
+          "steel": "#d8a92a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "dryWeather": {
+          "berm": "#a99a5e",
+          "concrete": "#c2bdb1",
+          "water": "#8a7a5c",
+          "steel": "#d8a92a"
+        },
+        "algae": {
+          "berm": "#5d7f3c",
+          "concrete": "#9fa094",
+          "water": "#5f8a3e",
+          "steel": "#7f8a8c"
+        },
+        "weathered": {
+          "berm": "#7c7a52",
+          "concrete": "#8f8a80",
+          "water": "#4a5f5c",
+          "steel": "#8a5a3a"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1018,
         "sizeM": [
-          1.392,
-          1.25,
-          1.0798
+          6.5,
+          2.01,
+          6.201087
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "berm",
+          "color": "#6f8f4a",
           "parts": [
-            "basin-floor",
-            "front-berm",
-            "back-berm",
-            "left-berm",
-            "right-berm"
+            "berm"
+          ],
+          "param": "berm"
+        },
+        {
+          "name": "concrete",
+          "color": "#b3afa5",
+          "parts": [
+            "lining",
+            "baffle-wall",
+            "headwall",
+            "headwall-wing--1",
+            "headwall-wing-1",
+            "riser",
+            "outlet-endwall",
+            "ramp",
+            "ramp-kerb--1",
+            "ramp-kerb-1"
           ],
           "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#64757a",
+          "name": "water",
+          "color": "#4f7f86",
           "parts": [
-            "walkway"
+            "water"
           ],
-          "param": "paintedSteel"
+          "param": "water"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "inlet-pipe",
+          "color": "#5d6266",
           "parts": [
-            "sample-pipe",
-            "level-gauge"
+            "inlet-pipe",
+            "outlet-pipe"
+          ]
+        },
+        {
+          "name": "riprap--2280--260",
+          "color": "#8d877c",
+          "parts": [
+            "riprap--2280--260",
+            "riprap--2240-120",
+            "riprap--2160-380",
+            "riprap--2050--120",
+            "riprap--1980-240",
+            "riprap--2120--460",
+            "riprap--1900--320",
+            "riprap--1880-40"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#d8a92a",
+          "parts": [
+            "rack-bar-0",
+            "rack-bar-1",
+            "rack-bar-2",
+            "rack-bar-3",
+            "rack-bar-4",
+            "rack-bar-5",
+            "rack-frame-a",
+            "rack-frame-b",
+            "gauge-post",
+            "rail-post--1300",
+            "rail-post--400",
+            "rail-post-400",
+            "rail-post-1300",
+            "rail-top",
+            "rail-mid"
           ],
-          "param": "stainlessSteel"
+          "param": "steel"
+        },
+        {
+          "name": "riser-orifice-0",
+          "color": "#2f3437",
+          "parts": [
+            "riser-orifice-0",
+            "riser-orifice-1",
+            "riser-orifice-2"
+          ]
+        },
+        {
+          "name": "gauge-band-0",
+          "color": "#f2f2ec",
+          "parts": [
+            "gauge-band-0",
+            "gauge-band-2",
+            "gauge-band-4",
+            "warning-sign"
+          ]
+        },
+        {
+          "name": "gauge-band-1",
+          "color": "#c0392b",
+          "parts": [
+            "gauge-band-1",
+            "gauge-band-3",
+            "gauge-band-5"
+          ]
+        },
+        {
+          "name": "warning-sign-band",
+          "color": "#2f6fa8",
+          "parts": [
+            "warning-sign-band"
+          ]
         }
       ]
     },
