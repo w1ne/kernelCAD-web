@@ -2,3 +2,6 @@ examples/portfolio/**/*.mp4 binary
 examples/portfolio/**/*.step binary
 examples/portfolio/**/*.stl binary
 site/blog/rocket-engine-routing/engine-routed.step binary
+
+# Deterministic drawing QA artifacts have fixed PDF xref spacing.
+docs/demos/drawing-path-qa/*.pdf binary

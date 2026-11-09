@@ -5,6 +5,7 @@ import { SHEETS, type DrawingSheetSize, type DrawingViewName } from './drawingLa
 import type { DrawingReport } from './drawingAuto/contracts';
 import { runAdvanceEm, textRuns } from '../../export/pdf/helveticaMetrics';
 import { effectiveStyle, parseTransform } from '../../export/pdf/svgSheetToPdf';
+import { measureSvgPath, nodeMatrix, transformPoint, transformRectangle } from './drawingSvgPathBounds';
 import type { DrawingVisualQaCheck, DrawingVisualQaIssue, DrawingVisualQaIssueCode, DrawingVisualQaReport } from './drawingVisualQa';
 
 interface Bounds {
@@ -86,15 +87,6 @@ function numberAttr(node: SvgNode, key: string): number | undefined {
   return Number.isFinite(value) ? value : undefined;
 }
 
-function pathBounds(d: string): Bounds | undefined {
-  const commands = [...d.matchAll(/([ML])\s*(-?(?:\d+\.?\d*|\.\d+))\s*,?\s*(-?(?:\d+\.?\d*|\.\d+))/g)];
-  if (commands.length === 0) return undefined;
-  const xs = commands.map(m => Number(m[2]));
-  const ys = commands.map(m => Number(m[3]));
-  if (![...xs, ...ys].every(Number.isFinite)) return undefined;
-  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
-}
-
 function union(a: Bounds | undefined, b: Bounds | undefined): Bounds | undefined {
   if (!a) return b;
   if (!b) return a;
@@ -102,7 +94,7 @@ function union(a: Bounds | undefined, b: Bounds | undefined): Bounds | undefined
 }
 
 function boundsOf(node: SvgNode): Bounds | undefined {
-  return descendants(node, 'path').reduce<Bounds | undefined>((bounds, path) => union(bounds, pathBounds(path.attrs.d ?? '')), undefined);
+  return descendants(node, 'path').reduce<Bounds | undefined>((bounds, path) => union(bounds, measureSvgPath(path.attrs.d ?? '', nodeMatrix(path))), undefined);
 }
 
 /** A dimension group may contain lines and text rather than SVG paths. */
@@ -115,7 +107,10 @@ function annotationBounds(node: SvgNode): Bounds | undefined {
       const x1 = numberAttr(child, 'x1'), x2 = numberAttr(child, 'x2');
       const y1 = numberAttr(child, 'y1'), y2 = numberAttr(child, 'y2');
       if (x1 !== undefined && x2 !== undefined && y1 !== undefined && y2 !== undefined) {
-        result = union(result, { x0: Math.min(x1, x2), y0: Math.min(y1, y2), x1: Math.max(x1, x2), y1: Math.max(y1, y2) });
+        const points = [transformPoint(x1, y1, nodeMatrix(child)),
+          transformPoint(x2, y2, nodeMatrix(child))];
+        result = union(result, { x0: Math.min(...points.map(pt => pt[0])), y0: Math.min(...points.map(pt => pt[1])),
+          x1: Math.max(...points.map(pt => pt[0])), y1: Math.max(...points.map(pt => pt[1])) });
       }
     }
   }
@@ -208,19 +203,23 @@ export function issue(
 }
 
 function dimensionPrimitiveBounds(node: SvgNode): Bounds | undefined {
-  if (node.tag === 'path') return pathBounds(node.attrs.d ?? '');
+  const matrix = nodeMatrix(node);
+  if (node.tag === 'path') return measureSvgPath(node.attrs.d ?? '', matrix);
   if (node.tag === 'line') {
     const x1 = numberAttr(node, 'x1'), x2 = numberAttr(node, 'x2');
     const y1 = numberAttr(node, 'y1'), y2 = numberAttr(node, 'y2');
     if (x1 === undefined || x2 === undefined || y1 === undefined || y2 === undefined) return undefined;
-    return { x0: Math.min(x1, x2), y0: Math.min(y1, y2),
-      x1: Math.max(x1, x2), y1: Math.max(y1, y2) };
+    const points = [transformPoint(x1, y1, matrix), transformPoint(x2, y2, matrix)];
+    return { x0: Math.min(...points.map(p => p[0])), y0: Math.min(...points.map(p => p[1])),
+      x1: Math.max(...points.map(p => p[0])), y1: Math.max(...points.map(p => p[1])) };
   }
   if (node.tag === 'polyline' || node.tag === 'polygon') {
-    const points = [...(node.attrs.points ?? '').matchAll(/(-?[\\d.]+)[,\\s]+(-?[\\d.]+)/g)];
-    const xs = points.map(point => Number(point[1])), ys = points.map(point => Number(point[2]));
-    return points.length ? { x0: Math.min(...xs), x1: Math.max(...xs),
-      y0: Math.min(...ys), y1: Math.max(...ys) } : undefined;
+    const pts = (node.attrs.points ?? '').trim().split(/[\s,]+/).filter(Boolean).map(Number);
+    if (pts.length < 2 || pts.length % 2 !== 0 || !pts.every(Number.isFinite)) return undefined;
+    const points: Array<readonly [number, number]> = [];
+    for (let i = 0; i < pts.length; i += 2) points.push(transformPoint(pts[i]!, pts[i + 1]!, matrix));
+    return { x0: Math.min(...points.map(p => p[0])), y0: Math.min(...points.map(p => p[1])),
+      x1: Math.max(...points.map(p => p[0])), y1: Math.max(...points.map(p => p[1])) };
   }
   return undefined;
 }
@@ -325,7 +324,8 @@ function findTitleBounds(ctx: SvgInspection): Bounds | undefined {
   });
   if (!rect) return undefined;
   const x = numberAttr(rect, 'x')!, y = numberAttr(rect, 'y')!;
-  return { x0: x, y0: y, x1: x + numberAttr(rect, 'width')!, y1: y + numberAttr(rect, 'height')! };
+  return transformRectangle({ x0: x, y0: y, x1: x + numberAttr(rect, 'width')!,
+    y1: y + numberAttr(rect, 'height')! }, nodeMatrix(rect));
 }
 
 function inspectTitleClearance(ctx: SvgInspection, views: readonly PlacedView[], title: Bounds | undefined): void {
@@ -339,6 +339,27 @@ function inspectTitleClearance(ctx: SvgInspection, views: readonly PlacedView[],
   }
   ctx.checks.push({ id: 'title-block-clearance', status: obstructionCount ? 'failed' : 'passed',
     message: obstructionCount + ' view/title-block intersections.' });
+}
+
+function inspectUnmeasurablePaths(ctx: SvgInspection): void {
+  let invalid = 0;
+  for (const node of ctx.all) {
+    if (node.tag !== 'path' || !(node.attrs.d ?? '').trim()) continue;
+    let inDefinitions = false;
+    for (let parent = node.parent; parent; parent = parent.parent) {
+      if (parent.tag === 'defs' || parent.tag === 'pattern') {
+        inDefinitions = true;
+        break;
+      }
+    }
+    if (inDefinitions || measureSvgPath(node.attrs.d!, nodeMatrix(node))) continue;
+    invalid++;
+    ctx.issues.push(issue('exported-sheet-invalid',
+      'A serialized drawing path could not be measured safely.',
+      'Correct the unsupported or incomplete SVG path before approving this drawing.'));
+  }
+  ctx.checks.push({ id: 'vector-path-geometry', status: invalid ? 'failed' : 'passed',
+    message: invalid + ' visible paths with unmeasurable geometry.' });
 }
 
 function inspectText(ctx: SvgInspection): void {
@@ -467,6 +488,7 @@ export function analyzeExportedDrawingSvg(
   const sheet = sheetSizeFromSvg(root);
   if (!sheet) return failedDrawingSvg('Drawing SVG has no valid sheet size.');
   const ctx: SvgInspection = { root, sheet, all: descendants(root), report: input.drawingReport, issues: [], checks: [] };
+  inspectUnmeasurablePaths(ctx);
   const views = inspectViews(ctx, input.requestedViews ?? VIEW_NAMES);
   const title = findTitleBounds(ctx);
   inspectViewBounds(ctx, views);
