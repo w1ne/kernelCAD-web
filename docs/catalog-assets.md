@@ -12,6 +12,16 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 9 space-exploration refinement keeps all 52 existing IDs and deepens
+the component materials on 36 assets. Every asset retains two to four
+material-specific controls and the `lunarDust` / `highVisibility` presets; the
+wheel assembly stays at two controls because its aluminum hub and rubber tire
+are its distinct materials. The instrument arm now connects its rotating base,
+links, pivots and gripper, and the oxygen rack has separate brass valve
+fittings. The global quality gate remains **2,402/2,402 passing (100.00%)**.
+This branch is not deployed; the [local space-exploration handoff](../artifacts/catalog-demos/space-exploration-materials-20261109/README.md)
+records generated previews, source hashes, checks and the inspected MP4.
+
 The Nov 9 standard-components follow-up refined five existing models: the base
 mounting plate, blind flange, pipe coupling, pipe flange and rubber bumper. It
 added five material-named color controls and five named palette variants, plus

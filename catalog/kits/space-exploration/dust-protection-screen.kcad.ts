@@ -5,7 +5,7 @@ meta({
   name: "dust-protection-screen",
   license: 'CC0-1.0',
   title: "Dust protection screen",
-  description: "Portable low dust screen with three panels, side rails and broad floor skids. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Portable low dust screen with three panels, side rails and broad floor skids. Material controls: paint, aluminum, stainless steel; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#89877e", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const stainlessSteel = param('stainlessSteel', "#758589", { label: "Stainless protective mesh" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "stainlessSteel": "#8c8b80"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "stainlessSteel": "#d5aa42"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -35,11 +37,11 @@ const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxSh
 const br = (x: number,y: number,z: number,w: number,d: number,h: number,rx=0,ry=0) => boxShape(w,d,h).rotateX(rx).rotateY(ry).translate(x,y,z+h/2).scale(scale);
 
 const p = assembly("dust-protection-screen");
-p.part("panel-0",br(-360,0,390,320,45,780,0,-7).color(paint));
-p.part("panel-1",br(0,0,390,320,45,780,0,0).color(paint));
-p.part("panel-2",br(360,0,390,320,45,780,0,7).color(paint));
-p.part("top-rail",b(0,0,800,1080,65,55).color(aluminum));
-p.part("bottom-rail",b(0,0,15,1080,65,30).color(aluminum));
+p.part("panel-0",br(-360,0,390,320,45,780,0,-7).color(stainlessSteel));
+p.part("panel-1",br(0,0,390,320,45,780,0,0).color(stainlessSteel));
+p.part("panel-2",br(360,0,390,320,45,780,0,7).color(stainlessSteel));
+p.part("top-rail",b(0,0,800,1080,65,55).color(paint));
+p.part("bottom-rail",b(0,0,15,1080,65,30).color(paint));
 p.part("skid-left",b(-360,0,0,180,500,50).color(aluminum));
 p.part("skid-right",b(360,0,0,180,500,50).color(aluminum));
 

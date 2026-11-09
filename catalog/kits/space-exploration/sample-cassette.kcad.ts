@@ -5,7 +5,7 @@ meta({
   name: "sample-cassette",
   license: 'CC0-1.0',
   title: "Sample cassette carrier",
-  description: "Stackable sample cassette with four open cell blocks and a raised handle ridge. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Stackable sample cassette with four open cell blocks and a raised handle ridge. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#9b9078", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer sample cells" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -35,10 +37,10 @@ const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxSh
 
 const p = assembly("sample-cassette");
 p.part("base",b(0,0,0,720,500,50).color(paint));
-p.part("cell-0",b(-240,0,35,140,400,90).color(paint));
-p.part("cell-1",b(-80,0,35,140,400,90).color(paint));
-p.part("cell-2",b(80,0,35,140,400,90).color(paint));
-p.part("cell-3",b(240,0,35,140,400,90).color(paint));
+p.part("cell-0",b(-240,0,35,140,400,90).color(polymer));
+p.part("cell-1",b(-80,0,35,140,400,90).color(polymer));
+p.part("cell-2",b(80,0,35,140,400,90).color(polymer));
+p.part("cell-3",b(240,0,35,140,400,90).color(polymer));
 p.part("handle",b(0,0,145,520,55,45).color(aluminum));
 p.part("end-left",b(-350,0,45,40,520,110).color(paint));
 p.part("end-right",b(350,0,45,40,520,110).color(paint));

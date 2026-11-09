@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Field tool chest: Low tool chest with a hinged-looking lid, front drawer line and side grab handles. Stylized visualization geometry in millimetres, Z up.
+// Field tool chest: Low chest with a hinged lid, drawer seam, side carry handles and a contrasting front polymer latch. Stylized visualization geometry in millimetres, Z up.
 
 meta({
   name: "field-tool-chest",
   license: 'CC0-1.0',
   title: "Field tool chest",
-  description: "Low tool chest with a hinged-looking lid, front drawer line and side grab handles. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Low tool chest with a hinged-looking lid, front drawer line, side grab handles and a separate polymer latch. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#716c5e", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#d4a63f", { label: "Polymer latches" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -40,6 +42,6 @@ p.part("lid",br(0,0,170,820,540,180,4,0).color(paint));
 p.part("drawer",b(0,-258,35,550,20,90).color(paint));
 p.part("handle-left",b(-440,0,100,65,130,160).color(aluminum));
 p.part("handle-right",b(440,0,100,65,130,160).color(aluminum));
-p.part("latch",b(0,-280,185,100,30,65).color(aluminum));
+p.part("latch",b(0,-280,185,100,30,65).color(polymer));
 
 return p.model();

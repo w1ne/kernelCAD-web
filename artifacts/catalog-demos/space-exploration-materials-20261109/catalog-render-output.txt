@@ -1,0 +1,56 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts spectrometer-case surface-sensor-post sample-trailer-cart portable-science-console payload-container surface-utility-cart robotic-arm-pedestal surface-battery-bank surface-storage-shed specimen-tray power-distribution-unit survey-flag seismic-sensor rover-wheel-assembly oxygen-cylinder-rack lunar-rover-chassis habitat-spares-crate relay-beacon surface-antenna-mast equipment-locker field-lamp field-tool-chest orbital-communication-dish sample-canister drill-core-tube-rack emergency-shelter-pod science-instrument-tripod sample-drill-head inflatable-habitat-frame rover-charging-dock equipment-stanchion rover-dust-shield science-worktable lunar-habitat-module pressurized-tunnel-collar transport-sled dust-protection-screen regolith-sieve satellite-solar-wing surface-cable-bridge landing-gear-pod satellite-bus tracking-antenna-dish landing-pad-marker rover-tool-rack sample-cassette rover-seat cargo-airlock-pod airlock-hatch core-sampler habitat-corridor-section geological-hammer
+(node:3713475) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+space-exploration/airlock-hatch: 724 tris
+space-exploration/cargo-airlock-pod: 332 tris
+space-exploration/core-sampler: 360 tris
+space-exploration/drill-core-tube-rack: 420 tris
+space-exploration/dust-protection-screen: 420 tris
+space-exploration/emergency-shelter-pod: 420 tris
+space-exploration/equipment-locker: 360 tris
+space-exploration/equipment-stanchion: 240 tris
+space-exploration/field-lamp: 300 tris
+space-exploration/field-tool-chest: 360 tris
+space-exploration/geological-hammer: 300 tris
+space-exploration/habitat-corridor-section: 348 tris
+space-exploration/habitat-spares-crate: 480 tris
+space-exploration/inflatable-habitat-frame: 468 tris
+space-exploration/landing-gear-pod: 300 tris
+space-exploration/landing-pad-marker: 360 tris
+space-exploration/lunar-habitat-module: 512 tris
+space-exploration/lunar-rover-chassis: 1452 tris
+space-exploration/orbital-communication-dish: 408 tris
+space-exploration/oxygen-cylinder-rack: 540 tris
+space-exploration/payload-container: 420 tris
+space-exploration/portable-science-console: 480 tris
+space-exploration/power-distribution-unit: 420 tris
+space-exploration/pressurized-tunnel-collar: 424 tris
+space-exploration/regolith-sieve: 540 tris
+space-exploration/relay-beacon: 480 tris
+space-exploration/robotic-arm-pedestal: 676 tris
+space-exploration/rover-charging-dock: 420 tris
+space-exploration/rover-dust-shield: 480 tris
+space-exploration/rover-seat: 360 tris
+space-exploration/rover-tool-rack: 480 tris
+space-exploration/rover-wheel-assembly: 888 tris
+space-exploration/sample-canister: 240 tris
+space-exploration/sample-cassette: 480 tris
+space-exploration/sample-drill-head: 300 tris
+space-exploration/sample-trailer-cart: 604 tris
+space-exploration/satellite-bus: 480 tris
+space-exploration/satellite-solar-wing: 480 tris
+space-exploration/science-instrument-tripod: 360 tris
+space-exploration/science-worktable: 420 tris
+space-exploration/seismic-sensor: 420 tris
+space-exploration/specimen-tray: 600 tris
+space-exploration/spectrometer-case: 360 tris
+space-exploration/surface-antenna-mast: 420 tris
+space-exploration/surface-battery-bank: 600 tris
+space-exploration/surface-cable-bridge: 300 tris
+space-exploration/surface-sensor-post: 420 tris
+space-exploration/surface-storage-shed: 480 tris
+space-exploration/surface-utility-cart: 544 tris
+space-exploration/survey-flag: 240 tris
+space-exploration/tracking-antenna-dish: 360 tris
+space-exploration/transport-sled: 480 tris

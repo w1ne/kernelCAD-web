@@ -5,7 +5,7 @@ meta({
   name: "emergency-shelter-pod",
   license: 'CC0-1.0',
   title: "Emergency shelter pod",
-  description: "Low emergency shelter capsule with raised end caps, foot pads and a top handle rail. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Low emergency shelter capsule with raised end caps, foot pads and a top handle rail. Material controls: paint, aluminum, thermal blanket; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#c98c52", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const thermalBlanket = param('thermalBlanket', "#b4a77f", { label: "Thermal blanket shell" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "thermalBlanket": "#c7ba96"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "thermalBlanket": "#d8bd70"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -41,7 +43,7 @@ const cylShape = (h: number,r: number,n=8) => {
 const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(x,y,z).scale(scale);
 
 const p = assembly("emergency-shelter-pod");
-p.part("shell",b(0,0,80,1100,650,600).color(paint));
+p.part("shell",b(0,0,80,1100,650,600).color(thermalBlanket));
 p.part("top",b(0,0,680,950,520,80).color(paint));
 p.part("end-a",c(-475,0,380,600,240,8).color(paint));
 p.part("end-b",c(475,0,380,600,240,8).color(paint));

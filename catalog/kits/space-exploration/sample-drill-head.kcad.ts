@@ -5,7 +5,7 @@ meta({
   name: "sample-drill-head",
   license: 'CC0-1.0',
   title: "Rock sample drill head",
-  description: "Compact drill head with a stepped barrel, mounting collar and rectangular drive block. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Compact drill head with a stepped barrel, mounting collar and rectangular drive block. Material controls: paint, aluminum, tungsten carbide; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#777e7a", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const carbide = param('carbide', "#707a80", { label: "Tungsten-carbide bit" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "carbide": "#77746c"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "carbide": "#c4a85f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -43,7 +45,7 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 const p = assembly("sample-drill-head");
 p.part("barrel",c(0,0,100,450,95,8).color(aluminum));
 p.part("collar",c(0,0,100,70,130,8).color(aluminum));
-p.part("bit",c(0,0,550,260,42,8).color(paint));
+p.part("bit",c(0,0,550,260,42,8).color(carbide));
 p.part("drive",b(0,130,270,300,220,240).color(paint));
 p.part("mount",b(0,0,0,430,370,80).color(aluminum));
 

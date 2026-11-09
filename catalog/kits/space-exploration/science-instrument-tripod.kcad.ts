@@ -5,7 +5,7 @@ meta({
   name: "science-instrument-tripod",
   license: 'CC0-1.0',
   title: "Science instrument tripod",
-  description: "Field instrument tripod with a short mast, mounting head and three splayed legs. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Field instrument tripod with a short mast, mounting head and three splayed legs. Material controls: paint, aluminum, ceramic; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#85887f", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const ceramic = param('ceramic', "#e0dac6", { label: "Ceramic instrument isolator" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "ceramic": "#d0c9b6"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "ceramic": "#f0c447"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -46,6 +48,6 @@ p.part("head",c(0,0,600,100,125,8).color(paint));
 p.part("leg-0",b(0,-150,0,40,50,650).color(aluminum));
 p.part("leg-1",b(-130,75,0,40,50,650).color(aluminum));
 p.part("leg-2",b(130,75,0,40,50,650).color(aluminum));
-p.part("mount",b(0,0,690,260,180,60).color(aluminum));
+p.part("mount",b(0,0,690,260,180,60).color(ceramic));
 
 return p.model();

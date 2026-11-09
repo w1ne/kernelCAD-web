@@ -1,0 +1,5 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "summary": "4 files passed; 15 tests passed; catalog index freshness case passed (759.68s total)",
+  "passed": true
+}

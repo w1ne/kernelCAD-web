@@ -1,26 +1,28 @@
 // SPDX-License-Identifier: CC0-1.0
-// Instrument arm pedestal: Static instrument-arm pedestal with a broad base, two block links and a tool-end mount. Stylized visualization geometry in millimetres, Z up.
+// Instrument arm pedestal: Supported two-link arm with separate shoulder, elbow and wrist pivots ending in paired gripper fingers. Stylized visualization geometry in millimetres, Z up.
 
 meta({
   name: "robotic-arm-pedestal",
   license: 'CC0-1.0',
   title: "Instrument arm pedestal",
-  description: "Static instrument-arm pedestal with a broad base, two block links and a tool-end mount. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Two supported instrument-arm links rise from a turntable through distinct shoulder and wrist pivots to a paired polymer gripper. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
   origin: 'base',
   compat: ['space', 'science', 'exploration', 'scene'],
-  triangleBudget: 596,
+  triangleBudget: 900,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const paint = param('paint', "#797e79", { label: "Painted shell" });
+const paint = param('paint', "#c9783b", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer gripper fingers" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -39,13 +41,18 @@ const cylShape = (h: number,r: number,n=8) => {
   return profiles[0].loft(profiles.slice(1), { planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0,0,z] as [number,number,number] })), ruled: true });
 };
 const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(x,y,z).scale(scale);
+const cy = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(0,0,-h/2).rotateX(90).translate(x,y,z).scale(scale);
 
 const p = assembly("robotic-arm-pedestal");
 p.part("base",b(0,0,0,520,520,70).color(paint));
 p.part("turntable",c(0,0,35,90,180,8).color(paint));
-p.part("lower-link",b(0,0,295,180,180,460).color(paint));
-p.part("upper-link",b(160,0,635,480,150,150).color(paint));
-p.part("joint",c(380,0,665,180,85,8).color(aluminum));
-p.part("tool-mount",b(520,0,685,160,180,100).color(aluminum));
-
+p.part("support-column",c(0,0,110,240,112,10).color(aluminum));
+p.part("lower-link",b(0,0,330,185,150,420).color(paint));
+p.part("shoulder-pivot",cy(0,0,405,190,104).color(aluminum));
+p.part("forearm",b(225,0,620,430,135,115).color(paint));
+p.part("elbow-pivot",cy(25,0,660,170,104).color(aluminum));
+p.part("wrist-pivot",cy(410,0,665,150,76).color(aluminum));
+p.part("tool-palm",b(500,0,625,150,190,90).color(aluminum));
+p.part("gripper-finger-left",b(620,70,620,150,24,110).color(polymer));
+p.part("gripper-finger-right",b(620,-70,620,150,24,110).color(polymer));
 return p.model();

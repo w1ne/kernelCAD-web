@@ -1,0 +1,5 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py",
+  "summary": "2,402/2,402 assets pass (50 rich kits, 0 thin kits)",
+  "passed": true
+}

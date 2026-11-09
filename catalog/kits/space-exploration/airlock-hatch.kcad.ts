@@ -5,7 +5,7 @@ meta({
   name: "airlock-hatch",
   license: 'CC0-1.0',
   title: "Airlock hatch",
-  description: "Circular pressure-door prop with an outer rim, central disk, handle and locking lugs. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Circular pressure-door prop with an outer rim, central disk, handle and locking lugs. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#737c7d", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const rubber = param('rubber', "#34383a", { label: "Rubber handle grip" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "rubber": "#514d44"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "rubber": "#252a2c"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -43,7 +45,7 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 const p = assembly("airlock-hatch");
 p.part("rim",c(0,0,0,55,360,12).color(aluminum));
 p.part("door",c(0,0,55,40,300,12).color(paint));
-p.part("handle",b(0,-315,95,140,25,42).color(aluminum));
+p.part("handle",b(0,-315,95,140,25,42).color(rubber));
 p.part("lug-0",c(0,-340,55,65,34,8).color(aluminum));
 p.part("lug-1",c(240,-240,55,65,34,8).color(aluminum));
 p.part("lug-2",c(340,0,55,65,34,8).color(aluminum));

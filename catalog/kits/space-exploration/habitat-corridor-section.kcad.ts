@@ -5,7 +5,7 @@ meta({
   name: "habitat-corridor-section",
   license: 'CC0-1.0',
   title: "Habitat corridor section",
-  description: "Short cylindrical pressure corridor with two raised seam rings and floor skids. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Short cylindrical pressure corridor with two raised seam rings and floor skids. Material controls: paint, aluminum, thermal blanket; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#9d9a8d", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const thermalBlanket = param('thermalBlanket', "#b4a77f", { label: "Thermal blanket shell" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "thermalBlanket": "#c7ba96"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "thermalBlanket": "#d8bd70"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -41,9 +43,9 @@ const cylShape = (h: number,r: number,n=8) => {
 const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(x,y,z).scale(scale);
 
 const p = assembly("habitat-corridor-section");
-p.part("tube",c(0,0,80,560,290,10).color(paint));
-p.part("ring-a",c(0,0,60,70,330,10).color(aluminum));
-p.part("ring-b",c(0,0,590,70,330,10).color(aluminum));
+p.part("tube",c(0,0,80,560,290,10).color(thermalBlanket));
+p.part("ring-a",c(0,0,60,70,330,10).color(paint));
+p.part("ring-b",c(0,0,590,70,330,10).color(paint));
 p.part("skid-left",b(0,-220,0,620,80,80).color(aluminum));
 p.part("skid-right",b(0,220,0,620,80,80).color(aluminum));
 
