@@ -85,6 +85,49 @@ describe('independent review regressions for drawing QA', () => {
     expect(qa.issues.map(i => i.code)).not.toContain('text-clipping');
   });
 
+  it('detects two distinct serialized annotation labels even when the placer reports no overlap', () => {
+    const svg = fixture(
+      '<g id="dimensions">' +
+      '<g data-kc-annotation-id="authored:first"><text x="100" y="70" font-size="3">NOTE A</text></g>' +
+      '<g data-kc-annotation-id="authored:second"><g data-kc-auto="note">' +
+      '<text x="100" y="70" font-size="3">NOTE B</text></g></g></g>');
+    const report = { annotations: [
+      { id: 'authored:first', overlapped: false },
+      { id: 'authored:second', overlapped: false },
+    ] };
+    const qa = analyzeExportedDrawingSvg(svg,
+      { requestedViews: ['front'], drawingReport: report as never });
+    expect(qa.status).toBe('needs-review');
+    expect(qa.issues).toContainEqual(expect.objectContaining({
+      code: 'annotation-collision', annotationId: 'authored:second',
+      location: expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
+    }));
+  });
+
+  it('checks annotation labels against visible view captions', () => {
+    const svg = fixture(
+      '<g id="view-front"><text class="view-label" x="100" y="70" font-size="3" text-anchor="middle">FRONT</text></g>' +
+      '<g id="dimensions"><g data-kc-annotation-id="authored:label">' +
+      '<text x="100" y="70" font-size="3" text-anchor="middle">FRONT LABEL</text></g></g>');
+    const qa = analyzeExportedDrawingSvg(svg,
+      { requestedViews: ['front'], drawingReport: { annotations: [
+        { id: 'authored:label', overlapped: false },
+      ] } as never });
+    expect(qa.issues.map(i => i.code)).toContain('annotation-collision');
+  });
+
+  it('does not flag intentionally nested text belonging to one annotation', () => {
+    const svg = fixture(
+      '<g id="dimensions"><g data-kc-annotation-id="authored:frame">' +
+      '<text x="100" y="70" font-size="3">A</text>' +
+      '<g data-kc-auto="fcf"><text x="100" y="70" font-size="3">B</text></g></g></g>');
+    const qa = analyzeExportedDrawingSvg(svg,
+      { requestedViews: ['front'], drawingReport: { annotations: [
+        { id: 'authored:frame', overlapped: false },
+      ] } as never });
+    expect(qa.issues.map(i => i.code)).not.toContain('annotation-collision');
+  });
+
   it('does not claim dimensional completeness when no critical review was declared (P1)', () => {
     const qa = analyzeExportedDrawingSvg(fixture(''), { requestedViews: ['front'] });
     expect(qa.status).toBe('incomplete');

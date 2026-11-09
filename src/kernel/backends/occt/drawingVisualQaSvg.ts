@@ -354,6 +354,64 @@ function inspectText(ctx: SvgInspection): void {
   ctx.checks.push({ id: 'text-bounds', status: clipped ? 'failed' : 'passed', message: clipped + ' clipped labels.' });
 }
 
+interface DrawingLabel {
+  owner?: string;
+  caption: boolean;
+  text: string;
+  bounds: Bounds;
+}
+
+function labelIdentity(node: SvgNode): { owner?: string; caption: boolean } {
+  const caption = node.attrs.class?.split(/\s+/).includes('view-label') ?? false;
+  for (let parent: SvgNode | undefined = node; parent; parent = parent.parent) {
+    if (parent.attrs['data-kc-annotation-id']) {
+      return { owner: parent.attrs['data-kc-annotation-id'], caption };
+    }
+  }
+  return { caption };
+}
+
+/** Independent serialized-label check: never trust placer overlap flags alone. */
+function visibleDrawingLabels(ctx: SvgInspection): DrawingLabel[] {
+  return ctx.all.flatMap(node => {
+    if (node.tag !== 'text') return [];
+    const identity = labelIdentity(node);
+    if (!identity.owner && !identity.caption) return [];
+    const bounds = textBounds(node);
+    return bounds ? [{ ...identity, text: descendantsText(node).trim(), bounds }] : [];
+  });
+}
+
+function inspectActualAnnotationCollisions(ctx: SvgInspection, alreadyReported: ReadonlySet<string>): number {
+  const labels = visibleDrawingLabels(ctx);
+  if (labels.length > 500) {
+    ctx.issues.push(issue('exported-sheet-invalid',
+      'Drawing has more than 500 inspected labels; collision check was not completed.',
+      'Split the drawing into sheets or reduce the visible callouts before approving it.'));
+    return 1;
+  }
+  let collisions = 0;
+  const reported = new Set(alreadyReported);
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      const a = labels[i]!, b = labels[j]!;
+      if (!a.owner && !b.owner) continue;
+      if (a.owner && b.owner && a.owner === b.owner) continue;
+      const shared = intersects(a.bounds, b.bounds, 0.5);
+      if (!shared) continue;
+      const target = b.owner ?? a.owner;
+      if (!target || reported.has(target)) continue;
+      ctx.issues.push(issue('annotation-collision',
+        'Serialized drawing labels overlap: ' + a.text + ' / ' + b.text + '.',
+        'Reposition the annotation, or select a larger drawing sheet.',
+        { annotationId: target, location: location(shared) }));
+      collisions++;
+      reported.add(target);
+    }
+  }
+  return collisions;
+}
+
 function inspectAnnotations(ctx: SvgInspection): void {
   const crowded = ctx.report?.annotations.filter(a => a.overlapped) ?? [];
   for (const a of crowded) {
@@ -363,8 +421,10 @@ function inspectAnnotations(ctx: SvgInspection): void {
       'Move the annotation or use a larger sheet.',
       { annotationId: a.id, ...(box ? { location: location(box) } : {}) }));
   }
-  ctx.checks.push({ id: 'annotation-placement', status: crowded.length ? 'failed' : ctx.report ? 'passed' : 'not-declared',
-    message: crowded.length + ' crowded annotations.' });
+  const collisions = inspectActualAnnotationCollisions(ctx, new Set(crowded.map(a => a.id)));
+  const total = crowded.length + collisions;
+  ctx.checks.push({ id: 'annotation-placement', status: total ? 'failed' : ctx.report ? 'passed' : 'not-declared',
+    message: total + ' crowded or overlapping annotations.' });
 }
 
 function inspectReview(ctx: SvgInspection): void {

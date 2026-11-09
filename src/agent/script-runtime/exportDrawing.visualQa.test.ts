@@ -72,6 +72,36 @@ return rotor;` },
     expect(result.drawingReport?.visualQa?.issues.filter(issue => issue.severity === 'error')).toEqual([]);
   }, 60_000);
 
+  it('detects serialized collisions in real exported SVG even if every placer flag is cleared', async () => {
+    // A thirteenth note returns to the same leader direction as the first:
+    // identical anchor/position but two different authored annotation IDs.
+    const annotations = Array.from({ length: 13 }, (_, i) => ({
+      kind: 'note' as const, id: 'note-' + i,
+      at: [10, 10, -2] as const, text: 'X',
+    }));
+    const result = await runAndExport({
+      code: 'return box(80,50,10);',
+      fileName: 'colliding-notes.kcad.ts',
+      format: 'svg-drawing',
+      options: { format: 'svg-drawing', annotations },
+    });
+    expect(result.bytes.length).toBeGreaterThan(1000);
+    expect(result.drawingReport).toBeDefined();
+    // Simulate inaccurate upstream placement metadata. The SVG itself is
+    // still the genuine OCCT-exported engineering drawing.
+    const misleading = {
+      ...result.drawingReport!,
+      overlapped: 0,
+      annotations: result.drawingReport!.annotations.map(row => ({ ...row, overlapped: false })),
+    };
+    const qa = analyzeExportedDrawingSvg(new TextDecoder().decode(result.bytes), {
+      drawingReport: misleading,
+    });
+    expect(qa.status).toBe('needs-review');
+    expect(qa.issues.map(issue => issue.code)).toContain('annotation-collision');
+    expect(qa.issues.some(issue => issue.annotationId?.startsWith('authored:note-'))).toBe(true);
+  }, 60_000);
+
   it('detects missing views and off-sheet path extents from serialized SVG', () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" data-kc-format="svg-drawing"><g data-view="front"><path d="M 10 10 L 320 30"/></g></svg>';
     const qa = analyzeExportedDrawingSvg(svg, { requestedViews: ['front', 'top'] });
