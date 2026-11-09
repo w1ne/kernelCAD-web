@@ -803,3 +803,37 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     expect(result.mechanismFailures).toEqual([]);
   }, 30000);
 });
+
+describe('mechanism truth — animation joint limits', () => {
+  it('marks a mechanism broken when param bounds hide an out-of-limit animation key', async () => {
+    const { arm, kcad } = makeArm('clamped-animation-key');
+    const hingeDeg = kcad.param('hingeDeg', 0, { min: -65, max: 65 });
+    const base = arm.part('base', kcad.box(40, 40, 10).translate(-40, -20, -5));
+    const link = arm.part('link', kcad.box(60, 8, 4).translate(0, -4, -2));
+    const pivot = {
+      type: 'axis' as const,
+      origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] },
+      axis: [0, 0, 1] as [number, number, number],
+    };
+    base.connector('pivot', pivot);
+    link.connector('pivot', pivot);
+    arm.mate('hinge', 'base.pivot', 'link.pivot', 'revolute', {
+      pose: hingeDeg,
+      limitsDeg: [-65, 65],
+    });
+    kcad.animationView({
+      tracks: [{
+        param: 'hingeDeg',
+        keys: [
+          { atMs: 0, value: 897, ease: 'easeInOut' },
+          { atMs: 1000, value: 0, ease: 'easeInOut' },
+        ],
+      }],
+    });
+
+    const result = await checkMechanismTruth(arm);
+
+    expect(result.failures.some((failure) => failure.code === 'kinematic.pose.out-of-limits')).toBe(true);
+    expect(result.mechanism).toBe('broken');
+  }, 60000);
+});
