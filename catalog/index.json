@@ -228342,14 +228342,22 @@
       "id": "garden-waste-tipping-floor",
       "kit": "recycling-facility",
       "title": "Garden-waste tipping floor",
-      "description": "Garden-waste tipping floor: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Three-bay garden-waste tipping floor at about real size: concrete slab, studded interlocking push-wall blocks, open-fronted bays of grass and leaves, hedge clippings and branches with logs, hazard-striped wall ends, colour-coded bay signs and a grated drainage channel. Material controls: wall blocks, floor slab, green waste, branches and logs; full, half or empty bays. depot, freshConcrete, autumn and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "recycling",
-        "materials recovery",
-        "waste management",
+        "tipping floor",
+        "tipping bay",
+        "green waste",
+        "garden waste",
+        "push wall",
+        "concrete blocks",
+        "lego blocks",
+        "compost",
         "organics",
+        "recycling",
+        "waste management",
+        "household recycling centre",
         "low poly",
         "scene prop"
       ],
@@ -228362,8 +228370,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/garden-waste-tipping-floor.kcad.ts",
       "preview": "/assets/recycling-facility-garden-waste-tipping-floor.png",
-      "sourceSha256": "0d92de0b00c06e9e78f69660638a79397f67cd12867330008793594156f358aa",
-      "triangleBudget": 1800,
+      "sourceSha256": "6e428fb2fc7005e306bb94c2b81c2e50f486dbbb7dbf64593d86dd3ad3768fe0",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -228375,60 +228383,421 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#587a70",
-          "label": "Painted steel"
+          "default": "#bdb8ac",
+          "label": "Push-wall blocks (precast concrete)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "slab",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#8f8b83",
+          "label": "Floor slab (concrete)"
+        },
+        {
+          "name": "greenWaste",
+          "type": "color",
+          "default": "#5f8a3a",
+          "label": "Green waste (grass, hedge clippings)"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8a6a48",
+          "label": "Branches and logs (wood)"
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Bay fill level",
+          "choices": [
+            "full",
+            "half",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#607569",
-          "stainlessSteel": "#9ea7a5"
+        "depot": {
+          "concrete": "#bdb8ac",
+          "slab": "#8f8b83",
+          "greenWaste": "#5f8a3a",
+          "timber": "#8a6a48"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "freshConcrete": {
+          "concrete": "#d6d3cb",
+          "slab": "#a9a59c",
+          "greenWaste": "#6e9a3e",
+          "timber": "#9a7a52"
+        },
+        "autumn": {
+          "concrete": "#bdb8ac",
+          "slab": "#8f8b83",
+          "greenWaste": "#9a7a32",
+          "timber": "#6d4f34"
+        },
+        "weathered": {
+          "concrete": "#9a958a",
+          "slab": "#6f6b64",
+          "greenWaste": "#4f6a34",
+          "timber": "#6a5a48"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 5158,
         "sizeM": [
-          1.714427,
-          1.3795,
-          1.2646
+          13.4,
+          2.63,
+          7.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#587a70",
+          "name": "slab",
+          "color": "#8f8b83",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "slab"
           ],
-          "param": "paintedSteel"
+          "param": "slab"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "channel",
+          "color": "#2a2c2d",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "channel",
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2"
+          ]
+        },
+        {
+          "name": "grate-0",
+          "color": "#5a6266",
+          "parts": [
+            "grate-0",
+            "grate-1",
+            "grate-2",
+            "grate-3",
+            "grate-4",
+            "grate-5",
+            "grate-6",
+            "grate-7",
+            "grate-8",
+            "grate-9",
+            "grate-10",
+            "grate-11",
+            "grate-12",
+            "grate-13",
+            "grate-14",
+            "grate-15",
+            "grate-16",
+            "grate-17",
+            "grate-18",
+            "grate-19",
+            "grate-20",
+            "grate-21",
+            "grate-22",
+            "grate-23"
+          ]
+        },
+        {
+          "name": "concrete",
+          "color": "#bdb8ac",
+          "parts": [
+            "back-0--6400",
+            "back-0--4800",
+            "back-0--3200",
+            "back-0--1600",
+            "back-0-0",
+            "back-0-1600",
+            "back-0-3200",
+            "back-0-4800",
+            "back-1--6400",
+            "back-1--5600",
+            "back-1--4000",
+            "back-1--2400",
+            "back-1--800",
+            "back-1-800",
+            "back-1-2400",
+            "back-1-4000",
+            "back-1-5600",
+            "back-2--6400",
+            "back-2--6400-stud",
+            "back-2--6400-stud",
+            "back-2--4800",
+            "back-2--4800-stud",
+            "back-2--4800-stud",
+            "back-2--3200",
+            "back-2--3200-stud",
+            "back-2--3200-stud",
+            "back-2--1600",
+            "back-2--1600-stud",
+            "back-2--1600-stud",
+            "back-2-0",
+            "back-2-0-stud",
+            "back-2-0-stud",
+            "back-2-1600",
+            "back-2-1600-stud",
+            "back-2-1600-stud",
+            "back-2-3200",
+            "back-2-3200-stud",
+            "back-2-3200-stud",
+            "back-2-4800",
+            "back-2-4800-stud",
+            "back-2-4800-stud",
+            "divider--6000-0-0",
+            "divider--6000-0-1600",
+            "divider--6000-0-3200",
+            "divider--6000-1-0",
+            "divider--6000-1-800",
+            "divider--6000-1-2400",
+            "divider--6000-1-4000",
+            "divider--6000-2-0",
+            "divider--6000-2-0-stud",
+            "divider--6000-2-0-stud",
+            "divider--6000-2-1600",
+            "divider--6000-2-1600-stud",
+            "divider--6000-2-1600-stud",
+            "divider--6000-2-3200",
+            "divider--6000-2-3200-stud",
+            "divider--6000-2-3200-stud",
+            "divider--2000-0-0",
+            "divider--2000-0-1600",
+            "divider--2000-0-3200",
+            "divider--2000-1-0",
+            "divider--2000-1-800",
+            "divider--2000-1-2400",
+            "divider--2000-1-4000",
+            "divider--2000-2-0",
+            "divider--2000-2-0-stud",
+            "divider--2000-2-0-stud",
+            "divider--2000-2-1600",
+            "divider--2000-2-1600-stud",
+            "divider--2000-2-1600-stud",
+            "divider--2000-2-3200",
+            "divider--2000-2-3200-stud",
+            "divider--2000-2-3200-stud",
+            "divider-2000-0-0",
+            "divider-2000-0-1600",
+            "divider-2000-0-3200",
+            "divider-2000-1-0",
+            "divider-2000-1-800",
+            "divider-2000-1-2400",
+            "divider-2000-1-4000",
+            "divider-2000-2-0",
+            "divider-2000-2-0-stud",
+            "divider-2000-2-0-stud",
+            "divider-2000-2-1600",
+            "divider-2000-2-1600-stud",
+            "divider-2000-2-1600-stud",
+            "divider-2000-2-3200",
+            "divider-2000-2-3200-stud",
+            "divider-2000-2-3200-stud",
+            "divider-6000-0-0",
+            "divider-6000-0-1600",
+            "divider-6000-0-3200",
+            "divider-6000-1-0",
+            "divider-6000-1-800",
+            "divider-6000-1-2400",
+            "divider-6000-1-4000",
+            "divider-6000-2-0",
+            "divider-6000-2-0-stud",
+            "divider-6000-2-0-stud",
+            "divider-6000-2-1600",
+            "divider-6000-2-1600-stud",
+            "divider-6000-2-1600-stud",
+            "divider-6000-2-3200",
+            "divider-6000-2-3200-stud",
+            "divider-6000-2-3200-stud"
           ],
-          "param": "stainlessSteel"
+          "param": "concrete"
+        },
+        {
+          "name": "end-plate--6000",
+          "color": "#f2c230",
+          "parts": [
+            "end-plate--6000",
+            "end-plate--6000",
+            "end-plate--6000",
+            "end-plate--2000",
+            "end-plate--2000",
+            "end-plate--2000",
+            "end-plate-2000",
+            "end-plate-2000",
+            "end-plate-2000",
+            "end-plate-6000",
+            "end-plate-6000",
+            "end-plate-6000"
+          ]
+        },
+        {
+          "name": "end-stripe--6000-0",
+          "color": "#1d2224",
+          "parts": [
+            "end-stripe--6000-0",
+            "end-stripe--6000-1",
+            "end-stripe--6000-2",
+            "end-stripe--6000-3",
+            "end-stripe--6000-0",
+            "end-stripe--6000-1",
+            "end-stripe--6000-2",
+            "end-stripe--6000-3",
+            "end-stripe--6000-0",
+            "end-stripe--6000-1",
+            "end-stripe--6000-2",
+            "end-stripe--6000-3",
+            "end-stripe--2000-0",
+            "end-stripe--2000-1",
+            "end-stripe--2000-2",
+            "end-stripe--2000-3",
+            "end-stripe--2000-0",
+            "end-stripe--2000-1",
+            "end-stripe--2000-2",
+            "end-stripe--2000-3",
+            "end-stripe--2000-0",
+            "end-stripe--2000-1",
+            "end-stripe--2000-2",
+            "end-stripe--2000-3",
+            "end-stripe-2000-0",
+            "end-stripe-2000-1",
+            "end-stripe-2000-2",
+            "end-stripe-2000-3",
+            "end-stripe-2000-0",
+            "end-stripe-2000-1",
+            "end-stripe-2000-2",
+            "end-stripe-2000-3",
+            "end-stripe-2000-0",
+            "end-stripe-2000-1",
+            "end-stripe-2000-2",
+            "end-stripe-2000-3",
+            "end-stripe-6000-0",
+            "end-stripe-6000-1",
+            "end-stripe-6000-2",
+            "end-stripe-6000-3",
+            "end-stripe-6000-0",
+            "end-stripe-6000-1",
+            "end-stripe-6000-2",
+            "end-stripe-6000-3",
+            "end-stripe-6000-0",
+            "end-stripe-6000-1",
+            "end-stripe-6000-2",
+            "end-stripe-6000-3"
+          ]
+        },
+        {
+          "name": "sign-0",
+          "color": "#f4f1e8",
+          "parts": [
+            "sign-0",
+            "sign-1",
+            "sign-2"
+          ]
+        },
+        {
+          "name": "sign-band-0",
+          "color": "#3d8a4f",
+          "parts": [
+            "sign-band-0",
+            "sign-icon-0"
+          ]
+        },
+        {
+          "name": "sign-band-1",
+          "color": "#2f6db5",
+          "parts": [
+            "sign-band-1",
+            "sign-icon-1"
+          ]
+        },
+        {
+          "name": "sign-band-2",
+          "color": "#8a5a2b",
+          "parts": [
+            "sign-band-2",
+            "sign-icon-2"
+          ]
+        },
+        {
+          "name": "greenWaste",
+          "color": "#5f8a3a",
+          "parts": [
+            "grass-heap",
+            "hedge-spill",
+            "litter-1",
+            "litter-2",
+            "litter-4",
+            "litter-5",
+            "litter-7",
+            "litter-8"
+          ],
+          "param": "greenWaste"
+        },
+        {
+          "name": "leaf-heap",
+          "color": "#9a7a32",
+          "parts": [
+            "leaf-heap"
+          ]
+        },
+        {
+          "name": "hedge-heap",
+          "color": "#46703a",
+          "parts": [
+            "hedge-heap"
+          ]
+        },
+        {
+          "name": "timber",
+          "color": "#8a6a48",
+          "parts": [
+            "twig-0",
+            "twig-1",
+            "twig-2",
+            "twig-3",
+            "twig-4",
+            "twig-5",
+            "branch-0",
+            "branch-1",
+            "branch-2",
+            "branch-3",
+            "branch-4",
+            "branch-5",
+            "branch-6",
+            "branch-7",
+            "log-0-0",
+            "log-0-1",
+            "log-0-2",
+            "log-1-0",
+            "log-1-1",
+            "log-2-0",
+            "litter-0",
+            "litter-3",
+            "litter-6",
+            "litter-9"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "brush-heap",
+          "color": "#6d7a3a",
+          "parts": [
+            "brush-heap"
+          ]
+        },
+        {
+          "name": "log-end-0-0",
+          "color": "#c9a46a",
+          "parts": [
+            "log-end-0-0",
+            "log-end-0-1",
+            "log-end-0-2",
+            "log-end-1-0",
+            "log-end-1-1",
+            "log-end-2-0"
+          ]
         }
       ]
     },
@@ -233051,14 +233420,21 @@
       "id": "inbound-message-board",
       "kit": "recycling-facility",
       "title": "Inbound message board",
-      "description": "Inbound message board: its foundation, equipment and top. Low-poly visualization prop. Material controls: concrete, painted steel, glass, rubber.",
+      "description": "Site-entrance variable message sign at about real size: twin galvanised posts on concrete plinths, deep housing with sun hood over a black dot-matrix LED face showing WEIGH IN, SITE FULL or OPEN, solar panel, modem antenna, control cabinet and a fixed site-name panel. Material controls: housing, LED pixels, posts and site panel; message choice. amber, councilGreen, alertRed and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "recycling",
-        "materials recovery",
-        "waste management",
+        "message board",
+        "variable message sign",
+        "VMS",
+        "LED sign",
+        "dot matrix",
+        "entrance sign",
+        "traffic sign",
+        "weighbridge",
         "reception",
+        "recycling",
+        "waste management",
         "low poly",
         "scene prop"
       ],
@@ -233071,8 +233447,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/inbound-message-board.kcad.ts",
       "preview": "/assets/recycling-facility-inbound-message-board.png",
-      "sourceSha256": "5990d1be7bf5fd9723402bba596bee5d4a1543ec2b98df161feaa06ebdd35b87",
-      "triangleBudget": 1800,
+      "sourceSha256": "5634280d56307feaad9ec4c883f6fd8b3629e583f46cd1b3f0c0de8f542fc625",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -233084,87 +233460,272 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "housing",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#3a3f44",
+          "label": "Sign housing and hood (powder coat)"
         },
         {
-          "name": "paintedSteel",
+          "name": "led",
           "type": "color",
-          "default": "#6c7882",
-          "label": "Painted steel"
+          "default": "#ffb020",
+          "label": "LED pixels"
         },
         {
-          "name": "glass",
+          "name": "posts",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#a4acb0",
+          "label": "Posts and cabinet (galvanised steel)"
         },
         {
-          "name": "rubber",
+          "name": "panel",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2f7a46",
+          "label": "Site-name panel"
+        },
+        {
+          "name": "message",
+          "type": "choice",
+          "default": "weighIn",
+          "label": "Message shown",
+          "choices": [
+            "weighIn",
+            "siteFull",
+            "open"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#6d7475",
-          "glass": "#55939a",
-          "rubber": "#3c403e"
+        "amber": {
+          "housing": "#3a3f44",
+          "led": "#ffb020",
+          "posts": "#a4acb0",
+          "panel": "#2f7a46"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "councilGreen": {
+          "housing": "#2c4a36",
+          "led": "#7dff6a",
+          "posts": "#3a3f44",
+          "panel": "#2f7a46"
+        },
+        "alertRed": {
+          "housing": "#3a3f44",
+          "led": "#ff4a3a",
+          "posts": "#a4acb0",
+          "panel": "#2f5fa8"
+        },
+        "weathered": {
+          "housing": "#565a5c",
+          "led": "#d9a040",
+          "posts": "#7d7b72",
+          "panel": "#4d6a52"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 1668,
         "sizeM": [
-          1.872,
-          0.87,
-          0.8165
+          5,
+          5.337321,
+          0.94176
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "plinth--1",
+          "color": "#b7b2a6",
           "parts": [
-            "foundation"
-          ],
-          "param": "concrete"
+            "plinth--1",
+            "plinth-1"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#6c7882",
+          "name": "posts",
+          "color": "#a4acb0",
           "parts": [
-            "equipment-body",
-            "top-panel",
-            "button-panel",
-            "mount-foot-a",
-            "mount-foot-b"
+            "base-plate--1",
+            "post--1",
+            "base-plate-1",
+            "post-1",
+            "bracket",
+            "solar-mast",
+            "cabinet",
+            "cabinet-roof"
           ],
-          "param": "paintedSteel"
+          "param": "posts"
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "housing",
+          "color": "#3a3f44",
           "parts": [
-            "screen-face"
+            "housing",
+            "hood",
+            "cheek--1",
+            "cheek-1"
           ],
-          "param": "glass"
+          "param": "housing"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "led-face",
+          "color": "#141618",
           "parts": [
-            "side-grip"
+            "led-face"
+          ]
+        },
+        {
+          "name": "back-door",
+          "color": "#4a5056",
+          "parts": [
+            "back-door"
+          ]
+        },
+        {
+          "name": "led",
+          "color": "#ffb020",
+          "parts": [
+            "px-0-0-0",
+            "px-0-0-4",
+            "px-0-1-0",
+            "px-0-1-4",
+            "px-0-2-0",
+            "px-0-2-4",
+            "px-0-3-0",
+            "px-0-3-2",
+            "px-0-3-4",
+            "px-0-4-0",
+            "px-0-4-2",
+            "px-0-4-4",
+            "px-0-5-0",
+            "px-0-5-2",
+            "px-0-5-4",
+            "px-0-6-1",
+            "px-0-6-3",
+            "px-1-0-0",
+            "px-1-1-0",
+            "px-1-2-0",
+            "px-1-3-0",
+            "px-1-4-0",
+            "px-1-5-0",
+            "px-1-6-0",
+            "px-2-0-1",
+            "px-2-1-2",
+            "px-2-2-2",
+            "px-2-3-2",
+            "px-2-4-2",
+            "px-2-5-2",
+            "px-2-6-1",
+            "px-3-0-1",
+            "px-3-1-0",
+            "px-3-1-4",
+            "px-3-2-0",
+            "px-3-3-0",
+            "px-3-3-2",
+            "px-3-4-0",
+            "px-3-4-4",
+            "px-3-5-0",
+            "px-3-5-4",
+            "px-3-6-1",
+            "px-4-0-0",
+            "px-4-0-4",
+            "px-4-1-0",
+            "px-4-1-4",
+            "px-4-2-0",
+            "px-4-2-4",
+            "px-4-3-0",
+            "px-4-4-0",
+            "px-4-4-4",
+            "px-4-5-0",
+            "px-4-5-4",
+            "px-4-6-0",
+            "px-4-6-4",
+            "px-6-0-1",
+            "px-6-1-2",
+            "px-6-2-2",
+            "px-6-3-2",
+            "px-6-4-2",
+            "px-6-5-2",
+            "px-6-6-1",
+            "px-7-0-0",
+            "px-7-0-4",
+            "px-7-1-0",
+            "px-7-1-4",
+            "px-7-2-0",
+            "px-7-2-2",
+            "px-7-2-4",
+            "px-7-3-0",
+            "px-7-3-3",
+            "px-7-4-0",
+            "px-7-4-4",
+            "px-7-5-0",
+            "px-7-5-4",
+            "px-7-6-0",
+            "px-7-6-4",
+            "px-9-0-1",
+            "px-9-1-2",
+            "px-9-2-3",
+            "px-9-3-4",
+            "px-9-4-3",
+            "px-9-5-2",
+            "px-9-6-1"
           ],
-          "param": "rubber"
+          "param": "led"
+        },
+        {
+          "name": "solar-panel",
+          "color": "#1f3550",
+          "parts": [
+            "solar-panel"
+          ]
+        },
+        {
+          "name": "solar-frame",
+          "color": "#c3c8cb",
+          "parts": [
+            "solar-frame"
+          ]
+        },
+        {
+          "name": "antenna",
+          "color": "#1d2224",
+          "parts": [
+            "antenna",
+            "antenna-tip",
+            "cabinet-lock"
+          ]
+        },
+        {
+          "name": "panel",
+          "color": "#2f7a46",
+          "parts": [
+            "site-panel"
+          ],
+          "param": "panel"
+        },
+        {
+          "name": "site-panel-border",
+          "color": "#f4f1e8",
+          "parts": [
+            "site-panel-border",
+            "site-panel-icon",
+            "site-text-0",
+            "site-text-1"
+          ]
+        },
+        {
+          "name": "cabinet-door",
+          "color": "#8e9599",
+          "parts": [
+            "cabinet-door"
+          ]
+        },
+        {
+          "name": "cabinet-vent",
+          "color": "#5a6266",
+          "parts": [
+            "cabinet-vent",
+            "conduit"
+          ]
         }
       ]
     },
@@ -236839,10 +237400,18 @@
       "id": "manual-sort-platform",
       "kit": "recycling-facility",
       "title": "Manual sorting platform",
-      "description": "Manual sorting platform: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Open steel picking mezzanine at about real size: grated walkways either side of a sort belt, handrails with knee rails and toe boards, yellow-lipped drop chutes into six concrete storage bays below holding sorted piles, feed hopper, stair to the deck and a residue skip at the head end. Material controls: steel frame, walkway grating, concrete bays, handrails and safety trim; mixed or empty stream. plant, galvanised, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "sort platform",
+        "picking platform",
+        "picking mezzanine",
+        "hand sorting",
+        "sort belt",
+        "storage bays",
+        "push wall",
+        "drop chute",
         "recycling",
         "materials recovery",
         "waste management",
@@ -236859,8 +237428,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/manual-sort-platform.kcad.ts",
       "preview": "/assets/recycling-facility-manual-sort-platform.png",
-      "sourceSha256": "b0c585a7452f542ee5982256e9f1039c492adda63e7b84bd875791b3908267b8",
-      "triangleBudget": 1800,
+      "sourceSha256": "afc40a17d98103bb602fdc6fca004a8ef822ad6a908568e6acad8106851974af",
+      "triangleBudget": 3800,
       "params": [
         {
           "name": "scale",
@@ -236872,79 +237441,389 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#61727c",
-          "label": "Painted steel"
+          "default": "#3d6f8f",
+          "label": "Columns, beams and belt frame (paint)"
         },
         {
-          "name": "rubber",
+          "name": "grating",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#9aa1a5",
+          "label": "Walkway grating and stair treads"
         },
         {
-          "name": "stainlessSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b7b2a6",
+          "label": "Storage bay walls (concrete)"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Handrails and chute lips"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "mixed",
+          "label": "Belt and bays",
+          "choices": [
+            "mixed",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "steel": "#3d6f8f",
+          "grating": "#9aa1a5",
+          "concrete": "#b7b2a6",
+          "safety": "#f0b429"
+        },
+        "galvanised": {
+          "steel": "#a4acb0",
+          "grating": "#c3c8cb",
+          "concrete": "#c4c0b6",
+          "safety": "#e2b31f"
+        },
         "weathered": {
-          "paintedSteel": "#667071",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "steel": "#5a5650",
+          "grating": "#7d7b72",
+          "concrete": "#9a958a",
+          "safety": "#a8893f"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "steel": "#3d7a4a",
+          "grating": "#a4acb0",
+          "concrete": "#bdb8ac",
+          "safety": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 3104,
         "sizeM": [
-          0.959895,
-          0.7476,
-          1.6
+          4.4,
+          4.1,
+          14.68
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#61727c",
+          "name": "concrete",
+          "color": "#b7b2a6",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
+            "bay-spine",
+            "bay-wall--4000--1",
+            "bay-wall--4000-1",
+            "bay-wall--1350--1",
+            "bay-wall--1350-1",
+            "bay-wall-1350--1",
+            "bay-wall-1350-1",
+            "bay-wall-4000--1",
+            "bay-wall-4000-1"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "bay-wall-cap--4000--1",
+          "color": "#8e8a80",
+          "parts": [
+            "bay-wall-cap--4000--1",
+            "bay-wall-cap--4000-1",
+            "bay-wall-cap--1350--1",
+            "bay-wall-cap--1350-1",
+            "bay-wall-cap-1350--1",
+            "bay-wall-cap-1350-1",
+            "bay-wall-cap-4000--1",
+            "bay-wall-cap-4000-1"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#3d6f8f",
+          "parts": [
+            "column--1--4000",
+            "column--1--1350",
+            "column--1-1350",
+            "column--1-4000",
+            "column-1--4000",
+            "column-1--1350",
+            "column-1-1350",
+            "column-1-4000",
+            "edge-beam--1",
+            "edge-beam-1",
+            "cross-beam--4000",
+            "cross-beam--1350",
+            "cross-beam-1350",
+            "cross-beam-4000",
+            "stringer--1",
+            "belt-post--1--2700",
+            "belt-post--1-0",
+            "belt-post--1-2700",
+            "head-leg--1",
+            "head-foot--1",
+            "stringer-1",
+            "belt-post-1--2700",
+            "belt-post-1-0",
+            "belt-post-1-2700",
+            "head-leg-1",
+            "head-foot-1",
+            "stair-stringer--1",
+            "stair-foot--1",
+            "stair-stringer-1",
+            "stair-foot-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "grating",
+          "color": "#9aa1a5",
+          "parts": [
+            "walkway--1",
+            "walkway-1",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4",
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8",
+            "tread-9",
+            "tread-10",
+            "tread-11"
+          ],
+          "param": "grating"
+        },
+        {
+          "name": "grating-bar--1-1",
+          "color": "#6f777c",
+          "parts": [
+            "grating-bar--1-1",
+            "grating-bar--1-2",
+            "grating-bar--1-3",
+            "grating-bar--1-4",
+            "grating-bar--1-5",
+            "grating-bar--1-6",
+            "grating-bar--1-7",
+            "grating-bar--1-8",
+            "grating-bar--1-9",
+            "grating-bar--1-10",
+            "grating-bar--1-11",
+            "grating-bar--1-12",
+            "grating-bar--1-13",
+            "grating-bar--1-14",
+            "grating-bar--1-15",
+            "grating-bar-1-1",
+            "grating-bar-1-2",
+            "grating-bar-1-3",
+            "grating-bar-1-4",
+            "grating-bar-1-5",
+            "grating-bar-1-6",
+            "grating-bar-1-7",
+            "grating-bar-1-8",
+            "grating-bar-1-9",
+            "grating-bar-1-10",
+            "grating-bar-1-11",
+            "grating-bar-1-12",
+            "grating-bar-1-13",
+            "grating-bar-1-14",
+            "grating-bar-1-15"
+          ]
+        },
+        {
+          "name": "chute-0",
+          "color": "#b9c1c4",
+          "parts": [
+            "chute-0",
+            "chute-1",
+            "chute-2",
+            "chute-3",
+            "chute-4",
+            "chute-5",
+            "skirt--1",
+            "skirt-1",
+            "feed-hopper"
+          ]
+        },
+        {
+          "name": "chute-mouth-0",
+          "color": "#1d2224",
+          "parts": [
+            "chute-mouth-0",
+            "mat-0",
+            "chute-mouth-1",
+            "mat-1",
+            "chute-mouth-2",
+            "mat-2",
+            "chute-mouth-3",
+            "mat-3",
+            "chute-mouth-4",
+            "mat-4",
+            "chute-mouth-5",
+            "mat-5"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "chute-lip-0",
+            "chute-lip-1",
+            "chute-lip-2",
+            "chute-lip-3",
+            "chute-lip-4",
+            "chute-lip-5",
+            "rail-top--1",
+            "rail-knee--1",
+            "toe-board--1",
+            "rail-post--1--3000",
+            "rail-post--1--2000",
+            "rail-post--1--1000",
+            "rail-post--1-0",
+            "rail-post--1-1000",
+            "rail-post--1-2000",
+            "rail-post--1-3000",
+            "rail-post--1-4000",
+            "rail-top-1",
+            "rail-knee-1",
+            "toe-board-1",
+            "rail-post-1--4000",
+            "rail-post-1--3000",
+            "rail-post-1--2000",
+            "rail-post-1--1000",
+            "rail-post-1-0",
+            "rail-post-1-1000",
+            "rail-post-1-2000",
+            "rail-post-1-3000",
+            "rail-post-1-4000",
+            "end-rail--1",
+            "end-knee--1",
+            "end-rail-1",
+            "end-knee-1",
+            "tail-rail",
+            "drive-guard",
+            "stair-rail--1",
+            "stair-rail-post--1",
+            "stair-rail-1",
+            "stair-rail-post-1"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "belt-top",
+          "color": "#2b2f31",
+          "parts": [
+            "belt-top",
+            "pulley--4000",
+            "pulley-5600"
+          ]
+        },
+        {
+          "name": "pull-cord--1",
+          "color": "#d42a2a",
+          "parts": [
+            "pull-cord--1",
+            "pull-cord-1"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#5a6266",
+          "parts": [
             "drive-motor"
-          ],
-          "param": "paintedSteel"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "residue-skip",
+          "color": "#d9661e",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "residue-skip",
+            "skip-lug--1",
+            "skip-lug-1"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "item-0",
+          "color": "#c49a6c",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
-          ],
-          "param": "stainlessSteel"
+            "item-0",
+            "item-6",
+            "item-12",
+            "pile-0"
+          ]
+        },
+        {
+          "name": "item-1",
+          "color": "#5c8fc4",
+          "parts": [
+            "item-1",
+            "item-7",
+            "item-13",
+            "pile-1"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#e2e6e8",
+          "parts": [
+            "item-2",
+            "item-8",
+            "item-14"
+          ]
+        },
+        {
+          "name": "item-3",
+          "color": "#3d8a4f",
+          "parts": [
+            "item-3",
+            "item-9",
+            "item-15",
+            "pile-4"
+          ]
+        },
+        {
+          "name": "item-4",
+          "color": "#d9d2bf",
+          "parts": [
+            "item-4",
+            "item-10",
+            "pile-5"
+          ]
+        },
+        {
+          "name": "item-5",
+          "color": "#c8202a",
+          "parts": [
+            "item-5",
+            "item-11"
+          ]
+        },
+        {
+          "name": "pile-2",
+          "color": "#9aa0a4",
+          "parts": [
+            "pile-2"
+          ]
+        },
+        {
+          "name": "pile-3",
+          "color": "#e8e4da",
+          "parts": [
+            "pile-3"
+          ]
+        },
+        {
+          "name": "residue-heap",
+          "color": "#6d5a3a",
+          "parts": [
+            "residue-heap"
+          ]
         }
       ]
     },
@@ -240477,10 +241356,18 @@
       "id": "picking-booth-module",
       "kit": "recycling-facility",
       "title": "Picking booth module",
-      "description": "Picking booth module: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Elevated, enclosed MRF picking cabin at about real size: sandwich-panel cabin on steel legs with a window band, a sort belt running through strip-curtain openings, floor drop chutes into colour-coded bins, roof HVAC unit and extraction duct, beacon, and a steel stair with handrails to the door landing. Material controls: cladding panels, steel structure, window glass, handrails and safety trim; mixed or paper load. mrfWhite, plantBlue, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "picking booth",
+        "picking cabin",
+        "sort cabin",
+        "sorting station",
+        "hand sorting",
+        "belt conveyor",
+        "mezzanine",
+        "MRF",
         "recycling",
         "materials recovery",
         "waste management",
@@ -240497,8 +241384,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/picking-booth-module.kcad.ts",
       "preview": "/assets/recycling-facility-picking-booth-module.png",
-      "sourceSha256": "26a3e97f146c369eef5ac661a1d7267a8b753dea4bbe620b17f5e30b614a24ad",
-      "triangleBudget": 1800,
+      "sourceSha256": "79517c9474d625fed183a12c970c94a752521254e2bac69b9618330028da195e",
+      "triangleBudget": 3400,
       "params": [
         {
           "name": "scale",
@@ -240510,79 +241397,377 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cladding",
           "type": "color",
-          "default": "#566d83",
-          "label": "Painted steel"
+          "default": "#e4e6e2",
+          "label": "Cabin cladding panels"
         },
         {
-          "name": "rubber",
+          "name": "steel",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#3a78a8",
+          "label": "Legs, frame and conveyor (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "glass",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#8fb8cc",
+          "label": "Window glass"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Handrails and safety trim"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "mixed",
+          "label": "Material on belt",
+          "choices": [
+            "mixed",
+            "paper",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "mrfWhite": {
+          "cladding": "#e4e6e2",
+          "steel": "#3a78a8",
+          "glass": "#8fb8cc",
+          "safety": "#f0b429"
+        },
+        "plantBlue": {
+          "cladding": "#2f5d9a",
+          "steel": "#6f777c",
+          "glass": "#a9cbd9",
+          "safety": "#f2d21b"
+        },
         "weathered": {
-          "paintedSteel": "#5e6c76",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "cladding": "#b9b4a6",
+          "steel": "#566673",
+          "glass": "#7d939b",
+          "safety": "#a8893f"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "cladding": "#e9eaea",
+          "steel": "#3d7a4a",
+          "glass": "#8fb8cc",
+          "safety": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 2608,
         "sizeM": [
-          1.171895,
-          0.985,
-          2.64
+          5.045,
+          6.8,
+          10
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#566d83",
+          "name": "steel",
+          "color": "#3a78a8",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
+            "leg--1700--2900",
+            "leg-plate--1700--2900",
+            "leg--1700-0",
+            "leg-plate--1700-0",
+            "leg--1700-2900",
+            "leg-plate--1700-2900",
+            "leg-1700--2900",
+            "leg-plate-1700--2900",
+            "leg-1700-0",
+            "leg-plate-1700-0",
+            "leg-1700-2900",
+            "leg-plate-1700-2900",
+            "ring-beam--1700",
+            "ring-beam-1700",
+            "cross-beam--2900",
+            "cross-beam-2900",
+            "mullion-0",
+            "mullion-1",
+            "mullion-2",
+            "mullion-3",
+            "mullion-4",
+            "door",
+            "roof-trim",
+            "stringer--1",
+            "belt-leg--1--1",
+            "belt-leg--1-1",
+            "belt-leg-brace--1",
+            "stringer-1",
+            "belt-leg-1--1",
+            "belt-leg-1-1",
+            "belt-leg-brace-1",
+            "drive-gearbox",
+            "landing",
+            "landing-post--2850",
+            "landing-post--1850",
+            "stringer-stair--1",
+            "stringer-foot--1",
+            "stringer-stair-1",
+            "stringer-foot-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "floor",
+          "color": "#6f777c",
+          "parts": [
+            "floor",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4",
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8",
+            "tread-9",
+            "tread-10",
+            "tread-11",
+            "tread-12"
+          ]
+        },
+        {
+          "name": "cladding",
+          "color": "#e4e6e2",
+          "parts": [
+            "wall-back",
+            "wall-end--1",
+            "wall-end-1",
+            "wall-front-low",
+            "wall-front-high",
+            "roof"
+          ],
+          "param": "cladding"
+        },
+        {
+          "name": "curtain--1-0",
+          "color": "#9c8f5a",
+          "parts": [
+            "curtain--1-0",
+            "curtain--1-1",
+            "curtain--1-2",
+            "curtain--1-3",
+            "curtain--1-4",
+            "curtain--1-5",
+            "curtain--1-6",
+            "curtain-1-0",
+            "curtain-1-1",
+            "curtain-1-2",
+            "curtain-1-3",
+            "curtain-1-4",
+            "curtain-1-5",
+            "curtain-1-6"
+          ]
+        },
+        {
+          "name": "glass",
+          "color": "#8fb8cc",
+          "parts": [
+            "window-band",
+            "door-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "door-handle",
+          "color": "#c3c8cb",
+          "parts": [
+            "door-handle"
+          ]
+        },
+        {
+          "name": "sign",
+          "color": "#2f6db5",
+          "parts": [
+            "sign",
+            "bin-0",
+            "bin-rim-0"
+          ]
+        },
+        {
+          "name": "sign-text-0",
+          "color": "#f4f1e8",
+          "parts": [
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2",
+            "bin-label-0",
+            "bin-label-1",
+            "bin-label-2",
+            "bin-label-3"
+          ]
+        },
+        {
+          "name": "hvac-unit",
+          "color": "#c9ced1",
+          "parts": [
+            "hvac-unit"
+          ]
+        },
+        {
+          "name": "hvac-fan-750",
+          "color": "#3a3f42",
+          "parts": [
+            "hvac-fan-750",
+            "hvac-fan-1650",
+            "beacon-base"
+          ]
+        },
+        {
+          "name": "duct-rise",
+          "color": "#b9c1c4",
+          "parts": [
+            "duct-rise",
+            "duct-run",
+            "skirt--1",
+            "skirt-1",
+            "feed-hopper",
+            "chute-0",
+            "chute-1",
+            "chute-2",
+            "chute-3"
+          ]
+        },
+        {
+          "name": "duct-cap",
+          "color": "#8e9599",
+          "parts": [
+            "duct-cap"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f29a1d",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "belt-top",
+          "color": "#2b2f31",
+          "parts": [
+            "belt-top",
+            "pulley--1",
+            "pulley-1"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#5a6266",
+          "parts": [
             "drive-motor"
-          ],
-          "param": "paintedSteel"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "chute-hatch-0",
+          "color": "#1d2224",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "chute-hatch-0",
+            "bin-castor-0--1",
+            "bin-castor-0-1",
+            "chute-hatch-1",
+            "bin-castor-1--1",
+            "bin-castor-1-1",
+            "chute-hatch-2",
+            "bin-castor-2--1",
+            "bin-castor-2-1",
+            "chute-hatch-3",
+            "bin-castor-3--1",
+            "bin-castor-3-1"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "bin-1",
+          "color": "#e2b31f",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "bin-1",
+            "bin-rim-1"
+          ]
+        },
+        {
+          "name": "bin-2",
+          "color": "#3d8a4f",
+          "parts": [
+            "bin-2",
+            "bin-rim-2",
+            "item-3",
+            "item-9",
+            "item-15"
+          ]
+        },
+        {
+          "name": "bin-3",
+          "color": "#c8202a",
+          "parts": [
+            "bin-3",
+            "bin-rim-3",
+            "item-5",
+            "item-11",
+            "item-17"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "handrail--1",
+            "rail-post--1-0",
+            "rail-post--1-1",
+            "handrail-1",
+            "rail-post-1-0",
+            "rail-post-1-1",
+            "landing-rail",
+            "landing-rail-end",
+            "landing-rail-post-0",
+            "landing-rail-post-1",
+            "landing-toe"
           ],
-          "param": "stainlessSteel"
+          "param": "safety"
+        },
+        {
+          "name": "item-0",
+          "color": "#c49a6c",
+          "parts": [
+            "item-0",
+            "item-6",
+            "item-12"
+          ]
+        },
+        {
+          "name": "item-1",
+          "color": "#5c8fc4",
+          "parts": [
+            "item-1",
+            "item-7",
+            "item-13"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#e2e6e8",
+          "parts": [
+            "item-2",
+            "item-8",
+            "item-14"
+          ]
+        },
+        {
+          "name": "item-4",
+          "color": "#d9d2bf",
+          "parts": [
+            "item-4",
+            "item-10",
+            "item-16"
+          ]
         }
       ]
     },
@@ -250755,14 +251940,22 @@
       "id": "walking-floor-trailer",
       "kit": "recycling-facility",
       "title": "Walking-floor trailer",
-      "description": "Walking-floor trailer: its skids, top cover and access. Low-poly visualization prop. Material controls: stainless steel, painted steel, rubber.",
+      "description": "Tri-axle walking-floor bulk semi-trailer at about real size: aluminium sides with external stakes, open top with cross bows and a rolled sliding tarp, rear barn doors swung back along the sides, moving-floor slats with a woodchip or green-waste load, air-suspension bogie on wide single tyres, landing legs and front hydraulic pack. Material controls: body sides, chassis, tarp, tyres; woodchip, green-waste or empty load. aluminium, haulierRed, fleetGreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "walking floor",
+        "moving floor",
+        "trailer",
+        "semi-trailer",
+        "bulk trailer",
+        "tri-axle",
+        "woodchip",
+        "green waste",
+        "haulage",
         "recycling",
-        "materials recovery",
         "waste management",
-        "containers",
+        "vehicle",
         "low poly",
         "scene prop"
       ],
@@ -250775,8 +251968,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/walking-floor-trailer.kcad.ts",
       "preview": "/assets/recycling-facility-walking-floor-trailer.png",
-      "sourceSha256": "e030130520b0e8855290e54bda2bb602cf11bc58c02444724aa1378cb972dcd4",
-      "triangleBudget": 1800,
+      "sourceSha256": "2def24f82486033490497f88397732cde3b06469e9d7f6df110704aac4c1b3a1",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -250788,75 +251981,322 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "body",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#dfe3e6",
+          "label": "Body sides and doors (aluminium)"
         },
         {
-          "name": "paintedSteel",
+          "name": "chassis",
           "type": "color",
-          "default": "#806d5d",
-          "label": "Painted steel"
+          "default": "#2c3034",
+          "label": "Chassis, bogie and stakes (paint)"
+        },
+        {
+          "name": "tarp",
+          "type": "color",
+          "default": "#3f6a4a",
+          "label": "Sliding tarp (PVC)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#232527",
+          "label": "Tyres (rubber)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "woodchip",
+          "label": "Load",
+          "choices": [
+            "woodchip",
+            "greenWaste",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#7b6c5c",
-          "rubber": "#3c403e"
+        "aluminium": {
+          "body": "#dfe3e6",
+          "chassis": "#2c3034",
+          "tarp": "#3f6a4a",
+          "rubber": "#232527"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "haulierRed": {
+          "body": "#b8282c",
+          "chassis": "#25282b",
+          "tarp": "#2f3b55",
+          "rubber": "#232527"
+        },
+        "fleetGreen": {
+          "body": "#2f6a46",
+          "chassis": "#c9ced2",
+          "tarp": "#e1ddd0",
+          "rubber": "#232527"
+        },
+        "weathered": {
+          "body": "#9a9c96",
+          "chassis": "#4a3f38",
+          "tarp": "#5c6248",
+          "rubber": "#3a3936"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 2820,
         "sizeM": [
-          1.47,
-          1.195,
-          0.9725
+          2.804,
+          4.41,
+          13.62
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "chassis",
+          "color": "#2c3034",
           "parts": [
-            "base-skids",
-            "handle-left",
-            "handle-right"
+            "floor-deck",
+            "top-rail--1",
+            "bottom-rail--1",
+            "stake--1-0",
+            "stake--1-1",
+            "stake--1-2",
+            "stake--1-3",
+            "stake--1-4",
+            "stake--1-5",
+            "stake--1-6",
+            "stake--1-7",
+            "stake--1-8",
+            "stake--1-9",
+            "stake--1-10",
+            "stake--1-11",
+            "stake--1-12",
+            "top-rail-1",
+            "bottom-rail-1",
+            "stake-1-0",
+            "stake-1-1",
+            "stake-1-2",
+            "stake-1-3",
+            "stake-1-4",
+            "stake-1-5",
+            "stake-1-6",
+            "stake-1-7",
+            "stake-1-8",
+            "stake-1-9",
+            "stake-1-10",
+            "stake-1-11",
+            "stake-1-12",
+            "rear-frame-top",
+            "rear-post--1",
+            "rear-post-1",
+            "bow-0",
+            "bow-1",
+            "bow-2",
+            "bow-3",
+            "bow-4",
+            "bow-5",
+            "bow-6",
+            "bow-7",
+            "tarp-strap--1",
+            "tarp-strap-1",
+            "door-hinge--1-1750",
+            "door-hinge--1-3450",
+            "door-hinge-1-1750",
+            "door-hinge-1-3450",
+            "beam--1",
+            "beam-1",
+            "underrun-bar",
+            "underrun-hanger--1",
+            "underrun-hanger-1",
+            "axle-0",
+            "axle-1",
+            "axle-2",
+            "mudguard--1",
+            "hanger-front--1",
+            "mudguard-1",
+            "hanger-front-1",
+            "landing-leg--1",
+            "sand-shoe--1",
+            "landing-leg-1",
+            "sand-shoe-1",
+            "leg-brace",
+            "leg-gearbox",
+            "kingpin-plate"
           ],
-          "param": "stainlessSteel"
+          "param": "chassis"
         },
         {
-          "name": "paintedSteel",
-          "color": "#806d5d",
+          "name": "slat-0",
+          "color": "#8e9599",
           "parts": [
-            "body",
-            "top-cover",
-            "access-panel"
+            "slat-0",
+            "slat-3",
+            "slat-6",
+            "slat-9",
+            "slat-12",
+            "slat-15",
+            "slat-18"
+          ]
+        },
+        {
+          "name": "slat-1",
+          "color": "#b3babd",
+          "parts": [
+            "slat-1",
+            "slat-2",
+            "slat-4",
+            "slat-5",
+            "slat-7",
+            "slat-8",
+            "slat-10",
+            "slat-11",
+            "slat-13",
+            "slat-14",
+            "slat-16",
+            "slat-17",
+            "slat-19",
+            "slat-20"
+          ]
+        },
+        {
+          "name": "body",
+          "color": "#dfe3e6",
+          "parts": [
+            "side--1",
+            "side-1",
+            "front-wall",
+            "door--1",
+            "door-1"
           ],
-          "param": "paintedSteel"
+          "param": "body"
+        },
+        {
+          "name": "marker--1",
+          "color": "#f29a1d",
+          "parts": [
+            "marker--1",
+            "marker-1",
+            "indicator--1",
+            "indicator-1"
+          ]
+        },
+        {
+          "name": "tarp",
+          "color": "#3f6a4a",
+          "parts": [
+            "tarp-roll",
+            "tarp-flap"
+          ],
+          "param": "tarp"
+        },
+        {
+          "name": "door-bar--1",
+          "color": "#9aa0a4",
+          "parts": [
+            "door-bar--1",
+            "door-bar-1",
+            "leg-handle"
+          ]
+        },
+        {
+          "name": "load-bed",
+          "color": "#b88a52",
+          "parts": [
+            "load-bed"
+          ]
+        },
+        {
+          "name": "load-heap-rear",
+          "color": "#a07440",
+          "parts": [
+            "load-heap-rear"
+          ]
+        },
+        {
+          "name": "load-heap-mid",
+          "color": "#c89e66",
+          "parts": [
+            "load-heap-mid"
+          ]
+        },
+        {
+          "name": "tail-light--1",
+          "color": "#c8202a",
+          "parts": [
+            "tail-light--1",
+            "tail-light-1"
+          ]
+        },
+        {
+          "name": "number-plate",
+          "color": "#f2d21b",
+          "parts": [
+            "number-plate"
+          ]
+        },
+        {
+          "name": "plate-text",
+          "color": "#1d2224",
+          "parts": [
+            "plate-text",
+            "air-bag-0--1",
+            "air-bag-0-1",
+            "air-bag-1--1",
+            "air-bag-1-1",
+            "air-bag-2--1",
+            "air-bag-2-1",
+            "flap--1",
+            "flap-1"
+          ]
         },
         {
           "name": "rubber",
-          "color": "#303638",
+          "color": "#232527",
           "parts": [
-            "left-wheel",
-            "right-wheel",
-            "left-wheel-far",
-            "right-wheel-far"
+            "tyre-0--1",
+            "tyre-0-1",
+            "tyre-1--1",
+            "tyre-1-1",
+            "tyre-2--1",
+            "tyre-2-1"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "rim-0--1",
+          "color": "#c3c8cb",
+          "parts": [
+            "rim-0--1",
+            "rim-0-1",
+            "rim-1--1",
+            "rim-1-1",
+            "rim-2--1",
+            "rim-2-1"
+          ]
+        },
+        {
+          "name": "hub-0--1",
+          "color": "#7e8487",
+          "parts": [
+            "hub-0--1",
+            "hub-0-1",
+            "hub-1--1",
+            "hub-1-1",
+            "hub-2--1",
+            "hub-2-1",
+            "kingpin"
+          ]
+        },
+        {
+          "name": "hydraulic-pack",
+          "color": "#d9661e",
+          "parts": [
+            "hydraulic-pack",
+            "hydraulic-tank",
+            "control-box"
+          ]
         }
       ]
     },
