@@ -47,6 +47,28 @@ function insideFrame(r: Rect, sheet: SheetSpec): boolean {
     && r.y + r.h <= sheet.h - minY + EPS_MM;
 }
 
+
+function reviewOneView(
+  name: DrawingViewName,
+  layout: SheetLayout,
+  sheet: SheetSpec,
+  title: Rect,
+  tolerance: Rect,
+  hasGeneralTolerance: boolean,
+): { issues: SheetPlacementIssue[]; valid: boolean } {
+  const r = layout.views[name]?.box;
+  if (!r || !finiteRect(r) || !Number.isFinite(layout.scale) || layout.scale <= 0) {
+    return { issues: [{ kind: 'non-finite-view', views: [name] }], valid: false };
+  }
+  const issues: SheetPlacementIssue[] = [];
+  if (!insideFrame(r, sheet)) issues.push({ kind: 'outside-frame', views: [name] });
+  if (overlaps(r, title)) issues.push({ kind: 'title-block-overlap', views: [name] });
+  if (hasGeneralTolerance && overlaps(r, tolerance)) {
+    issues.push({ kind: 'general-tolerance-overlap', views: [name] });
+  }
+  return { issues, valid: true };
+}
+
 /** Check only actually rendered views, never the alias placements of front-only drawings. */
 export function reviewSheetViewPlacement(
   layout: SheetLayout,
@@ -59,25 +81,15 @@ export function reviewSheetViewPlacement(
   const title: Rect = {
     x: sheet.w - sheet.margin - sheet.titleBlock.w,
     y: sheet.h - sheet.margin - sheet.titleBlock.h,
-    ...{ w: sheet.titleBlock.w, h: sheet.titleBlock.h },
+    w: sheet.titleBlock.w, h: sheet.titleBlock.h,
   };
   const tolerance: Rect = { x: title.x - 46, y: title.y, w: 46, h: title.h };
   const valid: DrawingViewName[] = [];
-
   for (const name of checkedViews) {
-    const r = layout.views[name]?.box;
-    if (!r || !finiteRect(r) || !Number.isFinite(layout.scale) || layout.scale <= 0) {
-      issues.push({ kind: 'non-finite-view', views: [name] });
-      continue;
-    }
-    valid.push(name);
-    if (!insideFrame(r, sheet)) issues.push({ kind: 'outside-frame', views: [name] });
-    if (overlaps(r, title)) issues.push({ kind: 'title-block-overlap', views: [name] });
-    if (hasGeneralTolerance && overlaps(r, tolerance)) {
-      issues.push({ kind: 'general-tolerance-overlap', views: [name] });
-    }
+    const result = reviewOneView(name, layout, sheet, title, tolerance, hasGeneralTolerance);
+    issues.push(...result.issues);
+    if (result.valid) valid.push(name);
   }
-
   for (let i = 0; i < valid.length; i++) {
     for (let j = i + 1; j < valid.length; j++) {
       const a = valid[i]!;

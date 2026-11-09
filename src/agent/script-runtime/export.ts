@@ -216,6 +216,8 @@ export interface PdfDrawingOptions extends DrawingReviewOptions {
   /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
    *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
   sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** Enable a bounded larger-sheet repair after a crowded drawing export. */
+  layoutRepair?: boolean;
   /** View arrangement and title-block symbol; default `'third'`. */
   projection?: ProjectionAngle;
   /** Drawing title; defaults to the model name (the script file name). */

@@ -87,6 +87,22 @@ describe('pdf-drawing: file structure', () => {
   });
 });
 
+describe('pdf-drawing: bounded sheet layout repair', () => {
+  it('exports the repaired page as A3 and passes its geometry and rendered text report', async () => {
+    const note = 'INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH';
+    const r = await exportPdf('return box(80,50,12);', {
+      sheet: 'a4', layoutRepair: true, autoAnnotate: false,
+      annotations: [{ id: 'inspection', kind: 'note', at: [0, 0, 12], text: note }],
+    });
+    expect(r.drawingReport?.sheetRepair?.applied).toBe(true);
+    expect(r.drawingReport?.sheetRepair?.status).toBe('clear');
+    expect(r.drawingReport?.renderedText?.issues).toEqual([]);
+    expect(r.page.widthMm).toBeCloseTo(420, 1);
+    expect(r.page.heightMm).toBeCloseTo(297, 1);
+    expect(textsOf(r.page)).toContain(note);
+  }, 120_000);
+});
+
 describe('pdf-drawing: title block', () => {
   it('prints every field, with the values the export was given', () => {
     const texts = textsOf(bracket.page);

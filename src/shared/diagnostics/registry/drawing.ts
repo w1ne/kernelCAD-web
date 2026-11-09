@@ -55,6 +55,13 @@ export const DRAWING_CODES = {
     group: 'drawing',
     description: 'A building-sized model (footprint at least 2.5 m × 2.5 m, at least 2 m tall) was drawn with the default mechanical drawing style.',
   },
+  'drawing.text.placement': {
+    hintTemplate: 'An exported SVG/PDF drawing text label is clipped or overlaps another label or a reserved title-block region. Inspect the sheet, adjust annotation offsets, or increase options.sheet.',
+    nextAction: { kind: 'fix-arg', field: 'options.annotationOverrides' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'Actual serialized drawing text has a PDF-font-bounds placement defect.',
+  },
   'drawing.view.placement': {
     hintTemplate: 'A projected drawing view leaves the sheet frame or conflicts with another view or a reserved title-block region. Increase options.sheet (or use auto), re-export, and inspect the resulting drawing.',
     nextAction: { kind: 'fix-arg', field: 'options.sheet' },

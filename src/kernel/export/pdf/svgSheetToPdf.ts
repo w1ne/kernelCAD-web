@@ -29,7 +29,7 @@ export const PT_PER_MM = 72 / 25.4;
 
 type Attrs = Record<string, string>;
 
-interface XmlNode {
+export interface XmlNode {
   tag: string;
   attrs: Attrs;
   children: XmlNode[];
@@ -60,7 +60,7 @@ function parseAttrs(src: string): Attrs {
 }
 
 /** Parse XML into a tree rooted at a synthetic `#document` node. */
-function parseXml(src: string): XmlNode {
+export function parseXml(src: string): XmlNode {
   const doc: XmlNode = { tag: '#document', attrs: {}, children: [], text: '' };
   const stack: XmlNode[] = [doc];
   const re = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!\[CDATA\[([\s\S]*?)\]\]>|<!DOCTYPE[^>]*>|<(\/?)([\w:.-]+)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(\/?)>|([^<]+)/g;
@@ -411,7 +411,7 @@ function num(v: string | undefined, fallback = 0): number {
 
 /** Resolve the element's effective style: inherited keys, then its own
  *  attributes, then its `style` declarations. */
-function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
+export function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
   const style: Attrs = { ...inherited };
   for (const k of INHERITED) if (attrs[k] !== undefined) style[k] = attrs[k];
   if (attrs.style !== undefined) {
