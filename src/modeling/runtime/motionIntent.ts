@@ -83,7 +83,7 @@ export function animatedParams(records: readonly FeatureRecord[]): Set<string> {
     if (r.kind !== 'animationView' || r.suppressed) continue;
     const tracks = (r.metadata as { tracks?: NormalizedAnimationTrack[] } | undefined)?.tracks ?? [];
     for (const t of tracks) {
-      const values = t.keys.map((k) => k.value);
+      const values = t.keys.map((k) => k.authoredValue ?? k.value);
       if (values.length > 1 && Math.max(...values) !== Math.min(...values)) out.add(t.param);
     }
   }
