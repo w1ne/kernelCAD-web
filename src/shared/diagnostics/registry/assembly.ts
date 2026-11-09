@@ -398,6 +398,17 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement exceeds the declared actuator torque/force capacity.',
   },
+  'assembly.joint.static-hold.no-actuator': {
+    hintTemplate:
+      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'declare an actuator capacity on an arm.revolute/arm.prismatic joint; mate-only mechanicalJoint chains are not covered by checkStaticHold yet',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'checkStaticHold evaluated no arm.revolute/arm.prismatic joint with a declared actuator capacity, so the result has no holding-capacity coverage.',
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:

@@ -39,6 +39,9 @@ export interface MechanismVerdictSummary {
   readonly skipped: readonly string[];
   /** Error-severity mechanism failures. Empty unless verdict is 'broken'. */
   readonly failures: readonly MechanismVerdictFailure[];
+  /** Pair declarations from `solvedModel({ ignore })`; the declarations do
+   *  not suppress collision checks during joint travel. */
+  readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
   /** Motion-load result in one line, when a mechanicalJoint declares a
    *  torqueNm rating. The full table is verify({ check: 'motion-load' }). */
   readonly loads?: MechanismLoadsLine;
@@ -119,14 +122,53 @@ function checkedOf(c: MechanismCoverage | undefined): string[] {
   const poses = c.joints === 0
     ? 'rest pose only (no moving joints)'
     : `${plural(c.poses, 'pose')} across ${plural(c.joints, 'joint')} (each joint at its limits)`;
+  const ignoredPairs = c.ignoredPairs ?? [];
+  const ignoredPairsLabel = ignoredPairs.map(([a, b]) => `${a} ↔ ${b}`).join(', ');
+  const collisionCheck = ignoredPairs.length === 0
+    ? 'no collisions'
+    : !c.sweep
+      ? `collision sweep not completed; declared ignore pairs: ${ignoredPairsLabel}`
+      : c.joints === 0
+        ? `no collisions; declared ignore pairs also reported: ${ignoredPairsLabel}`
+        : `no swept collisions; declared ignore pairs also checked during travel: ${ignoredPairsLabel}`;
   return [
     poses,
     ...(c.limitsChecked > 0 ? [`animation within limits on ${plural(c.limitsChecked, 'joint')}`] : []),
     ...(c.matesChecked ? ['all mates satisfied'] : []),
-    'no collisions',
+    collisionCheck,
     ...(c.fastened > 0 ? ['fastened parts stay rigid'] : []),
     ...(c.physics ? ['holds under gravity'] : []),
   ];
+}
+
+function ignoredPairsOf(coverage: MechanismCoverage | undefined): ReadonlyArray<readonly [string, string]> {
+  return coverage?.ignoredPairs ?? [];
+}
+
+function ignoredPairsText(pairs: ReadonlyArray<readonly [string, string]>): string {
+  return pairs.map(([a, b]) => `${a} ↔ ${b}`).join(', ');
+}
+
+function attachIgnoredPairs<T extends object>(
+  summary: T,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): T & { ignoredPairs?: ReadonlyArray<readonly [string, string]> } {
+  return ignoredPairs.length > 0 ? { ...summary, ignoredPairs } : summary;
+}
+
+function brokenIgnoreNote(
+  first: string,
+  more: string,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): string {
+  if (ignoredPairs.length === 0) return '';
+  const punct = /[.!?]$/.test(`${first}${more}`) ? '' : '.';
+  return `${punct} Declared ignore pairs: ${ignoredPairsText(ignoredPairs)}.`;
+}
+
+function unverifiedIgnoreNote(ignoredPairs: ReadonlyArray<readonly [string, string]>): string {
+  if (ignoredPairs.length === 0) return '';
+  return ` Declared ignore pairs are not certified clear across joint travel: ${ignoredPairsText(ignoredPairs)}.`;
 }
 
 /** Build the verdict summary from one (possibly aggregated) probe result. */
@@ -135,31 +177,41 @@ export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdi
     const failures = input.failures.filter((d) => d.severity === 'error').map(failureOf);
     const first = failures[0]?.reason ?? 'a mechanism check failed';
     const more = failures.length > 1 ? ` (+${failures.length - 1} more)` : '';
-    return { verdict: 'broken', maxLevel: 'error', statement: `Mechanism broken: ${first}${more}`, checked: [], skipped: [], failures };
+    const ignoredPairs = ignoredPairsOf(input.coverage);
+    return attachIgnoredPairs({
+      verdict: 'broken' as const,
+      maxLevel: 'error' as const,
+      statement: `Mechanism broken: ${first}${more}${brokenIgnoreNote(first, more, ignoredPairs)}`,
+      checked: [],
+      skipped: [],
+      failures,
+    }, ignoredPairs);
   }
   if (input.mechanism === 'unverified') {
     const skipped = skippedOf(input);
-    return {
-      verdict: 'unverified',
-      maxLevel: 'warning',
-      statement: `Motion not checked: ${skipped[0]}. Do not call this mechanism working.`,
+    const ignoredPairs = ignoredPairsOf(input.coverage);
+    return attachIgnoredPairs({
+      verdict: 'unverified' as const,
+      maxLevel: 'warning' as const,
+      statement: `Motion not checked: ${skipped[0]}. Do not call this mechanism working.${unverifiedIgnoreNote(ignoredPairs)}`,
       checked: [],
       skipped,
       failures: [],
-    };
+    }, ignoredPairs);
   }
   const checked = checkedOf(input.coverage);
   const skipped = [...(input.coverage?.skipped ?? [])];
+  const ignoredPairs = ignoredPairsOf(input.coverage);
   const gravity = input.coverage?.physics === true ? '' : ' Gravity not checked.';
   const ranges = skipped.length === 0 ? '' : ` Not checked: ${skipped[0]}${skipped.length > 1 ? ` (+${skipped.length - 1} more)` : ''}.`;
-  return {
-    verdict: 'real',
-    maxLevel: 'ok',
+  return attachIgnoredPairs({
+    verdict: 'real' as const,
+    maxLevel: 'ok' as const,
     statement: `Motion checked: ${checked.join(', ')}.${ranges}${gravity}`,
     checked,
     skipped,
     failures: [],
-  };
+  }, ignoredPairs);
 }
 
 /** Fold several assemblies' coverage into one. */
@@ -175,5 +227,8 @@ export function mergeCoverage(list: ReadonlyArray<MechanismCoverage | undefined>
     limitsChecked: present.reduce((n, c) => n + c.limitsChecked, 0),
     matesChecked: present.every((c) => c.matesChecked),
     skipped: present.flatMap((c) => c.skipped),
+    ...(present.some((c) => (c.ignoredPairs?.length ?? 0) > 0)
+      ? { ignoredPairs: present.flatMap((c) => c.ignoredPairs ?? []) }
+      : {}),
   };
 }

@@ -1,0 +1,6 @@
+Actual verify({ check: 'static-hold' }) workflow
+
+4-DOF production arm cookbook
+
+Mate-driven mechanism
+No arm.revolute actuator capacities

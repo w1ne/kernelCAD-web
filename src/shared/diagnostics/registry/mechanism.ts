@@ -23,11 +23,11 @@ export const MECHANISM_CODES = {
   },
   'mechanism.interpenetration': {
     hintTemplate:
-      "Two non-mated parts overlap at a sampled pose. Add clearance, reduce mate travel, or move the mounting geometry so the swept pose stays collision-free. If the contact is intentional, declare a mate between the parts so the loop knows about it.",
+      "Two parts overlap at a sampled pose. Remove this pair from the solvedModel ignore list, then add clearance, reduce mate travel, or correct the geometry so every sampled pose stays collision-free. An ignore declaration does not waive the mechanism collision check.",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'At a sampled pose, two parts that are NOT joined by a mate overlap by more than the epsilon volume floor (intentional contact at clevis joints is excluded).',
+    description: 'At a sampled pose, two parts overlap above the actionable interference thresholds. A mate or solvedModel ignore declaration does not exempt the pair from mechanism collision checking during joint travel.',
   },
   'mechanism.dof-mismatch': {
     hintTemplate:
@@ -63,7 +63,7 @@ export const MECHANISM_CODES = {
   // consistent, they are just the wrong kind for the motion the model claims.
   'mechanism.motion-on-fixed-joint': {
     hintTemplate:
-      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not move a fastened part by rotating or translating its geometry with the param.",
+      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not animate a transform of a fastened part's geometry with that param.",
     nextAction: { kind: 'fix-arg', field: 'mateType' },
     defaultSeverity: 'error',
     group: 'mechanism',

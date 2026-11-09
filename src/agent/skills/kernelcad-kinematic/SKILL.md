@@ -47,7 +47,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
-| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
+| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
 
@@ -60,11 +60,17 @@ actuator must supply to hold the downstream mass still, using real mass
 properties (volume and center of mass from the part's declared `density`/`material`,
 same substrate as `inspect({ of: 'mass' })`). Reports the worst pose,
 required torque/force, declared capacity, and margin percent.
+Coverage is limited to actuated `arm.revolute(...)` and `arm.prismatic(...)`
+joints. Mate-only `mechanicalJoint` chains are not evaluated. When no
+actuated body-tree joint is selected, the result is `ok: false` with an
+`assembly.joint.static-hold.no-actuator` warning, naming moving mates when
+available; this result has no holding-capacity coverage.
+Demo and replay bundle: [Issue #1270 static-hold coverage](../../../../docs/demos/issue-1270-static-hold/README.md).
 `opts.minTorqueMarginPct` (default 20) is a floor, not a hard pass/fail — a
 joint that clears capacity but misses the margin still returns `ok: true`
-with a `margin-low` warn diagnostic; only an actually-exceeded joint flips
-`ok: false`. v1 assumes rigid links and a single uniform gravity vector; pair
-with `checkLoadCapacity` for applied external loads.
+with a `margin-low` warn diagnostic; an exceeded capacity or missing actuator
+coverage returns `ok: false`. v1 assumes rigid links and a single uniform
+gravity vector; pair with `checkLoadCapacity` for applied external loads.
 
 ### `sweepTolerance` — range proofs over the requirements ledger
 
@@ -140,6 +146,7 @@ call to confirm.
 | K9 `kinematic.mounting-hole.diameter-mismatch` | `fix-arg` | Set both connectors' hole diameter to the same value |
 | `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
 | `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
+| `assembly.joint.static-hold.no-actuator` | `rewrite-feature` | Declare `actuator: { torqueNm }` on `arm.revolute(...)` or `actuator: { forceN }` on `arm.prismatic(...)`; mate-only `mechanicalJoint` chains are not covered |
 | `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
 | `mechanism.load.torque-exceeded` / `mechanism.load.torque-margin-low` | `rewrite-feature` | Stronger actuator, lighter/shorter links, or slower motion (aim for 2x) |
 | `mechanism.load.side-load-exceeded` | `rewrite-feature` | Add a coaxial bushing/bearing and list it in the mechanicalJoint `supports` |
