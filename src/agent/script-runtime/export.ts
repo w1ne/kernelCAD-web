@@ -10,7 +10,13 @@ import { runScript } from '../../composition/runScript';
 import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { lowerScriptRun } from './lowerScriptRun';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import {
+  exportMeshDeflection,
+  type ExportMeshToleranceOptions,
+  type MeshDeviationReport,
+} from '../../kernel/backends/occt/backendMesh';
 import { partStlBytes } from '../../kernel/backends/occt/partFileExport';
+import { stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../shared/intent/drafting';
@@ -66,6 +72,7 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
 import { qualityGateOptionsError, runExportQualityGate, runQualityGateOnBodies, type ExportGeometryQualitySummary, type ExportQualityGateInput } from './exportQualityGate';
 export type { ExportGeometryQualitySummary, ExportQualityGateInput, QualityGateMode } from './exportQualityGate';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
@@ -86,7 +93,7 @@ export const EXPORT_FORMATS: readonly ExportFormat[] = [
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
-  | { format: 'stl'; verify?: boolean }
+  | ({ format: 'stl'; verify?: boolean } & ExportMeshToleranceOptions)
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in'; verify?: boolean }
   | {
       format: 'dxf';
@@ -102,6 +109,8 @@ export type ExportOptions =
     }
   | {
       format: '3mf';
+      tolerance?: number;
+      angularToleranceDeg?: number;
       printUnit?: 'mm' | 'cm' | 'in';
       embedSource?: boolean;
       /** Bed layout: 'none' (default, modelled positions), 'plate' (packed,
@@ -133,7 +142,7 @@ export type ExportOptions =
       units?: 'mm' | 'm';
     }
   /** `bytes` is a zip of `model.obj` (with `mtllib` / `usemtl`) and sibling `model.mtl`. */
-  | { format: 'obj' }
+  | ({ format: 'obj' } & ExportMeshToleranceOptions)
   | {
       /** Stanford PLY triangle mesh (mm, Z-up); assemblies merge every part
        *  in world space into one file. */
@@ -294,6 +303,8 @@ export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Sampled one-sided distance from exact B-rep face samples to file triangles. */
+  mesh_deviation?: MeshDeviationReport;
   /** `dxf` of a flat or sheet-metal part: the sheet it is cut from. A shop
    *  needs the thickness, which the DXF itself does not carry. */
   sheet?: { thicknessMm: number; bendCount: number };
@@ -602,6 +613,7 @@ export interface PartStlExport {
   bytes: Uint8Array;
   report: WatertightReport;
   triangleCount: number;
+  mesh_deviation?: MeshDeviationReport;
 }
 
 export interface ExportPartsInput {
@@ -613,6 +625,8 @@ export interface ExportPartsInput {
   parts?: string[];
   /** Per-part geometry-quality gate; default mode 'warn'. */
   qualityGate?: ExportQualityGateInput;
+  /** Per-part STL mesh controls. */
+  options?: ExportMeshToleranceOptions;
 }
 
 export interface ExportPartsResult {
@@ -729,14 +743,29 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     if (gate.blocked) return { parts: [], featureCount, diagnostics, ...geometryQuality };
     const parts: PartStlExport[] = [];
     for (const p of selected) {
-      const mesh = meshShapeForExport(p.shape.getReplicadShape());
+      const requested = input.options?.tolerance;
+      const initialDeflection = requested === undefined
+        ? exportMeshDeflection(input.options)
+        : exportMeshDeflection({ angularToleranceDeg: input.options?.angularToleranceDeg });
+      let mesh = meshShapeForExport(p.shape.getReplicadShape(), initialDeflection);
+      let bytes = partStlBytes(p.shape, mesh);
+      let mesh_deviation = requested === undefined
+        ? undefined
+        : measureBrepSurfaceDeviation([p.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested);
+      if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
+        mesh = meshShapeForExport(p.shape.getReplicadShape(), exportMeshDeflection(input.options));
+        bytes = partStlBytes(p.shape, mesh);
+        mesh_deviation = measureBrepSurfaceDeviation([p.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested!);
+      }
+      if (requested !== undefined) bytes = stampStlMeshTolerance(bytes, requested);
       const report = verifyWatertight(mesh);
       parts.push({
         name: p.name,
         fileSafeName: fileSafePartName(p.name),
-        bytes: partStlBytes(p.shape, mesh),
+        bytes,
         report,
         triangleCount: mesh.triangles.length / 3,
+        ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
       });
     }
     return { parts, featureCount, diagnostics, ...geometryQuality };

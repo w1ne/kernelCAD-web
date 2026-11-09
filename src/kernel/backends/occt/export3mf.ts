@@ -42,6 +42,11 @@ import { createRequire } from 'node:module';
 import {
   meshShapeForExport,
 } from './occtBackend';
+import {
+  exportMeshDeflection,
+  validateExportMeshToleranceOptions,
+  type MeshDeviationReport,
+} from './backendMesh';
 import type { MeshData } from './exportStlBinary';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { WorldFramePart } from './sceneToWorldFrame';
@@ -103,6 +108,10 @@ export type { SlicerFlavor } from './threeMfSlicerConfig';
 
 export interface Export3mfOptions {
   format: '3mf';
+  /** Requested absolute mesh tolerance in millimetres. */
+  tolerance?: number;
+  /** Maximum mesh normal-angle change in degrees. */
+  angularToleranceDeg?: number;
   /** 3MF document unit. Default `mm`. */
   printUnit?: ThreeMfUnit;
   /** When `true`, embed the original `.kcad.ts` source as a 3MF extension
@@ -208,7 +217,13 @@ export interface Export3mfResult {
   bytes: Uint8Array;
   bedWarnings: ThreeMfBedWarning[];
   meshWarnings: ThreeMfMeshWarning[];
+  mesh_deviation?: MeshDeviationReport;
 }
+
+export type MeshDeviationMeasurer = (
+  parts: readonly MeshedPart[],
+  requestedMm: number,
+) => MeshDeviationReport;
 
 /** A part mesh with more bad edges than the defect budget after the heal
  *  pass. The message contains `not watertight` (the runtime keys on it). */
@@ -307,16 +322,45 @@ export async function export3mfAsync(
 export async function export3mfWithReportAsync(
   parts: ReadonlyArray<WorldFramePart | MeshedPart>,
   options: Export3mfOptions,
+  measureDeviation?: MeshDeviationMeasurer,
 ): Promise<Export3mfResult> {
   if (parts.length === 0) {
     throw new Error('export3mfAsync: no parts to write.');
   }
+  const toleranceError = validateExportMeshToleranceOptions(options);
+  if (toleranceError !== undefined) throw new Error(toleranceError);
 
-  const { parts: meshed, meshWarnings } = healPartMeshes(parts.map((p) =>
-    hasMesh(p)
-      ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape()) },
-  ));
+  const angularOnlyDeflection = exportMeshDeflection({ angularToleranceDeg: options.angularToleranceDeg });
+  const requestedDeflection = exportMeshDeflection(options);
+  const meshInputParts = (refine: boolean): MeshedPart[] => parts.map((p) => {
+    const inputHasMesh = hasMesh(p);
+    const shouldRemeshForAngle = options.angularToleranceDeg !== undefined;
+    const canReuseInputMesh = options.tolerance === undefined || measureDeviation !== undefined;
+    if (!refine && inputHasMesh && !shouldRemeshForAngle && canReuseInputMesh) return p;
+    return {
+      ...p,
+      mesh: meshShapeForExport(
+        p.shape.getReplicadShape(),
+        refine || measureDeviation === undefined || options.tolerance === undefined
+          ? requestedDeflection
+          : angularOnlyDeflection,
+      ),
+    };
+  });
+
+  let healed = healPartMeshes(meshInputParts(false));
+  let mesh_deviation: MeshDeviationReport | undefined;
+  if (options.tolerance !== undefined && measureDeviation !== undefined) {
+    mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    if (mesh_deviation.measured_max_mm > options.tolerance * 1.05) {
+      // The legacy relative mesh can already meet the requested absolute
+      // ceiling. Keep it when it does; otherwise remesh this export in
+      // absolute mode and measure the triangles that will be serialized.
+      healed = healPartMeshes(meshInputParts(true));
+      mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    }
+  }
+  const { parts: meshed, meshWarnings } = healed;
 
   const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
   const arrange: ThreeMfArrange = options.arrange ?? 'none';
@@ -370,7 +414,11 @@ export async function export3mfWithReportAsync(
 <model unit="${PRINT_UNIT_TAG[printUnit]}" xml:lang="en-US"
        xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
   <metadata name="Application">${escapeXml(attributionGenerator(KERNELCAD_VERSION))}</metadata>
-  <metadata name="Description">${escapeXml(`Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`)}</metadata>
+  <metadata name="Description">${escapeXml(
+    options.tolerance === undefined
+      ? `Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`
+      : `Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE}); requested mesh tolerance ${String(options.tolerance)} mm`,
+  )}</metadata>
   <metadata name="CreationDate">${isoDate}</metadata>
   <resources>
     <basematerials id="${baseMaterialsId}">
@@ -411,7 +459,12 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
   if (embedSource) {
     files['Metadata/source.kcad.ts'] = strToU8(options.scriptSource!);
   }
-  return { bytes: zipSync(files), bedWarnings: layout.bedWarnings, meshWarnings };
+  return {
+    bytes: zipSync(files),
+    bedWarnings: layout.bedWarnings,
+    meshWarnings,
+    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+  };
 }
 
 /**

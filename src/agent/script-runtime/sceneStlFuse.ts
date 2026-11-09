@@ -17,13 +17,14 @@
 // fuse gives for parts that only touch or sit with clearance, and a union
 // that every slicer computes itself for parts that overlap.
 
-import { meshShapeForExport } from '../../kernel/backends/occt/backendMesh';
-import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
+import { exportMeshDeflection, meshShapeForExport, type ExportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
+import { encodeBinaryStl, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
 import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
-import { stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { meshToleranceNotMetDiagnostic, stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
 
 /** Overlapping free-form face pairs between two parts above which the fuse is
  *  skipped. A lofted handle on a lofted body is a few pairs; two threaded
@@ -74,11 +75,14 @@ export function freeformFuseOverBudget(parts: readonly WorldFramePart[]): Freefo
 }
 
 /** Mesh every part on its own and concatenate the meshes (index-offset). */
-export function meshPartsAsShells(parts: readonly WorldFramePart[]): { vertices: number[]; triangles: number[] } {
+export function meshPartsAsShells(
+  parts: readonly WorldFramePart[],
+  deflection?: ExportMeshDeflection,
+): { vertices: number[]; triangles: number[] } {
   const vertices: number[] = [];
   const triangles: number[] = [];
   for (const p of parts) {
-    const m = meshShapeForExport(p.shape.getReplicadShape());
+    const m = meshShapeForExport(p.shape.getReplicadShape(), deflection);
     const offset = vertices.length / 3;
     for (const v of m.vertices) vertices.push(v);
     for (const t of m.triangles) triangles.push(t + offset);
@@ -135,10 +139,34 @@ export function exportSceneStlAsShells(
   diagnostics: readonly CompilerDiagnostic[],
   featureCount: number,
   verify: boolean,
-): { bytes: Uint8Array; featureCount: number; diagnostics: CompilerDiagnostic[] } {
-  const mesh = meshPartsAsShells(worldParts);
-  const report = verifyWatertight(mesh);
-  const bytes = Uint8Array.from(encodeBinaryStl(mesh));
+  options?: ExportMeshToleranceOptions,
+): { bytes: Uint8Array; featureCount: number; diagnostics: CompilerDiagnostic[]; mesh_deviation?: MeshDeviationReport } {
+  const requested = options?.tolerance;
+  const initialDeflection = requested === undefined
+    ? exportMeshDeflection(options)
+    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
+  let mesh = meshPartsAsShells(worldParts, initialDeflection);
+  let report = verifyWatertight(mesh);
+  let bytes: Uint8Array<ArrayBufferLike> = Uint8Array.from(encodeBinaryStl(mesh));
+  let mesh_deviation: MeshDeviationReport | undefined;
+  if (requested !== undefined) {
+    mesh_deviation = measureBrepSurfaceDeviation(
+      worldParts.map(part => part.shape.getReplicadShape()),
+      [decodeBinaryStlMesh(bytes)],
+      requested,
+    );
+    if (mesh_deviation.measured_max_mm > requested * 1.05) {
+      mesh = meshPartsAsShells(worldParts, exportMeshDeflection(options));
+      report = verifyWatertight(mesh);
+      bytes = Uint8Array.from(encodeBinaryStl(mesh));
+      mesh_deviation = measureBrepSurfaceDeviation(
+        worldParts.map(part => part.shape.getReplicadShape()),
+        [decodeBinaryStlMesh(bytes)],
+        requested,
+      );
+    }
+    bytes = stampStlMeshTolerance(bytes, requested);
+  }
   const skipped: CompilerDiagnostic = {
     target: 'export-occt',
     code: 'export.stl.fuse-skipped',
@@ -152,6 +180,9 @@ export function exportSceneStlAsShells(
     nextAction: NEXT_ACTIONS['export.stl.fuse-skipped'],
   };
   const out = [...diagnostics, skipped];
+  if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
+    out.push(meshToleranceNotMetDiagnostic(mesh_deviation, targetId));
+  }
   if (verify && !report.ok) out.push(stlNotWatertightDiagnostic(report, targetId));
-  return { bytes, featureCount, diagnostics: out };
+  return { bytes, featureCount, diagnostics: out, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
 }
