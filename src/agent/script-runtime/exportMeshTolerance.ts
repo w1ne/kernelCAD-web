@@ -7,7 +7,7 @@ import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
-import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
+import { measureBrepSurfaceDeviation, measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
 import { meshToleranceNotMetDiagnostic } from './exportDiagnostics';
 
 export interface StlMeshToleranceOptions extends ExportMeshToleranceOptions {
@@ -72,9 +72,5 @@ function measureStlDeviation(
 ): MeshDeviationReport | undefined {
   return requestedMm === undefined
     ? undefined
-    : measureBrepSurfaceDeviation(
-        [shape.getReplicadShape()],
-        [decodeBinaryStlMesh(bytes)],
-        requestedMm,
-      );
+    : measureBrepSurfaceDeviationFromBinaryStl([shape.getReplicadShape()], bytes, requestedMm);
 }

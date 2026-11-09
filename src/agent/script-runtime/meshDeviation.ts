@@ -16,17 +16,12 @@ export const MESH_DEVIATION_SAMPLE_CAP = 4_000;
 export const MESH_DEVIATION_TRIANGLE_CHUNK_SIZE = 8_192;
 
 type DeviationPoint = [number, number, number];
+type TriangleMeshChunk = { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
 /** Read the triangles a binary STL actually stores (including Float32
  *  coordinate rounding) into the indexed mesh shape used by the BVH. */
 export function decodeBinaryStlMesh(bytes: Uint8Array): MeshData {
-  if (bytes.byteLength < 84) throw new Error('Binary STL is shorter than its header.');
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const triangleCount = view.getUint32(80, true);
-  const expectedBytes = 84 + triangleCount * 50;
-  if (bytes.byteLength < expectedBytes) {
-    throw new Error(`Binary STL declares ${triangleCount} triangles but ends before byte ${expectedBytes}.`);
-  }
+  const { view, triangleCount } = readBinaryStl(bytes);
   const vertices = new Float32Array(triangleCount * 9);
   const triangles = new Uint32Array(triangleCount * 3);
   let offset = 84;
@@ -41,6 +36,36 @@ export function decodeBinaryStlMesh(bytes: Uint8Array): MeshData {
     offset += 38; // vertices plus the 2-byte attribute count
   }
   return { vertices, triangles };
+}
+
+/** Lazily decode an STL into indexed meshes capped at `chunkSize` triangles. */
+export function decodeBinaryStlMeshChunks(
+  bytes: Uint8Array,
+  chunkSize = MESH_DEVIATION_TRIANGLE_CHUNK_SIZE,
+): Iterable<MeshData> {
+  const { view, triangleCount } = readBinaryStl(bytes);
+  validateTriangleChunkSize(chunkSize);
+  return {
+    *[Symbol.iterator](): Iterator<MeshData> {
+      for (let start = 0; start < triangleCount; start += chunkSize) {
+        const count = Math.min(chunkSize, triangleCount - start);
+        const vertices = new Float32Array(count * 9);
+        const triangles = new Uint32Array(count * 3);
+        for (let localTriangle = 0; localTriangle < count; localTriangle++) {
+          const recordOffset = 84 + (start + localTriangle) * 50;
+          const vertexOffset = localTriangle * 9;
+          for (let vertex = 0; vertex < 9; vertex++) {
+            vertices[vertexOffset + vertex] = view.getFloat32(recordOffset + 12 + vertex * 4, true);
+          }
+          const triangleOffset = localTriangle * 3;
+          triangles[triangleOffset] = localTriangle * 3;
+          triangles[triangleOffset + 1] = localTriangle * 3 + 1;
+          triangles[triangleOffset + 2] = localTriangle * 3 + 2;
+        }
+        yield { vertices, triangles };
+      }
+    },
+  };
 }
 
 /**
@@ -73,6 +98,40 @@ export function measureBrepSurfaceDeviation(
       if (Number.isFinite(distance)) distances.push(distance);
     }
   }
+  return deviationReport(distances, triangleCount, requestedMm);
+}
+
+/** Measure a binary STL without materializing a decoded mesh for the whole export. */
+export function measureBrepSurfaceDeviationFromBinaryStl(
+  shapes: readonly Shape3D[],
+  bytes: Uint8Array,
+  requestedMm: number,
+  sampleCap = MESH_DEVIATION_SAMPLE_CAP,
+  chunkSize = MESH_DEVIATION_TRIANGLE_CHUNK_SIZE,
+): MeshDeviationReport {
+  validateTriangleChunkSize(chunkSize);
+  const { triangleCount } = readBinaryStl(bytes);
+  if (triangleCount === 0) throw new Error('Mesh-deviation measurement needs at least one export triangle.');
+  const samples = collectDeterministicSamples(shapes, sampleCap);
+  const distances = nearestTriangleDistancesFromChunks(
+    samples,
+    decodeBinaryStlMeshChunks(bytes, chunkSize),
+  ).filter(Number.isFinite);
+  return deviationReport(distances, triangleCount, requestedMm);
+}
+
+function collectDeterministicSamples(shapes: readonly Shape3D[], sampleCap: number): DeviationPoint[] {
+  const candidateCount = countBrepSamples(shapes);
+  if (candidateCount === 0) throw new Error('Mesh-deviation measurement found no triangulated B-rep face samples.');
+  const stride = Math.max(1, Math.ceil(candidateCount / Math.max(1, sampleCap)));
+  return collectBrepSamples(shapes, stride).flat();
+}
+
+function deviationReport(
+  distances: number[],
+  triangleCount: number,
+  requestedMm: number,
+): MeshDeviationReport {
   if (distances.length === 0) throw new Error('Mesh-deviation measurement could not project any B-rep samples onto their owning faces.');
   distances.sort((a, b) => a - b);
   return {
@@ -94,26 +153,53 @@ export function nearestTriangleDistancesChunked(
   meshes: readonly MeshData[],
   chunkSize = MESH_DEVIATION_TRIANGLE_CHUNK_SIZE,
 ): number[] {
-  if (!Number.isSafeInteger(chunkSize) || chunkSize < 1) {
-    throw new Error('Mesh-deviation triangle chunk size must be a positive safe integer.');
-  }
+  validateTriangleChunkSize(chunkSize);
+  return nearestTriangleDistancesFromChunks(points, indexedTriangleChunks(meshes, chunkSize));
+}
+
+function nearestTriangleDistancesFromChunks(
+  points: readonly DeviationPoint[],
+  chunks: Iterable<TriangleMeshChunk>,
+): number[] {
   const nearest = new Float64Array(points.length);
   nearest.fill(Infinity);
-  for (const mesh of meshes) {
-    const meshTriangleCount = Math.floor(mesh.triangles.length / 3);
-    for (let start = 0; start < meshTriangleCount; start += chunkSize) {
-      const count = Math.min(chunkSize, meshTriangleCount - start);
-      const bvh = new TriangleBvh(indexedTriangleChunk(mesh, start, count));
-      for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
-        const hit = bvh.closestPoint(points[pointIndex]! as Vec3);
-        if (hit && hit.distance < nearest[pointIndex]!) nearest[pointIndex] = hit.distance;
-      }
+  for (const chunk of chunks) {
+    const bvh = new TriangleBvh(chunk as unknown as DfmMesh);
+    for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
+      const hit = bvh.closestPoint(points[pointIndex]! as Vec3);
+      if (hit && hit.distance < nearest[pointIndex]!) nearest[pointIndex] = hit.distance;
     }
   }
   return Array.from(nearest);
 }
 
-function indexedTriangleChunk(mesh: MeshData, start: number, count: number): DfmMesh {
+function* indexedTriangleChunks(meshes: readonly MeshData[], chunkSize: number): Iterable<TriangleMeshChunk> {
+  for (const mesh of meshes) {
+    const meshTriangleCount = Math.floor(mesh.triangles.length / 3);
+    for (let start = 0; start < meshTriangleCount; start += chunkSize) {
+      yield indexedTriangleChunk(mesh, start, Math.min(chunkSize, meshTriangleCount - start));
+    }
+  }
+}
+
+function validateTriangleChunkSize(chunkSize: number): void {
+  if (!Number.isSafeInteger(chunkSize) || chunkSize < 1) {
+    throw new Error('Mesh-deviation triangle chunk size must be a positive safe integer.');
+  }
+}
+
+function readBinaryStl(bytes: Uint8Array): { view: DataView; triangleCount: number } {
+  if (bytes.byteLength < 84) throw new Error('Binary STL is shorter than its header.');
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const triangleCount = view.getUint32(80, true);
+  const expectedBytes = 84 + triangleCount * 50;
+  if (bytes.byteLength < expectedBytes) {
+    throw new Error(`Binary STL declares ${triangleCount} triangles but ends before byte ${expectedBytes}.`);
+  }
+  return { view, triangleCount };
+}
+
+function indexedTriangleChunk(mesh: MeshData, start: number, count: number): TriangleMeshChunk {
   const vertices = new Float64Array(count * 9);
   const triangles = new Uint32Array(count * 3);
   for (let triangle = 0; triangle < count; triangle++) {

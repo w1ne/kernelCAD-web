@@ -72,7 +72,7 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
-import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
+import { measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
 import { qualityGateOptionsError, runExportQualityGate, runQualityGateOnBodies, type ExportGeometryQualitySummary, type ExportQualityGateInput } from './exportQualityGate';
 export type { ExportGeometryQualitySummary, ExportQualityGateInput, QualityGateMode } from './exportQualityGate';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
@@ -762,11 +762,11 @@ function meshPartWithTolerance(
   let bytes = partStlBytes(part.shape, mesh);
   let mesh_deviation = requested === undefined
     ? undefined
-    : measureBrepSurfaceDeviation([part.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested);
+    : measureBrepSurfaceDeviationFromBinaryStl([part.shape.getReplicadShape()], bytes, requested);
   if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
     mesh = meshShapeForExport(part.shape.getReplicadShape(), exportMeshDeflection(options));
     bytes = partStlBytes(part.shape, mesh);
-    mesh_deviation = measureBrepSurfaceDeviation([part.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested!);
+    mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl([part.shape.getReplicadShape()], bytes, requested!);
   }
   if (requested !== undefined) bytes = stampStlMeshTolerance(bytes, requested);
   const report = verifyWatertight(mesh);

@@ -24,7 +24,7 @@ import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFram
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { meshToleranceNotMetDiagnostic, stlNotWatertightDiagnostic } from './exportDiagnostics';
-import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
+import { measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
 import type { ExportResult } from './export';
 import { crackSeams, describeCrackSeams } from './sceneStlSeams';
 
@@ -152,18 +152,18 @@ export function exportSceneStlAsShells(
   let bytes: Uint8Array<ArrayBufferLike> = Uint8Array.from(encodeBinaryStl(mesh));
   let mesh_deviation: MeshDeviationReport | undefined;
   if (requested !== undefined) {
-    mesh_deviation = measureBrepSurfaceDeviation(
+    mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
       worldParts.map(part => part.shape.getReplicadShape()),
-      [decodeBinaryStlMesh(bytes)],
+      bytes,
       requested,
     );
     if (mesh_deviation.measured_max_mm > requested * 1.05) {
       mesh = meshPartsAsShells(worldParts, exportMeshDeflection(options));
       report = verifyWatertight(mesh);
       bytes = Uint8Array.from(encodeBinaryStl(mesh));
-      mesh_deviation = measureBrepSurfaceDeviation(
+      mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
         worldParts.map(part => part.shape.getReplicadShape()),
-        [decodeBinaryStlMesh(bytes)],
+        bytes,
         requested,
       );
     }
@@ -260,9 +260,9 @@ function measureShellDeviation(
 ): MeshDeviationReport | undefined {
   return tolerance === undefined
     ? undefined
-    : measureBrepSurfaceDeviation(
+    : measureBrepSurfaceDeviationFromBinaryStl(
         worldParts.map(part => part.shape.getReplicadShape()),
-        [decodeBinaryStlMesh(bytes)],
+        bytes,
         tolerance,
       );
 }
