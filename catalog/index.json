@@ -125688,13 +125688,19 @@
       "id": "blackout-curtain-drive",
       "kit": "hydroponics",
       "title": "Blackout curtain drive",
-      "description": "Greenhouse shade-screen drive assembly with a motor block, roller shaft and end supports. Parameters: overall scale, powder-coated steel, polymer, rubber; weathered and highVisibility presets.",
+      "description": "Greenhouse blackout screen rack-and-pinion drive at about real size: two columns with a cross beam, a gearmotor with finned motor and limit-switch box on the drive shaft, bearing blocks, pinion gearboxes, toothed racks pushing the aluminium leading-edge profile, support wires and a black-over-white blackout screen running out from its folded package. Material controls: structure, gearmotor, screen top and screen underside, plus screen position (open, half, closed). blackout, energyScreen, shadeScreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "hydroponics",
+        "blackout screen",
+        "shade screen",
+        "energy curtain",
+        "screen drive",
+        "rack and pinion",
+        "gearmotor",
+        "photoperiod",
         "greenhouse",
-        "controlled environment agriculture",
+        "hydroponics",
         "low poly",
         "scene prop"
       ],
@@ -125707,8 +125713,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
       "preview": "/assets/hydroponics-blackout-curtain-drive.png",
-      "sourceSha256": "16ed40b03810836e2814a8c103c38ba3da944caa2624b650669a042796ffcd76",
-      "triangleBudget": 1800,
+      "sourceSha256": "21c4aced71da19c67732e64f1b3e9f09686e36a32ec8bae92f761bd6a76b8a23",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -125720,77 +125726,228 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b9c0c3",
+          "label": "Columns, shaft and racks (galvanised steel)"
         },
         {
-          "name": "polymer",
+          "name": "gearmotor",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2f6fa8",
+          "label": "Gearmotor (painted)"
         },
         {
-          "name": "rubber",
+          "name": "screenTop",
           "type": "color",
-          "default": "#323a3d",
-          "label": "Rubber"
+          "default": "#202225",
+          "label": "Screen top face"
+        },
+        {
+          "name": "screenUnder",
+          "type": "color",
+          "default": "#eceae2",
+          "label": "Screen underside"
+        },
+        {
+          "name": "screenPosition",
+          "type": "choice",
+          "default": "half",
+          "label": "Screen position",
+          "choices": [
+            "open",
+            "half",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa",
-          "rubber": "#4b504e"
+        "blackout": {
+          "structure": "#b9c0c3",
+          "gearmotor": "#2f6fa8",
+          "screenTop": "#202225",
+          "screenUnder": "#eceae2"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b",
-          "rubber": "#262d30"
+        "energyScreen": {
+          "structure": "#c6cbcd",
+          "gearmotor": "#e07a1f",
+          "screenTop": "#d9dcd8",
+          "screenUnder": "#bfc5c8"
+        },
+        "shadeScreen": {
+          "structure": "#b0b6b8",
+          "gearmotor": "#3c7a3a",
+          "screenTop": "#4f5a52",
+          "screenUnder": "#9da69f"
+        },
+        "weathered": {
+          "structure": "#8b908e",
+          "gearmotor": "#56708a",
+          "screenTop": "#34363a",
+          "screenUnder": "#c9c4b4"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1788,
         "sizeM": [
-          0.963665,
-          0.605,
-          0.8
+          2.04,
+          2.27,
+          2.1
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "structure",
+          "color": "#b9c0c3",
           "parts": [
-            "mount-plate",
-            "left-bracket",
-            "right-bracket",
-            "motor-box",
-            "screen-rail"
+            "base--900",
+            "column--900",
+            "gutter--900",
+            "base-900",
+            "column-900",
+            "gutter-900",
+            "truss-top",
+            "truss-bottom",
+            "truss-web-0",
+            "truss-web-1",
+            "truss-web-2",
+            "truss-web-3",
+            "truss-web-4",
+            "truss-web-5",
+            "drive-shaft",
+            "bearing-arm--830",
+            "bearing-arm-830",
+            "rack--500",
+            "tooth--500-0",
+            "tooth--500-1",
+            "tooth--500-2",
+            "tooth--500-3",
+            "tooth--500-4",
+            "tooth--500-5",
+            "tooth--500-6",
+            "tooth--500-7",
+            "tooth--500-8",
+            "tooth--500-9",
+            "tooth--500-10",
+            "tooth--500-11",
+            "tooth--500-12",
+            "tooth--500-13",
+            "tooth--500-14",
+            "tooth--500-15",
+            "tooth--500-16",
+            "tooth--500-17",
+            "rack-clamp--500",
+            "push-rod--500",
+            "rack-500",
+            "tooth-500-0",
+            "tooth-500-1",
+            "tooth-500-2",
+            "tooth-500-3",
+            "tooth-500-4",
+            "tooth-500-5",
+            "tooth-500-6",
+            "tooth-500-7",
+            "tooth-500-8",
+            "tooth-500-9",
+            "tooth-500-10",
+            "tooth-500-11",
+            "tooth-500-12",
+            "tooth-500-13",
+            "tooth-500-14",
+            "tooth-500-15",
+            "tooth-500-16",
+            "tooth-500-17",
+            "rack-clamp-500",
+            "push-rod-500",
+            "wire--700",
+            "wire--350",
+            "wire-0",
+            "wire-350",
+            "wire-700"
           ],
-          "param": "powderCoatedSteel"
+          "param": "structure"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "bearing--830",
+          "color": "#3b3f42",
           "parts": [
-            "curtain-weight",
-            "limit-switch-box",
-            "drive-coupler",
-            "idler-cap"
-          ],
-          "param": "polymer"
+            "bearing--830",
+            "bearing-830",
+            "motor-fan-cover",
+            "pinion-box--500",
+            "pinion-box-500"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#323a3d",
+          "name": "gearmotor",
+          "color": "#2f6fa8",
           "parts": [
-            "roller-tube"
+            "gearbox",
+            "gearbox-flange",
+            "motor",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "terminal-box"
           ],
-          "param": "rubber"
+          "param": "gearmotor"
+        },
+        {
+          "name": "limit-box",
+          "color": "#e3e4df",
+          "parts": [
+            "limit-box"
+          ]
+        },
+        {
+          "name": "limit-dial",
+          "color": "#c0392b",
+          "parts": [
+            "limit-dial"
+          ]
+        },
+        {
+          "name": "motor-cable",
+          "color": "#1f2326",
+          "parts": [
+            "motor-cable"
+          ]
+        },
+        {
+          "name": "leading-edge",
+          "color": "#d0d4d6",
+          "parts": [
+            "leading-edge"
+          ]
+        },
+        {
+          "name": "screenTop",
+          "color": "#202225",
+          "parts": [
+            "screen-top",
+            "package-fold-0",
+            "package-fold-2",
+            "package-fold-4"
+          ],
+          "param": "screenTop"
+        },
+        {
+          "name": "screenUnder",
+          "color": "#eceae2",
+          "parts": [
+            "screen-under",
+            "screen-pleat-120",
+            "screen-pleat-380",
+            "screen-pleat-640",
+            "package-fold-1",
+            "package-fold-3"
+          ],
+          "param": "screenUnder"
         }
       ]
     },
@@ -126050,13 +126207,20 @@
       "id": "coco-coir-slab-holder",
       "kit": "hydroponics",
       "title": "Coir slab holder",
-      "description": "Open-sided slab cradle with a perforated-looking support deck and central drain line. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Substrate-culture coir slab station at about real size: galvanised U-gutter on two trestle stands, a film-wrapped coco coir slab with planting windows, three rockwool cubes with young plants, a drip stake in each cube fed by spaghetti tube from the black lateral along the back, drainage slits on the slab front and a drain outlet at the gutter end. Material controls: gutter and stands, slab film, coir, drip line and foliage. whiteFilm, blackFilm, cucumber and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "coir slab",
+        "coco coir",
+        "grow slab",
+        "substrate culture",
+        "rockwool cube",
+        "drip irrigation",
+        "grow gutter",
+        "tomato",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -126069,8 +126233,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/coco-coir-slab-holder.kcad.ts",
       "preview": "/assets/hydroponics-coco-coir-slab-holder.png",
-      "sourceSha256": "04e7be0a3e41a0fb79ba66c12e53161d4bae82a5a98098c05b72ad7c61e68c92",
-      "triangleBudget": 1800,
+      "sourceSha256": "dab19bd7b32553b70b605a68d31cedeef24f5d2feb5ac6498f293aacf8219908",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -126082,77 +126246,211 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "gutter",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b8bfc2",
+          "label": "Gutter and stands (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "slabFilm",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#ecebe4",
+          "label": "Slab film (UV polyethylene)"
         },
         {
-          "name": "polymer",
+          "name": "coir",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#7a4e2c",
+          "label": "Coir and rockwool"
+        },
+        {
+          "name": "dripLine",
+          "type": "color",
+          "default": "#1f2326",
+          "label": "Drip line (PE)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#4f8a3a",
+          "label": "Foliage"
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "whiteFilm": {
+          "gutter": "#b8bfc2",
+          "slabFilm": "#ecebe4",
+          "coir": "#7a4e2c",
+          "dripLine": "#1f2326",
+          "foliage": "#4f8a3a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blackFilm": {
+          "gutter": "#a7adb0",
+          "slabFilm": "#2a2c2e",
+          "coir": "#86593a",
+          "dripLine": "#3a3f44",
+          "foliage": "#3f7d34"
+        },
+        "cucumber": {
+          "gutter": "#d0d4d2",
+          "slabFilm": "#f2f0e6",
+          "coir": "#6d4426",
+          "dripLine": "#1f2326",
+          "foliage": "#6aa54a"
+        },
+        "weathered": {
+          "gutter": "#8d9290",
+          "slabFilm": "#cfcab8",
+          "coir": "#5e3f27",
+          "dripLine": "#2c2f30",
+          "foliage": "#6f8a45"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 2136,
         "sizeM": [
-          1.59,
-          0.35,
-          0.5225
+          1.663,
+          1.066,
+          0.58
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "gutter",
+          "color": "#b8bfc2",
           "parts": [
-            "left-end",
-            "right-end",
+            "stand-head--520",
+            "stand-leg-front--520",
+            "stand-leg-back--520",
+            "stand-brace--520",
+            "stand-head-520",
+            "stand-leg-front-520",
+            "stand-leg-back-520",
+            "stand-brace-520",
+            "gutter",
+            "gutter-end-left",
+            "gutter-end-right"
+          ],
+          "param": "gutter"
+        },
+        {
+          "name": "stand-foot-front--520",
+          "color": "#3b3f42",
+          "parts": [
+            "stand-foot-front--520",
+            "stand-foot-back--520",
+            "stand-foot-front-520",
+            "stand-foot-back-520",
+            "lateral-clip--560",
+            "lateral-clip-0",
+            "lateral-clip-560"
+          ]
+        },
+        {
+          "name": "dripLine",
+          "color": "#1f2326",
+          "parts": [
+            "drain-spigot",
+            "drain-elbow",
+            "drain-pipe",
+            "stake--330",
+            "spaghetti--330-0",
+            "spaghetti--330-1",
+            "spaghetti--330-2",
+            "spaghetti--330-3",
+            "stake-0",
+            "spaghetti-0-0",
+            "spaghetti-0-1",
+            "spaghetti-0-2",
+            "spaghetti-0-3",
+            "stake-330",
+            "spaghetti-330-0",
+            "spaghetti-330-1",
+            "spaghetti-330-2",
+            "spaghetti-330-3",
+            "lateral"
+          ],
+          "param": "dripLine"
+        },
+        {
+          "name": "slabFilm",
+          "color": "#ecebe4",
+          "parts": [
             "slab",
-            "deck-strip-a",
-            "deck-strip-b",
-            "deck-strip-c"
+            "slab-seal-left",
+            "slab-seal-right",
+            "cube-wrap--330",
+            "cube-wrap-0",
+            "cube-wrap-330"
           ],
-          "param": "polymer"
+          "param": "slabFilm"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "coir",
+          "color": "#7a4e2c",
           "parts": [
-            "front-rail",
-            "back-rail"
+            "drain-slit--410",
+            "drain-slit--150",
+            "drain-slit-150",
+            "drain-slit-410",
+            "window--330",
+            "window-0",
+            "window-330"
           ],
-          "param": "powderCoatedSteel"
+          "param": "coir"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "foliage",
+          "color": "#4f8a3a",
           "parts": [
-            "irrigation-line",
-            "drain-line"
+            "slab-print",
+            "leaf--330-0",
+            "leaf--330-1",
+            "leaf--330-2",
+            "leaf--330-3",
+            "crown--330",
+            "leaf-0-0",
+            "leaf-0-1",
+            "leaf-0-2",
+            "leaf-0-3",
+            "crown-0",
+            "leaf-330-0",
+            "leaf-330-1",
+            "leaf-330-2",
+            "leaf-330-3",
+            "crown-330"
           ],
-          "param": "pvc"
+          "param": "foliage"
+        },
+        {
+          "name": "cube--330",
+          "color": "#c9c08f",
+          "parts": [
+            "cube--330",
+            "cube-0",
+            "cube-330"
+          ]
+        },
+        {
+          "name": "stem--330",
+          "color": "#5d8f3a",
+          "parts": [
+            "stem--330",
+            "stem-0",
+            "stem-330"
+          ]
+        },
+        {
+          "name": "stake-head--330",
+          "color": "#c0392b",
+          "parts": [
+            "stake-head--330",
+            "stake-head-0",
+            "stake-head-330",
+            "lateral-end"
+          ]
         }
       ]
     },
@@ -126160,13 +126458,20 @@
       "id": "crop-trellis-frame",
       "kit": "hydroponics",
       "title": "Crop trellis frame",
-      "description": "A freestanding crop-support frame with a top tension rail, four uprights and a raised cross-tie. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "One bay of a high-wire vine-crop trellis at about real size: two galvanised end posts on braced base plates, a top cross tube with the tensioned crop wire and turnbuckle, four twine reels hung on the wire, twine dropping to each plant, vines winding up with alternating leaves and fruit trusses, rooted in grow cubes on a slab in a floor gutter. Material controls: frame, twine and reels, foliage and fruit, plus crop height. tomato, cucumber, pepper and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "trellis",
+        "crop wire",
+        "high wire",
+        "vine crop",
+        "tomato",
+        "cucumber",
+        "twine reel",
+        "roller hook",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -126179,8 +126484,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/crop-trellis-frame.kcad.ts",
       "preview": "/assets/hydroponics-crop-trellis-frame.png",
-      "sourceSha256": "6d8d71f26e59e06208000ae2003e32d4fd2af50cec2edf7b814bd749e5dd5fc5",
-      "triangleBudget": 1800,
+      "sourceSha256": "1f61af8b7bc5d1ba5d99b282de66f55978e38e3048bd4e2011f30e32b7139548",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -126192,64 +126497,306 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b4bbbe",
+          "label": "Posts and wire (galvanised steel)"
         },
         {
-          "name": "polymer",
+          "name": "twine",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e7d9a8",
+          "label": "Twine and reels (polypropylene)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#3f7f35",
+          "label": "Foliage"
+        },
+        {
+          "name": "fruit",
+          "type": "color",
+          "default": "#d33a2c",
+          "label": "Fruit"
+        },
+        {
+          "name": "cropHeight",
+          "type": "choice",
+          "default": "tall",
+          "label": "Crop height",
+          "choices": [
+            "young",
+            "mid",
+            "tall"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+        "tomato": {
+          "frame": "#b4bbbe",
+          "twine": "#e7d9a8",
+          "foliage": "#3f7f35",
+          "fruit": "#d33a2c"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+        "cucumber": {
+          "frame": "#c3c8ca",
+          "twine": "#f2f0ea",
+          "foliage": "#5a9a3e",
+          "fruit": "#2f6b2a"
+        },
+        "pepper": {
+          "frame": "#9aa3a6",
+          "twine": "#d6c38a",
+          "foliage": "#376f2e",
+          "fruit": "#e8a220"
+        },
+        "weathered": {
+          "frame": "#8a8f8c",
+          "twine": "#bfae80",
+          "foliage": "#6b8442",
+          "fruit": "#a8442e"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 6420,
         "sizeM": [
-          1.3,
-          1.84,
-          0.74
+          1.82,
+          2.28,
+          1.062681
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#b4bbbe",
           "parts": [
-            "foot-left-front",
-            "foot-right-front",
-            "foot-left-back",
-            "foot-right-back",
-            "post-left-front",
-            "post-right-front",
-            "post-left-back",
-            "post-right-back",
-            "top-rail",
-            "mid-rail",
-            "tension-anchor-left"
+            "base-plate--800",
+            "post--800",
+            "gusset-l--800",
+            "gusset-r--800",
+            "brace--800",
+            "brace-foot--800",
+            "base-plate-800",
+            "post-800",
+            "gusset-l-800",
+            "gusset-r-800",
+            "brace-800",
+            "brace-foot-800",
+            "cross-tube",
+            "crop-wire",
+            "wire-anchor--770",
+            "wire-anchor-770",
+            "floor-gutter",
+            "hook-0",
+            "hook-1",
+            "hook-2",
+            "hook-3"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "post-cap--800",
+          "color": "#3b3f42",
           "parts": [
-            "tension-anchor-right"
+            "post-cap--800",
+            "post-cap-800"
+          ]
+        },
+        {
+          "name": "turnbuckle",
+          "color": "#d0a43a",
+          "parts": [
+            "turnbuckle"
+          ]
+        },
+        {
+          "name": "slab",
+          "color": "#ecebe4",
+          "parts": [
+            "slab"
+          ]
+        },
+        {
+          "name": "cube-0",
+          "color": "#c9c08f",
+          "parts": [
+            "cube-0",
+            "cube-1",
+            "cube-2",
+            "cube-3"
+          ]
+        },
+        {
+          "name": "twine",
+          "color": "#e7d9a8",
+          "parts": [
+            "reel-0",
+            "twine-0",
+            "reel-1",
+            "twine-1",
+            "reel-2",
+            "twine-2",
+            "reel-3",
+            "twine-3"
           ],
-          "param": "polymer"
+          "param": "twine"
+        },
+        {
+          "name": "reel-flange-0",
+          "color": "#2f6b9a",
+          "parts": [
+            "reel-flange-0",
+            "reel-flange-1",
+            "reel-flange-2",
+            "reel-flange-3"
+          ]
+        },
+        {
+          "name": "vine-0-1",
+          "color": "#4d7d33",
+          "parts": [
+            "vine-0-1",
+            "vine-0-2",
+            "vine-0-3",
+            "vine-0-4",
+            "vine-0-5",
+            "vine-0-6",
+            "vine-0-7",
+            "vine-0-8",
+            "vine-0-9",
+            "vine-0-10",
+            "vine-0-11",
+            "vine-1-1",
+            "vine-1-2",
+            "vine-1-3",
+            "vine-1-4",
+            "vine-1-5",
+            "vine-1-6",
+            "vine-1-7",
+            "vine-1-8",
+            "vine-1-9",
+            "vine-1-10",
+            "vine-1-11",
+            "vine-2-1",
+            "vine-2-2",
+            "vine-2-3",
+            "vine-2-4",
+            "vine-2-5",
+            "vine-2-6",
+            "vine-2-7",
+            "vine-2-8",
+            "vine-2-9",
+            "vine-2-10",
+            "vine-2-11",
+            "vine-3-1",
+            "vine-3-2",
+            "vine-3-3",
+            "vine-3-4",
+            "vine-3-5",
+            "vine-3-6",
+            "vine-3-7",
+            "vine-3-8",
+            "vine-3-9",
+            "vine-3-10",
+            "vine-3-11"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#3f7f35",
+          "parts": [
+            "leaf-0-1",
+            "leaf-0-2",
+            "leaf-0-3",
+            "leaf-0-4",
+            "leaf-0-5",
+            "leaf-0-6",
+            "leaf-0-7",
+            "leaf-0-8",
+            "leaf-0-9",
+            "leaf-0-10",
+            "leaf-0-11",
+            "head-0",
+            "leaf-1-1",
+            "leaf-1-2",
+            "leaf-1-3",
+            "leaf-1-4",
+            "leaf-1-5",
+            "leaf-1-6",
+            "leaf-1-7",
+            "leaf-1-8",
+            "leaf-1-9",
+            "leaf-1-10",
+            "leaf-1-11",
+            "head-1",
+            "leaf-2-1",
+            "leaf-2-2",
+            "leaf-2-3",
+            "leaf-2-4",
+            "leaf-2-5",
+            "leaf-2-6",
+            "leaf-2-7",
+            "leaf-2-8",
+            "leaf-2-9",
+            "leaf-2-10",
+            "leaf-2-11",
+            "head-2",
+            "leaf-3-1",
+            "leaf-3-2",
+            "leaf-3-3",
+            "leaf-3-4",
+            "leaf-3-5",
+            "leaf-3-6",
+            "leaf-3-7",
+            "leaf-3-8",
+            "leaf-3-9",
+            "leaf-3-10",
+            "leaf-3-11",
+            "head-3"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "fruit",
+          "color": "#d33a2c",
+          "parts": [
+            "fruit-0-2-0",
+            "fruit-0-2-1",
+            "fruit-0-4-0",
+            "fruit-0-4-1",
+            "fruit-0-6-0",
+            "fruit-0-6-1",
+            "fruit-0-8-0",
+            "fruit-0-8-1",
+            "fruit-1-2-0",
+            "fruit-1-2-1",
+            "fruit-1-4-0",
+            "fruit-1-4-1",
+            "fruit-1-6-0",
+            "fruit-1-6-1",
+            "fruit-1-8-0",
+            "fruit-1-8-1",
+            "fruit-2-2-0",
+            "fruit-2-2-1",
+            "fruit-2-4-0",
+            "fruit-2-4-1",
+            "fruit-2-6-0",
+            "fruit-2-6-1",
+            "fruit-2-8-0",
+            "fruit-2-8-1",
+            "fruit-3-2-0",
+            "fruit-3-2-1",
+            "fruit-3-4-0",
+            "fruit-3-4-1",
+            "fruit-3-6-0",
+            "fruit-3-6-1",
+            "fruit-3-8-0",
+            "fruit-3-8-1"
+          ],
+          "param": "fruit"
         }
       ]
     },
@@ -127962,13 +128509,19 @@
       "id": "evaporative-cooling-pad",
       "kit": "hydroponics",
       "title": "Evaporative cooling pad",
-      "description": "Cooling wall section with a framed media panel, top water header and lower collection trough. Parameters: overall scale, powder-coated steel, pvc, polymer, grow substrate; weathered and highVisibility presets.",
+      "description": "Fan-and-pad greenhouse wet wall section at about real size: three 150 mm cellulose honeycomb pad modules with angled flutes, wet lower band, aluminium frame and posts, top distribution pipe under a hinged cap, bottom run-off gutter, recirculation tank with pump and float valve, and a riser with ball valve back up to the distribution pipe. Material controls: pad media, frame, pipework and tank. cellulose, glassFibre, greenCoated and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "evaporative cooling",
+        "cooling pad",
+        "wet wall",
+        "fan and pad",
+        "cellulose pad",
+        "swamp cooler",
+        "greenhouse cooling",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -127981,8 +128534,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/evaporative-cooling-pad.kcad.ts",
       "preview": "/assets/hydroponics-evaporative-cooling-pad.png",
-      "sourceSha256": "0749c8b11174f2d587e9a6f7548baf373a6f85a047eae8c7b0f0a5c43bd8db6c",
-      "triangleBudget": 1800,
+      "sourceSha256": "4673216f62fffc6e0ea32429b7d0c2c9df82aa18bfb9f82f7e04f7dba0a5de56",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -127994,93 +128547,283 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "padMedia",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#c99a5b",
+          "label": "Pad media (cellulose)"
         },
         {
-          "name": "pvc",
+          "name": "frame",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#c3c8cb",
+          "label": "Frame and cap (aluminium)"
         },
         {
-          "name": "polymer",
+          "name": "pipework",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#5b6d7c",
+          "label": "Pipework (PVC)"
         },
         {
-          "name": "growSubstrate",
+          "name": "tank",
           "type": "color",
-          "default": "#8a6848",
-          "label": "Grow substrate"
+          "default": "#2f3b35",
+          "label": "Tank and gutter (PE)"
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa",
-          "growSubstrate": "#75604b"
+        "cellulose": {
+          "padMedia": "#c99a5b",
+          "frame": "#c3c8cb",
+          "pipework": "#5b6d7c",
+          "tank": "#2f3b35"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b",
-          "growSubstrate": "#aa8652"
+        "glassFibre": {
+          "padMedia": "#d8d6c8",
+          "frame": "#a9b0b4",
+          "pipework": "#3f4c58",
+          "tank": "#3a3d40"
+        },
+        "greenCoated": {
+          "padMedia": "#6f8f4a",
+          "frame": "#e3e4df",
+          "pipework": "#2e5f8a",
+          "tank": "#2b2f33"
+        },
+        "weathered": {
+          "padMedia": "#9e7a4c",
+          "frame": "#8f9392",
+          "pipework": "#6b7378",
+          "tank": "#3c3f3a"
         }
       },
       "stats": {
-        "triangles": 324,
+        "triangles": 2352,
         "sizeM": [
-          1.55,
-          1.77,
-          0.315
+          2.33,
+          2.12,
+          0.765
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "growSubstrate",
-          "color": "#8a6848",
+          "name": "padMedia",
+          "color": "#c99a5b",
           "parts": [
-            "pad-core"
+            "pad-0",
+            "pad-1",
+            "pad-2"
           ],
-          "param": "growSubstrate"
+          "param": "padMedia"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "pad-wet-0",
+          "color": "#8a6236",
           "parts": [
-            "frame-left",
-            "frame-right",
-            "frame-top",
-            "side-support-left",
-            "side-support-right"
-          ],
-          "param": "powderCoatedSteel"
+            "pad-wet-0",
+            "pad-wet-1",
+            "pad-wet-2"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "flute-0--1430",
+          "color": "#a5793f",
           "parts": [
-            "sump-trough",
-            "front-grille"
-          ],
-          "param": "polymer"
+            "flute-0--1430",
+            "flute-0--1360",
+            "flute-0--1290",
+            "flute-0--1220",
+            "flute-0--1150",
+            "flute-0--1080",
+            "flute-0--1010",
+            "flute-0--940",
+            "flute-0--870",
+            "flute-0--800",
+            "flute-0--730",
+            "flute-0--660",
+            "flute-0--590",
+            "flute-0--520",
+            "flute-0--450",
+            "flute-0--380",
+            "flute-0--310",
+            "flute-0--240",
+            "flute-0--170",
+            "flute-0--100",
+            "flute-0--30",
+            "flute-0-40",
+            "flute-0-110",
+            "flute-0-180",
+            "flute-0-250",
+            "flute-0-320",
+            "flute-0-390",
+            "flute-0-460",
+            "flute-0-530",
+            "flute-1--1430",
+            "flute-1--1360",
+            "flute-1--1290",
+            "flute-1--1220",
+            "flute-1--1150",
+            "flute-1--1080",
+            "flute-1--1010",
+            "flute-1--940",
+            "flute-1--870",
+            "flute-1--800",
+            "flute-1--730",
+            "flute-1--660",
+            "flute-1--590",
+            "flute-1--520",
+            "flute-1--450",
+            "flute-1--380",
+            "flute-1--310",
+            "flute-1--240",
+            "flute-1--170",
+            "flute-1--100",
+            "flute-1--30",
+            "flute-1-40",
+            "flute-1-110",
+            "flute-1-180",
+            "flute-1-250",
+            "flute-1-320",
+            "flute-1-390",
+            "flute-1-460",
+            "flute-1-530",
+            "flute-2--1430",
+            "flute-2--1360",
+            "flute-2--1290",
+            "flute-2--1220",
+            "flute-2--1150",
+            "flute-2--1080",
+            "flute-2--1010",
+            "flute-2--940",
+            "flute-2--870",
+            "flute-2--800",
+            "flute-2--730",
+            "flute-2--660",
+            "flute-2--590",
+            "flute-2--520",
+            "flute-2--450",
+            "flute-2--380",
+            "flute-2--310",
+            "flute-2--240",
+            "flute-2--170",
+            "flute-2--100",
+            "flute-2--30",
+            "flute-2-40",
+            "flute-2-110",
+            "flute-2-180",
+            "flute-2-250",
+            "flute-2-320",
+            "flute-2-390",
+            "flute-2-460",
+            "flute-2-530"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "frame",
+          "color": "#c3c8cb",
           "parts": [
-            "water-header",
-            "inlet-riser",
-            "drain-outlet"
+            "post--940",
+            "foot--940",
+            "post-940",
+            "foot-940",
+            "mullion-1",
+            "mullion-2",
+            "bottom-rail",
+            "top-rail",
+            "cap",
+            "gutter-stand--500",
+            "gutter-stand-0",
+            "gutter-stand-500"
           ],
-          "param": "pvc"
+          "param": "frame"
+        },
+        {
+          "name": "pipework",
+          "color": "#5b6d7c",
+          "parts": [
+            "distribution-pipe",
+            "gutter-outlet",
+            "gutter-drop",
+            "riser-stub",
+            "riser-run",
+            "riser-elbow-low",
+            "riser",
+            "riser-elbow-high",
+            "riser-top",
+            "riser-into-cap"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "distribution-end",
+          "color": "#3b3f42",
+          "parts": [
+            "distribution-end",
+            "ball-valve"
+          ]
+        },
+        {
+          "name": "tank",
+          "color": "#2f3b35",
+          "parts": [
+            "gutter",
+            "tank",
+            "tank-lid"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "tank-band",
+          "color": "#3e4b44",
+          "parts": [
+            "tank-band"
+          ]
+        },
+        {
+          "name": "pump",
+          "color": "#2e5f8a",
+          "parts": [
+            "pump"
+          ]
+        },
+        {
+          "name": "pump-fins",
+          "color": "#264e72",
+          "parts": [
+            "pump-fins"
+          ]
+        },
+        {
+          "name": "pump-cable",
+          "color": "#1f2326",
+          "parts": [
+            "pump-cable",
+            "makeup-line"
+          ]
+        },
+        {
+          "name": "float-valve",
+          "color": "#e3e4df",
+          "parts": [
+            "float-valve",
+            "pressure-gauge"
+          ]
+        },
+        {
+          "name": "valve-handle",
+          "color": "#c0392b",
+          "parts": [
+            "valve-handle"
+          ]
+        },
+        {
+          "name": "gauge-face",
+          "color": "#22262a",
+          "parts": [
+            "gauge-face"
+          ]
         }
       ]
     },
@@ -128088,13 +128831,20 @@
       "id": "flood-drain-valve-manifold",
       "kit": "hydroponics",
       "title": "Flood-and-drain valve manifold",
-      "description": "Compact manifold panel with two valve bodies, branch outlets and a central riser. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
+      "description": "Three-zone ebb-and-flow valve board at about real size: supply riser with main isolation valve and pressure gauge, top fill header with a true-union ball valve and solenoid valve on each zone drop, lower drain collector header with a ball valve on each zone return, check valve and return line to the sump, pipe clips, coloured zone tags and a sequencing controller box on a backboard between two posts. Material controls: backboard, pipework, valve handles and solenoid coils. greyPvc, whitePvc, abs and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "flood and drain",
+        "ebb and flow",
+        "valve manifold",
+        "irrigation manifold",
+        "solenoid valve",
+        "ball valve",
+        "zone valve",
+        "header",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -128107,8 +128857,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/flood-drain-valve-manifold.kcad.ts",
       "preview": "/assets/hydroponics-flood-drain-valve-manifold.png",
-      "sourceSha256": "5a802ff36537861d7ef8d28d6346f678ec262e3afd2be8953ed0e33170360652",
-      "triangleBudget": 1800,
+      "sourceSha256": "bc03f4bf39c2e9c523e3de5a1868e0353291ac233c1e21ff9987c109c7f893f5",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -128120,64 +128870,283 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "backboard",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e6e4dc",
+          "label": "Backboard and posts (HDPE / steel)"
         },
         {
-          "name": "pvc",
+          "name": "pipework",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#8f979c",
+          "label": "Pipework (PVC)"
+        },
+        {
+          "name": "valveHandles",
+          "type": "color",
+          "default": "#c0392b",
+          "label": "Fill valve handles"
+        },
+        {
+          "name": "solenoidCoils",
+          "type": "color",
+          "default": "#24282b",
+          "label": "Solenoid coils"
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae"
+        "greyPvc": {
+          "backboard": "#e6e4dc",
+          "pipework": "#8f979c",
+          "valveHandles": "#c0392b",
+          "solenoidCoils": "#24282b"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789"
+        "whitePvc": {
+          "backboard": "#3f6f5a",
+          "pipework": "#eeeeea",
+          "valveHandles": "#2f6fb0",
+          "solenoidCoils": "#2a2c2e"
+        },
+        "abs": {
+          "backboard": "#d8d2c0",
+          "pipework": "#2b2d2f",
+          "valveHandles": "#e3a21c",
+          "solenoidCoils": "#4a5056"
+        },
+        "weathered": {
+          "backboard": "#a8a596",
+          "pipework": "#7b8186",
+          "valveHandles": "#8f3a2c",
+          "solenoidCoils": "#3a3a36"
         }
       },
       "stats": {
-        "triangles": 464,
+        "triangles": 3348,
         "sizeM": [
-          0.73,
-          0.51,
-          0.76
+          1.64,
+          1.6,
+          0.401
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "post--720",
+          "color": "#7f878b",
           "parts": [
-            "mounting-plate"
-          ],
-          "param": "powderCoatedSteel"
+            "post--720",
+            "foot--720",
+            "post-720",
+            "foot-720"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "backboard",
+          "color": "#e6e4dc",
           "parts": [
-            "header-pipe",
-            "left-branch",
-            "right-branch",
-            "valve-handle-left",
-            "valve-handle-right",
-            "outlet-rail",
-            "valve-body-left",
-            "valve-body-right",
-            "riser",
-            "outlet-left",
-            "outlet-right"
+            "backboard"
           ],
-          "param": "pvc"
+          "param": "backboard"
+        },
+        {
+          "name": "pipework",
+          "color": "#8f979c",
+          "parts": [
+            "supply-riser",
+            "supply-union",
+            "main-valve-body",
+            "supply-elbow",
+            "fill-header",
+            "fill-cap",
+            "fill-tee-0",
+            "fill-drop-0",
+            "fill-union-top-0",
+            "fill-ball-0",
+            "fill-union-low-0",
+            "fill-stem-0",
+            "drain-rise-0",
+            "drain-union-0",
+            "drain-ball-0",
+            "drain-stem-0",
+            "fill-tee-1",
+            "fill-drop-1",
+            "fill-union-top-1",
+            "fill-ball-1",
+            "fill-union-low-1",
+            "fill-stem-1",
+            "drain-rise-1",
+            "drain-union-1",
+            "drain-ball-1",
+            "drain-stem-1",
+            "fill-tee-2",
+            "fill-drop-2",
+            "fill-union-top-2",
+            "fill-ball-2",
+            "fill-union-low-2",
+            "fill-stem-2",
+            "drain-rise-2",
+            "drain-union-2",
+            "drain-ball-2",
+            "drain-stem-2",
+            "drain-header",
+            "drain-cap",
+            "drain-tee-0",
+            "drain-tee-1",
+            "drain-tee-2",
+            "check-valve",
+            "return-elbow",
+            "return-line"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "main-valve-handle",
+          "color": "#2f6fb0",
+          "parts": [
+            "main-valve-handle",
+            "drain-handle-0",
+            "drain-handle-1",
+            "drain-handle-2"
+          ]
+        },
+        {
+          "name": "gauge-tee",
+          "color": "#c9a24a",
+          "parts": [
+            "gauge-tee"
+          ]
+        },
+        {
+          "name": "gauge",
+          "color": "#e9e6dc",
+          "parts": [
+            "gauge"
+          ]
+        },
+        {
+          "name": "gauge-face",
+          "color": "#f7f6f0",
+          "parts": [
+            "gauge-face"
+          ]
+        },
+        {
+          "name": "valveHandles",
+          "color": "#c0392b",
+          "parts": [
+            "gauge-needle",
+            "fill-handle-0",
+            "fill-handle-1",
+            "fill-handle-2",
+            "controller-switch"
+          ],
+          "param": "valveHandles"
+        },
+        {
+          "name": "clip-riser",
+          "color": "#3b3f42",
+          "parts": [
+            "clip-riser",
+            "clip-fill-0",
+            "clip-drain-0",
+            "clip-fill-1",
+            "clip-drain-1",
+            "clip-fill-2",
+            "clip-drain-2",
+            "clip-header-a",
+            "clip-header-b",
+            "clip-drain-header"
+          ]
+        },
+        {
+          "name": "sol-body-0",
+          "color": "#b98a3e",
+          "parts": [
+            "sol-body-0",
+            "sol-body-1",
+            "sol-body-2"
+          ]
+        },
+        {
+          "name": "solenoidCoils",
+          "color": "#24282b",
+          "parts": [
+            "sol-coil-0",
+            "sol-cap-0",
+            "sol-coil-1",
+            "sol-cap-1",
+            "sol-coil-2",
+            "sol-cap-2"
+          ],
+          "param": "solenoidCoils"
+        },
+        {
+          "name": "sol-cable-out-0",
+          "color": "#1f2326",
+          "parts": [
+            "sol-cable-out-0",
+            "sol-cable-0",
+            "sol-cable-out-1",
+            "sol-cable-1",
+            "sol-cable-out-2",
+            "sol-cable-2"
+          ]
+        },
+        {
+          "name": "fill-tag-0",
+          "color": "#d9542b",
+          "parts": [
+            "fill-tag-0",
+            "drain-tag-0",
+            "controller-led-0"
+          ]
+        },
+        {
+          "name": "fill-tag-1",
+          "color": "#e3b52c",
+          "parts": [
+            "fill-tag-1",
+            "drain-tag-1",
+            "controller-led-1"
+          ]
+        },
+        {
+          "name": "fill-tag-2",
+          "color": "#3d8f4a",
+          "parts": [
+            "fill-tag-2",
+            "drain-tag-2",
+            "controller-led-2"
+          ]
+        },
+        {
+          "name": "check-arrow",
+          "color": "#22262a",
+          "parts": [
+            "check-arrow"
+          ]
+        },
+        {
+          "name": "controller",
+          "color": "#d8dcd8",
+          "parts": [
+            "controller"
+          ]
+        },
+        {
+          "name": "controller-lid",
+          "color": "#c3c9c6",
+          "parts": [
+            "controller-lid"
+          ]
+        },
+        {
+          "name": "controller-screen",
+          "color": "#2e5f8a",
+          "parts": [
+            "controller-screen"
+          ]
         }
       ]
     },
