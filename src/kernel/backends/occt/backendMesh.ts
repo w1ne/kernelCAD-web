@@ -49,6 +49,12 @@ export function validateExportMeshToleranceOptions(options: unknown): string | u
        value.angularToleranceDeg <= 0 || value.angularToleranceDeg > 180)) {
     return 'options.angularToleranceDeg must be a finite number greater than 0 and at most 180 degrees.';
   }
+  if (value.angularToleranceDeg !== undefined) {
+    const radians = value.angularToleranceDeg * Math.PI / 180;
+    if (!Number.isFinite(radians) || radians <= 0) {
+      return 'options.angularToleranceDeg must convert to a finite, positive radian value.';
+    }
+  }
   return undefined;
 }
 
