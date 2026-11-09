@@ -1,0 +1,35 @@
+{
+  "file": "compost-bin-quality.mp4",
+  "bytes": 234947,
+  "stream": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1",
+    "duration": "12.000000"
+  },
+  "samples": [
+    {
+      "second": 1.5,
+      "path": "sample-1.png",
+      "sha256": "6d7aefea32e2dfeebf0e564ebde81fcdba880fd889bf221dc3d35d75e3edc930"
+    },
+    {
+      "second": 4.5,
+      "path": "sample-2.png",
+      "sha256": "4c4db3713ccbbbb056aac46340db42c6cb434f60f2041b3906b1373cc6370507"
+    },
+    {
+      "second": 7.5,
+      "path": "sample-3.png",
+      "sha256": "7a2909fa3feb7f0bf5097de264b760957e4b64abbe48f5b5d5e9d1c9d7753dd7"
+    },
+    {
+      "second": 10.5,
+      "path": "sample-4.png",
+      "sha256": "0ccfec02cf095d6c087e9862adc751ffb725be0dbca76d0ec57a689feb06d926"
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png"
+}

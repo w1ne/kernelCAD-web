@@ -12,6 +12,17 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 9 garden follow-up refined the existing `compost-bin` in place. Its
+`frontAccess` choice now builds open, lower-access, and closed removable-slat
+fronts; the exposed compost is a rounded, independently colored mound, with
+treated-timber and compost controls plus three named palettes. The default
+preview is 296 triangles under its unchanged 420-triangle budget. The garden
+kit remains **40/40 passing**, and the global gate remains **2,402/2,402
+(100.00%) across 50 rich kits**. The [compost-bin handoff](../artifacts/catalog-demos/garden-compost-bin-quality-20261109/README.md)
+records source-driven variants, preview/index hashes, local checks and an
+inspected MP4. This is local branch evidence; the change is not deployed and
+does not establish product fit or physical acceptance.
+
 The Nov 6 construction-equipment visual follow-up refined three existing
 assets whose previews still read as stacked primitives. The towable tower now
 has a wheeled generator trailer, four screw jacks, a telescoping mast and a

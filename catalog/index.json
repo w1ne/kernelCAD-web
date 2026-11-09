@@ -111384,7 +111384,7 @@
       "id": "compost-bin",
       "kit": "garden",
       "title": "Slatted compost bin",
-      "description": "Open-front slatted garden compost bin with corner posts and removable front boards. Knobs: width and timber and compost colours.",
+      "description": "Ventilated timber garden compost bin with corner posts, side and rear slats, a rounded visible compost pile, and a configurable removable-slat front (open, lower access, or closed). Choose 800, 1000, or 1200 mm width. Material controls: treated timber and compost. Includes recycled, painted and mature presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -111402,7 +111402,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/compost-bin.kcad.ts",
       "preview": "/assets/garden-compost-bin.png",
-      "sourceSha256": "4007ab962f08bf9f6356c84463c8cbc6228c4cbd80c274408e255f02f87f7481",
+      "sourceSha256": "9f9b290df27b423ebba5e6e712ed673169c8605a34e1a60ef48cc444ae0a3ed9",
       "triangleBudget": 420,
       "params": [
         {
@@ -111417,29 +111417,45 @@
           ]
         },
         {
+          "name": "frontAccess",
+          "type": "choice",
+          "default": "open",
+          "label": "Front access",
+          "choices": [
+            "open",
+            "lower-access",
+            "closed"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
-          "default": "#76563c",
-          "label": "Timber"
+          "default": "#98704c",
+          "label": "Treated timber"
         },
         {
           "name": "compost",
           "type": "color",
-          "default": "#49372a",
+          "default": "#493126",
           "label": "Compost"
         }
       ],
       "presets": {
         "recycled": {
           "timber": "#887456",
-          "compost": "#3d3025"
+          "compost": "#493126"
         },
         "painted": {
-          "timber": "#536748"
+          "timber": "#536748",
+          "compost": "#493126"
+        },
+        "mature": {
+          "timber": "#71634e",
+          "compost": "#38291f"
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 296,
         "sizeM": [
           1.07,
           1,
@@ -111451,44 +111467,38 @@
       "palette": [
         {
           "name": "timber",
-          "color": "#76563c",
+          "color": "#98704c",
           "parts": [
             "corner-post",
             "corner-post-2",
             "corner-post-3",
             "corner-post-4",
-            "side-slat",
-            "side-slat-2",
-            "back-slat",
-            "back-slat-2",
-            "side-slat-3",
-            "side-slat-4",
-            "back-slat-3",
-            "back-slat-4",
-            "side-slat-5",
-            "side-slat-6",
-            "back-slat-5",
-            "back-slat-6",
-            "side-slat-7",
-            "side-slat-8",
-            "back-slat-7",
-            "back-slat-8",
-            "side-slat-9",
-            "side-slat-10",
-            "back-slat-9",
-            "back-slat-10",
-            "side-slat-11",
-            "side-slat-12",
-            "back-slat-11",
-            "back-slat-12"
+            "rear-slat",
+            "end-slat",
+            "end-slat-2",
+            "rear-slat-2",
+            "end-slat-3",
+            "end-slat-4",
+            "rear-slat-3",
+            "end-slat-5",
+            "end-slat-6",
+            "rear-slat-4",
+            "end-slat-7",
+            "end-slat-8",
+            "rear-slat-5",
+            "end-slat-9",
+            "end-slat-10",
+            "rear-slat-6",
+            "end-slat-11",
+            "end-slat-12"
           ],
           "param": "timber"
         },
         {
           "name": "compost",
-          "color": "#49372a",
+          "color": "#493126",
           "parts": [
-            "compost-fill"
+            "compost-mound"
           ],
           "param": "compost"
         }
