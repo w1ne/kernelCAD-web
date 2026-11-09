@@ -9,6 +9,7 @@ import { beforeAll, afterEach, describe, expect, it } from 'vitest';
 import { loadSnippets } from '../../../src/agent/cookbook';
 import { runAndExport, type ExportOptions } from '../../../src/agent/script-runtime/export';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
+import { exportTool } from '../../../src/agent/mcp/tools/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { meshShapeForExport } from '../../../src/kernel/backends/occt/backendMesh';
 import { measureBrepSurfaceDeviation } from '../../../src/agent/script-runtime/meshDeviation';
@@ -105,6 +106,37 @@ describe('agent-controlled mesh tolerance', () => {
       expect(existsSync(outputPath)).toBe(true);
       expect(new TextDecoder().decode(readFileSync(outputPath).subarray(0, 80)))
         .toContain('requested-mesh-tolerance=0.01mm');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it('reports and enforces sampled tolerance through the public single-solid 3MF export path', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kernelcad-mesh-tolerance-3mf-'));
+    const outputPath = join(dir, 'sphere.3mf');
+    try {
+      const result = await exportTool({
+        target: 'model',
+        code: 'return sphere(50);',
+        output_path: outputPath,
+        format: '3mf',
+        options: { format: '3mf', tolerance: 0.01 } as ExportOptions,
+      }) as Awaited<ReturnType<typeof exportModelTool>>;
+      const report = result.mesh_deviation;
+      expect(report).toMatchObject({
+        requested_mm: 0.01,
+        measurement: 'sampled_brep_surface_to_export_triangles',
+        samples: expect.any(Number),
+        triangles: expect.any(Number),
+        global_max_certified: false,
+      });
+      expect(report!.samples).toBeGreaterThan(0);
+      expect(report!.measured_max_mm).toBeGreaterThan(0.0105);
+      expect(result.ok).toBe(false);
+      expect(result.diagnostics?.map(diagnostic => diagnostic.code)).toContain('export.mesh.tolerance-not-met');
+
+      const model = strFromU8(unzipSync(readFileSync(outputPath))['3D/3dmodel.model']!);
+      expect((model.match(/<triangle\b/g) ?? []).length).toBe(report!.triangles);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

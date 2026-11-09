@@ -551,16 +551,9 @@ export async function exportScene3mf(
       const { bytes, bedWarnings, meshWarnings, mesh_deviation } = await export3mfWithReportAsync(
         worldParts,
         { assemblyName: scene.assemblyName, ...opts3mf },
-        (parts, requestedMm) => measureBrepSurfaceDeviation(
-          parts.map(part => part.shape.getReplicadShape()),
-          parts.map(part => part.mesh),
-          requestedMm,
-        ),
+        measureWorldFramePartsDeviation,
       );
-      const toleranceFailure = mesh_deviation !== undefined &&
-          mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-        ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-        : undefined;
+      const toleranceFailure = meshToleranceFailure(mesh_deviation, targetId);
       return {
         bytes,
         featureCount,
@@ -1103,13 +1096,47 @@ async function exportSingle3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   const part: WorldFramePart = { name: 'part', shape };
   try {
-    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync([part], opts3mf);
-    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    const { bytes, bedWarnings, meshWarnings, mesh_deviation } = await export3mfWithReportAsync(
+      [part],
+      opts3mf,
+      measureWorldFramePartsDeviation,
+    );
+    const toleranceFailure = meshToleranceFailure(mesh_deviation, targetId);
+    return {
+      bytes,
+      featureCount,
+      diagnostics: [
+        ...diagnostics,
+        ...(toleranceFailure === undefined ? [] : [toleranceFailure]),
+        ...threeMfMeshDiagnostics(meshWarnings, targetId),
+        ...threeMfBedDiagnostics(bedWarnings, targetId),
+      ],
+      ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+    };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
     throw e;
   }
+}
+
+function measureWorldFramePartsDeviation(
+  parts: readonly WorldFramePart[],
+  requestedMm: number,
+): MeshDeviationReport {
+  return measureBrepSurfaceDeviation(
+    parts.map(part => part.shape.getReplicadShape()),
+    parts.map(part => part.mesh),
+    requestedMm,
+  );
+}
+
+function meshToleranceFailure(
+  report: MeshDeviationReport | undefined,
+  targetId: string,
+): CompilerDiagnostic | undefined {
+  if (report === undefined || report.measured_max_mm <= report.requested_mm * 1.05) return undefined;
+  return meshToleranceNotMetDiagnostic(report, targetId);
 }
 
 async function exportSingleGlb(
