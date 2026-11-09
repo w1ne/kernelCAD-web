@@ -125004,13 +125004,20 @@
       "id": "bato-bucket",
       "kit": "hydroponics",
       "title": "Bato bucket",
-      "description": "Single recirculating media bucket with a top collar, lower drain fitting and short feed tube. Parameters: overall scale, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Bato (Dutch) bucket at real size: tapered square polypropylene body with flat rim and corner ribs, perlite or clay-pebble media, siphon elbow dropping through the floor to a drain spigot, drip line with dripper stake, and a young vine plant on a cane. Material controls: bucket, media, plumbing and foliage, plus media and plant choices. classicBlack, tanBucket, clayPebbles and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bato bucket",
+        "dutch bucket",
+        "media bucket",
+        "siphon",
+        "perlite",
+        "clay pebbles",
+        "drip irrigation",
+        "vine crop",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -125023,8 +125030,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/bato-bucket.kcad.ts",
       "preview": "/assets/hydroponics-bato-bucket.png",
-      "sourceSha256": "6ddc50108f48324dfe20db6ddc06448b683903b9871375351ca8735375b7881c",
-      "triangleBudget": 1800,
+      "sourceSha256": "f6d6ceee29a03bc1813493957a5dfa4cdadae241e2e3667c14e04a09aaf06497",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -125036,60 +125043,192 @@
           "step": 0.05
         },
         {
-          "name": "pvc",
+          "name": "bucket",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#26282a",
+          "label": "Bucket (polypropylene)"
         },
         {
-          "name": "polymer",
+          "name": "media",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e4e2da",
+          "label": "Growing media"
+        },
+        {
+          "name": "plumbing",
+          "type": "color",
+          "default": "#e8e8e2",
+          "label": "Siphon and drain (PVC)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#3f8a38",
+          "label": "Plant foliage"
+        },
+        {
+          "name": "mediaType",
+          "type": "choice",
+          "default": "perlite",
+          "label": "Media type",
+          "choices": [
+            "perlite",
+            "clay-pebbles"
+          ]
+        },
+        {
+          "name": "plant",
+          "type": "choice",
+          "default": "tomato",
+          "label": "Plant",
+          "choices": [
+            "tomato",
+            "pepper",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "classicBlack": {
+          "bucket": "#26282a",
+          "media": "#e4e2da",
+          "plumbing": "#e8e8e2",
+          "foliage": "#3f8a38"
         },
-        "highVisibility": {
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "tanBucket": {
+          "bucket": "#cdbf9c",
+          "media": "#e4e2da",
+          "plumbing": "#f0f0ea",
+          "foliage": "#3f8a38"
+        },
+        "clayPebbles": {
+          "bucket": "#26282a",
+          "media": "#b5603a",
+          "plumbing": "#e8e8e2",
+          "foliage": "#4a9440"
+        },
+        "weathered": {
+          "bucket": "#4b4a45",
+          "media": "#c9c4b4",
+          "plumbing": "#c8c4b4",
+          "foliage": "#6f8a48"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1392,
         "sizeM": [
-          0.47,
-          0.68,
-          0.521
+          0.435755,
+          0.77,
+          0.284
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "bucket",
+          "color": "#26282a",
           "parts": [
             "bucket-body",
-            "upper-rim",
-            "inset-lid",
-            "front-panel",
-            "side-rib-left",
-            "side-rib-right"
+            "bucket-rim",
+            "corner-rib-lf",
+            "foot-lf",
+            "corner-rib-rf",
+            "foot-rf",
+            "corner-rib-lb",
+            "foot-lb",
+            "corner-rib-rb",
+            "foot-rb",
+            "front-label-recess"
           ],
-          "param": "polymer"
+          "param": "bucket"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "media",
+          "color": "#e4e2da",
           "parts": [
-            "drain-bulkhead",
-            "feed-stub"
+            "media-fill",
+            "media-lump-0",
+            "media-lump-1",
+            "media-lump-2",
+            "media-lump-3",
+            "media-lump-4",
+            "media-lump-5",
+            "media-lump-6",
+            "media-lump-7",
+            "media-lump-8"
           ],
-          "param": "pvc"
+          "param": "media"
+        },
+        {
+          "name": "plumbing",
+          "color": "#e8e8e2",
+          "parts": [
+            "siphon-riser",
+            "siphon-bend",
+            "siphon-cap",
+            "drain-spigot",
+            "drain-nut"
+          ],
+          "param": "plumbing"
+        },
+        {
+          "name": "drip-line",
+          "color": "#1c1e20",
+          "parts": [
+            "drip-line",
+            "drip-tube",
+            "drip-header"
+          ]
+        },
+        {
+          "name": "dripper",
+          "color": "#c0392b",
+          "parts": [
+            "dripper"
+          ]
+        },
+        {
+          "name": "cane",
+          "color": "#c9a86a",
+          "parts": [
+            "cane"
+          ]
+        },
+        {
+          "name": "stem",
+          "color": "#5c7a2e",
+          "parts": [
+            "stem"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#3f8a38",
+          "parts": [
+            "leaf-0",
+            "leaf-1",
+            "leaf-2",
+            "leaf-3",
+            "leaf-4",
+            "crown"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "fruit-0",
+          "color": "#c9302c",
+          "parts": [
+            "fruit-0",
+            "fruit-1"
+          ]
+        },
+        {
+          "name": "fruit-2",
+          "color": "#e08a2a",
+          "parts": [
+            "fruit-2"
+          ]
         }
       ]
     },
@@ -127994,13 +128133,20 @@
       "id": "handheld-ph-meter",
       "kit": "hydroponics",
       "title": "Handheld pH meter",
-      "description": "Portable acidity meter with a recessed display, key pad, electrode holder and short cable tail. Parameters: overall scale, stainless steel, polymer, instrument glass; weathered and highVisibility presets.",
+      "description": "Portable pH meter at real size, propped on its stand with a rubber bumper, LCD and soft keys, a coiled cable to a glass electrode probe dipped in a sample beaker, plus pH 4 and pH 7 calibration buffer bottles. Material controls: housing, bumper, display and sample solution, plus a reading choice (acidic, neutral, alkaline). labYellow, greyPro, nutrientBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ph meter",
+        "ph tester",
+        "ph probe",
+        "electrode",
+        "calibration buffer",
+        "beaker",
+        "nutrient testing",
+        "water testing",
         "hydroponics",
-        "greenhouse",
-        "controlled environment agriculture",
+        "lab",
         "low poly",
         "scene prop"
       ],
@@ -128013,8 +128159,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ph-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ph-meter.png",
-      "sourceSha256": "12269763268f7625d1bdde64e2496c01e99b85b67e3d0cacb93a2d4f3bc9dbd3",
-      "triangleBudget": 1800,
+      "sourceSha256": "b090206e458e1a2a936e73da34be66b6ee0a61cbf8b4ae89b213bb41393c3ef0",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -128026,77 +128172,244 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#e9eae6",
+          "label": "Housing (ABS)"
         },
         {
-          "name": "polymer",
+          "name": "bumper",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e0a21c",
+          "label": "Bumper (rubber)"
         },
         {
-          "name": "glass",
+          "name": "display",
           "type": "color",
-          "default": "#51afc1",
-          "label": "Instrument glass"
+          "default": "#a9bfa0",
+          "label": "Display (LCD)"
+        },
+        {
+          "name": "solution",
+          "type": "color",
+          "default": "#7fb3c9",
+          "label": "Sample solution"
+        },
+        {
+          "name": "reading",
+          "type": "choice",
+          "default": "neutral",
+          "label": "Reading",
+          "choices": [
+            "acidic",
+            "neutral",
+            "alkaline"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa",
-          "glass": "#548e98"
+        "labYellow": {
+          "housing": "#e9eae6",
+          "bumper": "#e0a21c",
+          "display": "#a9bfa0",
+          "solution": "#7fb3c9"
         },
-        "highVisibility": {
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b",
-          "glass": "#38c5dc"
+        "greyPro": {
+          "housing": "#3a3f44",
+          "bumper": "#22262a",
+          "display": "#9fb7a6",
+          "solution": "#8fc0d0"
+        },
+        "nutrientBlue": {
+          "housing": "#eef0ec",
+          "bumper": "#2f6fa8",
+          "display": "#b0c6aa",
+          "solution": "#9fc36a"
+        },
+        "weathered": {
+          "housing": "#cfcbbf",
+          "bumper": "#a8823a",
+          "display": "#8f9c86",
+          "solution": "#9aa78a"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1926,
         "sizeM": [
-          0.345,
-          0.66,
-          0.207
+          0.3396,
+          0.269875,
+          0.127
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "bumper",
+          "color": "#e0a21c",
           "parts": [
-            "meter-shell",
-            "upper-cap",
-            "keypad",
-            "left-key",
-            "right-key",
-            "connector",
-            "cable-end"
+            "bumper",
+            "brand-strip"
           ],
-          "param": "polymer"
+          "param": "bumper"
         },
         {
-          "name": "glass",
-          "color": "#51afc1",
+          "name": "housing",
+          "color": "#e9eae6",
+          "parts": [
+            "housing-face"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "display-bezel",
+          "color": "#2a2d30",
+          "parts": [
+            "display-bezel",
+            "cable-gland",
+            "kickstand",
+            "bench-pad",
+            "probe-body",
+            "probe-cap"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#a9bfa0",
           "parts": [
             "display"
           ],
-          "param": "glass"
+          "param": "display"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "digit-0-top",
+          "color": "#1f2a1c",
           "parts": [
-            "probe-holder",
-            "electrode"
+            "digit-0-top",
+            "digit-0-mid",
+            "digit-0-bot",
+            "digit-0-left",
+            "digit-0-right",
+            "digit-1-top",
+            "digit-1-mid",
+            "digit-1-bot",
+            "digit-1-left",
+            "digit-1-right",
+            "decimal-point",
+            "ph-legend"
+          ]
+        },
+        {
+          "name": "key-0",
+          "color": "#c0392b",
+          "parts": [
+            "key-0",
+            "buffer-4-cap"
+          ]
+        },
+        {
+          "name": "key-1",
+          "color": "#2f6fa8",
+          "parts": [
+            "key-1"
+          ]
+        },
+        {
+          "name": "key-2",
+          "color": "#5b6166",
+          "parts": [
+            "key-2"
+          ]
+        },
+        {
+          "name": "cable-0",
+          "color": "#1e2124",
+          "parts": [
+            "cable-0",
+            "cable-1",
+            "cable-2",
+            "cable-3",
+            "cable-4",
+            "cable-5",
+            "cable-6",
+            "cable-7",
+            "cable-8"
+          ]
+        },
+        {
+          "name": "beaker",
+          "color": "#dfe9ee",
+          "parts": [
+            "beaker"
+          ]
+        },
+        {
+          "name": "solution",
+          "color": "#7fb3c9",
+          "parts": [
+            "sample"
           ],
-          "param": "stainlessSteel"
+          "param": "solution"
+        },
+        {
+          "name": "grad-0",
+          "color": "#4a5a66",
+          "parts": [
+            "grad-0",
+            "grad-1",
+            "grad-2",
+            "grad-3"
+          ]
+        },
+        {
+          "name": "probe-glass",
+          "color": "#cfe3e8",
+          "parts": [
+            "probe-glass"
+          ]
+        },
+        {
+          "name": "probe-bulb",
+          "color": "#d8ecf0",
+          "parts": [
+            "probe-bulb"
+          ]
+        },
+        {
+          "name": "probe-guard",
+          "color": "#3a3f44",
+          "parts": [
+            "probe-guard"
+          ]
+        },
+        {
+          "name": "buffer-4-bottle",
+          "color": "#f2f2ee",
+          "parts": [
+            "buffer-4-bottle",
+            "buffer-7-bottle"
+          ]
+        },
+        {
+          "name": "buffer-4-label",
+          "color": "#e57a6c",
+          "parts": [
+            "buffer-4-label"
+          ]
+        },
+        {
+          "name": "buffer-7-cap",
+          "color": "#3b8a3e",
+          "parts": [
+            "buffer-7-cap"
+          ]
+        },
+        {
+          "name": "buffer-7-label",
+          "color": "#87c27a",
+          "parts": [
+            "buffer-7-label"
+          ]
         }
       ]
     },
@@ -128908,13 +129221,20 @@
       "id": "media-filter-vessel",
       "kit": "hydroponics",
       "title": "Media filter vessel",
-      "description": "Compact vertical filtration tank with bolted-looking top ring, service hatch and lower legs. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Pressure media (sand) filter at about real size: domed steel or fibreglass vessel on three splayed legs with top inspection flange, side manhole, PVC inlet and outlet headers with butterfly valves, two pressure gauges and a bottom drain; single vessel or a backwashing duplex pair on a skid. Material controls: vessel, legs and flanges, PVC pipework and valve handles, plus a vessel count choice. epoxyBlue, fibreglass, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "media filter",
+        "sand filter",
+        "pressure filter",
+        "backwash",
+        "filtration",
+        "irrigation",
+        "water treatment",
+        "pressure vessel",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -128927,8 +129247,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/media-filter-vessel.kcad.ts",
       "preview": "/assets/hydroponics-media-filter-vessel.png",
-      "sourceSha256": "7c4ba446d66e25900af0b23e749dfeeb92b1ed5ed889e4ef10c61af07f30166f",
-      "triangleBudget": 1800,
+      "sourceSha256": "7bbd10b54567a4a78fced6ecd7bc374aa309ce5507c531a5b315db993de513ca",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -128940,78 +129260,235 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "vessel",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#2f6fa8",
+          "label": "Vessel (epoxy-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "frame",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#3d4347",
+          "label": "Legs, flanges and skid (steel)"
         },
         {
-          "name": "polymer",
+          "name": "pipe",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#dcdcd4",
+          "label": "Pipework (PVC)"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#c0392b",
+          "label": "Valve handles"
+        },
+        {
+          "name": "vessels",
+          "type": "choice",
+          "default": "duplex",
+          "label": "Vessels",
+          "choices": [
+            "single",
+            "duplex"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "epoxyBlue": {
+          "vessel": "#2f6fa8",
+          "frame": "#3d4347",
+          "pipe": "#dcdcd4",
+          "handle": "#c0392b"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "fibreglass": {
+          "vessel": "#d9c9a3",
+          "frame": "#4a4f52",
+          "pipe": "#5a6066",
+          "handle": "#e0a21c"
+        },
+        "stainless": {
+          "vessel": "#b9c0c4",
+          "frame": "#7c8388",
+          "pipe": "#e6e6e0",
+          "handle": "#2f6fa8"
+        },
+        "weathered": {
+          "vessel": "#4f6a80",
+          "frame": "#5c5a52",
+          "pipe": "#bdb9aa",
+          "handle": "#9a4a3a"
         }
       },
       "stats": {
-        "triangles": 388,
+        "triangles": 3812,
         "sizeM": [
-          0.870323,
-          1.28,
-          0.8595
+          1.7,
+          1.433,
+          1.005
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#3d4347",
           "parts": [
-            "base-frame",
-            "left-foot",
-            "right-foot"
+            "skid-rail-front",
+            "skid-rail-back",
+            "skid-cross-l",
+            "skid-cross-r",
+            "vessel-0-girth-seam-lo",
+            "vessel-0-girth-seam-hi",
+            "vessel-0-leg-0",
+            "vessel-0-leg-pad-0",
+            "vessel-0-leg-1",
+            "vessel-0-leg-pad-1",
+            "vessel-0-leg-2",
+            "vessel-0-leg-pad-2",
+            "vessel-0-top-flange",
+            "vessel-0-manhole-cover",
+            "vessel-0-in-valve",
+            "vessel-0-in-valve-neck",
+            "vessel-0-out-valve",
+            "vessel-0-out-valve-neck",
+            "vessel-0-drain-valve",
+            "vessel-1-girth-seam-lo",
+            "vessel-1-girth-seam-hi",
+            "vessel-1-leg-0",
+            "vessel-1-leg-pad-0",
+            "vessel-1-leg-1",
+            "vessel-1-leg-pad-1",
+            "vessel-1-leg-2",
+            "vessel-1-leg-pad-2",
+            "vessel-1-top-flange",
+            "vessel-1-manhole-cover",
+            "vessel-1-in-valve",
+            "vessel-1-in-valve-neck",
+            "vessel-1-out-valve",
+            "vessel-1-out-valve-neck",
+            "vessel-1-drain-valve",
+            "inlet-flange",
+            "outlet-flange",
+            "outlet-header-support-l",
+            "outlet-header-support-r",
+            "front-rail-extension"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "vessel",
+          "color": "#2f6fa8",
           "parts": [
-            "front-panel",
-            "side-panel",
-            "top-ring",
-            "service-cover",
-            "vessel-shell",
-            "backwash-port"
+            "vessel-0-shell",
+            "vessel-0-top-cover",
+            "vessel-0-manhole-neck",
+            "vessel-1-shell",
+            "vessel-1-top-cover",
+            "vessel-1-manhole-neck",
+            "flow-arrow-out"
           ],
-          "param": "polymer"
+          "param": "vessel"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "vessel-0-bolt-0",
+          "color": "#c9ccce",
           "parts": [
-            "inlet-port",
-            "outlet-port"
+            "vessel-0-bolt-0",
+            "vessel-0-bolt-1",
+            "vessel-0-bolt-2",
+            "vessel-0-bolt-3",
+            "vessel-0-bolt-4",
+            "vessel-0-bolt-5",
+            "vessel-0-bolt-6",
+            "vessel-0-bolt-7",
+            "vessel-0-manhole-handle",
+            "vessel-1-bolt-0",
+            "vessel-1-bolt-1",
+            "vessel-1-bolt-2",
+            "vessel-1-bolt-3",
+            "vessel-1-bolt-4",
+            "vessel-1-bolt-5",
+            "vessel-1-bolt-6",
+            "vessel-1-bolt-7",
+            "vessel-1-manhole-handle"
+          ]
+        },
+        {
+          "name": "pipe",
+          "color": "#dcdcd4",
+          "parts": [
+            "vessel-0-inlet-nozzle",
+            "vessel-0-inlet-drop",
+            "vessel-0-outlet-nozzle",
+            "vessel-0-outlet-stub",
+            "vessel-0-drain-pipe",
+            "vessel-1-inlet-nozzle",
+            "vessel-1-inlet-drop",
+            "vessel-1-outlet-nozzle",
+            "vessel-1-outlet-stub",
+            "vessel-1-drain-pipe",
+            "inlet-header",
+            "inlet-cap",
+            "outlet-header",
+            "outlet-cap"
           ],
-          "param": "pvc"
+          "param": "pipe"
+        },
+        {
+          "name": "handle",
+          "color": "#c0392b",
+          "parts": [
+            "vessel-0-in-handle",
+            "vessel-0-out-handle",
+            "vessel-0-p1-gauge-needle",
+            "vessel-0-p2-gauge-needle",
+            "vessel-0-drain-lever",
+            "vessel-1-in-handle",
+            "vessel-1-out-handle",
+            "vessel-1-p1-gauge-needle",
+            "vessel-1-p2-gauge-needle",
+            "vessel-1-drain-lever"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "vessel-0-p1-gauge-stem",
+          "color": "#c9a84a",
+          "parts": [
+            "vessel-0-p1-gauge-stem",
+            "vessel-0-p2-gauge-stem",
+            "vessel-1-p1-gauge-stem",
+            "vessel-1-p2-gauge-stem"
+          ]
+        },
+        {
+          "name": "vessel-0-p1-gauge",
+          "color": "#d9dcde",
+          "parts": [
+            "vessel-0-p1-gauge",
+            "vessel-0-p2-gauge",
+            "vessel-1-p1-gauge",
+            "vessel-1-p2-gauge"
+          ]
+        },
+        {
+          "name": "vessel-0-p1-gauge-face",
+          "color": "#f4f4ee",
+          "parts": [
+            "vessel-0-p1-gauge-face",
+            "vessel-0-p2-gauge-face",
+            "vessel-1-p1-gauge-face",
+            "vessel-1-p2-gauge-face"
+          ]
+        },
+        {
+          "name": "flow-arrow-in",
+          "color": "#2a8a4a",
+          "parts": [
+            "flow-arrow-in"
+          ]
         }
       ]
     },
@@ -129019,13 +129496,21 @@
       "id": "net-pot-stack",
       "kit": "hydroponics",
       "title": "Net pot stack",
-      "description": "Nested-looking stack of four lightweight planting cups with rolled rims and tapered-looking steps. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "Hydroponic net pots at real size: a nested stack of spare slotted cups beside one cup with a rockwool cube and one with clay pebbles, both carrying seedlings. Each cup has open tapered ribs, a wide flat lip and a slotted base ring. Material controls: cup plastic, rockwool, clay pebbles and seedling foliage, plus cup size (2 in or 3 in) and stack height choices. classicBlack, whiteCups, mintGreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "net pot",
+        "net cup",
+        "mesh pot",
+        "slotted cup",
+        "rockwool",
+        "clay pebbles",
+        "hydroton",
+        "seedling",
+        "dwc",
+        "nft",
         "hydroponics",
-        "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -129038,8 +129523,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/net-pot-stack.kcad.ts",
       "preview": "/assets/hydroponics-net-pot-stack.png",
-      "sourceSha256": "181a7b3eb3fad42988a0464445212ec0e0a3456517225d5ee37c7485304f6152",
-      "triangleBudget": 1800,
+      "sourceSha256": "0df20892ced29b6a4d966ca76a7d9e54a713c23ee3dae543e7e8bb8a29f27bb5",
+      "triangleBudget": 6400,
       "params": [
         {
           "name": "scale",
@@ -129051,61 +129536,223 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "cup",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#232527",
+          "label": "Net cups (polypropylene)"
         },
         {
-          "name": "polymer",
+          "name": "rockwool",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#cdb98a",
+          "label": "Rockwool cube"
+        },
+        {
+          "name": "pebbles",
+          "type": "color",
+          "default": "#b3603a",
+          "label": "Clay pebbles"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#78bb4a",
+          "label": "Seedling foliage"
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "3in",
+          "label": "Cup size",
+          "choices": [
+            "2in",
+            "3in"
+          ]
+        },
+        {
+          "name": "stack",
+          "type": "choice",
+          "default": "8",
+          "label": "Cups in stack",
+          "choices": [
+            "5",
+            "8",
+            "12"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+        "classicBlack": {
+          "cup": "#232527",
+          "rockwool": "#cdb98a",
+          "pebbles": "#b3603a",
+          "foliage": "#78bb4a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+        "whiteCups": {
+          "cup": "#ecece6",
+          "rockwool": "#cdb98a",
+          "pebbles": "#b3603a",
+          "foliage": "#6db544"
+        },
+        "mintGreen": {
+          "cup": "#7fc4a4",
+          "rockwool": "#d6c493",
+          "pebbles": "#a9583a",
+          "foliage": "#5aa83c"
+        },
+        "weathered": {
+          "cup": "#55554f",
+          "rockwool": "#b3a47e",
+          "pebbles": "#94664d",
+          "foliage": "#8aa35a"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 5210,
         "sizeM": [
-          0.42,
-          0.62,
-          0.42
+          0.296,
+          0.147,
+          0.262
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "cup",
+          "color": "#232527",
           "parts": [
-            "base-plate"
+            "stack-0-base",
+            "stack-0-base-hub",
+            "stack-0-base-spoke-0",
+            "stack-0-base-spoke-60",
+            "stack-0-base-spoke-120",
+            "stack-0-rib-0",
+            "stack-0-rib-1",
+            "stack-0-rib-2",
+            "stack-0-rib-3",
+            "stack-0-rib-4",
+            "stack-0-rib-5",
+            "stack-0-rib-6",
+            "stack-0-rib-7",
+            "stack-0-rib-8",
+            "stack-0-rib-9",
+            "stack-0-mid-band",
+            "stack-0-top-band",
+            "stack-0-lip",
+            "stack-1-band",
+            "stack-1-lip",
+            "stack-2-band",
+            "stack-2-lip",
+            "stack-3-band",
+            "stack-3-lip",
+            "stack-4-band",
+            "stack-4-lip",
+            "stack-5-band",
+            "stack-5-lip",
+            "stack-6-band",
+            "stack-6-lip",
+            "stack-7-band",
+            "stack-7-lip",
+            "cube-cup-base",
+            "cube-cup-base-hub",
+            "cube-cup-base-spoke-0",
+            "cube-cup-base-spoke-60",
+            "cube-cup-base-spoke-120",
+            "cube-cup-rib-0",
+            "cube-cup-rib-1",
+            "cube-cup-rib-2",
+            "cube-cup-rib-3",
+            "cube-cup-rib-4",
+            "cube-cup-rib-5",
+            "cube-cup-rib-6",
+            "cube-cup-rib-7",
+            "cube-cup-rib-8",
+            "cube-cup-rib-9",
+            "cube-cup-mid-band",
+            "cube-cup-top-band",
+            "cube-cup-lip",
+            "pebble-cup-base",
+            "pebble-cup-base-hub",
+            "pebble-cup-base-spoke-0",
+            "pebble-cup-base-spoke-60",
+            "pebble-cup-base-spoke-120",
+            "pebble-cup-rib-0",
+            "pebble-cup-rib-1",
+            "pebble-cup-rib-2",
+            "pebble-cup-rib-3",
+            "pebble-cup-rib-4",
+            "pebble-cup-rib-5",
+            "pebble-cup-rib-6",
+            "pebble-cup-rib-7",
+            "pebble-cup-rib-8",
+            "pebble-cup-rib-9",
+            "pebble-cup-mid-band",
+            "pebble-cup-top-band",
+            "pebble-cup-lip"
           ],
-          "param": "powderCoatedSteel"
+          "param": "cup"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "rockwool",
+          "color": "#cdb98a",
           "parts": [
-            "lower-cup",
-            "second-cup",
-            "third-cup",
-            "upper-cup",
-            "rim-lower",
-            "rim-middle",
-            "rim-upper",
-            "center-spacer"
+            "rockwool-cube"
           ],
-          "param": "polymer"
+          "param": "rockwool"
+        },
+        {
+          "name": "rockwool-hole",
+          "color": "#9a8a62",
+          "parts": [
+            "rockwool-hole"
+          ]
+        },
+        {
+          "name": "cube-seedling-stem",
+          "color": "#9cbf6a",
+          "parts": [
+            "cube-seedling-stem",
+            "pebble-seedling-stem"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#78bb4a",
+          "parts": [
+            "cube-seedling-cotyledons",
+            "cube-seedling-leaf-a",
+            "cube-seedling-leaf-b",
+            "pebble-seedling-cotyledons",
+            "pebble-seedling-leaf-a",
+            "pebble-seedling-leaf-b"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "root--6-4",
+          "color": "#efe9d6",
+          "parts": [
+            "root--6-4",
+            "root-5--3",
+            "root-2-6"
+          ]
+        },
+        {
+          "name": "pebbles",
+          "color": "#b3603a",
+          "parts": [
+            "pebble-0",
+            "pebble-1",
+            "pebble-2",
+            "pebble-3",
+            "pebble-4",
+            "pebble-5",
+            "pebble-6",
+            "pebble-7",
+            "pebble-8"
+          ],
+          "param": "pebbles"
         }
       ]
     },
@@ -130059,13 +130706,19 @@
       "id": "peristaltic-dosing-pump",
       "kit": "hydroponics",
       "title": "Peristaltic dosing pump",
-      "description": "Bench-mounted metering pump with circular pump head, tubing guide and raised controller housing. Parameters: overall scale, powder-coated steel, pvc, polymer, rubber; weathered and highVisibility presets.",
+      "description": "Multi-channel peristaltic nutrient doser at real size: control housing with display and keys, two or four round pump heads with clear covers over three-roller rotors and tube loops, suction tubes into labelled concentrate bottles (part A, part B, pH down, pH up) on a shelf, and a discharge bundle to the reservoir, all on a plywood backboard. Material controls: housing, pump heads, tubing and backboard, plus a channel count choice. greyIndustrial, whiteLab, growerGreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dosing pump",
+        "peristaltic pump",
+        "nutrient doser",
+        "metering pump",
+        "fertigation",
+        "ph control",
+        "concentrate",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -130078,8 +130731,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/peristaltic-dosing-pump.kcad.ts",
       "preview": "/assets/hydroponics-peristaltic-dosing-pump.png",
-      "sourceSha256": "92ea376267b4a963de40c306f197110ad0cf5e3af91c6beaed815f85c9c1c7e6",
-      "triangleBudget": 1800,
+      "sourceSha256": "48f0062e34c218df550a7829a22ac2b2388b71ea2946903e70af500d333ef210",
+      "triangleBudget": 6400,
       "params": [
         {
           "name": "scale",
@@ -130091,92 +130744,305 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#55606a",
+          "label": "Housing (powder-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "head",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2a2d30",
+          "label": "Pump heads (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "tubing",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e9e4d0",
+          "label": "Silicone tubing"
         },
         {
-          "name": "rubber",
+          "name": "board",
           "type": "color",
-          "default": "#323a3d",
-          "label": "Rubber"
+          "default": "#c9a46a",
+          "label": "Backboard (plywood)"
+        },
+        {
+          "name": "channels",
+          "type": "choice",
+          "default": "4",
+          "label": "Channels",
+          "choices": [
+            "2",
+            "4"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa",
-          "rubber": "#4b504e"
+        "greyIndustrial": {
+          "housing": "#55606a",
+          "head": "#2a2d30",
+          "tubing": "#e9e4d0",
+          "board": "#c9a46a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b",
-          "rubber": "#262d30"
+        "whiteLab": {
+          "housing": "#eceee9",
+          "head": "#3a6fa0",
+          "tubing": "#f2efe2",
+          "board": "#d6d2c6"
+        },
+        "growerGreen": {
+          "housing": "#2f7a46",
+          "head": "#24282a",
+          "tubing": "#e9e4d0",
+          "board": "#b8925a"
+        },
+        "weathered": {
+          "housing": "#6d6f68",
+          "head": "#3e403c",
+          "tubing": "#cfc49e",
+          "board": "#9a8462"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 5692,
         "sizeM": [
-          0.481846,
-          0.475,
-          0.446
+          0.56,
+          0.9,
+          0.238
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "board",
+          "color": "#c9a46a",
           "parts": [
-            "mounting-foot",
-            "pump-base",
-            "rotor-cap"
+            "backboard",
+            "shelf",
+            "shelf-lip"
           ],
-          "param": "powderCoatedSteel"
+          "param": "board"
         },
         {
-          "name": "rubber",
-          "color": "#323a3d",
+          "name": "housing",
+          "color": "#55606a",
           "parts": [
-            "controller",
-            "tubing-guide-left",
-            "tubing-guide-right"
+            "shelf-bracket-l",
+            "shelf-bracket-r",
+            "housing",
+            "face-plate"
           ],
-          "param": "rubber"
+          "param": "housing"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "display-bezel",
+          "color": "#1e2124",
           "parts": [
-            "screen-bezel",
-            "pump-head"
-          ],
-          "param": "polymer"
+            "display-bezel",
+            "power-gland",
+            "power-cable",
+            "discharge-bundle"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "display",
+          "color": "#6fb3d2",
           "parts": [
-            "tube-inlet",
-            "tube-outlet"
+            "display"
+          ]
+        },
+        {
+          "name": "display-text",
+          "color": "#f2f6f8",
+          "parts": [
+            "display-text"
+          ]
+        },
+        {
+          "name": "key-0",
+          "color": "#2a8a4a",
+          "parts": [
+            "key-0",
+            "bottle-label-0",
+            "bottle-cap-0",
+            "channel-tag-0"
+          ]
+        },
+        {
+          "name": "key-1",
+          "color": "#d9dcde",
+          "parts": [
+            "key-1",
+            "key-2",
+            "key-3"
+          ]
+        },
+        {
+          "name": "status-led",
+          "color": "#4ad06a",
+          "parts": [
+            "status-led"
+          ]
+        },
+        {
+          "name": "bottle-0",
+          "color": "#f2f2ee",
+          "parts": [
+            "bottle-0",
+            "bottle-1",
+            "bottle-2",
+            "bottle-3"
+          ]
+        },
+        {
+          "name": "bottle-label-1",
+          "color": "#c9a42a",
+          "parts": [
+            "bottle-label-1",
+            "bottle-cap-1",
+            "channel-tag-1"
+          ]
+        },
+        {
+          "name": "bottle-label-2",
+          "color": "#c0392b",
+          "parts": [
+            "bottle-label-2",
+            "bottle-cap-2",
+            "channel-tag-2"
+          ]
+        },
+        {
+          "name": "bottle-label-3",
+          "color": "#2f6fa8",
+          "parts": [
+            "bottle-label-3",
+            "bottle-cap-3",
+            "channel-tag-3"
+          ]
+        },
+        {
+          "name": "head",
+          "color": "#2a2d30",
+          "parts": [
+            "head-0",
+            "cover-rim-0",
+            "hub-0",
+            "head-1",
+            "cover-rim-1",
+            "hub-1",
+            "head-2",
+            "cover-rim-2",
+            "hub-2",
+            "head-3",
+            "cover-rim-3",
+            "hub-3",
+            "bundle-clip"
           ],
-          "param": "pvc"
+          "param": "head"
+        },
+        {
+          "name": "tubing",
+          "color": "#e9e4d0",
+          "parts": [
+            "loop-0-0",
+            "loop-0-1",
+            "loop-0-2",
+            "loop-0-3",
+            "loop-0-4",
+            "loop-0-5",
+            "loop-0-6",
+            "loop-0-7",
+            "loop-0-8",
+            "loop-0-9",
+            "suction-0",
+            "dip-0",
+            "discharge-0",
+            "discharge-run-0",
+            "loop-1-0",
+            "loop-1-1",
+            "loop-1-2",
+            "loop-1-3",
+            "loop-1-4",
+            "loop-1-5",
+            "loop-1-6",
+            "loop-1-7",
+            "loop-1-8",
+            "loop-1-9",
+            "suction-1",
+            "dip-1",
+            "discharge-1",
+            "discharge-run-1",
+            "loop-2-0",
+            "loop-2-1",
+            "loop-2-2",
+            "loop-2-3",
+            "loop-2-4",
+            "loop-2-5",
+            "loop-2-6",
+            "loop-2-7",
+            "loop-2-8",
+            "loop-2-9",
+            "suction-2",
+            "dip-2",
+            "discharge-2",
+            "discharge-run-2",
+            "loop-3-0",
+            "loop-3-1",
+            "loop-3-2",
+            "loop-3-3",
+            "loop-3-4",
+            "loop-3-5",
+            "loop-3-6",
+            "loop-3-7",
+            "loop-3-8",
+            "loop-3-9",
+            "suction-3",
+            "dip-3",
+            "discharge-3",
+            "discharge-run-3"
+          ],
+          "param": "tubing"
+        },
+        {
+          "name": "rotor-0",
+          "color": "#c9ccce",
+          "parts": [
+            "rotor-0",
+            "rotor-1",
+            "rotor-2",
+            "rotor-3"
+          ]
+        },
+        {
+          "name": "roller-0-0",
+          "color": "#e6e8ea",
+          "parts": [
+            "roller-0-0",
+            "roller-0-1",
+            "roller-0-2",
+            "roller-1-0",
+            "roller-1-1",
+            "roller-1-2",
+            "roller-2-0",
+            "roller-2-1",
+            "roller-2-2",
+            "roller-3-0",
+            "roller-3-1",
+            "roller-3-2"
+          ]
+        },
+        {
+          "name": "cover-0",
+          "color": "#cfe3ea",
+          "parts": [
+            "cover-0",
+            "cover-1",
+            "cover-2",
+            "cover-3"
+          ]
         }
       ]
     },
