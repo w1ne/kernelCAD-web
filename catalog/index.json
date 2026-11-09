@@ -127655,13 +127655,19 @@
       "id": "ec-sensor-flow-cell",
       "kit": "hydroponics",
       "title": "EC sensor flow cell",
-      "description": "Inline conductivity cell with paired unions, removable electrode cap and support feet. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Panel-mounted conductivity flow cell at about real size: clear acrylic cell in ring clips on a polypropylene backboard, bottom inlet with ball valve and sample tap, top outlet, EC electrode in a top compression gland with its cable arcing to an LCD transmitter, optional temperature probe in a side gland, hose barbs and flow arrows, on a floor stand. Material controls: backboard, flow cell, pipework, transmitter housing, plus an EC-only or EC + temperature probe choice. greyPanel, blueTransmitter, labWhite and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ec sensor",
+        "conductivity",
+        "flow cell",
+        "sensor panel",
+        "transmitter",
+        "nutrient monitoring",
+        "fertigation",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -127674,8 +127680,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ec-sensor-flow-cell.kcad.ts",
       "preview": "/assets/hydroponics-ec-sensor-flow-cell.png",
-      "sourceSha256": "8e3a4c5dd2bdef2f0bb39f3d2ec48240f4866a5ead2283acb6466409e120c4fa",
-      "triangleBudget": 1800,
+      "sourceSha256": "74ff6ac19d2805ec3a4a80ca7bbf9537802ed838ea2b42a692b7abef9114fbeb",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -127687,92 +127693,268 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "backboard",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e4e3dc",
+          "label": "Backboard (polypropylene)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "flowCell",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#b9dbe4",
+          "label": "Flow cell (clear acrylic)"
         },
         {
-          "name": "pvc",
+          "name": "pipework",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#5d6a73",
+          "label": "Pipework and fittings (PVC-U)"
         },
         {
-          "name": "polymer",
+          "name": "transmitter",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2f6fa8",
+          "label": "Transmitter housing (polycarbonate)"
+        },
+        {
+          "name": "probes",
+          "type": "choice",
+          "default": "EC + temperature",
+          "label": "Probes fitted",
+          "choices": [
+            "EC only",
+            "EC + temperature"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greyPanel": {
+          "backboard": "#e4e3dc",
+          "flowCell": "#b9dbe4",
+          "pipework": "#5d6a73",
+          "transmitter": "#2f6fa8"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blueTransmitter": {
+          "backboard": "#3b4248",
+          "flowCell": "#c6e4ec",
+          "pipework": "#9aa3a8",
+          "transmitter": "#1f5d99"
+        },
+        "labWhite": {
+          "backboard": "#f3f2ee",
+          "flowCell": "#d2eaf0",
+          "pipework": "#c9ced1",
+          "transmitter": "#e7e3d6"
+        },
+        "weathered": {
+          "backboard": "#c9c3b2",
+          "flowCell": "#a9bcb8",
+          "pipework": "#7a7a70",
+          "transmitter": "#5f7a8e"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 2970,
         "sizeM": [
-          0.88,
-          0.75,
-          0.36
+          0.64,
+          0.954856,
+          0.32
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "base-plate",
+          "color": "#5a6066",
           "parts": [
             "base-plate",
-            "support-left",
-            "support-right"
-          ],
-          "param": "powderCoatedSteel"
+            "post--220",
+            "post-160"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "backboard",
+          "color": "#e4e3dc",
           "parts": [
-            "sensor-block",
-            "cable-box",
-            "flow-body"
+            "backboard"
           ],
-          "param": "polymer"
+          "param": "backboard"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "board-screw--230-300",
+          "color": "#9aa3a8",
           "parts": [
-            "left-union",
-            "right-union"
-          ],
-          "param": "pvc"
+            "board-screw--230-300",
+            "board-screw-170-300",
+            "board-screw--230-880",
+            "board-screw-170-880"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "flowCell",
+          "color": "#b9dbe4",
           "parts": [
-            "electrode-cap",
-            "probe-tip"
+            "cell-tube"
           ],
-          "param": "stainlessSteel"
+          "param": "flowCell"
+        },
+        {
+          "name": "pipework",
+          "color": "#5d6a73",
+          "parts": [
+            "cell-bottom-cap",
+            "cell-top-cap",
+            "inlet-riser",
+            "inlet-elbow",
+            "inlet-pipe",
+            "inlet-valve",
+            "sample-tap",
+            "outlet-pipe",
+            "outlet-boss"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "clip-ring-470",
+          "color": "#3b3f42",
+          "parts": [
+            "clip-ring-470",
+            "clip-stem-470",
+            "clip-ring-640",
+            "clip-stem-640",
+            "top-gland",
+            "gland-nut",
+            "temp-gland"
+          ]
+        },
+        {
+          "name": "transmitter",
+          "color": "#2f6fa8",
+          "parts": [
+            "level-band",
+            "sample-tap-handle",
+            "transmitter",
+            "ec-tag"
+          ],
+          "param": "transmitter"
+        },
+        {
+          "name": "inlet-valve-lever",
+          "color": "#c0392b",
+          "parts": [
+            "inlet-valve-lever",
+            "key-0",
+            "flow-arrow-out"
+          ]
+        },
+        {
+          "name": "inlet-barb",
+          "color": "#c9ced1",
+          "parts": [
+            "inlet-barb",
+            "outlet-barb",
+            "temp-probe"
+          ]
+        },
+        {
+          "name": "inlet-hose-0",
+          "color": "#2a2d30",
+          "parts": [
+            "inlet-hose-0",
+            "inlet-hose-1",
+            "inlet-hose-2",
+            "outlet-hose-0",
+            "outlet-hose-1",
+            "outlet-hose-2",
+            "outlet-hose-3",
+            "outlet-hose-4",
+            "ec-electrode"
+          ]
+        },
+        {
+          "name": "electrode-band",
+          "color": "#e3b52c",
+          "parts": [
+            "electrode-band"
+          ]
+        },
+        {
+          "name": "electrode-boot",
+          "color": "#1e2124",
+          "parts": [
+            "electrode-boot",
+            "ec-cable-0",
+            "ec-cable-1",
+            "ec-cable-2",
+            "ec-cable-3",
+            "ec-cable-4",
+            "ec-cable-5",
+            "ec-cable-6",
+            "ec-cable-7",
+            "power-cable-0",
+            "power-cable-1",
+            "power-cable-2",
+            "power-cable-3",
+            "temp-boot",
+            "temp-cable-a",
+            "temp-cable-b"
+          ]
+        },
+        {
+          "name": "display-bezel",
+          "color": "#22262a",
+          "parts": [
+            "display-bezel",
+            "top-gland-tx",
+            "bottom-gland-power",
+            "bottom-gland-temp"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#a9bfa0",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "digit-86",
+          "color": "#1f2a1c",
+          "parts": [
+            "digit-86",
+            "digit-104",
+            "digit-126",
+            "units-legend",
+            "decimal-point"
+          ]
+        },
+        {
+          "name": "key-1",
+          "color": "#e7e3d6",
+          "parts": [
+            "key-1",
+            "key-2",
+            "key-3"
+          ]
+        },
+        {
+          "name": "status-led",
+          "color": "#4f9a3a",
+          "parts": [
+            "status-led",
+            "flow-arrow-in",
+            "flow-arrow-up",
+            "flow-arrow-head--1",
+            "flow-arrow-head-1"
+          ]
+        },
+        {
+          "name": "ec-tag-text",
+          "color": "#f2f2ec",
+          "parts": [
+            "ec-tag-text"
+          ]
         }
       ]
     },
@@ -129098,13 +129280,19 @@
       "id": "handheld-ec-meter",
       "kit": "hydroponics",
       "title": "Handheld EC meter",
-      "description": "Handheld conductivity meter with a tapered-looking grip, raised display and probe lead. Parameters: overall scale, stainless steel, polymer, instrument glass, safety amber; weathered and highVisibility presets.",
+      "description": "Pocket conductivity (EC/TDS) tester at real size, standing in a sample cup of nutrient solution on a bench tray: either a pen tester with LCD, keys and electrode foot, or a truncheon wand with a column of LED strength indicators; protective cap and an EC calibration standard bottle beside it. Material controls: housing, trim, display and sample solution, plus a pen or truncheon style choice. classicWhite, blueTruncheon, blackPocket and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ec meter",
+        "tds meter",
+        "conductivity",
+        "ec pen",
+        "truncheon",
+        "nutrient testing",
+        "calibration",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -129117,8 +129305,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ec-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ec-meter.png",
-      "sourceSha256": "aebe6bebf515f8ab19f9c91fe1ca8e401531c588f0c4d16f18fd355299d2f5e0",
-      "triangleBudget": 1800,
+      "sourceSha256": "776b1ffeb673cfd30fb1a3fdae56040326696ef1778dc4c7d9129bf4dbc42ece",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -129130,91 +129318,181 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#eef0ec",
+          "label": "Housing (ABS)"
         },
         {
-          "name": "polymer",
+          "name": "trim",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2f6fa8",
+          "label": "Cap and keys (rubberised polymer)"
         },
         {
-          "name": "glass",
+          "name": "display",
           "type": "color",
-          "default": "#51afc1",
-          "label": "Instrument glass"
+          "default": "#a9bfa0",
+          "label": "Display (LCD)"
         },
         {
-          "name": "safetyAmber",
+          "name": "solution",
           "type": "color",
-          "default": "#e4a52e",
-          "label": "Safety amber"
+          "default": "#9fc36a",
+          "label": "Sample solution"
+        },
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "pen",
+          "label": "Meter style",
+          "choices": [
+            "pen",
+            "truncheon"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa",
-          "glass": "#548e98",
-          "safetyAmber": "#b9842f"
+        "classicWhite": {
+          "housing": "#eef0ec",
+          "trim": "#2f6fa8",
+          "display": "#a9bfa0",
+          "solution": "#9fc36a"
         },
-        "highVisibility": {
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b",
-          "glass": "#38c5dc",
-          "safetyAmber": "#ffd139"
+        "blueTruncheon": {
+          "housing": "#2f6fa8",
+          "trim": "#22262a",
+          "display": "#b6c8b0",
+          "solution": "#7fb3c9"
+        },
+        "blackPocket": {
+          "housing": "#2a2d30",
+          "trim": "#e0a21c",
+          "display": "#9fb7a6",
+          "solution": "#b9c96a"
+        },
+        "weathered": {
+          "housing": "#cfcbbf",
+          "trim": "#5f7a8e",
+          "display": "#8f9c86",
+          "solution": "#9aa78a"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 1294,
         "sizeM": [
-          0.325,
-          0.685,
-          0.1915
+          0.3,
+          0.214932,
+          0.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "tray",
+          "color": "#3b3f42",
           "parts": [
-            "meter-body",
-            "shoulder",
-            "lanyard-eye"
-          ],
-          "param": "polymer"
+            "tray",
+            "tray-lip"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#51afc1",
+          "name": "sample-cup",
+          "color": "#e9eae6",
+          "parts": [
+            "sample-cup"
+          ]
+        },
+        {
+          "name": "solution",
+          "color": "#9fc36a",
+          "parts": [
+            "sample"
+          ],
+          "param": "solution"
+        },
+        {
+          "name": "cup-mark-0",
+          "color": "#4a5a66",
+          "parts": [
+            "cup-mark-0",
+            "cup-mark-1",
+            "cup-mark-2"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#eef0ec",
+          "parts": [
+            "electrode-sleeve",
+            "pen-body"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "electrode-pin-a",
+          "color": "#c9ced1",
+          "parts": [
+            "electrode-pin-a",
+            "electrode-pin-b",
+            "pocket-clip"
+          ]
+        },
+        {
+          "name": "trim",
+          "color": "#2f6fa8",
+          "parts": [
+            "grip-band",
+            "key-on",
+            "key-cal",
+            "battery-cap",
+            "cap",
+            "cap-end",
+            "cal-cap"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "display-bezel",
+          "color": "#2a2d30",
+          "parts": [
+            "display-bezel",
+            "cal-label-band"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#a9bfa0",
           "parts": [
             "display"
           ],
-          "param": "glass"
+          "param": "display"
         },
         {
-          "name": "safetyAmber",
-          "color": "#e4a52e",
+          "name": "digit-row-150",
+          "color": "#1f2a1c",
           "parts": [
-            "button-one",
-            "button-two"
-          ],
-          "param": "safetyAmber"
+            "digit-row-150",
+            "digit-row-140",
+            "digit-stroke-142",
+            "digit-stroke-152",
+            "units-legend"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "cal-bottle",
+          "color": "#f2f2ee",
           "parts": [
-            "probe-clip",
-            "probe-stem",
-            "probe-tip"
-          ],
-          "param": "stainlessSteel"
+            "cal-bottle"
+          ]
+        },
+        {
+          "name": "cal-label",
+          "color": "#e3b52c",
+          "parts": [
+            "cal-label"
+          ]
         }
       ]
     },
@@ -131540,13 +131818,20 @@
       "id": "nutrient-measuring-cylinder",
       "kit": "hydroponics",
       "title": "Nutrient measuring cylinder",
-      "description": "Bench measuring vessel with a broad foot, graduated-band ridges and a pouring lip. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
+      "description": "Graduated measuring cylinder at real size on a hexagonal foot, rolled rim and pouring spout, front graduation ticks with numbered majors, nutrient solution visible to the fill line, beside two-part A and B concentrate bottles and a dosing syringe. Material controls: cylinder wall, foot, solution and concentrate bottles, plus a 250, 500 or 1000 mL capacity choice that sets bore and height. labClear, blueFoot, amberSolution and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "measuring cylinder",
+        "graduated cylinder",
+        "nutrient",
+        "fertiliser",
+        "concentrate",
+        "dosing",
+        "syringe",
+        "two part nutrient",
         "hydroponics",
-        "greenhouse",
-        "controlled environment agriculture",
+        "lab",
         "low poly",
         "scene prop"
       ],
@@ -131559,8 +131844,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-measuring-cylinder.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-measuring-cylinder.png",
-      "sourceSha256": "92ccd137a35ab5404925b739de5e7bb4c208369ca70a8da014ff994b7c347eda",
-      "triangleBudget": 1800,
+      "sourceSha256": "9c8c2f28c354b62ae9aafd5e96bdecda4330d6239d4087e640f99b07022a644f",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -131572,76 +131857,181 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "cylinderWall",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#d6e8ec",
+          "label": "Cylinder wall (clear polypropylene)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "foot",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#2f6fa8",
+          "label": "Hexagonal foot (polypropylene)"
         },
         {
-          "name": "polymer",
+          "name": "solution",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#6fae5a",
+          "label": "Nutrient solution"
+        },
+        {
+          "name": "concentrateBottles",
+          "type": "color",
+          "default": "#eef0ec",
+          "label": "Concentrate bottles (HDPE)"
+        },
+        {
+          "name": "capacity",
+          "type": "choice",
+          "default": "1000 mL",
+          "label": "Capacity",
+          "choices": [
+            "250 mL",
+            "500 mL",
+            "1000 mL"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa"
+        "labClear": {
+          "cylinderWall": "#d6e8ec",
+          "foot": "#2f6fa8",
+          "solution": "#6fae5a",
+          "concentrateBottles": "#eef0ec"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b"
+        "blueFoot": {
+          "cylinderWall": "#dceef2",
+          "foot": "#1f5d99",
+          "solution": "#7fb3c9",
+          "concentrateBottles": "#22262a"
+        },
+        "amberSolution": {
+          "cylinderWall": "#e3ece6",
+          "foot": "#3b3f42",
+          "solution": "#c98a2b",
+          "concentrateBottles": "#f2f2ee"
+        },
+        "weathered": {
+          "cylinderWall": "#bcc9c4",
+          "foot": "#5f7a8e",
+          "solution": "#8d9a5c",
+          "concentrateBottles": "#cfcbbf"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 1334,
         "sizeM": [
-          0.29,
-          0.67,
-          0.29
+          0.401,
+          0.395,
+          0.235571
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot",
+          "color": "#2f6fa8",
           "parts": [
-            "base-foot"
+            "foot",
+            "foot-collar",
+            "capacity-badge"
           ],
-          "param": "powderCoatedSteel"
+          "param": "foot"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "solution",
+          "color": "#6fae5a",
           "parts": [
-            "pouring-lip",
-            "mark-low",
-            "mark-mid-low",
-            "mark-mid",
-            "mark-mid-high",
-            "vessel",
-            "rim"
+            "tube-filled",
+            "meniscus",
+            "syringe-dose"
           ],
-          "param": "polymer"
+          "param": "solution"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "cylinderWall",
+          "color": "#d6e8ec",
           "parts": [
-            "spout-tip"
+            "tube-wall",
+            "rim",
+            "spout",
+            "syringe-barrel",
+            "syringe-tip",
+            "syringe-flange"
           ],
-          "param": "stainlessSteel"
+          "param": "cylinderWall"
+        },
+        {
+          "name": "tick-1",
+          "color": "#2a3a44",
+          "parts": [
+            "tick-1",
+            "tick-2",
+            "num-2-0",
+            "num-2-1",
+            "num-2-2",
+            "tick-3",
+            "tick-4",
+            "num-4-0",
+            "num-4-1",
+            "num-4-2",
+            "tick-5",
+            "tick-6",
+            "num-6-0",
+            "num-6-1",
+            "num-6-2",
+            "tick-7",
+            "tick-8",
+            "num-8-0",
+            "num-8-1",
+            "num-8-2",
+            "tick-9",
+            "tick-10",
+            "num-10-0",
+            "num-10-1",
+            "num-10-2",
+            "num-10-3"
+          ]
+        },
+        {
+          "name": "concentrateBottles",
+          "color": "#eef0ec",
+          "parts": [
+            "part-a-bottle",
+            "part-a-shoulder",
+            "part-a-neck",
+            "part-b-bottle",
+            "part-b-shoulder",
+            "part-b-neck"
+          ],
+          "param": "concentrateBottles"
+        },
+        {
+          "name": "part-a-cap",
+          "color": "#3b8a3e",
+          "parts": [
+            "part-a-cap",
+            "part-a-label"
+          ]
+        },
+        {
+          "name": "part-a-letter",
+          "color": "#f2f2ee",
+          "parts": [
+            "part-a-letter",
+            "part-b-letter",
+            "plunger-rod",
+            "plunger-thumb"
+          ]
+        },
+        {
+          "name": "part-b-cap",
+          "color": "#c0392b",
+          "parts": [
+            "part-b-cap",
+            "part-b-label"
+          ]
         }
       ]
     },
@@ -132632,13 +133022,20 @@
       "id": "ph-probe-flow-cell",
       "kit": "hydroponics",
       "title": "pH probe flow cell",
-      "description": "Sampling cell with two hose unions, a probe gland and a compact mounting block. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Bench-top electrode flow cell at about real size: clear acrylic chamber on pedestals with hose barbs and clear sample hoses, pH, ORP and temperature electrodes tilted 15 degrees in threaded top bosses with colour bands and cables through a cable comb, front identification labels, KCl storage bottle and calibration cup on a base plate with rubber feet. Material controls: flow chamber, base plate, fittings, electrode bodies, plus a probe set choice (pH only, pH + ORP, pH + ORP + temperature). clearGrey, blackPanel, labBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ph probe",
+        "ph sensor",
+        "orp",
+        "electrode",
+        "flow cell",
+        "probe holder",
+        "nutrient monitoring",
+        "fertigation",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -132651,8 +133048,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ph-probe-flow-cell.kcad.ts",
       "preview": "/assets/hydroponics-ph-probe-flow-cell.png",
-      "sourceSha256": "fe3a03c1f3a789eb16855391b5994c3d9e766842a725b394fd2d09a92718d4b2",
-      "triangleBudget": 1800,
+      "sourceSha256": "2ce444979fca7aaf343f6491be7bbe96cd867036e0f87f6a54b670d05fde0ac4",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -132664,92 +133061,245 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "flowChamber",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#bfe0e8",
+          "label": "Flow chamber (clear acrylic)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "basePlate",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#d8d6cf",
+          "label": "Base plate and pedestals (polypropylene)"
         },
         {
-          "name": "pvc",
+          "name": "fittings",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#4a535a",
+          "label": "Bosses, end caps and barbs (PVC)"
         },
         {
-          "name": "polymer",
+          "name": "electrodes",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2a2d30",
+          "label": "Electrode bodies (epoxy)"
+        },
+        {
+          "name": "probeSet",
+          "type": "choice",
+          "default": "pH + ORP + temperature",
+          "label": "Probe set",
+          "choices": [
+            "pH only",
+            "pH + ORP",
+            "pH + ORP + temperature"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "clearGrey": {
+          "flowChamber": "#bfe0e8",
+          "basePlate": "#d8d6cf",
+          "fittings": "#4a535a",
+          "electrodes": "#2a2d30"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blackPanel": {
+          "flowChamber": "#c9e6ec",
+          "basePlate": "#30353a",
+          "fittings": "#8d969c",
+          "electrodes": "#1d2023"
+        },
+        "labBlue": {
+          "flowChamber": "#d4ecf1",
+          "basePlate": "#f1f0eb",
+          "fittings": "#2f6fa8",
+          "electrodes": "#3a3f44"
+        },
+        "weathered": {
+          "flowChamber": "#a8bdb6",
+          "basePlate": "#bdb6a3",
+          "fittings": "#6c6b62",
+          "electrodes": "#3f3d38"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 2966,
         "sizeM": [
-          0.82,
-          0.965,
-          0.326
+          0.54741,
+          0.408141,
+          0.258137
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot--190--90",
+          "color": "#22262a",
           "parts": [
-            "mounting-block"
-          ],
-          "param": "powderCoatedSteel"
+            "foot--190--90",
+            "foot-190--90",
+            "foot--190-110",
+            "foot-190-110"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "basePlate",
+          "color": "#d8d6cf",
           "parts": [
-            "front-label"
+            "base-plate",
+            "pedestal--110",
+            "pedestal-110",
+            "cable-comb-post"
           ],
-          "param": "polymer"
+          "param": "basePlate"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "fittings",
+          "color": "#4a535a",
           "parts": [
-            "left-union",
-            "right-union",
-            "flow-cell",
-            "inlet",
-            "outlet"
+            "saddle--110",
+            "saddle-110",
+            "cable-comb",
+            "end-cap--1",
+            "barb--1",
+            "barb-ridge--1",
+            "end-cap-1",
+            "barb-1",
+            "barb-ridge-1",
+            "ph-boss",
+            "ph-nut",
+            "orp-boss",
+            "orp-nut",
+            "temp-boss",
+            "temp-nut",
+            "cup-ring"
           ],
-          "param": "pvc"
+          "param": "fittings"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "flowChamber",
+          "color": "#bfe0e8",
           "parts": [
-            "probe-clip",
-            "probe-gland",
-            "probe-stem"
+            "chamber"
           ],
-          "param": "stainlessSteel"
+          "param": "flowChamber"
+        },
+        {
+          "name": "end-bolt--1-10",
+          "color": "#c9ced1",
+          "parts": [
+            "end-bolt--1-10",
+            "end-bolt--1-74",
+            "end-bolt-1-10",
+            "end-bolt-1-74",
+            "temp-body",
+            "temp-band"
+          ]
+        },
+        {
+          "name": "flow-arrow",
+          "color": "#2f6fa8",
+          "parts": [
+            "flow-arrow",
+            "flow-arrow-head",
+            "ph-band",
+            "ph-label"
+          ]
+        },
+        {
+          "name": "hose-in-0",
+          "color": "#cfe3e8",
+          "parts": [
+            "hose-in-0",
+            "hose-in-1",
+            "hose-in-2",
+            "hose-in-3",
+            "hose-out-0",
+            "hose-out-1",
+            "hose-out-2",
+            "hose-out-3"
+          ]
+        },
+        {
+          "name": "electrodes",
+          "color": "#2a2d30",
+          "parts": [
+            "ph-body",
+            "ph-head",
+            "orp-body",
+            "orp-head",
+            "temp-head"
+          ],
+          "param": "electrodes"
+        },
+        {
+          "name": "ph-cable-0",
+          "color": "#1e2124",
+          "parts": [
+            "ph-cable-0",
+            "ph-cable-1",
+            "ph-cable-2",
+            "ph-cable-3",
+            "ph-cable-drop",
+            "orp-cable-0",
+            "orp-cable-1",
+            "orp-cable-2",
+            "orp-cable-3",
+            "orp-cable-drop",
+            "temp-cable-0",
+            "temp-cable-1",
+            "temp-cable-2",
+            "temp-cable-3",
+            "temp-cable-drop"
+          ]
+        },
+        {
+          "name": "ph-label-text",
+          "color": "#f2f2ec",
+          "parts": [
+            "ph-label-text",
+            "orp-label-text",
+            "temp-label-text",
+            "kcl-cap",
+            "kcl-label"
+          ]
+        },
+        {
+          "name": "orp-band",
+          "color": "#e3b52c",
+          "parts": [
+            "orp-band",
+            "orp-label"
+          ]
+        },
+        {
+          "name": "temp-label",
+          "color": "#c0392b",
+          "parts": [
+            "temp-label"
+          ]
+        },
+        {
+          "name": "kcl-bottle",
+          "color": "#8a5a2b",
+          "parts": [
+            "kcl-bottle"
+          ]
+        },
+        {
+          "name": "cal-cup",
+          "color": "#e9eae6",
+          "parts": [
+            "cal-cup"
+          ]
+        },
+        {
+          "name": "cal-solution",
+          "color": "#e57a6c",
+          "parts": [
+            "cal-solution"
+          ]
         }
       ]
     },
@@ -135949,13 +136499,20 @@
       "id": "water-level-float",
       "kit": "hydroponics",
       "title": "Water level float",
-      "description": "Float switch assembly with guide mast, adjustable collar and protected cable lead. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
+      "description": "Reservoir float level switches at about real size in a cut-away tank: vertical stainless stem float switch hung from a rim bracket with terminal head, cable gland and ring float riding the water surface between stop collars, plus a side-mounted hinged high-level float through the tank wall that swings up when the water reaches it, a level scale on the back wall and both cables leaving over the rim. Material controls: tank, water, float switch body and bracket, plus a water level choice (low, normal, high) that moves the floats. blackTank, blueTank, whiteFood and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "float switch",
+        "level switch",
+        "water level",
+        "level sensor",
+        "reservoir",
+        "top-up",
+        "auto fill",
+        "tank",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -135968,8 +136525,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/water-level-float.kcad.ts",
       "preview": "/assets/hydroponics-water-level-float.png",
-      "sourceSha256": "878bfb7d02e705e611ff8159954d6950a3a793ee926295c0fb4fdef071042982",
-      "triangleBudget": 1800,
+      "sourceSha256": "694601a4d8a019d307ff4ecc83b21fb3bb312372f4e29b2059cf2f51cb19f0da",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -135981,76 +136538,211 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#2b2f33",
+          "label": "Tank (HDPE)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "water",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#6fa9c4",
+          "label": "Water (nutrient solution)"
         },
         {
-          "name": "polymer",
+          "name": "switchBody",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#e9e6dc",
+          "label": "Floats and heads (polypropylene)"
+        },
+        {
+          "name": "bracket",
+          "type": "color",
+          "default": "#b9c0c3",
+          "label": "Stem and bracket (stainless steel)"
+        },
+        {
+          "name": "level",
+          "type": "choice",
+          "default": "normal",
+          "label": "Water level",
+          "choices": [
+            "low",
+            "normal",
+            "high"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa"
+        "blackTank": {
+          "tank": "#2b2f33",
+          "water": "#6fa9c4",
+          "switchBody": "#e9e6dc",
+          "bracket": "#b9c0c3"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b"
+        "blueTank": {
+          "tank": "#2f6fa8",
+          "water": "#8cc2d6",
+          "switchBody": "#f2f2ec",
+          "bracket": "#c9ced1"
+        },
+        "whiteFood": {
+          "tank": "#ebe9e2",
+          "water": "#7fb37a",
+          "switchBody": "#e0a21c",
+          "bracket": "#9aa3a8"
+        },
+        "weathered": {
+          "tank": "#4a4a44",
+          "water": "#7f9c8a",
+          "switchBody": "#c8bfa4",
+          "bracket": "#8d9290"
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 1540,
         "sizeM": [
-          0.36,
-          0.935,
-          0.34
+          0.813814,
+          0.596,
+          0.528886
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "tank",
+          "color": "#2b2f33",
           "parts": [
-            "mounting-foot",
-            "top-bracket",
-            "guide-mast"
+            "floor",
+            "wall-back",
+            "wall-right",
+            "lip-front",
+            "lip-left",
+            "rim-back",
+            "rim-right",
+            "rib--200",
+            "rib-0",
+            "rib-200"
           ],
-          "param": "powderCoatedSteel"
+          "param": "tank"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "water",
+          "color": "#6fa9c4",
           "parts": [
-            "clamp-block"
+            "water"
           ],
-          "param": "stainlessSteel"
+          "param": "water"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "water-shine",
+          "color": "#d8ecf0",
           "parts": [
-            "cable-clip",
-            "float-body",
-            "adjust-collar",
-            "cable-gland",
-            "switch-head"
+            "water-shine"
+          ]
+        },
+        {
+          "name": "scale-strip",
+          "color": "#f2f2ec",
+          "parts": [
+            "scale-strip"
+          ]
+        },
+        {
+          "name": "scale-tick-100",
+          "color": "#22262a",
+          "parts": [
+            "scale-tick-100",
+            "scale-tick-150",
+            "scale-tick-200",
+            "scale-tick-250",
+            "scale-tick-300",
+            "scale-tick-350",
+            "scale-tick-400",
+            "scale-tick-450"
+          ]
+        },
+        {
+          "name": "mark-low",
+          "color": "#c0392b",
+          "parts": [
+            "mark-low"
+          ]
+        },
+        {
+          "name": "mark-high",
+          "color": "#e3b52c",
+          "parts": [
+            "mark-high"
+          ]
+        },
+        {
+          "name": "bracket",
+          "color": "#b9c0c3",
+          "parts": [
+            "bracket-top",
+            "bracket-lip",
+            "stem",
+            "stem-nut",
+            "stop-collar-low",
+            "stop-collar-high",
+            "stem-end"
           ],
-          "param": "polymer"
+          "param": "bracket"
+        },
+        {
+          "name": "bracket-screw",
+          "color": "#5a6066",
+          "parts": [
+            "bracket-screw"
+          ]
+        },
+        {
+          "name": "switchBody",
+          "color": "#e9e6dc",
+          "parts": [
+            "head",
+            "head-lid",
+            "float",
+            "side-boss-out",
+            "side-boss-in",
+            "side-arm",
+            "side-float"
+          ],
+          "param": "switchBody"
+        },
+        {
+          "name": "head-gland",
+          "color": "#3b3f42",
+          "parts": [
+            "head-gland",
+            "side-hinge"
+          ]
+        },
+        {
+          "name": "float-band",
+          "color": "#e8862b",
+          "parts": [
+            "float-band",
+            "side-float-cap"
+          ]
+        },
+        {
+          "name": "stem-cable-0",
+          "color": "#1e2124",
+          "parts": [
+            "stem-cable-0",
+            "stem-cable-1",
+            "stem-cable-2",
+            "stem-cable-3",
+            "stem-cable-4",
+            "stem-cable-5",
+            "side-cable-0",
+            "side-cable-1",
+            "side-cable-2",
+            "side-cable-3"
+          ]
         }
       ]
     },
