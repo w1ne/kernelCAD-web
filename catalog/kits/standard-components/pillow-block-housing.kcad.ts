@@ -9,7 +9,7 @@ meta({
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 360,
+  triangleBudget: 480,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -25,8 +25,15 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pillow-block-housing');
-a.part('base',block(-32*s,-20*s,0,64*s,40*s,7*s).color(castIron));
-a.part('left-foot',block(-32*s,-20*s,0,16*s,40*s,13*s).color(zinc));
-a.part('right-foot',block(16*s,-20*s,0,16*s,40*s,13*s).color(zinc));
-a.part('bearing',cylinder(22*s,20*s,16).subtract(cylinder(24*s,10*s,12).translate(0,0,-s)).translate(0,0,7*s).color(bronze));
+// A pillow bearing supports a HORIZONTAL shaft, not a vertical through-bore.
+// This is a visual CC0 prop; it is not a dimensioned vendor housing.
+let base=block(-42*s,-21*s,0,84*s,42*s,7*s);
+for (const x of [-30,30]) base=base.subtract(cylinder(9*s,4*s,16).translate(x*s,0,-s));
+a.part('two-bolt-base',base.color(castIron));
+a.part('support-riser',block(-18*s,-12*s,7*s,36*s,24*s,20*s).color(castIron));
+let housing=cylinder(20*s,22*s,24).subtract(cylinder(22*s,11*s,24).translate(0,0,-s));
+a.part('horizontal-bearing-housing',housing.rotateX(90).translate(0,10*s,28*s).color(castIron));
+let insert=cylinder(18*s,11*s,24).subtract(cylinder(20*s,7*s,24).translate(0,0,-s));
+a.part('inner-bearing-ring',insert.rotateX(90).translate(0,9*s,28*s).color(zinc));
+a.part('grease-nipple',cylinder(5*s,3*s,12).translate(0,0,49*s).color(bronze));
 return a.model();

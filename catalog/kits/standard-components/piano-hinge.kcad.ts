@@ -9,7 +9,7 @@ meta({
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 380,
+  triangleBudget: 1550,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -24,8 +24,19 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('piano-hinge');
-a.part('leaf-left',block(-45*s,-18*s,0,45*s,36*s,3*s).color(steel));
-a.part('leaf-right',block(0,-18*s,0,45*s,36*s,3*s).color(steel));
-for (const x of [-40,-24,-8,8,24,40]) a.part(`knuckle-${x}`,cylinder(8*s,4*s,10).rotateY(90).translate(x*s,0,4*s).color(steel));
-a.part('hinge-pin',cylinder(80*s,2*s,10).rotateY(90).translate(-40*s,0,4*s).color(stainless));
+// Opposing leaves run beside the common hinge pin, not end-to-end.
+let left=block(-45*s,-31*s,0,90*s,27*s,3*s);
+let right=block(-45*s,4*s,0,90*s,27*s,3*s);
+for (const x of [-32,0,32]) {
+  left=left.subtract(cylinder(5*s,2.6*s,12).translate(x*s,-18*s,-s));
+  right=right.subtract(cylinder(5*s,2.6*s,12).translate(x*s,18*s,-s));
+}
+a.part('left-leaf',left.color(steel));
+a.part('right-leaf',right.color(steel));
+for (let i=0;i<10;i++) {
+  const x=(-45+i*9)*s;
+  let knuckle=cylinder(9*s,4*s,12).subtract(cylinder(11*s,2.2*s,12).translate(0,0,-s));
+  a.part(`hinge-knuckle-${i}`,knuckle.rotateY(90).translate(x,0,5*s).color(steel));
+}
+a.part('hinge-pin',cylinder(90*s,2*s,16).rotateY(90).translate(-45*s,0,5*s).color(stainless));
 return a.model();

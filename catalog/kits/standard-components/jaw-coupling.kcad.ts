@@ -9,7 +9,7 @@ meta({
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 360,
+  triangleBudget: 520,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -22,8 +22,21 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
+const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('jaw-coupling');
-a.part('hub-a',cylinder(16*s,18*s,14).subtract(cylinder(18*s,8*s,12).translate(0,0,-s)).color(steel));
-a.part('spider',cylinder(8*s,14*s,12).translate(0,0,16*s).color(polymer));
-a.part('hub-b',cylinder(16*s,18*s,14).subtract(cylinder(18*s,8*s,12).translate(0,0,-s)).translate(0,0,24*s).color(steel));
+// Two interleaved three-jaw hubs and a six-lobed elastomer spider.
+// The jaws are visible geometry; the assembly remains an illustrative prop.
+let hubA=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+let hubB=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+a.part('drive-hub',hubA.color(steel));
+a.part('driven-hub',hubB.translate(0,0,24*s).color(steel));
+for (let i=0;i<3;i++) {
+  const angle=120*i;
+  a.part(`drive-jaw-${i}`,block(10*s,-4*s,12*s,9*s,8*s,8*s).rotateZ(angle).color(steel));
+  a.part(`driven-jaw-${i}`,block(10*s,-4*s,16*s,9*s,8*s,8*s).rotateZ(angle+60).color(steel));
+}
+a.part('elastomer-core',cylinder(7*s,8*s,16).translate(0,0,15*s).color(polymer));
+for (let i=0;i<6;i++) {
+  a.part(`spider-lobe-${i}`,block(7*s,-2.5*s,15*s,8*s,5*s,7*s).rotateZ(i*60).color(polymer));
+}
 return a.model();

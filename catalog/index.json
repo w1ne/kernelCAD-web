@@ -252223,8 +252223,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
       "preview": "/assets/standard-components-caster-wheel.png",
-      "sourceSha256": "397b85d05eb1b036eafdd54a2696da5c222404e223b75920110cc7745d6bd73c",
-      "triangleBudget": 380,
+      "sourceSha256": "564f3a088dd95ff0c21d3118db38fb2b5c86af7ee4721fa4c674f3c8345b5aa9",
+      "triangleBudget": 520,
       "params": [
         {
           "name": "size",
@@ -252274,13 +252274,13 @@
         }
       },
       "stats": {
-        "triangles": 200,
+        "triangles": 428,
         "sizeM": [
-          0.048,
-          0.047,
-          0.032
+          0.05,
+          0.049,
+          0.038
         ],
-        "minUpM": 0,
+        "minUpM": 0.002,
         "materials": 1
       },
       "palette": [
@@ -252288,11 +252288,9 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "mount",
-            "fork-left-front",
-            "fork-right-front",
-            "fork-left-back",
-            "fork-right-back"
+            "mounting-plate",
+            "fork-left",
+            "fork-right"
           ],
           "param": "steel"
         },
@@ -252300,7 +252298,8 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "stem"
+            "swivel-stem",
+            "wheel-hub"
           ],
           "param": "zinc"
         },
@@ -252308,7 +252307,7 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "wheel"
+            "rubber-tire"
           ],
           "param": "rubber"
         }
@@ -253569,8 +253568,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
       "preview": "/assets/standard-components-jaw-coupling.png",
-      "sourceSha256": "c6324db61764a7335ce924832fecb8db59bcd8b8cf388e9ad8a2280b8470f4df",
-      "triangleBudget": 360,
+      "sourceSha256": "ef1c1c854389e8590d2388f6017fceeef47ac9d763771960c8bb1560f70ec7f4",
+      "triangleBudget": 520,
       "params": [
         {
           "name": "size",
@@ -253611,11 +253610,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 380,
         "sizeM": [
+          0.038,
           0.036,
-          0.04,
-          0.036
+          0.036909
         ],
         "minUpM": 0,
         "materials": 1
@@ -253625,8 +253624,14 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "hub-a",
-            "hub-b"
+            "drive-hub",
+            "driven-hub",
+            "drive-jaw-0",
+            "driven-jaw-0",
+            "drive-jaw-1",
+            "driven-jaw-1",
+            "drive-jaw-2",
+            "driven-jaw-2"
           ],
           "param": "steel"
         },
@@ -253634,7 +253639,13 @@
           "name": "polymer",
           "color": "#e46b3c",
           "parts": [
-            "spider"
+            "elastomer-core",
+            "spider-lobe-0",
+            "spider-lobe-1",
+            "spider-lobe-2",
+            "spider-lobe-3",
+            "spider-lobe-4",
+            "spider-lobe-5"
           ],
           "param": "polymer"
         }
@@ -254206,8 +254217,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
       "preview": "/assets/standard-components-piano-hinge.png",
-      "sourceSha256": "0e7016ba2fca89baf51a1c6cb782d1bcfe7e5592012dcd13d3bbf7675d14efb6",
-      "triangleBudget": 380,
+      "sourceSha256": "a910b874476e4a3ad8e81797cd6e10ea93df70f5720420dcaa7fa51b3c20effe",
+      "triangleBudget": 1550,
       "params": [
         {
           "name": "size",
@@ -254248,11 +254259,11 @@
         }
       },
       "stats": {
-        "triangles": 332,
+        "triangles": 1340,
         "sizeM": [
-          0.093,
-          0.008,
-          0.036
+          0.09,
+          0.009,
+          0.062
         ],
         "minUpM": 0,
         "materials": 1
@@ -254262,14 +254273,18 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "leaf-left",
-            "leaf-right",
-            "knuckle--40",
-            "knuckle--24",
-            "knuckle--8",
-            "knuckle-8",
-            "knuckle-24",
-            "knuckle-40"
+            "left-leaf",
+            "right-leaf",
+            "hinge-knuckle-0",
+            "hinge-knuckle-1",
+            "hinge-knuckle-2",
+            "hinge-knuckle-3",
+            "hinge-knuckle-4",
+            "hinge-knuckle-5",
+            "hinge-knuckle-6",
+            "hinge-knuckle-7",
+            "hinge-knuckle-8",
+            "hinge-knuckle-9"
           ],
           "param": "steel"
         },
@@ -254305,8 +254320,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
       "preview": "/assets/standard-components-pillow-block-housing.png",
-      "sourceSha256": "c3120ac5119ea007b16b811b5f6dab3924aa48a077b2500c76a8382dca05d6b8",
-      "triangleBudget": 360,
+      "sourceSha256": "877539961ff296f86585fe54e14b67e8c8ff0d381e9ed213f4a4a05f8103599e",
+      "triangleBudget": 480,
       "params": [
         {
           "name": "size",
@@ -254356,11 +254371,11 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 364,
         "sizeM": [
-          0.064,
-          0.029,
-          0.04
+          0.084,
+          0.054,
+          0.042
         ],
         "minUpM": 0,
         "materials": 1
@@ -254370,7 +254385,9 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "base"
+            "two-bolt-base",
+            "support-riser",
+            "horizontal-bearing-housing"
           ],
           "param": "castIron"
         },
@@ -254378,8 +254395,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "left-foot",
-            "right-foot"
+            "inner-bearing-ring"
           ],
           "param": "zinc"
         },
@@ -254387,7 +254403,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bearing"
+            "grease-nipple"
           ],
           "param": "bronze"
         }
@@ -254973,8 +254989,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
       "preview": "/assets/standard-components-pipe-tee.png",
-      "sourceSha256": "35d13e50e8ed799ae1ccafecb6a666ed2b59d9f0e7fd0d13f4d86b424d5370a7",
-      "triangleBudget": 360,
+      "sourceSha256": "750669ba7023a004496fac030d660dc15b919070950ef13d7e253c106a56897d",
+      "triangleBudget": 520,
       "params": [
         {
           "name": "size",
@@ -255015,11 +255031,11 @@
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 416,
         "sizeM": [
-          0.024,
+          0.026,
           0.044,
-          0.036
+          0.037
         ],
         "minUpM": 0,
         "materials": 1
@@ -255029,7 +255045,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "run"
+            "continuous-tee-fitting"
           ],
           "param": "steel"
         },
@@ -255037,7 +255053,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "branch"
+            "branch-outlet-collar"
           ],
           "param": "bronze"
         }

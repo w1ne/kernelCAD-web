@@ -9,7 +9,7 @@ meta({
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 360,
+  triangleBudget: 520,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -23,7 +23,19 @@ presets({
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const a = assembly('pipe-tee');
+// Union the two perpendicular outer pipes before boring the intersecting
+// passages. Separate hollow cylinders leave a blocked joint internally.
 const r=12*s;
-a.part('run',cylinder(44*s,r,12).subtract(cylinder(46*s,8*s,12).translate(0,0,-s)).color(steel));
-a.part('branch',cylinder(36*s,r,12).subtract(cylinder(38*s,8*s,12).translate(0,0,-s)).rotateX(90).translate(0,18*s,22*s).color(bronze));
+const alongZ=cylinder(44*s,r,16);
+const alongY=cylinder(36*s,r,16).rotateX(90).translate(0,18*s,22*s);
+let tee=alongZ.union(alongY);
+tee=tee.subtract(cylinder(46*s,8*s,16).translate(0,0,-s));
+tee=tee.subtract(cylinder(38*s,8*s,16).rotateX(90).translate(0,19*s,22*s));
+a.part('continuous-tee-fitting',tee.color(steel));
+// A removable bronze coupling ring at the branch outlet is a separate part,
+// not a decorative colour stripe across the flow passage.
+const collar=cylinder(6*s,13*s,16)
+  .subtract(cylinder(8*s,8*s,16).translate(0,0,-s))
+  .rotateX(90).translate(0,19*s,22*s);
+a.part('branch-outlet-collar',collar.color(bronze));
 return a.model();
