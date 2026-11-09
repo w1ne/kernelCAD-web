@@ -35,10 +35,18 @@ describe('assembly overlay semantics', () => {
     expect(info[0].partName).toBe('front-clip');
   }, 60_000);
 
-  it('still rejects the same overlap without the overlay declaration', async () => {
+  it('defers the same non-overlay overlap as an error for mechanism truth', async () => {
     const { arm } = overlappingArm(false);
-    await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toThrow(/overlap|interference/i);
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    const overlaps = scene.__deferredValidationDiagnostics()
+      .filter((diagnostic) => diagnostic.code === 'assembly.interference.overlap');
+
+    expect(overlaps).toHaveLength(1);
+    expect(overlaps[0]).toMatchObject({
+      severity: 'error',
+      partA: 'body',
+      partB: 'front-clip',
+    });
   }, 60_000);
 
   it('records overlay exclusions for model-only assemblies', () => {
