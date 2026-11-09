@@ -175631,28 +175631,30 @@
       "id": "continuous-miner",
       "kit": "mining",
       "title": "Continuous miner",
-      "description": "Low tracked mining machine with cutting head, operator canopy, cutter drum, and trailing cable reel. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
+      "description": "Room-and-pillar continuous miner at about real size: low crawler body on two tracks with grouser shoes, full-width cutter drum in three sections on a hinged boom with lift cylinders and helical rows of conical picks, loading pan with flared side plates and two three-arm gathering heads, centre chain conveyor carrying cut coal up to a tail conveyor boom, electrical and hydraulic enclosures, dust scrubber duct and fan box, trailing-cable reel with cable on the floor, canopied operator deck, headlights and water sprays. Material controls: machine paint, frame and track steel, wear steel for drum and picks, rubber and cable, plus a cutter height choice (floor, sumping, roof). weathered, sandvikYellow and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "coal",
+        "continuous miner",
+        "room and pillar",
+        "cutter drum",
+        "crawler",
+        "mining machine"
       ],
       "compat": [
         "mining",
-        "mineral-processing",
+        "underground",
         "industrial",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/continuous-miner.kcad.ts",
       "preview": "/assets/mining-continuous-miner.png",
-      "sourceSha256": "bf6eb10fa452445073390f7345e32522ef785520fdfe2cfcd15103001730a1e7",
-      "triangleBudget": 1800,
+      "sourceSha256": "30222da0d2f76236e55d70934f4fcb613144fc65419d78081fe1ae4443df785b",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -175664,118 +175666,275 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "machinePaint",
           "type": "color",
-          "default": "#cb9f39",
-          "label": "Coated equipment steel"
+          "default": "#e4dcc4",
+          "label": "Machine paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Frame and track steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "wearSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#9a9e9b",
+          "label": "Drum and pick wear steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#25292b",
+          "label": "Rubber and cable"
+        },
+        {
+          "name": "cutterHeight",
+          "type": "choice",
+          "default": "sumping",
+          "label": "Cutter drum height",
+          "choices": [
+            "floor",
+            "sumping",
+            "roof"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e",
+          "machinePaint": "#a59d88",
+          "frameSteel": "#5f625f",
+          "wearSteel": "#7a756e",
           "rubber": "#393a38"
         },
+        "sandvikYellow": {
+          "machinePaint": "#e9b821",
+          "frameSteel": "#33383b",
+          "wearSteel": "#a3a7a4",
+          "rubber": "#202325"
+        },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca",
+          "machinePaint": "#f08a1c",
+          "frameSteel": "#465159",
+          "wearSteel": "#b0b5b2",
           "rubber": "#24282a"
         }
       },
       "stats": {
-        "triangles": 600,
+        "triangles": 3496,
         "sizeM": [
-          1.199882,
-          0.376596,
-          0.656
+          13.198869,
+          2.539194,
+          4.167631
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "frameSteel",
+          "color": "#4b5459",
           "parts": [
-            "left-track",
-            "right-track"
+            "track-0",
+            "grouser-0-0",
+            "grouser-0-1",
+            "grouser-0-2",
+            "grouser-0-3",
+            "grouser-0-4",
+            "grouser-0-5",
+            "grouser-0-6",
+            "grouser-0-7",
+            "grouser-0-8",
+            "grouser-0-9",
+            "grouser-0-10",
+            "grouser-0-11",
+            "grouser-0-12",
+            "grouser-0-13",
+            "idler-hub-0",
+            "track-1",
+            "grouser-1-0",
+            "grouser-1-1",
+            "grouser-1-2",
+            "grouser-1-3",
+            "grouser-1-4",
+            "grouser-1-5",
+            "grouser-1-6",
+            "grouser-1-7",
+            "grouser-1-8",
+            "grouser-1-9",
+            "grouser-1-10",
+            "grouser-1-11",
+            "grouser-1-12",
+            "grouser-1-13",
+            "idler-hub-1",
+            "frame-bumper-0",
+            "frame-bumper-1",
+            "loading-pan",
+            "pan-side-plate-0",
+            "gathering-hub-0",
+            "pan-side-plate-1",
+            "gathering-hub-1",
+            "conveyor-side-0",
+            "conveyor-side-1",
+            "conveyor-flight-0",
+            "conveyor-flight-1",
+            "conveyor-flight-2",
+            "conveyor-flight-3",
+            "conveyor-flight-4",
+            "conveyor-flight-5",
+            "conveyor-flight-6",
+            "conveyor-flight-7",
+            "tail-boom-side-0",
+            "tail-boom-side-1",
+            "tail-swing-pivot",
+            "enclosure-door-0",
+            "enclosure-door-1",
+            "scrubber-inlet",
+            "scrubber-exhaust",
+            "cable-reel",
+            "operator-deck",
+            "canopy-post-0",
+            "canopy-post-1",
+            "canopy-post-2",
+            "canopy-post-3",
+            "drum-hub-0",
+            "drum-hub-1",
+            "boom-pivot",
+            "pick-0-0-0",
+            "pick-0-0-1",
+            "pick-0-1-0",
+            "pick-0-1-1",
+            "pick-0-2-0",
+            "pick-0-2-1",
+            "pick-1-0-0",
+            "pick-1-0-1",
+            "pick-1-1-0",
+            "pick-1-1-1",
+            "pick-1-2-0",
+            "pick-1-2-1",
+            "pick-1-3-0",
+            "pick-1-3-1",
+            "pick-1-4-0",
+            "pick-1-4-1",
+            "pick-1-5-0",
+            "pick-1-5-1",
+            "pick-1-6-0",
+            "pick-1-6-1",
+            "pick-1-7-0",
+            "pick-1-7-1",
+            "pick-1-8-0",
+            "pick-1-8-1",
+            "pick-1-9-0",
+            "pick-1-9-1",
+            "pick-1-10-0",
+            "pick-1-10-1",
+            "pick-1-11-0",
+            "pick-1-11-1",
+            "pick-1-12-0",
+            "pick-1-12-1",
+            "pick-1-13-0",
+            "pick-1-13-1",
+            "pick-2-0-0",
+            "pick-2-0-1",
+            "pick-2-1-0",
+            "pick-2-1-1",
+            "pick-2-2-0",
+            "pick-2-2-1"
           ],
-          "param": "structuralSteel"
+          "param": "frameSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#cb9f39",
+          "name": "wearSteel",
+          "color": "#9a9e9b",
           "parts": [
-            "main-body",
-            "operator-canopy",
-            "cutter-boom",
-            "rear-control-box"
+            "drive-sprocket-0",
+            "drive-sprocket-1",
+            "spray-bar-0",
+            "spray-bar-1",
+            "gathering-disc-0",
+            "gathering-arm-0-0",
+            "gathering-arm-0-1",
+            "gathering-arm-0-2",
+            "gathering-disc-1",
+            "gathering-arm-1-0",
+            "gathering-arm-1-1",
+            "gathering-arm-1-2",
+            "conveyor-deck",
+            "tail-pulley",
+            "tail-lift-cylinder-0",
+            "tail-lift-cylinder-1",
+            "tank-filler",
+            "boom-lift-cylinder-0",
+            "boom-lift-cylinder-1",
+            "cutter-drum-0",
+            "cutter-drum-1",
+            "cutter-drum-2"
           ],
-          "param": "coatedSteel"
+          "param": "wearSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "machinePaint",
+          "color": "#e4dcc4",
           "parts": [
-            "cutting-drum",
-            "left-track-shoe-1",
-            "right-track-shoe-1",
-            "left-track-shoe-2",
-            "right-track-shoe-2",
-            "left-track-shoe-3",
-            "right-track-shoe-3",
-            "left-track-shoe-4",
-            "right-track-shoe-4",
-            "left-track-shoe-5",
-            "right-track-shoe-5",
-            "left-track-shoe-6",
-            "right-track-shoe-6",
-            "left-track-shoe-7",
-            "right-track-shoe-7",
-            "left-track-shoe-8",
-            "right-track-shoe-8",
-            "left-track-shoe-9",
-            "right-track-shoe-9",
-            "left-track-shoe-10",
-            "right-track-shoe-10",
-            "cutting-pick-1",
-            "cutting-pick-2",
-            "cutting-pick-3",
-            "cutting-pick-4",
-            "cutting-pick-5",
-            "cutting-pick-6",
-            "cutting-pick-7",
-            "cutting-pick-8",
-            "cutting-pick-9",
-            "cutting-pick-10"
+            "frame-half-0",
+            "frame-half-1",
+            "tail-boom-deck",
+            "electrical-enclosure",
+            "hydraulic-tank",
+            "scrubber-duct",
+            "scrubber-fan-box",
+            "control-console",
+            "canopy-roof",
+            "boom-gearcase-0",
+            "boom-gearcase-1",
+            "boom-body",
+            "boom-motor-cover"
           ],
-          "param": "stainlessSteel"
+          "param": "machinePaint"
+        },
+        {
+          "name": "headlight-0",
+          "color": "#fff1b0",
+          "parts": [
+            "headlight-0",
+            "headlight-1"
+          ]
+        },
+        {
+          "name": "rear-bumper",
+          "color": "#e8c21e",
+          "parts": [
+            "rear-bumper"
+          ]
+        },
+        {
+          "name": "coal-lump-pan-0",
+          "color": "#1c1c1f",
+          "parts": [
+            "coal-lump-pan-0",
+            "coal-lump-pan-2",
+            "coal-lump-pan-4",
+            "conveyor-coal",
+            "tail-boom-coal"
+          ]
+        },
+        {
+          "name": "coal-lump-pan-1",
+          "color": "#2e2f33",
+          "parts": [
+            "coal-lump-pan-1",
+            "coal-lump-pan-3"
+          ]
         },
         {
           "name": "rubber",
-          "color": "#292d2f",
+          "color": "#25292b",
           "parts": [
-            "cable-reel"
+            "cable-wraps",
+            "trailing-cable-drop",
+            "trailing-cable-floor",
+            "operator-seat"
           ],
           "param": "rubber"
         }
@@ -178889,28 +179048,30 @@
       "id": "longwall-shearer",
       "kit": "mining",
       "title": "Longwall shearer",
-      "description": "Armored face shearer with twin cutter drums, central drive housing, and low guide shoes. Controls: overall scale, coated equipment steel, stainless steel, rubber; weathered and highVisibility presets.",
+      "description": "Double-ended ranging-drum longwall shearer at about real size on a section of armoured face conveyor: long body with haulage units, control box and lights on an underframe that rides the conveyor, two ranging arms with lift cylinders and spiral-vaned cutter drums carrying picks, leading drum on the roof and trailing drum on the floor, coal face showing the uncut web ahead and the lower bench between the drums, conveyor pans with flight bars, toe ramp, spill plate, rack bar and cable trough, cut coal on the conveyor, and two two-leg hydraulic roof shields ahead of the leading drum. Material controls: shearer paint, conveyor and shield steel, drum and pick steel, hoses and cable, plus a seam height choice (2.5, 3.2, 4.0 m) that sets the drum size, arm angles and shield height. weathered, eickhoffGreen and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "coal",
+        "longwall",
+        "shearer",
+        "armoured face conveyor",
+        "roof support",
+        "mining machine"
       ],
       "compat": [
         "mining",
-        "mineral-processing",
+        "underground",
         "industrial",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/longwall-shearer.kcad.ts",
       "preview": "/assets/mining-longwall-shearer.png",
-      "sourceSha256": "a42f59877d5b5efe8267d34d717374839168f1a1ec7d0512f9b359885aa27329",
-      "triangleBudget": 1800,
+      "sourceSha256": "d1de31f6febb274f6f3fbbafcffedff24e67e165f3caf78327315b221a288da5",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -178922,75 +179083,303 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "shearerPaint",
           "type": "color",
-          "default": "#a8a365",
-          "label": "Coated equipment steel"
+          "default": "#d99a1f",
+          "label": "Shearer paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "steelwork",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#566168",
+          "label": "Conveyor and shield steel"
         },
         {
-          "name": "rubber",
+          "name": "drumSteel",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#8f9491",
+          "label": "Drum and pick steel"
+        },
+        {
+          "name": "hoses",
+          "type": "color",
+          "default": "#25292b",
+          "label": "Hoses and cable"
+        },
+        {
+          "name": "seamHeight",
+          "type": "choice",
+          "default": "3.2 m",
+          "label": "Seam height",
+          "choices": [
+            "2.5 m",
+            "3.2 m",
+            "4.0 m"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e",
-          "rubber": "#393a38"
+          "shearerPaint": "#8f7a52",
+          "steelwork": "#5f625f",
+          "drumSteel": "#77706a",
+          "hoses": "#393a38"
+        },
+        "eickhoffGreen": {
+          "shearerPaint": "#3f7f4a",
+          "steelwork": "#3c4246",
+          "drumSteel": "#9da19e",
+          "hoses": "#1f2224"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca",
-          "rubber": "#24282a"
+          "shearerPaint": "#f0b01c",
+          "steelwork": "#465159",
+          "drumSteel": "#b0b5b2",
+          "hoses": "#24282a"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 3504,
         "sizeM": [
-          1.057903,
-          0.28,
-          0.76
+          20,
+          3.35,
+          5.85
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#a8a365",
+          "name": "steelwork",
+          "color": "#566168",
           "parts": [
-            "shearer-body",
-            "cutter-left",
-            "cutter-right",
-            "gearbox-left",
-            "gearbox-right"
+            "afc-pans",
+            "afc-toe-ramp",
+            "spill-plate",
+            "cable-trough",
+            "flight-bar-0",
+            "flight-bar-1",
+            "flight-bar-2",
+            "flight-bar-3",
+            "flight-bar-4",
+            "flight-bar-5",
+            "flight-bar-6",
+            "flight-bar-7",
+            "flight-bar-8",
+            "flight-bar-9",
+            "flight-bar-10",
+            "flight-bar-11",
+            "flight-bar-12",
+            "flight-bar-13",
+            "flight-bar-14",
+            "flight-bar-15",
+            "flight-bar-16",
+            "underframe",
+            "goaf-shoe-0",
+            "face-leg-0",
+            "goaf-shoe-1",
+            "face-leg-1",
+            "control-box",
+            "cable-handler",
+            "arm-pivot-0",
+            "vane-pick-0-0-0",
+            "vane-pick-0-0-1",
+            "vane-pick-0-0-2",
+            "vane-pick-0-0-3",
+            "vane-pick-0-1-0",
+            "vane-pick-0-1-1",
+            "vane-pick-0-1-2",
+            "vane-pick-0-1-3",
+            "vane-pick-0-2-0",
+            "vane-pick-0-2-1",
+            "vane-pick-0-2-2",
+            "vane-pick-0-2-3",
+            "face-pick-0-0",
+            "face-pick-0-1",
+            "face-pick-0-2",
+            "face-pick-0-3",
+            "face-pick-0-4",
+            "face-pick-0-5",
+            "face-pick-0-6",
+            "face-pick-0-7",
+            "arm-pivot-1",
+            "vane-pick-1-0-0",
+            "vane-pick-1-0-1",
+            "vane-pick-1-0-2",
+            "vane-pick-1-0-3",
+            "vane-pick-1-1-0",
+            "vane-pick-1-1-1",
+            "vane-pick-1-1-2",
+            "vane-pick-1-1-3",
+            "vane-pick-1-2-0",
+            "vane-pick-1-2-1",
+            "vane-pick-1-2-2",
+            "vane-pick-1-2-3",
+            "face-pick-1-0",
+            "face-pick-1-1",
+            "face-pick-1-2",
+            "face-pick-1-3",
+            "face-pick-1-4",
+            "face-pick-1-5",
+            "face-pick-1-6",
+            "face-pick-1-7",
+            "shield-base-0-0",
+            "shield-base-0-1",
+            "shield-canopy-0",
+            "caving-shield-0",
+            "lemniscate-link-0-0",
+            "lemniscate-link-0-1",
+            "shield-base-1-0",
+            "shield-base-1-1",
+            "shield-canopy-1",
+            "caving-shield-1",
+            "lemniscate-link-1-0",
+            "lemniscate-link-1-1"
           ],
-          "param": "coatedSteel"
+          "param": "steelwork"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "drumSteel",
+          "color": "#8f9491",
           "parts": [
-            "guide-shoe-left",
-            "guide-shoe-right"
+            "afc-deck",
+            "rack-bar",
+            "haulage-sprocket-0",
+            "haulage-sprocket-1",
+            "drum-core-0",
+            "drum-face-ring-0",
+            "drum-back-plate-0",
+            "vane-0-0-0",
+            "vane-0-0-1",
+            "vane-0-0-2",
+            "vane-0-0-3",
+            "vane-0-1-0",
+            "vane-0-1-1",
+            "vane-0-1-2",
+            "vane-0-1-3",
+            "vane-0-2-0",
+            "vane-0-2-1",
+            "vane-0-2-2",
+            "vane-0-2-3",
+            "drum-core-1",
+            "drum-face-ring-1",
+            "drum-back-plate-1",
+            "vane-1-0-0",
+            "vane-1-0-1",
+            "vane-1-0-2",
+            "vane-1-0-3",
+            "vane-1-1-0",
+            "vane-1-1-1",
+            "vane-1-1-2",
+            "vane-1-1-3",
+            "vane-1-2-0",
+            "vane-1-2-1",
+            "vane-1-2-2",
+            "vane-1-2-3",
+            "relay-bar-0",
+            "relay-bar-1"
           ],
-          "param": "stainlessSteel"
+          "param": "drumSteel"
         },
         {
-          "name": "rubber",
-          "color": "#292d2f",
+          "name": "hoses",
+          "color": "#25292b",
           "parts": [
-            "cable-arm"
+            "cable-in-trough",
+            "water-manifold",
+            "spray-hose-0",
+            "spray-hose-1",
+            "shield-hose-0",
+            "shield-hose-1"
           ],
-          "param": "rubber"
+          "param": "hoses"
+        },
+        {
+          "name": "shearerPaint",
+          "color": "#d99a1f",
+          "parts": [
+            "body",
+            "haulage-unit-0",
+            "haulage-unit-1",
+            "ranging-arm-0",
+            "arm-gearhead-0",
+            "ranging-arm-1",
+            "arm-gearhead-1",
+            "shield-leg-0-0",
+            "shield-leg-0-1",
+            "shield-leg-1-0",
+            "shield-leg-1-1"
+          ],
+          "param": "shearerPaint"
+        },
+        {
+          "name": "body-lamp-0",
+          "color": "#fff1b0",
+          "parts": [
+            "body-lamp-0",
+            "body-lamp-1"
+          ]
+        },
+        {
+          "name": "control-display",
+          "color": "#3c7fa8",
+          "parts": [
+            "control-display"
+          ]
+        },
+        {
+          "name": "control-button-0",
+          "color": "#c8322b",
+          "parts": [
+            "control-button-0"
+          ]
+        },
+        {
+          "name": "control-button-1",
+          "color": "#e8c21e",
+          "parts": [
+            "control-button-1",
+            "shield-valve-bank-0",
+            "shield-valve-bank-1"
+          ]
+        },
+        {
+          "name": "arm-lift-cylinder-0",
+          "color": "#c9ced0",
+          "parts": [
+            "arm-lift-cylinder-0",
+            "arm-lift-cylinder-1",
+            "shield-leg-ram-0-0",
+            "shield-leg-ram-0-1",
+            "shield-leg-ram-1-0",
+            "shield-leg-ram-1-1"
+          ]
+        },
+        {
+          "name": "coal-face",
+          "color": "#222327",
+          "parts": [
+            "coal-face",
+            "afc-coal",
+            "coal-lump-0",
+            "coal-lump-1",
+            "coal-lump-2"
+          ]
+        },
+        {
+          "name": "uncut-web",
+          "color": "#3d3f45",
+          "parts": [
+            "uncut-web",
+            "floor-bench"
+          ]
+        },
+        {
+          "name": "roof-strip",
+          "color": "#5d5850",
+          "parts": [
+            "roof-strip"
+          ]
         }
       ]
     },
@@ -181109,17 +181498,19 @@
     {
       "id": "rock-breaker-boom",
       "kit": "mining",
-      "title": "Crusher rock-breaker boom",
-      "description": "Pedestal-mounted breaker boom with segmented arm, hydraulic cylinders, and hammer tool. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
+      "title": "Pedestal rock breaker",
+      "description": "Pedestal rock-breaker system at about real size: concrete plinth with anchor-bolted base plate, tapered steel pedestal, slewing ring and turret with slew cylinders, tapered main boom and stick with boom, stick and tool cylinders, hydraulic hammer with chisel, hose bundle along the boom, hydraulic power unit with motor, oil cooler and tank, remote control station, and a grizzly of heavy steel bars over an ore pit between concrete walls carrying oversize boulders, one under the chisel. Material controls: boom paint, pedestal and grizzly steel, hammer steel and concrete, plus a pose choice (working with the chisel on a boulder, parked folded over the plinth). weathered, safetyYellow and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "crushing",
+        "rock breaker",
+        "hydraulic hammer",
+        "grizzly",
+        "pedestal boom",
+        "oversize"
       ],
       "compat": [
         "mining",
@@ -181130,7 +181521,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/rock-breaker-boom.kcad.ts",
       "preview": "/assets/mining-rock-breaker-boom.png",
-      "sourceSha256": "bab5e374708509cb118b60db763406f312e0575d137a0fec7f2970db599769a3",
+      "sourceSha256": "9cdbf9ee3569af74c29aaf13de82643a01da44cff2145de44085520c83ff7218",
       "triangleBudget": 1800,
       "params": [
         {
@@ -181143,120 +181534,231 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "boomPaint",
           "type": "color",
-          "default": "#ba8934",
-          "label": "Coated equipment steel"
+          "default": "#d9831f",
+          "label": "Boom paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "steelwork",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Pedestal and grizzly steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "hammerSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#3a3f42",
+          "label": "Hammer steel"
         },
         {
-          "name": "rubber",
+          "name": "concrete",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#a9a49a",
+          "label": "Concrete"
+        },
+        {
+          "name": "pose",
+          "type": "choice",
+          "default": "working",
+          "label": "Pose",
+          "choices": [
+            "working",
+            "parked"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e",
-          "rubber": "#393a38"
+          "boomPaint": "#8a7458",
+          "steelwork": "#5f625f",
+          "hammerSteel": "#4a4642",
+          "concrete": "#8f8a80"
+        },
+        "safetyYellow": {
+          "boomPaint": "#e9b821",
+          "steelwork": "#33383b",
+          "hammerSteel": "#2b2f31",
+          "concrete": "#b5b0a6"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca",
-          "rubber": "#24282a"
+          "boomPaint": "#f08a1c",
+          "steelwork": "#465159",
+          "hammerSteel": "#3a3f42",
+          "concrete": "#c2beb4"
         }
       },
       "stats": {
-        "triangles": 220,
+        "triangles": 1294,
         "sizeM": [
-          1.08,
-          0.79,
-          0.47
+          14,
+          6.478106,
+          4.543301
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "concrete",
+          "color": "#a9a49a",
           "parts": [
-            "base-plinth"
+            "plinth",
+            "pit-wall-0",
+            "pit-wall-1",
+            "pit-end-wall"
           ],
-          "param": "structuralSteel"
+          "param": "concrete"
         },
         {
-          "name": "coatedSteel",
-          "color": "#ba8934",
+          "name": "steelwork",
+          "color": "#4b5459",
           "parts": [
-            "turntable",
+            "base-plate",
             "pedestal",
-            "boom-lower",
-            "boom-upper",
-            "hammer-body"
+            "grizzly-crossbeam-0",
+            "grizzly-crossbeam-1",
+            "grizzly-bar-0",
+            "grizzly-bar-1",
+            "grizzly-bar-2",
+            "grizzly-bar-3",
+            "grizzly-bar-4",
+            "grizzly-bar-5",
+            "grizzly-bar-6",
+            "grizzly-bar-7",
+            "grizzly-bar-8",
+            "hpu-skid",
+            "hpu-motor",
+            "control-station"
           ],
-          "param": "coatedSteel"
+          "param": "steelwork"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "hammerSteel",
+          "color": "#3a3f42",
           "parts": [
-            "hydraulic-cylinder",
-            "tool-tip"
+            "anchor-nut-0",
+            "anchor-nut-1",
+            "anchor-nut-2",
+            "anchor-nut-3",
+            "slew-ring",
+            "boom-foot-pin",
+            "stick-pin",
+            "hammer-body",
+            "hammer-front-head",
+            "hpu-pump",
+            "oil-cooler"
           ],
-          "param": "stainlessSteel"
+          "param": "hammerSteel"
         },
         {
-          "name": "rubber",
-          "color": "#292d2f",
+          "name": "boomPaint",
+          "color": "#d9831f",
           "parts": [
-            "hose-pack"
+            "turret",
+            "slew-cylinder-0",
+            "turret-cheek-0",
+            "slew-cylinder-1",
+            "turret-cheek-1",
+            "boom",
+            "stick",
+            "boom-cylinder-barrel",
+            "stick-cylinder-barrel",
+            "hammer-bracket",
+            "tool-cylinder-barrel",
+            "hpu-tank",
+            "control-roof"
           ],
-          "param": "rubber"
+          "param": "boomPaint"
+        },
+        {
+          "name": "boom-cylinder-rod",
+          "color": "#c9ced0",
+          "parts": [
+            "boom-cylinder-rod",
+            "stick-cylinder-rod",
+            "chisel",
+            "tool-cylinder-rod"
+          ]
+        },
+        {
+          "name": "hose-up-pedestal",
+          "color": "#25292b",
+          "parts": [
+            "hose-up-pedestal",
+            "hose-to-boom",
+            "hose-boom",
+            "hose-stick",
+            "hpu-hose"
+          ]
+        },
+        {
+          "name": "pit-ore",
+          "color": "#3b3732",
+          "parts": [
+            "pit-ore"
+          ]
+        },
+        {
+          "name": "boulder-target",
+          "color": "#8a7d6c",
+          "parts": [
+            "boulder-target",
+            "boulder-3"
+          ]
+        },
+        {
+          "name": "boulder-2",
+          "color": "#6f6457",
+          "parts": [
+            "boulder-2"
+          ]
+        },
+        {
+          "name": "warning-post-0",
+          "color": "#e8c21e",
+          "parts": [
+            "warning-post-0",
+            "warning-post-1"
+          ]
+        },
+        {
+          "name": "control-window",
+          "color": "#7fa6b8",
+          "parts": [
+            "control-window"
+          ]
         }
       ]
     },
     {
       "id": "roof-bolting-rig",
       "kit": "mining",
-      "title": "Underground roof-bolting rig",
-      "description": "Compact bolting vehicle with protected cab, tracked base, feed mast, and paired drill heads. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "title": "Roof-bolting rig",
+      "description": "Twin-boom crawler roof bolter at about real size: crawler tracks with grouser shoes, low chassis with deck, two drill masts on swing booms with climbing drill heads, chucks, drill steels and centralisers, ATRS roof-support beam on twin lift cylinders, two operator platforms with lever banks under canopies on posts, bolt and resin magazines, dust collector box with vacuum hoses to the masts, hydraulic tank, electrical enclosure and cable reel with trailing cable. Material controls: machine paint, frame and track steel, drill steel and chrome, hoses and rubber, plus a mast choice (stowed for tramming, drilling with masts and ATRS raised to a 3.2 m roof). weathered, permissibleWhite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "coal",
+        "roof bolter",
+        "rock bolting",
+        "ground support",
+        "ATRS",
+        "mining machine"
       ],
       "compat": [
         "mining",
-        "mineral-processing",
+        "underground",
         "industrial",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/roof-bolting-rig.kcad.ts",
       "preview": "/assets/mining-roof-bolting-rig.png",
-      "sourceSha256": "050ecb362c8ce62ad95e2e3204b3fb2dad32bdd441f8379e8be023f1b3beeea6",
-      "triangleBudget": 1800,
+      "sourceSha256": "ce1a527deed106d92e8fafd96304fc76d5df9ca8fc32f16a68e197bd6339caa1",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -181268,60 +181770,254 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "machinePaint",
           "type": "color",
-          "default": "#dea83e",
-          "label": "Coated equipment steel"
+          "default": "#e3bf2a",
+          "label": "Machine paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Frame and track steel"
+        },
+        {
+          "name": "drillSteel",
+          "type": "color",
+          "default": "#b9bfc1",
+          "label": "Drill steel and chrome"
+        },
+        {
+          "name": "hoses",
+          "type": "color",
+          "default": "#25292b",
+          "label": "Hoses and rubber"
+        },
+        {
+          "name": "mastState",
+          "type": "choice",
+          "default": "drilling",
+          "label": "Masts",
+          "choices": [
+            "stowed",
+            "drilling"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "machinePaint": "#9a8752",
+          "frameSteel": "#5f625f",
+          "drillSteel": "#8f918d",
+          "hoses": "#393a38"
+        },
+        "permissibleWhite": {
+          "machinePaint": "#e6e2d6",
+          "frameSteel": "#33383b",
+          "drillSteel": "#a9aeb0",
+          "hoses": "#1f2224"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "machinePaint": "#f08a1c",
+          "frameSteel": "#465159",
+          "drillSteel": "#c5ccca",
+          "hoses": "#24282a"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 2136,
         "sizeM": [
-          0.835,
-          0.78,
-          0.595
+          9.867295,
+          3.24,
+          3.3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "frameSteel",
+          "color": "#4b5459",
           "parts": [
-            "left-track",
-            "right-track",
-            "chassis",
-            "feed-mast"
+            "track-0",
+            "grouser-0-0",
+            "grouser-0-1",
+            "grouser-0-2",
+            "grouser-0-3",
+            "grouser-0-4",
+            "grouser-0-5",
+            "grouser-0-6",
+            "grouser-0-7",
+            "grouser-0-8",
+            "grouser-0-9",
+            "grouser-0-10",
+            "grouser-0-11",
+            "grouser-0-12",
+            "grouser-0-13",
+            "grouser-0-14",
+            "grouser-0-15",
+            "track-1",
+            "grouser-1-0",
+            "grouser-1-1",
+            "grouser-1-2",
+            "grouser-1-3",
+            "grouser-1-4",
+            "grouser-1-5",
+            "grouser-1-6",
+            "grouser-1-7",
+            "grouser-1-8",
+            "grouser-1-9",
+            "grouser-1-10",
+            "grouser-1-11",
+            "grouser-1-12",
+            "grouser-1-13",
+            "grouser-1-14",
+            "grouser-1-15",
+            "deck-plate",
+            "atrs-mount-0",
+            "atrs-mount-1",
+            "boom-pivot-0",
+            "drill-head-0",
+            "boom-pivot-1",
+            "drill-head-1",
+            "platform-0",
+            "canopy-post-0-0",
+            "canopy-post-0-1",
+            "canopy-post-0-2",
+            "canopy-post-0-3",
+            "platform-1",
+            "canopy-post-1-0",
+            "canopy-post-1-1",
+            "canopy-post-1-2",
+            "canopy-post-1-3",
+            "bolt-rack-0",
+            "bolt-rack-1",
+            "filter-door-0",
+            "filter-door-1",
+            "filter-door-2",
+            "filter-door-3",
+            "vacuum-exhaust",
+            "electrical-enclosure",
+            "cable-reel"
           ],
-          "param": "structuralSteel"
+          "param": "frameSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#dea83e",
+          "name": "drillSteel",
+          "color": "#b9bfc1",
           "parts": [
-            "cab",
-            "cab-roof",
-            "drill-head-left",
-            "drill-head-right"
+            "drive-sprocket-0",
+            "drive-sprocket-1",
+            "atrs-ram-0",
+            "atrs-ram-1",
+            "mast-slide-0",
+            "mast-feed-cylinder-0",
+            "chuck-0",
+            "drill-steel-0",
+            "mast-slide-1",
+            "mast-feed-cylinder-1",
+            "chuck-1",
+            "drill-steel-1",
+            "tank-filler"
           ],
-          "param": "coatedSteel"
+          "param": "drillSteel"
+        },
+        {
+          "name": "machinePaint",
+          "color": "#e3bf2a",
+          "parts": [
+            "chassis",
+            "atrs-beam",
+            "atrs-cylinder-0",
+            "atrs-cylinder-1",
+            "swing-boom-0",
+            "mast-0",
+            "drill-motor-0",
+            "swing-boom-1",
+            "mast-1",
+            "drill-motor-1",
+            "lever-bank-0",
+            "canopy-0",
+            "lever-bank-1",
+            "canopy-1",
+            "dust-collector",
+            "dust-collector-hopper",
+            "hydraulic-tank",
+            "enclosure-door"
+          ],
+          "param": "machinePaint"
+        },
+        {
+          "name": "rear-bumper",
+          "color": "#e8c21e",
+          "parts": [
+            "rear-bumper",
+            "centraliser-0",
+            "centraliser-1"
+          ]
+        },
+        {
+          "name": "rear-lamp-0",
+          "color": "#fff1b0",
+          "parts": [
+            "rear-lamp-0",
+            "rear-lamp-1",
+            "work-light-0",
+            "work-light-1"
+          ]
+        },
+        {
+          "name": "hoses",
+          "color": "#25292b",
+          "parts": [
+            "atrs-pad-0",
+            "atrs-pad-1",
+            "dust-hose-drop-0",
+            "dust-hose-run-0",
+            "dust-hose-drop-1",
+            "dust-hose-run-1",
+            "lever-0-1",
+            "lever-0-2",
+            "lever-0-3",
+            "lever-1-1",
+            "lever-1-2",
+            "lever-1-3",
+            "cable-wraps",
+            "trailing-cable"
+          ],
+          "param": "hoses"
+        },
+        {
+          "name": "lever-0-0",
+          "color": "#c8322b",
+          "parts": [
+            "lever-0-0",
+            "lever-1-0"
+          ]
+        },
+        {
+          "name": "roof-bolt-0-0",
+          "color": "#6f7477",
+          "parts": [
+            "roof-bolt-0-0",
+            "roof-bolt-0-1",
+            "roof-bolt-0-2",
+            "roof-bolt-0-3",
+            "bearing-plates-0",
+            "roof-bolt-1-0",
+            "roof-bolt-1-1",
+            "roof-bolt-1-2",
+            "roof-bolt-1-3",
+            "bearing-plates-1"
+          ]
+        },
+        {
+          "name": "resin-box-0",
+          "color": "#c8562a",
+          "parts": [
+            "resin-box-0",
+            "resin-box-1"
+          ]
         }
       ]
     },
@@ -184280,28 +184976,30 @@
       "id": "underground-shuttle-car",
       "kit": "mining",
       "title": "Underground shuttle car",
-      "description": "Low ore shuttle with a deep haul body, operator enclosure, front bumper, and wheel guards. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
+      "description": "Electric underground shuttle car at about real size: low wide tub with side boards cut out over four rubber tyres, chain conveyor bed with flight bars running from the low loading end up the raised discharge boom, head shaft and discharge lip, side-sitting operator pocket with seat, steering wheel and canopy on posts, cable reel with spooling guide and trailing cable, traction motor housings, hydraulic tank, bumpers and headlights at both ends. Material controls: body paint, chassis steel, conveyor wear steel and tyre rubber, plus a load choice (loaded with a coal heap, empty). weathered, joyWhite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "coal",
+        "shuttle car",
+        "haulage",
+        "room and pillar",
+        "chain conveyor",
+        "mining vehicle"
       ],
       "compat": [
         "mining",
-        "mineral-processing",
+        "underground",
         "industrial",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/underground-shuttle-car.kcad.ts",
       "preview": "/assets/mining-underground-shuttle-car.png",
-      "sourceSha256": "00a065755e0386c674b942785d87c9eed07933bdef7edabc34cd6899cbfef4ae",
-      "triangleBudget": 1800,
+      "sourceSha256": "e0af303de595dd93e059712ecd635ae0d13a48b31f9c6bb8aae5e4d8e74eeaa0",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -184313,75 +185011,205 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "bodyPaint",
           "type": "color",
-          "default": "#ba7d34",
-          "label": "Coated equipment steel"
+          "default": "#d8a531",
+          "label": "Body paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "chassisSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Chassis steel"
         },
         {
-          "name": "rubber",
+          "name": "conveyorSteel",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#8f9491",
+          "label": "Conveyor wear steel"
+        },
+        {
+          "name": "tyreRubber",
+          "type": "color",
+          "default": "#232628",
+          "label": "Tyre rubber"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "rubber": "#393a38"
+          "bodyPaint": "#8f7a52",
+          "chassisSteel": "#5f625f",
+          "conveyorSteel": "#77706a",
+          "tyreRubber": "#38393a"
+        },
+        "joyWhite": {
+          "bodyPaint": "#e6e2d6",
+          "chassisSteel": "#33383b",
+          "conveyorSteel": "#a3a7a4",
+          "tyreRubber": "#1f2224"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "rubber": "#24282a"
+          "bodyPaint": "#f08a1c",
+          "chassisSteel": "#465159",
+          "conveyorSteel": "#b0b5b2",
+          "tyreRubber": "#24282a"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 2428,
         "sizeM": [
-          1.265,
-          0.605,
-          0.52
+          10.811593,
+          2.27,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "tyreRubber",
+          "color": "#232628",
           "parts": [
-            "chassis"
+            "tyre-0-0",
+            "tyre-tread-0-0-0",
+            "tyre-tread-0-0-1",
+            "tyre-0-1",
+            "tyre-tread-0-1-0",
+            "tyre-tread-0-1-1",
+            "tyre-1-0",
+            "tyre-tread-1-0-0",
+            "tyre-tread-1-0-1",
+            "tyre-1-1",
+            "tyre-tread-1-1-0",
+            "tyre-tread-1-1-1",
+            "cable-reel-wraps",
+            "trailing-cable"
           ],
-          "param": "structuralSteel"
+          "param": "tyreRubber"
         },
         {
-          "name": "coatedSteel",
-          "color": "#ba7d34",
+          "name": "bodyPaint",
+          "color": "#d8a531",
           "parts": [
-            "ore-body",
-            "body-rim",
-            "operator-cab",
-            "cab-roof"
+            "fender-0-0",
+            "fender-0-1",
+            "fender-1-0",
+            "fender-1-1",
+            "side-board-0",
+            "board-rail-0-0",
+            "board-rail-0-1",
+            "side-board-1",
+            "board-rail-1-0",
+            "canopy-roof",
+            "reel-motor"
           ],
-          "param": "coatedSteel"
+          "param": "bodyPaint"
         },
         {
-          "name": "rubber",
-          "color": "#292d2f",
+          "name": "conveyorSteel",
+          "color": "#8f9491",
           "parts": [
-            "front-wheel-set",
-            "rear-wheel-set",
-            "front-bumper"
+            "wheel-hub-0-0",
+            "wheel-hub-0-1",
+            "wheel-hub-1-0",
+            "wheel-hub-1-1",
+            "conveyor-bed",
+            "head-shaft",
+            "boom-lift-cylinder",
+            "loading-apron"
           ],
-          "param": "rubber"
+          "param": "conveyorSteel"
+        },
+        {
+          "name": "chassisSteel",
+          "color": "#4b5459",
+          "parts": [
+            "traction-motor-0-0",
+            "traction-motor-0-1",
+            "traction-motor-1-0",
+            "traction-motor-1-1",
+            "chassis",
+            "flight-bar-0",
+            "flight-bar-1",
+            "flight-bar-2",
+            "flight-bar-3",
+            "flight-bar-4",
+            "flight-bar-5",
+            "flight-bar-6",
+            "flight-bar-7",
+            "flight-bar-8",
+            "flight-bar-9",
+            "flight-bar-10",
+            "flight-bar-11",
+            "discharge-lip",
+            "operator-floor",
+            "steering-column",
+            "control-panel",
+            "canopy-post-0",
+            "canopy-post-1",
+            "canopy-post-2",
+            "canopy-post-3",
+            "cable-reel-drum",
+            "spooling-guide",
+            "hydraulic-tank",
+            "electrical-box"
+          ],
+          "param": "chassisSteel"
+        },
+        {
+          "name": "bumper-0",
+          "color": "#e8c21e",
+          "parts": [
+            "bumper-0",
+            "bumper-1"
+          ]
+        },
+        {
+          "name": "headlight-0-0",
+          "color": "#fff1b0",
+          "parts": [
+            "headlight-0-0",
+            "headlight-0-1",
+            "headlight-1-0",
+            "headlight-1-1"
+          ]
+        },
+        {
+          "name": "coal-heap",
+          "color": "#222327",
+          "parts": [
+            "coal-heap",
+            "coal-lump-0",
+            "coal-lump-2",
+            "coal-lump-4"
+          ]
+        },
+        {
+          "name": "coal-lump-1",
+          "color": "#3d3f45",
+          "parts": [
+            "coal-lump-1",
+            "coal-lump-3"
+          ]
+        },
+        {
+          "name": "operator-seat",
+          "color": "#2f3436",
+          "parts": [
+            "operator-seat",
+            "seat-back",
+            "steering-wheel"
+          ]
         }
       ]
     },
