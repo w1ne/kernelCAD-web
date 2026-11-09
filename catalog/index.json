@@ -174726,16 +174726,18 @@
       "id": "ball-mill",
       "kit": "mining",
       "title": "Ball mill assembly",
-      "description": "Mill assembly with compact drum shell, trunnion ends, bearing saddles, motor bed, and feed chute. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Overflow ball mill at about real size: 6.8 m long, 4.6 m diameter shell with liner-bolt rows and bolted manway covers, conical heads on hollow trunnions in hooded bearings on concrete piers, guarded girth gear with pinion, gearbox and finned motor, feed spout with cyclone underflow line and feed box on legs, discharge trommel or overflow bell over a sump, make-up grinding-ball bin, lube unit and walkway with handrails. Material controls: mill shell coating, drive and structural steel, trunnion and trommel steel, pier concrete, plus a discharge choice (trommel, overflow). weathered, highVisibility and greyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "grinding",
+        "ball mill",
+        "comminution",
+        "concentrator",
+        "girth gear",
+        "trommel"
       ],
       "compat": [
         "mining",
@@ -174746,8 +174748,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/ball-mill.kcad.ts",
       "preview": "/assets/mining-ball-mill.png",
-      "sourceSha256": "36c8a307a4156847be725361cac56268b19b56c2ac9501a73f0f9e2d0a330fb3",
-      "triangleBudget": 1800,
+      "sourceSha256": "a7533658535acef38bbd93e1c73c77c7fbef0cc6c69714e7236d674bd5e290af",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -174761,59 +174763,234 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a87b",
-          "label": "Coated equipment steel"
+          "default": "#3f7f9e",
+          "label": "Mill shell coating"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#4f5b62",
+          "label": "Drive and structural steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Trunnion and trommel steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a19d94",
+          "label": "Pier concrete"
+        },
+        {
+          "name": "discharge",
+          "type": "choice",
+          "default": "trommel",
+          "label": "Discharge end",
+          "choices": [
+            "trommel",
+            "overflow"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e"
+          "coatedSteel": "#5d6f73",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "concrete": "#8b8579"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca"
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "concrete": "#b3afa6"
+        },
+        "greyPlant": {
+          "coatedSteel": "#b9bec0",
+          "structuralSteel": "#2f5a8a",
+          "stainlessSteel": "#d0d6d6",
+          "concrete": "#a8a49b"
         }
       },
       "stats": {
-        "triangles": 396,
+        "triangles": 4440,
         "sizeM": [
-          1.585,
-          0.655,
-          0.88
+          15.054532,
+          6.828922,
+          9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#65a87b",
+          "name": "concrete",
+          "color": "#a19d94",
           "parts": [
-            "shell",
-            "motor",
-            "feed-chute"
+            "foundation",
+            "pier-0",
+            "pier-plinth-0",
+            "pier-1",
+            "pier-plinth-1"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3f7f9e",
+          "parts": [
+            "mill-shell",
+            "shell-flange-0",
+            "shell-flange-1",
+            "shell-flange-2",
+            "gear-guard-band",
+            "coupling-guard",
+            "feed-box-lid",
+            "discharge-sump",
+            "ball-bin",
+            "lube-filter-a",
+            "lube-filter-b",
+            "handrail-post--3250",
+            "handrail-post--1600",
+            "handrail-post-0",
+            "handrail-post-1600",
+            "handrail-post-3250",
+            "handrail-top",
+            "handrail-mid"
           ],
           "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "liner-bolts-0-0",
+            "liner-bolts-0-1",
+            "liner-bolts-1-0",
+            "liner-bolts-1-1",
+            "liner-bolts-2-0",
+            "liner-bolts-2-1",
+            "liner-bolts-3-0",
+            "liner-bolts-3-1",
+            "liner-bolts-4-0",
+            "liner-bolts-4-1",
+            "liner-bolts-5-0",
+            "liner-bolts-5-1",
+            "liner-bolts-6-0",
+            "liner-bolts-6-1",
+            "liner-bolts-7-0",
+            "liner-bolts-7-1",
+            "liner-bolts-8-0",
+            "liner-bolts-8-1",
+            "liner-bolts-9-0",
+            "liner-bolts-9-1",
+            "liner-bolts-10-0",
+            "liner-bolts-10-1",
+            "liner-bolts-11-0",
+            "liner-bolts-11-1",
+            "bearing-housing-0",
+            "bearing-cap-0",
+            "bearing-housing-1",
+            "bearing-cap-1",
+            "gear-guard",
+            "pinion-base",
+            "pinion-bearing-a",
+            "pinion-bearing-b",
+            "gearbox",
+            "gearbox-cover",
+            "motor",
+            "motor-fin-5400",
+            "motor-fin-5600",
+            "motor-fin-5800",
+            "motor-fin-6000",
+            "motor-fin-6200",
+            "motor-fin-6400",
+            "motor-terminal-box",
+            "feed-spout",
+            "feed-box",
+            "feed-leg--6900--800",
+            "feed-leg--6900-800",
+            "feed-leg--6100--800",
+            "feed-leg--6100-800",
+            "reject-chute",
+            "lube-unit",
+            "walkway-deck",
+            "walkway-post--3100",
+            "walkway-post--1000",
+            "walkway-post-1000",
+            "walkway-post-3100"
+          ],
+          "param": "structuralSteel"
         },
         {
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "feed-trunnion",
-            "discharge-trunnion",
-            "bearing-left",
-            "bearing-right",
-            "girth-ring",
-            "discharge-box"
+            "manway--1700",
+            "manway-1000",
+            "trunnion-journal-0",
+            "trunnion-journal-1",
+            "pinion-shaft",
+            "underflow-flange",
+            "trommel-band-5050",
+            "trommel-band-5600",
+            "trommel-band-6150",
+            "trommel-band-6650",
+            "trommel-bar-0",
+            "trommel-bar-1",
+            "trommel-bar-2",
+            "trommel-bar-3",
+            "trommel-bar-4",
+            "trommel-bar-5",
+            "trommel-bar-6",
+            "trommel-bar-7"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "manway-handle--1700",
+          "color": "#26292b",
+          "parts": [
+            "manway-handle--1700",
+            "manway-handle-1000",
+            "bearing-oil-line-0",
+            "bearing-oil-line-1",
+            "motor-fan-cowl",
+            "sump-opening",
+            "trommel-screen"
+          ]
+        },
+        {
+          "name": "girth-gear",
+          "color": "#3a3631",
+          "parts": [
+            "girth-gear"
+          ]
+        },
+        {
+          "name": "underflow-line",
+          "color": "#1f2224",
+          "parts": [
+            "underflow-line",
+            "underflow-bend"
+          ]
+        },
+        {
+          "name": "grinding-ball-0",
+          "color": "#7d8287",
+          "parts": [
+            "grinding-ball-0",
+            "grinding-ball-1",
+            "grinding-ball-2",
+            "grinding-ball-3",
+            "grinding-ball-4",
+            "grinding-ball-5",
+            "grinding-ball-6",
+            "grinding-ball-7"
+          ]
         }
       ]
     },
@@ -174932,16 +175109,18 @@
       "id": "cone-crusher-module",
       "kit": "mining",
       "title": "Cone crusher module",
-      "description": "Cone crushing station with feed hopper, nested crusher body, access deck, and drive cabinet. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Secondary cone crusher at about real size on a raised steel module: round main frame with a horizontal countershaft box, adjustment ring with clamping cylinders and tramp-release cylinders, bowl and conical feed hopper with distributor and ore, grooved drive sheave on V-belts from a motor on a slide base, hydraulic power unit, service deck with handrail and ladder, discharge chute and inclined conveyor carrying crushed ore. Material controls: crusher coating, module and drive steel, hydraulic chrome, belts and rubber, plus a hopper load choice (loaded, empty). weathered, highVisibility and yellowPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "crushing",
+        "cone crusher",
+        "secondary crusher",
+        "V-belt drive",
+        "conveyor",
+        "crushing plant"
       ],
       "compat": [
         "mining",
@@ -174952,8 +175131,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/cone-crusher-module.kcad.ts",
       "preview": "/assets/mining-cone-crusher-module.png",
-      "sourceSha256": "ac2eef6fe2cf0908711fcade370b4f3e376f1c439389410db2232a79f03b1f4e",
-      "triangleBudget": 1800,
+      "sourceSha256": "e9b3cace64390dd8e390b7656f116bfbcaaa4ba8bef504edff8f029124af16ca",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -174967,32 +175146,64 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a88f",
-          "label": "Coated equipment steel"
+          "default": "#2f6fb0",
+          "label": "Crusher coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Module and drive steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3cacc",
+          "label": "Hydraulic cylinder chrome"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#25292b",
+          "label": "Belts and rubber"
+        },
+        {
+          "name": "hopperLoad",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Hopper load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "coatedSteel": "#56707f",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#9da3a3",
+          "rubber": "#393a38"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#cfd5d6",
+          "rubber": "#24282a"
+        },
+        "yellowPlant": {
+          "coatedSteel": "#e2b01f",
+          "structuralSteel": "#2d3134",
+          "stainlessSteel": "#c3cacc",
+          "rubber": "#1d2022"
         }
       },
       "stats": {
-        "triangles": 332,
+        "triangles": 4258,
         "sizeM": [
-          1.115,
-          0.91,
-          0.87
+          9.56,
+          5.55,
+          6.181651
         ],
         "minUpM": 0,
         "materials": 1
@@ -175000,26 +175211,176 @@
       "palette": [
         {
           "name": "structuralSteel",
-          "color": "#566168",
+          "color": "#4b5459",
           "parts": [
-            "base-skid",
-            "support-left",
-            "support-right",
-            "service-deck"
+            "module-column--1500--1500",
+            "column-base--1500--1500",
+            "module-column--1500-1500",
+            "column-base--1500-1500",
+            "module-column-1500--1500",
+            "column-base-1500--1500",
+            "module-column-1500-1500",
+            "column-base-1500-1500",
+            "ring-beam-x--1500",
+            "ring-beam-x-1500",
+            "ring-beam-y--1500",
+            "ring-beam-y-1500",
+            "module-brace-0",
+            "module-brace-1",
+            "bowl-cap",
+            "hopper-rim",
+            "adjustment-motor",
+            "crusher-sheave",
+            "motor-sheave",
+            "motor",
+            "motor-fin--2100",
+            "motor-fin--1920",
+            "motor-fin--1740",
+            "motor-fin--1560",
+            "motor-fin--1380",
+            "motor-fin--1200",
+            "motor-fin--1020",
+            "motor-slide-base",
+            "motor-terminal-box",
+            "service-deck",
+            "hydraulic-unit",
+            "discharge-chute",
+            "conveyor-stringer--650",
+            "conveyor-stringer-650",
+            "head-pulley",
+            "conveyor-leg-0--650",
+            "conveyor-leg-0-650",
+            "conveyor-leg-1--650",
+            "conveyor-leg-1-650"
           ],
           "param": "structuralSteel"
         },
         {
           "name": "coatedSteel",
-          "color": "#65a88f",
+          "color": "#2f6fb0",
           "parts": [
-            "crusher-shell",
-            "inner-cone",
-            "top-bowl",
-            "feed-box",
-            "drive-cabinet"
+            "main-frame",
+            "main-frame-flange",
+            "frame-rib-0",
+            "frame-rib-1",
+            "frame-rib-2",
+            "frame-rib-3",
+            "adjustment-ring",
+            "bowl",
+            "feed-hopper",
+            "countershaft-box",
+            "countershaft-housing",
+            "hydraulic-tank-cap"
           ],
           "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3cacc",
+          "parts": [
+            "feed-distributor",
+            "clamp-cylinder-0",
+            "clamp-cylinder-1",
+            "clamp-cylinder-2",
+            "clamp-cylinder-3",
+            "clamp-cylinder-4",
+            "clamp-cylinder-5",
+            "clamp-cylinder-6",
+            "clamp-cylinder-7",
+            "clamp-cylinder-8",
+            "clamp-cylinder-9",
+            "tramp-rod-0",
+            "tramp-rod-1",
+            "tramp-rod-2",
+            "tramp-rod-3",
+            "tramp-rod-4",
+            "tramp-rod-5",
+            "tramp-rod-6",
+            "tramp-rod-7",
+            "countershaft"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "ore-in-hopper",
+          "color": "#8a7d6c",
+          "parts": [
+            "ore-in-hopper",
+            "ore-on-belt"
+          ]
+        },
+        {
+          "name": "ore-lump-0",
+          "color": "#6f6457",
+          "parts": [
+            "ore-lump-0",
+            "ore-lump-1",
+            "ore-lump-2",
+            "ore-lump-3",
+            "ore-lump-4"
+          ]
+        },
+        {
+          "name": "tramp-cylinder-0",
+          "color": "#e8c21e",
+          "parts": [
+            "tramp-cylinder-0",
+            "tramp-cylinder-1",
+            "tramp-cylinder-2",
+            "tramp-cylinder-3",
+            "tramp-cylinder-4",
+            "tramp-cylinder-5",
+            "tramp-cylinder-6",
+            "tramp-cylinder-7",
+            "accumulator",
+            "handrail-post--1750",
+            "handrail-post-0",
+            "handrail-post-1750",
+            "handrail-top",
+            "handrail-mid",
+            "ladder-rail-1500",
+            "ladder-rail-1900",
+            "ladder-rung-300",
+            "ladder-rung-600",
+            "ladder-rung-900",
+            "ladder-rung-1200",
+            "ladder-rung-1500",
+            "ladder-rung-1800",
+            "ladder-rung-2100",
+            "ladder-rung-2400"
+          ]
+        },
+        {
+          "name": "rubber",
+          "color": "#25292b",
+          "parts": [
+            "lock-hose-loop",
+            "v-belt-top--2730",
+            "v-belt-bottom--2730",
+            "v-belt-top--2630",
+            "v-belt-bottom--2630",
+            "v-belt-top--2530",
+            "v-belt-bottom--2530",
+            "v-belt-top--2430",
+            "v-belt-bottom--2430",
+            "hydraulic-hose",
+            "conveyor-belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "crusher-sheave-groove--2730",
+          "color": "#1e2123",
+          "parts": [
+            "crusher-sheave-groove--2730",
+            "crusher-sheave-groove--2630",
+            "crusher-sheave-groove--2530",
+            "crusher-sheave-groove--2430",
+            "motor-sheave-groove--2730",
+            "motor-sheave-groove--2630",
+            "motor-sheave-groove--2530",
+            "motor-sheave-groove--2430"
+          ]
         }
       ]
     },
@@ -175734,16 +176095,18 @@
       "id": "double-deck-screen",
       "kit": "mining",
       "title": "Double-deck vibrating screen",
-      "description": "Two-level screening unit with framed decks, support springs, discharge lips, and paired exciters. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Inclined double-deck vibrating screen at about real size: 6 m by 2.4 m body of stiffened side plates and tubular cross-members, modular top-deck panels carrying ore and a lower deck, exciter beam with unbalance housings driven by a cardan shaft from a stand-mounted motor, four corner coil springs on a steel stand, feed box at the high end, oversize and mid-size discharge lips at the low end, undersize hopper. Material controls: screen body coating, stand steel, screen panel polyurethane, springs and exciter steel, plus an incline choice (15, 20, 25 degrees). weathered, highVisibility and greyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "screening",
+        "vibrating screen",
+        "double deck",
+        "sizing",
+        "crushing plant",
+        "aggregate"
       ],
       "compat": [
         "mining",
@@ -175754,8 +176117,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/double-deck-screen.kcad.ts",
       "preview": "/assets/mining-double-deck-screen.png",
-      "sourceSha256": "a57e94e7bf17b2065bba694a0f5b2e68d24f64012dbdb3f5c0b1a33cbd04c814",
-      "triangleBudget": 1800,
+      "sourceSha256": "b9910baf5b3cebab0edb66adcdc4e239a4da9bbad4d187ed5dba54cbf9331ca6",
+      "triangleBudget": 5800,
       "params": [
         {
           "name": "scale",
@@ -175769,74 +176132,232 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a894",
-          "label": "Coated equipment steel"
+          "default": "#2f8f6a",
+          "label": "Screen body coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4b5459",
+          "label": "Stand steel"
+        },
+        {
+          "name": "polyurethane",
+          "type": "color",
+          "default": "#d95f2b",
+          "label": "Screen panel polyurethane"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#b9c1c3",
+          "label": "Springs and exciter steel"
+        },
+        {
+          "name": "incline",
+          "type": "choice",
+          "default": "20",
+          "label": "Deck incline (degrees)",
+          "choices": [
+            "15",
+            "20",
+            "25"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#5f7166",
           "structuralSteel": "#666a66",
+          "polyurethane": "#9b6a4f",
           "stainlessSteel": "#969f9e"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
+          "polyurethane": "#2a7fc0",
           "stainlessSteel": "#c5ccca"
+        },
+        "greyPlant": {
+          "coatedSteel": "#b9bec0",
+          "structuralSteel": "#2f5a8a",
+          "polyurethane": "#3a9a52",
+          "stainlessSteel": "#d0d6d6"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 5194,
         "sizeM": [
-          1.42,
-          0.87,
-          1.01
+          6.541124,
+          5.694548,
+          5.05
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
-          "parts": [
-            "base-frame",
-            "deck-lower",
-            "deck-upper"
-          ],
-          "param": "structuralSteel"
-        },
-        {
           "name": "coatedSteel",
-          "color": "#65a894",
+          "color": "#2f8f6a",
           "parts": [
-            "side-left",
-            "side-right",
-            "exciter-left",
-            "exciter-right"
+            "side-plate-0",
+            "stiffener-0--2400",
+            "stiffener-0--1600",
+            "stiffener-0--800",
+            "stiffener-0-0",
+            "stiffener-0-800",
+            "stiffener-0-1600",
+            "stiffener-0-2400",
+            "side-flange-0",
+            "side-plate-1",
+            "stiffener-1--2400",
+            "stiffener-1--1600",
+            "stiffener-1--800",
+            "stiffener-1-0",
+            "stiffener-1-800",
+            "stiffener-1-1600",
+            "stiffener-1-2400",
+            "side-flange-1",
+            "cross-member-low--2200",
+            "cross-member-high--2200",
+            "cross-member-low--800",
+            "cross-member-high--800",
+            "cross-member-low-600",
+            "cross-member-high-600",
+            "cross-member-low-2000",
+            "cross-member-high-2000",
+            "feed-box",
+            "exciter-cover-0",
+            "exciter-gusset-0",
+            "exciter-cover-1",
+            "exciter-gusset-1"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "structuralSteel",
+          "color": "#4b5459",
           "parts": [
-            "discharge-lower",
-            "discharge-upper"
+            "support-bracket-feed-0",
+            "support-bracket-discharge-0",
+            "support-bracket-feed-1",
+            "support-bracket-discharge-1",
+            "spring-seat-0",
+            "stand-column-0",
+            "column-base-0",
+            "spring-seat-1",
+            "stand-column-1",
+            "column-base-1",
+            "spring-seat-2",
+            "stand-column-2",
+            "column-base-2",
+            "spring-seat-3",
+            "stand-column-3",
+            "column-base-3",
+            "stand-tie--1",
+            "stand-tie-1",
+            "motor-plate",
+            "motor-leg--1--1",
+            "motor-leg--1-1",
+            "motor-leg-1--1",
+            "motor-leg-1-1",
+            "motor-leg-brace",
+            "motor",
+            "undersize-hopper"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "lower-deck",
+          "color": "#1e2123",
+          "parts": [
+            "lower-deck",
+            "deck-rail-x--2900",
+            "deck-rail-x--2300",
+            "deck-rail-x--1700",
+            "deck-rail-x--1100",
+            "deck-rail-x--500",
+            "deck-rail-x-100",
+            "deck-rail-x-700",
+            "deck-rail-x-1300",
+            "deck-rail-x-1900",
+            "deck-rail-x-2500",
+            "deck-rail-y--625",
+            "deck-rail-y-0",
+            "deck-rail-y-625",
+            "motor-fan-cowl"
+          ]
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b9c1c3",
+          "parts": [
+            "lower-discharge-lip",
+            "top-discharge-lip",
+            "exciter-beam",
+            "exciter-housing-0",
+            "exciter-housing-1",
+            "spring-coil-0-0",
+            "spring-coil-0-1",
+            "spring-coil-0-2",
+            "spring-coil-0-3",
+            "spring-coil-1-0",
+            "spring-coil-1-1",
+            "spring-coil-1-2",
+            "spring-coil-1-3",
+            "spring-coil-2-0",
+            "spring-coil-2-1",
+            "spring-coil-2-2",
+            "spring-coil-2-3",
+            "spring-coil-3-0",
+            "spring-coil-3-1",
+            "spring-coil-3-2",
+            "spring-coil-3-3",
+            "cardan-shaft"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "polyurethane",
+          "color": "#d95f2b",
+          "parts": [
+            "top-deck"
+          ],
+          "param": "polyurethane"
+        },
+        {
+          "name": "ore-bed",
+          "color": "#8a7d6c",
+          "parts": [
+            "ore-bed"
+          ]
+        },
+        {
+          "name": "ore-lump-0",
+          "color": "#6f6457",
+          "parts": [
+            "ore-lump-0",
+            "ore-lump-1",
+            "ore-lump-2",
+            "ore-lump-3",
+            "ore-lump-4",
+            "ore-lump-5",
+            "ore-lump-6"
+          ]
+        },
+        {
+          "name": "cardan-guard",
+          "color": "#e8c21e",
+          "parts": [
+            "cardan-guard"
+          ]
+        },
+        {
+          "name": "undersize-spout",
+          "color": "#25292b",
+          "parts": [
+            "undersize-spout"
+          ]
         }
       ]
     },
@@ -176373,16 +176894,18 @@
       "id": "hydrocyclone-cluster",
       "kit": "mining",
       "title": "Hydrocyclone cluster",
-      "description": "Cyclone manifold with multiple compact separators, feed header, support frame, and underflow collection box. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Radial hydrocyclone cluster at about real size: ring of rubber-lined cyclones with cylindrical heads, tangential feed inlets with knife-gate valves and long cones to the apex, round a central feed distributor with pressure gauge; overflow pipes turning into a ring overflow launder, apex sprays into an underflow launder, column-supported ring platform with handrail and ladder, main feed pipe from the pump. Material controls: cyclone body coating, platform and launder steel, rubber lining and hoses, valve steel, plus a cyclone count choice (6, 8, 10). weathered, highVisibility and greyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "classification",
+        "hydrocyclone",
+        "cyclone cluster",
+        "grinding circuit",
+        "slurry",
+        "concentrator"
       ],
       "compat": [
         "mining",
@@ -176393,8 +176916,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/hydrocyclone-cluster.kcad.ts",
       "preview": "/assets/mining-hydrocyclone-cluster.png",
-      "sourceSha256": "d574843c6f507d4f3ad4b8df5e1a85705ac4acdf3da201ec7468f11d1537e174",
-      "triangleBudget": 1800,
+      "sourceSha256": "ef69fbbdd8cf9a328c5b5fc916785ea44472ba4935c59b98bb833a0b46ec1794",
+      "triangleBudget": 6400,
       "params": [
         {
           "name": "scale",
@@ -176408,32 +176931,65 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#a88d65",
-          "label": "Coated equipment steel"
+          "default": "#3d6fa8",
+          "label": "Cyclone body coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Platform and launder steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2c",
+          "label": "Rubber lining and hoses"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Valve and gauge steel"
+        },
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "8",
+          "label": "Cyclones in the cluster",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "coatedSteel": "#5d6d78",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38",
+          "stainlessSteel": "#969f9e"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "structuralSteel": "#465159",
+          "rubber": "#24282a",
+          "stainlessSteel": "#c5ccca"
+        },
+        "greyPlant": {
+          "coatedSteel": "#c9cdcf",
+          "structuralSteel": "#2f5a8a",
+          "rubber": "#2c2f31",
+          "stainlessSteel": "#d0d6d6"
         }
       },
       "stats": {
-        "triangles": 432,
+        "triangles": 5412,
         "sizeM": [
-          1.05,
-          0.8,
-          0.848
+          7.75,
+          6.773906,
+          6.564237
         ],
         "minUpM": 0,
         "materials": 1
@@ -176441,29 +176997,193 @@
       "palette": [
         {
           "name": "structuralSteel",
-          "color": "#566168",
+          "color": "#4f5b62",
           "parts": [
-            "base-frame",
-            "crossbeam",
-            "service-platform"
+            "platform-deck",
+            "column-0",
+            "column-base-0",
+            "column-1",
+            "column-base-1",
+            "column-2",
+            "column-base-2",
+            "column-3",
+            "column-base-3",
+            "column-4",
+            "column-base-4",
+            "column-5",
+            "column-base-5",
+            "feed-pipe-support",
+            "overflow-launder",
+            "launder-hanger-0",
+            "launder-hanger-1",
+            "launder-hanger-2",
+            "launder-hanger-3",
+            "overflow-outlet",
+            "underflow-launder",
+            "underflow-outlet",
+            "underflow-leg-0",
+            "underflow-leg-1",
+            "underflow-leg-2",
+            "underflow-leg-3"
           ],
           "param": "structuralSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#a88d65",
+          "name": "handrail-post-0",
+          "color": "#e8c21e",
           "parts": [
-            "header-left",
-            "header-right",
-            "cyclone-0",
-            "cyclone-1",
-            "cyclone-2",
-            "cyclone-3",
-            "cyclone-4",
-            "underflow-box",
-            "feed-header"
+            "handrail-post-0",
+            "handrail-post-1",
+            "handrail-post-2",
+            "handrail-post-3",
+            "handrail-post-4",
+            "handrail-post-5",
+            "handrail-top",
+            "handrail-mid",
+            "ladder-rail--200",
+            "ladder-rail-200",
+            "ladder-rung-300",
+            "ladder-rung-600",
+            "ladder-rung-900",
+            "ladder-rung-1200",
+            "ladder-rung-1500",
+            "ladder-rung-1800",
+            "ladder-rung-2100",
+            "ladder-rung-2400",
+            "ladder-rung-2700",
+            "ladder-rung-3000",
+            "ladder-rung-3300",
+            "knife-gate-actuator-0",
+            "knife-gate-actuator-1",
+            "knife-gate-actuator-2",
+            "knife-gate-actuator-3",
+            "knife-gate-actuator-4",
+            "knife-gate-actuator-5",
+            "knife-gate-actuator-6",
+            "knife-gate-actuator-7"
+          ]
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d6fa8",
+          "parts": [
+            "distributor",
+            "distributor-flange",
+            "distributor-cone",
+            "cyclone-cone-0",
+            "cyclone-head-0",
+            "cyclone-head-flange-0",
+            "feed-inlet-0",
+            "cyclone-cone-1",
+            "cyclone-head-1",
+            "cyclone-head-flange-1",
+            "feed-inlet-1",
+            "cyclone-cone-2",
+            "cyclone-head-2",
+            "cyclone-head-flange-2",
+            "feed-inlet-2",
+            "cyclone-cone-3",
+            "cyclone-head-3",
+            "cyclone-head-flange-3",
+            "feed-inlet-3",
+            "cyclone-cone-4",
+            "cyclone-head-4",
+            "cyclone-head-flange-4",
+            "feed-inlet-4",
+            "cyclone-cone-5",
+            "cyclone-head-5",
+            "cyclone-head-flange-5",
+            "feed-inlet-5",
+            "cyclone-cone-6",
+            "cyclone-head-6",
+            "cyclone-head-flange-6",
+            "feed-inlet-6",
+            "cyclone-cone-7",
+            "cyclone-head-7",
+            "cyclone-head-flange-7",
+            "feed-inlet-7"
           ],
           "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2c",
+          "parts": [
+            "feed-pipe-riser",
+            "feed-pipe",
+            "apex-spigot-0",
+            "feed-line-0",
+            "overflow-riser-0",
+            "overflow-pipe-0",
+            "apex-spigot-1",
+            "feed-line-1",
+            "overflow-riser-1",
+            "overflow-pipe-1",
+            "apex-spigot-2",
+            "feed-line-2",
+            "overflow-riser-2",
+            "overflow-pipe-2",
+            "apex-spigot-3",
+            "feed-line-3",
+            "overflow-riser-3",
+            "overflow-pipe-3",
+            "apex-spigot-4",
+            "feed-line-4",
+            "overflow-riser-4",
+            "overflow-pipe-4",
+            "apex-spigot-5",
+            "feed-line-5",
+            "overflow-riser-5",
+            "overflow-pipe-5",
+            "apex-spigot-6",
+            "feed-line-6",
+            "overflow-riser-6",
+            "overflow-pipe-6",
+            "apex-spigot-7",
+            "feed-line-7",
+            "overflow-riser-7",
+            "overflow-pipe-7"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "pressure-gauge-stem",
+            "pressure-gauge",
+            "knife-gate-0",
+            "knife-gate-1",
+            "knife-gate-2",
+            "knife-gate-3",
+            "knife-gate-4",
+            "knife-gate-5",
+            "knife-gate-6",
+            "knife-gate-7"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "overflow-slurry",
+          "color": "#6f6a60",
+          "parts": [
+            "overflow-slurry",
+            "apex-spray-0",
+            "apex-spray-1",
+            "apex-spray-2",
+            "apex-spray-3",
+            "apex-spray-4",
+            "apex-spray-5",
+            "apex-spray-6",
+            "apex-spray-7"
+          ]
+        },
+        {
+          "name": "underflow-sand",
+          "color": "#8a7d6c",
+          "parts": [
+            "underflow-sand"
+          ]
         }
       ]
     },
@@ -178133,16 +178853,18 @@
       "id": "mine-ventilation-fan",
       "kit": "mining",
       "title": "Mine ventilation fan station",
-      "description": "Compact fan station with intake plenum, motor block, guarded housing, and raised support frame. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Surface main ventilation fan station at about real size: 3 m axial fan casing with flanges and stiffening rings, square inlet box with isolation damper and actuator, inlet duct rising out of a concrete upcast shaft collar, evase diffuser bending into a vertical discharge stack with a flared mouth, in-line drive motor on a pedestal with coupling guard and shaft, cable tray to an electrical house with VSD, door and air-conditioner. Material controls: fan and duct coating, structural steel, shaft-collar concrete, E-house cladding, plus a fan arrangement choice (single, twin duty/standby). weathered, highVisibility and greyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "ventilation",
+        "main fan",
+        "axial fan",
+        "upcast shaft",
+        "evase",
+        "mine services"
       ],
       "compat": [
         "mining",
@@ -178153,8 +178875,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-ventilation-fan.kcad.ts",
       "preview": "/assets/mining-mine-ventilation-fan.png",
-      "sourceSha256": "eef290591d65c48cf73b1a2af1c9f9a669ea7b833b0e4c9c750bffbabee53e34",
-      "triangleBudget": 1800,
+      "sourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+      "triangleBudget": 6600,
       "params": [
         {
           "name": "scale",
@@ -178168,73 +178890,180 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a896",
-          "label": "Coated equipment steel"
+          "default": "#3f8a5a",
+          "label": "Fan and duct coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
+          "default": "#4f5b62",
           "label": "Structural steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#a19d94",
+          "label": "Shaft collar concrete"
+        },
+        {
+          "name": "cladding",
+          "type": "color",
+          "default": "#d9d4c7",
+          "label": "E-house cladding"
+        },
+        {
+          "name": "arrangement",
+          "type": "choice",
+          "default": "single",
+          "label": "Fan arrangement",
+          "choices": [
+            "single",
+            "twin"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#61705f",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "concrete": "#8b8579",
+          "cladding": "#b4aea0"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "concrete": "#b3afa6",
+          "cladding": "#f0ede4"
+        },
+        "greyPlant": {
+          "coatedSteel": "#b9bec0",
+          "structuralSteel": "#2f5a8a",
+          "concrete": "#a8a49b",
+          "cladding": "#2f5a8a"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 3236,
         "sizeM": [
-          0.935,
-          0.645,
-          0.695
+          16.2,
+          10.4,
+          13.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "concrete",
+          "color": "#a19d94",
           "parts": [
-            "base-skid",
-            "left-support",
-            "right-support",
-            "service-platform"
+            "slab",
+            "shaft-collar",
+            "collar-cap",
+            "stack-plinth-0",
+            "motor-pedestal-0"
           ],
-          "param": "structuralSteel"
+          "param": "concrete"
         },
         {
           "name": "coatedSteel",
-          "color": "#65a896",
+          "color": "#3f8a5a",
           "parts": [
-            "fan-housing",
-            "motor",
-            "outlet-plenum"
+            "collar-riser",
+            "inlet-header",
+            "inlet-box-0",
+            "fan-casing-0",
+            "casing-ring-0--1200",
+            "casing-ring-0--400",
+            "casing-ring-0-400",
+            "casing-ring-0-1100",
+            "evase-0",
+            "bend-0-0",
+            "bend-0-1",
+            "bend-0-2",
+            "bend-0-3",
+            "discharge-stack-0",
+            "stack-mouth-0"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "header-end-flange--900",
+            "header-end-flange-6600",
+            "header-stiffener-0",
+            "header-stiffener-1600",
+            "header-stiffener-3200",
+            "header-stiffener-4800",
+            "header-support-0",
+            "header-support-1",
+            "damper-frame-0",
+            "inlet-box-base-0",
+            "casing-saddle-0",
+            "inspection-door-0",
+            "bend-flange-0-0",
+            "bend-flange-0-1",
+            "bend-flange-0-2",
+            "bend-flange-0-3",
+            "stack-ring-0-6000",
+            "stack-ring-0-8000",
+            "stack-stay-0--1--1",
+            "stack-stay-0--1-1",
+            "stack-stay-0-1--1",
+            "stack-stay-0-1-1",
+            "motor-0",
+            "motor-fin-0-4150",
+            "motor-fin-0-4370",
+            "motor-fin-0-4590",
+            "motor-fin-0-4810",
+            "motor-fin-0-5030",
+            "motor-fin-0-5250",
+            "motor-fin-0-5470",
+            "motor-fin-0-5690",
+            "motor-terminal-box-0",
+            "e-house-roof",
+            "e-house-skid",
+            "e-house-door",
+            "cable-tray"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "damper-actuator-0",
+          "color": "#e8c21e",
+          "parts": [
+            "damper-actuator-0",
+            "coupling-guard-0"
+          ]
+        },
+        {
+          "name": "door-handle-0",
+          "color": "#1e2123",
+          "parts": [
+            "door-handle-0",
+            "stack-throat-0",
+            "motor-fan-cowl-0",
+            "aircon-grille",
+            "cable-drop-0"
+          ]
+        },
+        {
+          "name": "drive-shaft-0",
           "color": "#b5c0c0",
           "parts": [
-            "inlet-ring"
+            "drive-shaft-0"
+          ]
+        },
+        {
+          "name": "cladding",
+          "color": "#d9d4c7",
+          "parts": [
+            "e-house",
+            "e-house-aircon"
           ],
-          "param": "stainlessSteel"
+          "param": "cladding"
         }
       ]
     },
