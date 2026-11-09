@@ -223351,14 +223351,19 @@
       "id": "cullet-storage-silo",
       "kit": "recycling-facility",
       "title": "Cullet storage silo",
-      "description": "Cullet storage silo: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Outdoor cullet silo at about real size: steel shell on four cross-braced legs, steep cone hopper with slide gate and truck-height discharge spout, pneumatic fill line up the side, roof bin-vent filter, level sensor, caged ladder and roof handrail. Material controls: silo shell, support structure, safety rail and fittings. plant, weathered, glassWorks and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "cullet",
+        "glass",
+        "silo",
+        "storage silo",
+        "cone hopper",
+        "truck loadout",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -223371,8 +223376,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cullet-storage-silo.kcad.ts",
       "preview": "/assets/recycling-facility-cullet-storage-silo.png",
-      "sourceSha256": "b57562db5a45cb3df1279310aef45953017e6157490fe0b85b1fcbab35c7462c",
-      "triangleBudget": 1800,
+      "sourceSha256": "9d0a2d529722908cdad5fbc1156b4a7ce5e586aa402e2ad1b807f0d11b9d2cc2",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -223384,66 +223389,212 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "shell",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d9dcd8",
+          "label": "Silo shell (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#5f7484",
-          "label": "Painted steel"
+          "default": "#3a6c9c",
+          "label": "Legs and bracing"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Handrail and ladder cage"
+        },
+        {
+          "name": "fittings",
+          "type": "color",
+          "default": "#8f989c",
+          "label": "Gate, spout and pipework"
         }
       ],
       "presets": {
+        "plant": {
+          "shell": "#d9dcd8",
+          "structure": "#3a6c9c",
+          "safety": "#f0b429",
+          "fittings": "#8f989c"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#647176"
+          "shell": "#b8b5a8",
+          "structure": "#55636c",
+          "safety": "#c09a45",
+          "fittings": "#7a7b75"
+        },
+        "glassWorks": {
+          "shell": "#5d8f6a",
+          "structure": "#3d4b52",
+          "safety": "#f0b429",
+          "fittings": "#a9b1b4"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "shell": "#f2f2ee",
+          "structure": "#d4572a",
+          "safety": "#f2d21b",
+          "fittings": "#c9ced1"
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 3662,
         "sizeM": [
-          0.7635,
-          2.29,
-          0.731
+          3.62,
+          12.05,
+          4.26
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "shell",
+          "color": "#d9dcd8",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle",
-            "outlet-neck"
+            "silo-body",
+            "filter-housing"
           ],
-          "param": "stainlessSteel"
+          "param": "shell"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5f7484",
+          "name": "structure",
+          "color": "#3a6c9c",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack",
-            "conical-discharge"
+            "band-4500",
+            "band-6400",
+            "band-8300",
+            "band-10080",
+            "leg--1--1",
+            "leg--1-1",
+            "leg-1--1",
+            "leg-1-1",
+            "girt-x--1",
+            "girt-y--1",
+            "brace-x--1--1",
+            "brace-y--1--1",
+            "brace-x--1-1",
+            "brace-y--1-1",
+            "girt-x-1",
+            "girt-y-1",
+            "brace-x-1--1",
+            "brace-y-1--1",
+            "brace-x-1-1",
+            "brace-y-1-1",
+            "fill-bracket-5400",
+            "fill-bracket-7500",
+            "fill-bracket-9800",
+            "filter-cap",
+            "ladder-standoff-3900",
+            "ladder-standoff-6800",
+            "ladder-standoff-9900"
           ],
-          "param": "paintedSteel"
+          "param": "structure"
+        },
+        {
+          "name": "fittings",
+          "color": "#8f989c",
+          "parts": [
+            "base-plate--1--1",
+            "base-plate--1-1",
+            "base-plate-1--1",
+            "base-plate-1-1",
+            "gate-body",
+            "actuator-rod",
+            "spout",
+            "fill-coupling",
+            "fill-riser",
+            "fill-elbow",
+            "fill-roof-run",
+            "roof-manway",
+            "ladder-stile--1",
+            "ladder-stile-1",
+            "rung-600",
+            "rung-1200",
+            "rung-1800",
+            "rung-2400",
+            "rung-3000",
+            "rung-3600",
+            "rung-4200",
+            "rung-4800",
+            "rung-5400",
+            "rung-6000",
+            "rung-6600",
+            "rung-7200",
+            "rung-7800",
+            "rung-8400",
+            "rung-9000",
+            "rung-9600",
+            "rung-10200",
+            "rung-10800"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "gate-actuator",
+            "level-sensor",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "rail-post-6",
+            "rail-post-7",
+            "rail-post-8",
+            "rail-post-9",
+            "rail-post-10",
+            "rail-post-11",
+            "handrail",
+            "midrail",
+            "hoop-front-2600",
+            "hoop-side-2600--1",
+            "hoop-side-2600-1",
+            "hoop-front-3700",
+            "hoop-side-3700--1",
+            "hoop-side-3700-1",
+            "hoop-front-4800",
+            "hoop-side-4800--1",
+            "hoop-side-4800-1",
+            "hoop-front-5900",
+            "hoop-side-5900--1",
+            "hoop-side-5900-1",
+            "hoop-front-7000",
+            "hoop-side-7000--1",
+            "hoop-side-7000-1",
+            "hoop-front-8100",
+            "hoop-side-8100--1",
+            "hoop-side-8100-1",
+            "hoop-front-9200",
+            "hoop-side-9200--1",
+            "hoop-side-9200-1",
+            "hoop-front-10300",
+            "hoop-side-10300--1",
+            "hoop-side-10300-1",
+            "cage-bar--380",
+            "cage-bar-0",
+            "cage-bar-380"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "spout-sock",
+          "color": "#2b2f33",
+          "parts": [
+            "spout-sock"
+          ]
+        },
+        {
+          "name": "ladder-landing",
+          "color": "#a7a39b",
+          "parts": [
+            "ladder-landing"
+          ]
         }
       ]
     },
@@ -229168,14 +229319,20 @@
       "id": "glass-loadout-silo",
       "kit": "recycling-facility",
       "title": "Glass load-out silo",
-      "description": "Glass load-out silo: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Drive-through glass load-out bin at about real size: square steel bin with pyramid hopper on a portal frame a truck drives under, telescopic loading spout, bucket elevator with intake boot and head chute into the roof, ribbed bin walls and railed roof walkway. Material controls: bin, portal frame, bucket elevator and safety rail. plant, weathered, glassGreen and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "glass",
+        "cullet",
+        "load-out",
+        "loadout bin",
+        "truck loading",
+        "bucket elevator",
+        "hopper",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -229188,7 +229345,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-loadout-silo.kcad.ts",
       "preview": "/assets/recycling-facility-glass-loadout-silo.png",
-      "sourceSha256": "1e874b1407ba8b9134db409f705dada3fbb818f57bb310ec28778285c7678359",
+      "sourceSha256": "430037d4bc2b0e82e8a84783ffb8aada396dd971052f6421170f849255ba980b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -229201,66 +229358,182 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "bin",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#5d7f96",
+          "label": "Bin and hopper (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#5e6982",
-          "label": "Painted steel"
+          "default": "#3d4a52",
+          "label": "Portal frame"
+        },
+        {
+          "name": "elevator",
+          "type": "color",
+          "default": "#e08a2c",
+          "label": "Bucket elevator casing"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Handrail and bump guards"
         }
       ],
       "presets": {
+        "plant": {
+          "bin": "#5d7f96",
+          "frame": "#3d4a52",
+          "elevator": "#e08a2c",
+          "safety": "#f0c419"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#646a75"
+          "bin": "#6f7a7c",
+          "frame": "#4a4d4c",
+          "elevator": "#a87b4a",
+          "safety": "#bf9f45"
+        },
+        "glassGreen": {
+          "bin": "#4f8a5c",
+          "frame": "#2f3b40",
+          "elevator": "#c9ced1",
+          "safety": "#f0c419"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "bin": "#e8e8e2",
+          "frame": "#2a6fb5",
+          "elevator": "#d4402a",
+          "safety": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 1200,
         "sizeM": [
-          0.7635,
-          2.05,
-          0.7603
+          6.95,
+          11.5,
+          4.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#3d4a52",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle",
-            "outlet-neck"
+            "column--1--1",
+            "column--1-1",
+            "column-1--1",
+            "column-1-1",
+            "beam-x--1",
+            "beam-y--1",
+            "knee-x--1",
+            "beam-x-1",
+            "beam-y-1",
+            "knee-x-1",
+            "rib-x--1200--1",
+            "rib-y--1200--1",
+            "rib-x--1200-1",
+            "rib-y--1200-1",
+            "rib-x-0--1",
+            "rib-y-0--1",
+            "rib-x-0-1",
+            "rib-y-0-1",
+            "rib-x-1200--1",
+            "rib-y-1200--1",
+            "rib-x-1200-1",
+            "rib-y-1200-1",
+            "waist-band",
+            "outlet-gate",
+            "leg-joint-2500",
+            "leg-joint-4500",
+            "leg-joint-6500",
+            "leg-joint-8500",
+            "gearbox",
+            "elevator-tie-3500",
+            "elevator-tie-6500"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5e6982",
+          "name": "safety",
+          "color": "#f0c419",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack",
-            "conical-discharge"
+            "bump-guard--1--1",
+            "bump-guard--1-1",
+            "bump-guard-1--1",
+            "bump-guard-1-1",
+            "gate-cylinder",
+            "post-x--1900--1",
+            "post-y--1900--1",
+            "post-x--1900-1",
+            "post-y--1900-1",
+            "post-x-0--1",
+            "post-y-0--1",
+            "post-x-0-1",
+            "post-y-0-1",
+            "post-x-1900--1",
+            "post-y-1900--1",
+            "post-x-1900-1",
+            "post-y-1900-1",
+            "rail-x--1-9250",
+            "rail-y--1-9250",
+            "rail-x--1-9720",
+            "rail-y--1-9720",
+            "rail-x-1-9250",
+            "rail-y-1-9250",
+            "rail-x-1-9720",
+            "rail-y-1-9720"
           ],
-          "param": "paintedSteel"
+          "param": "safety"
+        },
+        {
+          "name": "bin",
+          "color": "#5d7f96",
+          "parts": [
+            "hopper",
+            "bin-body",
+            "bin-roof",
+            "spout-upper",
+            "spout-mid",
+            "spout-lower"
+          ],
+          "param": "bin"
+        },
+        {
+          "name": "inspection-hatch",
+          "color": "#2a2e31",
+          "parts": [
+            "inspection-hatch",
+            "spout-skirt",
+            "spout-cable-45",
+            "spout-cable-135",
+            "spout-cable-225",
+            "spout-cable-315"
+          ]
+        },
+        {
+          "name": "elevator",
+          "color": "#e08a2c",
+          "parts": [
+            "intake-hopper",
+            "boot",
+            "elevator-leg--260",
+            "elevator-leg-260",
+            "head-housing",
+            "head-hood",
+            "head-chute"
+          ],
+          "param": "elevator"
+        },
+        {
+          "name": "drive-motor",
+          "color": "#2f5d9a",
+          "parts": [
+            "drive-motor"
+          ]
         }
       ]
     },
@@ -230201,14 +230474,19 @@
       "id": "grease-trap-tank",
       "kit": "recycling-facility",
       "title": "Grease-trap tank",
-      "description": "Grease-trap tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Horizontal grease interceptor at about real size: ribbed polyethylene barrel with domed ends on concrete saddles and slab, two manway risers with cast lids, inlet and outlet tees with capped cleanouts, vent stack with cowl and a downstream sampling chamber. Material controls: tank body, manway lids, pipework and concrete. plant, weathered, coatedSteel and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "grease trap",
+        "grease interceptor",
+        "FOG",
+        "food waste",
+        "wastewater",
+        "tank",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -230221,8 +230499,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/grease-trap-tank.kcad.ts",
       "preview": "/assets/recycling-facility-grease-trap-tank.png",
-      "sourceSha256": "37219d2bcd02ddd2009e7913119a8b256f350cb0b6cdc2472a207f2f17b6f506",
-      "triangleBudget": 1800,
+      "sourceSha256": "c83f149d266da25c370d1ec1c524c37c4040a902e14ae7f293d86ccb891a82c7",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -230234,64 +230512,135 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4e7d55",
+          "label": "Tank body (polyethylene)"
         },
         {
-          "name": "paintedSteel",
+          "name": "lids",
           "type": "color",
-          "default": "#806d5d",
-          "label": "Painted steel"
+          "default": "#3b3f42",
+          "label": "Manway lids (cast iron)"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#d8742f",
+          "label": "Pipework (PVC)"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a7a39b",
+          "label": "Saddles and slab (concrete)"
         }
       ],
       "presets": {
+        "plant": {
+          "tank": "#4e7d55",
+          "lids": "#3b3f42",
+          "pipework": "#d8742f",
+          "concrete": "#a7a39b"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#7b6c5c"
+          "tank": "#5b6a55",
+          "lids": "#4a4540",
+          "pipework": "#a8704a",
+          "concrete": "#8f8b82"
+        },
+        "coatedSteel": {
+          "tank": "#2f5d9a",
+          "lids": "#c9ced1",
+          "pipework": "#8f989c",
+          "concrete": "#b5b1a8"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#e5e3dc",
+          "lids": "#d4402a",
+          "pipework": "#f0b429",
+          "concrete": "#c4c0b6"
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 1300,
         "sizeM": [
-          0.9355,
-          2.29,
-          0.903
+          6.5,
+          3.88,
+          2.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "concrete",
+          "color": "#a7a39b",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle"
+            "slab",
+            "saddle--1400",
+            "saddle-0",
+            "saddle-1400",
+            "pipe-support--2950",
+            "pipe-support-2950",
+            "sample-chamber"
           ],
-          "param": "stainlessSteel"
+          "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#806d5d",
+          "name": "tank",
+          "color": "#4e7d55",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack"
+            "barrel",
+            "rib--1750",
+            "rib--700",
+            "rib-700",
+            "rib-1750",
+            "riser--1050",
+            "riser-collar--1050",
+            "riser-1050",
+            "riser-collar-1050"
           ],
-          "param": "paintedSteel"
+          "param": "tank"
+        },
+        {
+          "name": "lids",
+          "color": "#3b3f42",
+          "parts": [
+            "lid--1050",
+            "lid-boss--1050",
+            "lift-key--1050--1",
+            "lift-key--1050-1",
+            "lid-1050",
+            "lid-boss-1050",
+            "lift-key-1050--1",
+            "lift-key-1050-1",
+            "inlet-cap",
+            "outlet-cap",
+            "vent-cowl",
+            "sample-cover"
+          ],
+          "param": "lids"
+        },
+        {
+          "name": "pipework",
+          "color": "#d8742f",
+          "parts": [
+            "inlet-pipe",
+            "inlet-tee",
+            "outlet-pipe",
+            "outlet-tee",
+            "vent-stack",
+            "sample-branch"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "level-plate",
+          "color": "#e8e6dc",
+          "parts": [
+            "level-plate"
+          ]
         }
       ]
     },
@@ -233453,14 +233802,20 @@
       "id": "leachate-sump-tank",
       "kit": "recycling-facility",
       "title": "Leachate sump tank",
-      "description": "Leachate sump tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Leachate holding tank at about real size: vertical ribbed polyethylene tank with cone roof and manway inside a concrete bund, grated sump chamber with pump riser and discharge line into the roof, sight-tube level gauge, pump control kiosk and tanker draw-off with camlock and drip tray. Material controls: tank, bund concrete, pipework and fittings. plant, weathered, blackPoly and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "landfill",
+        "leachate",
+        "sump",
+        "holding tank",
+        "bund",
+        "pump",
+        "wastewater",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -233473,8 +233828,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/leachate-sump-tank.kcad.ts",
       "preview": "/assets/recycling-facility-leachate-sump-tank.png",
-      "sourceSha256": "5a4f326fb687090a9238c6067525e4a21dd266b4eafc9f0eba6ac141ed337f98",
-      "triangleBudget": 1800,
+      "sourceSha256": "62bc68d27d03a0021f5d29e52e537b70e2e963544ee698e2d13fbf04cee1cd60",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -233486,64 +233841,164 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4a7a66",
+          "label": "Tank (polyethylene)"
         },
         {
-          "name": "paintedSteel",
+          "name": "bund",
           "type": "color",
-          "default": "#60766f",
-          "label": "Painted steel"
+          "default": "#aba79e",
+          "label": "Bund and sump (concrete)"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#2f6fb5",
+          "label": "Pipework (HDPE)"
+        },
+        {
+          "name": "fittings",
+          "type": "color",
+          "default": "#c9ced1",
+          "label": "Gratings, kiosk and fittings"
         }
       ],
       "presets": {
+        "plant": {
+          "tank": "#4a7a66",
+          "bund": "#aba79e",
+          "pipework": "#2f6fb5",
+          "fittings": "#c9ced1"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#657268"
+          "tank": "#4f5d55",
+          "bund": "#8f8b82",
+          "pipework": "#476d8f",
+          "fittings": "#9a9c97"
+        },
+        "blackPoly": {
+          "tank": "#454b4f",
+          "bund": "#b5b1a8",
+          "pipework": "#d8742f",
+          "fittings": "#e2e4e1"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#e5e3dc",
+          "bund": "#c4c0b6",
+          "pipework": "#f0b429",
+          "fittings": "#d4402a"
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 1250,
         "sizeM": [
-          0.7635,
-          2.05,
-          0.731
+          8.6,
+          5.75,
+          7.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "bund",
+          "color": "#aba79e",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle"
+            "bund",
+            "bund-step",
+            "sump-chamber",
+            "kiosk-plinth"
           ],
-          "param": "stainlessSteel"
+          "param": "bund"
         },
         {
-          "name": "paintedSteel",
-          "color": "#60766f",
+          "name": "tank",
+          "color": "#4a7a66",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack"
+            "tank-wall",
+            "rib-900",
+            "rib-1800",
+            "rib-2700",
+            "rib-3600",
+            "rib-4500",
+            "tank-roof"
           ],
-          "param": "paintedSteel"
+          "param": "tank"
+        },
+        {
+          "name": "fittings",
+          "color": "#c9ced1",
+          "parts": [
+            "roof-manway",
+            "hold-down-30",
+            "hold-down-150",
+            "hold-down-270",
+            "gauge-arm-500",
+            "gauge-arm-4340",
+            "sump-grating",
+            "riser-stay",
+            "kiosk",
+            "camlock",
+            "drip-tray",
+            "draw-off-stand"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "pipework",
+          "color": "#2f6fb5",
+          "parts": [
+            "roof-vent",
+            "pump-riser",
+            "riser-bend",
+            "roof-inlet",
+            "draw-off-drop",
+            "draw-off-run"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "gauge-tube",
+          "color": "#dfe9ec",
+          "parts": [
+            "gauge-tube"
+          ]
+        },
+        {
+          "name": "gauge-float",
+          "color": "#d4402a",
+          "parts": [
+            "gauge-float"
+          ]
+        },
+        {
+          "name": "gauge-scale",
+          "color": "#f2f2ee",
+          "parts": [
+            "gauge-scale"
+          ]
+        },
+        {
+          "name": "grating-bar--300",
+          "color": "#2a2e31",
+          "parts": [
+            "grating-bar--300",
+            "grating-bar-0",
+            "grating-bar-300",
+            "pump-valve",
+            "kiosk-roof",
+            "cable-duct",
+            "draw-off-valve"
+          ]
+        },
+        {
+          "name": "kiosk-beacon",
+          "color": "#f0b429",
+          "parts": [
+            "kiosk-beacon"
+          ]
         }
       ]
     },
@@ -239538,14 +239993,20 @@
       "id": "plastic-flake-silo",
       "kit": "recycling-facility",
       "title": "Plastic flake silo",
-      "description": "Plastic flake silo: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Aluminium plastic-flake silo at about real size: tall slim shell with weld-seam bands on a closed skirt with access door, rotary discharge valve into a pneumatic pick-up line, conveying line up the side to a roof cyclone receiver, caged ladder with rest platform and roof rail, on a concrete plinth. Material controls: silo shell, skirt, conveying pipework and safety rail. plant, weathered, food-grade and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "plastics",
+        "PET flake",
+        "HDPE",
+        "silo",
+        "pneumatic conveying",
+        "cyclone",
+        "rotary valve",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -239558,8 +240019,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/plastic-flake-silo.kcad.ts",
       "preview": "/assets/recycling-facility-plastic-flake-silo.png",
-      "sourceSha256": "a2670f73be3f28df5199bf3381d67d3b1a3764ac0926ce43589b58d00293057b",
-      "triangleBudget": 1800,
+      "sourceSha256": "08b5620c99b4b0b453ed37f0ff6e9447a60b6d4b4ffd49f96cc40a079f53004f",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -239571,66 +240032,216 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "shell",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c3c9cc",
+          "label": "Silo shell (aluminium)"
         },
         {
-          "name": "paintedSteel",
+          "name": "skirt",
           "type": "color",
-          "default": "#4a7980",
-          "label": "Painted steel"
+          "default": "#3f7f8a",
+          "label": "Skirt and roof (painted steel)"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#7d8589",
+          "label": "Conveying pipework"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Ladder cage and handrail"
         }
       ],
       "presets": {
+        "plant": {
+          "shell": "#c3c9cc",
+          "skirt": "#3f7f8a",
+          "pipework": "#7d8589",
+          "safety": "#f0b429"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#567574"
+          "shell": "#a9aba5",
+          "skirt": "#566b6c",
+          "pipework": "#6f716c",
+          "safety": "#bf9a45"
+        },
+        "foodGrade": {
+          "shell": "#e2e6e8",
+          "skirt": "#d8dcdc",
+          "pipework": "#b8c0c3",
+          "safety": "#2f6fb5"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "shell": "#e8ebec",
+          "skirt": "#2a6fb5",
+          "pipework": "#d4572a",
+          "safety": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 3188,
         "sizeM": [
-          0.9355,
-          2.17,
-          0.903
+          5.8,
+          15.4,
+          4.1
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "plinth",
+          "color": "#a7a39b",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle",
-            "outlet-neck"
-          ],
-          "param": "stainlessSteel"
+            "plinth"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#4a7980",
+          "name": "skirt",
+          "color": "#3f7f8a",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack",
-            "conical-discharge"
+            "skirt",
+            "door-frame",
+            "roof",
+            "riser-clamp-2900",
+            "riser-clamp-5300",
+            "riser-clamp-7700",
+            "riser-clamp-10100",
+            "riser-clamp-12500",
+            "vent-cap"
           ],
-          "param": "paintedSteel"
+          "param": "skirt"
+        },
+        {
+          "name": "skirt-door",
+          "color": "#2a2e31",
+          "parts": [
+            "skirt-door"
+          ]
+        },
+        {
+          "name": "shell",
+          "color": "#c3c9cc",
+          "parts": [
+            "shell",
+            "cyclone-barrel",
+            "cyclone-cone"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "pipework",
+          "color": "#7d8589",
+          "parts": [
+            "seam-2900",
+            "seam-4500",
+            "seam-6100",
+            "seam-7700",
+            "seam-9300",
+            "seam-10900",
+            "seam-12500",
+            "rotary-valve",
+            "pickup-line",
+            "pipe-stand--2600",
+            "pipe-stand--3500",
+            "fill-riser",
+            "fill-inlet",
+            "fill-bend",
+            "fill-roof-run",
+            "cyclone-vent",
+            "ladder-stile--1",
+            "ladder-stile-1",
+            "rung-550",
+            "rung-1150",
+            "rung-1750",
+            "rung-2350",
+            "rung-2950",
+            "rung-3550",
+            "rung-4150",
+            "rung-4750",
+            "rung-5350",
+            "rung-5950",
+            "rung-6550",
+            "rung-7150",
+            "rung-7750",
+            "rung-8350",
+            "rung-8950",
+            "rung-9550",
+            "rung-10150",
+            "rung-10750",
+            "rung-11350",
+            "rung-11950",
+            "rung-12550",
+            "rung-13150",
+            "rest-platform"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "valve-motor",
+          "color": "#2f5d9a",
+          "parts": [
+            "valve-motor"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "rail-post-6",
+            "rail-post-7",
+            "rail-post-8",
+            "rail-post-9",
+            "rail-post-10",
+            "rail-post-11",
+            "handrail",
+            "hoop-front-2600",
+            "hoop-side-2600--1",
+            "hoop-side-2600-1",
+            "hoop-front-3800",
+            "hoop-side-3800--1",
+            "hoop-side-3800-1",
+            "hoop-front-5000",
+            "hoop-side-5000--1",
+            "hoop-side-5000-1",
+            "hoop-front-6200",
+            "hoop-side-6200--1",
+            "hoop-side-6200-1",
+            "hoop-front-7400",
+            "hoop-side-7400--1",
+            "hoop-side-7400-1",
+            "hoop-front-8600",
+            "hoop-side-8600--1",
+            "hoop-side-8600-1",
+            "hoop-front-9800",
+            "hoop-side-9800--1",
+            "hoop-side-9800-1",
+            "hoop-front-11000",
+            "hoop-side-11000--1",
+            "hoop-side-11000-1",
+            "hoop-front-12200",
+            "hoop-side-12200--1",
+            "hoop-side-12200-1",
+            "hoop-front-13400",
+            "hoop-side-13400--1",
+            "hoop-side-13400-1",
+            "cage-bar--380",
+            "cage-bar-0",
+            "cage-bar-380",
+            "rest-rail",
+            "rest-post"
+          ],
+          "param": "safety"
         }
       ]
     },
