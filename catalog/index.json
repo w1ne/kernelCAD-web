@@ -231973,12 +231973,20 @@
       "id": "household-hazardous-waste-cabinet",
       "kit": "recycling-facility",
       "title": "Household hazardous-waste cabinet",
-      "description": "Household hazardous-waste cabinet: its foundation, equipment and top. Low-poly visualization prop. Material controls: concrete, painted steel, glass, rubber.",
+      "description": "Double-door steel hazardous-waste safety cabinet at about real size: one door open showing perforated drip-tray shelves stocked with paint tins, solvent cans and chemical bottles, bunded base sump, louvred vents, roof vent stub, hazard diamond, warning panel, lever handle and padlock hasp. Material controls: cabinet paint, shelves and sump, stored containers and warning labels. flammableYellow, corrosiveWhite, toxicRed and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "hazardous waste",
+        "HHW",
+        "safety cabinet",
+        "flammable store",
+        "COSHH cabinet",
+        "chemical storage",
+        "paint",
+        "solvent",
+        "household recycling centre",
         "recycling",
-        "materials recovery",
         "waste management",
         "reception",
         "low poly",
@@ -231993,8 +232001,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/household-hazardous-waste-cabinet.kcad.ts",
       "preview": "/assets/recycling-facility-household-hazardous-waste-cabinet.png",
-      "sourceSha256": "69f5ef4bbd59f5049f7f2b18c21d10bb7041f7df4e3d22c9da935f857e631fb9",
-      "triangleBudget": 1800,
+      "sourceSha256": "fab3cdec0622d39b69b4760aa61b89018f7150a1dd60795a904cff3e173f5a25",
+      "triangleBudget": 3800,
       "params": [
         {
           "name": "scale",
@@ -232006,87 +232014,248 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "cabinetPaint",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#e8b820",
+          "label": "Cabinet body and doors (powder-coated steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "shelfSteel",
           "type": "color",
-          "default": "#47758a",
-          "label": "Painted steel"
+          "default": "#8f969a",
+          "label": "Shelves and sump (galvanised steel)"
         },
         {
-          "name": "glass",
+          "name": "containers",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#3f6fb0",
+          "label": "Stored tins and bottles (mixed plastic and tinplate)"
         },
         {
-          "name": "rubber",
+          "name": "label",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#c0392b",
+          "label": "Hazard labels (warning red)"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#54727a",
-          "glass": "#55939a",
-          "rubber": "#3c403e"
+        "flammableYellow": {
+          "cabinetPaint": "#e8b820",
+          "shelfSteel": "#8f969a",
+          "containers": "#3f6fb0",
+          "label": "#c0392b"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "corrosiveWhite": {
+          "cabinetPaint": "#e6e8e6",
+          "shelfSteel": "#9aa1a4",
+          "containers": "#2e9a63",
+          "label": "#1d2023"
+        },
+        "toxicRed": {
+          "cabinetPaint": "#b8322a",
+          "shelfSteel": "#8f969a",
+          "containers": "#e6e2d6",
+          "label": "#f2c230"
+        },
+        "weathered": {
+          "cabinetPaint": "#b8973a",
+          "shelfSteel": "#6f706a",
+          "containers": "#556b85",
+          "label": "#8a3a2a"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 3008,
         "sizeM": [
-          1.872,
-          0.789,
-          0.932
+          1.759793,
+          2.175,
+          0.89222
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "plinth",
+          "color": "#2f3437",
           "parts": [
-            "foundation"
-          ],
-          "param": "concrete"
+            "plinth",
+            "roof-vent-cap",
+            "side-louvre--1-0",
+            "low-louvre--1-0",
+            "side-louvre--1-1",
+            "low-louvre--1-1",
+            "side-louvre--1-2",
+            "low-louvre--1-2",
+            "side-louvre--1-3",
+            "low-louvre--1-3",
+            "side-louvre-1-0",
+            "low-louvre-1-0",
+            "side-louvre-1-1",
+            "low-louvre-1-1",
+            "side-louvre-1-2",
+            "low-louvre-1-2",
+            "side-louvre-1-3",
+            "low-louvre-1-3",
+            "hinge-300",
+            "hinge-1780",
+            "handle-plate",
+            "handle-lever"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#47758a",
+          "name": "cabinetPaint",
+          "color": "#e8b820",
           "parts": [
-            "equipment-body",
-            "top-panel",
-            "button-panel",
-            "mount-foot-a",
-            "mount-foot-b"
+            "body",
+            "roof-lip",
+            "door-right",
+            "door-right-rib",
+            "door-left"
           ],
-          "param": "paintedSteel"
+          "param": "cabinetPaint"
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "shelfSteel",
+          "color": "#8f969a",
           "parts": [
-            "screen-face"
+            "roof-vent",
+            "sump",
+            "shelf-700",
+            "shelf-1150",
+            "shelf-1600"
           ],
-          "param": "glass"
+          "param": "shelfSteel"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "sump-grid",
+          "color": "#5d6366",
           "parts": [
-            "side-grip"
+            "sump-grid"
+          ]
+        },
+        {
+          "name": "containers",
+          "color": "#3f6fb0",
+          "parts": [
+            "solvent-drum-a-body",
+            "paint-0-body",
+            "paint-2-body",
+            "paint-4-body",
+            "bottle-1-body",
+            "bottle-1-neck",
+            "bottle-5-body",
+            "bottle-5-neck",
+            "aerosol-1-body",
+            "aerosol-2-body",
+            "aerosol-4-body",
+            "aerosol-5-body"
           ],
-          "param": "rubber"
+          "param": "containers"
+        },
+        {
+          "name": "solvent-drum-a-lid",
+          "color": "#c3c8cb",
+          "parts": [
+            "solvent-drum-a-lid",
+            "solvent-drum-b-lid",
+            "paint-0-lid",
+            "paint-1-body",
+            "paint-1-lid",
+            "paint-2-lid",
+            "paint-3-body",
+            "paint-3-lid",
+            "paint-4-lid",
+            "aerosol-0-body",
+            "aerosol-0-lid",
+            "aerosol-1-lid",
+            "aerosol-2-lid",
+            "aerosol-3-body",
+            "aerosol-3-lid",
+            "aerosol-4-lid",
+            "aerosol-5-lid",
+            "aerosol-6-body",
+            "aerosol-6-lid",
+            "small-tin-0-lid",
+            "small-tin-1-lid",
+            "small-tin-2-lid",
+            "padlock-shackle"
+          ]
+        },
+        {
+          "name": "solvent-drum-b-body",
+          "color": "#7e8487",
+          "parts": [
+            "solvent-drum-b-body",
+            "small-tin-0-body",
+            "small-tin-1-body",
+            "small-tin-2-body"
+          ]
+        },
+        {
+          "name": "label",
+          "color": "#c0392b",
+          "parts": [
+            "jerrycan-body",
+            "jerrycan-neck",
+            "jerrycan-cap",
+            "bottle-0-cap",
+            "bottle-1-cap",
+            "bottle-2-cap",
+            "bottle-3-cap",
+            "bottle-4-body",
+            "bottle-4-neck",
+            "bottle-4-cap",
+            "bottle-5-cap",
+            "hazard-diamond",
+            "warning-header"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "bottle-0-body",
+          "color": "#e6e2d6",
+          "parts": [
+            "bottle-0-body",
+            "bottle-0-neck",
+            "bottle-3-body",
+            "bottle-3-neck"
+          ]
+        },
+        {
+          "name": "bottle-2-body",
+          "color": "#2e9a63",
+          "parts": [
+            "bottle-2-body",
+            "bottle-2-neck",
+            "earth-tag"
+          ]
+        },
+        {
+          "name": "hazard-diamond-inner",
+          "color": "#f2f2ec",
+          "parts": [
+            "hazard-diamond-inner",
+            "warning-panel"
+          ]
+        },
+        {
+          "name": "hazard-flame",
+          "color": "#1d2023",
+          "parts": [
+            "hazard-flame",
+            "hazard-flame-tip",
+            "warning-text-0",
+            "warning-text-1",
+            "warning-text-2"
+          ]
+        },
+        {
+          "name": "padlock-body",
+          "color": "#c9a640",
+          "parts": [
+            "padlock-body"
+          ]
         }
       ]
     },
@@ -234317,12 +234486,21 @@
       "id": "landfill-monitoring-pedestal",
       "kit": "recycling-facility",
       "title": "Landfill monitoring pedestal",
-      "description": "Landfill monitoring pedestal: its concrete plinth, equipment cabinet and display face. Low-poly visualization prop. Material controls: concrete, painted steel, glass, stainless steel.",
+      "description": "Landfill perimeter gas and groundwater monitoring station at about real size: concrete apron, hi-vis steel borehole headworks cover with lid open over the HDPE well casing and gas tap, sample line to a pedestal cabinet on a post with analyser display window, tilted solar panel, whip antenna, status beacon, ID plate and guard bollards. Material controls: cabinet and cover steel, concrete, well casing and solar glass. hiVis, councilGreen, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "landfill",
+        "landfill gas",
+        "monitoring",
+        "borehole",
+        "monitoring well",
+        "methane",
+        "groundwater",
+        "telemetry",
+        "solar panel",
+        "environmental monitoring",
         "recycling",
-        "materials recovery",
         "waste management",
         "residuals",
         "low poly",
@@ -234337,8 +234515,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/landfill-monitoring-pedestal.kcad.ts",
       "preview": "/assets/recycling-facility-landfill-monitoring-pedestal.png",
-      "sourceSha256": "f005351a3a55a7091fc6cf9a47ee1484fdc3b9349ce5ac6ff9249bebc8962975",
-      "triangleBudget": 1800,
+      "sourceSha256": "d952ce6caf151058e0d5dca1f7deaf05ec5a98dc3ef09637a278e5aae192973d",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -234350,47 +234528,62 @@
           "step": 0.05
         },
         {
+          "name": "cabinetSteel",
+          "type": "color",
+          "default": "#e8b820",
+          "label": "Cabinet and headworks cover (painted steel)"
+        },
+        {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#a9a59b",
+          "label": "Apron and bollard footings (concrete)"
         },
         {
-          "name": "paintedSteel",
+          "name": "casing",
           "type": "color",
-          "default": "#7c6955",
-          "label": "Painted steel"
+          "default": "#2b2d2f",
+          "label": "Well casing and sample line (HDPE)"
         },
         {
-          "name": "glass",
+          "name": "solarGlass",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#24447a",
+          "label": "Solar panel and display (glass)"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#786a56",
-          "glass": "#55939a",
-          "stainlessSteel": "#9ea7a5"
+        "hiVis": {
+          "cabinetSteel": "#e8b820",
+          "concrete": "#a9a59b",
+          "casing": "#2b2d2f",
+          "solarGlass": "#24447a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "councilGreen": {
+          "cabinetSteel": "#3f7a4a",
+          "concrete": "#b3afa5",
+          "casing": "#2b2d2f",
+          "solarGlass": "#24447a"
+        },
+        "stainless": {
+          "cabinetSteel": "#b8bfc2",
+          "concrete": "#c2bdb1",
+          "casing": "#3a5f8a",
+          "solarGlass": "#1d2f55"
+        },
+        "weathered": {
+          "cabinetSteel": "#a88a3a",
+          "concrete": "#8a857a",
+          "casing": "#3a3a36",
+          "solarGlass": "#2f3f5a"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 1328,
         "sizeM": [
-          0.76,
-          1.4512,
-          0.8476
+          2.004,
+          2.68,
+          1.482
         ],
         "minUpM": 0,
         "materials": 1
@@ -234398,39 +234591,139 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#898b83",
+          "color": "#a9a59b",
           "parts": [
-            "concrete-plinth"
+            "apron",
+            "apron-chamfer"
           ],
           "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#7c6955",
+          "name": "cabinetSteel",
+          "color": "#e8b820",
           "parts": [
-            "equipment-cabinet",
-            "sensor-mast",
-            "weather-hood",
-            "sensor-dish",
-            "sample-port"
+            "headworks-cover",
+            "cover-lid",
+            "cabinet",
+            "cabinet-hood",
+            "cabinet-door",
+            "bollard--1000",
+            "bollard-0",
+            "bollard-860"
           ],
-          "param": "paintedSteel"
+          "param": "cabinetSteel"
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "cover-band",
+          "color": "#1d2023",
           "parts": [
-            "display-face"
-          ],
-          "param": "glass"
+            "cover-band",
+            "display-window",
+            "id-plate-text",
+            "antenna",
+            "bollard-band--1000",
+            "bollard-cap--1000",
+            "bollard-band-0",
+            "bollard-cap-0",
+            "bollard-band-860",
+            "bollard-cap-860"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "casing",
+          "color": "#2b2d2f",
           "parts": [
-            "service-handle"
+            "well-casing",
+            "casing-cap",
+            "sample-line-a",
+            "sample-line-b",
+            "sample-line-c"
           ],
-          "param": "stainlessSteel"
+          "param": "casing"
+        },
+        {
+          "name": "gas-tap",
+          "color": "#c3c8cb",
+          "parts": [
+            "gas-tap",
+            "solar-frame",
+            "solar-cell-line-1",
+            "solar-cell-line-2",
+            "solar-cell-line-3"
+          ]
+        },
+        {
+          "name": "gas-tap-valve",
+          "color": "#c0392b",
+          "parts": [
+            "gas-tap-valve"
+          ]
+        },
+        {
+          "name": "dip-tape-reel",
+          "color": "#e6e2d6",
+          "parts": [
+            "dip-tape-reel"
+          ]
+        },
+        {
+          "name": "lid-id-plate",
+          "color": "#f2f2ec",
+          "parts": [
+            "lid-id-plate",
+            "id-plate"
+          ]
+        },
+        {
+          "name": "cover-hasp",
+          "color": "#2f3437",
+          "parts": [
+            "cover-hasp",
+            "cabinet-door-gap",
+            "door-handle",
+            "antenna-base"
+          ]
+        },
+        {
+          "name": "post",
+          "color": "#7e8487",
+          "parts": [
+            "post",
+            "post-base",
+            "solar-arm"
+          ]
+        },
+        {
+          "name": "solarGlass",
+          "color": "#24447a",
+          "parts": [
+            "display-screen",
+            "solar-panel"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "display-bar-0",
+          "color": "#7ee08a",
+          "parts": [
+            "display-bar-0",
+            "display-bar-1",
+            "display-bar-2"
+          ]
+        },
+        {
+          "name": "vent-grille",
+          "color": "#5d6366",
+          "parts": [
+            "vent-grille"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f07a1a",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -246856,12 +247149,21 @@
       "id": "survey-gas-monitor",
       "kit": "recycling-facility",
       "title": "Survey gas monitor",
-      "description": "Survey gas monitor: its concrete plinth, equipment cabinet and display face. Low-poly visualization prop. Material controls: concrete, painted steel, glass, stainless steel.",
+      "description": "Portable landfill gas survey kit at about real size: rugged analyser with screen, keypad, bumpers, gas nipples and shoulder strap, sample hose to a stainless probe wand with T-handle pushed into a bar hole, bar-hole spike, marker flag, and an open hard carry case with foam insert, spare filter and calibration gas cylinder. Material controls: analyser housing, carry case, probe steel and sample hose. safetyOrange, fieldYellow, labGrey and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "gas monitor",
+        "gas analyser",
+        "landfill gas",
+        "methane",
+        "walk-over survey",
+        "gas probe",
+        "bar hole",
+        "portable instrument",
+        "carry case",
+        "environmental monitoring",
         "recycling",
-        "materials recovery",
         "waste management",
         "residuals",
         "low poly",
@@ -246876,8 +247178,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/survey-gas-monitor.kcad.ts",
       "preview": "/assets/recycling-facility-survey-gas-monitor.png",
-      "sourceSha256": "63be7d7238ac262e5d92ea9d38abe6b596aecc99ee2cc0eff3eac9e90ae74a54",
-      "triangleBudget": 1800,
+      "sourceSha256": "f255f2f0ed03365a9ca1f51c944207b9521f84d50ad949ebb606de6d3f279b0c",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -246889,87 +247191,247 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "housing",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#f07a1a",
+          "label": "Analyser housing (moulded plastic)"
         },
         {
-          "name": "paintedSteel",
+          "name": "caseShell",
           "type": "color",
-          "default": "#65765e",
-          "label": "Painted steel"
+          "default": "#2f3437",
+          "label": "Carry case shell (polypropylene)"
         },
         {
-          "name": "glass",
+          "name": "probeSteel",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#c3c8cb",
+          "label": "Probe wand and spike (stainless steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "hose",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3a7fc0",
+          "label": "Sample hose (PVC tube)"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#69725c",
-          "glass": "#55939a",
-          "stainlessSteel": "#9ea7a5"
+        "safetyOrange": {
+          "housing": "#f07a1a",
+          "caseShell": "#2f3437",
+          "probeSteel": "#c3c8cb",
+          "hose": "#3a7fc0"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "fieldYellow": {
+          "housing": "#f2c230",
+          "caseShell": "#3a4a3a",
+          "probeSteel": "#b8bfc2",
+          "hose": "#d8dcdc"
+        },
+        "labGrey": {
+          "housing": "#8f969a",
+          "caseShell": "#c0392b",
+          "probeSteel": "#d2d6d8",
+          "hose": "#2e9a63"
+        },
+        "weathered": {
+          "housing": "#b86a2a",
+          "caseShell": "#3d3b38",
+          "probeSteel": "#8f8c84",
+          "hose": "#4f6a85"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 2230,
         "sizeM": [
-          0.76,
-          1.6624,
-          0.6518
+          1.67,
+          1.092,
+          1.376331
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "soil-patch",
+          "color": "#7a6a4a",
           "parts": [
-            "concrete-plinth"
-          ],
-          "param": "concrete"
+            "soil-patch"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#65765e",
+          "name": "bar-hole",
+          "color": "#2a2218",
           "parts": [
-            "equipment-cabinet",
-            "sensor-mast",
-            "weather-hood",
-            "sensor-dish",
-            "sample-port"
-          ],
-          "param": "paintedSteel"
+            "bar-hole"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "caseShell",
+          "color": "#2f3437",
           "parts": [
-            "display-face"
+            "case-base",
+            "case-handle",
+            "case-lid"
           ],
-          "param": "glass"
+          "param": "caseShell"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "case-foam",
+          "color": "#4a4d50",
           "parts": [
-            "service-handle"
+            "case-foam",
+            "lid-foam"
+          ]
+        },
+        {
+          "name": "cal-cylinder",
+          "color": "#e6e2d6",
+          "parts": [
+            "cal-cylinder",
+            "spare-filter",
+            "probe-filter"
+          ]
+        },
+        {
+          "name": "cal-cylinder-shoulder",
+          "color": "#2e9a63",
+          "parts": [
+            "cal-cylinder-shoulder"
+          ]
+        },
+        {
+          "name": "probeSteel",
+          "color": "#c3c8cb",
+          "parts": [
+            "cal-regulator",
+            "inlet-nipple",
+            "outlet-nipple",
+            "probe-shaft",
+            "probe-tee",
+            "flag-pin"
           ],
-          "param": "stainlessSteel"
+          "param": "probeSteel"
+        },
+        {
+          "name": "hose",
+          "color": "#3a7fc0",
+          "parts": [
+            "filter-cap",
+            "sample-hose-0",
+            "sample-hose-1",
+            "sample-hose-2",
+            "sample-hose-3",
+            "sample-hose-4",
+            "sample-hose-5",
+            "sample-hose-joint-1",
+            "sample-hose-joint-2",
+            "sample-hose-joint-3",
+            "sample-hose-joint-4",
+            "sample-hose-joint-5"
+          ],
+          "param": "hose"
+        },
+        {
+          "name": "case-latch--1",
+          "color": "#7e8487",
+          "parts": [
+            "case-latch--1",
+            "case-latch-1",
+            "strap-lug-l",
+            "strap-lug-r"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#f07a1a",
+          "parts": [
+            "analyser-body"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "bumper-20",
+          "color": "#1d2023",
+          "parts": [
+            "bumper-20",
+            "bumper-380",
+            "screen-bezel",
+            "strap-0",
+            "strap-1",
+            "strap-2",
+            "strap-3",
+            "strap-4",
+            "strap-joint-1",
+            "strap-joint-2",
+            "strap-joint-3",
+            "strap-joint-4",
+            "probe-grip"
+          ]
+        },
+        {
+          "name": "screen",
+          "color": "#1f3a52",
+          "parts": [
+            "screen"
+          ]
+        },
+        {
+          "name": "screen-bar-0",
+          "color": "#7ee08a",
+          "parts": [
+            "screen-bar-0"
+          ]
+        },
+        {
+          "name": "screen-bar-1",
+          "color": "#f2c230",
+          "parts": [
+            "screen-bar-1"
+          ]
+        },
+        {
+          "name": "screen-bar-2",
+          "color": "#e6e8e6",
+          "parts": [
+            "screen-bar-2"
+          ]
+        },
+        {
+          "name": "key-0-0",
+          "color": "#3b3e40",
+          "parts": [
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3"
+          ]
+        },
+        {
+          "name": "key-0-3",
+          "color": "#c0392b",
+          "parts": [
+            "key-0-3",
+            "flag"
+          ]
+        },
+        {
+          "name": "spike-shaft",
+          "color": "#5d6366",
+          "parts": [
+            "spike-shaft",
+            "spike-head"
+          ]
+        },
+        {
+          "name": "flag-band",
+          "color": "#f2f2ec",
+          "parts": [
+            "flag-band"
+          ]
         }
       ]
     },
@@ -248798,12 +249260,18 @@
       "id": "tyre-dropoff-rack",
       "kit": "recycling-facility",
       "title": "Tyre drop-off rack",
-      "description": "Tyre drop-off rack: its foundation, equipment and top. Low-poly visualization prop. Material controls: concrete, painted steel, glass, rubber.",
+      "description": "Two-tier galvanised tyre storage rack at about real size: box-section uprights on base plates, paired tube cradle rails on each tier, upright car tyres with tread bands and some steel rims, a pallet stack of flat tyres, a sign board and yellow end guards. Material controls: steel frame, tyre rubber, wheel rims, safety guards and sign. galvanised, depotGreen, councilBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "tyre",
+        "tire",
+        "tyre rack",
+        "stillage",
+        "storage rack",
+        "drop-off",
+        "household recycling centre",
         "recycling",
-        "materials recovery",
         "waste management",
         "reception",
         "low poly",
@@ -248818,8 +249286,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/tyre-dropoff-rack.kcad.ts",
       "preview": "/assets/recycling-facility-tyre-dropoff-rack.png",
-      "sourceSha256": "2c91437ac9324453fabd30fe09f40cf81f6a9cd3d3ec944e2d6dd4d5d154d221",
-      "triangleBudget": 1800,
+      "sourceSha256": "44130fb0487ab72ad5d454be495117861acc6cb5327cc448e0b35ea4d35ec9ea",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -248831,87 +249299,198 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "steel",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
-        },
-        {
-          "name": "paintedSteel",
-          "type": "color",
-          "default": "#6c7882",
-          "label": "Painted steel"
-        },
-        {
-          "name": "glass",
-          "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#a4acb0",
+          "label": "Rack frame (galvanised steel)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2b2d2f",
+          "label": "Tyres (rubber)"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#c3c8cb",
+          "label": "Wheel rims (pressed steel)"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "End guards and sign (safety paint)"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#6d7475",
-          "glass": "#55939a",
-          "rubber": "#3c403e"
+        "galvanised": {
+          "steel": "#a4acb0",
+          "rubber": "#2b2d2f",
+          "rim": "#c3c8cb",
+          "safety": "#f2c230"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "depotGreen": {
+          "steel": "#3f7a4a",
+          "rubber": "#2a2c2d",
+          "rim": "#b8bdc0",
+          "safety": "#f2c230"
+        },
+        "councilBlue": {
+          "steel": "#2f5fa8",
+          "rubber": "#2b2d2f",
+          "rim": "#d2d6d8",
+          "safety": "#f07a1a"
+        },
+        "weathered": {
+          "steel": "#7d7b72",
+          "rubber": "#3a3936",
+          "rim": "#8a6a52",
+          "safety": "#b89a3a"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 3280,
         "sizeM": [
-          1.26,
-          0.87,
-          0.701
+          4.812,
+          2.2,
+          1
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "steel",
+          "color": "#a4acb0",
           "parts": [
-            "foundation"
+            "upright--1600--350",
+            "base-plate--1600--350",
+            "upright--1600-350",
+            "base-plate--1600-350",
+            "upright-1600--350",
+            "base-plate-1600--350",
+            "upright-1600-350",
+            "base-plate-1600-350",
+            "top-rail--350",
+            "top-rail-350",
+            "top-tie--1600",
+            "top-tie-0",
+            "top-tie-1600",
+            "mid-post-back",
+            "mid-post-front",
+            "tier-beam-120--1600",
+            "tier-beam-120-1600",
+            "cradle-rail-120--60",
+            "cradle-rail-120-60",
+            "tier-back-beam-120",
+            "tier-beam-1080--1600",
+            "tier-beam-1080-1600",
+            "cradle-rail-1080--60",
+            "cradle-rail-1080-60",
+            "tier-back-beam-1080"
           ],
-          "param": "concrete"
-        },
-        {
-          "name": "paintedSteel",
-          "color": "#6c7882",
-          "parts": [
-            "equipment-body",
-            "top-panel",
-            "button-panel",
-            "mount-foot-a",
-            "mount-foot-b"
-          ],
-          "param": "paintedSteel"
-        },
-        {
-          "name": "glass",
-          "color": "#4f9ca8",
-          "parts": [
-            "screen-face"
-          ],
-          "param": "glass"
+          "param": "steel"
         },
         {
           "name": "rubber",
-          "color": "#303638",
+          "color": "#2b2d2f",
           "parts": [
-            "side-grip"
+            "low-tyre-0-tread",
+            "low-tyre-1-tread",
+            "low-tyre-2-tread",
+            "low-tyre-3-tread",
+            "high-tyre-0-tread",
+            "high-tyre-1-tread",
+            "high-tyre-2-tread",
+            "high-tyre-3-tread",
+            "flat-tyre-0",
+            "flat-tyre-1",
+            "flat-tyre-2",
+            "flat-tyre-3"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "low-tyre-0-wall",
+          "color": "#3b3e40",
+          "parts": [
+            "low-tyre-0-wall",
+            "low-tyre-1-wall",
+            "low-tyre-2-wall",
+            "low-tyre-3-wall",
+            "high-tyre-0-wall",
+            "high-tyre-1-wall",
+            "high-tyre-2-wall",
+            "high-tyre-3-wall"
+          ]
+        },
+        {
+          "name": "rim",
+          "color": "#c3c8cb",
+          "parts": [
+            "low-tyre-1-rim",
+            "low-tyre-1-disc",
+            "low-tyre-3-rim",
+            "low-tyre-3-disc",
+            "high-tyre-2-rim",
+            "high-tyre-2-disc"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "low-tyre-1-hub",
+          "color": "#7e8487",
+          "parts": [
+            "low-tyre-1-hub",
+            "low-tyre-3-hub",
+            "high-tyre-2-hub"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f2c230",
+          "parts": [
+            "guard-post--1760",
+            "guard-post-1760",
+            "sign-board"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "guard-band--1760",
+          "color": "#2f3437",
+          "parts": [
+            "guard-band--1760",
+            "guard-band-1760",
+            "sign-panel"
+          ]
+        },
+        {
+          "name": "sign-icon",
+          "color": "#f2f2ec",
+          "parts": [
+            "sign-icon",
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2"
+          ]
+        },
+        {
+          "name": "pallet",
+          "color": "#a07a4a",
+          "parts": [
+            "pallet"
+          ]
+        },
+        {
+          "name": "pallet-skid--400",
+          "color": "#8a663a",
+          "parts": [
+            "pallet-skid--400",
+            "pallet-skid-0",
+            "pallet-skid-400"
+          ]
         }
       ]
     },
@@ -249180,12 +249759,20 @@
       "id": "used-oil-dropoff-tank",
       "kit": "recycling-facility",
       "title": "Used-oil drop-off tank",
-      "description": "Used-oil drop-off tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Public used engine oil bank at about real size: horizontal steel tank with dished ends on saddles inside a galvanised spill bund, filling cabinet with open lid over a mesh drain tray and funnel, dial contents gauge, gooseneck vent, lockable tanker collection point, sign board, spill kit bin and drip mat. Material controls: tank paint, bund steel, filler cabinet and sign. councilGreen, oilBlack, safetyYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "used oil",
+        "oil bank",
+        "waste oil",
+        "engine oil",
+        "bunded tank",
+        "spill bund",
+        "drop-off",
+        "household recycling centre",
+        "hazardous waste",
         "recycling",
-        "materials recovery",
         "waste management",
         "reception",
         "low poly",
@@ -249200,8 +249787,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/used-oil-dropoff-tank.kcad.ts",
       "preview": "/assets/recycling-facility-used-oil-dropoff-tank.png",
-      "sourceSha256": "8014ac6500d5701819daa12940a98ba1c2b5f126b48d1806f7357d9beee172e5",
-      "triangleBudget": 1800,
+      "sourceSha256": "544089c322cb369acbc52db163151342ee0ead2de074856d35636729dad26d05",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -249213,64 +249800,222 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tankPaint",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3f7a4a",
+          "label": "Tank shell (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "bundSteel",
           "type": "color",
-          "default": "#5d6985",
-          "label": "Painted steel"
+          "default": "#a4acb0",
+          "label": "Spill bund and saddles (galvanised steel)"
+        },
+        {
+          "name": "cabinet",
+          "type": "color",
+          "default": "#2f3437",
+          "label": "Filling cabinet (powder-coated steel)"
+        },
+        {
+          "name": "sign",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Sign board and spill kit (safety yellow)"
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#636a77"
+        "councilGreen": {
+          "tankPaint": "#3f7a4a",
+          "bundSteel": "#a4acb0",
+          "cabinet": "#2f3437",
+          "sign": "#f2c230"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "oilBlack": {
+          "tankPaint": "#2b2e30",
+          "bundSteel": "#9aa1a4",
+          "cabinet": "#c0392b",
+          "sign": "#f2c230"
+        },
+        "safetyYellow": {
+          "tankPaint": "#e0b020",
+          "bundSteel": "#8f969a",
+          "cabinet": "#2f3437",
+          "sign": "#f2f2ec"
+        },
+        "weathered": {
+          "tankPaint": "#556b4c",
+          "bundSteel": "#7d7b72",
+          "cabinet": "#4a4744",
+          "sign": "#b89a3a"
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 1964,
         "sizeM": [
-          0.9355,
-          2.41,
-          0.903
+          3.34,
+          2.164553,
+          2.3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "bundSteel",
+          "color": "#a4acb0",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle"
+            "bund",
+            "bund-lip",
+            "bund-rib--1100",
+            "bund-rib-0",
+            "bund-rib-1100",
+            "saddle--800",
+            "saddle-800",
+            "sign-post-250",
+            "sign-post-1150"
           ],
-          "param": "stainlessSteel"
+          "param": "bundSteel"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5d6985",
+          "name": "bund-rainwater",
+          "color": "#4f6670",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack"
+            "bund-rainwater"
+          ]
+        },
+        {
+          "name": "tankPaint",
+          "color": "#3f7a4a",
+          "parts": [
+            "tank-shell",
+            "tank-end--1",
+            "tank-dish--1",
+            "tank-end-1",
+            "tank-dish-1",
+            "manway"
           ],
-          "param": "paintedSteel"
+          "param": "tankPaint"
+        },
+        {
+          "name": "cabinet",
+          "color": "#2f3437",
+          "parts": [
+            "tank-band--500",
+            "tank-band-500",
+            "manway-lid",
+            "gauge-body",
+            "vent-cap",
+            "cabinet-body",
+            "cabinet-skirt",
+            "lid"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "sign",
+          "color": "#f2c230",
+          "parts": [
+            "tank-stripe",
+            "lid-label",
+            "sign-board",
+            "spill-kit",
+            "spill-kit-lid"
+          ],
+          "param": "sign"
+        },
+        {
+          "name": "manway-bolt-0",
+          "color": "#c3c8cb",
+          "parts": [
+            "manway-bolt-0",
+            "manway-bolt-1",
+            "manway-bolt-2",
+            "manway-bolt-3",
+            "manway-bolt-4",
+            "manway-bolt-5",
+            "manway-bolt-6",
+            "manway-bolt-7",
+            "gauge-stem",
+            "vent-pipe",
+            "vent-bend",
+            "vent-down",
+            "tray-bar-0",
+            "tray-bar-1",
+            "tray-bar-2",
+            "tray-bar-3",
+            "tray-bar-4",
+            "tray-bar-5",
+            "lid-stay"
+          ]
+        },
+        {
+          "name": "gauge-dial",
+          "color": "#f2f2ec",
+          "parts": [
+            "gauge-dial"
+          ]
+        },
+        {
+          "name": "gauge-red",
+          "color": "#c0392b",
+          "parts": [
+            "gauge-red",
+            "suction-valve",
+            "spill-kit-band"
+          ]
+        },
+        {
+          "name": "gauge-needle",
+          "color": "#1d2023",
+          "parts": [
+            "gauge-needle",
+            "sign-header",
+            "sign-drop-icon",
+            "sign-drop-tip",
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2",
+            "sign-text-3",
+            "drip-mat"
+          ]
+        },
+        {
+          "name": "drain-tray",
+          "color": "#7e8487",
+          "parts": [
+            "drain-tray"
+          ]
+        },
+        {
+          "name": "funnel",
+          "color": "#5d6366",
+          "parts": [
+            "funnel",
+            "suction-pipe"
+          ]
+        },
+        {
+          "name": "funnel-mouth",
+          "color": "#121416",
+          "parts": [
+            "funnel-mouth"
+          ]
+        },
+        {
+          "name": "oil-pool",
+          "color": "#3a2a14",
+          "parts": [
+            "oil-pool"
+          ]
+        },
+        {
+          "name": "camlock",
+          "color": "#c9a640",
+          "parts": [
+            "camlock",
+            "valve-padlock"
+          ]
         }
       ]
     },
