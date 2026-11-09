@@ -63,7 +63,7 @@ export const MECHANISM_CODES = {
   // consistent, they are just the wrong kind for the motion the model claims.
   'mechanism.motion-on-fixed-joint': {
     hintTemplate:
-      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not move a fastened part by rotating or translating its geometry with the param.",
+      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not animate a transform of a fastened part's geometry with that param.",
     nextAction: { kind: 'fix-arg', field: 'mateType' },
     defaultSeverity: 'error',
     group: 'mechanism',
