@@ -322,6 +322,13 @@ async function checkRestCriteria(
   return out;
 }
 
+function coverageWithIgnoredPairs(
+  coverage: Omit<MechanismCoverage, 'ignoredPairs'>,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): MechanismCoverage {
+  return ignoredPairs.length > 0 ? { ...coverage, ignoredPairs } : coverage;
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -380,14 +387,13 @@ export async function checkMechanismTruth(
   const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
   const ignoredPairs = arm.__ignoreInterference().map(([a, b]) => [a, b] as const);
   if (solved.length === 0) {
-    const coverage = {
+    const coverage = coverageWithIgnoredPairs({
       poses: 0,
       joints,
       ...scope,
       sweep: false,
       physics: false,
-      ...(ignoredPairs.length > 0 ? { ignoredPairs } : {}),
-    };
+    }, ignoredPairs);
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
@@ -425,14 +431,13 @@ export async function checkMechanismTruth(
   const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = {
+  const coverage = coverageWithIgnoredPairs({
     poses: solved.length,
     joints,
     ...scope,
     sweep: !sweepSkipped,
     physics: opts.physicsCheck === true,
-    ...(ignoredPairs.length > 0 ? { ignoredPairs } : {}),
-  };
+  }, ignoredPairs);
   return { mechanism, failures, coverage };
 }
 

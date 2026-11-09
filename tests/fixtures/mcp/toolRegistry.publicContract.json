@@ -549,6 +549,18 @@
                   }
                 }
               }
+            },
+            "ignoredPairs": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "description": "`solvedModel({ ignore })` pair declarations. They do not suppress mechanism collision checks during joint travel; an unverified sweep does not certify them clear."
             }
           }
         },
@@ -7112,6 +7124,18 @@
                   }
                 }
               }
+            },
+            "ignoredPairs": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "description": "`solvedModel({ ignore })` pair declarations. They do not suppress mechanism collision checks during joint travel; an unverified sweep does not certify them clear."
             }
           }
         },
@@ -12942,7 +12966,7 @@
   },
   {
     "name": "split_keep_parts",
-    "description": "Use this when a cutter must keep the overlap and both leftovers as separate solids. Pass file or code that returns shape.split, or body_code and tool_code (each a Shape expression) which the tool wraps as body.split(tool). keep is parts (default), intersection, a_only, or b_only, and it applies only to the body_code wrapper. parts returns a Scene named intersection (A ∩ B), a_only (A − B) and b_only (B − A). A fragment at or below 1e-6 mm³ is omitted, so disjoint operands return a_only and b_only. A single keep returns that one solid; an empty request returns ok false. Returns parts with name, volume_mm3 and bbox, plus ok and diagnostics. subtract, intersect and union still return one Shape and discard the complement. Face refs that the cut splits stay ambiguous. It writes nothing.",
+    "description": "Use this when a cutter must keep the overlap and both leftovers as separate solids. Pass file or code that returns shape.split, or body_code and tool_code (each a Shape expression) which the tool wraps as body.split(tool). keep is parts (default), intersection, a_only, or b_only, and it applies only to the body_code wrapper. parts returns a Scene named intersection (A \u2229 B), a_only (A \u2212 B) and b_only (B \u2212 A). A fragment at or below 1e-6 mm\u00b3 is omitted, so disjoint operands return a_only and b_only. A single keep returns that one solid; an empty request returns ok false. Returns parts with name, volume_mm3 and bbox, plus ok and diagnostics. subtract, intersect and union still return one Shape and discard the complement. Face refs that the cut splits stay ambiguous. It writes nothing.",
     "inputSchema": {
       "type": "object",
       "properties": {
