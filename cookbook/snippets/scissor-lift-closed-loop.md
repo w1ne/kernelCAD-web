@@ -1,6 +1,6 @@
 ---
 id: scissor-lift-closed-loop
-title: Scissor-lift table — open-chain layout scaffold with a swept collision
+title: Scissor-lift table — sweep-clear open-chain layout scaffold
 tags: [assembly, connector, mate, prismatic, joint, kinematic, plate, parameter, scissor, lift]
 keywords:
   - scissor lift
@@ -14,25 +14,23 @@ keywords:
   - scissor-lift open-chain collision check
 when_to_use: >-
   Prompt asks for a scissor-like table layout scaffold with a single prismatic
-  platform DOF and X-links fused into the frame at a representative mid pose.
-  This is not a sweep-clean production mechanism: the fixed links intersect
-  the platform at platform-lift=80, so full evaluate_script correctly reports
-  mechanism.interpenetration even though solvedModel declares the pair in
-  ignore. Replace the fixed links with moving geometry and recheck the full
-  travel before describing a mechanism as real. This open-chain scaffold is
-  distinct from the closed-loop mechanism in the kernelcad-kinematic cookbook
-  04-scissor-jack-swept. Do NOT invent joint.scissorLift(...). Gallery
-  examples/gallery/scissor-lift.kcad.ts is fastened pose-only (not
-  mechanism-driven).
+  platform DOF and decorative X-links fused into the frame at a representative
+  mid pose. The links are outboard of the platform and its ribs, so the
+  authored [80, 150] mm platform travel is sweep-clear. This remains an
+  open-chain table with fixed links: ParamRef cannot drive the Math.sqrt link
+  geometry, so it is not a solved closed-loop scissor. For the closed-loop
+  mechanism use the kernelcad-kinematic cookbook 04-scissor-jack-swept. Do NOT
+  invent joint.scissorLift(...). Gallery examples/gallery/scissor-lift.kcad.ts
+  is fastened pose-only (not mechanism-driven).
 ---
 
 ```typescript
 // Open-chain scissor-table layout scaffold. One prismatic DOF raises the
-// platform; X-links are fused into base-frame at a mid working pose (ParamRef
-// cannot drive Math.sqrt link geometry), so they stay still as the platform
-// moves and intersect it at the lower travel limit. A solved closed-loop
-// scissor (crossed links + sliders, lift angle driven) is the separate
-// kernelcad-kinematic cookbook 04.
+// platform; decorative X-links are fused into base-frame at the rest pose
+// because ParamRef cannot drive Math.sqrt link geometry. They stay outboard
+// of the platform and its ribs through the full travel, but are not a solved
+// closed-loop scissor (crossed links + sliders, lift angle driven); that is
+// the separate kernelcad-kinematic cookbook 04.
 // Do not invent joint.scissorLift.
 
 const platformZ = param('platformZ', 110, { min: 80, max: 150 });
@@ -40,13 +38,15 @@ const platformZ = param('platformZ', 110, { min: 80, max: 150 });
 const linkLen = 160;
 const linkW = 10;
 const linkT = 8;
-const sideY = 28;
 const railY = 38;
+// The platform is 100 mm wide in Y. Keep the 10 mm links 0.5 mm beyond its
+// side faces; short feet below the platform's minimum height bridge them to
+// the base rails without entering the moving platform's envelope.
+const sideY = railY + 12 + linkW / 2 + 0.5;
 const baseZ = 10;
-// The fused X-pattern is drawn at the rest pose (platformZ = 110): the
-// upper bar ends bear on the deck underside (z = 110), they do not pierce
-// it. A bar end's top edge sits linkT/2·cos(angle) above its centreline,
-// so solve the centreline height for that contact (a few iterations).
+// The fused X-pattern is drawn at the rest pose (platformZ = 110). Solve the
+// link centreline for the deck underside, then raise the outboard bar ends
+// slightly so the base/platform mate stays within the contact tolerance.
 const restDeckZ = 110;
 let stageH = 100;
 for (let i = 0; i < 8; i++) {
@@ -54,7 +54,7 @@ for (let i = 0; i < 8; i++) {
   stageH = restDeckZ - baseZ - (linkT / 2) * Math.cos(angle);
 }
 const halfSpan = Math.sqrt(Math.max(400, linkLen * linkLen - stageH * stageH)) / 2;
-const deckZ = baseZ + stageH;
+const deckZ = baseZ + stageH + 2;
 
 const arm = assembly('scissor-lift-open-chain');
 
@@ -75,6 +75,11 @@ const scissorX = linkBar(-halfSpan, baseZ, halfSpan, deckZ, -sideY, '#f6b23b')
   .union(linkBar(halfSpan, baseZ, -halfSpan, deckZ, -sideY, '#f0782f'))
   .union(linkBar(halfSpan, baseZ, -halfSpan, deckZ, sideY, '#f0782f'));
 
+const scissorMounts = box(20, 20, 12, true).translate(-halfSpan, -49, 9).color('#3b434c')
+  .union(box(20, 20, 12, true).translate(-halfSpan, 49, 9).color('#3b434c'))
+  .union(box(20, 20, 12, true).translate(halfSpan, -49, 9).color('#3b434c'))
+  .union(box(20, 20, 12, true).translate(halfSpan, 49, 9).color('#3b434c'));
+
 // Center actuator pad tops at z=12 so actuator-fix sits on solid (not mid-air
 // between the side rails). Pad spans rail-to-rail so it fuses into the frame.
 const actuatorPad = box(40, railY * 2, 12, true).translate(0, 0, 6).color('#3b434c');
@@ -88,6 +93,7 @@ const base = arm.part(
     .union(box(20, railY * 2 + 20, 8, true).translate(-halfSpan - 16, 0, 4).color('#3b434c'))
     .union(box(20, railY * 2 + 20, 8, true).translate(halfSpan + 16, 0, 4).color('#3b434c'))
     .union(actuatorPad)
+    .union(scissorMounts)
     .union(scissorX),
 );
 base.connector('lift-axis', {
@@ -159,7 +165,5 @@ animationView({
   fps: 24,
 });
 
-return arm.solvedModel({}, {
-  ignore: [['base-frame', 'platform']],
-});
+return arm.solvedModel({});
 ```
