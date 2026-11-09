@@ -35,6 +35,36 @@ kernelcad export pdf-drawing bracket.kcad.ts -o out/bracket.pdf --title "L mount
 
 Text is set in the standard Helvetica face, so the PDF needs no embedded font; `⌀` prints as `Ø`, and the GD&T and hole symbols (⌖ ⏥ ⟂ ∥ ⌴ ⌵ ↧ …) are drawn as vector strokes.
 
+## Agent-assisted layout QA and repair
+
+The generic `export` tool supports optional `visualQa` on both `svg-drawing`
+and `pdf-drawing`. It inspects the **serialized** sheet, not only the CAD
+model. For PDFs it also reads back page size, vector content and the text layer.
+The default export path remains unchanged unless `visualQa` is supplied.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "bracket.kcad.ts", "format": "pdf-drawing",
+  "output_path": "out/bracket-reviewed.pdf",
+  "options": { "format": "pdf-drawing", "sheet": "a4", "visualQa": { "autoRepair": true, "maxAttempts": 3 } } } }
+```
+
+Read `drawingReport.visualQa` from the export result. The report includes
+`status` (`verified`, `needs-review`, or `incomplete`), issue codes and
+sheet locations, the list of rejected/accepted attempts, and a separate PDF
+readback report. A `verified` result requires a **complete declared critical-dimension review**
+and passing layout checks. Without a declared critical-dimension contract, the
+result remains `incomplete` even if every layout check passes. An unresolved
+critical dimension or drawing decision results in `needs-review`. None of these
+statuses certifies physical fit, tolerances, or manufacturing-standard compliance.
+
+The repair loop first moves annotations already reported as crowded using the
+existing offset option, then tries progressively larger ISO/ANSI sheet sizes.
+It accepts only measurable reductions in layout issues and stops after at most
+three retries. It never changes source 3D geometry, dimension values, or
+unresolved engineering decisions. A missing critical dimension remains a
+blocking finding even after a successful layout repair. Review any remaining
+issues before releasing a drawing externally.
+
 ## Quickstart
 
 MCP:
