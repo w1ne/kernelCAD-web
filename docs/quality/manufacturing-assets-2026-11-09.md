@@ -5,7 +5,7 @@
 - Live source: `https://kernelcad.com/assets.json` collected on 2026-11-09. Exactly **2,418** entries, including **66** manufacturing-category assets: **50** CC0 low-poly standard-component scene props and **16** MIT parametric manufacturing examples. These are not interchangeable product classes.
 - **All 66** linked PNG previews and source files downloaded and visually reviewed from the live catalogue. All **50/50** standard-component sources passed the native catalog LOAD, parameter/knob and GLB mesh checks on work-1 (original baseline). All **16/16** manufacturing examples evaluated successfully in the production KernelCAD runtime without build diagnostics at default parameter values.
 - Source build success is **not** evidence of realistic geometry, manufacturer conformity, accuracy, clearance, fit, load rating, or mechanical function. A pass below means visually suitable for its labeled use *only*, not physically verified.
-- Three MIT manufacturing parts were repaired in [server PR #623](https://github.com/w1ne/kernelCAD-server/pull/623), merged 2026-11-09. Five CC0 component props have targeted rebuilds in the catalog quality branch; their release requires the normal PR/CI/deployment path.
+- Three MIT manufacturing parts were repaired in [server PR #623](https://github.com/w1ne/kernelCAD-server/pull/623), merged 2026-11-09. Eight CC0 component props have targeted rebuilds in the catalog quality branch; their release requires the normal PR/CI/deployment path.
 - Outstanding representational defects must not be silently cleared by a color/preset checker. Continue remediation in the [manufacturing asset issue](https://github.com/w1ne/kernelCAD-server/issues/622).
 
 ## Complete per-asset ledger
@@ -33,7 +33,7 @@
 | 19 | [standard-components/handwheel](https://kernelcad.com/assets/standard-components-handwheel.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 20 | [standard-components/hose-barb-adapter](https://kernelcad.com/assets/standard-components-hose-barb-adapter.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 21 | [standard-components/jaw-coupling](https://kernelcad.com/assets/standard-components-jaw-coupling.png) | CC0 low-poly prop | IMPROVED / proposed | New recognisable geometry plus renderer-verified PNG; requires PR, CI, production check. |
-| 22 | [standard-components/knurled-knob](https://kernelcad.com/assets/standard-components-knurled-knob.png) | CC0 low-poly prop | P1 / open | No visible knurling; model looks like a plain cylindrical knob. |
+| 22 | [standard-components/knurled-knob](https://kernelcad.com/assets/standard-components-knurled-knob.png) | CC0 low-poly prop | IMPROVED / proposed | New recognisable geometry plus renderer-verified PNG; requires PR, CI, production check. |
 | 23 | [standard-components/leveling-foot](https://kernelcad.com/assets/standard-components-leveling-foot.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 24 | [standard-components/linear-guide-carriage](https://kernelcad.com/assets/standard-components-linear-guide-carriage.png) | CC0 low-poly prop | P2 / open | Simplified carriage; no ball circuit or wiper functionality validation. |
 | 25 | [standard-components/linear-guide-rail](https://kernelcad.com/assets/standard-components-linear-guide-rail.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
@@ -44,7 +44,7 @@
 | 30 | [standard-components/pipe-elbow-45](https://kernelcad.com/assets/standard-components-pipe-elbow-45.png) | CC0 low-poly prop | P2 / open | Junction continuity and pressure passage not verified; cosmetic elbow. |
 | 31 | [standard-components/pipe-elbow-90](https://kernelcad.com/assets/standard-components-pipe-elbow-90.png) | CC0 low-poly prop | P2 / open | Junction continuity and pressure passage not verified; cosmetic elbow. |
 | 32 | [standard-components/pipe-flange](https://kernelcad.com/assets/standard-components-pipe-flange.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
-| 33 | [standard-components/pipe-reducer](https://kernelcad.com/assets/standard-components-pipe-reducer.png) | CC0 low-poly prop | P1 / open | Stepped coaxial cylinders, not a continuously tapered reducing fitting. |
+| 33 | [standard-components/pipe-reducer](https://kernelcad.com/assets/standard-components-pipe-reducer.png) | CC0 low-poly prop | IMPROVED / proposed | New recognisable geometry plus renderer-verified PNG; requires PR, CI, production check. |
 | 34 | [standard-components/pipe-saddle-clamp](https://kernelcad.com/assets/standard-components-pipe-saddle-clamp.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 35 | [standard-components/pipe-tee](https://kernelcad.com/assets/standard-components-pipe-tee.png) | CC0 low-poly prop | IMPROVED / proposed | New recognisable geometry plus renderer-verified PNG; requires PR, CI, production check. |
 | 36 | [standard-components/pipe-union](https://kernelcad.com/assets/standard-components-pipe-union.png) | CC0 low-poly prop | P2 / open | No functional separation, retaining nuts or threaded sealing interface established. |
@@ -55,7 +55,7 @@
 | 41 | [standard-components/shim-pack](https://kernelcad.com/assets/standard-components-shim-pack.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 42 | [standard-components/split-shaft-collar](https://kernelcad.com/assets/standard-components-split-shaft-collar.png) | CC0 low-poly prop | P2 / open | Split visible but clamping screw not modeled. |
 | 43 | [standard-components/square-mounting-flange](https://kernelcad.com/assets/standard-components-square-mounting-flange.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
-| 44 | [standard-components/t-slot-angle-bracket](https://kernelcad.com/assets/standard-components-t-slot-angle-bracket.png) | CC0 low-poly prop | P1 / open | T-slot connector has no fastener holes or mating interface. |
+| 44 | [standard-components/t-slot-angle-bracket](https://kernelcad.com/assets/standard-components-t-slot-angle-bracket.png) | CC0 low-poly prop | IMPROVED / proposed | New recognisable geometry plus renderer-verified PNG; requires PR, CI, production check. |
 | 45 | [standard-components/t-slot-end-cap](https://kernelcad.com/assets/standard-components-t-slot-end-cap.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 46 | [standard-components/timing-belt-pulley](https://kernelcad.com/assets/standard-components-timing-belt-pulley.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
 | 47 | [standard-components/tube-clamp](https://kernelcad.com/assets/standard-components-tube-clamp.png) | CC0 low-poly prop | SCENE PASS | Acceptable silhouette at the intended detail level; dimensions/physical function not verified. |
@@ -81,7 +81,7 @@
 
 ## Follow-up acceptance gates
 
-1. Fix the remaining P1 false-affordance models: helical beam coupling, knurled knob, smooth pipe reducer, T-slot mounting bracket, bearing/shaft assembly, hex nut and heat-set insert. Re-render each from exact source and retain proof.
+1. Fix the remaining P1 false-affordance models: helical beam coupling, bearing/shaft assembly, hex nut and heat-set insert. Re-render each from exact source and retain proof.
 2. Fix P2 interface omissions in the low-poly props if they are promoted as engineering examples; otherwise explicitly mark them as scene props and exclude them from manufacturing-performance claims.
 3. For every changed asset: compare the original and proposed thumbnail, run the native evaluator and index/preview integrity tests, check default plus size variants where applicable, and record source/preview hash and deployed status.
 4. Repeat review for new and high-visibility catalogue additions. An asset count increase is not a substitute for geometry quality.

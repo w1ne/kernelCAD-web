@@ -253655,7 +253655,7 @@
       "id": "knurled-knob",
       "kit": "standard-components",
       "title": "Knurled knob",
-      "description": "Compact control knob with a broad grip body, raised crown and center stem Knobs: model size, steel, aluminum, engineering polymer.",
+      "description": "Compact control knob with a broad grip body, raised crown, center stem and visible radial grip flutes. Knobs: model size, steel, aluminum, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253673,8 +253673,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/knurled-knob.kcad.ts",
       "preview": "/assets/standard-components-knurled-knob.png",
-      "sourceSha256": "765c46070da9d853a7aa961551c6011cac086c44b9647e343160300d00a117ee",
-      "triangleBudget": 300,
+      "sourceSha256": "b965a2e1ff6cd0d28f1e4828d2ad9435f6a7b8a7229592d6c56d9dc2426113cb",
+      "triangleBudget": 480,
       "params": [
         {
           "name": "size",
@@ -253724,11 +253724,11 @@
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 324,
         "sizeM": [
-          0.036,
+          0.04,
           0.033,
-          0.036
+          0.04
         ],
         "minUpM": 0,
         "materials": 1
@@ -253738,15 +253738,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "stem",
-            "grip-rib-0",
-            "grip-rib-45",
-            "grip-rib-90",
-            "grip-rib-135",
-            "grip-rib-180",
-            "grip-rib-225",
-            "grip-rib-270",
-            "grip-rib-315"
+            "stem"
           ],
           "param": "steel"
         },
@@ -253762,7 +253754,23 @@
           "name": "aluminum",
           "color": "#aebac0",
           "parts": [
-            "crown"
+            "crown",
+            "raised-grip-flute-0",
+            "raised-grip-flute-1",
+            "raised-grip-flute-2",
+            "raised-grip-flute-3",
+            "raised-grip-flute-4",
+            "raised-grip-flute-5",
+            "raised-grip-flute-6",
+            "raised-grip-flute-7",
+            "raised-grip-flute-8",
+            "raised-grip-flute-9",
+            "raised-grip-flute-10",
+            "raised-grip-flute-11",
+            "raised-grip-flute-12",
+            "raised-grip-flute-13",
+            "raised-grip-flute-14",
+            "raised-grip-flute-15"
           ],
           "param": "aluminum"
         }
@@ -254784,7 +254792,7 @@
       "id": "pipe-reducer",
       "kit": "standard-components",
       "title": "Pipe reducer",
-      "description": "Stepped hollow reducer joining a larger pipe end to a smaller pipe end Knobs: model size, steel, bronze.",
+      "description": "Tapered hollow pipe fitting connecting larger and smaller nominal bores Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254802,8 +254810,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
       "preview": "/assets/standard-components-pipe-reducer.png",
-      "sourceSha256": "a4bf0ec6210f32c023530754c0d2cee4e37107bf315af2129a475de1dce84d82",
-      "triangleBudget": 340,
+      "sourceSha256": "899dcaec7598db2922954ac85f463b2902447e9d118dda813200e74f7b37dbb3",
+      "triangleBudget": 520,
       "params": [
         {
           "name": "size",
@@ -254844,7 +254852,7 @@
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 316,
         "sizeM": [
           0.044,
           0.046,
@@ -254867,7 +254875,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "transition"
+            "continuous-taper"
           ],
           "param": "bronze"
         }
@@ -255840,8 +255848,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
       "preview": "/assets/standard-components-t-slot-angle-bracket.png",
-      "sourceSha256": "6ee080db9d9f64127456609f385510057c6083ab19c28e7b5dded18021f76462",
-      "triangleBudget": 380,
+      "sourceSha256": "b9b678956a9b15c77c8ae1e5e8191eb076adda077bf316ab3af8514fcc2c5c8e",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "size",
@@ -255882,7 +255890,7 @@
         }
       },
       "stats": {
-        "triangles": 40,
+        "triangles": 248,
         "sizeM": [
           0.072,
           0.039,
@@ -255896,8 +255904,8 @@
           "name": "aluminum",
           "color": "#aebac0",
           "parts": [
-            "base",
-            "upright"
+            "horizontal-mount",
+            "vertical-mount"
           ],
           "param": "aluminum"
         },
