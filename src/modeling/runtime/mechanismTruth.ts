@@ -22,8 +22,8 @@
 //                                      vec3-mount-spring drift pattern from
 //                                      PR #341 and the gutted-assembly
 //                                      missing-body pattern from PR #338)
-//   3. mechanism.interpenetration    — non-mated parts must not overlap
-//                                      under any sampled pose
+//   3. mechanism.interpenetration    — part pairs must not overlap at
+//                                      sampled poses
 //   4. mechanism.dof-mismatch        — declared mate kind must match the
 //                                      geometric free direction (pragmatic
 //                                      micro-pose check)
@@ -201,6 +201,9 @@ export interface MechanismCoverage {
   readonly matesChecked: boolean;
   /** Moving DOFs nobody limited: "joint 'x' offset has no limits, range not checked". */
   readonly skipped: readonly string[];
+  /** `solvedModel({ ignore })` declarations, listed for transparency; they
+   *  do not suppress collision checks at sampled joint-travel poses. */
+  readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
 }
 
 /**
@@ -375,8 +378,16 @@ export async function checkMechanismTruth(
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
   const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
+  const ignoredPairs = arm.__ignoreInterference().map(([a, b]) => [a, b] as const);
   if (solved.length === 0) {
-    const coverage = { poses: 0, joints, ...scope, sweep: false, physics: false };
+    const coverage = {
+      poses: 0,
+      joints,
+      ...scope,
+      sweep: false,
+      physics: false,
+      ...(ignoredPairs.length > 0 ? { ignoredPairs } : {}),
+    };
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
@@ -414,7 +425,14 @@ export async function checkMechanismTruth(
   const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = { poses: solved.length, joints, ...scope, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
+  const coverage = {
+    poses: solved.length,
+    joints,
+    ...scope,
+    sweep: !sweepSkipped,
+    physics: opts.physicsCheck === true,
+    ...(ignoredPairs.length > 0 ? { ignoredPairs } : {}),
+  };
   return { mechanism, failures, coverage };
 }
 
@@ -773,7 +791,7 @@ export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): Co
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Criterion 2 — mechanism.interpenetration (non-mated overlap)
+// Criterion 2 — mechanism.interpenetration (part overlap)
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
@@ -786,8 +804,9 @@ export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): Co
  * Adjacency does NOT excuse a real overlap. A correctly-modeled rotating
  * joint is a clearance fit (ISO 286): the clevis primitive drills the pin
  * bore through both knuckles so the pin floats in air and pin-in-tongue
- * shared volume is ~0. The only escape hatch for a genuine intended overlap
- * is the per-pair user `ignore` list on `solvedModel({ ignore: [...] })`.
+ * shared volume is ~0. `solvedModel({ ignore: [...] })` may exempt the
+ * returned rest sample from this BREP probe, but it never waives a collision
+ * at a sampled joint-travel pose.
  */
 async function checkInterpenetration(
   arm: Assembly,
@@ -805,19 +824,18 @@ async function checkInterpenetration(
     const b = parseConnectorRef(m.b).partName;
     matedPairs.set(pairKey(a, b), m.type);
   }
-
-  // The documented escape hatch for a genuine intended overlap is the
-  // per-pair user `ignore` list on `solvedModel({ ignore: [...] })`
-  // (SolidWorks "Ignore" / press-fit). Fold it into the detector's
-  // symmetric pair-key set so the mechanism-truth criterion honors the
-  // same silencing the validator diagnostic stream does.
-  const ignored = new Set<string>();
-  for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
+  const ignoredAtRest = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) ignoredAtRest.add(pairKey(a, b));
+  const noIgnoredPairs = new Set<string>();
 
   for (const s of solved) {
     const scene = await lowerSceneForSample(arm, s, loweredBase);
     if (scene === undefined) continue;
 
+    // Preserve the authored-pose exception, but never carry it into the
+    // articulated sweep. An ignore at rest cannot hide a collision at a
+    // declared joint limit or intermediate sample.
+    const ignored = s.sample.name === 'rest' ? ignoredAtRest : noIgnoredPairs;
     const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, ignored);
     if (result.pairs.length === 0) continue;
 
@@ -837,8 +855,8 @@ async function checkInterpenetration(
         'mechanism.interpenetration',
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
-        `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
-        `or pass { ignore: [['${pair.a}', '${pair.b}']] } as the SECOND argument to solvedModel({}, { ignore: ... }) if this overlap is genuinely intended.`,
+        `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. ` +
+        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.`,
       ));
     }
   }
