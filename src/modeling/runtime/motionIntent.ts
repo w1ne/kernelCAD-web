@@ -11,12 +11,10 @@
 //   1. A mechanicalJoint or transmission names a `fastened` mate.
 //   2. An animated param is the pose of a `fastened` mate (solvedModel poses).
 //   3. An animated param moves a fastened mate's connector frame.
-//   4. An animated param turns a part only through its geometry (the angle
-//      of a rotate on the part's own features), no articulated mate or joint
-//      takes that param as its pose, and every mate on that part is
-//      `fastened`. The animation then shows motion the mate graph forbids.
-//      Translations are not counted: a layout or exploded-view animation
-//      moves fastened parts by a spacing param on purpose.
+//   4. An animated param transforms a part through its geometry, no
+//      articulated mate or joint takes that param as its pose, and every mate
+//      on that part is `fastened`. The animation then shows motion the mate
+//      graph forbids.
 //
 // One code, `mechanism.motion-on-fixed-joint`, kept apart from the solver,
 // over-constraint and collision codes. Every message names the param or
@@ -255,14 +253,14 @@ function geometryOnlyMotion(
     const moving = new Set<string>();
     for (const r of lineage(part.originalShape.id, byId)) {
       for (const t of r.transforms) {
-        if (t.op === 'rotateAxis') for (const p of collectParamRefs(t.degrees)) moving.add(p);
+        for (const p of collectParamRefs(t)) moving.add(p);
       }
     }
     for (const p of free) {
       if (!moving.has(p)) continue;
       const held = partMates.map((m) => `'${m.name}'`).join(', ');
       out.push(diagnostic(
-        `Param '${p}' is animated and turns part '${part.name}' through its geometry, but no joint takes '${p}' as its pose: '${part.name}' is held by fastened joint ${held}. The animation shows motion the assembly does not allow.`,
+        `Param '${p}' is animated and transforms part '${part.name}' through its geometry, but no joint takes '${p}' as its pose: '${part.name}' is held by fastened joint ${held}. The animation shows motion the assembly does not allow.`,
         partMates[0].name,
         { partName: part.name, paramName: p },
       ));
