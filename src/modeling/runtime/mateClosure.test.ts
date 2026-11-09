@@ -47,6 +47,19 @@ describe('checkMateClosure', () => {
     expect(d.message).toBe("Mate 'bc' contradicts the other mates in its closed loop: at the rest pose its connectors are 2.00 mm apart.");
   });
 
+  it('keeps a named millimetre residual and actionable hint for an unclosed articulated loop', () => {
+    const [d] = checkMateClosure([{
+      name: 'rest',
+      status: 'did-not-converge',
+      loopResiduals: [{ mate: 'headSlide', mm: 2 }],
+    }]);
+
+    expect(d.code).toBe('assembly.solver.did-not-converge');
+    expect(d.message).toContain("mate 'headSlide'");
+    expect(d.message).toContain('2.00 mm apart');
+    expect(d.hint).toMatch(/link length|slider pose|connector/i);
+  });
+
   it('fails a loop mate that closes at rest but comes apart when a joint moves', async () => {
     const k = api();
     const arm = k.assembly('braced');
