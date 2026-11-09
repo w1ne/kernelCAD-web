@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
 import type { DrawingReport } from './drawingAuto/contracts';
-import type { DrawingSheetSize, DrawingViewName } from './drawingLayout';
+import { SHEETS, SHEET_SERIES, type DrawingSheetSize, type DrawingViewName } from './drawingLayout';
 
 export interface DrawingVisualQaOptions {
   /** Retry the export on progressively larger standard sheets when the
@@ -100,16 +100,6 @@ const VIEW_NAMES: readonly DrawingViewName[] = ['front', 'top', 'left', 'iso'];
 const LAYOUT_ISSUES = new Set<DrawingVisualQaIssueCode>([
   'view-overflow', 'view-overlap', 'title-block-obstruction', 'text-clipping', 'annotation-collision',
 ]);
-const SHEET_SERIES: Record<'iso' | 'ansi', readonly DrawingSheetSize[]> = {
-  iso: ['a4', 'a3', 'a2', 'a1', 'a0'],
-  ansi: ['ansi-a', 'ansi-b', 'ansi-c', 'ansi-d', 'ansi-e'],
-};
-const SHEET_MM: Record<DrawingSheetSize, readonly [number, number]> = {
-  a4: [297, 210], a3: [420, 297], a2: [594, 420], a1: [841, 594], a0: [1189, 841],
-  'ansi-a': [279.4, 215.9], 'ansi-b': [431.8, 279.4], 'ansi-c': [558.8, 431.8],
-  'ansi-d': [863.6, 558.8], 'ansi-e': [1117.6, 863.6],
-};
-
 function decodeEntities(s: string): string {
   return s.replace(/&(#x[0-9a-f]+|#\d+|lt|gt|quot|apos|amp);/gi, (_, entity: string) => {
     const e = entity.toLowerCase();
@@ -220,7 +210,7 @@ function sheetSizeFromSvg(svgRoot: SvgNode): { width: number; height: number; na
   const viewBox = (svgRoot.attrs.viewBox ?? '').trim().split(/[\s,]+/).map(Number);
   if (viewBox.length !== 4 || !viewBox.every(Number.isFinite) || viewBox[2]! <= 0 || viewBox[3]! <= 0) return undefined;
   const named = (svgRoot.attrs['data-kc-sheet'] ?? '').toLowerCase() as DrawingSheetSize;
-  const known = named in SHEET_MM ? named : undefined;
+  const known = named in SHEETS ? named : undefined;
   return { width: viewBox[2]!, height: viewBox[3]!, ...(known ? { named: known } : {}) };
 }
 
@@ -438,11 +428,11 @@ function layoutIssueCount(report: DrawingVisualQaReport): number {
 
 function namedSheetFromSvg(svg: string): DrawingSheetSize | undefined {
   const named = /<svg\b[^>]*\bdata-kc-sheet="([^"]+)"/.exec(svg)?.[1]?.toLowerCase();
-  if (named && named in SHEET_MM) return named as DrawingSheetSize;
+  if (named && named in SHEETS) return named as DrawingSheetSize;
   const match = /<svg\b[^>]*\bviewBox="[\d.]+[ ,]+[\d.]+[ ,]+([\d.]+)[ ,]+([\d.]+)"/.exec(svg);
   if (!match) return undefined;
   const width = Number(match[1]), height = Number(match[2]);
-  return (Object.keys(SHEET_MM) as DrawingSheetSize[]).find(name => Math.abs(SHEET_MM[name][0] - width) < 0.1 && Math.abs(SHEET_MM[name][1] - height) < 0.1);
+  return (Object.keys(SHEETS) as DrawingSheetSize[]).find(name => Math.abs(SHEETS[name].w - width) < 0.1 && Math.abs(SHEETS[name].h - height) < 0.1);
 }
 
 function nextSheet(sheet: DrawingSheetSize, start: DrawingSheetSize | undefined): DrawingSheetSize | undefined {
