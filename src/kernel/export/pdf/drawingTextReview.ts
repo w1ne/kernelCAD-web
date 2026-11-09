@@ -54,12 +54,17 @@ function overlap(a: Rect, b: Rect): boolean {
     && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > EPS;
 }
 
+function validTextMeasurement(content: string, size: number, x: number, y: number): boolean {
+  return content.length > 0 && Number.isFinite(size) && size > 0
+    && Number.isFinite(x) && Number.isFinite(y);
+}
+
 function measured(node: XmlNode, transform: Mat, attrs: Record<string, string>): Rect | undefined {
   const content = node.text.replace(/\s+/g, ' ').trim();
   const size = Number.parseFloat(attrs['font-size'] ?? '16');
   const x = Number(node.attrs.x ?? '0') + Number(node.attrs.dx ?? '0');
   const y = Number(node.attrs.y ?? '0') + Number(node.attrs.dy ?? '0');
-  if (!content || !Number.isFinite(size) || size <= 0 || !Number.isFinite(x) || !Number.isFinite(y)) return;
+  if (!validTextMeasurement(content, size, x, y)) return;
   const weight = attrs['font-weight'];
   const bold = weight === 'bold' || weight === 'bolder' || Number(weight) >= 600;
   const width = textRuns(content).reduce((v, r) => v + runAdvanceEm(r, bold), 0) * size;
