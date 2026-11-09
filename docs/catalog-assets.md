@@ -12,6 +12,18 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 9 standard-components follow-up refined five existing models: the base
+mounting plate, blind flange, pipe coupling, pipe flange and rubber bumper. It
+added five material-named color controls and five named palette variants, plus
+real choices for mounting-hole count, installed hardware, bore seals and bumper
+mounting interface. The kit remains **50/50 passing**; its average material
+controls rose from 2.28 to 2.38 per asset. The global quality result remains
+**2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. No IDs or kits
+were added. The [local source, preview, index and demo handoff](../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md)
+records the regenerated previews, variants, checks and inspected MP4. This
+branch has not been deployed; no manufacturing or physical acceptance is
+claimed.
+
 The Nov 9 construction-equipment silhouette follow-up rebuilt four existing
 machine assets in place: walk-behind power trowel, vibrating concrete screed,
 rebar bending machine, and portable material hoist. Their material controls and

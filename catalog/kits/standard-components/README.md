@@ -4,14 +4,22 @@ Original parametric low-poly components for workshop, industrial, and mechanical
 
 Each model keeps its compact / standard / large size choice and now exposes 2–4 independently editable, material-named visual color zones. Named `dark`, `brass`, and `weathered` presets provide alternate palettes. Color labels identify visual zones; they do not certify physical material properties.
 
+The Nov 9 refinement added geometry choices to five existing assets without
+adding IDs: the base plate and both flange models switch between four/eight
+mounting holes and open/bolted layouts; the pipe coupling switches between a
+bare bore and two visible elastomer seals; the rubber bumper switches between a
+male stud and a recessed threaded insert. Each now exposes steel, hardware and
+third material controls with a fourth named palette. The selectable hardware
+and interfaces are stylized scene geometry, not vendor-standard dimensions.
+
 ## Assets
 
 | ID | Component | Description | Color controls | Default triangles | Preview |
 | --- | --- | --- | --- | ---: | --- |
 | [`angle-bracket`](angle-bracket.kcad.ts) | Angle bracket | Low-poly right-angle mounting bracket with two drilled legs and a reinforcing web. | Steel, Stainless steel | 232 | [PNG](previews/angle-bracket.png) |
-| [`base-mounting-plate`](base-mounting-plate.kcad.ts) | Base mounting plate | Square equipment mounting plate with four corner holes and a raised locating boss. | Steel, Brass | 264 | [PNG](previews/base-mounting-plate.png) |
+| [`base-mounting-plate`](base-mounting-plate.kcad.ts) | Base mounting plate | Square equipment foot plate with a raised locating boss, four- or eight-hole layout and optional socket-head bolts. | Plate steel, Brass boss, Zinc-plated bolts | 264 | [PNG](previews/base-mounting-plate.png) |
 | [`beam-coupling`](beam-coupling.kcad.ts) | Beam coupling | Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve. | Steel, Aluminum | 428 | [PNG](previews/beam-coupling.png) |
-| [`blind-flange`](blind-flange.kcad.ts) | Blind flange | Solid round blind pipe flange with four recessed mounting-hole bores. | Cast iron, Bronze | 296 | [PNG](previews/blind-flange.png) |
+| [`blind-flange`](blind-flange.kcad.ts) | Blind flange | Solid pipe-end closure with raised sealing face, four/eight-hole bolt circle and optional installed bolts. | Cast iron, Bronze face, Zinc-plated bolts | 296 | [PNG](previews/blind-flange.png) |
 | [`bulkhead-adapter`](bulkhead-adapter.kcad.ts) | Bulkhead adapter | Hollow through-wall adapter with a tube barrel and a flange on each side. | Stainless steel, Brass | 288 | [PNG](previews/bulkhead-adapter.png) |
 | [`cable-clamp`](cable-clamp.kcad.ts) | Cable clamp | Low-profile cable saddle with two fixing ears and a rounded cable guide. | Steel, Rubber | 132 | [PNG](previews/cable-clamp.png) |
 | [`cable-gland`](cable-gland.kcad.ts) | Cable gland | Panel cable gland with a hollow body, stepped compression nut and wide sealing flange. | Engineering polymer, Rubber | 384 | [PNG](previews/cable-gland.png) |
@@ -36,16 +44,16 @@ Each model keeps its compact / standard / large size choice and now exposes 2–
 | [`panel-clamp`](panel-clamp.kcad.ts) | Panel clamp | Small edge clamp with a broad base, upright jaw and adjustable pressure pad. | Steel, Zinc-plated steel, Rubber | 80 | [PNG](previews/panel-clamp.png) |
 | [`piano-hinge`](piano-hinge.kcad.ts) | Piano hinge | Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. | Steel, Stainless steel | 332 | [PNG](previews/piano-hinge.png) |
 | [`pillow-block-housing`](pillow-block-housing.kcad.ts) | Pillow block housing | Raised pillow-block support with a broad base, round bearing boss and two bolt feet. | Zinc-plated steel, Cast iron, Bronze | 132 | [PNG](previews/pillow-block-housing.png) |
-| [`pipe-coupling`](pipe-coupling.kcad.ts) | Pipe coupling sleeve | Short hollow straight coupling sleeve with raised end collars. | Steel, Stainless steel | 288 | [PNG](previews/pipe-coupling.png) |
+| [`pipe-coupling`](pipe-coupling.kcad.ts) | Pipe coupling sleeve | Hollow sleeve with raised end collars and optional elastomer rings at both pipe entries. | Sleeve steel, Stainless collars, Elastomer seals | 480 | [PNG](previews/pipe-coupling.png) |
 | [`pipe-elbow-45`](pipe-elbow-45.kcad.ts) | 45 degree pipe elbow | Angled 45 degree pipe connector with open ends and a thicker low-poly center bend. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-45.png) |
 | [`pipe-elbow-90`](pipe-elbow-90.kcad.ts) | 90 degree pipe elbow | Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-90.png) |
-| [`pipe-flange`](pipe-flange.kcad.ts) | Pipe flange | Round slip-on pipe flange with a center bore and four bolt-hole positions. | Stainless steel, Cast iron | 400 | [PNG](previews/pipe-flange.png) |
+| [`pipe-flange`](pipe-flange.kcad.ts) | Pipe flange | Slip-on flange with a hollow raised neck, four/eight-hole bolt circle and optional installed bolts. | Stainless neck, Cast-iron flange, Zinc-plated bolts | 400 | [PNG](previews/pipe-flange.png) |
 | [`pipe-reducer`](pipe-reducer.kcad.ts) | Pipe reducer | Stepped hollow reducer joining a larger pipe end to a smaller pipe end. | Steel, Bronze | 288 | [PNG](previews/pipe-reducer.png) |
 | [`pipe-saddle-clamp`](pipe-saddle-clamp.kcad.ts) | Pipe saddle clamp | Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. | Steel, Rubber | 132 | [PNG](previews/pipe-saddle-clamp.png) |
 | [`pipe-tee`](pipe-tee.kcad.ts) | Pipe tee fitting | Three-way T pipe fitting with a vertical run and perpendicular side branch. | Steel, Bronze | 192 | [PNG](previews/pipe-tee.png) |
 | [`pipe-union`](pipe-union.kcad.ts) | Pipe union | Compact union fitting with two hollow sockets and a broad central hex-like nut body. | Steel, Brass | 256 | [PNG](previews/pipe-union.png) |
 | [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open retaining ring profile with two small installation ears. | Stainless steel, Spring steel | 124 | [PNG](previews/retaining-ring.png) |
-| [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Low-profile cylindrical vibration bumper with a flat base and centered mounting stem. | Steel, Rubber | 132 | [PNG](previews/rubber-bumper.png) |
+| [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Stepped vibration isolator with a broad foot and selectable male stud or recessed threaded insert. | Rubber, Stud steel, Zinc-plated hardware | 332 | [PNG](previews/rubber-bumper.png) |
 | [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | One-piece round shaft collar with a centered bore and a small radial set-screw boss. | Steel, Zinc-plated steel | 140 | [PNG](previews/shaft-collar.png) |
 | [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Straight shaft coupler with a thicker center band and two aligned shaft bores. | Steel, Bronze | 288 | [PNG](previews/shaft-coupling.png) |
 | [`shim-pack`](shim-pack.kcad.ts) | Shim pack | Stack of thin rectangular alignment shims with small offset pull tabs. | Steel, Stainless steel, Brass | 60 | [PNG](previews/shim-pack.png) |
@@ -75,7 +83,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), and the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), and the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 

@@ -1,0 +1,270 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-installation-quality-20261109/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={format:\"glb\", style:\"lowpoly\", lowpoly:{maxTriangles: source triangleBudget}})",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "holePatternsAndInstalledHardware": "plate, blind flange, and pipe flange pairs have different triangle counts",
+    "couplingSealChoice": "two-seal and bare-sleeve variants have different triangle counts",
+    "bumperMountHeightDeltaMm": 9.900000000000002
+  },
+  "sources": [
+    {
+      "source": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
+      "sourceSha256": "9b0ffee21e8a9c61e3e378d8229c326ee5a7cc09ae96e0c540de79537021303c",
+      "triangleBudget": 1300
+    },
+    {
+      "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
+      "sourceSha256": "f3d6d70823b6d4c33352185acfe7b485b93574d31948145c8c4adc2b9ebbf05f",
+      "triangleBudget": 1500
+    },
+    {
+      "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
+      "sourceSha256": "b3aed7920c6ea10f85da857cf6be173b34a5254d04d9e623d4f0399e0d1fbf39",
+      "triangleBudget": 640
+    },
+    {
+      "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
+      "sourceSha256": "e8b1d432e4a8d8d3c61b860c784b0143cd9e46ea8adc77de4f6899dd0f44e026",
+      "triangleBudget": 1500
+    },
+    {
+      "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
+      "sourceSha256": "ca5fe840fc64788e8586450c2b34b6eba192e2fc884b7da6dc242bd799d89d20",
+      "triangleBudget": 420
+    }
+  ],
+  "renders": [
+    {
+      "id": "plate-four-open",
+      "asset": "base-mounting-plate",
+      "choices": {
+        "holePattern": "4-corner",
+        "fasteners": "open"
+      },
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.06,
+          0.017,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 2,
+        "parts": 2,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "12cde8ad9771922ac573d270bf4a7793ea436f9ec8b9d2ef2005d5fdf64b05fe"
+    },
+    {
+      "id": "plate-eight-installed",
+      "asset": "base-mounting-plate",
+      "choices": {
+        "holePattern": "8-perimeter",
+        "fasteners": "installed"
+      },
+      "preset": "galvanized",
+      "stats": {
+        "triangles": 1208,
+        "sizeM": [
+          0.06,
+          0.017,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 10,
+        "parts": 10,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "d0524ae63c67feb38734b2ca60ceb09af9e8b37a9bd3183fc0c4e6b24339a906"
+    },
+    {
+      "id": "blind-four-open",
+      "asset": "blind-flange",
+      "choices": {
+        "boltCount": "4",
+        "fasteners": "open"
+      },
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          0.056,
+          0.0102,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 2,
+        "parts": 2,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "07777c83e961aa261bdf3065df6dbdf20bee67ffc3c6ac6460766e12409cd158"
+    },
+    {
+      "id": "blind-eight-installed",
+      "asset": "blind-flange",
+      "choices": {
+        "boltCount": "8",
+        "fasteners": "installed"
+      },
+      "preset": "clean",
+      "stats": {
+        "triangles": 1240,
+        "sizeM": [
+          0.056,
+          0.0102,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 10,
+        "parts": 10,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "e06324c6de456530c10cb191611843253ff726c0f373c80ef9fe56c02fcb0463"
+    },
+    {
+      "id": "coupling-two-seals",
+      "asset": "pipe-coupling",
+      "choices": {
+        "sealConfiguration": "two-seals"
+      },
+      "stats": {
+        "triangles": 480,
+        "sizeM": [
+          0.038,
+          0.028,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "3515c3a566d220a78db5de9c553e1f26e98f07db2c5f112dec9a5d38cde7fe5c"
+    },
+    {
+      "id": "coupling-bare-clean-service",
+      "asset": "pipe-coupling",
+      "choices": {
+        "sealConfiguration": "bare-sleeve"
+      },
+      "preset": "cleanService",
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.038,
+          0.028,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "52938327256873b0904006cb94d0276c067fb0c81440432af73ac3b21c4bb7ae"
+    },
+    {
+      "id": "flange-four-open",
+      "asset": "pipe-flange",
+      "choices": {
+        "boltCount": "4",
+        "fasteners": "open"
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.056,
+          0.0238,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 2,
+        "parts": 2,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "3ca09d790b28c830bd389051808ac58a246a178c380a84a8ce5b006e54f02385"
+    },
+    {
+      "id": "flange-eight-installed",
+      "asset": "pipe-flange",
+      "choices": {
+        "boltCount": "8",
+        "fasteners": "installed"
+      },
+      "preset": "clean",
+      "stats": {
+        "triangles": 1344,
+        "sizeM": [
+          0.056,
+          0.0238,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 10,
+        "parts": 10,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "9791dc7e4e64707d9cd16fa55703991863818bbf78ff57c4aaf7270923058249"
+    },
+    {
+      "id": "bumper-male-stud",
+      "asset": "rubber-bumper",
+      "choices": {
+        "mounting": "male-stud"
+      },
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.036,
+          0.0267,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "bd8cbcd7a03751def39a17f1177ecd3a663af51c4e26a2f431a42b8b4eda233e"
+    },
+    {
+      "id": "bumper-threaded-insert",
+      "asset": "rubber-bumper",
+      "choices": {
+        "mounting": "threaded-insert"
+      },
+      "preset": "clean",
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.036,
+          0.0168,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 2,
+        "parts": 2,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "117d94a07545fb186483a2d54e47ee4e3e53f40d033d78a19a60ed90a0f799b4"
+    }
+  ]
+}

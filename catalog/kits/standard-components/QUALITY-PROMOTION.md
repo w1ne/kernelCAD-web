@@ -31,6 +31,22 @@ The first integration run overlapped the long index rebuild and caught the old
 `piano-hinge` hash. That superseded run is retained in the evidence directory;
 the full suite was rerun successfully after the new index completed.
 
+## Installation-layout follow-up — 2026-11-09
+
+The [installation-variant handoff](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md)
+refines five existing assets without adding IDs: the base mounting plate,
+blind flange, pipe coupling, pipe flange and rubber bumper. Each now has three
+material-named controls and a fourth named palette. Hole count, installed
+fasteners, coupling seals and bumper mounting interface change generated
+geometry. Defaults are **264**, **296**, **480**, **400** and **332** triangles
+respectively; each stays under its source triangle budget. The kit remains
+**50/50 passing**, and the global gate remains **2,402/2,402 (100.00%; 50 rich
+kits, 0 thin kits)**. No assets were added. The handoff records all 50 refreshed
+previews, generated index and source hashes, local page checks, the required
+lint and integration results, named option renders and the inspected MP4. The
+branch is not deployed; these remain generic scene assets without vendor
+dimensions or physical acceptance claims.
+
 ## Review and demo
 
 The [15-second MP4 workflow demo](demo/workflow.mp4) shows the local source,

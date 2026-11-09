@@ -307658,7 +307658,7 @@
       "id": "base-mounting-plate",
       "kit": "standard-components",
       "title": "Base mounting plate",
-      "description": "Square equipment mounting plate with four corner holes and a raised locating boss Knobs: model size, steel, brass.",
+      "description": "Square equipment foot plate with a raised locating boss, four- or eight-hole mounting pattern and optional socket-head bolts. Knobs: size, hole pattern, fasteners, steel, brass and zinc finishes.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -307676,8 +307676,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
       "preview": "/assets/standard-components-base-mounting-plate.png",
-      "sourceSha256": "168ad147693e639e8dbeadab27a413439241a516b99b70896c87e3001b821aa7",
-      "triangleBudget": 300,
+      "sourceSha256": "9b0ffee21e8a9c61e3e378d8229c326ee5a7cc09ae96e0c540de79537021303c",
+      "triangleBudget": 1300,
       "params": [
         {
           "name": "size",
@@ -307691,37 +307691,71 @@
           ]
         },
         {
+          "name": "holePattern",
+          "type": "choice",
+          "default": "4-corner",
+          "label": "Hole pattern",
+          "choices": [
+            "4-corner",
+            "8-perimeter"
+          ]
+        },
+        {
+          "name": "fasteners",
+          "type": "choice",
+          "default": "open",
+          "label": "Mounting bolts",
+          "choices": [
+            "open",
+            "installed"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Plate steel"
         },
         {
           "name": "brass",
           "type": "color",
           "default": "#b28a4d",
-          "label": "Brass"
+          "label": "Locating boss brass"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#b7c0c5",
+          "label": "Bolt zinc plating"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "brass": "#725938"
+          "brass": "#725938",
+          "zinc": "#727c81"
         },
         "brass": {
           "steel": "#646f75",
-          "brass": "#c0944d"
+          "brass": "#c0944d",
+          "zinc": "#9c845e"
         },
         "weathered": {
           "steel": "#665b4d",
-          "brass": "#8c734d"
+          "brass": "#8c734d",
+          "zinc": "#756d62"
+        },
+        "galvanized": {
+          "steel": "#aab3b8",
+          "brass": "#ad8954",
+          "zinc": "#c4cbd0"
         }
       },
       "stats": {
         "triangles": 264,
         "sizeM": [
           0.06,
-          0.013,
+          0.017,
           0.06
         ],
         "minUpM": 0,
@@ -307740,7 +307774,7 @@
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "boss"
+            "locating-boss"
           ],
           "param": "brass"
         }
@@ -307843,7 +307877,7 @@
       "id": "blind-flange",
       "kit": "standard-components",
       "title": "Blind flange",
-      "description": "Solid round blind pipe flange with four recessed mounting-hole bores Knobs: model size, cast iron, bronze.",
+      "description": "Solid cast-iron pipe-end closure with a raised sealing face, four- or eight-hole bolt circle and optional installed bolts. Knobs: size, bolt count, fasteners, cast iron, bronze and zinc finishes.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -307861,8 +307895,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
       "preview": "/assets/standard-components-blind-flange.png",
-      "sourceSha256": "c664bbdbda6f4b223c2aec9bd4f9a686470d784280d65a9df285b88b4bd90eb2",
-      "triangleBudget": 340,
+      "sourceSha256": "f3d6d70823b6d4c33352185acfe7b485b93574d31948145c8c4adc2b9ebbf05f",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "size",
@@ -307876,6 +307910,26 @@
           ]
         },
         {
+          "name": "boltCount",
+          "type": "choice",
+          "default": "4",
+          "label": "Bolt circle holes",
+          "choices": [
+            "4",
+            "8"
+          ]
+        },
+        {
+          "name": "fasteners",
+          "type": "choice",
+          "default": "open",
+          "label": "Flange bolts",
+          "choices": [
+            "open",
+            "installed"
+          ]
+        },
+        {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
@@ -307885,28 +307939,42 @@
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Raised sealing face bronze"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#b7c0c5",
+          "label": "Bolt zinc plating"
         }
       ],
       "presets": {
         "dark": {
           "castIron": "#3b4246",
-          "bronze": "#684d37"
+          "bronze": "#684d37",
+          "zinc": "#727c81"
         },
         "brass": {
           "castIron": "#69645b",
-          "bronze": "#b0804d"
+          "bronze": "#b0804d",
+          "zinc": "#a28b68"
         },
         "weathered": {
           "castIron": "#4d4b46",
-          "bronze": "#6e583f"
+          "bronze": "#6e583f",
+          "zinc": "#756d62"
+        },
+        "clean": {
+          "castIron": "#a9b1b6",
+          "bronze": "#b18a53",
+          "zinc": "#c4cbd0"
         }
       },
       "stats": {
         "triangles": 296,
         "sizeM": [
           0.056,
-          0.011,
+          0.0102,
           0.056
         ],
         "minUpM": 0,
@@ -307917,7 +307985,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "plate"
+            "blind-flange-body"
           ],
           "param": "castIron"
         },
@@ -307925,7 +307993,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "hub"
+            "raised-sealing-face"
           ],
           "param": "bronze"
         }
@@ -310408,7 +310476,7 @@
       "id": "pipe-coupling",
       "kit": "standard-components",
       "title": "Pipe coupling sleeve",
-      "description": "Short hollow straight coupling sleeve with raised end collars Knobs: model size, steel, stainless steel.",
+      "description": "Hollow straight pipe sleeve with raised end collars and a visible pair of elastomer bore seals. Choose sealed or bare ends and recolor the steel, stainless collars and rubber seals.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -310426,8 +310494,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
       "preview": "/assets/standard-components-pipe-coupling.png",
-      "sourceSha256": "e848da3d9e106fc9c12813db7718ccb942971f004664470972c917bfc83eea75",
-      "triangleBudget": 320,
+      "sourceSha256": "b3aed7920c6ea10f85da857cf6be173b34a5254d04d9e623d4f0399e0d1fbf39",
+      "triangleBudget": 640,
       "params": [
         {
           "name": "size",
@@ -310441,34 +310509,58 @@
           ]
         },
         {
+          "name": "sealConfiguration",
+          "type": "choice",
+          "default": "two-seals",
+          "label": "Bore seals",
+          "choices": [
+            "two-seals",
+            "bare-sleeve"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Sleeve steel"
         },
         {
           "name": "stainless",
           "type": "color",
           "default": "#b8c1c6",
-          "label": "Stainless steel"
+          "label": "Collar stainless steel"
+        },
+        {
+          "name": "seal",
+          "type": "color",
+          "default": "#343b3e",
+          "label": "Elastomer seal"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "stainless": "#7d8a91"
+          "stainless": "#7d8a91",
+          "seal": "#242729"
         },
         "brass": {
           "steel": "#646f75",
-          "stainless": "#b38b52"
+          "stainless": "#b38b52",
+          "seal": "#2a2d2f"
         },
         "weathered": {
           "steel": "#665b4d",
-          "stainless": "#8b8275"
+          "stainless": "#8b8275",
+          "seal": "#3b3935"
+        },
+        "cleanService": {
+          "steel": "#9aa6ad",
+          "stainless": "#c8d0d4",
+          "seal": "#477c8d"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 480,
         "sizeM": [
           0.038,
           0.028,
@@ -310482,7 +310574,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "sleeve"
+            "coupling-sleeve"
           ],
           "param": "steel"
         },
@@ -310490,10 +310582,19 @@
           "name": "stainless",
           "color": "#b8c1c6",
           "parts": [
-            "collar-a",
-            "collar-b"
+            "entry-collar-a",
+            "entry-collar-b"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "seal",
+          "color": "#343b3e",
+          "parts": [
+            "bore-seal-a",
+            "bore-seal-b"
+          ],
+          "param": "seal"
         }
       ]
     },
@@ -310687,7 +310788,7 @@
       "id": "pipe-flange",
       "kit": "standard-components",
       "title": "Pipe flange",
-      "description": "Round slip-on pipe flange with a center bore and four bolt-hole positions Knobs: model size, stainless steel, cast iron.",
+      "description": "Slip-on pipe flange with a hollow raised neck, four- or eight-hole bolt circle and optional installed bolts. Knobs: size, bolt count, fasteners, cast iron, stainless steel and zinc finishes.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -310705,8 +310806,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
       "preview": "/assets/standard-components-pipe-flange.png",
-      "sourceSha256": "8cfefec718dee503b774639532b4e7f73281712d5f820acee8e86c5ef8d7472c",
-      "triangleBudget": 450,
+      "sourceSha256": "e8b1d432e4a8d8d3c61b860c784b0143cd9e46ea8adc77de4f6899dd0f44e026",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "size",
@@ -310720,37 +310821,71 @@
           ]
         },
         {
+          "name": "boltCount",
+          "type": "choice",
+          "default": "4",
+          "label": "Bolt circle holes",
+          "choices": [
+            "4",
+            "8"
+          ]
+        },
+        {
+          "name": "fasteners",
+          "type": "choice",
+          "default": "open",
+          "label": "Flange bolts",
+          "choices": [
+            "open",
+            "installed"
+          ]
+        },
+        {
           "name": "stainless",
           "type": "color",
           "default": "#b8c1c6",
-          "label": "Stainless steel"
+          "label": "Neck stainless steel"
         },
         {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
-          "label": "Cast iron"
+          "label": "Flange cast iron"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#b7c0c5",
+          "label": "Bolt zinc plating"
         }
       ],
       "presets": {
         "dark": {
           "stainless": "#7d8a91",
-          "castIron": "#3b4246"
+          "castIron": "#3b4246",
+          "zinc": "#727c81"
         },
         "brass": {
           "stainless": "#b38b52",
-          "castIron": "#69645b"
+          "castIron": "#69645b",
+          "zinc": "#a28b68"
         },
         "weathered": {
           "stainless": "#8b8275",
-          "castIron": "#4d4b46"
+          "castIron": "#4d4b46",
+          "zinc": "#756d62"
+        },
+        "clean": {
+          "stainless": "#d2d9dd",
+          "castIron": "#9ba6ac",
+          "zinc": "#c4cbd0"
         }
       },
       "stats": {
         "triangles": 400,
         "sizeM": [
           0.056,
-          0.024,
+          0.0238,
           0.056
         ],
         "minUpM": 0,
@@ -310761,7 +310896,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "flange"
+            "flange-ring"
           ],
           "param": "castIron"
         },
@@ -310769,7 +310904,7 @@
           "name": "stainless",
           "color": "#b8c1c6",
           "parts": [
-            "neck"
+            "slip-on-neck"
           ],
           "param": "stainless"
         }
@@ -311244,7 +311379,7 @@
       "id": "rubber-bumper",
       "kit": "standard-components",
       "title": "Rubber bumper",
-      "description": "Low-profile cylindrical vibration bumper with a flat base and centered mounting stem Knobs: model size, steel, rubber.",
+      "description": "Stepped rubber vibration isolator with a broad mounting flange, narrowed crown and selectable male stud or recessed threaded insert. Knobs: size, mounting style, rubber, steel and zinc-plated hardware.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -311262,8 +311397,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
       "preview": "/assets/standard-components-rubber-bumper.png",
-      "sourceSha256": "2d4be457dc5538c2fa4cdd2e461cafd279ce639dd6f5d0917521ff49660f6771",
-      "triangleBudget": 260,
+      "sourceSha256": "ca5fe840fc64788e8586450c2b34b6eba192e2fc884b7da6dc242bd799d89d20",
+      "triangleBudget": 420,
       "params": [
         {
           "name": "size",
@@ -311277,37 +311412,61 @@
           ]
         },
         {
+          "name": "mounting",
+          "type": "choice",
+          "default": "male-stud",
+          "label": "Mounting interface",
+          "choices": [
+            "male-stud",
+            "threaded-insert"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Stud steel"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#353a3d",
-          "label": "Rubber"
+          "label": "Elastomer body"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#b7c0c5",
+          "label": "Insert hardware zinc"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "rubber": "#242729"
+          "rubber": "#242729",
+          "zinc": "#727c81"
         },
         "brass": {
           "steel": "#646f75",
-          "rubber": "#2a2d2f"
+          "rubber": "#2a2d2f",
+          "zinc": "#a28b68"
         },
         "weathered": {
           "steel": "#665b4d",
-          "rubber": "#3b3935"
+          "rubber": "#3b3935",
+          "zinc": "#756d62"
+        },
+        "clean": {
+          "steel": "#c1c9ce",
+          "rubber": "#454b4e",
+          "zinc": "#d1d7db"
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 332,
         "sizeM": [
           0.036,
-          0.029,
+          0.0267,
           0.036
         ],
         "minUpM": 0,
@@ -311318,16 +311477,23 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "base",
-            "crown"
+            "stepped-elastomer-foot"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "zinc",
+          "color": "#b7c0c5",
+          "parts": [
+            "stud-seat-washer"
+          ],
+          "param": "zinc"
         },
         {
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "stem"
+            "male-mounting-stud"
           ],
           "param": "steel"
         }
