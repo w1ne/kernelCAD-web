@@ -411,7 +411,7 @@ function num(v: string | undefined, fallback = 0): number {
 
 /** Resolve the element's effective style: inherited keys, then its own
  *  attributes, then its `style` declarations. */
-function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
+export function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
   const style: Attrs = { ...inherited };
   for (const k of INHERITED) if (attrs[k] !== undefined) style[k] = attrs[k];
   if (attrs.style !== undefined) {

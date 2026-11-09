@@ -3,6 +3,8 @@
 // SVG readback and layout checks. The drawing remains the source of truth.
 import { SHEETS, type DrawingSheetSize, type DrawingViewName } from './drawingLayout';
 import type { DrawingReport } from './drawingAuto/contracts';
+import { runAdvanceEm, textRuns } from '../../export/pdf/helveticaMetrics';
+import { effectiveStyle, parseTransform } from '../../export/pdf/svgSheetToPdf';
 import type { DrawingVisualQaCheck, DrawingVisualQaIssue, DrawingVisualQaIssueCode, DrawingVisualQaReport } from './drawingVisualQa';
 
 interface Bounds {
@@ -144,40 +146,51 @@ export function readDrawingSvgPageSize(svg: string): { width: number; height: nu
   return size ? { width: size.width, height: size.height } : undefined;
 }
 
-function inheritedFontSize(node: SvgNode): number {
-  for (let cursor: SvgNode | undefined = node; cursor; cursor = cursor.parent) {
-    const styleValue = /(?:^|;)\s*font-size\s*:\s*([\d.]+)/.exec(cursor.attrs.style ?? '')?.[1];
-    const value = Number.parseFloat(cursor.attrs['font-size'] ?? styleValue ?? '');
-    if (Number.isFinite(value) && value > 0) return value;
+type Affine = readonly [number, number, number, number, number, number];
+const IDENTITY: Affine = [1, 0, 0, 1, 0, 0];
+
+function multiply(a: Affine, b: Affine): Affine {
+  return [
+    a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1],
+    a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3],
+    a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5],
+  ];
+}
+
+/** Follow the same inherited text styles and affine transforms as vector PDF export. */
+function paintedTextContext(node: SvgNode): { style: Record<string, string>; matrix: Affine } {
+  const chain: SvgNode[] = [];
+  for (let current: SvgNode | undefined = node; current; current = current.parent) chain.unshift(current);
+  let style: Record<string, string> = {};
+  let matrix: Affine = IDENTITY;
+  for (const current of chain) {
+    style = effectiveStyle(style, current.attrs);
+    matrix = multiply(matrix, parseTransform(current.attrs.transform) ?? IDENTITY);
   }
-  return 3;
+  return { style, matrix };
 }
 
 function textBounds(node: SvgNode): Bounds | undefined {
-  const x = numberAttr(node, 'x'), y = numberAttr(node, 'y');
-  if (x === undefined || y === undefined) return undefined;
-  const size = inheritedFontSize(node);
-  const text = descendantsText(node).trim();
-  const width = Math.max(size * 0.35, [...text].length * size * 0.58);
-  const anchor = node.attrs['text-anchor'] ?? 'start';
-  let x0 = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
-  let x1 = anchor === 'middle' ? x + width / 2 : anchor === 'end' ? x : x + width;
-  let y0 = y - size * 0.9, y1 = y + size * 0.25;
-  const transform = node.attrs.transform;
-  if (transform) {
-    const rotate = /rotate\(\s*(-?\d+(?:\.\d+)?)\s*(?:[,\s]+\s*(-?\d+(?:\.\d+)?)[,\s]+\s*(-?\d+(?:\.\d+)?))?\s*\)/.exec(transform);
-    if (rotate) {
-      const angle = Number(rotate[1]) * Math.PI / 180;
-      const cx = Number(rotate[2] ?? 0), cy = Number(rotate[3] ?? 0);
-      const points = [[x0, y0], [x0, y1], [x1, y0], [x1, y1]].map(([px, py]) => {
-        const dx = px! - cx, dy = py! - cy;
-        return [cx + dx * Math.cos(angle) - dy * Math.sin(angle), cy + dx * Math.sin(angle) + dy * Math.cos(angle)];
-      });
-      x0 = Math.min(...points.map(p => p[0]!)); x1 = Math.max(...points.map(p => p[0]!));
-      y0 = Math.min(...points.map(p => p[1]!)); y1 = Math.max(...points.map(p => p[1]!));
-    }
-  }
-  return { x0, y0, x1, y1 };
+  const text = node.text.replace(/\s+/g, ' ').trim();
+  if (!text) return undefined;
+  const { style, matrix } = paintedTextContext(node);
+  if (style.fill === 'none') return undefined;
+  const rawSize = Number.parseFloat(style['font-size'] ?? '');
+  const size = Number.isFinite(rawSize) ? rawSize : 16;
+  if (size <= 0) return undefined;
+  const x = (numberAttr(node, 'x') ?? 0) + (numberAttr(node, 'dx') ?? 0);
+  const y = (numberAttr(node, 'y') ?? 0) + (numberAttr(node, 'dy') ?? 0);
+  const weight = style['font-weight'];
+  const bold = weight === 'bold' || weight === 'bolder' || Number(weight) >= 600;
+  const width = textRuns(text).reduce((total, run) => total + runAdvanceEm(run, bold), 0) * size;
+  const anchor = style['text-anchor'];
+  const left = x - (anchor === 'middle' ? width / 2 : anchor === 'end' ? width : 0);
+  const corners = [[left, y - 0.8 * size], [left + width, y - 0.8 * size],
+    [left + width, y + 0.25 * size], [left, y + 0.25 * size]]
+    .map(([px, py]) => [matrix[0] * px! + matrix[2] * py! + matrix[4],
+      matrix[1] * px! + matrix[3] * py! + matrix[5]]);
+  const xs = corners.map(p => p[0]!), ys = corners.map(p => p[1]!);
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
 }
 
 function descendantsText(node: SvgNode): string {
