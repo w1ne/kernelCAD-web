@@ -103,6 +103,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       views: pdf.views,
       draftingProfile: pdf.draftingProfile,
       annotationOverrides: pdf.annotationOverrides,
+      layoutRepair: pdf.layoutRepair,
       reviewPlans: pdf.reviewPlans,
       decisionResolutions: pdf.decisionResolutions,
       requireCompleteReview: pdf.requireCompleteReview,

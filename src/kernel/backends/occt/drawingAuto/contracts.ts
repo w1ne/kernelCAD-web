@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReview } from '../../../../shared/intent/drawingReview';
+import type { SheetPlacementReview } from '../drawingSheetPreflight';
+import type { RenderedTextReview } from '../../../export/pdf/drawingTextReview';
 // src/kernel/backends/occt/drawingAuto/contracts.ts
 
 import type { OcctBackend } from '../occtBackend';
@@ -29,6 +31,14 @@ export interface DrawingReportAnnotation {
 
 export interface DrawingReport {
   review?: DrawingReview;
+  /** Geometry-box preflight only; clear does not certify annotations or manufacturing readiness. */
+  sheetPlacement?: SheetPlacementReview;
+  /** Actual exported SVG text reviewed with vector-PDF font advances and transformations.
+   *  Approximate text boxes are not proof of readable raster output. */
+  renderedText?: RenderedTextReview;
+  /** Bounded paper-size repair history; does not imply verified manufacturing. */
+  sheetRepair?: { applied: boolean; status: 'clear' | 'issues';
+    attempts: Array<{ sheet: string; issueCount: number; overlapped: number; textIssueCount: number }> };
   /** Annotations rendered clear of geometry, other labels and the frame. */
   placed: number;
   /** Annotations rendered but still colliding with something. */
