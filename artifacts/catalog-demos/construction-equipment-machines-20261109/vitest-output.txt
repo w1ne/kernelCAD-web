@@ -8,3 +8,11 @@ npm notice run 'vitest' run tests/integration/catalog/
  ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 13746ms
      ✓ a kit-representative sample opens with exactly the knobs its index row lists  12453ms
      ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  473ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 588923ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  588313ms
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  21:12:25
+   Duration  594.27s (transform 17.89s, setup 453ms, import 23.97s, tests 603.75s, environment 0ms)
+
