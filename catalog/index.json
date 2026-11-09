@@ -126331,12 +126331,18 @@
       "id": "ebb-flow-grow-table",
       "kit": "hydroponics",
       "title": "Ebb-and-flow grow table",
-      "description": "Flood-and-drain bench with a shallow growing tray, underframe, overflow standpipe and return outlet. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Flood-and-drain grow bench at about real size: moulded flood tray with raised lip and channelled floor, corner flood/drain fitting with overflow standpipe, return pipe into a lidded reservoir under the bench, galvanised bench frame on roller tubes, and a crop of potted plants or plug flats. Material controls: bench frame, flood tray, pots and crop foliage, plus a crop choice. potted, darkTray, flowering and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ebb and flow",
+        "flood and drain",
+        "flood table",
+        "rolling bench",
+        "grow table",
         "hydroponics",
         "greenhouse",
+        "nursery",
         "controlled environment agriculture",
         "low poly",
         "scene prop"
@@ -126350,8 +126356,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ebb-flow-grow-table.kcad.ts",
       "preview": "/assets/hydroponics-ebb-flow-grow-table.png",
-      "sourceSha256": "66b9d280296c4bde93f18b66ce32ad6f5c2e196fc52d5ada7b7876224874dfd8",
-      "triangleBudget": 1800,
+      "sourceSha256": "95467c7a4a73388c5771d26f844a94512560a5a418bdb09e42e52daa60ece896",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -126363,79 +126369,347 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a9b1b4",
+          "label": "Bench frame (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "tray",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#ecebe4",
+          "label": "Flood tray (ABS)"
         },
         {
-          "name": "polymer",
+          "name": "pots",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2a2c2e",
+          "label": "Pots and flats (polypropylene)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#5f9e3c",
+          "label": "Crop foliage"
+        },
+        {
+          "name": "crop",
+          "type": "choice",
+          "default": "potted",
+          "label": "Crop on the tray",
+          "choices": [
+            "potted",
+            "plug flats",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "potted": {
+          "frame": "#a9b1b4",
+          "tray": "#ecebe4",
+          "pots": "#2a2c2e",
+          "foliage": "#5f9e3c"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "darkTray": {
+          "frame": "#a9b1b4",
+          "tray": "#2b2e30",
+          "pots": "#b5643c",
+          "foliage": "#6faa44"
+        },
+        "flowering": {
+          "frame": "#8f9699",
+          "tray": "#ecebe4",
+          "pots": "#2a2c2e",
+          "foliage": "#c0508a"
+        },
+        "weathered": {
+          "frame": "#8c8a80",
+          "tray": "#d4cfbf",
+          "pots": "#4a4a46",
+          "foliage": "#86a35a"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 4088,
         "sizeM": [
-          1.8,
-          0.97,
-          1.095
+          2.44,
+          1.0252,
+          1.249
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "frame",
+          "color": "#a9b1b4",
           "parts": [
-            "tray-floor",
-            "front-lip",
-            "back-lip",
-            "left-lip",
-            "right-lip"
+            "leg--1000--450",
+            "leg--1000-450",
+            "cross--1000",
+            "brace--1000",
+            "leg-0--450",
+            "leg-0-450",
+            "cross-0",
+            "brace-0",
+            "leg-1000--450",
+            "leg-1000-450",
+            "cross-1000",
+            "brace-1000",
+            "side-rail--450",
+            "side-rail-450",
+            "lower-rail"
           ],
-          "param": "polymer"
+          "param": "frame"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "foot--1000--450",
+          "color": "#6b7174",
           "parts": [
-            "leg-left-front",
-            "leg-right-front",
-            "leg-left-back",
-            "leg-right-back",
-            "lower-brace"
-          ],
-          "param": "powderCoatedSteel"
+            "foot--1000--450",
+            "foot--1000-450",
+            "foot-0--450",
+            "foot-0-450",
+            "foot-1000--450",
+            "foot-1000-450",
+            "roller-saddle--1000--380",
+            "roller-saddle-0--380",
+            "roller-saddle-1000--380",
+            "roller-saddle--1000-380",
+            "roller-saddle-0-380",
+            "roller-saddle-1000-380",
+            "anti-tip-hook"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "roller-tube--380",
+          "color": "#c9cfd1",
+          "parts": [
+            "roller-tube--380",
+            "roller-tube-380"
+          ]
+        },
+        {
+          "name": "tray",
+          "color": "#ecebe4",
+          "parts": [
+            "tray-shell",
+            "tray-lip",
+            "floor-rib-x-0",
+            "floor-rib-x-1",
+            "floor-rib-x-2",
+            "floor-rib-x-3",
+            "floor-rib-x-4",
+            "floor-rib-x-5",
+            "floor-rib-x-6",
+            "floor-rib-x-7",
+            "floor-rib-x-8",
+            "lip-rib-0",
+            "lip-rib-1",
+            "lip-rib-2",
+            "lip-rib-3"
+          ],
+          "param": "tray"
+        },
+        {
+          "name": "centre-channel",
+          "color": "#c8c6bc",
+          "parts": [
+            "centre-channel"
+          ]
+        },
+        {
+          "name": "fitting-flange",
+          "color": "#3d4245",
+          "parts": [
+            "fitting-flange",
+            "standpipe-screen",
+            "fill-drain-fitting"
+          ]
+        },
+        {
+          "name": "overflow-standpipe",
+          "color": "#e0e2dc",
           "parts": [
             "overflow-standpipe",
-            "return-outlet"
+            "return-pipe",
+            "drain-elbow"
+          ]
+        },
+        {
+          "name": "feed-pipe",
+          "color": "#2f6fa8",
+          "parts": [
+            "feed-pipe",
+            "timer-dial"
+          ]
+        },
+        {
+          "name": "reservoir",
+          "color": "#30373b",
+          "parts": [
+            "reservoir"
+          ]
+        },
+        {
+          "name": "reservoir-lid",
+          "color": "#3e464a",
+          "parts": [
+            "reservoir-lid",
+            "reservoir-rib"
+          ]
+        },
+        {
+          "name": "reservoir-level-tube",
+          "color": "#7fb7c8",
+          "parts": [
+            "reservoir-level-tube"
+          ]
+        },
+        {
+          "name": "pump-timer",
+          "color": "#d8d8d0",
+          "parts": [
+            "pump-timer"
+          ]
+        },
+        {
+          "name": "pump-lead",
+          "color": "#1d2023",
+          "parts": [
+            "pump-lead"
+          ]
+        },
+        {
+          "name": "pots",
+          "color": "#2a2c2e",
+          "parts": [
+            "pot-0-1",
+            "pot-0-2",
+            "pot-0-3",
+            "pot-0-4",
+            "pot-1-0",
+            "pot-1-1",
+            "pot-1-2",
+            "pot-1-3",
+            "pot-1-4",
+            "pot-2-0",
+            "pot-2-1",
+            "pot-2-2",
+            "pot-2-3",
+            "pot-2-4",
+            "pot-3-0",
+            "pot-3-1",
+            "pot-3-2",
+            "pot-3-3",
+            "pot-3-4",
+            "pot-4-0",
+            "pot-4-1",
+            "pot-4-2",
+            "pot-4-3",
+            "pot-4-4",
+            "pot-5-0",
+            "pot-5-1",
+            "pot-5-2",
+            "pot-5-3",
+            "pot-5-4",
+            "pot-6-0",
+            "pot-6-1",
+            "pot-6-2",
+            "pot-6-3",
+            "pot-6-4",
+            "pot-7-0",
+            "pot-7-1",
+            "pot-7-2",
+            "pot-7-3",
+            "pot-7-4",
+            "pot-8-0",
+            "pot-8-1",
+            "pot-8-2",
+            "pot-8-3",
+            "pot-8-4",
+            "pot-9-0",
+            "pot-9-1",
+            "pot-9-2",
+            "pot-9-3",
+            "pot-9-4"
           ],
-          "param": "pvc"
+          "param": "pots"
+        },
+        {
+          "name": "foliage",
+          "color": "#5f9e3c",
+          "parts": [
+            "plant-0-1",
+            "plant-0-2",
+            "plant-0-3",
+            "plant-0-4",
+            "plant-1-0",
+            "plant-1-1",
+            "plant-1-2",
+            "plant-1-3",
+            "plant-1-4",
+            "plant-2-0",
+            "plant-2-1",
+            "plant-2-2",
+            "plant-2-3",
+            "plant-2-4",
+            "plant-3-0",
+            "plant-3-1",
+            "plant-3-2",
+            "plant-3-3",
+            "plant-3-4",
+            "plant-4-0",
+            "plant-4-1",
+            "plant-4-2",
+            "plant-4-3",
+            "plant-4-4",
+            "plant-5-0",
+            "plant-5-1",
+            "plant-5-2",
+            "plant-5-3",
+            "plant-5-4",
+            "plant-6-0",
+            "plant-6-1",
+            "plant-6-2",
+            "plant-6-3",
+            "plant-6-4",
+            "plant-7-0",
+            "plant-7-1",
+            "plant-7-2",
+            "plant-7-3",
+            "plant-7-4",
+            "plant-8-0",
+            "plant-8-1",
+            "plant-8-2",
+            "plant-8-3",
+            "plant-8-4",
+            "plant-9-0",
+            "plant-9-1",
+            "plant-9-2",
+            "plant-9-3",
+            "plant-9-4"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "bloom-0-4",
+          "color": "#e8d85a",
+          "parts": [
+            "bloom-0-4",
+            "bloom-1-3",
+            "bloom-2-2",
+            "bloom-3-1",
+            "bloom-4-0",
+            "bloom-4-4",
+            "bloom-5-3",
+            "bloom-6-2",
+            "bloom-7-1",
+            "bloom-8-0",
+            "bloom-8-4",
+            "bloom-9-3"
+          ]
         }
       ]
     },
@@ -126982,10 +127256,19 @@
       "id": "greenhouse-exhaust-fan",
       "kit": "hydroponics",
       "title": "Greenhouse exhaust fan",
-      "description": "Wall exhaust module with an open square mounting frame, four swept rotor blades, rear motor and central drive hub. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
+      "description": "Greenhouse box exhaust fan at about real size: deep square galvanised housing with a flanged front and round venturi ring, square wire intake guard, pitched propeller blades on a hub, belt drive from a corner motor to a hub pulley on a rear spider bracket, gravity shutter slats on the exhaust face, junction box and conduit, on a skid frame. Material controls: housing, propeller blades, wire guard and motor, plus a blade count choice. galvanised, whiteHousing, blackGuard and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "exhaust fan",
+        "box fan",
+        "greenhouse fan",
+        "ventilation fan",
+        "belt drive fan",
+        "shutter fan",
+        "wall fan",
+        "cooling",
+        "ventilation",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -127001,8 +127284,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-exhaust-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-exhaust-fan.png",
-      "sourceSha256": "a2409fdbeaa6eefc99ef446cc4c7d7e81d38dae9bd48c635bcf748be2d8e6aa1",
-      "triangleBudget": 1800,
+      "sourceSha256": "a9455586a672e32dcbcb62f07cf81c1bbe9c537333d313b7aa3ae698fe1d43ed",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -127014,84 +127297,227 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b8bec2",
+          "label": "Housing (galvanised steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "blades",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#d6dadc",
+          "label": "Propeller blades (aluminium)"
         },
         {
-          "name": "polymer",
+          "name": "guard",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#5d6367",
+          "label": "Wire guard (zinc-plated steel)"
+        },
+        {
+          "name": "motor",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Motor (painted cast iron)"
+        },
+        {
+          "name": "bladeCount",
+          "type": "choice",
+          "default": "6",
+          "label": "Propeller blades",
+          "choices": [
+            "3",
+            "6"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "polymer": "#b4b5aa"
+        "galvanised": {
+          "housing": "#b8bec2",
+          "blades": "#d6dadc",
+          "guard": "#5d6367",
+          "motor": "#2f6fa8"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "polymer": "#f2c84b"
+        "whiteHousing": {
+          "housing": "#ecece6",
+          "blades": "#c9ced2",
+          "guard": "#5d6367",
+          "motor": "#3f7f4a"
+        },
+        "blackGuard": {
+          "housing": "#b8bec2",
+          "blades": "#e6e8ea",
+          "guard": "#202325",
+          "motor": "#c0392b"
+        },
+        "weathered": {
+          "housing": "#8f938c",
+          "blades": "#a9aca6",
+          "guard": "#5b5146",
+          "motor": "#4f6070"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 1412,
         "sizeM": [
-          1.05,
-          1.05,
-          0.515
+          1.46,
+          1.746,
+          0.76
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "guard",
+          "color": "#5d6367",
           "parts": [
-            "fan-hub",
-            "motor-housing",
-            "outer-frame-top",
-            "outer-frame-bottom",
-            "outer-frame-left",
-            "outer-frame-right",
-            "inner-frame-top",
-            "inner-frame-bottom",
-            "inner-frame-left",
-            "inner-frame-right"
+            "skid--570",
+            "skid-post-f--570",
+            "skid-post-b--570",
+            "skid-570",
+            "skid-post-f-570",
+            "skid-post-b-570",
+            "shutter-link",
+            "guard-v-0",
+            "guard-h-0",
+            "guard-v-1",
+            "guard-h-1",
+            "guard-v-2",
+            "guard-h-2",
+            "guard-v-3",
+            "guard-h-3",
+            "guard-v-4",
+            "guard-h-4",
+            "guard-v-5",
+            "guard-h-5",
+            "guard-v-6",
+            "guard-h-6",
+            "guard-v-7",
+            "guard-h-7",
+            "guard-v-8",
+            "guard-h-8",
+            "guard-v-9",
+            "guard-h-9",
+            "guard-v-10",
+            "guard-h-10",
+            "guard-v-11",
+            "guard-h-11",
+            "guard-clip--1",
+            "guard-clip-1"
           ],
-          "param": "powderCoatedSteel"
+          "param": "guard"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "housing",
+          "color": "#b8bec2",
           "parts": [
-            "corner-boss-left",
-            "corner-boss-right",
-            "blade-a",
-            "blade-b",
-            "blade-c",
-            "blade-d"
+            "housing-shell",
+            "front-panel",
+            "front-flange",
+            "venturi-ring",
+            "spider-arm--1--1",
+            "spider-arm-1--1",
+            "spider-arm--1-1",
+            "spider-arm-1-1"
           ],
-          "param": "polymer"
+          "param": "housing"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "corner-gusset--1--1",
+          "color": "#9aa0a4",
           "parts": [
-            "motor-shaft"
+            "corner-gusset--1--1",
+            "corner-gusset--1-1",
+            "corner-gusset-1--1",
+            "corner-gusset-1-1"
+          ]
+        },
+        {
+          "name": "blades",
+          "color": "#d6dadc",
+          "parts": [
+            "blade-0",
+            "blade-1",
+            "blade-2",
+            "blade-3",
+            "blade-4",
+            "blade-5",
+            "hub"
           ],
-          "param": "stainlessSteel"
+          "param": "blades"
+        },
+        {
+          "name": "hub-cap",
+          "color": "#8c9296",
+          "parts": [
+            "hub-cap",
+            "hub-pulley",
+            "drive-shaft",
+            "motor-pulley"
+          ]
+        },
+        {
+          "name": "bearing-block",
+          "color": "#4a4f53",
+          "parts": [
+            "bearing-block",
+            "motor-mount"
+          ]
+        },
+        {
+          "name": "motor",
+          "color": "#2f6fa8",
+          "parts": [
+            "motor-body",
+            "motor-fins"
+          ],
+          "param": "motor"
+        },
+        {
+          "name": "belt-b",
+          "color": "#1d2023",
+          "parts": [
+            "belt-b",
+            "belt-a"
+          ]
+        },
+        {
+          "name": "shutter-0",
+          "color": "#dfe2e4",
+          "parts": [
+            "shutter-0",
+            "shutter-1",
+            "shutter-2",
+            "shutter-3",
+            "shutter-4",
+            "shutter-5",
+            "shutter-6",
+            "shutter-7",
+            "shutter-8"
+          ]
+        },
+        {
+          "name": "junction-box",
+          "color": "#d8d8d0",
+          "parts": [
+            "junction-box"
+          ]
+        },
+        {
+          "name": "conduit",
+          "color": "#5a5f63",
+          "parts": [
+            "conduit",
+            "conduit-run"
+          ]
+        },
+        {
+          "name": "rating-plate",
+          "color": "#e8d85a",
+          "parts": [
+            "rating-plate"
+          ]
         }
       ]
     },
@@ -127803,12 +128229,20 @@
       "id": "hydroponic-grow-rack",
       "kit": "hydroponics",
       "title": "Hydroponic grow rack",
-      "description": "Three-tier crop rack with growing channels, end supports, diagonal-looking cross braces and a feed riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four lidded gutters per tier with planting holes and a growing crop, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "vertical farm",
+        "grow rack",
+        "nft",
+        "nutrient film technique",
+        "gutter",
+        "multi-tier",
+        "indoor farm",
+        "led grow light",
+        "lettuce",
         "hydroponics",
-        "greenhouse",
         "controlled environment agriculture",
         "low poly",
         "scene prop"
@@ -127822,8 +128256,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
-      "sourceSha256": "e5db8bae3624baa0f92a9e64d6eda3600adf5bbfa7a7bb7d69786c971ed55d6c",
-      "triangleBudget": 1800,
+      "sourceSha256": "13cd13f53c9e932b00c9524cd9aaa135b07bfbae111518b19aeb680258c87088",
+      "triangleBudget": 8000,
       "params": [
         {
           "name": "scale",
@@ -127835,78 +128269,419 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#3a6f9e",
+          "label": "Rack frame (powder-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "gutters",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#f0f0ea",
+          "label": "NFT gutters (PVC)"
         },
         {
-          "name": "polymer",
+          "name": "foliage",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#86bb4c",
+          "label": "Crop foliage"
+        },
+        {
+          "name": "lights",
+          "type": "color",
+          "default": "#f6f2ff",
+          "label": "LED grow lights (diffuser glow)"
+        },
+        {
+          "name": "crop",
+          "type": "choice",
+          "default": "lettuce",
+          "label": "Crop in the gutters",
+          "choices": [
+            "lettuce",
+            "microgreens",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "lettuce": {
+          "frame": "#3a6f9e",
+          "gutters": "#f0f0ea",
+          "foliage": "#86bb4c",
+          "lights": "#f6f2ff"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "basil": {
+          "frame": "#3a6f9e",
+          "gutters": "#f0f0ea",
+          "foliage": "#3f8a34",
+          "lights": "#f6f2ff"
+        },
+        "purpleLight": {
+          "frame": "#2e3236",
+          "gutters": "#e8e8e2",
+          "foliage": "#7aa848",
+          "lights": "#d982e0"
+        },
+        "weathered": {
+          "frame": "#5f6e78",
+          "gutters": "#d4d0c2",
+          "foliage": "#93a65a",
+          "lights": "#e8e2d0"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 6266,
         "sizeM": [
-          1.335,
-          1.75,
-          0.955
+          2.98,
+          2.1,
+          0.88
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#3a6f9e",
           "parts": [
-            "leg-front-left",
-            "leg-front-right",
-            "leg-back-left",
-            "leg-back-right",
-            "crossbar-low",
-            "crossbar-high"
+            "upright--1200--380",
+            "upright--1200-380",
+            "upright-0--380",
+            "upright-0-380",
+            "upright-1200--380",
+            "upright-1200-380",
+            "end-tie--1200-120",
+            "end-tie--1200-760",
+            "end-tie--1200-1430",
+            "end-tie--1200-2040",
+            "end-brace--1200-120",
+            "end-brace--1200-760",
+            "end-brace--1200-1430",
+            "end-tie-1200-120",
+            "end-tie-1200-760",
+            "end-tie-1200-1430",
+            "end-tie-1200-2040",
+            "end-brace-1200-120",
+            "end-brace-1200-760",
+            "end-brace-1200-1430",
+            "beam-0--380",
+            "beam-0-380",
+            "gutter-bearer-0--900",
+            "gutter-bearer-0-0",
+            "gutter-bearer-0-900",
+            "beam-1--380",
+            "beam-1-380",
+            "gutter-bearer-1--900",
+            "gutter-bearer-1-0",
+            "gutter-bearer-1-900",
+            "beam-2--380",
+            "beam-2-380",
+            "gutter-bearer-2--900",
+            "gutter-bearer-2-0",
+            "gutter-bearer-2-900",
+            "top-beam--380",
+            "top-beam-380",
+            "top-hanger--180",
+            "top-hanger-0",
+            "top-hanger-180"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "foot--1200--380",
+          "color": "#5a5f63",
           "parts": [
-            "lower-channel",
-            "middle-channel",
-            "upper-channel"
-          ],
-          "param": "polymer"
+            "foot--1200--380",
+            "foot--1200-380",
+            "foot-0--380",
+            "foot-0-380",
+            "foot-1200--380",
+            "foot-1200-380"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "slots--1200-0",
+          "color": "#1f2326",
           "parts": [
-            "side-feed",
-            "feed-pipe"
+            "slots--1200-0",
+            "slots--1200-1",
+            "slots--1200-2",
+            "slots--1200-3",
+            "slots--1200-4",
+            "slots--1200-5",
+            "slots--1200-6",
+            "slots--1200-7",
+            "slots--1200-8",
+            "slots--1200-9",
+            "slots--1200-10",
+            "slots--1200-11",
+            "slots--1200-12",
+            "slots--1200-13",
+            "slots-0-0",
+            "slots-0-1",
+            "slots-0-2",
+            "slots-0-3",
+            "slots-0-4",
+            "slots-0-5",
+            "slots-0-6",
+            "slots-0-7",
+            "slots-0-8",
+            "slots-0-9",
+            "slots-0-10",
+            "slots-0-11",
+            "slots-0-12",
+            "slots-0-13",
+            "slots-1200-0",
+            "slots-1200-1",
+            "slots-1200-2",
+            "slots-1200-3",
+            "slots-1200-4",
+            "slots-1200-5",
+            "slots-1200-6",
+            "slots-1200-7",
+            "slots-1200-8",
+            "slots-1200-9",
+            "slots-1200-10",
+            "slots-1200-11",
+            "slots-1200-12",
+            "slots-1200-13"
+          ]
+        },
+        {
+          "name": "gutters",
+          "color": "#f0f0ea",
+          "parts": [
+            "gutter-0-0",
+            "gutter-lid-0-0",
+            "gutter-0-1",
+            "gutter-lid-0-1",
+            "gutter-0-2",
+            "gutter-lid-0-2",
+            "gutter-0-3",
+            "gutter-lid-0-3",
+            "gutter-1-0",
+            "gutter-lid-1-0",
+            "gutter-1-1",
+            "gutter-lid-1-1",
+            "gutter-1-2",
+            "gutter-lid-1-2",
+            "gutter-1-3",
+            "gutter-lid-1-3",
+            "gutter-2-0",
+            "gutter-lid-2-0",
+            "gutter-2-1",
+            "gutter-lid-2-1",
+            "gutter-2-2",
+            "gutter-lid-2-2",
+            "gutter-2-3",
+            "gutter-lid-2-3"
           ],
-          "param": "pvc"
+          "param": "gutters"
+        },
+        {
+          "name": "gutter-head-cap-0-0",
+          "color": "#c9cbc4",
+          "parts": [
+            "gutter-head-cap-0-0",
+            "gutter-head-cap-0-1",
+            "gutter-head-cap-0-2",
+            "gutter-head-cap-0-3",
+            "return-collector-0",
+            "gutter-head-cap-1-0",
+            "gutter-head-cap-1-1",
+            "gutter-head-cap-1-2",
+            "gutter-head-cap-1-3",
+            "return-collector-1",
+            "gutter-head-cap-2-0",
+            "gutter-head-cap-2-1",
+            "gutter-head-cap-2-2",
+            "gutter-head-cap-2-3",
+            "return-collector-2",
+            "return-drop",
+            "return-floor-elbow"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#86bb4c",
+          "parts": [
+            "head-0",
+            "head-1",
+            "head-2",
+            "head-3",
+            "head-4",
+            "head-5",
+            "head-6",
+            "head-7",
+            "head-8",
+            "head-10",
+            "head-11",
+            "head-12",
+            "head-13",
+            "head-14",
+            "head-15",
+            "head-16",
+            "head-17",
+            "head-18",
+            "head-20",
+            "head-21",
+            "head-22",
+            "head-23",
+            "head-24",
+            "head-25",
+            "head-26",
+            "head-27",
+            "head-28",
+            "head-30",
+            "head-31",
+            "head-32",
+            "head-33",
+            "head-34",
+            "head-35",
+            "head-36",
+            "head-37",
+            "head-38",
+            "head-100",
+            "head-101",
+            "head-102",
+            "head-103",
+            "head-104",
+            "head-105",
+            "head-106",
+            "head-107",
+            "head-108",
+            "head-110",
+            "head-111",
+            "head-112",
+            "head-113",
+            "head-114",
+            "head-115",
+            "head-116",
+            "head-117",
+            "head-118",
+            "head-120",
+            "head-121",
+            "head-122",
+            "head-123",
+            "head-124",
+            "head-125",
+            "head-126",
+            "head-127",
+            "head-128",
+            "head-130",
+            "head-131",
+            "head-132",
+            "head-133",
+            "head-134",
+            "head-135",
+            "head-136",
+            "head-137",
+            "head-138",
+            "head-200",
+            "head-201",
+            "head-202",
+            "head-203",
+            "head-204",
+            "head-205",
+            "head-206",
+            "head-207",
+            "head-208",
+            "head-210",
+            "head-211",
+            "head-212",
+            "head-213",
+            "head-214",
+            "head-215",
+            "head-216",
+            "head-217",
+            "head-218",
+            "head-220",
+            "head-221",
+            "head-222",
+            "head-223",
+            "head-224",
+            "head-225",
+            "head-226",
+            "head-227",
+            "head-228",
+            "head-230",
+            "head-231",
+            "head-232",
+            "head-233",
+            "head-234",
+            "head-235",
+            "head-236",
+            "head-237",
+            "head-238"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "feed-header-0",
+          "color": "#2f6fa8",
+          "parts": [
+            "feed-header-0",
+            "feed-header-1",
+            "feed-header-2",
+            "feed-riser"
+          ]
+        },
+        {
+          "name": "drip-tube-0--270",
+          "color": "#1d2023",
+          "parts": [
+            "drip-tube-0--270",
+            "drip-tube-0--90",
+            "drip-tube-0-90",
+            "drip-tube-0-270",
+            "drip-tube-1--270",
+            "drip-tube-1--90",
+            "drip-tube-1-90",
+            "drip-tube-1-270",
+            "drip-tube-2--270",
+            "drip-tube-2--90",
+            "drip-tube-2-90",
+            "drip-tube-2-270"
+          ]
+        },
+        {
+          "name": "led-bar-0--180",
+          "color": "#2a2e31",
+          "parts": [
+            "led-bar-0--180",
+            "led-bar-0-0",
+            "led-bar-0-180",
+            "led-bar-1--180",
+            "led-bar-1-0",
+            "led-bar-1-180",
+            "led-bar-2--180",
+            "led-bar-2-0",
+            "led-bar-2-180"
+          ]
+        },
+        {
+          "name": "lights",
+          "color": "#f6f2ff",
+          "parts": [
+            "led-diffuser-0--180",
+            "led-diffuser-0-0",
+            "led-diffuser-0-180",
+            "led-diffuser-1--180",
+            "led-diffuser-1-0",
+            "led-diffuser-1-180",
+            "led-diffuser-2--180",
+            "led-diffuser-2-0",
+            "led-diffuser-2-180"
+          ],
+          "param": "lights"
+        },
+        {
+          "name": "feed-valve",
+          "color": "#c0392b",
+          "parts": [
+            "feed-valve"
+          ]
         }
       ]
     },
@@ -129631,13 +130406,21 @@
       "id": "propagation-plug-tray",
       "kit": "hydroponics",
       "title": "Propagation plug tray",
-      "description": "Shallow seedling insert with a broad rim, four rows of tapered plug cells and carry tabs. Parameters: overall scale, polymer, grow substrate; weathered and highVisibility presets.",
+      "description": "1020-size seed-starting set at real size: ribbed carry tray with flared rim and end handles, thin plug insert with 72 or 128 square cells filled with substrate, a plant label and seedlings at a chosen stage (sown, cotyledons or transplant-ready). Material controls: carry tray, plug insert, substrate and seedling foliage, plus cell count and growth stage choices. classicBlack, whiteNursery, lettuce and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "plug tray",
+        "seed tray",
+        "cell tray",
+        "1020 tray",
+        "seedling tray",
+        "propagation",
+        "seedlings",
+        "germination",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
+        "nursery",
         "low poly",
         "scene prop"
       ],
@@ -129650,8 +130433,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/propagation-plug-tray.kcad.ts",
       "preview": "/assets/hydroponics-propagation-plug-tray.png",
-      "sourceSha256": "cb6d0d1b916b1527732bcaed8565b808d4284945e495575a0cbd8a34cc0ba254",
-      "triangleBudget": 1800,
+      "sourceSha256": "7ecbd624a5eb99a8b872c0c424780c884cf195f37b3bde6ce65522c706f0f620",
+      "triangleBudget": 10000,
       "params": [
         {
           "name": "scale",
@@ -129663,63 +130446,310 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "carry",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#222426",
+          "label": "Carry tray (polystyrene)"
         },
         {
-          "name": "growSubstrate",
+          "name": "insert",
           "type": "color",
-          "default": "#8a6848",
-          "label": "Grow substrate"
+          "default": "#33373a",
+          "label": "Plug insert (polystyrene)"
+        },
+        {
+          "name": "substrate",
+          "type": "color",
+          "default": "#5a3f2a",
+          "label": "Substrate (peat / coir)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#7cc04f",
+          "label": "Seedling foliage"
+        },
+        {
+          "name": "cells",
+          "type": "choice",
+          "default": "72",
+          "label": "Cells per tray",
+          "choices": [
+            "72",
+            "128"
+          ]
+        },
+        {
+          "name": "stage",
+          "type": "choice",
+          "default": "cotyledons",
+          "label": "Growth stage",
+          "choices": [
+            "sown",
+            "cotyledons",
+            "transplant"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "polymer": "#b4b5aa",
-          "growSubstrate": "#75604b"
+        "classicBlack": {
+          "carry": "#222426",
+          "insert": "#33373a",
+          "substrate": "#5a3f2a",
+          "foliage": "#7cc04f"
         },
-        "highVisibility": {
-          "polymer": "#f2c84b",
-          "growSubstrate": "#aa8652"
+        "whiteNursery": {
+          "carry": "#e6e6e0",
+          "insert": "#f2f2ee",
+          "substrate": "#6b4a30",
+          "foliage": "#6db544"
+        },
+        "lettuce": {
+          "carry": "#222426",
+          "insert": "#33373a",
+          "substrate": "#8a6848",
+          "foliage": "#a9c94e"
+        },
+        "weathered": {
+          "carry": "#4a4a46",
+          "insert": "#5a5a54",
+          "substrate": "#7a6650",
+          "foliage": "#93a65a"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 4492,
         "sizeM": [
-          0.880868,
-          0.145,
-          0.55
+          0.591,
+          0.118,
+          0.286
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "carry",
+          "color": "#222426",
           "parts": [
-            "tray-floor",
-            "front-rim",
-            "back-rim",
-            "left-rim",
-            "right-rim",
-            "carry-grip-left",
-            "carry-grip-right"
+            "carry-tray",
+            "carry-rim",
+            "side-rib-0",
+            "side-rib-1",
+            "side-rib-2",
+            "side-rib-3",
+            "side-rib-4",
+            "side-rib-5",
+            "handle-l",
+            "handle-r"
           ],
-          "param": "polymer"
+          "param": "carry"
         },
         {
-          "name": "growSubstrate",
-          "color": "#8a6848",
+          "name": "insert",
+          "color": "#33373a",
           "parts": [
-            "cell-row-front",
-            "cell-row-mid-front",
-            "cell-row-mid-back",
-            "cell-row-back"
+            "insert-floor",
+            "cell-web-x-0",
+            "cell-web-x-1",
+            "cell-web-x-2",
+            "cell-web-x-3",
+            "cell-web-x-4",
+            "cell-web-x-5",
+            "cell-web-x-6",
+            "cell-web-x-7",
+            "cell-web-x-8",
+            "cell-web-x-9",
+            "cell-web-x-10",
+            "cell-web-x-11",
+            "cell-web-x-12",
+            "cell-web-y-0",
+            "cell-web-y-1",
+            "cell-web-y-2",
+            "cell-web-y-3",
+            "cell-web-y-4",
+            "cell-web-y-5",
+            "cell-web-y-6",
+            "insert-lip"
           ],
-          "param": "growSubstrate"
+          "param": "insert"
+        },
+        {
+          "name": "substrate",
+          "color": "#5a3f2a",
+          "parts": [
+            "substrate-fill"
+          ],
+          "param": "substrate"
+        },
+        {
+          "name": "plant-label",
+          "color": "#f2f0e6",
+          "parts": [
+            "plant-label"
+          ]
+        },
+        {
+          "name": "label-print",
+          "color": "#2f6fa8",
+          "parts": [
+            "label-print"
+          ]
+        },
+        {
+          "name": "stem-1",
+          "color": "#a8c878",
+          "parts": [
+            "stem-1",
+            "stem-2",
+            "stem-3",
+            "stem-4",
+            "stem-5",
+            "stem-6",
+            "stem-7",
+            "stem-8",
+            "stem-9",
+            "stem-10",
+            "stem-11",
+            "stem-12",
+            "stem-13",
+            "stem-14",
+            "stem-15",
+            "stem-16",
+            "stem-17",
+            "stem-18",
+            "stem-19",
+            "stem-20",
+            "stem-21",
+            "stem-22",
+            "stem-23",
+            "stem-24",
+            "stem-25",
+            "stem-26",
+            "stem-27",
+            "stem-28",
+            "stem-29",
+            "stem-30",
+            "stem-31",
+            "stem-32",
+            "stem-33",
+            "stem-34",
+            "stem-35",
+            "stem-36",
+            "stem-37",
+            "stem-38",
+            "stem-39",
+            "stem-40",
+            "stem-41",
+            "stem-42",
+            "stem-43",
+            "stem-44",
+            "stem-45",
+            "stem-46",
+            "stem-47",
+            "stem-48",
+            "stem-49",
+            "stem-50",
+            "stem-51",
+            "stem-52",
+            "stem-53",
+            "stem-54",
+            "stem-55",
+            "stem-56",
+            "stem-57",
+            "stem-58",
+            "stem-59",
+            "stem-60",
+            "stem-61",
+            "stem-62",
+            "stem-63",
+            "stem-64",
+            "stem-65",
+            "stem-66",
+            "stem-67",
+            "stem-68",
+            "stem-69",
+            "stem-70",
+            "stem-71"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#7cc04f",
+          "parts": [
+            "cotyledons-1",
+            "cotyledons-2",
+            "cotyledons-3",
+            "cotyledons-4",
+            "cotyledons-5",
+            "cotyledons-6",
+            "cotyledons-7",
+            "cotyledons-8",
+            "cotyledons-9",
+            "cotyledons-10",
+            "cotyledons-11",
+            "cotyledons-12",
+            "cotyledons-13",
+            "cotyledons-14",
+            "cotyledons-15",
+            "cotyledons-16",
+            "cotyledons-17",
+            "cotyledons-18",
+            "cotyledons-19",
+            "cotyledons-20",
+            "cotyledons-21",
+            "cotyledons-22",
+            "cotyledons-23",
+            "cotyledons-24",
+            "cotyledons-25",
+            "cotyledons-26",
+            "cotyledons-27",
+            "cotyledons-28",
+            "cotyledons-29",
+            "cotyledons-30",
+            "cotyledons-31",
+            "cotyledons-32",
+            "cotyledons-33",
+            "cotyledons-34",
+            "cotyledons-35",
+            "cotyledons-36",
+            "cotyledons-37",
+            "cotyledons-38",
+            "cotyledons-39",
+            "cotyledons-40",
+            "cotyledons-41",
+            "cotyledons-42",
+            "cotyledons-43",
+            "cotyledons-44",
+            "cotyledons-45",
+            "cotyledons-46",
+            "cotyledons-47",
+            "cotyledons-48",
+            "cotyledons-49",
+            "cotyledons-50",
+            "cotyledons-51",
+            "cotyledons-52",
+            "cotyledons-53",
+            "cotyledons-54",
+            "cotyledons-55",
+            "cotyledons-56",
+            "cotyledons-57",
+            "cotyledons-58",
+            "cotyledons-59",
+            "cotyledons-60",
+            "cotyledons-61",
+            "cotyledons-62",
+            "cotyledons-63",
+            "cotyledons-64",
+            "cotyledons-65",
+            "cotyledons-66",
+            "cotyledons-67",
+            "cotyledons-68",
+            "cotyledons-69",
+            "cotyledons-70",
+            "cotyledons-71"
+          ],
+          "param": "foliage"
         }
       ]
     },
@@ -130045,13 +131075,21 @@
       "id": "seedling-propagation-cart",
       "kit": "hydroponics",
       "title": "Seedling propagation cart",
-      "description": "Mobile propagation trolley with four shallow trays, push handle and compact caster housings. Parameters: overall scale, powder-coated steel, polymer, rubber; weathered and highVisibility presets.",
+      "description": "Mobile seedling germination cart at about real size: tall open steel-tube frame on four swivel casters, wire shelves each holding four seed trays of seedlings, twin LED grow-light bars under every shelf, an end push handle and a light timer box. Material controls: cart frame, seed trays, seedling foliage and LED light colour, plus a tier count choice. chrome, fullSpectrum, blackFrame and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "propagation cart",
+        "seedling cart",
+        "germination rack",
+        "grow rack",
+        "seed trays",
+        "grow lights",
+        "led",
+        "trolley",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
+        "nursery",
         "low poly",
         "scene prop"
       ],
@@ -130064,8 +131102,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/seedling-propagation-cart.kcad.ts",
       "preview": "/assets/hydroponics-seedling-propagation-cart.png",
-      "sourceSha256": "f0be49473c6d00366a6fa3eb45184f8409b4759dab22a65da2e5dc6d66806e3b",
-      "triangleBudget": 1800,
+      "sourceSha256": "7c44926b0f512669d0a8d4530860004cb236eb52e6f5a14ea8655a79be56f309",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -130077,79 +131115,341 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#c3c8cc",
+          "label": "Cart frame (zinc-plated steel)"
         },
         {
-          "name": "polymer",
+          "name": "trays",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2a2c2e",
+          "label": "Seed trays (polystyrene)"
         },
         {
-          "name": "rubber",
+          "name": "foliage",
           "type": "color",
-          "default": "#323a3d",
-          "label": "Rubber"
+          "default": "#79b94c",
+          "label": "Seedling foliage"
+        },
+        {
+          "name": "lights",
+          "type": "color",
+          "default": "#f4f0ff",
+          "label": "LED grow lights (diffuser glow)"
+        },
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "4",
+          "label": "Shelf tiers",
+          "choices": [
+            "3",
+            "4"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa",
-          "rubber": "#4b504e"
+        "chrome": {
+          "frame": "#c3c8cc",
+          "trays": "#2a2c2e",
+          "foliage": "#79b94c",
+          "lights": "#f4f0ff"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b",
-          "rubber": "#262d30"
+        "fullSpectrum": {
+          "frame": "#c3c8cc",
+          "trays": "#2a2c2e",
+          "foliage": "#79b94c",
+          "lights": "#e48ae6"
+        },
+        "blackFrame": {
+          "frame": "#34383b",
+          "trays": "#e6e6e0",
+          "foliage": "#6db544",
+          "lights": "#fff4dc"
+        },
+        "weathered": {
+          "frame": "#8e8e86",
+          "trays": "#4a4a46",
+          "foliage": "#93a65a",
+          "lights": "#e8e2d0"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 3604,
         "sizeM": [
-          0.92,
-          1.753,
-          0.6
+          1.38,
+          1.702,
+          0.64
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "caster-plate-lf",
+          "color": "#6b7174",
           "parts": [
-            "lower-tray",
-            "tray-two",
-            "tray-three",
-            "upper-tray",
-            "push-handle",
-            "front-stop"
-          ],
-          "param": "polymer"
+            "caster-plate-lf",
+            "caster-swivel-lf",
+            "caster-fork-lf",
+            "caster-plate-lb",
+            "caster-swivel-lb",
+            "caster-fork-lb",
+            "caster-plate-rf",
+            "caster-swivel-rf",
+            "caster-fork-rf",
+            "caster-plate-rb",
+            "caster-swivel-rb",
+            "caster-fork-rb"
+          ]
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "caster-wheel-lf",
+          "color": "#25282a",
           "parts": [
-            "post-left",
-            "post-right"
-          ],
-          "param": "powderCoatedSteel"
+            "caster-wheel-lf",
+            "caster-wheel-lb",
+            "caster-wheel-rf",
+            "caster-wheel-rb",
+            "handle-grip"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#323a3d",
+          "name": "frame",
+          "color": "#c3c8cc",
           "parts": [
-            "caster-left-front",
-            "caster-right-front",
-            "caster-left-back",
-            "caster-right-back"
+            "caster-hub-lf",
+            "caster-hub-lb",
+            "caster-hub-rf",
+            "caster-hub-rb",
+            "post--1--1",
+            "post--1-1",
+            "top-end--1",
+            "post-1--1",
+            "post-1-1",
+            "top-end-1",
+            "top-side--1",
+            "top-side-1",
+            "handle-arm-1180",
+            "handle-arm-1520",
+            "handle-arm-b-1180",
+            "handle-arm-b-1520",
+            "handle-upright--150",
+            "handle-upright-150",
+            "shelf-frame-0",
+            "shelf-wire-0-0",
+            "shelf-wire-0-1",
+            "shelf-wire-0-2",
+            "shelf-wire-0-3",
+            "shelf-wire-0-4",
+            "shelf-wire-0-5",
+            "shelf-wire-0-6",
+            "shelf-wire-long-0",
+            "led-hanger-0--150",
+            "led-hanger-0-150",
+            "shelf-frame-1",
+            "shelf-wire-1-0",
+            "shelf-wire-1-1",
+            "shelf-wire-1-2",
+            "shelf-wire-1-3",
+            "shelf-wire-1-4",
+            "shelf-wire-1-5",
+            "shelf-wire-1-6",
+            "shelf-wire-long-1",
+            "led-hanger-1--150",
+            "led-hanger-1-150",
+            "shelf-frame-2",
+            "shelf-wire-2-0",
+            "shelf-wire-2-1",
+            "shelf-wire-2-2",
+            "shelf-wire-2-3",
+            "shelf-wire-2-4",
+            "shelf-wire-2-5",
+            "shelf-wire-2-6",
+            "shelf-wire-long-2",
+            "led-hanger-2--150",
+            "led-hanger-2-150",
+            "shelf-frame-3",
+            "shelf-wire-3-0",
+            "shelf-wire-3-1",
+            "shelf-wire-3-2",
+            "shelf-wire-3-3",
+            "shelf-wire-3-4",
+            "shelf-wire-3-5",
+            "shelf-wire-3-6",
+            "shelf-wire-long-3",
+            "led-hanger-3--150",
+            "led-hanger-3-150"
           ],
-          "param": "rubber"
+          "param": "frame"
+        },
+        {
+          "name": "trays",
+          "color": "#2a2c2e",
+          "parts": [
+            "tray-0-lf",
+            "tray-0-lb",
+            "tray-0-rf",
+            "tray-0-rb",
+            "tray-1-lf",
+            "tray-1-lb",
+            "tray-1-rf",
+            "tray-1-rb",
+            "tray-2-lf",
+            "tray-2-lb",
+            "tray-2-rf",
+            "tray-2-rb",
+            "tray-3-lf",
+            "tray-3-lb",
+            "tray-3-rf",
+            "tray-3-rb"
+          ],
+          "param": "trays"
+        },
+        {
+          "name": "soil-0-lf",
+          "color": "#5a3f2a",
+          "parts": [
+            "soil-0-lf",
+            "soil-0-lb",
+            "soil-0-rf",
+            "soil-0-rb",
+            "soil-1-lf",
+            "soil-1-lb",
+            "soil-1-rf",
+            "soil-1-rb",
+            "soil-2-lf",
+            "soil-2-lb",
+            "soil-2-rf",
+            "soil-2-rb",
+            "soil-3-lf",
+            "soil-3-lb",
+            "soil-3-rf",
+            "soil-3-rb"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#79b94c",
+          "parts": [
+            "seedlings-0-lf",
+            "tuft-0-lf-0",
+            "tuft-0-lf-1",
+            "tuft-0-lf-2",
+            "seedlings-0-lb",
+            "tuft-0-lb-0",
+            "tuft-0-lb-1",
+            "tuft-0-lb-2",
+            "seedlings-0-rf",
+            "tuft-0-rf-0",
+            "tuft-0-rf-1",
+            "tuft-0-rf-2",
+            "seedlings-0-rb",
+            "tuft-0-rb-0",
+            "tuft-0-rb-1",
+            "tuft-0-rb-2",
+            "seedlings-1-lf",
+            "tuft-1-lf-0",
+            "tuft-1-lf-1",
+            "tuft-1-lf-2",
+            "seedlings-1-lb",
+            "tuft-1-lb-0",
+            "tuft-1-lb-1",
+            "tuft-1-lb-2",
+            "seedlings-1-rf",
+            "tuft-1-rf-0",
+            "tuft-1-rf-1",
+            "tuft-1-rf-2",
+            "seedlings-1-rb",
+            "tuft-1-rb-0",
+            "tuft-1-rb-1",
+            "tuft-1-rb-2",
+            "seedlings-2-lf",
+            "tuft-2-lf-0",
+            "tuft-2-lf-1",
+            "tuft-2-lf-2",
+            "seedlings-2-lb",
+            "tuft-2-lb-0",
+            "tuft-2-lb-1",
+            "tuft-2-lb-2",
+            "seedlings-2-rf",
+            "tuft-2-rf-0",
+            "tuft-2-rf-1",
+            "tuft-2-rf-2",
+            "seedlings-2-rb",
+            "tuft-2-rb-0",
+            "tuft-2-rb-1",
+            "tuft-2-rb-2",
+            "seedlings-3-lf",
+            "tuft-3-lf-0",
+            "tuft-3-lf-1",
+            "tuft-3-lf-2",
+            "seedlings-3-lb",
+            "tuft-3-lb-0",
+            "tuft-3-lb-1",
+            "tuft-3-lb-2",
+            "seedlings-3-rf",
+            "tuft-3-rf-0",
+            "tuft-3-rf-1",
+            "tuft-3-rf-2",
+            "seedlings-3-rb",
+            "tuft-3-rb-0",
+            "tuft-3-rb-1",
+            "tuft-3-rb-2"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "led-bar-0--150",
+          "color": "#3a3e41",
+          "parts": [
+            "led-bar-0--150",
+            "led-bar-0-150",
+            "led-bar-1--150",
+            "led-bar-1-150",
+            "led-bar-2--150",
+            "led-bar-2-150",
+            "led-bar-3--150",
+            "led-bar-3-150"
+          ]
+        },
+        {
+          "name": "lights",
+          "color": "#f4f0ff",
+          "parts": [
+            "led-diffuser-0--150",
+            "led-diffuser-0-150",
+            "led-diffuser-1--150",
+            "led-diffuser-1-150",
+            "led-diffuser-2--150",
+            "led-diffuser-2-150",
+            "led-diffuser-3--150",
+            "led-diffuser-3-150"
+          ],
+          "param": "lights"
+        },
+        {
+          "name": "timer-box",
+          "color": "#d8d8d0",
+          "parts": [
+            "timer-box"
+          ]
+        },
+        {
+          "name": "timer-dial",
+          "color": "#2f6fa8",
+          "parts": [
+            "timer-dial"
+          ]
+        },
+        {
+          "name": "power-lead",
+          "color": "#1d2023",
+          "parts": [
+            "power-lead",
+            "lead-plug"
+          ]
         }
       ]
     },
