@@ -231,12 +231,7 @@ export async function evaluateScriptTool(
   // this sweep and is untouched here.
   const sceneMechanism = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
   const connectorErrors = await connectorGate(model, buildSucceeded && input.skipMechanismCheck !== true);
-  if (connectorErrors.length > 0) {
-    // Connector seating is a definitive mechanical failure, even when the
-    // kinematic/rest-pose probe alone would call a static assembly real.
-    sceneMechanism.mechanism = 'broken';
-    sceneMechanism.mechanismFailures.push(...connectorErrors);
-  }
+  applyConnectorSeatingFailures(sceneMechanism, connectorErrors);
   const { mechanism, mechanismFailures } = sceneMechanism;
   const mechanismSummary = await summaryWithLoads(model, buildSucceeded, sceneMechanism);
 
@@ -277,6 +272,19 @@ export async function evaluateScriptTool(
     ...mechanismFields(mechanism, mechanismSummary),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
   };
+}
+
+
+/** Mark a seating failure as mechanism-broken without growing evaluateScriptTool complexity. */
+function applyConnectorSeatingFailures(
+  sceneMechanism: SceneMechanism,
+  connectorErrors: Awaited<ReturnType<typeof connectorGate>>,
+): void {
+  if (connectorErrors.length === 0) return;
+  // Connector seating is a definitive mechanical failure, even when the
+  // kinematic/rest-pose probe alone would call a static assembly real.
+  sceneMechanism.mechanism = 'broken';
+  sceneMechanism.mechanismFailures.push(...connectorErrors);
 }
 
 /** The verdict fields, each present only when set. */
