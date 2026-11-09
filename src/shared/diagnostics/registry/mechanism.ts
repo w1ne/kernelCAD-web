@@ -88,6 +88,14 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
   },
+  'mechanism.physics-budget-exceeded': {
+    hintTemplate:
+      "Physics preparation was skipped because the lowered rest-scene mesh work exceeded the physics budget or could not be measured. The mechanism is unverified unless another criterion found a defect. Simplify the physics geometry or verify a smaller assembly.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The deterministic rest-scene physics mesh preflight could not certify that MJCF preparation fits its work budget, so physics was skipped and coverage records that it did not run.',
+  },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
       'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',

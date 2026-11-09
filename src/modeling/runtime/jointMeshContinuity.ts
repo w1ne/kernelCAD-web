@@ -59,6 +59,7 @@ import { OcctBackend as OcctBackendClass } from '../../kernel/backends/occt/occt
 import type { Transform, Vec3 } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { brepExtremaContact, brepExtremaDistance, wrappedShape } from './brepDistance';
+import { restMeshBvh, restMeshContact } from './restAnalysisMesh';
 
 /**
  * Per-spec tolerance (mm) for the joint-mesh-continuity check. Wide
@@ -247,7 +248,15 @@ function buildSideRow(
   connector: MateConnector,
 ): JointMeshGapResult | undefined {
   if (!(scenePart.shape instanceof OcctBackendClass)) return undefined;
-  const gap = measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
+  const allowed = (connector.jointClearanceRadius ?? 0) + JOINT_MESH_GAP_TOLERANCE_MM;
+  const bvh = restMeshBvh(scenePart, 'shape');
+  const probePoint: [number, number, number] = [pivotWorld[0], pivotWorld[1], pivotWorld[2]];
+  const closest = bvh?.closestPoint(probePoint);
+  const meshGap = closest === null || closest === undefined ? undefined
+    : bvh!.pointInside(probePoint) ? 0 : closest.distance;
+  const gap = meshGap !== undefined && Math.abs(meshGap - allowed) > 0.25
+    ? meshGap
+    : measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
   if (gap === undefined) return undefined;
   return {
     mateName,
@@ -363,11 +372,15 @@ function measureMateBearingGap(
   const b = sceneByPartName.get(childPartName);
   if (a === undefined || b === undefined) return undefined;
   if (!(a.shape instanceof OcctBackendClass) || !(b.shape instanceof OcctBackendClass)) return undefined;
-  const contact = measureBodyToBodyContact(
-    a.shape as OcctBackend,
-    a.worldTransform,
-    b.shape as OcctBackend,
-    b.worldTransform,
+  const meshContact = restMeshContact(a, b, 'shape');
+  const meshRadial = meshContact !== undefined && axis !== undefined
+    ? Math.max(radialDistanceMm(meshContact.pointA, axis), radialDistanceMm(meshContact.pointB, axis))
+    : undefined;
+  const useMesh = meshContact !== undefined && !meshContact.contained
+    && Math.abs(meshContact.distanceMm - JOINT_MESH_GAP_TOLERANCE_MM) > 0.25
+    && (meshRadial === undefined || meshRadial < JOINT_BEARING_AXIS_RADIUS_MM - 0.25);
+  const contact = useMesh ? meshContact : measureBodyToBodyContact(
+    a.shape as OcctBackend, a.worldTransform, b.shape as OcctBackend, b.worldTransform,
   );
   if (contact === undefined) return undefined;
   if (axis !== undefined) {

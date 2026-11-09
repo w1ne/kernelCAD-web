@@ -265,6 +265,7 @@ const LEGACY_CODE_ORDER = [
   'mechanism.dof-mismatch',
   'mechanism.orphan-part',
   'mechanism.unverified-budget-exceeded',
+  'mechanism.physics-budget-exceeded',
   'mechanism.joint-mesh-gap',
   'mechanism.unstable-under-gravity',
   'mechanism.drops-on-release',

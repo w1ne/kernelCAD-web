@@ -28,6 +28,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. ' +
       'For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: ' +
       '"Motion checked: ..." names what ran; "Motion not checked: ..." is NOT a pass — never call that mechanism working. ' +
+      'If the joint-range collision sweep exceeds its work budget, `mechanism.unverified-budget-exceeded` appears as a warning in diagnostics and `mechanismSummary.skipped` explains the skip. Rest-pose body continuity, mate contact and interpenetration still run; a rest-pose error makes the mechanism broken, while a clean but skipped sweep remains unverified. ' +
       'Every union() is checked too (no opt-out): union.disconnected (the union is several ' +
       'separate solids — a floating operand) and union.member-overlap (two operands that each ' +
       'carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross ' +
@@ -64,7 +65,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
             'Opt out of the default mechanism-truth gate. By default a full ' +
             'evaluation of an assembly-built scene runs checkMechanismTruth and ' +
             'returns a `mechanism` verdict (real/broken/unverified); a broken ' +
-            "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
+            "mechanism makes ok:false. A budget-skipped sweep still runs rest-pose checks and reports a typed warning. Set true to skip the mechanism gate entirely (no " +
             '`mechanism` field, no cost). Ignored for dry_run and non-assembly scripts.',
         },
         baseline: {
