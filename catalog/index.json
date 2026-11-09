@@ -176365,16 +176365,18 @@
       "id": "flotation-cell-bank",
       "kit": "mining",
       "title": "Flotation cell bank",
-      "description": "Three-cell flotation bank with connected tank bodies, central drive housings, and access walkway. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Bank of round forced-air flotation tank cells at about real size: 4.4 m tanks stepping down from feed to tail on concrete plinths, mineral froth surfaces spilling into external ring launders, drive bridges with mechanism motor, belt guard and rotor shaft, junction boxes with dart-valve actuators between cells, feed box, tailings box, air header with a drop and butterfly valve to each cell, concentrate launders falling to a collection pipe, walkway with handrails and stair. Material controls: tank coating, walkway and drive steel, rubber-lined launders and hoses, froth colour, plus a cell-count choice (3, 4, 5). weathered, highVisibility and copperFroth presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "flotation",
+        "flotation cell",
+        "tank cell",
+        "froth",
+        "concentrator",
+        "launder"
       ],
       "compat": [
         "mining",
@@ -176385,8 +176387,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/flotation-cell-bank.kcad.ts",
       "preview": "/assets/mining-flotation-cell-bank.png",
-      "sourceSha256": "158c4f5caaf15306aa66951e8886a9b2d2608868625b52cfa315b9a4707c2232",
-      "triangleBudget": 1800,
+      "sourceSha256": "2eee1ed872c6d0fd7dabe94cb3d4c64a29a3b31afc43995a52c4171a305a2159",
+      "triangleBudget": 7400,
       "params": [
         {
           "name": "scale",
@@ -176400,61 +176402,277 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a89e",
-          "label": "Coated equipment steel"
+          "default": "#3f7f9e",
+          "label": "Tank coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Walkway and drive steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Rubber-lined launders and hoses"
+        },
+        {
+          "name": "froth",
+          "type": "color",
+          "default": "#b7b29a",
+          "label": "Mineral froth"
+        },
+        {
+          "name": "cells",
+          "type": "choice",
+          "default": "4",
+          "label": "Cells in the bank",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "coatedSteel": "#5d6f73",
+          "structuralSteel": "#666a66",
+          "rubber": "#333332",
+          "froth": "#a49d86"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "structuralSteel": "#465159",
+          "rubber": "#26292b",
+          "froth": "#c4c0ac"
+        },
+        "copperFroth": {
+          "coatedSteel": "#5f7b4a",
+          "structuralSteel": "#3e4549",
+          "rubber": "#2a2c2e",
+          "froth": "#8f7a4a"
         }
       },
       "stats": {
-        "triangles": 420,
+        "triangles": 5712,
         "sizeM": [
-          1.79,
-          0.73,
-          0.7475
+          25.8,
+          9.25,
+          11.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "ground-slab",
+          "color": "#a6a196",
           "parts": [
-            "base-skid",
-            "walkway",
-            "front-rail"
+            "ground-slab",
+            "plinth-0",
+            "plinth-1",
+            "plinth-2",
+            "plinth-3"
+          ]
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3f7f9e",
+          "parts": [
+            "tank-0",
+            "tank-ring-0",
+            "launder-lip-0",
+            "froth-crowder-0",
+            "mechanism-standpipe-0",
+            "tank-1",
+            "tank-ring-1",
+            "launder-lip-1",
+            "froth-crowder-1",
+            "mechanism-standpipe-1",
+            "tank-2",
+            "tank-ring-2",
+            "launder-lip-2",
+            "froth-crowder-2",
+            "mechanism-standpipe-2",
+            "tank-3",
+            "tank-ring-3",
+            "launder-lip-3",
+            "froth-crowder-3",
+            "mechanism-standpipe-3",
+            "junction-box-0",
+            "junction-box-1",
+            "junction-box-2",
+            "feed-box",
+            "tail-box"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#2a2c2e",
+          "parts": [
+            "launder-0",
+            "launder-outlet-0",
+            "launder-1",
+            "launder-outlet-1",
+            "launder-2",
+            "launder-outlet-2",
+            "launder-3",
+            "launder-outlet-3",
+            "feed-pipe",
+            "feed-pipe-drop",
+            "tail-pipe",
+            "concentrate-pipe"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "froth",
+          "color": "#b7b29a",
+          "parts": [
+            "froth-0",
+            "froth-spill-0",
+            "froth-1",
+            "froth-spill-1",
+            "froth-2",
+            "froth-spill-2",
+            "froth-3",
+            "froth-spill-3"
+          ],
+          "param": "froth"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "drive-bridge-0",
+            "bridge-leg-a-0",
+            "bridge-leg-b-0",
+            "mechanism-bearing-0",
+            "mechanism-motor-0",
+            "motor-fin-0-0",
+            "motor-fin-0-1",
+            "air-drop-0",
+            "air-drop-down-0",
+            "drive-bridge-1",
+            "bridge-leg-a-1",
+            "bridge-leg-b-1",
+            "mechanism-bearing-1",
+            "mechanism-motor-1",
+            "motor-fin-1-0",
+            "motor-fin-1-1",
+            "air-drop-1",
+            "air-drop-down-1",
+            "drive-bridge-2",
+            "bridge-leg-a-2",
+            "bridge-leg-b-2",
+            "mechanism-bearing-2",
+            "mechanism-motor-2",
+            "motor-fin-2-0",
+            "motor-fin-2-1",
+            "air-drop-2",
+            "air-drop-down-2",
+            "drive-bridge-3",
+            "bridge-leg-a-3",
+            "bridge-leg-b-3",
+            "mechanism-bearing-3",
+            "mechanism-motor-3",
+            "motor-fin-3-0",
+            "motor-fin-3-1",
+            "air-drop-3",
+            "air-drop-down-3",
+            "air-header",
+            "air-header-drop-1",
+            "air-header-drop-2",
+            "air-header-drop-3",
+            "pipe-stand--2500",
+            "pipe-stand-8400",
+            "pipe-stand-19000",
+            "walkway-deck",
+            "walkway-column-0",
+            "walkway-column-1",
+            "walkway-column-2",
+            "walkway-column-3",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-tread-7",
+            "stair-tread-8",
+            "stair-tread-9",
+            "stair-tread-10",
+            "stair-tread-11",
+            "stair-tread-12",
+            "stair-tread-13",
+            "stair-tread-14",
+            "stair-tread-15",
+            "stair-stringer"
           ],
           "param": "structuralSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#65a89e",
+          "name": "mechanism-sheave-guard-0",
+          "color": "#e8c21a",
           "parts": [
-            "cell-0",
-            "cell-1",
-            "cell-2",
-            "motor-0",
-            "motor-1",
-            "motor-2",
-            "launder-left",
-            "launder-right"
-          ],
-          "param": "coatedSteel"
+            "mechanism-sheave-guard-0",
+            "air-valve-actuator-0",
+            "mechanism-sheave-guard-1",
+            "air-valve-actuator-1",
+            "mechanism-sheave-guard-2",
+            "air-valve-actuator-2",
+            "mechanism-sheave-guard-3",
+            "air-valve-actuator-3",
+            "dart-actuator-0",
+            "dart-actuator-1",
+            "dart-actuator-2",
+            "tail-actuator",
+            "handrail-post--3300",
+            "handrail-post--1700",
+            "handrail-post--100",
+            "handrail-post-1500",
+            "handrail-post-3100",
+            "handrail-post-4700",
+            "handrail-post-6300",
+            "handrail-post-7900",
+            "handrail-post-9500",
+            "handrail-post-11100",
+            "handrail-post-12700",
+            "handrail-post-14300",
+            "handrail-post-15900",
+            "handrail-post-17500",
+            "handrail-post-19100",
+            "handrail-top",
+            "handrail-mid"
+          ]
+        },
+        {
+          "name": "motor-cowl-0",
+          "color": "#26292b",
+          "parts": [
+            "motor-cowl-0",
+            "motor-cowl-1",
+            "motor-cowl-2",
+            "motor-cowl-3"
+          ]
+        },
+        {
+          "name": "air-valve-0",
+          "color": "#b5c0c0",
+          "parts": [
+            "air-valve-0",
+            "air-valve-1",
+            "air-valve-2",
+            "air-valve-3",
+            "dart-valve-0",
+            "dart-valve-1",
+            "dart-valve-2",
+            "tail-dart"
+          ]
         }
       ]
     },
@@ -176674,16 +176892,18 @@
       "id": "gyratory-crusher-station",
       "kit": "mining",
       "title": "Gyratory crusher station",
-      "description": "Tall primary crusher station with portal frame, upper feed ring, main shell, and discharge opening. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Primary gyratory crusher station at about real size: bottom shell with countershaft arm, middle shell and flaring top shell whose throat shows the manganese mantle head in a bowl of rock, spider beam and cap, horizontal countershaft with coupling and motor, discharge chute into the pit below, concrete pit walls forming the truck dump pocket, dump deck with wheel stop, operator deck with handrails and a pedestal rock breaker for oversize. Material controls: crusher shell coating, deck and drive steel, manganese wear steel, pit concrete, plus a rock-breaker choice (fitted, none). weathered, highVisibility and yellowPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "crushing",
+        "gyratory crusher",
+        "primary crusher",
+        "comminution",
+        "dump pocket",
+        "rock breaker"
       ],
       "compat": [
         "mining",
@@ -176694,8 +176914,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/gyratory-crusher-station.kcad.ts",
       "preview": "/assets/mining-gyratory-crusher-station.png",
-      "sourceSha256": "0969250986724c5606e846d41a63b9f2e8d78266ee9429077039ec4dae5ce0ea",
-      "triangleBudget": 1800,
+      "sourceSha256": "f43edc525ba50393a564d4d4fd2915a42942c509e1a9afc5706b871323e65ced",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -176709,73 +176929,234 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a865",
-          "label": "Coated equipment steel"
+          "default": "#3e6f96",
+          "label": "Crusher shell coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Deck and drive steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "manganeseSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#8c8a84",
+          "label": "Manganese wear steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a6a196",
+          "label": "Pit concrete"
+        },
+        {
+          "name": "rockBreaker",
+          "type": "choice",
+          "default": "fitted",
+          "label": "Rock breaker",
+          "choices": [
+            "fitted",
+            "none"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#5d6f73",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "manganeseSteel": "#77736b",
+          "concrete": "#8b8579"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "manganeseSteel": "#9a978f",
+          "concrete": "#b3afa6"
+        },
+        "yellowPlant": {
+          "coatedSteel": "#e2b31c",
+          "structuralSteel": "#2f3437",
+          "manganeseSteel": "#8f8b82",
+          "concrete": "#aaa59b"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 3336,
         "sizeM": [
-          1.28,
-          1.16,
-          1.06
+          16,
+          12.768784,
+          20
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "concrete",
+          "color": "#a6a196",
           "parts": [
-            "foundation",
-            "top-bridge"
+            "pit-floor",
+            "crusher-pedestal",
+            "motor-base",
+            "back-wall",
+            "side-wall-l",
+            "side-wall-r",
+            "dump-deck",
+            "wheel-stop"
           ],
-          "param": "structuralSteel"
+          "param": "concrete"
+        },
+        {
+          "name": "discharge-chute",
+          "color": "#26292b",
+          "parts": [
+            "discharge-chute",
+            "spider-cap-lube",
+            "motor-fan-cowl",
+            "hydraulic-line"
+          ]
+        },
+        {
+          "name": "surge-ore",
+          "color": "#7a6650",
+          "parts": [
+            "surge-ore",
+            "bowl-rock",
+            "bowl-lump-0",
+            "bowl-lump-2",
+            "bowl-lump-4",
+            "bowl-lump-6",
+            "apron-ore"
+          ]
         },
         {
           "name": "coatedSteel",
-          "color": "#65a865",
+          "color": "#3e6f96",
           "parts": [
-            "column-left",
-            "column-right",
-            "rear-column",
-            "crusher-shell"
+            "bottom-shell",
+            "bottom-flange",
+            "middle-shell",
+            "middle-flange",
+            "top-shell",
+            "shell-rib-0",
+            "shell-rib-1",
+            "shell-rib-2",
+            "shell-rib-3",
+            "shell-rib-4",
+            "shell-rib-5",
+            "shell-rib-6",
+            "shell-rib-7",
+            "shell-rib-8",
+            "shell-rib-9",
+            "shell-rib-10",
+            "shell-rib-11",
+            "spider-beam",
+            "spider-cap",
+            "countershaft-box",
+            "hydraulic-tank",
+            "breaker-pedestal",
+            "breaker-boom",
+            "breaker-stick"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "manganeseSteel",
+          "color": "#8c8a84",
           "parts": [
-            "feed-ring",
-            "discharge-chute"
+            "top-rim",
+            "mantle",
+            "spider-arm-guard",
+            "countershaft",
+            "dump-apron",
+            "boom-cylinder",
+            "stick-cylinder",
+            "breaker-moil"
           ],
-          "param": "stainlessSteel"
+          "param": "manganeseSteel"
+        },
+        {
+          "name": "bowl-lump-1",
+          "color": "#9a8670",
+          "parts": [
+            "bowl-lump-1",
+            "bowl-lump-3",
+            "bowl-lump-5",
+            "bowl-lump-7"
+          ]
+        },
+        {
+          "name": "coupling-guard",
+          "color": "#e8c21a",
+          "parts": [
+            "coupling-guard",
+            "wheel-stop-stripe-0",
+            "wheel-stop-stripe-1",
+            "wheel-stop-stripe-2",
+            "wheel-stop-stripe-3",
+            "wheel-stop-stripe-4",
+            "wheel-stop-stripe-5",
+            "handrail-post--5300",
+            "handrail-post--3500",
+            "handrail-post--1700",
+            "handrail-post-0",
+            "handrail-post-1700",
+            "handrail-post-3500",
+            "handrail-post-5300",
+            "handrail-top",
+            "handrail-mid",
+            "stair-rail",
+            "breaker-hammer"
+          ]
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "motor",
+            "motor-fin--8800",
+            "motor-fin--8520",
+            "motor-fin--8240",
+            "motor-fin--7960",
+            "motor-fin--7680",
+            "motor-fin--7400",
+            "motor-fin--7120",
+            "motor-fin--6840",
+            "motor-terminal-box",
+            "hydraulic-unit",
+            "operator-deck",
+            "deck-side-l",
+            "deck-side-r",
+            "deck-column--5100",
+            "deck-column--2000",
+            "deck-column-2000",
+            "deck-column-5100",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-tread-7",
+            "stair-tread-8",
+            "stair-tread-9",
+            "stair-tread-10",
+            "stair-tread-11",
+            "stair-tread-12",
+            "stair-tread-13",
+            "stair-stringer",
+            "breaker-slew"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "breaker-hose",
+          "color": "#3a3631",
+          "parts": [
+            "breaker-hose"
+          ]
         }
       ]
     },
@@ -180980,16 +181361,18 @@
       "id": "slurry-pump-skid",
       "kit": "mining",
       "title": "Slurry pump skid",
-      "description": "Heavy-duty slurry pump with motor, guarded coupling, suction elbow, discharge riser, and base rails. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Horizontal centrifugal slurry pump on a skid at about real size: split volute casing with a ring of clamp bolts and lifting lugs, end suction spool with rubber expansion joint and knife-gate valve, tangential discharge riser with pressure gauge and flanged elbow, pedestal bearing frame with shaft and adjustment bolts, gland-seal water line, drain trough, and a motor either on an overhead frame with V-belts in a guard or coupled in line behind the bearing frame. Material controls: pump casing coating, skid and frame steel, rubber hoses and joints, valve and shaft steel, plus a drive choice (overhead, inline). weathered, highVisibility and greyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "slurry pump",
+        "centrifugal pump",
+        "pump skid",
+        "knife-gate valve",
+        "v-belt drive",
+        "concentrator"
       ],
       "compat": [
         "mining",
@@ -181000,8 +181383,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/slurry-pump-skid.kcad.ts",
       "preview": "/assets/mining-slurry-pump-skid.png",
-      "sourceSha256": "5c624bcf0635b06b39edec704d90a30914501ef0d98d8999948b6114c3dc8879",
-      "triangleBudget": 1800,
+      "sourceSha256": "f11a5592ecba8381b88c595a2c446d8f43342369043e7385018db964062e878f",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -181015,63 +181398,120 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a898",
-          "label": "Coated equipment steel"
+          "default": "#2f6f9e",
+          "label": "Pump casing coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Skid and frame steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1f2224",
+          "label": "Rubber hoses and joints"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Valve and shaft steel"
+        },
+        {
+          "name": "drive",
+          "type": "choice",
+          "default": "overhead",
+          "label": "Motor drive",
+          "choices": [
+            "overhead",
+            "inline"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#5d6f73",
           "structuralSteel": "#666a66",
+          "rubber": "#333332",
           "stainlessSteel": "#969f9e"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
+          "rubber": "#26292b",
           "stainlessSteel": "#c5ccca"
+        },
+        "greyPlant": {
+          "coatedSteel": "#b9bec0",
+          "structuralSteel": "#2f5a8a",
+          "rubber": "#1f2224",
+          "stainlessSteel": "#d0d6d6"
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 2708,
         "sizeM": [
-          1.25,
-          0.725,
-          0.725
+          5.3,
+          3.86,
+          2.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "plinth",
+          "color": "#a6a196",
           "parts": [
-            "base-skid",
-            "coupling-guard",
-            "motor-foot-left",
-            "motor-foot-right"
+            "plinth"
+          ]
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "skid-rail-a",
+            "skid-rail-b",
+            "base-plate",
+            "volute-split-band",
+            "suction-flange",
+            "suction-spool-flange",
+            "suction-support",
+            "discharge-flange",
+            "pedestal",
+            "bearing-housing",
+            "drain-trough",
+            "overhead-frame-post-a",
+            "overhead-frame-post-b",
+            "overhead-frame-deck",
+            "motor",
+            "motor-fin-550",
+            "motor-fin-720",
+            "motor-fin-890",
+            "motor-fin-1060",
+            "motor-fin-1230",
+            "motor-fin-1400",
+            "motor-terminal-box"
           ],
           "param": "structuralSteel"
         },
         {
           "name": "coatedSteel",
-          "color": "#65a898",
+          "color": "#2f6f9e",
           "parts": [
-            "motor",
-            "pump-casing",
-            "suction-flange"
+            "volute-frame-half",
+            "volute-cover-half",
+            "volute-swell",
+            "casing-foot",
+            "lifting-lug--670",
+            "lifting-lug-670",
+            "suction-cover",
+            "discharge-branch",
+            "bearing-end-cap-a",
+            "bearing-end-cap-b",
+            "gland-housing"
           ],
           "param": "coatedSteel"
         },
@@ -181079,10 +181519,63 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "discharge-riser",
-            "discharge-flange"
+            "clamp-bolt-0",
+            "clamp-bolt-1",
+            "clamp-bolt-2",
+            "clamp-bolt-3",
+            "clamp-bolt-4",
+            "clamp-bolt-5",
+            "clamp-bolt-6",
+            "clamp-bolt-7",
+            "clamp-bolt-8",
+            "clamp-bolt-9",
+            "knife-gate-body",
+            "knife-gate-bonnet",
+            "knife-gate-stem",
+            "pressure-gauge-tap",
+            "shaft",
+            "adjusting-bolt--430",
+            "adjusting-bolt-430",
+            "gland-water-header",
+            "overhead-jack-screw"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#1f2224",
+          "parts": [
+            "expansion-joint",
+            "suction-spool",
+            "discharge-spool",
+            "discharge-elbow",
+            "discharge-line",
+            "gland-water-line"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "knife-gate-handwheel",
+          "color": "#e8c21a",
+          "parts": [
+            "knife-gate-handwheel",
+            "belt-guard"
+          ]
+        },
+        {
+          "name": "pressure-gauge",
+          "color": "#e9ece8",
+          "parts": [
+            "pressure-gauge"
+          ]
+        },
+        {
+          "name": "motor-fan-cowl",
+          "color": "#26292b",
+          "parts": [
+            "motor-fan-cowl",
+            "belt-guard-vent"
+          ]
         }
       ]
     },
@@ -181314,16 +181807,18 @@
       "id": "tailings-filter-press",
       "kit": "mining",
       "title": "Tailings filter press",
-      "description": "Plate-and-frame filter press with paired end frames, stacked filter plates, hydraulic ram, and drip tray. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Sidebar plate-and-frame tailings filter press at about real size: pack of 2 m square polypropylene filter plates hung on twin side bars, fixed feed head with feed pipe and filtrate manifolds, moving head driven by a hydraulic closing cylinder in a rear cylinder head with power pack, plate-shifter carriage, drip-tray doors, raised on a steel structure with walkways and handrails over a concrete cake bay holding a pile of discharged cake. Material controls: press frame coating, structure and walkway steel, filter plate polypropylene, cake bay concrete, plus a cycle choice (filtering, discharging). weathered, highVisibility and whitePlates presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "tailings",
+        "filter press",
+        "dewatering",
+        "dry stack",
+        "filtration",
+        "concentrator"
       ],
       "compat": [
         "mining",
@@ -181334,8 +181829,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/tailings-filter-press.kcad.ts",
       "preview": "/assets/mining-tailings-filter-press.png",
-      "sourceSha256": "63921600e7f12882d32d760ffa21dde329cf5ddb7e3553f92fdc00c41023d742",
-      "triangleBudget": 1800,
+      "sourceSha256": "fda14597914dbee8c78cca72b0ba23766b0cb11d80a034a00097304144f625c5",
+      "triangleBudget": 3800,
       "params": [
         {
           "name": "scale",
@@ -181349,82 +181844,344 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#83a865",
-          "label": "Coated equipment steel"
+          "default": "#2f6f9e",
+          "label": "Press frame coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Structure and walkway steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "polypropylene",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#9aa4ab",
+          "label": "Filter plate polypropylene"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a6a196",
+          "label": "Cake bay concrete"
+        },
+        {
+          "name": "cycle",
+          "type": "choice",
+          "default": "filtering",
+          "label": "Press cycle",
+          "choices": [
+            "filtering",
+            "discharging"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
+          "coatedSteel": "#5d6f73",
           "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "polypropylene": "#8a8f8e",
+          "concrete": "#8b8579"
         },
         "highVisibility": {
           "coatedSteel": "#e48a1e",
           "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+          "polypropylene": "#5f6a72",
+          "concrete": "#b3afa6"
+        },
+        "whitePlates": {
+          "coatedSteel": "#2f5a8a",
+          "structuralSteel": "#3e4549",
+          "polypropylene": "#e3e3dc",
+          "concrete": "#aaa59b"
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 3180,
         "sizeM": [
-          1.45535,
-          0.895,
-          0.72
+          18.02,
+          7.46,
+          10.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "concrete",
+          "color": "#a6a196",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "upper-beam"
+            "cake-bay-floor",
+            "cake-bay-wall-back",
+            "cake-bay-wall-l",
+            "cake-bay-wall-r"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "cake-pile",
+          "color": "#8a7a62",
+          "parts": [
+            "cake-pile"
+          ]
+        },
+        {
+          "name": "cake-pile-b",
+          "color": "#6f624f",
+          "parts": [
+            "cake-pile-b"
+          ]
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "column--7600--3800",
+            "column--7600-3800",
+            "column--2600--3800",
+            "column--2600-3800",
+            "column-2600--3800",
+            "column-2600-3800",
+            "column-7600--3800",
+            "column-7600-3800",
+            "girder--3800",
+            "girder-3800",
+            "press-beam-a",
+            "press-beam-b",
+            "cross-girder--7600",
+            "cross-girder-7600",
+            "walkway--1",
+            "walkway-1",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-tread-7",
+            "stair-tread-8",
+            "stair-tread-9",
+            "stair-tread-10",
+            "stair-tread-11",
+            "stair-tread-12",
+            "stair-tread-13",
+            "stair-landing",
+            "stair-stringer",
+            "power-pack",
+            "power-pack-motor",
+            "drip-tray-a",
+            "drip-tray-b",
+            "filtrate-manifold",
+            "filtrate-drop"
           ],
           "param": "structuralSteel"
         },
         {
+          "name": "handrail-post--1--7800",
+          "color": "#e8c21a",
+          "parts": [
+            "handrail-post--1--7800",
+            "handrail-post--1--5850",
+            "handrail-post--1--3900",
+            "handrail-post--1--1950",
+            "handrail-post--1-0",
+            "handrail-post--1-1950",
+            "handrail-post--1-3900",
+            "handrail-post--1-5850",
+            "handrail-post--1-7800",
+            "handrail-top--1",
+            "handrail-mid--1",
+            "handrail-post-1--7800",
+            "handrail-post-1--5850",
+            "handrail-post-1--3900",
+            "handrail-post-1--1950",
+            "handrail-post-1-0",
+            "handrail-post-1-1950",
+            "handrail-post-1-3900",
+            "handrail-post-1-5850",
+            "handrail-post-1-7800",
+            "handrail-top-1",
+            "handrail-mid-1",
+            "plate-shifter"
+          ]
+        },
+        {
           "name": "coatedSteel",
-          "color": "#83a865",
+          "color": "#2f6f9e",
           "parts": [
             "fixed-head",
+            "fixed-head-rib",
+            "cylinder-head",
+            "side-bar--1500",
+            "side-bar-1500",
+            "closing-cylinder",
             "moving-head",
-            "drip-tray",
-            "control-pedestal"
+            "power-pack-tank"
           ],
           "param": "coatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "side-bar-rail--1500",
+          "color": "#c5ccca",
           "parts": [
-            "filter-plate-0",
-            "filter-plate-1",
-            "filter-plate-2",
-            "filter-plate-3",
-            "filter-plate-4",
-            "filter-plate-5",
-            "filter-plate-6",
-            "filter-plate-7",
-            "filter-plate-8",
-            "hydraulic-ram"
+            "side-bar-rail--1500",
+            "side-bar-rail-1500",
+            "closing-ram",
+            "feed-valve",
+            "filtrate-port-0",
+            "filtrate-port-1",
+            "filtrate-port-2",
+            "filtrate-port-3"
+          ]
+        },
+        {
+          "name": "moving-head-roller--1500",
+          "color": "#26292b",
+          "parts": [
+            "moving-head-roller--1500",
+            "moving-head-roller-1500",
+            "plate-handles--1070",
+            "plate-handles-1070"
+          ]
+        },
+        {
+          "name": "hydraulic-hose",
+          "color": "#1f2224",
+          "parts": [
+            "hydraulic-hose",
+            "feed-pipe",
+            "feed-riser"
+          ]
+        },
+        {
+          "name": "polypropylene",
+          "color": "#9aa4ab",
+          "parts": [
+            "plate-0",
+            "plate-1",
+            "plate-2",
+            "plate-3",
+            "plate-4",
+            "plate-5",
+            "plate-6",
+            "plate-7",
+            "plate-8",
+            "plate-9",
+            "plate-10",
+            "plate-11",
+            "plate-12",
+            "plate-13",
+            "plate-14",
+            "plate-15",
+            "plate-16",
+            "plate-17",
+            "plate-18",
+            "plate-19",
+            "plate-20",
+            "plate-21",
+            "plate-22",
+            "plate-23",
+            "plate-24",
+            "plate-25",
+            "plate-26",
+            "plate-27",
+            "plate-28",
+            "plate-29",
+            "plate-30",
+            "plate-31",
+            "plate-32",
+            "plate-33",
+            "plate-34",
+            "plate-35",
+            "plate-36",
+            "plate-37",
+            "plate-38",
+            "plate-39",
+            "plate-40",
+            "plate-41",
+            "plate-42",
+            "plate-43",
+            "plate-44",
+            "plate-45",
+            "plate-46",
+            "plate-47",
+            "plate-48",
+            "plate-49",
+            "plate-50",
+            "plate-51",
+            "plate-52",
+            "plate-53",
+            "plate-54",
+            "plate-55",
+            "plate-56",
+            "plate-57",
+            "plate-58",
+            "plate-59",
+            "plate-60",
+            "plate-61",
+            "plate-62",
+            "plate-63",
+            "plate-64",
+            "plate-65",
+            "plate-66",
+            "plate-67",
+            "plate-68",
+            "plate-69",
+            "plate-70",
+            "plate-71",
+            "plate-72",
+            "plate-73",
+            "plate-74",
+            "plate-75",
+            "plate-76",
+            "plate-77",
+            "plate-78",
+            "plate-79",
+            "plate-80",
+            "plate-81",
+            "plate-82",
+            "plate-83",
+            "plate-84",
+            "plate-85",
+            "plate-86",
+            "plate-87",
+            "plate-88",
+            "plate-89",
+            "plate-90",
+            "plate-91",
+            "plate-92",
+            "plate-93",
+            "plate-94",
+            "plate-95",
+            "plate-96",
+            "plate-97",
+            "plate-98",
+            "plate-99",
+            "plate-100",
+            "plate-101",
+            "plate-102",
+            "plate-103",
+            "plate-104",
+            "plate-105",
+            "plate-106",
+            "plate-107",
+            "plate-108",
+            "plate-109",
+            "plate-110",
+            "plate-111",
+            "plate-112",
+            "plate-113",
+            "plate-114",
+            "plate-115",
+            "plate-116",
+            "plate-117",
+            "plate-118",
+            "plate-119",
+            "plate-120",
+            "plate-121"
           ],
-          "param": "stainlessSteel"
+          "param": "polypropylene"
         }
       ]
     },
@@ -181543,16 +182300,18 @@
       "id": "thickener-bridge",
       "kit": "mining",
       "title": "Tailings thickener bridge",
-      "description": "Circular thickener tank with peripheral rim, radial bridge, central drive, and rake-arm crossbar. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Bridge-type tailings thickener at about real size: 22 m elevated steel tank on a ring of columns with a conical floor and underflow cone, settled water surface with a notched overflow weir and external launder discharging to an overflow box, centre feedwell fed by a pipe carried along a trussed walkway bridge with handrails, central drive head with gearbox, twin motors and rake-lift cylinder, rake-arm crossbar showing at the surface, underflow pump and pipe under the centre. Material controls: tank coating, bridge and column steel, drive coating, process water colour, plus a bridge choice (half, full). weathered, highVisibility and clearWater presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "tailings",
+        "thickener",
+        "clarifier",
+        "dewatering",
+        "rake drive",
+        "bridge"
       ],
       "compat": [
         "mining",
@@ -181563,8 +182322,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/thickener-bridge.kcad.ts",
       "preview": "/assets/mining-thickener-bridge.png",
-      "sourceSha256": "0a23b6e55b57dead964a4f13cd3e3ccff2c44c232eafcfd0392bdc68876c9a5c",
-      "triangleBudget": 1800,
+      "sourceSha256": "404c2ebcff8f3cf360d8be2a321461faf11642e50ddbbb4ba5ce39cba4f81fcf",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -181578,60 +182337,278 @@
         {
           "name": "coatedSteel",
           "type": "color",
-          "default": "#65a88b",
-          "label": "Coated equipment steel"
+          "default": "#bcc4c4",
+          "label": "Tank coating"
         },
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#4f5b62",
+          "label": "Bridge and column steel"
+        },
+        {
+          "name": "driveCoating",
+          "type": "color",
+          "default": "#2f6f9e",
+          "label": "Drive head coating"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#4b7466",
+          "label": "Process water"
+        },
+        {
+          "name": "span",
+          "type": "choice",
+          "default": "half",
+          "label": "Bridge span",
+          "choices": [
+            "half",
+            "full"
+          ]
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "coatedSteel": "#7b8180",
+          "structuralSteel": "#666a66",
+          "driveCoating": "#5d6f73",
+          "water": "#706a55"
         },
         "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+          "coatedSteel": "#c9cfcf",
+          "structuralSteel": "#465159",
+          "driveCoating": "#e48a1e",
+          "water": "#5f7a72"
+        },
+        "clearWater": {
+          "coatedSteel": "#a9b5b8",
+          "structuralSteel": "#2f5a8a",
+          "driveCoating": "#2f5a8a",
+          "water": "#4f8399"
         }
       },
       "stats": {
-        "triangles": 424,
+        "triangles": 5104,
         "sizeM": [
-          1.3,
-          0.54,
-          1.3
+          29,
+          11.4,
+          27
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#65a88b",
+          "name": "ground-slab",
+          "color": "#a6a196",
           "parts": [
-            "tank",
-            "tank-rim",
-            "center-drive",
-            "drive-cover",
-            "rake-arm-left",
-            "rake-arm-right"
+            "ground-slab",
+            "column-footing-0",
+            "column-footing-1",
+            "column-footing-2",
+            "column-footing-3",
+            "column-footing-4",
+            "column-footing-5",
+            "column-footing-6",
+            "column-footing-7",
+            "column-footing-8",
+            "column-footing-9",
+            "column-footing-10",
+            "column-footing-11",
+            "underflow-pump-plinth"
+          ]
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#bcc4c4",
+          "parts": [
+            "tank-wall",
+            "tank-cone",
+            "underflow-cone",
+            "wall-ring-0",
+            "wall-ring-1",
+            "wall-ring-2",
+            "wall-ring-3",
+            "launder",
+            "overflow-box",
+            "feedwell"
           ],
           "param": "coatedSteel"
         },
         {
           "name": "structuralSteel",
-          "color": "#566168",
+          "color": "#4f5b62",
           "parts": [
-            "bridge",
-            "bridge-rail-left",
-            "bridge-rail-right",
-            "walkway"
+            "column-0",
+            "column-1",
+            "column-2",
+            "column-3",
+            "column-4",
+            "column-5",
+            "column-6",
+            "column-7",
+            "column-8",
+            "column-9",
+            "column-10",
+            "column-11",
+            "inner-column-0",
+            "inner-column-1",
+            "inner-column-2",
+            "inner-column-3",
+            "inner-column-4",
+            "inner-column-5",
+            "column-brace-0",
+            "column-brace-1",
+            "column-brace-2",
+            "column-brace-3",
+            "column-brace-4",
+            "column-brace-5",
+            "column-brace-6",
+            "column-brace-7",
+            "column-brace-8",
+            "column-brace-9",
+            "column-brace-10",
+            "column-brace-11",
+            "overflow-weir",
+            "drive-platform",
+            "drive-motor-0",
+            "drive-motor-1",
+            "drive-control-box",
+            "centre-column",
+            "bridge-deck",
+            "bridge-chord-bottom--900",
+            "bridge-diag--900-0",
+            "bridge-diag--900-1",
+            "bridge-diag--900-2",
+            "bridge-diag--900-3",
+            "bridge-diag--900-4",
+            "bridge-diag--900-5",
+            "bridge-diag--900-6",
+            "bridge-diag--900-7",
+            "bridge-chord-bottom-900",
+            "bridge-diag-900-0",
+            "bridge-diag-900-1",
+            "bridge-diag-900-2",
+            "bridge-diag-900-3",
+            "bridge-diag-900-4",
+            "bridge-diag-900-5",
+            "bridge-diag-900-6",
+            "bridge-diag-900-7",
+            "bridge-rim-support",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-tread-7",
+            "stair-tread-8",
+            "stair-tread-9",
+            "stair-tread-10",
+            "stair-tread-11",
+            "stair-tread-12",
+            "stair-tread-13",
+            "stair-tread-14",
+            "stair-tread-15",
+            "stair-tread-16",
+            "stair-tread-17",
+            "stair-landing",
+            "stair-stringer",
+            "underflow-motor"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "water",
+          "color": "#4b7466",
+          "parts": [
+            "water-surface",
+            "launder-water"
+          ],
+          "param": "water"
+        },
+        {
+          "name": "overflow-pipe",
+          "color": "#26292b",
+          "parts": [
+            "overflow-pipe",
+            "drive-gear-ring",
+            "drive-motor-cowl-0",
+            "drive-motor-cowl-1",
+            "rake-crossbar",
+            "rake-tie--1",
+            "rake-tie-1"
+          ]
+        },
+        {
+          "name": "feedwell-froth",
+          "color": "#c9c6b8",
+          "parts": [
+            "feedwell-froth"
+          ]
+        },
+        {
+          "name": "driveCoating",
+          "color": "#2f6f9e",
+          "parts": [
+            "drive-cage",
+            "drive-cap",
+            "drive-gearbox-0",
+            "drive-gearbox-1",
+            "rake-lift-cylinder",
+            "underflow-pump"
+          ],
+          "param": "driveCoating"
+        },
+        {
+          "name": "rake-lift-rod",
+          "color": "#b5c0c0",
+          "parts": [
+            "rake-lift-rod"
+          ]
+        },
+        {
+          "name": "bridge-post--900--2000",
+          "color": "#e8c21a",
+          "parts": [
+            "bridge-post--900--2000",
+            "bridge-post--900--400",
+            "bridge-post--900-1200",
+            "bridge-post--900-2800",
+            "bridge-post--900-4400",
+            "bridge-post--900-6000",
+            "bridge-post--900-7600",
+            "bridge-post--900-9200",
+            "bridge-post--900-10800",
+            "bridge-rail-top--900",
+            "bridge-rail-mid--900",
+            "bridge-post-900--2000",
+            "bridge-post-900--400",
+            "bridge-post-900-1200",
+            "bridge-post-900-2800",
+            "bridge-post-900-4400",
+            "bridge-post-900-6000",
+            "bridge-post-900-7600",
+            "bridge-post-900-9200",
+            "bridge-post-900-10800",
+            "bridge-rail-top-900",
+            "bridge-rail-mid-900"
+          ]
+        },
+        {
+          "name": "feed-pipe",
+          "color": "#1f2224",
+          "parts": [
+            "feed-pipe",
+            "feed-pipe-drop",
+            "feed-pipe-riser",
+            "underflow-spool",
+            "underflow-discharge",
+            "underflow-line"
+          ]
         }
       ]
     },
