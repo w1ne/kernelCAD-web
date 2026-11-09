@@ -228537,14 +228537,18 @@
       "id": "geomembrane-welder",
       "kit": "recycling-facility",
       "title": "Geomembrane welder",
-      "description": "Geomembrane welder: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Self-propelled hot-wedge geomembrane welder at about real size on an overlapped HDPE liner seam: low chassis with drive wheels, heated wedge between the sheets, knurled pressure rollers, carry handle, control box with temperature and speed dials, trailing power cable and the double weld track with test channel behind it. Material controls: welder housing, liner, metal and controls. landfillBlack, whiteLiner, pondLiner and worn presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "landfill",
+        "geomembrane",
+        "HDPE liner",
+        "wedge welder",
+        "seaming",
+        "tools",
         "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -228557,8 +228561,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/geomembrane-welder.kcad.ts",
       "preview": "/assets/recycling-facility-geomembrane-welder.png",
-      "sourceSha256": "4597b6bd2789681ad4c6692b6e90c14ef0e101c17731824d5948adcb49cfedc3",
-      "triangleBudget": 1800,
+      "sourceSha256": "16f0e04d076c46f63b8928ef578f14387f9ef899fd3698e16a71aec0e6fc2ac0",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -228570,60 +228574,193 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#5c6c7b",
-          "label": "Painted steel"
+          "default": "#e8a21c",
+          "label": "Welder housing (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "liner",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#25282a",
+          "label": "Liner (HDPE)"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#b9bfc2",
+          "label": "Wedge, rollers and handle (metal)"
+        },
+        {
+          "name": "controls",
+          "type": "color",
+          "default": "#3b4044",
+          "label": "Control box and cable"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#626c70",
-          "stainlessSteel": "#9ea7a5"
+        "landfillBlack": {
+          "housing": "#e8a21c",
+          "liner": "#25282a",
+          "metal": "#b9bfc2",
+          "controls": "#3b4044"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "whiteLiner": {
+          "housing": "#d4402a",
+          "liner": "#e4e6e0",
+          "metal": "#a8b0b4",
+          "controls": "#2a2e31"
+        },
+        "pondLiner": {
+          "housing": "#2f6fa8",
+          "liner": "#2f4f3a",
+          "metal": "#c6ccce",
+          "controls": "#24282b"
+        },
+        "worn": {
+          "housing": "#a8884a",
+          "liner": "#3a3c3a",
+          "metal": "#8f8a80",
+          "controls": "#4a4540"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 884,
         "sizeM": [
-          1.861327,
-          1.513,
-          1.4102
+          1.770803,
+          0.589,
+          1.3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5c6c7b",
+          "name": "subgrade",
+          "color": "#8a7458",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
-          ],
-          "param": "paintedSteel"
+            "subgrade"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "liner",
+          "color": "#25282a",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "bottom-sheet",
+            "top-sheet",
+            "top-sheet-flap"
           ],
-          "param": "stainlessSteel"
+          "param": "liner"
+        },
+        {
+          "name": "weld-track--55",
+          "color": "#3a3e40",
+          "parts": [
+            "weld-track--55",
+            "weld-track-15"
+          ]
+        },
+        {
+          "name": "test-channel",
+          "color": "#1e2022",
+          "parts": [
+            "test-channel",
+            "drive-wheel--1--120",
+            "drive-wheel--1-170",
+            "drive-wheel-1--120",
+            "drive-wheel-1-170",
+            "pressure-knob",
+            "grip-rubber"
+          ]
+        },
+        {
+          "name": "seam-marks",
+          "color": "#f2f2ee",
+          "parts": [
+            "seam-marks"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#e8a21c",
+          "parts": [
+            "chassis",
+            "chassis-nose",
+            "motor-housing"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "controls",
+          "color": "#3b4044",
+          "parts": [
+            "motor-cap",
+            "heater-lead",
+            "control-box",
+            "cable-drop",
+            "cable-run-1",
+            "cable-run-2"
+          ],
+          "param": "controls"
+        },
+        {
+          "name": "metal",
+          "color": "#b9bfc2",
+          "parts": [
+            "wedge-arm",
+            "heater-block",
+            "pressure-roller",
+            "roller-yoke",
+            "pressure-screw",
+            "handle-upright--1",
+            "handle-upright-1",
+            "handle-grip",
+            "control-post"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "wedge",
+          "color": "#c86a2a",
+          "parts": [
+            "wedge"
+          ]
+        },
+        {
+          "name": "roller-knurl",
+          "color": "#8a9094",
+          "parts": [
+            "roller-knurl"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#3fbf6a",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "dial--100",
+          "color": "#d4402a",
+          "parts": [
+            "dial--100",
+            "dial-20"
+          ]
+        },
+        {
+          "name": "power-switch",
+          "color": "#e8e6dc",
+          "parts": [
+            "power-switch"
+          ]
+        },
+        {
+          "name": "cable-plug",
+          "color": "#f0b429",
+          "parts": [
+            "cable-plug"
+          ]
         }
       ]
     },
@@ -241254,15 +241391,19 @@
     {
       "id": "product-pelletizer",
       "kit": "recycling-facility",
-      "title": "Recovered-material pelletizer",
-      "description": "Recovered-material pelletizer: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "title": "Product pelletizer",
+      "description": "Plastic strand pelletizing line at about real size: motor and gearbox driving a horizontal extruder barrel with heater bands, tapered flake hopper, die head with a fan of strands running through an open water bath to a strand cutter that drops pellets into a bin. Material controls: machine frame, barrel and heaters, drive motor and pellets. plant, stainless, legacy and recycledBlack presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "plastics",
+        "pelletizer",
+        "extruder",
+        "strand pelletizing",
         "materials recovery",
         "waste management",
-        "baling",
+        "machinery",
         "low poly",
         "scene prop"
       ],
@@ -241275,8 +241416,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/product-pelletizer.kcad.ts",
       "preview": "/assets/recycling-facility-product-pelletizer.png",
-      "sourceSha256": "952fce8923bd9c48d9d95a7c9b6c63649c1c30572ae96ceea6dd1a826b12ec59",
-      "triangleBudget": 1800,
+      "sourceSha256": "f0d66747f6722d150c9cda1081609b9d6b6b4767c4c9496f005977afaa48bf0b",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -241288,60 +241429,205 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "machine",
           "type": "color",
-          "default": "#766078",
-          "label": "Painted steel"
+          "default": "#2f6fa8",
+          "label": "Machine frame (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "barrel",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b9bfc2",
+          "label": "Barrel and heater bands"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#3f7f4a",
+          "label": "Drive motor (paint)"
+        },
+        {
+          "name": "pellets",
+          "type": "color",
+          "default": "#e8eef0",
+          "label": "Pellets and strands"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#74646e",
-          "stainlessSteel": "#9ea7a5"
+        "plant": {
+          "machine": "#2f6fa8",
+          "barrel": "#b9bfc2",
+          "drive": "#3f7f4a",
+          "pellets": "#e8eef0"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "stainless": {
+          "machine": "#c6ccce",
+          "barrel": "#9aa3a6",
+          "drive": "#4a5054",
+          "pellets": "#7fb0d8"
+        },
+        "legacy": {
+          "machine": "#7a8a5a",
+          "barrel": "#8f8a80",
+          "drive": "#5a6070",
+          "pellets": "#d8c890"
+        },
+        "recycledBlack": {
+          "machine": "#d4572a",
+          "barrel": "#b9bfc2",
+          "drive": "#2f3437",
+          "pellets": "#2a2c2e"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1716,
         "sizeM": [
-          2.008227,
-          1.1554,
-          1.4102
+          5.87,
+          1.84,
+          1.337795
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#766078",
+          "name": "machine",
+          "color": "#2f6fa8",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "extruder-base",
+            "base-door",
+            "cooling-fan-0",
+            "cooling-fan-1",
+            "cooling-fan-2",
+            "cooling-fan-3",
+            "cooling-fan-4",
+            "cooling-fan-5",
+            "feed-throat",
+            "hopper",
+            "screen-changer",
+            "bath-leg-1200",
+            "bath-leg-b-1200",
+            "bath-leg-2700",
+            "bath-leg-b-2700",
+            "bath-rail",
+            "cutter-stand",
+            "cutter-housing"
           ],
-          "param": "paintedSteel"
+          "param": "machine"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "base-plinth",
+          "color": "#2a2e31",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "base-plinth",
+            "foot--1880--300",
+            "foot--1880-300",
+            "foot-880--300",
+            "foot-880-300",
+            "motor-fan-cover",
+            "heater-lead-0",
+            "heater-lead-1",
+            "heater-lead-2",
+            "heater-lead-3",
+            "heater-lead-4",
+            "heater-lead-5",
+            "hopper-rim",
+            "screen-handle",
+            "die-band",
+            "guide-roller-1350",
+            "guide-roller-1950",
+            "guide-roller-2550",
+            "cutter-intake",
+            "cabinet-door-line",
+            "hmi-arm",
+            "hmi-panel"
+          ]
+        },
+        {
+          "name": "drive",
+          "color": "#3f7f4a",
+          "parts": [
+            "motor",
+            "motor-terminal-box",
+            "gearbox",
+            "cutter-motor"
           ],
-          "param": "stainlessSteel"
+          "param": "drive"
+        },
+        {
+          "name": "coupling-guard",
+          "color": "#f0b429",
+          "parts": [
+            "coupling-guard",
+            "cutter-guard"
+          ]
+        },
+        {
+          "name": "barrel",
+          "color": "#b9bfc2",
+          "parts": [
+            "barrel",
+            "heater-0",
+            "heater-1",
+            "heater-2",
+            "heater-3",
+            "heater-4",
+            "heater-5",
+            "die-head",
+            "strand-die",
+            "bath",
+            "pellet-chute"
+          ],
+          "param": "barrel"
+        },
+        {
+          "name": "pellets",
+          "color": "#e8eef0",
+          "parts": [
+            "hopper-flake",
+            "strand-drop-0",
+            "strand-run-0",
+            "strand-rise-0",
+            "strand-drop-1",
+            "strand-run-1",
+            "strand-rise-1",
+            "strand-drop-2",
+            "strand-run-2",
+            "strand-rise-2",
+            "strand-drop-3",
+            "strand-run-3",
+            "strand-rise-3",
+            "strand-drop-4",
+            "strand-run-4",
+            "strand-rise-4",
+            "strand-drop-5",
+            "strand-run-5",
+            "strand-rise-5",
+            "pellet-heap"
+          ],
+          "param": "pellets"
+        },
+        {
+          "name": "water",
+          "color": "#5ba3c8",
+          "parts": [
+            "water",
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "pellet-bin",
+          "color": "#3a5a7a",
+          "parts": [
+            "pellet-bin"
+          ]
+        },
+        {
+          "name": "control-cabinet",
+          "color": "#c9ced1",
+          "parts": [
+            "control-cabinet"
+          ]
         }
       ]
     },
@@ -241983,7 +242269,7 @@
       "id": "recovered-bale-wrapper",
       "kit": "recycling-facility",
       "title": "Recovered-material bale wrapper",
-      "description": "Recovered-material bale wrapper: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Ring bale wrapper at about real size: powered roller bed, a vertical wrapping ring on two portal frames carrying a stretch-film carriage, and a strapped bale that is bare on the infeed side and film-wrapped on the outfeed side, plus control pedestal and safety light. Material controls: frame, wrapping ring, stretch film and bale. paperBale, rdfBlack, plasticBale and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -241991,6 +242277,9 @@
         "materials recovery",
         "waste management",
         "baling",
+        "bale wrapper",
+        "stretch film",
+        "machinery",
         "low poly",
         "scene prop"
       ],
@@ -242003,8 +242292,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/recovered-bale-wrapper.kcad.ts",
       "preview": "/assets/recycling-facility-recovered-bale-wrapper.png",
-      "sourceSha256": "a486d3157cf634d2e57c7a0d22f9b2ac9411a230f8ec2bea9626f0aac06f7a86",
-      "triangleBudget": 1800,
+      "sourceSha256": "a7054973f3af9752a4cee106c8cc5b619ad7810a787c3f1f77dedf263a5febb8",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -242016,60 +242305,194 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#5f7380",
-          "label": "Painted steel"
+          "default": "#2f6fa8",
+          "label": "Frame and roller bed (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "ring",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f0b429",
+          "label": "Wrapping ring (paint)"
+        },
+        {
+          "name": "film",
+          "type": "color",
+          "default": "#e9eef0",
+          "label": "Stretch film"
+        },
+        {
+          "name": "bale",
+          "type": "color",
+          "default": "#b49a6c",
+          "label": "Bale (paper)"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#647074",
-          "stainlessSteel": "#9ea7a5"
+        "paperBale": {
+          "frame": "#2f6fa8",
+          "ring": "#f0b429",
+          "film": "#e9eef0",
+          "bale": "#b49a6c"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "rdfBlack": {
+          "frame": "#3f7f4a",
+          "ring": "#d4572a",
+          "film": "#262a2c",
+          "bale": "#7a6a58"
+        },
+        "plasticBale": {
+          "frame": "#5a6270",
+          "ring": "#f0b429",
+          "film": "#3f9a5a",
+          "bale": "#5b8fc0"
+        },
+        "weathered": {
+          "frame": "#5f7380",
+          "ring": "#a8884a",
+          "film": "#c8ccc4",
+          "bale": "#8e7a5a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2792,
         "sizeM": [
-          1.420627,
-          1.246,
-          1.2646
+          3.6,
+          2.5,
+          2.67
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5f7380",
+          "name": "frame",
+          "color": "#2f6fa8",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "bed-rail--1",
+            "bed-leg--1--1650",
+            "bed-leg--1--600",
+            "bed-leg--1-600",
+            "bed-leg--1-1650",
+            "bed-rail-1",
+            "bed-leg-1--1650",
+            "bed-leg-1--600",
+            "bed-leg-1-600",
+            "bed-leg-1-1650",
+            "post--260--1",
+            "post--260-1",
+            "portal-beam--260",
+            "portal-foot--260",
+            "post-260--1",
+            "post-260-1",
+            "portal-beam-260",
+            "portal-foot-260",
+            "portal-tie--1",
+            "portal-tie-1",
+            "ring-hanger--1",
+            "ring-hanger-1",
+            "ring-hanger-top"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "roller-0",
+          "color": "#b9bfc2",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "roller-6",
+            "roller-9",
+            "roller-10",
+            "roller-11",
+            "roller-12",
+            "roller-13",
+            "roller-14",
+            "roller-15"
+          ]
+        },
+        {
+          "name": "bed-drive",
+          "color": "#2a2e31",
+          "parts": [
+            "bed-drive",
+            "ring-track",
+            "ring-guide--1",
+            "ring-guide-1",
+            "film-core",
+            "prestretch-motor",
+            "strap-top--700",
+            "strap-front--700",
+            "strap-top--500",
+            "strap-front--500",
+            "strap-top--300",
+            "strap-front--300",
+            "control-panel",
+            "beacon-mast"
+          ]
+        },
+        {
+          "name": "ring",
+          "color": "#f0b429",
+          "parts": [
+            "ring",
+            "carriage-plate"
           ],
-          "param": "stainlessSteel"
+          "param": "ring"
+        },
+        {
+          "name": "film",
+          "color": "#e9eef0",
+          "parts": [
+            "film-roll",
+            "film-web",
+            "bale-wrap",
+            "wrap-edge",
+            "wrapped-bale",
+            "wrapped-band"
+          ],
+          "param": "film"
+        },
+        {
+          "name": "bale",
+          "color": "#b49a6c",
+          "parts": [
+            "bale"
+          ],
+          "param": "bale"
+        },
+        {
+          "name": "wrapped-label",
+          "color": "#e8e6dc",
+          "parts": [
+            "wrapped-label"
+          ]
+        },
+        {
+          "name": "control-pedestal",
+          "color": "#c9ced1",
+          "parts": [
+            "control-pedestal"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d4402a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08a24",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -242077,14 +242500,19 @@
       "id": "recovered-plastic-bagger",
       "kit": "recycling-facility",
       "title": "Recovered-plastic bagger",
-      "description": "Recovered-plastic bagger: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Big-bag (FIBC) filling station for recycled plastic flake at about real size: four-post steel frame with fill head and inflatable spout, inclined screw conveyor from a floor hopper, woven bulk bag hung from four loop hooks on a pallet on a weigh scale, weight indicator and flake spill. Material controls: frame, bulk bag, pallet and flake. plant, foodGrade, regrind and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "plastics",
+        "bagger",
+        "big bag",
+        "FIBC",
+        "bulk bag filler",
+        "flake",
         "materials recovery",
         "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -242097,8 +242525,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/recovered-plastic-bagger.kcad.ts",
       "preview": "/assets/recycling-facility-recovered-plastic-bagger.png",
-      "sourceSha256": "a19c8449414110e1c57b4e43e7df6246946be2f827e02d2fac3c77e74906c0dd",
-      "triangleBudget": 1800,
+      "sourceSha256": "655db386bf11eee30a2a31c2c0369854323223fe8896488dbe22664da1332d1a",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -242110,60 +242538,212 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#647b66",
-          "label": "Painted steel"
+          "default": "#d4572a",
+          "label": "Frame and conveyor (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "bag",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#eceee6",
+          "label": "Bulk bag (woven PP)"
+        },
+        {
+          "name": "pallet",
+          "type": "color",
+          "default": "#b08a58",
+          "label": "Pallet (timber)"
+        },
+        {
+          "name": "flake",
+          "type": "color",
+          "default": "#6fb4d8",
+          "label": "Plastic flake"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#687662",
-          "stainlessSteel": "#9ea7a5"
+        "plant": {
+          "frame": "#d4572a",
+          "bag": "#eceee6",
+          "pallet": "#b08a58",
+          "flake": "#6fb4d8"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "foodGrade": {
+          "frame": "#c6ccce",
+          "bag": "#f6f6f2",
+          "pallet": "#3a6ea8",
+          "flake": "#e4ecef"
+        },
+        "regrind": {
+          "frame": "#3f7f4a",
+          "bag": "#c8b98a",
+          "pallet": "#8a6a44",
+          "flake": "#3c3f42"
+        },
+        "weathered": {
+          "frame": "#8a5a40",
+          "bag": "#cfcab8",
+          "pallet": "#7d6648",
+          "flake": "#5f8fa8"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1598,
         "sizeM": [
-          1.420627,
-          1.246,
-          1.4102
+          3.77,
+          3.62,
+          2.031663
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#647b66",
+          "name": "scale-base",
+          "color": "#2a2e31",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
-          ],
-          "param": "paintedSteel"
+            "scale-base",
+            "load-cell--1--1",
+            "load-cell--1-1",
+            "load-cell-1--1",
+            "load-cell-1-1",
+            "post-foot--1--1",
+            "post-foot--1-1",
+            "post-foot-1--1",
+            "post-foot-1-1",
+            "hook--1--1",
+            "hook--1-1",
+            "hook-1--1",
+            "hook-1-1",
+            "inflatable-collar",
+            "fill-valve",
+            "screw-flange-1",
+            "screw-flange-2",
+            "screw-flange-3",
+            "screw-flange-4",
+            "hopper-legs"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "scale-deck",
+          "color": "#9aa3a6",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "scale-deck"
+          ]
+        },
+        {
+          "name": "pallet",
+          "color": "#b08a58",
+          "parts": [
+            "pallet-runner--450",
+            "pallet-runner-0",
+            "pallet-runner-450",
+            "pallet-board-0",
+            "pallet-board-1",
+            "pallet-board-2",
+            "pallet-board-3",
+            "pallet-board-4",
+            "pallet-board-5",
+            "pallet-board-6"
           ],
-          "param": "stainlessSteel"
+          "param": "pallet"
+        },
+        {
+          "name": "bag",
+          "color": "#eceee6",
+          "parts": [
+            "bag-body",
+            "bag-top",
+            "bag-inlet",
+            "bag-loop--1--1",
+            "bag-loop--1-1",
+            "bag-loop-1--1",
+            "bag-loop-1-1",
+            "vent-filter"
+          ],
+          "param": "bag"
+        },
+        {
+          "name": "bag-seam--1--1",
+          "color": "#d6d8ce",
+          "parts": [
+            "bag-seam--1--1",
+            "bag-seam--1-1",
+            "bag-seam-1--1",
+            "bag-seam-1-1"
+          ]
+        },
+        {
+          "name": "bag-label",
+          "color": "#e8e6dc",
+          "parts": [
+            "bag-label"
+          ]
+        },
+        {
+          "name": "flake",
+          "color": "#6fb4d8",
+          "parts": [
+            "bag-label-text",
+            "hopper-flake",
+            "spill"
+          ],
+          "param": "flake"
+        },
+        {
+          "name": "frame",
+          "color": "#d4572a",
+          "parts": [
+            "post--1--1",
+            "post--1-1",
+            "post-1--1",
+            "post-1-1",
+            "beam-x--1",
+            "beam-x-1",
+            "beam-y--1",
+            "beam-y-1",
+            "hook-carriage",
+            "carriage-hanger--1",
+            "carriage-hanger-1",
+            "screw-tube",
+            "screw-head",
+            "screw-support",
+            "floor-hopper",
+            "indicator-arm"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "fill-spout",
+          "color": "#b9bfc2",
+          "parts": [
+            "fill-spout",
+            "fill-head",
+            "vent-pipe",
+            "screw-drop"
+          ]
+        },
+        {
+          "name": "screw-motor",
+          "color": "#3f7f4a",
+          "parts": [
+            "screw-motor"
+          ]
+        },
+        {
+          "name": "indicator",
+          "color": "#c9ced1",
+          "parts": [
+            "indicator"
+          ]
+        },
+        {
+          "name": "indicator-display",
+          "color": "#3fbf6a",
+          "parts": [
+            "indicator-display"
+          ]
         }
       ]
     },
@@ -243076,14 +243656,18 @@
       "id": "residue-loadout-chute",
       "kit": "recycling-facility",
       "title": "Residue load-out chute",
-      "description": "Residue load-out chute: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Residue load-out at about real size: inclined belt conveyor on a support leg climbing to a head pulley on a braced steel tower with platform and handrail, hooded head chute with flop gate and actuator, telescoping spout with rubber skirt, and a mixed residue heap inside a three-sided concrete push-wall bay. Material controls: structure, chute, rubber and residue. plant, galvanised, highVisibility and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "residue",
+        "load-out",
+        "chute",
+        "conveyor",
+        "push wall",
         "materials recovery",
         "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -243096,8 +243680,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/residue-loadout-chute.kcad.ts",
       "preview": "/assets/recycling-facility-residue-loadout-chute.png",
-      "sourceSha256": "a0c93cc8c69d569633f7500765ac55e1ed843bf75376431aee816acc7193a5c4",
-      "triangleBudget": 1800,
+      "sourceSha256": "b3a9cd30afeb0f28917c9765c0f1a73a893e4a078ff8da1a6c7ca30cf51b1563",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -243109,60 +243693,215 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#64757a",
-          "label": "Painted steel"
+          "default": "#2f6fa8",
+          "label": "Tower and conveyor (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chute",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#9aa3a6",
+          "label": "Chute and spout (wear plate)"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#24282b",
+          "label": "Belt and rubber skirt"
+        },
+        {
+          "name": "residue",
+          "type": "color",
+          "default": "#6b5a45",
+          "label": "Residue heap"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#68726f",
-          "stainlessSteel": "#9ea7a5"
+        "plant": {
+          "structure": "#2f6fa8",
+          "chute": "#9aa3a6",
+          "rubber": "#24282b",
+          "residue": "#6b5a45"
+        },
+        "galvanised": {
+          "structure": "#a8b0b0",
+          "chute": "#8a9296",
+          "rubber": "#2a2e31",
+          "residue": "#7a6a52"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "structure": "#f0b429",
+          "chute": "#5a6270",
+          "rubber": "#1e2022",
+          "residue": "#6b5a45"
+        },
+        "weathered": {
+          "structure": "#5f7380",
+          "chute": "#8a6a50",
+          "rubber": "#3a3c3a",
+          "residue": "#5a4a3a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1274,
         "sizeM": [
-          1.420627,
-          1.3795,
-          1.119
+          5.56,
+          5.069703,
+          3.004
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#64757a",
+          "name": "bay-slab",
+          "color": "#9a968c",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
-          ],
-          "param": "paintedSteel"
+            "bay-slab"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "back-wall",
+          "color": "#b8b4aa",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "back-wall",
+            "side-wall--1",
+            "side-wall-1"
+          ]
+        },
+        {
+          "name": "wall-chevron--1",
+          "color": "#f0b429",
+          "parts": [
+            "wall-chevron--1",
+            "wall-chevron-1",
+            "rail-post--640",
+            "rail-post-640",
+            "handrail",
+            "midrail",
+            "side-rail--1",
+            "side-rail-1"
+          ]
+        },
+        {
+          "name": "structure",
+          "color": "#2f6fa8",
+          "parts": [
+            "leg--500-600",
+            "leg--500-1300",
+            "leg-500-600",
+            "leg-500-1300",
+            "brace-a-600",
+            "brace-b-600",
+            "brace-a-1300",
+            "brace-b-1300",
+            "platform",
+            "stringer--430",
+            "stringer-430",
+            "conveyor-leg--430",
+            "tail-leg--430",
+            "conveyor-leg-430",
+            "tail-leg-430",
+            "tail-tie",
+            "spout-ring-560",
+            "spout-ring-500",
+            "spout-ring-440",
+            "cable-reel"
           ],
-          "param": "stainlessSteel"
+          "param": "structure"
+        },
+        {
+          "name": "chute",
+          "color": "#9aa3a6",
+          "parts": [
+            "platform-cut",
+            "head-pulley",
+            "tail-pulley",
+            "head-hood",
+            "hood-roof",
+            "head-box",
+            "spout-560",
+            "spout-500",
+            "spout-440"
+          ],
+          "param": "chute"
+        },
+        {
+          "name": "rubber",
+          "color": "#24282b",
+          "parts": [
+            "belt",
+            "flop-shaft",
+            "lift-cable",
+            "skirt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "residue",
+          "color": "#6b5a45",
+          "parts": [
+            "belt-load",
+            "heap"
+          ],
+          "param": "residue"
+        },
+        {
+          "name": "drive-motor",
+          "color": "#3f7f4a",
+          "parts": [
+            "drive-motor",
+            "gearbox"
+          ]
+        },
+        {
+          "name": "flop-actuator",
+          "color": "#c9ced1",
+          "parts": [
+            "flop-actuator"
+          ]
+        },
+        {
+          "name": "timber--500",
+          "color": "#a8704a",
+          "parts": [
+            "timber--500",
+            "timber--200"
+          ]
+        },
+        {
+          "name": "timber-420",
+          "color": "#8a5a3c",
+          "parts": [
+            "timber-420"
+          ]
+        },
+        {
+          "name": "stone--700",
+          "color": "#8f8a80",
+          "parts": [
+            "stone--700",
+            "stone-300",
+            "stone-600",
+            "stone--300"
+          ]
+        },
+        {
+          "name": "film-100",
+          "color": "#d9dcd6",
+          "parts": [
+            "film-100",
+            "film--650",
+            "film-250"
+          ]
+        },
+        {
+          "name": "spilled-bag",
+          "color": "#2f3437",
+          "parts": [
+            "spilled-bag"
+          ]
         }
       ]
     },
