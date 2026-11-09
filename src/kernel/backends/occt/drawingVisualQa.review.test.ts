@@ -54,6 +54,37 @@ describe('independent review regressions for drawing QA', () => {
     expect(qa.issues.map(i => i.code)).toContain('text-clipping');
   });
 
+  it('detects page clipping from the PDF Helvetica width of wide glyphs', () => {
+    // Naive character-count width (0.58em) fits this label on A4, but the
+    // actual vector-PDF Helvetica advance of W is about 0.944em.
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g id="dimensions"><text x="284" y="30" font-size="3">WWWWWW</text></g>'),
+    { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('text-clipping');
+  });
+
+  it('does not falsely clip narrow glyphs that fit using real PDF font advances', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g id="dimensions"><text x="289" y="30" font-size="3">iiiiiii</text></g>'),
+    { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).not.toContain('text-clipping');
+  });
+
+  it('detects translated text outside the sheet and respects inherited text-anchor', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g transform="translate(280 0)" text-anchor="end" font-size="3">' +
+      '<text x="30" y="30">LONG WIDE NOTE</text></g>'),
+    { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).toContain('text-clipping');
+  });
+
+  it('ignores a non-painted text group as the PDF export does', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g style="fill:none"><text x="295" y="30" font-size="4">UNPAINTED</text></g>'),
+    { requestedViews: ['front'] });
+    expect(qa.issues.map(i => i.code)).not.toContain('text-clipping');
+  });
+
   it('does not claim dimensional completeness when no critical review was declared (P1)', () => {
     const qa = analyzeExportedDrawingSvg(fixture(''), { requestedViews: ['front'] });
     expect(qa.status).toBe('incomplete');

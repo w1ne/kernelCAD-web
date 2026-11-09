@@ -39,4 +39,34 @@ Want the same paper size and style next time? Enter a **Profile name** and click
 
 Using an AI assistant? Ask: “Export this mounting plate as a PDF drawing with baseline dimensions.” Your assistant returns a PDF download link through MCP.
 
+## Optional automatic drawing QA for agent exports
+
+The existing MCP `export` action can check the finished SVG and vector PDF,
+then retry a crowded layout without changing the CAD model:
+
+```json
+{
+  "target": "model",
+  "file": "fixture.kcad.ts",
+  "format": "pdf-drawing",
+  "output_path": "/tmp/fixture.pdf",
+  "options": {
+    "format": "pdf-drawing",
+    "sheet": "a4",
+    "visualQa": { "autoRepair": true, "maxAttempts": 3 }
+  }
+}
+```
+
+The response includes `drawing_report.visualQa`, with detected sheet issues,
+attempted repairs and PDF readback evidence. An agent can adjust annotation
+placement or choose a larger standard sheet only when measured defects decrease.
+It does not invent dimensions, tolerances or manufacturing requirements.
+
+**A successful PDF export is not engineering approval.** A drawing without
+declared critical requirements remains `incomplete`. Check and approve the
+part interfaces, material, fit and manufacturing process before fabrication.
+The [reproducible PDF QA demonstration](../../docs/demos/drawing-visual-qa/README.md)
+shows an A4 clipping failure and an accepted A3 layout repair on a real export.
+
 [Watch the Studio walkthrough](/blog/drafting-review/one-click.mp4). The video and Studio screenshots show a local walkthrough. These example parts have not been manufactured or tested.
