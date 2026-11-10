@@ -62,6 +62,7 @@ const API_EXAMPLES: Record<string, string> = {
   spurGear: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
   internalSpurGear: 'internalSpurGear({ module: 1, teeth: 54, faceWidth: 8, rimThickness: 4 })',
   spring: 'spring({ length: 30, coilRadius: 5, wireRadius: 1, turns: 8 })',
+  pipe: 'pipe([[0, 0, 0], [40, 0, 0], [40, 0, 30]], 3, { bendRadius: 8 })',
   extrudeRect: 'extrudeRect(40, 30, 10)',
   extrudeCircle: 'extrudeCircle(10, 5)',
   extrudePolygon: 'extrudePolygon([[0, 0], [20, 0], [20, 10], [0, 10]], 5)',
