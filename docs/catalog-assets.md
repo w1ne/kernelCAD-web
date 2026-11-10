@@ -20,6 +20,23 @@ and an inspected MP4. Earlier round notes below retain their at-the-time results
 under the previous gate definition. This is a local branch snapshot, not a
 deployment or hardware-acceptance claim.
 
+The Nov 10 office writing-tool follow-up refines two existing assets in place:
+the highlighter now has a rounded barrel and cap, visible side clip and sloped
+felt nib; the mechanical pencil has a turned barrel, separately colored rubber
+grip, tapered nose, click button, clip and exposed graphite lead. The highlighter
+gained a cap-polymer control; the pencil gained a rubber-grip control, separating
+it from graphite lead. Each now exposes four material controls, one more than
+before. Both retain their compact / standard option and professional / classroom
+palettes. Their meshes are 232 / 320 and 802 / 900
+triangles. All 40 office previews were regenerated and the
+index rebuilt. The office kit remains 40/40 passing and the global catalog
+quality result remains 2,402/2,402 (100.00%). The
+[writing-tool handoff](../artifacts/catalog-demos/office-tools-silhouette-20261110/README.md)
+contains before/after source and previews, source-driven palette renders,
+source-hash and local-page checks, lint and integration results, and the
+inspected MP4. This branch is not deployed; the assets are generic low-poly
+visualizations, not product replicas or manufacturing specifications.
+
 The Nov 10 standard-components detail pass improves three existing assets in
 place: the pipe reducer has a tapered hollow body, end collars, a separate
 elastomer band, and a selectable outlet ratio; the retaining ring has pierced

@@ -61,6 +61,12 @@ repairs the default catalog view by joining each polymer finger loop to the
 brass pivot with a tapered handle tang. It retains the existing stainless-steel,
 polymer, and brass controls and both named palettes.
 
+The [writing-tool silhouette follow-up](../../../artifacts/catalog-demos/office-tools-silhouette-20261110/README.md)
+refines the highlighter's rounded cap, pocket clip and chisel nib, and the
+mechanical pencil's turned barrel, rubber grip, tapered nose and exposed lead.
+Both existing IDs keep their compact/standard option and professional/classroom
+palettes; no kit or asset ID was added.
+
 ## Licence and provenance
 
 Every asset in this kit is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The models are authored from scratch as parametric kernelCAD source; no downloaded, traced, converted or decimated mesh, texture or palette is included.

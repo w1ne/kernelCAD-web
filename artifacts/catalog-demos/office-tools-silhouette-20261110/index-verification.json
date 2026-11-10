@@ -1,0 +1,27 @@
+{
+  "verified": true,
+  "catalogAssetCount": 2402,
+  "officeAssetCount": 40,
+  "assets": [
+    {
+      "id": "highlighter",
+      "source": "catalog/kits/office/highlighter.kcad.ts",
+      "sourceSha256": "a54b129fe9cac4c69984eabd37ec0eeed8e631e6015e144d5e456ed56e284690",
+      "preview": "/assets/office-highlighter.png",
+      "previewPath": "catalog/kits/office/previews/highlighter.png",
+      "previewBytes": 19848,
+      "triangles": 232,
+      "triangleBudget": 320
+    },
+    {
+      "id": "mechanical-pencil",
+      "source": "catalog/kits/office/mechanical-pencil.kcad.ts",
+      "sourceSha256": "75dc5d6218b868b7c49a570fd848ea16ae8f1328099468a459fe6f9c28e52ee3",
+      "preview": "/assets/office-mechanical-pencil.png",
+      "previewPath": "catalog/kits/office/previews/mechanical-pencil.png",
+      "previewBytes": 22803,
+      "triangles": 802,
+      "triangleBudget": 900
+    }
+  ]
+}

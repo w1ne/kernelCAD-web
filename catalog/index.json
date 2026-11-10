@@ -204468,7 +204468,7 @@
       "id": "highlighter",
       "kit": "office",
       "title": "Highlighter",
-      "description": "Broad chisel-tip highlighter with a removable cap and contrasting end plug. Controls: barrel polymer, fluorescent ink, felt tip.",
+      "description": "Broad chisel-tip highlighter with a rounded barrel, removable cap, pocket clip and visible ink face. Controls: barrel polymer, cap polymer, felt and fluorescent ink; compact and standard formats.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -204486,26 +204486,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/highlighter.kcad.ts",
       "preview": "/assets/office-highlighter.png",
-      "sourceSha256": "e56356c74b1fd845b177ee1682bf867c2c84c6ba1a1acb1dfa140af56a246538",
-      "triangleBudget": 120,
+      "sourceSha256": "a54b129fe9cac4c69984eabd37ec0eeed8e631e6015e144d5e456ed56e284690",
+      "triangleBudget": 320,
       "params": [
         {
-          "name": "polymer",
+          "name": "barrelPolymer",
           "type": "color",
           "default": "#eac633",
           "label": "Barrel polymer"
         },
         {
-          "name": "fluorescentInk",
+          "name": "capPolymer",
           "type": "color",
-          "default": "#f4ed48",
-          "label": "Fluorescent ink"
+          "default": "#d39124",
+          "label": "Cap polymer"
         },
         {
           "name": "felt",
           "type": "color",
-          "default": "#c84747",
-          "label": "Felt tip"
+          "default": "#bd6a36",
+          "label": "Felt nib"
+        },
+        {
+          "name": "fluorescentInk",
+          "type": "color",
+          "default": "#eff24d",
+          "label": "Fluorescent ink"
         },
         {
           "name": "format",
@@ -204520,52 +204526,62 @@
       ],
       "presets": {
         "professional": {
-          "polymer": "#eac633",
-          "fluorescentInk": "#f4ed48",
-          "felt": "#c84747"
+          "barrelPolymer": "#eac633",
+          "capPolymer": "#d39124",
+          "felt": "#bd6a36",
+          "fluorescentInk": "#eff24d"
         },
         "classroom": {
-          "polymer": "#57a16a",
-          "fluorescentInk": "#ff8d49",
-          "felt": "#3c6da3"
+          "barrelPolymer": "#4d9a7b",
+          "capPolymer": "#34765f",
+          "felt": "#405b8a",
+          "fluorescentInk": "#ff9444"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 232,
         "sizeM": [
-          0.126,
-          0.028,
-          0.032
+          0.130868,
+          0.026,
+          0.0258
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
+          "name": "barrelPolymer",
           "color": "#eac633",
           "parts": [
             "barrel"
           ],
-          "param": "polymer"
+          "param": "barrelPolymer"
         },
         {
-          "name": "fluorescentInk",
-          "color": "#f4ed48",
+          "name": "capPolymer",
+          "color": "#d39124",
           "parts": [
             "cap",
-            "cap-clip"
+            "cap-crown",
+            "pocket-clip"
           ],
-          "param": "fluorescentInk"
+          "param": "capPolymer"
         },
         {
           "name": "felt",
-          "color": "#c84747",
+          "color": "#bd6a36",
           "parts": [
-            "chisel-tip",
-            "end-plug"
+            "felt-chisel-nib"
           ],
           "param": "felt"
+        },
+        {
+          "name": "fluorescentInk",
+          "color": "#eff24d",
+          "parts": [
+            "fluorescent-ink-face"
+          ],
+          "param": "fluorescentInk"
         }
       ]
     },
@@ -205460,7 +205476,7 @@
       "id": "mechanical-pencil",
       "kit": "office",
       "title": "Mechanical pencil",
-      "description": "Slim mechanical pencil with a stepped grip, clip and exposed writing tip. Controls: barrel aluminum, grip polymer, graphite lead.",
+      "description": "Slim mechanical pencil with a turned barrel, ribbed elastomer grip, tapered nose, exposed lead, click button and pocket clip. Controls: barrel aluminum, grip rubber, accent polymer and graphite; compact and standard formats.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -205478,8 +205494,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/mechanical-pencil.kcad.ts",
       "preview": "/assets/office-mechanical-pencil.png",
-      "sourceSha256": "91c5e4f9b138b2b0142002861c8a200318369d12384cdb2151444b45c0f47243",
-      "triangleBudget": 120,
+      "sourceSha256": "75dc5d6218b868b7c49a570fd848ea16ae8f1328099468a459fe6f9c28e52ee3",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "aluminum",
@@ -205488,15 +205504,21 @@
           "label": "Barrel aluminum"
         },
         {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Grip rubber"
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#d85e4d",
-          "label": "Grip polymer"
+          "label": "Accent polymer"
         },
         {
           "name": "graphite",
           "type": "color",
-          "default": "#393c3e",
+          "default": "#25292b",
           "label": "Graphite lead"
         },
         {
@@ -205513,21 +205535,23 @@
       "presets": {
         "professional": {
           "aluminum": "#9aa6aa",
+          "rubber": "#30363a",
           "polymer": "#d85e4d",
-          "graphite": "#393c3e"
+          "graphite": "#25292b"
         },
         "classroom": {
           "aluminum": "#4a7892",
+          "rubber": "#394947",
           "polymer": "#607e54",
           "graphite": "#d4ae4c"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 802,
         "sizeM": [
-          0.168,
-          0.01,
-          0.0125
+          0.1495,
+          0.0138,
+          0.0093
         ],
         "minUpM": 0,
         "materials": 1
@@ -205537,16 +205561,30 @@
           "name": "aluminum",
           "color": "#9aa6aa",
           "parts": [
-            "barrel"
+            "barrel",
+            "barrel-shoulder-ring",
+            "grip-rib-1",
+            "grip-rib-2",
+            "grip-rib-3",
+            "grip-rib-4",
+            "tapered-nose",
+            "pocket-clip"
           ],
           "param": "aluminum"
         },
         {
-          "name": "graphite",
-          "color": "#393c3e",
+          "name": "rubber",
+          "color": "#30363a",
           "parts": [
-            "grip",
-            "lead"
+            "elastomer-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "graphite",
+          "color": "#25292b",
+          "parts": [
+            "graphite-lead"
           ],
           "param": "graphite"
         },
@@ -205554,9 +205592,7 @@
           "name": "polymer",
           "color": "#d85e4d",
           "parts": [
-            "nose",
-            "button",
-            "clip"
+            "click-button"
           ],
           "param": "polymer"
         }
