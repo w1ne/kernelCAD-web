@@ -93,6 +93,18 @@ export interface PhysicsCriteriaResult {
  * only.
  */
 
+/** Closed-loop rejection from `assemblyToMjcf`. Unsupported topology,
+ *  not a dynamics failure: warn, and leave the physics check unverified. */
+function unsupportedClosedLoopFailure(error: unknown): CompilerDiagnostic | undefined {
+  const msg = error instanceof Error ? error.message : String(error);
+  if (!/multiple parents|mate graph has a cycle/.test(msg)) return undefined;
+  return makeFailure(
+    'mechanism.physics-unsupported',
+    `Physics was not run because the mate graph is a closed loop, which this physics gate does not support. ${msg} The check is unverified, not a dynamics failure.`,
+    'warn',
+  );
+}
+
 function invalidPhysicsBudgetReason(budget: unknown): string | undefined {
   if (typeof budget !== 'number') return 'the physics budget has an invalid type';
   if (budget === 0) return 'the physics budget is 0 (force skip)';
@@ -145,9 +157,13 @@ export async function runPhysicsCriteria(
   try {
     mjcfResult = await assemblyToMjcf(arm, restScene === undefined ? {} : { scene: restScene });
   } catch (e) {
-    // Closed-loop graphs or other emitter failures. The kinematic
-    // criteria already surface their own failures; don't double-fail
-    // here. Surface a single hint that physics couldn't run.
+    const unsupported = unsupportedClosedLoopFailure(e);
+    if (unsupported !== undefined) {
+      out.push(unsupported);
+      return { failures: out, ran: false };
+    }
+    // Other emitter failures. The kinematic criteria already surface
+    // their own failures; don't double-fail here.
     const msg = e instanceof Error ? e.message : String(e);
     out.push(makeFailure(
       'mechanism.unstable-under-gravity',
