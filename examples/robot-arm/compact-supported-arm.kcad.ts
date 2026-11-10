@@ -533,12 +533,13 @@ const upperLink = arm.part('upper-link', (() => {
     hex,
   );
   const flare = coat(
-    extrudeRoundedRect(16, 15.5, 3.2, 12, { axis: 'x' }).translate(18, 0, 0),
+    extrudeRoundedRect(12, 9.5, 3.2, 22, { axis: 'x' }).translate(18, 0, 0),
     hex,
   );
   // Inside the previous 24×18 beam, narrower at the elbow.
-  // Tip stays wider than the cheek gap (6.6) so the yoke bridges join the beam.
-  const beam = coat(taperedLink(26, 108, 20, 15, 16.5, 9, 7), hex);
+  // Root stays shallow so the 40° pitch clears the turret cap.
+  // Tip stays wider than the cheek gap (6.6) so the yoke bridges join.
+  const beam = coat(taperedLink(36, 108, 15, 9.5, 15.5, 8, 4.2), hex);
   const bridge = (y0, y1) => coat(
     extrudeRoundedRect(36, 18, 2.6, Math.abs(y1 - y0), { axis: 'y' })
       .translate(108, Math.min(y0, y1), 0),
@@ -557,12 +558,14 @@ const upperLink = arm.part('upper-link', (() => {
   // the elbow. The first point sits inside the flare so the run is one solid.
   // Anchored in the flare, with the slack belly at mid-span under the beam
   // so it stays clear of both pitch cheeks.
+  // Dressed along the beam. The slack loop lives on the pitch servo,
+  // not as a chord under the link.
   const cable = cableRun([
-    [32, 0, 0],
-    [52, 16, -14],
-    [74, 18, -34],
-    [98, 2, 0],
-  ], 3.2);
+    [40, 1, -2],
+    [58, 3, -5],
+    [76, 3, -7],
+    [96, 1, -2],
+  ], 2.6);
   const positives = [
     tongue, neck, flare, beam,
     bridge(-14, -CHEEK_GAP), bridge(CHEEK_GAP, 14),
@@ -605,11 +608,11 @@ const forearmLink = arm.part('forearm-link', (() => {
   // Inside the previous 20×15 beam. Local [80, 0, 0] stays on the solid axis.
   const beam = coat(taperedLink(22, 98, 16, 12.5, 10, 7.5, 6), hex);
   const cable = cableRun([
-    [28, 0, 0],
-    [46, 14, -12],
-    [66, 14, -30],
-    [92, 2, 0],
-  ], 3.2);
+    [32, 1, -2],
+    [50, 3, -5],
+    [68, 3, -7],
+    [90, 1, -2],
+  ], 2.5);
   const palmFlange = coat(
     extrudeRoundedRect(36, 28, 3.2, 17.6, { axis: 'x' }).translate(94, 0, 0),
     hex,
@@ -827,7 +830,7 @@ function fingerPad(side) {
   // Taller and thicker than the orange jaw, with the contact face proud
   // of the jaw. The dovetail neck and bulb are unchanged.
   const body = coat(
-    extrudeRoundedRect(36, 7.4, 1.8, 12.6).translate(26, ySign * 7.7, -6.55),
+    extrudeRoundedRect(14, 6.4, 1.6, 12.2).translate(19, ySign * 7.2, -6.4),
     INK.pad,
   );
   // Reach 0.4 mm into the pad body. The jaw slot still owns the inboard end.
@@ -837,10 +840,10 @@ function fingerPad(side) {
   const bulb = inward
     ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
     : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
-  const ribs = [16, 26, 36].map((x) => {
-    const near = ySign * 11.05;
-    const far = ySign * 12.55;
-    return slab(x, x + 4.2, Math.min(near, far), Math.max(near, far), -5.4, 5.2, INK.pad);
+  const ribs = [14, 18, 22].map((x) => {
+    const near = ySign * 9.0;
+    const far = ySign * 10.2;
+    return slab(x, x + 3.4, Math.min(near, far), Math.max(near, far), -5.2, 4.8, INK.pad);
   });
   return paint(fuse([body, neck, bulb, ...ribs]), INK.pad);
 }
