@@ -574,14 +574,18 @@ yawTurret
   .connector('shoulder-servo-mount', frameAt([0, SERVO_FACE_Y, SHOULDER_Z], [0, 1, 0]))
   .connector('shoulder-out', axisY([0, 0, SHOULDER_Z], 3.4));
 shoulderPitchServo.connector('mount', frameAt([0, 0, 0], [0, -1, 0]));
-shoulderPitchShaft.connector('mount', frameAt([0, 0, 0], [0, 1, 0]));
+shoulderPitchShaft
+  .connector('mount', frameAt([0, 0, 0], [0, 1, 0]))
+  .connector('axis', axisY([0, 0, 0], 3));
 upperLink
   .connector('shoulder-in', axisY([0, 0, 0], 3.4))
   .connector('shaft-mount', frameAt([0, 0, 0], [0, 1, 0]))
   .connector('elbow-servo-mount', frameAt([UPPER, SERVO_FACE_Y, 0], [0, 1, 0]))
   .connector('elbow-out', axisY([UPPER, 0, 0], 3.4));
 elbowPitchServo.connector('mount', frameAt([UPPER, 0, 0], [0, -1, 0]));
-elbowPitchShaft.connector('mount', frameAt([0, 0, 0], [0, 1, 0]));
+elbowPitchShaft
+  .connector('mount', frameAt([0, 0, 0], [0, 1, 0]))
+  .connector('axis', axisY([0, 0, 0], 3));
 forearmLink
   .connector('elbow-in', axisY([0, 0, 0], 3.4))
   .connector('shaft-mount', frameAt([0, 0, 0], [0, 1, 0]))
@@ -597,8 +601,12 @@ toolPalm
   .connector('tool-tip', frameAt([GRIP_X + FINGER, 0, 0], [1, 0, 0]));
 gripServo.connector('mount', frameAt([GRIP_X, 0, 17.05]));
 gripDriver.connector('axis', axisZ([GRIP_X, 0, 0], 3.2));
-leftHingePin.connector('mount', frameAt([GRIP_X, HINGE_Y, 0]));
-rightHingePin.connector('mount', frameAt([GRIP_X, -HINGE_Y, 0]));
+leftHingePin
+  .connector('mount', frameAt([GRIP_X, HINGE_Y, 0]))
+  .connector('axis', axisZ([GRIP_X, HINGE_Y, 0], 2.45));
+rightHingePin
+  .connector('mount', frameAt([GRIP_X, -HINGE_Y, 0]))
+  .connector('axis', axisZ([GRIP_X, -HINGE_Y, 0], 2.45));
 leftFinger
   .connector('hinge', axisZ([0, 0, 0], 2.8))
   .connector('pad-mount', frameAt([22, -4.2, 0], [0, -1, 0]))
@@ -677,7 +685,7 @@ arm.mechanicalJoint('base-yaw-drive', {
   actuator: 'base-yaw-servo',
   shaft: 'base-yaw-output',
   supports: ['base-plate'],
-  output: 'yaw-turret',
+  output: 'base-yaw-output',
   requiredSupport: {
     kind: 'bearing',
     around: 'base-yaw-output.axis',
