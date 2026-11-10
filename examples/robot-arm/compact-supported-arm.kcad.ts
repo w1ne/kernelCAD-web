@@ -562,8 +562,9 @@ const upperLink = arm.part('upper-link', (() => {
   // the elbow. The first point sits inside the flare so the run is one solid.
   // Anchored in the flare, with the slack belly at mid-span under the beam
   // so it stays clear of both pitch cheeks.
-  // Dressed along the beam. The slack loop lives on the pitch servo,
-  // not as a chord under the link.
+  // Dressed along the beam. The slack loop lives on the pitch servo.
+  // Keep this run even if the cylinder chain looks faceted — that is
+  // issue #1312 / PR #1314 (pipe()), not a reason to drop the cable.
   const cable = cableRun([
     [40, 1, -2],
     [58, 3, -5],
@@ -611,6 +612,7 @@ const forearmLink = arm.part('forearm-link', (() => {
   );
   // Inside the previous 20×15 beam. Local [80, 0, 0] stays on the solid axis.
   const beam = coat(taperedLink(22, 98, 16, 12.5, 10, 7.5, 6), hex);
+  // Keep this dressed run; a kinked cylinder-chain look is #1312 / #1314.
   const cable = cableRun([
     [32, 1, -2],
     [50, 3, -5],
