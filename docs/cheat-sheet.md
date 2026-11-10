@@ -48,6 +48,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
+| `pipe(points: Vec3[], radius: number, opts?: { bendRadius?: number }) => Shape` | Solid circular pipe along a polyline: straight legs joined by constant-radius bends. |
 | `threadedRod({ spec: string, length: number, chamfer?: boolean \| number, cosmetic?: boolean, clearance?: number }) => Shape` | A real ISO metric EXTERNAL thread (60° basic profile, right-hand) along +Z from z = 0 to `length`; the ridge centre crosses +X at every z = k·pitch, so a modelled `threadedHole` whose entry face is on a whole pitch mates in phase. |
 | `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
 | `metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' \| 'tap_drill' \| 'auto', toleranceMm?: number }) => IsoThreadInfo` | Resolve the ISO 261 coarse metric thread for a diameter in millimetres. |
