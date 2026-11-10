@@ -251740,15 +251740,17 @@
     {
       "id": "beam-coupling",
       "kit": "standard-components",
-      "title": "Beam coupling",
-      "description": "Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve Knobs: model size, steel, aluminum.",
+      "title": "Helical beam coupling (illustrative)",
+      "description": "One-piece bored shaft coupling with a continuous helical flexure cut, integral end hubs, and two radial set-screw bores. Illustrative geometry only; no fit tolerance, torque rating, or fatigue verification.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "beam coupling",
-        "flexible coupling",
-        "shaft coupling",
-        "rotary"
+        "helical coupling",
+        "flexible shaft coupling",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -251759,14 +251761,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/beam-coupling.kcad.ts",
       "preview": "/assets/standard-components-beam-coupling.png",
-      "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
-      "triangleBudget": 480,
+      "sourceSha256": "05bd36abfe771f271e54147b74ec439aca6c6b5ad078f3b26f39f5cbdbf17795",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model scale",
           "choices": [
             "compact",
             "standard",
@@ -251774,59 +251776,41 @@
           ]
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
-        },
-        {
-          "name": "aluminum",
+          "name": "metal",
           "type": "color",
           "default": "#aebac0",
-          "label": "Aluminum"
+          "label": "Alloy surface (color only)"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "aluminum": "#586970"
+          "metal": "#586970"
         },
         "brass": {
-          "steel": "#646f75",
-          "aluminum": "#aab8bc"
+          "metal": "#c29a5c"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "aluminum": "#788177"
+          "metal": "#788177"
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 676,
         "sizeM": [
-          0.036,
+          0.018,
           0.03,
-          0.036
+          0.018
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminum",
+          "name": "metal",
           "color": "#aebac0",
           "parts": [
-            "sleeve"
+            "part"
           ],
-          "param": "aluminum"
-        },
-        {
-          "name": "steel",
-          "color": "#85929a",
-          "parts": [
-            "end-a",
-            "end-b"
-          ],
-          "param": "steel"
+          "param": "metal"
         }
       ]
     },
