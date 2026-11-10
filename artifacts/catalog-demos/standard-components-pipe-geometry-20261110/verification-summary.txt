@@ -1,0 +1,25 @@
+2026-11-10 local verification summary
+
+Assets refined in place: pipe-reducer, retaining-ring, tubular-spacer. No IDs or
+kits added. The three source checks pass at 474/620, 228/420, and 432/520
+triangles. 12 parameter/palette variants were rendered and their geometry,
+appearance, and budget assertions passed (variant-manifest.json). The three
+current source files also match the retained snapshots and manifest SHA-256 values.
+
+Quality gate: standard-components 50/50 (100%); catalog 2,402/2,402
+(100.00%, 50 rich kits, 0 thin kits). See quality-kit-output.txt and
+quality-global-output.txt.
+
+Previews: all 50 standard-components previews rerendered; catalog/index.json
+rebuilt. verify_asset_index.py confirmed all 2,402 indexed source hashes match
+and previews exist (index-verification.json). Three edited previews were opened
+and reviewed in preview-review/three-previews.png.
+
+ESLint: clean (eslint-output.txt). Catalog integration: 4 files / 15 tests
+passed, including full catalog source builds and index freshness
+(integration-output.txt). Local static pages: 2,402 generated; all 3 edited
+pages checked (local-page-check-output.txt, local-page-check.json).
+
+The MP4 is 1280x720 H.264, 17.54 seconds. Six decoded frames were inspected
+and retained under video-review/. The branch is not deployed; hardware or
+physical acceptance is not claimed.

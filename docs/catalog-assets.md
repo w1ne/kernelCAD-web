@@ -20,6 +20,20 @@ and an inspected MP4. Earlier round notes below retain their at-the-time results
 under the previous gate definition. This is a local branch snapshot, not a
 deployment or hardware-acceptance claim.
 
+The Nov 10 standard-components detail pass improves three existing assets in
+place: the pipe reducer has a tapered hollow body, end collars, a separate
+elastomer band, and a selectable outlet ratio; the retaining ring has pierced
+plier ears and a variable installation gap; and the tubular spacer has a longer
+hollow sleeve, polymer liner, chamfered ends, plated rims, and three length
+choices. The reducer and spacer each gained a third material control, and all
+three gained a coordinated palette. Their defaults are 474, 228, and 432
+triangles within budgets of 620, 420, and 520. No IDs changed; the kit remains
+50/50 passing and the global gate remains **2,402/2,402 (100.00%)**. The
+[pipe geometry handoff](../artifacts/catalog-demos/standard-components-pipe-geometry-20261110/README.md)
+contains before/after previews, source-driven variants, regenerated kit
+previews and index evidence, local checks, and the inspected MP4. The branch is
+not deployed; no vendor dimensions or physical acceptance are claimed.
+
 The Nov 10 electronics pass refines the existing `keyboard`: long key rows are
 separated into keycaps, selected caps receive printed legend marks, and the
 navigation and number-pad groups have distinct key positions. `layout` selects

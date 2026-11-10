@@ -41,6 +41,19 @@ default separates clearly from the silver hardware, while the `brass` palette
 remains available. The five-hole variant measures 712 triangles under an
 800-triangle budget. No IDs or kits were added.
 
+The Nov 10 pipe-detail follow-up refines three existing parts in place. The pipe
+reducer now has a continuous hollow taper, raised collars and a visible seal;
+its outlet-ratio choice changes the small end. The retaining ring has pierced
+plier ears and a selectable installation gap. The tubular spacer now has a
+longer hollow sleeve, chamfered ends, a polymer bore liner, plated rims, and
+short/standard/long choices. The reducer and spacer each expose three
+material-named controls; all three assets gained an additional named palette.
+Their default meshes are 474/620, 228/420, and 432/520 triangles respectively.
+The [pipe geometry handoff](../../../artifacts/catalog-demos/standard-components-pipe-geometry-20261110/README.md)
+records source-driven options, the regenerated 50 previews and index, checks,
+and the inspected MP4. No IDs or kits were added; these generic scene models
+are not vendor geometry or manufacturing specifications.
+
 ## Assets
 
 | ID | Component | Description | Color controls | Default triangles | Preview |
@@ -77,11 +90,11 @@ remains available. The five-hole variant measures 712 triangles under an
 | [`pipe-elbow-45`](pipe-elbow-45.kcad.ts) | 45 degree pipe elbow | Angled 45 degree pipe connector with open ends and a thicker low-poly center bend. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-45.png) |
 | [`pipe-elbow-90`](pipe-elbow-90.kcad.ts) | 90 degree pipe elbow | Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-90.png) |
 | [`pipe-flange`](pipe-flange.kcad.ts) | Pipe flange | Slip-on flange with a hollow raised neck, four/eight-hole bolt circle and optional installed bolts. | Stainless neck, Cast-iron flange, Zinc-plated bolts | 400 | [PNG](previews/pipe-flange.png) |
-| [`pipe-reducer`](pipe-reducer.kcad.ts) | Pipe reducer | Stepped hollow reducer joining a larger pipe end to a smaller pipe end. | Steel, Bronze | 288 | [PNG](previews/pipe-reducer.png) |
+| [`pipe-reducer`](pipe-reducer.kcad.ts) | Pipe reducer | Concentric hollow reducer with a tapered barrel, raised end collars, a visible seal, and selectable outlet ratio. | Painted steel, Zinc-plated steel, Elastomer | 474 | [PNG](previews/pipe-reducer.png) |
 | [`pipe-saddle-clamp`](pipe-saddle-clamp.kcad.ts) | Pipe saddle clamp | Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. | Steel, Rubber | 132 | [PNG](previews/pipe-saddle-clamp.png) |
 | [`pipe-tee`](pipe-tee.kcad.ts) | Pipe tee fitting | Three-way T pipe fitting with a vertical run and perpendicular side branch. | Steel, Bronze | 192 | [PNG](previews/pipe-tee.png) |
 | [`pipe-union`](pipe-union.kcad.ts) | Pipe union | Straight-through fitting with hollow steel sockets, six-flat brass nut and visible rubber joint seal. | Steel, Brass, Seal rubber | 360 | [PNG](previews/pipe-union.png) |
-| [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open retaining ring profile with two small installation ears. | Stainless steel, Spring steel | 124 | [PNG](previews/retaining-ring.png) |
+| [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open circlip with pierced plier ears and a selectable installation gap. | Spring steel, Stainless ear finish | 228 | [PNG](previews/retaining-ring.png) |
 | [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Stepped vibration isolator with a broad foot and selectable male stud or recessed threaded insert. | Rubber, Stud steel, Zinc-plated hardware | 332 | [PNG](previews/rubber-bumper.png) |
 | [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | One-piece round shaft collar with a centered bore and a small radial set-screw boss. | Steel, Zinc-plated steel | 140 | [PNG](previews/shaft-collar.png) |
 | [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Two through-bored steel hubs around a bronze center band, with selectable set-screw or split-clamp retention. | Steel, Bronze, Zinc-plated set screws | 536 | [PNG](previews/shaft-coupling.png) |
@@ -92,7 +105,7 @@ remains available. The five-hole variant measures 712 triangles under an
 | [`t-slot-end-cap`](t-slot-end-cap.kcad.ts) | T-slot end cap | Polymer end cap with locating ribs seated in a short grooved aluminum extrusion profile. | Aluminum, Engineering polymer | 156 | [PNG](previews/t-slot-end-cap.png) |
 | [`timing-belt-pulley`](timing-belt-pulley.kcad.ts) | Timing belt pulley | Twenty-tooth crown with paired bolted retaining flanges and a keyed shaft bore. | Aluminum, Steel, Flange hardware | 1236 | [PNG](previews/timing-belt-pulley.png) |
 | [`tube-clamp`](tube-clamp.kcad.ts) | Tube clamp | Two-hole clamp with a semicircular lined saddle, paired side cheeks, and a raised retainer bridge. | Steel, Zinc-plated steel, Rubber | 164 | [PNG](previews/tube-clamp.png) |
-| [`tubular-spacer`](tubular-spacer.kcad.ts) | Tubular spacer | Short hollow steel spacer with a thin polymer isolation sleeve lining its centered clearance bore. | Steel, Engineering polymer | 192 | [PNG](previews/tubular-spacer.png) |
+| [`tubular-spacer`](tubular-spacer.kcad.ts) | Tubular spacer | Hollow sleeve with polymer bore liner, chamfered ends, plated rims, and selectable length. | Steel, Engineering polymer, Zinc-plated steel | 432 | [PNG](previews/tubular-spacer.png) |
 | [`u-bracket`](u-bracket.kcad.ts) | U bracket | Open-top channel mounting bracket with a flat back and two parallel side ears. | Steel, Stainless steel | 80 | [PNG](previews/u-bracket.png) |
 | [`v-belt-pulley`](v-belt-pulley.kcad.ts) | V-belt pulley | Stepped V-belt pulley with two shallow belt grooves and a through bore. | Steel, Cast iron | 384 | [PNG](previews/v-belt-pulley.png) |
 

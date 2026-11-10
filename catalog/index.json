@@ -312079,13 +312079,14 @@
       "id": "pipe-reducer",
       "kit": "standard-components",
       "title": "Pipe reducer",
-      "description": "Stepped hollow reducer joining a larger pipe end to a smaller pipe end Knobs: model size, steel, bronze.",
+      "description": "Concentric hollow reducer with a tapered steel barrel, end collars and an elastomer seal. Size and outlet ratio change the model; barrel, collar and seal colors are independent.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "pipe reducer",
-        "reducer fitting",
-        "pipe adapter",
+        "concentric reducer",
+        "pipe fitting",
+        "adapter",
         "plumbing"
       ],
       "compat": [
@@ -312097,8 +312098,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
       "preview": "/assets/standard-components-pipe-reducer.png",
-      "sourceSha256": "a4bf0ec6210f32c023530754c0d2cee4e37107bf315af2129a475de1dce84d82",
-      "triangleBudget": 340,
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1",
+      "triangleBudget": 620,
       "params": [
         {
           "name": "size",
@@ -312112,37 +312113,62 @@
           ]
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
+          "name": "reduction",
+          "type": "choice",
+          "default": "0.60",
+          "label": "Outlet / inlet ratio",
+          "choices": [
+            "0.50",
+            "0.60",
+            "0.75"
+          ]
         },
         {
-          "name": "bronze",
+          "name": "barrel",
           "type": "color",
-          "default": "#98714c",
-          "label": "Bronze"
+          "default": "#3f6e8c",
+          "label": "Painted steel barrel"
+        },
+        {
+          "name": "collars",
+          "type": "color",
+          "default": "#c5ccd0",
+          "label": "Zinc-plated steel collars"
+        },
+        {
+          "name": "gasket",
+          "type": "color",
+          "default": "#c95836",
+          "label": "Red elastomer seal"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "bronze": "#684d37"
+          "barrel": "#3e484e",
+          "collars": "#8f989d",
+          "gasket": "#202426"
         },
         "brass": {
-          "steel": "#646f75",
-          "bronze": "#b0804d"
+          "barrel": "#646f75",
+          "collars": "#b0804d",
+          "gasket": "#382c23"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "bronze": "#6e583f"
+          "barrel": "#665b4d",
+          "collars": "#8b8275",
+          "gasket": "#453f38"
+        },
+        "stainless": {
+          "barrel": "#aeb8bd",
+          "collars": "#e1e5e6",
+          "gasket": "#25292b"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 474,
         "sizeM": [
           0.044,
-          0.046,
+          0.042,
           0.044
         ],
         "minUpM": 0,
@@ -312150,21 +312176,29 @@
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#85929a",
+          "name": "barrel",
+          "color": "#3f6e8c",
           "parts": [
-            "large-end",
-            "small-end"
+            "tapered-barrel"
           ],
-          "param": "steel"
+          "param": "barrel"
         },
         {
-          "name": "bronze",
-          "color": "#98714c",
+          "name": "collars",
+          "color": "#c5ccd0",
           "parts": [
-            "transition"
+            "inlet-collar",
+            "outlet-collar"
           ],
-          "param": "bronze"
+          "param": "collars"
+        },
+        {
+          "name": "gasket",
+          "color": "#c95836",
+          "parts": [
+            "elastomer-band"
+          ],
+          "param": "gasket"
         }
       ]
     },
@@ -312468,12 +312502,13 @@
       "id": "retaining-ring",
       "kit": "standard-components",
       "title": "Retaining ring",
-      "description": "Open retaining ring profile with two small installation ears Knobs: model size, stainless steel, spring steel.",
+      "description": "Open external retaining ring with two pierced plier ears. Model size scales the ring, while the installation-gap choice moves the ears and changes the opening; spring steel and ear finish have separate color controls.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "retaining ring",
         "circlip",
+        "snap ring",
         "shaft retainer",
         "hardware"
       ],
@@ -312486,8 +312521,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
       "preview": "/assets/standard-components-retaining-ring.png",
-      "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
-      "triangleBudget": 300,
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15",
+      "triangleBudget": 420,
       "params": [
         {
           "name": "size",
@@ -312501,38 +312536,53 @@
           ]
         },
         {
-          "name": "stainless",
-          "type": "color",
-          "default": "#b8c1c6",
-          "label": "Stainless steel"
+          "name": "gap",
+          "type": "choice",
+          "default": "standard",
+          "label": "Installation gap",
+          "choices": [
+            "compact",
+            "standard",
+            "wide"
+          ]
         },
         {
           "name": "springSteel",
           "type": "color",
-          "default": "#78868e",
-          "label": "Spring steel"
+          "default": "#4f6874",
+          "label": "Spring steel band"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#cbd3d7",
+          "label": "Stainless ear finish"
         }
       ],
       "presets": {
         "dark": {
-          "stainless": "#7d8a91",
-          "springSteel": "#4c585e"
+          "springSteel": "#4c585e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "stainless": "#b38b52",
-          "springSteel": "#75838a"
+          "springSteel": "#75838a",
+          "stainless": "#b38b52"
         },
         "weathered": {
-          "stainless": "#8b8275",
-          "springSteel": "#5b5550"
+          "springSteel": "#5b5550",
+          "stainless": "#8b8275"
+        },
+        "bluePhosphate": {
+          "springSteel": "#3f5965",
+          "stainless": "#a8b5ba"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 228,
         "sizeM": [
           0.039899,
           0.003,
-          0.043975
+          0.043475
         ],
         "minUpM": 0,
         "materials": 1
@@ -312540,18 +312590,18 @@
       "palette": [
         {
           "name": "springSteel",
-          "color": "#78868e",
+          "color": "#4f6874",
           "parts": [
-            "ring"
+            "spring-band"
           ],
           "param": "springSteel"
         },
         {
           "name": "stainless",
-          "color": "#b8c1c6",
+          "color": "#cbd3d7",
           "parts": [
-            "ear-left",
-            "ear-right"
+            "left-plier-ear",
+            "right-plier-ear"
           ],
           "param": "stainless"
         }
@@ -313612,13 +313662,14 @@
       "id": "tubular-spacer",
       "kit": "standard-components",
       "title": "Tubular spacer",
-      "description": "Short hollow steel spacer with a thin polymer isolation sleeve lining its centered clearance bore. Knobs: model size, steel, engineering polymer.",
+      "description": "Hollow steel spacer with a continuous polymer bore liner, chamfered ends and plated end rims. Choose short, standard or long length; steel, liner and rim colors are independent.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "spacer",
         "tube spacer",
         "standoff",
+        "sleeve",
         "hardware"
       ],
       "compat": [
@@ -313630,8 +313681,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
       "preview": "/assets/standard-components-tubular-spacer.png",
-      "sourceSha256": "5e2a149dbbc6a8a5f5614033c9049b8b1b95afec97783ba939d1f091d6125f49",
-      "triangleBudget": 260,
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491",
+      "triangleBudget": 520,
       "params": [
         {
           "name": "size",
@@ -313645,38 +313696,63 @@
           ]
         },
         {
+          "name": "length",
+          "type": "choice",
+          "default": "standard",
+          "label": "Sleeve length",
+          "choices": [
+            "short",
+            "standard",
+            "long"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
+          "default": "#426a83",
+          "label": "Steel sleeve"
         },
         {
           "name": "polymer",
           "type": "color",
           "default": "#e46b3c",
-          "label": "Engineering polymer"
+          "label": "Engineering polymer liner"
+        },
+        {
+          "name": "endRims",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated end rims"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "polymer": "#244956"
+          "polymer": "#244956",
+          "endRims": "#929da3"
         },
         "brass": {
           "steel": "#646f75",
-          "polymer": "#1d5364"
+          "polymer": "#1d5364",
+          "endRims": "#b0804d"
         },
         "weathered": {
           "steel": "#665b4d",
-          "polymer": "#96734f"
+          "polymer": "#96734f",
+          "endRims": "#a19682"
+        },
+        "insulated": {
+          "steel": "#7f8b91",
+          "polymer": "#3b9b77",
+          "endRims": "#d7dcde"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 432,
         "sizeM": [
-          0.028,
-          0.016,
-          0.028
+          0.0307,
+          0.036,
+          0.0307
         ],
         "minUpM": 0,
         "materials": 1
@@ -313684,9 +313760,9 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#426a83",
           "parts": [
-            "spacer"
+            "steel-sleeve"
           ],
           "param": "steel"
         },
@@ -313694,9 +313770,18 @@
           "name": "polymer",
           "color": "#e46b3c",
           "parts": [
-            "isolation-liner"
+            "polymer-bore-liner"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "endRims",
+          "color": "#cbd1d5",
+          "parts": [
+            "lower-plated-rim",
+            "upper-plated-rim"
+          ],
+          "param": "endRims"
         }
       ]
     },

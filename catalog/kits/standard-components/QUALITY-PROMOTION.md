@@ -158,3 +158,27 @@ carriage with visible top wells and orange end wipers on the guide rail, and
 contrasting set screws or clamp bolts around the coupling hubs. These are
 generic visualization assets, not supplier geometry, manufacturing evidence,
 or physical hardware acceptance. The branch is not deployed.
+
+
+## Pipe and sleeve geometry follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-pipe-geometry-20261110/README.md)
+refines three existing parts in place: `pipe-reducer`, `retaining-ring`, and
+`tubular-spacer`. The reducer's ratio changes its tapered outlet; the retaining
+ring's 4/6/8 mm installation gap changes the opening and ear spacing; and the
+spacer's 22/36/50 mm choice changes its hollow sleeve length. Each part has
+separate material zones and a new coordinated palette. The reducer and spacer
+each gained one material control; no IDs or kits were added.
+
+- Defaults: **474/620**, **228/420**, and **432/520** triangles.
+- Kit quality gate: **50/50 passing (100%)**; average material controls rose
+  from **2.50 to 2.54**. Global gate: **2,402/2,402 passing (100.00%; 50 rich
+  kits, zero thin kits)**.
+- All **50** kit previews were rerendered; `catalog/index.json` was rebuilt.
+  The verification bundle confirms every indexed source hash and preview is
+  present, and the catalog integration suite passed **4 files / 15 tests**.
+- ESLint is clean; local static pages were generated and the three edited pages
+  checked. The inspected MP4 and decoded frames are in the handoff.
+
+The branch is not deployed; no vendor dimensions, fit, manufacturing, or
+physical-acceptance claims are made.
