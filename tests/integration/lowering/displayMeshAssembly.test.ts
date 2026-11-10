@@ -52,7 +52,7 @@ describe('display mesh assemblies', () => {
     }
   });
 
-  it('evaluates a mated display mesh assembly with the mechanism gates on', async () => {
+  it('keeps a mated display mesh assembly unverified when joint continuity cannot be measured', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-mesh-assembly-'));
     try {
       // A closed 10 mm cube, so connectors at its centre sit in its material.
@@ -73,14 +73,18 @@ describe('display mesh assemblies', () => {
         "arm.mate('spin', 'chassis.axle', 'wheel.axle', 'revolute', { pose: spin });",
         'return arm.solvedModel();',
       ].join('\n'));
-      // Used to throw "Display mesh bodies do not expose BRep topology" from
-      // the connector gate, which only needs each part's bounds.
+      // Connector validation only needs each part's bounds, but display mesh
+      // parts do not provide BREP evidence for the rest-pose joint check.
       const out = (await callMcpTool('evaluate_script', { file: scriptPath, autosave: false } as never)) as {
         ok: boolean; diagnostics: Array<{ code?: string; severity: string }>; mechanismSummary?: { verdict: string };
       };
       expect(out.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
       expect(out.ok).toBe(true);
-      expect(out.mechanismSummary?.verdict).toBe('real');
+      expect(out.mechanismSummary?.verdict).toBe('unverified');
+      expect(out.diagnostics).toContainEqual(expect.objectContaining({
+        code: 'mechanism.joint-mesh-unverified',
+        severity: 'warn',
+      }));
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
