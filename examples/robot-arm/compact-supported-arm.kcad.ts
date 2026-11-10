@@ -108,8 +108,8 @@ function polyTube(points, r) {
 function sts3215Envelope(extras) {
   const body = coat(extrudeRoundedRect(30, 20, 3.2, 35.6).translate(0, 0, -35.6), INK.servo);
   const ears = coat(extrudeRoundedRect(45.2, 24.7, 2.4, 4.6).translate(0, 0, -4.95), INK.servo);
-  // Hub stops before the spline teeth, which sit just proud of the output face.
-  const hub = coat(rodZ(-0.2, 0.5, 7.1, 16), INK.servo);
+  // Hub meets the stalk. Spline teeth start clear of this face (see pitchHorn).
+  const hub = coat(rodZ(-0.2, 0.85, 7.1, 16), INK.servo);
   // Narrow stalk bridges the case to the pilot through the horn bore.
   const stalk = coat(rodZ(0.55, 2.05, 3.35, 12), INK.servo);
   const pilot = coat(rodZ(1.55, 4.55, 3.85, 12), INK.servo);
@@ -259,10 +259,12 @@ function splineRingY(y0, y1, rootR, tipR) {
 // Y axis through the origin. The disc, clamp screws, and spline sit on the
 // outboard face of the +Y cheek. A cap bolt closes the other side.
 function pitchHorn() {
-  const spindle = rodY(-24.15, 22.15, 2.9, 14);
+  // Spindle reaches into the cap bolt. Teeth sit on the disc, clear of the
+  // servo hub (hub ends at canonical z 0.85, which is parent y 26.35).
+  const spindle = rodY(-26.8, 22.15, 2.9, 14);
   const collar = rodY(22.05, 24.35, 7.2, 14);
-  const disc = rodY(22.15, 25.35, 12.4, 20);
-  const teeth = splineRingY(24.95, 26.45, 5.55, 8.35);
+  const disc = rodY(22.15, 26.05, 12.4, 20);
+  const teeth = splineRingY(24.3, 25.85, 5.55, 8.35);
   const bore = rodY(22.4, 26.6, 5.05, 14);
   const capBolt = rodY(-27.55, -25.35, 5.15, 12);
   const capSlot = box(0.55, 2.3, 3.2).translate(-0.275, -27.65, -1.6);
@@ -287,17 +289,14 @@ function pitchHorn() {
 function pitchPocket(hex) {
   // Ribs and ledges stay inside the ear silhouette (ears reach x = ±22.6
   // and z = ±12.3) so the tabs and spotfaces stay visible.
-  // Ribs stop before the horn disc (y 22.15). Ledges stop before the servo
-  // face (y 27.2) and clear the clamp-screw heads.
+  // Ribs stop before the horn disc (y 22.15). The clamp screws sweep
+  // through the old ear-ledge radius, so the pocket ends at the neck.
   const neck = coat(rodY(16.2, 21.55, 11.4, 16), hex);
   const sideRib = (x0, x1) => coat(slab(x0, x1, 18.2, 21.7, -2.6, 2.6, hex), hex);
-  const ledge = (x0, x1) => coat(slab(x0, x1, 25.6, 26.7, -4.2, 4.2, hex), hex);
   const positives = [
     neck,
     sideRib(11.2, 15.2),
     sideRib(-15.2, -11.2),
-    ledge(12.4, 15.6),
-    ledge(-15.6, -12.4),
   ];
   const cutters = [
     rodY(-22.4, -6.15, 3.5, 12),
@@ -354,19 +353,7 @@ const baseYawOutput = arm.part('base-yaw-output', (() => {
   const bore = rodZ(1.65, 9.4, 5.05, 12);
   const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sy) =>
     rodZ(4.3, 9.2, 1.55, 8).translate(sx * 6.2, sy * 6.2, 0)));
-  // Six flange bolts on a circle outside the column, heads proud of the turret.
-  const bolts = [0, 1, 2, 3, 4, 5].flatMap((i) => {
-    const a = Math.PI / 6 + i * Math.PI / 3;
-    const x = Math.cos(a) * 50;
-    const y = Math.sin(a) * 50;
-    const shank = rodZ(5.4, 9.15, 1.7, 8).translate(x, y, 0);
-    const head = rodZ(9.05, 12.85, 3.55, 10).translate(x, y, 0);
-    const socket = rodZ(11.15, 13.05, 1.35, 6).translate(x, y, 0);
-    return [shank, head, socket];
-  });
-  const heads = bolts.filter((_, index) => index % 3 !== 2);
-  const sockets = bolts.filter((_, index) => index % 3 === 2);
-  return fuse([hub, disc, ...heads]).subtract(fuse([bore, ...holes, ...sockets]));
+  return fuse([hub, disc]).subtract(fuse([bore, ...holes]));
 })(), { material: 'aluminum-6061' });
 
 const yawTurret = arm.part('yaw-turret', (() => {
@@ -391,7 +378,7 @@ const yawTurret = arm.part('yaw-turret', (() => {
     rodY(y0, y0 + len, 16.2, 18).translate(0, 0, SHOULDER_Z),
     hex,
   );
-  const cap = coat(rodY(-25.05, -22.15, 9.2, 14).translate(0, 0, SHOULDER_Z), hex);
+  const cap = coat(rodY(-25.05, -21.45, 9.2, 14).translate(0, 0, SHOULDER_Z), hex);
   const pocket = pitchPocket(hex);
   // Gussets sit outside the upper-link beam (|y| <= 13 at every pitch)
   // and tie the column top to the shoulder cheeks.
@@ -400,13 +387,18 @@ const yawTurret = arm.part('yaw-turret', (() => {
     const a = Math.PI / 6 + i * Math.PI / 3;
     const x = Math.cos(a) * 50;
     const y = Math.sin(a) * 50;
-    return rodZ(4.8, 9.4, 2.25, 8).translate(x, y, 0);
+    return {
+      hole: rodZ(4.8, 9.6, 2.15, 8).translate(x, y, 0),
+      head: rodZ(8.35, 12.45, 3.35, 10).translate(x, y, 0),
+      socket: rodZ(11.15, 12.65, 1.25, 6).translate(x, y, 0),
+    };
   });
   const positives = [
     flange, skirt, column,
     cheek(-21.8, 15.2), cheek(CHEEK_GAP, 15.2),
     cap,
     gusset(14.6, 21.2), gusset(-21.2, -14.6),
+    ...bolts.map((bolt) => bolt.head),
     ...at(pocket.positives, 0, 0, SHOULDER_Z),
   ];
   const cutters = [
@@ -414,8 +406,8 @@ const yawTurret = arm.part('yaw-turret', (() => {
     rodZ(0.4, 10.4, 5.85, 16),
     rodZ(0.35, 2.2, 7.55, 16),
     rodZ(4.1, 9.5, 11.1, 20),
-    rodY(-25.4, -21.85, 3.7, 10).translate(0, 0, SHOULDER_Z),
-    ...bolts,
+    rodY(-25.6, -21.15, 3.7, 10).translate(0, 0, SHOULDER_Z),
+    ...bolts.flatMap((bolt) => [bolt.hole, bolt.socket]),
     ...at(pocket.cutters, 0, 0, SHOULDER_Z),
   ];
   return paint(fuse(positives).subtract(fuse(cutters)), hex);
@@ -444,19 +436,20 @@ const upperLink = arm.part('upper-link', (() => {
   const trough = rodX(36, 98, 2.35, 8).translate(0, 0, 9.15);
   const bridge = (y0, y1) => slab(102, 130, y0, y1, -9, 9, hex);
   const cheek = (y0, len) => coat(rodY(y0, y0 + len, 16.2, 18).translate(UPPER, 0, 0), hex);
-  const cap = coat(rodY(-25.05, -22.15, 9.2, 14).translate(UPPER, 0, 0), hex);
+  const cap = coat(rodY(-25.05, -21.45, 9.2, 14).translate(UPPER, 0, 0), hex);
   const pocket = pitchPocket(hex);
   // Proud round bead in the top trough, with a lift at each pitch joint.
   // Bead on the servo side of the trough, with a lift at each pitch joint
   // so the run clears the cheek and still points at the slack loop.
+  // Centerline sits 1 mm into the beam top so the bead is one solid,
+  // with a lift at each pitch joint.
   const cable = polyTube([
-    [18, 6.5, 19.6],
-    [30, 5.2, 12.5],
-    [42, 4.8, 11.5],
-    [94, 4.8, 11.5],
-    [106, 5.2, 13.4],
-    [116, 4.2, 19.4],
-  ], 1.5);
+    [18, 6.2, 15.8],
+    [32, 4.8, 10.05],
+    [94, 4.8, 10.05],
+    [108, 5.0, 12.2],
+    [116, 4.2, 16.2],
+  ], 1.45);
   const positives = [
     tongue, neck, flare, beam,
     bridge(-14, -CHEEK_GAP), bridge(CHEEK_GAP, 14),
@@ -468,7 +461,7 @@ const upperLink = arm.part('upper-link', (() => {
   const cutters = [
     beamVoid, trough,
     rodY(-8, 8, 3.5, 10),
-    rodY(-25.4, -21.85, 3.7, 10).translate(UPPER, 0, 0),
+    rodY(-25.6, -21.15, 3.7, 10).translate(UPPER, 0, 0),
     ...at(pocket.cutters, UPPER, 0, 0),
   ];
   return paint(fuse(positives).subtract(fuse(cutters)), hex);
@@ -513,7 +506,7 @@ const forearmLink = arm.part('forearm-link', (() => {
     const y = sy * 8;
     return {
       hole: rodZ(-13.5, 13.15, 1.45, 8).translate(x, y, 0),
-      head: rodZ(13.2, 16.05, 2.4, 10).translate(x, y, 0),
+      head: rodZ(12.55, 15.85, 2.4, 10).translate(x, y, 0),
       socket: rodZ(14.75, 16.25, 1.05, 6).translate(x, y, 0),
     };
   }));
