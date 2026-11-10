@@ -88,3 +88,47 @@ describe('checkSweptCollision pose reuse', () => {
     expect(swept.posesSampled).toBe(7);
   }, 30_000);
 });
+
+function collidingJointTree() {
+  const session = new CaptureSession();
+  const kcad = createModelingApi({ session });
+  const arm = kcad.assembly('swept-reuse-joint-tree');
+  // Body-tree joints attach the child origin to `opts.origin` on the parent.
+  // Keep the bar's local origin at the hinge so 0 deg extends +X and 45 deg
+  // reaches the post at (28, 28), matching the mate-built fixture.
+  const base = arm.part('base', kcad.box(20, 20, 8).union(kcad.box(8, 8, 20).translate(28, 28, 0)));
+  const bar = arm.part('bar', kcad.box(40, 6, 6).translate(0, -3, 0));
+  arm.revolute('swing', base, bar, {
+    axis: [0, 0, 1],
+    origin: [10, 10, 8],
+    limitsDeg: [0, 90],
+  });
+  return arm;
+}
+
+describe('checkSweptCollision joint-tree reuse', () => {
+  it('reports a mid-range hit on a body-tree revolute with no mates', async () => {
+    const arm = collidingJointTree();
+    const swept = await checkSweptCollision(arm, {
+      joint: 'swing',
+      range: [0, 90, 15],
+    });
+    expect(swept.posesSampled).toBe(7);
+    expect(swept.ok).toBe(false);
+    const angles = swept.collidingPoses.map((row) => row.pose.swing).sort((a, b) => Number(a) - Number(b));
+    expect(angles).toContain(45);
+    expect(angles).not.toContain(0);
+    expect(angles).not.toContain(90);
+    const hit = swept.collidingPoses.find((row) => row.pose.swing === 45);
+    const contact = hit!.contacts.find((row) =>
+      (row.partA === 'bar' && row.partB === 'base') || (row.partA === 'base' && row.partB === 'bar'));
+    expect(contact).toBeDefined();
+    expect(contact!.volumeMm3).toBeGreaterThan(0.01);
+
+    const single = await detectInterferencesForPoses(arm, { swing: 45 }, 0.01);
+    const singleHit = single.find((pair) =>
+      (pair.a === 'bar' && pair.b === 'base') || (pair.a === 'base' && pair.b === 'bar'));
+    expect(singleHit).toBeDefined();
+    expect(contact!.volumeMm3).toBeCloseTo(singleHit!.volumeMm3, 5);
+  }, 30_000);
+});

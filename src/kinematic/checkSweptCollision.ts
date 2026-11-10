@@ -32,6 +32,7 @@ import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
 import { reposedLoweredAssemblyScene } from '../modeling/mates/loweredAssemblyScene';
 import { solveMates } from '../modeling/mates/solver';
+import type { Transform } from '../shared/runtime/se3';
 import { detectInterferences } from '../modeling/runtime/detectInterferences';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
@@ -41,7 +42,7 @@ import {
 } from '../shared/diagnostics/registry';
 import { enumeratePoses } from './sweptPoseEnumeration';
 import { LoopContinuation } from './loopContinuation';
-import { jointGraphHasLoops, type NumericPoses as FullPoses } from '../modeling/capture/forwardKinematics';
+import { forwardKinematics, jointGraphHasLoops, type NumericPoses as FullPoses } from '../modeling/capture/forwardKinematics';
 import type {
   KinematicDiagnostic,
   NumericPoses,
@@ -203,14 +204,44 @@ async function posedSceneForSweep(
 ): Promise<SceneBackend | undefined> {
   if (cached !== undefined) {
     try {
-      const solved = await solveMates(arm, poses);
-      const reposed = reposedLoweredAssemblyScene(arm, cached, solved.poses);
+      const transforms = await transformsForSweepPose(arm, poses);
+      const reposed = transforms === undefined
+        ? undefined
+        : reposedLoweredAssemblyScene(arm, cached, transforms);
       if (reposed !== undefined) return reposed;
     } catch {
       // Incomplete FK is not clearance: fall through to a full lower.
     }
   }
   return lowerAssemblySceneForPoses(arm, poses);
+}
+
+/**
+ * World transforms for one sweep sample. Mate-only assemblies use
+ * `solveMates`. Joint-only body trees use `forwardKinematics` — `solveMates`
+ * ignores joint poses and would otherwise re-check the rest pose while
+ * still incrementing `posesSampled`. A hybrid of mates and articulated
+ * joints falls through so `solvedModel` remains the source of truth.
+ */
+async function transformsForSweepPose(
+  arm: Assembly,
+  poses: FullPoses,
+): Promise<ReadonlyMap<string, Transform> | undefined> {
+  const hasArticulatedJoints = arm.__joints().some((joint) => joint.kind !== 'fixed');
+  const hasMates = (arm.__mates?.() ?? []).length > 0;
+  if (hasArticulatedJoints && hasMates) return undefined;
+  if (hasArticulatedJoints) {
+    const fk = forwardKinematics(arm.__parts(), arm.__joints(), poses);
+    const byName = new Map<string, Transform>();
+    for (const part of arm.__parts()) {
+      const placement = fk.get(part.id);
+      if (placement === undefined) return undefined;
+      byName.set(part.name, placement);
+    }
+    return byName;
+  }
+  const solved = await solveMates(arm, poses);
+  return solved.poses;
 }
 
 /** Full `solvedModel` + RecomputeEngine lower — the first sample, or any
