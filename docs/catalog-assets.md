@@ -6,11 +6,29 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-10)
 
-The current catalog quality gate reports **2,402/2,402 assets passing
-(100.00%) across 50 rich kits**, with no failing assets. The recycling-facility
-kit contains 153 assets, all passing; all 153 have kit-local rendered previews
-and matching source hashes in the generated index. This is a local branch
-snapshot, not a deployment or hardware-acceptance claim.
+The current catalog quality gate requires two material-named color controls and
+at least one preset; a generic `color` control does not count as a material.
+It reports **2,401/2,402 assets passing (99.96%; 49 rich kits and one mixed
+kit)**. The remaining gap is `interior/table-lamp`. The recycling-facility kit
+contains 153 assets, all passing; all 153 have kit-local rendered previews and
+matching source hashes in the generated index. Earlier round notes below retain
+their at-the-time results under the previous gate definition. This is a local
+branch snapshot, not a deployment or hardware-acceptance claim.
+
+The Nov 10 electronics pass refines the existing `keyboard`: long key rows are
+separated into keycaps, selected caps receive printed legend marks, and the
+navigation and number-pad groups have distinct key positions. `layout` selects
+compact, tenkeyless or full geometry. The shell, PBT keycaps, accent keycaps
+and printed ink each have a material-named color control; `retro`, `white` and
+`gamer` presets change those materials together. The default mesh is 1,360
+triangles under its 2,000-triangle budget. No IDs or kits were added; the
+electronics kit is 12/12 passing and the stricter catalog result remains
+**2,401/2,402 (99.96%)**. The
+[keyboard handoff](../artifacts/catalog-demos/electronics-keyboard-materials-20261110/README.md)
+contains the source-driven palette/layout renders, preview and index refresh,
+quality-gate evidence, lint and integration results, and inspected MP4. This
+branch is not deployed; the model is a low-poly visualization, not a production
+keyboard design or physical acceptance result.
 
 The Nov 10 water-treatment visual follow-up refines the existing
 `vertical-turbine-pump` head in place. Its four-way `outletOrientation` choice

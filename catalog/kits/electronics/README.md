@@ -1,6 +1,6 @@
 # Electronics kit
 
-Low-poly consumer electronics - screens, computers, phones, audio and networking gear - for home, office and retro scenes at real-world scale, flat-shaded on one palette material. Modelled in millimetres with Z up and exported as GLB in metres. Each piece has choice knobs for sizes, styles and states, colour knobs for its material zones, and a few presets.
+Low-poly consumer electronics - screens, computers, phones, audio and networking gear - for home, office and retro scenes at real-world scale. Models are built in millimetres with Z up and exported as GLB in metres. Separate material controls distinguish shells, screens, keycaps, fabric, metal and accents; choice knobs change real sizes, styles, layouts and states, with named presets for alternate looks.
 
 | id | what it is | knobs | triangles (default) |
 | --- | --- | --- | --- |
@@ -11,7 +11,7 @@ Low-poly consumer electronics - screens, computers, phones, audio and networking
 | `desk-phone` | Landline desk telephone, an office phone with a sloped keypad, display and side handset or a classic rotary dial phone with the handset across the top | style, body, handset, keys, display | 276 |
 | `desktop-tower` | Desktop computer tower case on feet with a front panel, drive bays, vent slots and power button, or a gamer mesh front with light strips and a glass side window | style, size, case, front, accent, dark | 208 |
 | `game-console` | Home video game console box, a modern slab with a disc slot and light bar or a retro cartridge wedge, with one or two gamepad controllers beside it | style, controllers, console, accent, pad, buttons | 252 |
-| `keyboard` | Desktop computer keyboard with a wedge case, raised key rows, accent Esc, Enter and space keys, and an optional arrow cluster and number pad | layout, case, keys, accent | 268 |
+| `keyboard` | Desktop keyboard with an angled ABS shell, separated PBT keycaps, printed legends, accent keys, and optional navigation cluster and number pad | layout, caseABS, keycapPBT, accentPBT, legendInk | 1,360 |
 | `laptop` | Open laptop computer with a thin base, key rows, touchpad and a hinged bezelled screen lid at an adjustable angle | sizeIn, lidAngle, body, keys, bezel, screen | 132 |
 | `retro-radio` | Vintage tabletop valve radio in a wooden cathedral-arch or wide chamfered cabinet with a cloth speaker grille, fret bars, tuning dial and knobs | style, wood, cloth, dial, knobs | 240 |
 | `smartphone` | Modern touchscreen smartphone with a large screen, side buttons and rear camera bump, lying flat or leaning on a desk stand | pose, size, body, screen, camera, stand | 124 |

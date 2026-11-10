@@ -78724,7 +78724,7 @@
       "id": "keyboard",
       "kit": "electronics",
       "title": "Keyboard",
-      "description": "Desktop computer keyboard with a wedge case, raised key rows, accent Esc, Enter and space keys, and an optional arrow cluster and number pad. Knobs: layout, case, keys and accent key colours.",
+      "description": "Desktop computer keyboard with a sloped ABS shell, separated PBT keycaps, printed legends, accent keys, and optional navigation cluster and number pad. Knobs: layout, caseABS, keycapPBT, accentPBT and legendInk; retro, white and gamer presets.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -78747,8 +78747,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/electronics/keyboard.kcad.ts",
       "preview": "/assets/electronics-keyboard.png",
-      "sourceSha256": "ae8f0eaa624ca146bc16c7a9ed16d37e92c609ec0fc382a2dec7f012a5df5349",
-      "triangleBudget": 320,
+      "sourceSha256": "7566d8845890ddb95baccc8f5302b56d106c05c76484dc6b0bf492bdb42cafa1",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "layout",
@@ -78762,46 +78762,55 @@
           ]
         },
         {
-          "name": "case",
+          "name": "caseABS",
           "type": "color",
           "default": "#1f2023",
-          "label": "Case"
+          "label": "ABS case"
         },
         {
-          "name": "keys",
+          "name": "keycapPBT",
           "type": "color",
           "default": "#5d616a",
-          "label": "Keys"
+          "label": "PBT keycaps"
         },
         {
-          "name": "accent",
+          "name": "accentPBT",
           "type": "color",
           "default": "#d0533e",
-          "label": "Accent keys"
+          "label": "Accent PBT keycaps"
+        },
+        {
+          "name": "legendInk",
+          "type": "color",
+          "default": "#d9d7ce",
+          "label": "Printed legend ink"
         }
       ],
       "presets": {
         "retro": {
-          "case": "#d8cfb8",
-          "keys": "#ece6d6",
-          "accent": "#8a8478"
+          "caseABS": "#9e8766",
+          "keycapPBT": "#f1e4c5",
+          "accentPBT": "#c66b3c",
+          "legendInk": "#514536"
         },
         "white": {
-          "case": "#e9e9e6",
-          "keys": "#f7f7f5",
-          "accent": "#9fb8d8"
+          "caseABS": "#bfc5c7",
+          "keycapPBT": "#eff1ef",
+          "accentPBT": "#6d94bf",
+          "legendInk": "#535e67"
         },
         "gamer": {
-          "case": "#141416",
-          "keys": "#26272b",
-          "accent": "#38e07b"
+          "caseABS": "#141416",
+          "keycapPBT": "#26272b",
+          "accentPBT": "#38e07b",
+          "legendInk": "#b7ffc9"
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 1360,
         "sizeM": [
           0.373663,
-          0.031999,
+          0.032899,
           0.149825
         ],
         "minUpM": 0,
@@ -78809,47 +78818,145 @@
       },
       "palette": [
         {
-          "name": "case",
+          "name": "caseABS",
           "color": "#1f2023",
           "parts": [
             "case"
           ],
-          "param": "case"
+          "param": "caseABS"
         },
         {
-          "name": "keys",
+          "name": "keycapPBT",
           "color": "#5d616a",
           "parts": [
-            "key-0",
-            "key-2",
-            "key-3",
-            "key-4",
-            "key-5",
-            "key-6",
-            "key-7",
-            "key-9",
-            "key-10",
-            "key-11",
-            "key-12",
-            "key-14",
-            "key-15",
-            "key-16",
-            "key-17",
-            "key-18",
-            "key-19",
-            "key-20"
+            "keycap-0",
+            "keycap-1",
+            "keycap-2",
+            "keycap-3",
+            "keycap-5",
+            "keycap-6",
+            "keycap-7",
+            "keycap-8",
+            "keycap-9",
+            "keycap-10",
+            "keycap-11",
+            "keycap-12",
+            "keycap-13",
+            "keycap-14",
+            "keycap-15",
+            "keycap-16",
+            "keycap-17",
+            "keycap-18",
+            "keycap-19",
+            "keycap-20",
+            "keycap-21",
+            "keycap-22",
+            "keycap-23",
+            "keycap-24",
+            "keycap-25",
+            "keycap-26",
+            "keycap-27",
+            "keycap-28",
+            "keycap-29",
+            "keycap-30",
+            "keycap-31",
+            "keycap-32",
+            "keycap-33",
+            "keycap-34",
+            "keycap-35",
+            "keycap-36",
+            "keycap-37",
+            "keycap-40",
+            "keycap-41",
+            "keycap-42",
+            "keycap-43",
+            "keycap-44",
+            "keycap-45",
+            "keycap-46",
+            "keycap-47",
+            "keycap-48",
+            "keycap-49",
+            "keycap-50",
+            "keycap-51",
+            "keycap-52",
+            "keycap-53",
+            "keycap-54",
+            "keycap-55",
+            "keycap-56",
+            "keycap-57",
+            "keycap-58",
+            "keycap-59",
+            "keycap-60",
+            "keycap-61",
+            "keycap-62",
+            "keycap-63",
+            "keycap-64",
+            "keycap-65",
+            "keycap-66",
+            "keycap-67",
+            "keycap-68",
+            "keycap-69",
+            "keycap-70",
+            "keycap-72",
+            "keycap-73",
+            "keycap-74",
+            "keycap-75",
+            "keycap-76",
+            "keycap-77",
+            "keycap-78",
+            "keycap-79",
+            "keycap-80",
+            "keycap-81",
+            "keycap-82",
+            "keycap-83",
+            "keycap-84",
+            "keycap-85",
+            "keycap-86",
+            "keycap-87",
+            "keycap-90",
+            "keycap-91",
+            "keycap-92"
           ],
-          "param": "keys"
+          "param": "keycapPBT"
         },
         {
-          "name": "accent",
+          "name": "legendInk",
+          "color": "#d9d7ce",
+          "parts": [
+            "legend-1",
+            "legend-6",
+            "legend-11",
+            "legend-16",
+            "legend-21",
+            "legend-26",
+            "legend-31",
+            "legend-36",
+            "legend-41",
+            "legend-46",
+            "legend-51",
+            "legend-56",
+            "legend-61",
+            "legend-66",
+            "legend-71",
+            "legend-76",
+            "legend-81",
+            "legend-86",
+            "legend-91"
+          ],
+          "param": "legendInk"
+        },
+        {
+          "name": "accentPBT",
           "color": "#d0533e",
           "parts": [
-            "key-1",
-            "key-8",
-            "key-13"
+            "keycap-4",
+            "keycap-38",
+            "keycap-39",
+            "keycap-71",
+            "keycap-88",
+            "keycap-89"
           ],
-          "param": "accent"
+          "param": "accentPBT"
         }
       ]
     },
