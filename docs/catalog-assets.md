@@ -4,13 +4,28 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
-## Catalog quality snapshot (2026-11-09)
+## Catalog quality snapshot (2026-11-10)
 
 The current catalog quality gate reports **2,402/2,402 assets passing
 (100.00%) across 50 rich kits**, with no failing assets. The recycling-facility
 kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
+
+The Nov 10 standard-components follow-up refines three existing assets in place:
+the flange-bearing housing now exposes a steel race and rubber lip seal; the jaw
+coupling shows offset drive jaws around its elastomer spider with visible set
+screws; and the pipe union uses a six-flat nut with an exposed joint seal. Each
+has three independently adjustable material controls and named appearance
+presets. The existing `size` choice changes the model envelope. No IDs or kits
+were added; default meshes are 456, 574 and 360 triangles, within budgets of
+500, 640 and 440. The standard-components kit remains 50/50 passing and the
+global gate remains **2,402/2,402 passing (100.00%)**. The
+[source-to-preview handoff](../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md)
+contains source-driven variant renders, the regenerated 50 previews and index,
+local page and check evidence, and the inspected MP4. This branch is not
+deployed; these are generic visualization models, not vendor geometry or
+physical acceptance evidence.
 
 The Nov 10 water-treatment follow-up refines the existing `backwash-pump-skid`
 in place. Its preview now shows end-suction pump casings, finned motors,

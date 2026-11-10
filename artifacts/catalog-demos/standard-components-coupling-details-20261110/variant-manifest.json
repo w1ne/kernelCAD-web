@@ -1,0 +1,232 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-coupling-details-20261110/render_variants.ts",
+  "renderer": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget) + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "sizeChoiceWidthRatios": {
+      "bearingStandardToLarge": 1.25,
+      "jawStandardToLarge": 1.25,
+      "unionCompactToStandard": 1.3333333333333333
+    },
+    "presetImageHashesDiffer": true
+  },
+  "sources": [
+    {
+      "asset": "flange-bearing-housing",
+      "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255"
+    },
+    {
+      "asset": "jaw-coupling",
+      "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5"
+    },
+    {
+      "asset": "pipe-union",
+      "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544"
+    }
+  ],
+  "renders": [
+    {
+      "id": "bearing-default",
+      "asset": "flange-bearing-housing",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.056,
+          0.024,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "4ffe9249d566118e5247929c454d400a98f8d54fd039a7323e966f7e3e935c6c",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255"
+    },
+    {
+      "id": "bearing-high-visibility",
+      "asset": "flange-bearing-housing",
+      "preset": "highVisibility",
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.056,
+          0.024,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "b8685947f29ad2a4f46a99036e979775c5b9ff14c1f6e4ae19f81c926a7ad661",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255"
+    },
+    {
+      "id": "bearing-large",
+      "asset": "flange-bearing-housing",
+      "choices": {
+        "size": "large"
+      },
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.07,
+          0.03,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "bc6d53cdd08a648799c7529e375a42ed8aff376de9ae9de823f5acfaba6eb93c",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255"
+    },
+    {
+      "id": "jaw-default",
+      "asset": "jaw-coupling",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 574,
+        "sizeM": [
+          0.036,
+          0.042,
+          0.035338
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "88653c36a78c2db40cf444aad9f9979714e08791b60ea4f4b44ab8e6023f7206",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5"
+    },
+    {
+      "id": "jaw-high-torque",
+      "asset": "jaw-coupling",
+      "preset": "highTorque",
+      "stats": {
+        "triangles": 574,
+        "sizeM": [
+          0.036,
+          0.042,
+          0.035338
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "0dd219174e92de867e31544c1dd84feaf106c0ff28794cdb4e2f8400fa3b00f5",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5"
+    },
+    {
+      "id": "jaw-large",
+      "asset": "jaw-coupling",
+      "choices": {
+        "size": "large"
+      },
+      "stats": {
+        "triangles": 574,
+        "sizeM": [
+          0.045,
+          0.0525,
+          0.044173
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "f7c8c077bf79be659d5eb02aea1b7c077e9578ce7bfe465e9e4a1e9ffb7cdd9a",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5"
+    },
+    {
+      "id": "union-default",
+      "asset": "pipe-union",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.038,
+          0.036,
+          0.0346
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "cf93f3e8aae1c674ad48f1c44af5ffdf4381f93bc6ae640542530a514013c49c",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544"
+    },
+    {
+      "id": "union-brass",
+      "asset": "pipe-union",
+      "preset": "brass",
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.038,
+          0.036,
+          0.0346
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "e3196b5811abbec25d12158f74ea092971a72cd9a7690398b66d0c553e4dbcae",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544"
+    },
+    {
+      "id": "union-compact",
+      "asset": "pipe-union",
+      "choices": {
+        "size": "compact"
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.0285,
+          0.027,
+          0.02595
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "81f3dcc5ce46f4675d50e7e1f63d14ba904c8b7f2ea80e13f2a72fc8d0d80aae",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544"
+    }
+  ]
+}

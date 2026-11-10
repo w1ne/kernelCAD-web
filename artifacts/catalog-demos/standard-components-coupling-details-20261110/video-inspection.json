@@ -1,0 +1,45 @@
+{
+  "inspectionInvocation": "python3 artifacts/catalog-demos/standard-components-coupling-details-20261110/inspect_coupling_details_video.py",
+  "video": "standard-components-coupling-details.mp4",
+  "ffprobe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "duration": "15.041667",
+      "size": "242249"
+    }
+  },
+  "sampleSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5
+  ],
+  "samples": [
+    "video-review/sample-01.png",
+    "video-review/sample-02.png",
+    "video-review/sample-03.png",
+    "video-review/sample-04.png",
+    "video-review/sample-05.png"
+  ],
+  "contactSheet": "video-review/decoded-samples.png",
+  "reviewStatus": "visually inspected",
+  "visualReview": {
+    "reviewedArtifacts": [
+      "video-review/decoded-samples.png",
+      "video-review/sample-01.png",
+      "video-review/sample-05.png"
+    ],
+    "notes": "All five sampled frames match the documented sequence. Titles and labels are readable at 1280x720; model variants are visible; no clipping, decode corruption or unsupported deployment or physical-acceptance claim was found."
+  }
+}

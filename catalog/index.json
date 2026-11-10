@@ -309965,7 +309965,7 @@
       "id": "flange-bearing-housing",
       "kit": "standard-components",
       "title": "Flange bearing housing",
-      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.",
+      "description": "Two-hole cast-iron bearing housing with a raised boss, visible steel bearing race, rubber lip seal and through-bore. Knobs: model size, cast iron, bearing steel and seal rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -309983,8 +309983,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
       "preview": "/assets/standard-components-flange-bearing-housing.png",
-      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
-      "triangleBudget": 360,
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "size",
@@ -310004,31 +310004,40 @@
           "label": "Cast iron"
         },
         {
-          "name": "bronze",
+          "name": "bearingSteel",
           "type": "color",
-          "default": "#98714c",
-          "label": "Bronze"
+          "default": "#aeb9be",
+          "label": "Bearing steel"
+        },
+        {
+          "name": "sealRubber",
+          "type": "color",
+          "default": "#353b3d",
+          "label": "Seal rubber"
         }
       ],
       "presets": {
-        "dark": {
-          "castIron": "#3b4246",
-          "bronze": "#684d37"
-        },
-        "brass": {
-          "castIron": "#69645b",
-          "bronze": "#b0804d"
+        "factory": {
+          "castIron": "#68747a",
+          "bearingSteel": "#c2c9cc",
+          "sealRubber": "#303436"
         },
         "weathered": {
           "castIron": "#4d4b46",
-          "bronze": "#6e583f"
+          "bearingSteel": "#8d9698",
+          "sealRubber": "#51473d"
+        },
+        "highVisibility": {
+          "castIron": "#e2a62d",
+          "bearingSteel": "#c4cdd1",
+          "sealRubber": "#202426"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 456,
         "sizeM": [
           0.056,
-          0.02,
+          0.024,
           0.04
         ],
         "minUpM": 0,
@@ -310039,17 +310048,26 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "plate"
+            "plate",
+            "housing-boss"
           ],
           "param": "castIron"
         },
         {
-          "name": "bronze",
-          "color": "#98714c",
+          "name": "bearingSteel",
+          "color": "#aeb9be",
           "parts": [
-            "boss"
+            "bearing-race"
           ],
-          "param": "bronze"
+          "param": "bearingSteel"
+        },
+        {
+          "name": "sealRubber",
+          "color": "#353b3d",
+          "parts": [
+            "lip-seal"
+          ],
+          "param": "sealRubber"
         }
       ]
     },
@@ -310566,7 +310584,7 @@
       "id": "jaw-coupling",
       "kit": "standard-components",
       "title": "Jaw coupling",
-      "description": "Two jaw hubs with a visible flexible center spider between the shaft bores Knobs: model size, steel, engineering polymer.",
+      "description": "Two bored steel hubs with offset driving jaws around a three-lobe elastomer spider and visible set-screw heads. Knobs: model size, hub steel, engineering polymer and set-screw steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -310584,8 +310602,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
       "preview": "/assets/standard-components-jaw-coupling.png",
-      "sourceSha256": "c6324db61764a7335ce924832fecb8db59bcd8b8cf388e9ad8a2280b8470f4df",
-      "triangleBudget": 360,
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5",
+      "triangleBudget": 640,
       "params": [
         {
           "name": "size",
@@ -310609,28 +310627,37 @@
           "type": "color",
           "default": "#e46b3c",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "setScrewSteel",
+          "type": "color",
+          "default": "#343a3e",
+          "label": "Set-screw steel"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "polymer": "#244956"
+          "polymer": "#244956",
+          "setScrewSteel": "#171b1d"
         },
-        "brass": {
-          "steel": "#646f75",
-          "polymer": "#1d5364"
+        "highTorque": {
+          "steel": "#aeb8be",
+          "polymer": "#d74631",
+          "setScrewSteel": "#343a3e"
         },
         "weathered": {
           "steel": "#665b4d",
-          "polymer": "#96734f"
+          "polymer": "#96734f",
+          "setScrewSteel": "#34312d"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 574,
         "sizeM": [
           0.036,
-          0.04,
-          0.036
+          0.042,
+          0.035338
         ],
         "minUpM": 0,
         "materials": 1
@@ -310640,8 +310667,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "hub-a",
-            "hub-b"
+            "lower-jaw-hub",
+            "upper-jaw-hub"
           ],
           "param": "steel"
         },
@@ -310649,9 +310676,18 @@
           "name": "polymer",
           "color": "#e46b3c",
           "parts": [
-            "spider"
+            "elastomer-spider"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "setScrewSteel",
+          "color": "#343a3e",
+          "parts": [
+            "lower-set-screw",
+            "upper-set-screw"
+          ],
+          "param": "setScrewSteel"
         }
       ]
     },
@@ -312129,7 +312165,7 @@
       "id": "pipe-union",
       "kit": "standard-components",
       "title": "Pipe union",
-      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.",
+      "description": "Straight-through pipe union with two hollow steel sockets, a six-flat brass nut and a separate rubber joint seal. Knobs: model size, steel, brass and seal rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -312147,8 +312183,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
       "preview": "/assets/standard-components-pipe-union.png",
-      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
-      "triangleBudget": 340,
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544",
+      "triangleBudget": 440,
       "params": [
         {
           "name": "size",
@@ -312172,28 +312208,37 @@
           "type": "color",
           "default": "#b28a4d",
           "label": "Brass"
+        },
+        {
+          "name": "sealRubber",
+          "type": "color",
+          "default": "#292e31",
+          "label": "Seal rubber"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "brass": "#725938"
+          "brass": "#725938",
+          "sealRubber": "#181c1e"
         },
         "brass": {
           "steel": "#646f75",
-          "brass": "#c0944d"
+          "brass": "#c0944d",
+          "sealRubber": "#352a21"
         },
         "weathered": {
           "steel": "#665b4d",
-          "brass": "#8c734d"
+          "brass": "#8c734d",
+          "sealRubber": "#55483a"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 360,
         "sizeM": [
+          0.038,
           0.036,
-          0.036,
-          0.036
+          0.0346
         ],
         "minUpM": 0,
         "materials": 1
@@ -312212,9 +312257,17 @@
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "nut"
+            "union-nut"
           ],
           "param": "brass"
+        },
+        {
+          "name": "sealRubber",
+          "color": "#292e31",
+          "parts": [
+            "joint-seal"
+          ],
+          "param": "sealRubber"
         }
       ]
     },

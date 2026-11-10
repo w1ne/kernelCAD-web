@@ -2,7 +2,7 @@
 
 Original parametric low-poly components for workshop, industrial, and mechanical scenes. Each asset is a standalone kernelCAD `.kcad.ts` model in millimetres, with its base on Z = 0 and centered X/Y bounds. These generic scene assets are not vendor part-number geometry.
 
-Each model keeps its compact / standard / large size choice and now exposes 2–4 independently editable, material-named visual color zones. Named `dark`, `brass`, and `weathered` presets provide alternate palettes. Color labels identify visual zones; they do not certify physical material properties.
+Each model keeps its compact / standard / large size choice and exposes 2–4 independently editable, material-named visual color zones. Named appearance presets provide alternate palettes. Color labels identify visual zones; they do not certify physical material properties.
 
 The Nov 9 refinement added geometry choices to five existing assets without
 adding IDs: the base plate and both flange models switch between four/eight
@@ -11,6 +11,15 @@ bare bore and two visible elastomer seals; the rubber bumper switches between a
 male stud and a recessed threaded insert. Each now exposes steel, hardware and
 third material controls with a fourth named palette. The selectable hardware
 and interfaces are stylized scene geometry, not vendor-standard dimensions.
+
+The Nov 10 follow-up refines three existing models in place: the flange-bearing
+housing now separates its cast base, steel race and rubber lip seal; the jaw
+coupling has offset drive jaws, a three-lobe elastomer spider and visible set
+screws; and the pipe union has a six-flat nut with a visible joint seal. Each
+has three material controls and named appearance presets. Their size choices
+continue to change the generated envelope. The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md)
+records the source variants, refreshed previews, generated index and inspected
+MP4. These remain generic low-poly scene models, not vendor-standard geometry.
 
 ## Assets
 
@@ -30,13 +39,13 @@ and interfaces are stylized scene geometry, not vendor-standard dimensions.
 | [`din-rail-terminal-block`](din-rail-terminal-block.kcad.ts) | DIN rail terminal block | Insulated housing with slotted clamp screws, visible copper cages and an undercut rail clip. | Engineering polymer, Steel, Copper | 444 | [PNG](previews/din-rail-terminal-block.png) |
 | [`door-hinge`](door-hinge.kcad.ts) | Door hinge | Upright two-leaf butt hinge with alternating barrel knuckles, a brass pin and visible fasteners. | Steel, Brass, Fasteners | 1440 | [PNG](previews/door-hinge.png) |
 | [`drawer-slide-channel`](drawer-slide-channel.kcad.ts) | Drawer slide channel | Nested low-poly slide rails with C-channel lips for a telescoping drawer track. | Steel, Stainless steel | 60 | [PNG](previews/drawer-slide-channel.png) |
-| [`flange-bearing-housing`](flange-bearing-housing.kcad.ts) | Flange bearing housing | Square two-hole bearing mount with a raised round boss and a centered shaft opening. | Cast iron, Bronze | 212 | [PNG](previews/flange-bearing-housing.png) |
+| [`flange-bearing-housing`](flange-bearing-housing.kcad.ts) | Flange bearing housing | Two-hole cast-iron flange base with a raised boss, steel race, rubber lip seal and through-bore. | Cast iron, Bearing steel, Seal rubber | 456 | [PNG](previews/flange-bearing-housing.png) |
 | [`flat-joining-plate`](flat-joining-plate.kcad.ts) | Flat joining plate | Flat strap plate with four zinc-plated fastener heads seated in its mounting holes for joining two parts in line. | Steel, Zinc-plated steel | 572 | [PNG](previews/flat-joining-plate.png) |
 | [`gusset-bracket`](gusset-bracket.kcad.ts) | Gusset bracket | Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web. | Steel, Stainless steel | 32 | [PNG](previews/gusset-bracket.png) |
 | [`handle-pull`](handle-pull.kcad.ts) | Handle pull | Raised U-shaped cabinet pull with two mounting feet and a straight grip bar. | Steel, Engineering polymer | 220 | [PNG](previews/handle-pull.png) |
 | [`handwheel`](handwheel.kcad.ts) | Handwheel | Three-spoke handwheel with a raised center hub and a clear circular rim. | Steel, Cast iron, Brass | 176 | [PNG](previews/handwheel.png) |
 | [`hose-barb-adapter`](hose-barb-adapter.kcad.ts) | Hose barb adapter | Stepped hose-barb adapter with a hollow center and three grip ribs. | Steel, Stainless steel, Brass | 448 | [PNG](previews/hose-barb-adapter.png) |
-| [`jaw-coupling`](jaw-coupling.kcad.ts) | Jaw coupling | Two jaw hubs with a visible flexible center spider between the shaft bores. | Steel, Engineering polymer | 236 | [PNG](previews/jaw-coupling.png) |
+| [`jaw-coupling`](jaw-coupling.kcad.ts) | Jaw coupling | Offset driving jaws interleave around a three-lobe elastomer spider; front-facing set screws are visible. | Hub steel, Engineering polymer, Set-screw steel | 574 | [PNG](previews/jaw-coupling.png) |
 | [`knurled-knob`](knurled-knob.kcad.ts) | Knurled knob | Compact control knob with a broad grip body, raised crown and center stem. | Steel, Aluminum, Engineering polymer | 228 | [PNG](previews/knurled-knob.png) |
 | [`leveling-foot`](leveling-foot.kcad.ts) | Leveling foot | Adjustable leveling foot with a wide circular pad and centered support stem. | Steel, Zinc-plated steel, Rubber | 132 | [PNG](previews/leveling-foot.png) |
 | [`linear-guide-carriage`](linear-guide-carriage.kcad.ts) | Linear guide carriage | Steel guide carriage with an open underside channel, polymer wiper end plates, four recessed top mounting wells, and a brass grease fitting. | Steel, Engineering polymer, Brass | 408 | [PNG](previews/linear-guide-carriage.png) |
@@ -51,7 +60,7 @@ and interfaces are stylized scene geometry, not vendor-standard dimensions.
 | [`pipe-reducer`](pipe-reducer.kcad.ts) | Pipe reducer | Stepped hollow reducer joining a larger pipe end to a smaller pipe end. | Steel, Bronze | 288 | [PNG](previews/pipe-reducer.png) |
 | [`pipe-saddle-clamp`](pipe-saddle-clamp.kcad.ts) | Pipe saddle clamp | Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. | Steel, Rubber | 132 | [PNG](previews/pipe-saddle-clamp.png) |
 | [`pipe-tee`](pipe-tee.kcad.ts) | Pipe tee fitting | Three-way T pipe fitting with a vertical run and perpendicular side branch. | Steel, Bronze | 192 | [PNG](previews/pipe-tee.png) |
-| [`pipe-union`](pipe-union.kcad.ts) | Pipe union | Compact union fitting with two hollow sockets and a broad central hex-like nut body. | Steel, Brass | 256 | [PNG](previews/pipe-union.png) |
+| [`pipe-union`](pipe-union.kcad.ts) | Pipe union | Straight-through fitting with hollow steel sockets, six-flat brass nut and visible rubber joint seal. | Steel, Brass, Seal rubber | 360 | [PNG](previews/pipe-union.png) |
 | [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open retaining ring profile with two small installation ears. | Stainless steel, Spring steel | 124 | [PNG](previews/retaining-ring.png) |
 | [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Stepped vibration isolator with a broad foot and selectable male stud or recessed threaded insert. | Rubber, Stud steel, Zinc-plated hardware | 332 | [PNG](previews/rubber-bumper.png) |
 | [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | One-piece round shaft collar with a centered bore and a small radial set-screw boss. | Steel, Zinc-plated steel | 140 | [PNG](previews/shaft-collar.png) |
@@ -83,7 +92,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), and the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), and the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 
