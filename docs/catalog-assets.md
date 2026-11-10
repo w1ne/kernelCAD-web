@@ -8,12 +8,17 @@ from those sources and must be rebuilt in the same change.
 
 The current catalog quality gate requires two material-named color controls and
 at least one preset; a generic `color` control does not count as a material.
-It reports **2,401/2,402 assets passing (99.96%; 49 rich kits and one mixed
-kit)**. The remaining gap is `interior/table-lamp`. The recycling-facility kit
-contains 153 assets, all passing; all 153 have kit-local rendered previews and
-matching source hashes in the generated index. Earlier round notes below retain
-their at-the-time results under the previous gate definition. This is a local
-branch snapshot, not a deployment or hardware-acceptance claim.
+It reports **2,402/2,402 assets passing (100.00%; 50 rich kits)**. The final
+gap, `interior/table-lamp`, now separates its glazed ceramic base, textile shade,
+and brass hardware. Its jar/column base choice and three appearance presets
+remain editable; the stem, neck ferrule, and side switch make the material
+changes visible in the preview. The 72 interior previews were regenerated and
+the index source hash updated. The
+[table-lamp handoff](../artifacts/catalog-demos/interior-table-lamp-materials-20261110/README.md)
+contains source-driven variants, check evidence, a three-preview visual review,
+and an inspected MP4. Earlier round notes below retain their at-the-time results
+under the previous gate definition. This is a local branch snapshot, not a
+deployment or hardware-acceptance claim.
 
 The Nov 10 electronics pass refines the existing `keyboard`: long key rows are
 separated into keycaps, selected caps receive printed legend marks, and the

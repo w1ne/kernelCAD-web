@@ -154966,7 +154966,7 @@
       "id": "table-lamp",
       "kit": "interior",
       "title": "Table lamp",
-      "description": "Bedside or desk table lamp with a faceted jar or column base and a tapered shade. Knobs: base style, base and shade colours.",
+      "description": "Bedside or desk lamp with a faceted ceramic jar or column base, brass stem and side switch, and tapered textile shade. Knobs: base style, ceramic, shade textile and hardware colours.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -154975,7 +154975,10 @@
         "desk lamp",
         "lamp",
         "light",
-        "lighting"
+        "lighting",
+        "ceramic",
+        "brass",
+        "textile shade"
       ],
       "compat": [
         "indoor",
@@ -154986,8 +154989,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/interior/table-lamp.kcad.ts",
       "preview": "/assets/interior-table-lamp.png",
-      "sourceSha256": "327fe9ed5580e76c68edabd44ed1fe917d6b61d9e30016c79d04101c13c21b53",
-      "triangleBudget": 150,
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d",
+      "triangleBudget": 240,
       "params": [
         {
           "name": "baseStyle",
@@ -155000,33 +155003,46 @@
           ]
         },
         {
-          "name": "base",
+          "name": "ceramic",
           "type": "color",
           "default": "#3f6f7a",
-          "label": "Base"
+          "label": "Glazed ceramic base"
         },
         {
-          "name": "shade",
+          "name": "textile",
           "type": "color",
           "default": "#f2ead8",
-          "label": "Shade"
+          "label": "Shade textile"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#bd8b48",
+          "label": "Brass hardware"
         }
       ],
       "presets": {
         "terracotta": {
-          "base": "#b9653f",
-          "shade": "#efe6d2"
+          "ceramic": "#b9653f",
+          "textile": "#efe6d2",
+          "hardware": "#b67b3b"
         },
-        "black": {
-          "base": "#232323",
-          "shade": "#d9d4c7"
+        "midCentury": {
+          "ceramic": "#d39b40",
+          "textile": "#eee1c5",
+          "hardware": "#9f6234"
+        },
+        "monochrome": {
+          "ceramic": "#34363a",
+          "textile": "#d9d4c7",
+          "hardware": "#8c9299"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 144,
         "sizeM": [
           0.285145,
-          0.47,
+          0.495,
           0.292478
         ],
         "minUpM": 0,
@@ -155034,22 +155050,31 @@
       },
       "palette": [
         {
-          "name": "base",
+          "name": "ceramic",
           "color": "#3f6f7a",
           "parts": [
             "base-lower",
-            "base-upper",
-            "stem"
+            "base-upper"
           ],
-          "param": "base"
+          "param": "ceramic"
         },
         {
-          "name": "shade",
+          "name": "hardware",
+          "color": "#bd8b48",
+          "parts": [
+            "neck-ferrule",
+            "stem",
+            "side-switch"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "textile",
           "color": "#f2ead8",
           "parts": [
             "shade"
           ],
-          "param": "shade"
+          "param": "textile"
         }
       ]
     },

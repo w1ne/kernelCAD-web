@@ -1,0 +1,26 @@
+Interior table-lamp quality promotion verification
+Date: 2026-11-10 UTC
+
+Asset: interior/table-lamp (in-place; no IDs or kits added)
+Geometry: 144 triangles / 240 triangle budget
+Controls: baseStyle plus ceramic, textile, hardware
+Presets: terracotta, midCentury, monochrome
+Variants: 5 source-driven renders passed; jar/column and all presets differ;
+          all variants remain at 144 triangles.
+
+Previews: all 72 interior previews rendered; all 72 index preview files exist.
+Index: regenerated from source; table-lamp source SHA-256 and preview path match.
+Quality: interior 72/72 (100.00%); global 2,402/2,402 (100.00%; 50 rich kits).
+Lint: npx eslint catalog/kits/interior/ passed.
+Integration: npx vitest run tests/integration/catalog/ passed 4 files / 15 tests.
+Pages: 2,402 local static pages built; interior/table-lamp page, preview, controls,
+       presets, source hash and Studio link verified.
+Package boundary: dry-run contains 5,229 files including index/source/preview;
+                  no commercial paths found; package export map unchanged.
+Visual review: table-lamp, desk-lamp and sofa previews opened; each reads as the
+                intended object and uses distinct color zones.
+Demo: 12.04-second H.264 MP4 at 1280x720; four decoded samples visually reviewed.
+
+Scope: local source-driven renders, catalog generation, static page build and
+checks. No simulation or deployment was performed. No lighting/electrical,
+manufacturing, or physical-acceptance claim is made.
