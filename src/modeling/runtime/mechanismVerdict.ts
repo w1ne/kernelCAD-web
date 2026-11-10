@@ -91,7 +91,9 @@ function plural(n: number, word: string): string {
 }
 
 function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
-  const { mateName: joint, partName: part } = d as { mateName?: unknown; partName?: unknown };
+  const legacy = d as { mateName?: unknown; partName?: unknown };
+  const joint = typeof d.details?.mateName === 'string' ? d.details.mateName : legacy.mateName;
+  const part = typeof d.details?.partName === 'string' ? d.details.partName : legacy.partName;
   return {
     code: d.code,
     reason: d.message,
@@ -124,6 +126,12 @@ function skippedOf(input: MechanismVerdictInput): string[] {
         : 'collision sweep across the joint travel skipped: over the work budget');
     } else if (d.code === 'mechanism.unverified-exact-probe') {
       out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
+    } else if (d.code === 'mechanism.joint-mesh-unverified') {
+      const joint = /Joint '([^']+)'/.exec(d.message)?.[1];
+      const part = /body '([^']+)'/.exec(d.message)?.[1];
+      out.push(joint !== undefined && part !== undefined
+        ? `rest-pose joint continuity could not be measured at '${joint}' on '${part}'`
+        : 'rest-pose joint continuity could not be measured');
     } else {
       const physicsSkip = physicsSkipLine(d.code, d.message);
       if (physicsSkip !== undefined) out.push(physicsSkip);

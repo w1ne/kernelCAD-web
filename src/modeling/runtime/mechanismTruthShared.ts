@@ -46,6 +46,7 @@ export function makeFailure(
     | 'mechanism.physics-unsupported'
     | 'mechanism.drops-on-release'
     | 'mechanism.joint-mesh-gap'
+    | 'mechanism.joint-mesh-unverified'
     | 'mechanism.tendon-body-intersect'
     | 'mechanism.rest-interpenetration'
     | 'mechanism.mate-gap',

@@ -1,0 +1,33 @@
+{
+  "invocation": "npx vitest run tests/integration/fast/restJointContinuityUnavailableDemo.test.ts",
+  "case": "Annular rim and disc bearing with mesh and BREP pivot-distance measurements unavailable; sweep skipped at budget 0.",
+  "settings": {
+    "sweepBudget": 0
+  },
+  "evidence": {
+    "verdict": "unverified",
+    "coverage": {
+      "sweep": false,
+      "poses": 3,
+      "joints": 1
+    },
+    "diagnostics": [
+      {
+        "code": "mechanism.joint-mesh-unverified",
+        "severity": "warn",
+        "message": "Joint 'select' parent body 'parent': rest-pose continuity could not be measured because the mesh and exact BREP queries could not certify a distance. This joint cannot be certified connected."
+      },
+      {
+        "code": "mechanism.unverified-budget-exceeded",
+        "severity": "warn",
+        "message": "The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: estimated work 0 exceeds the budget 0 (2 parts in 2 rigid clusters, 4 poses, 0 pair overlap probes; work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs). The mechanism is NOT certified collision-free across its travel. Rest-pose joint-mesh continuity still ran: measured gaps remain errors, and unavailable joint measurements keep the mechanism unverified. Reduce the part/pose count, verify a tractable sub-assembly, or pass a larger sweepBudget to force the full sweep."
+      }
+    ]
+  },
+  "scope": {
+    "localValidation": "Direct checkMechanismTruth call on a locally constructed OCCT annular-bearing model.",
+    "simulation": "No physics or motion simulation was run; the over-budget BREP pose sweep was skipped.",
+    "deployment": "Not deployed; this is branch-local evidence.",
+    "hardware": "No physical hardware was used or accepted."
+  }
+}

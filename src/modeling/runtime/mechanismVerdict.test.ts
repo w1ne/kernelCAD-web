@@ -76,6 +76,20 @@ describe('summarizeMechanism', () => {
     expect(s.failures).toEqual([]);
   });
 
+  it('names unavailable rest-pose continuity in an unverified summary', () => {
+    const unknown = {
+      target: 'export-occt', code: 'mechanism.joint-mesh-unverified', severity: 'warn',
+      message: "Joint 'select' parent body 'parent': rest-pose continuity could not be measured because both measurement paths failed.",
+      hint: 'h', details: { mateName: 'select', partName: 'parent', side: 'parent' },
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [unknown], coverage });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.skipped).toContain("rest-pose joint continuity could not be measured at 'select' on 'parent'");
+    expect(s.statement).toMatch(/^Motion not checked: rest-pose joint continuity could not be measured at 'select' on 'parent'\. Do not call this mechanism working\.$/);
+    expect(s.failures).toEqual([]);
+  });
+
   it('names the joint of a broken verdict', () => {
     const d = {
       target: 'export-occt', code: 'mechanism.motion-on-fixed-joint', severity: 'error',
