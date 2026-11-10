@@ -370,9 +370,14 @@ function didBuildSucceed(
   // Union-guard errors (union.*) are verdicts on a model that DID build, like
   // dfm gate errors: keep the session and still probe the mechanism so the
   // agent sees every finding at once. `ok` is false via exitCode either way.
+  const hasDeferredOverlap = model?.returnValue instanceof Scene
+    && model.returnValue.__deferredValidationDiagnostics().some(d => d.code === 'assembly.interference.overlap');
   return (
     model !== undefined &&
-    model.diagnostics.every(d => d.severity !== 'error' || gateDiagnostics.has(d) || d.code.startsWith('union.'))
+    model.diagnostics.every(d => d.severity !== 'error'
+      || gateDiagnostics.has(d)
+      || d.code.startsWith('union.')
+      || (hasDeferredOverlap && d.code === 'assembly.interference.overlap'))
   );
 }
 
@@ -425,9 +430,30 @@ async function probeSceneMechanism(
   const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
   if (assemblies.length === 0) return { mechanismFailures: [] };
   const probe = await probeAssemblies(assemblies);
+  const deferredOverlapFailures = model.returnValue instanceof Scene
+    ? model.returnValue.__deferredValidationDiagnostics()
+      .filter((d) => d.code === 'assembly.interference.overlap')
+      .flatMap((d): CompilerDiagnostic[] => {
+        if (d.partA === undefined || d.partB === undefined) return [];
+        const alreadyReported = probe.failures.some((failure) =>
+          failure.code === 'mechanism.rest-interpenetration'
+          && failure.message.includes(`'${d.partA}'`)
+          && failure.message.includes(`'${d.partB}'`),
+        );
+        if (alreadyReported) return [];
+        return [{
+          target: 'export-occt',
+          code: 'mechanism.rest-interpenetration',
+          severity: 'error',
+          message: `Parts '${d.partA}' and '${d.partB}' interpenetrate at the rest pose. ${d.message}`,
+          hint: d.hint,
+        }];
+      })
+    : [];
+  const mechanismFailures = [...probe.failures, ...deferredOverlapFailures];
   return {
-    mechanism: probe.mechanism,
-    mechanismFailures: [...probe.failures],
+    mechanism: deferredOverlapFailures.length > 0 ? 'broken' : probe.mechanism,
+    mechanismFailures,
     ...(probe.coverage !== undefined ? { coverage: probe.coverage } : {}),
   };
 }

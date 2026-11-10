@@ -17,6 +17,7 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
+import { Scene } from '../../../src/modeling/validation/scene';
 
 function makeArm() {
   const session = new CaptureSession();
@@ -89,13 +90,19 @@ describe('Assembly.solvedModel — envelope gate (explicit posesGate, post-merge
 
   it('preserves v0.6.0 single-pose interference gate when no mate has limits', async () => {
     // Two boxes overlapping at default pose (no limits declared). The
-    // single-pose check fires regardless of posesGate.
+    // single-pose check runs regardless of posesGate and defers its
+    // overlap-only error on the returned Scene.
     const { arm, kcad } = makeArm();
     arm.part('a', kcad.box(10, 10, 10)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
     arm.part('b', kcad.box(10, 10, 10)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
     arm.mate('m', 'a.o', 'b.o', 'fastened');
 
-    await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toThrow(/interference|overlap/i);
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    expect(scene).toBeInstanceOf(Scene);
+    const overlap = scene.__deferredValidationDiagnostics().find(
+      (diagnostic) => diagnostic.code === 'assembly.interference.overlap',
+    );
+    expect(overlap).toBeDefined();
+    expect(overlap?.message).toMatch(/overlap/i);
   });
 });
