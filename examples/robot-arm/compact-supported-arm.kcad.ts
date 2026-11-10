@@ -118,12 +118,6 @@ function sts3215Envelope(extras) {
     INK.servo,
   );
   const grommet = coat(rodY(-14.2, -10.6, 4.15, 12).translate(0, 0, -24.6), INK.servo);
-  const tail = polyTube([
-    [0, -15.6, -24.6],
-    [0, -20.2, -23.2],
-    [2.4, -22.2, -19.8],
-    [1.2, -19.4, -17.2],
-  ], 1.65);
   const seam = extrudeRoundedRect(31.8, 21.8, 3.3, 1.35).translate(0, 0, -19.1)
     .subtract(extrudeRoundedRect(27.6, 17.6, 2.2, 2.6).translate(0, 0, -19.7));
   const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sy) => {
@@ -135,8 +129,33 @@ function sts3215Envelope(extras) {
     ]);
   }));
   return paint(fuse([
-    body, ears, hub, stalk, pilot, boot, grommet, ...tail, ...(extras ?? []),
+    body, ears, hub, stalk, pilot, boot, grommet, ...(extras ?? []),
   ]).subtract(fuse([seam, ...holes])), INK.servo);
+}
+
+// Slack loop on the -X side of a pitch servo, in the envelope frame
+// (output +Z). After rotateX(90) it hangs beside the cheek, clear of the
+// ear tabs, and rises toward the child link without entering the yoke.
+function pitchSlack() {
+  return polyTube([
+    [0, -16.2, -24.2],
+    [-8, -22.4, -18.6],
+    [-26, -24.2, -12.4],
+    [-26, -12.4, -6.6],
+    [-26, 5.5, -1.2],
+  ], 1.45);
+}
+
+// Grip servo is rotateX(180) on the palm. This run leaves the boot, sags,
+// and heads back over the forearm. It stays above the jaws at every curl.
+function gripSlack() {
+  return polyTube([
+    [0, -16.2, -24.2],
+    [5, -22.5, -14.5],
+    [-2, -18.5, -11.2],
+    [-14, -12.5, -8.6],
+    [-28, -6.2, -7.4],
+  ], 1.45);
 }
 
 // Pitch radius minus 0.125 mm on an external tooth, plus 0.125 mm on an
@@ -316,11 +335,12 @@ const basePlate = arm.part('base-plate', (() => {
 })(), { material: 'petg' });
 
 const baseYawServo = arm.part('base-yaw-servo', sts3215Envelope(polyTube([
-  [0, -18.5, -24.4],
-  [0, -40, -24.4],
-  [0, -49, -32],
-  [0, -58, -41.5],
-], 1.55)), {
+  [0, -16.2, -24.6],
+  [0, -30, -24.6],
+  [0, -42, -24.4],
+  [0, -51, -31],
+  [0, -58, -41.4],
+], 1.5)), {
   material: 'petg',
   massKg: 0.055,
 });
@@ -334,8 +354,8 @@ const baseYawOutput = arm.part('base-yaw-output', (() => {
   // Six flange bolts on a circle outside the column, heads proud of the turret.
   const bolts = [0, 1, 2, 3, 4, 5].flatMap((i) => {
     const a = Math.PI / 6 + i * Math.PI / 3;
-    const x = Math.cos(a) * 46;
-    const y = Math.sin(a) * 46;
+    const x = Math.cos(a) * 50;
+    const y = Math.sin(a) * 50;
     const shank = rodZ(5.4, 9.15, 1.7, 8).translate(x, y, 0);
     const head = rodZ(9.05, 12.85, 3.55, 10).translate(x, y, 0);
     const socket = rodZ(11.15, 13.05, 1.35, 6).translate(x, y, 0);
@@ -375,8 +395,8 @@ const yawTurret = arm.part('yaw-turret', (() => {
   const gusset = (y0, y1) => slab(-12, 12, y0, y1, 104, 132, hex);
   const bolts = [0, 1, 2, 3, 4, 5].map((i) => {
     const a = Math.PI / 6 + i * Math.PI / 3;
-    const x = Math.cos(a) * 46;
-    const y = Math.sin(a) * 46;
+    const x = Math.cos(a) * 50;
+    const y = Math.sin(a) * 50;
     return rodZ(4.8, 9.4, 2.25, 8).translate(x, y, 0);
   });
   const positives = [
@@ -400,7 +420,7 @@ const yawTurret = arm.part('yaw-turret', (() => {
 
 const shoulderPitchServo = arm.part(
   'shoulder-pitch-servo',
-  sts3215Envelope().rotateX(90),
+  sts3215Envelope(pitchSlack()).rotateX(90),
   { material: 'petg', massKg: 0.055 },
 );
 
@@ -424,14 +444,16 @@ const upperLink = arm.part('upper-link', (() => {
   const cap = coat(rodY(-25.05, -22.15, 9.2, 14).translate(UPPER, 0, 0), hex);
   const pocket = pitchPocket(hex);
   // Proud round bead in the top trough, with a lift at each pitch joint.
+  // Bead on the servo side of the trough, with a lift at each pitch joint
+  // so the run clears the cheek and still points at the slack loop.
   const cable = polyTube([
-    [16, 1.5, 15.5],
-    [22, 0, 12.2],
-    [36, 0, 10.55],
-    [98, 0, 10.55],
-    [110, -1.2, 12.4],
-    [118, 0, 15.2],
-  ], 1.6);
+    [18, 6.5, 19.6],
+    [30, 5.2, 12.5],
+    [42, 4.8, 11.5],
+    [94, 4.8, 11.5],
+    [106, 5.2, 13.4],
+    [116, 4.2, 19.4],
+  ], 1.5);
   const positives = [
     tongue, neck, flare, beam,
     bridge(-14, -CHEEK_GAP), bridge(CHEEK_GAP, 14),
@@ -451,7 +473,7 @@ const upperLink = arm.part('upper-link', (() => {
 
 const elbowPitchServo = arm.part(
   'elbow-pitch-servo',
-  sts3215Envelope().rotateX(90).translate(UPPER, 0, 0),
+  sts3215Envelope(pitchSlack()).rotateX(90).translate(UPPER, 0, 0),
   { material: 'petg', massKg: 0.055 },
 );
 
@@ -470,20 +492,27 @@ const forearmLink = arm.part('forearm-link', (() => {
   const sideWindow = (x0, y0) => box(22, 7, 7).translate(x0, y0, -3.5);
   const trough = rodX(32, 92, 2.15, 8).translate(0, 0, 7.55);
   const cable = polyTube([
-    [14, 0, 12.6],
-    [24, 0, 9.15],
-    [92, 0, 9.15],
-    [102, 1.4, 11.4],
-  ], 1.5);
+    [14, 1.2, 18.4],
+    [26, 3.8, 10.3],
+    [88, 3.8, 10.3],
+    [98, 2.4, 15.8],
+    [106, 1.4, 17.6],
+  ], 1.4);
   const palmFlange = coat(extrudeRoundedRect(40, 26, 3, 15.6, { axis: 'x' }).translate(96, 0, 0), hex);
   const pinionClear = rodZ(6.85, 10.5, 17.4, 24).translate(FORE + GRIP_X, 0, 0);
-  const holes = [-1, 1].flatMap((sy) => [-1, 1].map((sz) =>
-    rodX(95, 112.1, 1.6, 8).translate(0, sy * 9, sz * 8)));
-  // Socket heads on the palm flange, seated in the through-holes.
-  const boltHeads = [-1, 1].flatMap((sy) => [-1, 1].map((sz) =>
-    rodX(110.6, 113.4, 2.35, 8).translate(0, sy * 9, sz * 8)));
+  // Through-bolts from the top face of the flange. Heads stay proud of the
+  // shell and stop before the palm, which covers the flange end.
+  const flangeBolts = [-1, 1].flatMap((sx) => [-1, 1].map((sy) => {
+    const x = 102 + sx * 4;
+    const y = sy * 11;
+    return {
+      hole: rodZ(-13.5, 13.15, 1.45, 8).translate(x, y, 0),
+      head: rodZ(13.2, 16.15, 2.65, 10).translate(x, y, 0),
+      socket: rodZ(14.85, 16.4, 1.1, 6).translate(x, y, 0),
+    };
+  }));
   return paint(fuse([
-    tongue, neck, flare, beam, palmFlange, ...cable, ...boltHeads,
+    tongue, neck, flare, beam, palmFlange, ...cable, ...flangeBolts.map((bolt) => bolt.head),
   ]).subtract(fuse([
     rodY(-8, 8, 3.5, 10),
     trough,
@@ -492,7 +521,7 @@ const forearmLink = arm.part('forearm-link', (() => {
     sideWindow(68, 5.2),
     sideWindow(68, -12.2),
     pinionClear,
-    ...holes,
+    ...flangeBolts.flatMap((bolt) => [bolt.hole, bolt.socket]),
   ])), hex);
 })(), { material: 'petg' });
 
@@ -550,7 +579,7 @@ const toolPalm = arm.part('tool-palm', (() => {
 
 const gripServo = arm.part(
   'grip-servo',
-  sts3215Envelope().rotateX(180).translate(GRIP_X, 0, 17.05),
+  sts3215Envelope(gripSlack()).rotateX(180).translate(GRIP_X, 0, 17.05),
   { material: 'petg', massKg: 0.055 },
 );
 
@@ -674,18 +703,24 @@ const rightFinger = arm.part('right-finger', paint(fuse([
 
 function fingerPad(side) {
   const inward = side < 0;
-  const body = inward
-    ? slab(8, 40.4, -6.4, -3.55, -4.6, 2.6, INK.pad)
-    : slab(8, 40.4, 3.55, 6.4, -4.6, 2.6, INK.pad);
+  const ySign = inward ? -1 : 1;
+  // Taller than the orange jaw so the black pad reads as a border, and
+  // still clear of the jaw face. The dovetail is unchanged.
+  const body = coat(
+    extrudeRoundedRect(32.2, 3.45, 0.6, 10.9).translate(24.1, ySign * 5.275, -1.75),
+    INK.pad,
+  );
   const neck = inward
     ? slab(10, 34, -3.75, -1.45, -1.15, 1.05, INK.pad)
     : slab(10, 34, 1.45, 3.75, -1.15, 1.05, INK.pad);
   const bulb = inward
     ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
     : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
-  const ribs = [14, 23, 32].map((x) => (inward
-    ? slab(x, x + 2.3, -7.05, -6.15, -2.7, 1.6, INK.pad)
-    : slab(x, x + 2.3, 6.15, 7.05, -2.7, 1.6, INK.pad)));
+  const ribs = [13.5, 22.5, 31.5].map((x) => {
+    const near = ySign * 6.5;
+    const far = ySign * 7.65;
+    return slab(x, x + 2.8, Math.min(near, far), Math.max(near, far), -5.3, 2.5, INK.pad);
+  });
   return paint(fuse([body, neck, bulb, ...ribs]), INK.pad);
 }
 
