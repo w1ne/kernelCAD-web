@@ -103,6 +103,14 @@ describe('pipe()', () => {
     expect(errors(r.diagnostics)[0]?.message).toMatch(/greater than the pipe radius/);
   });
 
+  it('rejects a sparse waypoint hole', async () => {
+    const r = await evaluateScriptTool({
+      code: 'return pipe([[0, 0, 0], [40, , 0], [40, 0, 40]], 3);',
+    });
+    expect(r.ok).toBe(false);
+    expect(errors(r.diagnostics)[0]?.message).toMatch(/points\[1\]/);
+  });
+
   it('rejects a corner that the bend radius cannot reach', async () => {
     const r = await evaluateScriptTool({
       code: 'return pipe([[0, 0, 0], [10, 0, 0], [10, 0, 10]], 3, { bendRadius: 20 });',

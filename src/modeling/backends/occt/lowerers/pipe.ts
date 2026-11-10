@@ -19,7 +19,12 @@ function readPoints(r: FeatureRecord): V3[] | undefined {
   if (!Array.isArray(raw) || raw.length < 2) return undefined;
   const pts: V3[] = [];
   for (const p of raw) {
-    if (!Array.isArray(p) || p.length !== 3 || !p.every((n) => typeof n === 'number' && Number.isFinite(n))) {
+    if (
+      !Array.isArray(p) || p.length !== 3 ||
+      typeof p[0] !== 'number' || !Number.isFinite(p[0]) ||
+      typeof p[1] !== 'number' || !Number.isFinite(p[1]) ||
+      typeof p[2] !== 'number' || !Number.isFinite(p[2])
+    ) {
       return undefined;
     }
     pts.push([p[0], p[1], p[2]]);

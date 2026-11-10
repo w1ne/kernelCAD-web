@@ -32,7 +32,9 @@ function assertPipePoints(points: unknown): Vec3[] {
     if (
       !Array.isArray(p) ||
       p.length !== 3 ||
-      !p.every((n) => typeof n === 'number' && Number.isFinite(n))
+      typeof p[0] !== 'number' || !Number.isFinite(p[0]) ||
+      typeof p[1] !== 'number' || !Number.isFinite(p[1]) ||
+      typeof p[2] !== 'number' || !Number.isFinite(p[2])
     ) {
       invalidArgs({
         api: 'pipe(points, radius)',
