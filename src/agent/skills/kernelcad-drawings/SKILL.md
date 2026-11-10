@@ -35,6 +35,36 @@ kernelcad export pdf-drawing bracket.kcad.ts -o out/bracket.pdf --title "L mount
 
 Text is set in the standard Helvetica face, so the PDF needs no embedded font; `⌀` prints as `Ø`, and the GD&T and hole symbols (⌖ ⏥ ⟂ ∥ ⌴ ⌵ ↧ …) are drawn as vector strokes.
 
+## Agent-assisted layout QA and repair
+
+The generic `export` tool supports optional `visualQa` on both `svg-drawing`
+and `pdf-drawing`. It inspects the **serialized** sheet, not only the CAD
+model. For PDFs it also reads back page size, vector content and the text layer.
+The default export path remains unchanged unless `visualQa` is supplied.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "bracket.kcad.ts", "format": "pdf-drawing",
+  "output_path": "out/bracket-reviewed.pdf",
+  "options": { "format": "pdf-drawing", "sheet": "a4", "visualQa": { "autoRepair": true, "maxAttempts": 3 } } } }
+```
+
+Read `drawingReport.visualQa` from the export result. The report includes
+`status` (`verified`, `needs-review`, or `incomplete`), issue codes and
+sheet locations, the list of rejected/accepted attempts, and a separate PDF
+readback report. A `verified` result requires a **complete declared critical-dimension review**
+and passing layout checks. Without a declared critical-dimension contract, the
+result remains `incomplete` even if every layout check passes. An unresolved
+critical dimension or drawing decision results in `needs-review`. None of these
+statuses certifies physical fit, tolerances, or manufacturing-standard compliance.
+
+The repair loop first moves annotations already reported as crowded using the
+existing offset option, then tries progressively larger ISO/ANSI sheet sizes.
+It accepts only measurable reductions in layout issues and stops after at most
+three retries. It never changes source 3D geometry, dimension values, or
+unresolved engineering decisions. A missing critical dimension remains a
+blocking finding even after a successful layout repair. Review any remaining
+issues before releasing a drawing externally.
+
 ## Quickstart
 
 MCP:
@@ -234,6 +264,8 @@ Studio opens drawing review from Export → Drawing PDF: preview the SVG, inspec
 - GD&T intent can be declared with `Shape.datum()` / `Shape.tolerance()` or authored through `options.annotations`. Automatic datum selection is a geometry heuristic; review it against the intended setup and assembly interfaces.
 - `chamfer`'s leg `size` is author-supplied — not recoverable from a bare edge query without feature history.
 - Exploded isometric + balloons: pass `exploded` plus `balloons` / `partsList`. A script that is not an `assembly()` fails explode with `render.explode.no-assembly`; balloons without a BOM warn `drawing.balloons.bom-unavailable`. Balloon and table labels share the existing overlap check.
+- For new automated workflows, use `visualQa: { autoRepair: true, maxAttempts: 3 }` and read `drawing_report.visualQa` as the authoritative layout/PDF/engineering-review result. Its decision includes both the kernel's geometric/text preflight findings; a failed preflight cannot coexist with a `verified` visual QA status.
+- The older `layoutRepair` option remains supported for existing callers and returns `drawing_report.sheetRepair`, but is a **compatibility-only sheet-size repair path**, not complete PDF verification. Do not combine `layoutRepair: true` with `visualQa` (the exporter rejects that conflict); when visualQa is present, the implicit legacy auto-sheet loop is disabled.
 - Use `layoutRepair: true` to allow at most two bigger ISO/ANSI sheets after the requested one when geometric placement, actual serialized text-box clearance, or annotation overlap improves. `sheet: "auto"` / `"auto-ansi"` enables this unless `layoutRepair: false`. The result includes `drawing_report.sheetRepair` with attempted sizes, counts and `applied`; it leaves the source geometry and requested annotation text untouched. Explicit size defaults to no growth.
 - The drawing report includes `renderedText` with checked text and issues. It reads the finished SVG using the same parser, text metrics, and affine transforms as the vector-PDF emitter, and warns `drawing.text.placement` for clipping, annotation/caption text collisions, and occupied title or tolerance cells. This is a deterministic text-geometry check, **not** a pixel-level PDF raster oracle. Use real PDF rendering in final QA, and do not call an unresolved warning a verified sheet.
 - The drawing report now includes `sheetPlacement` with `status: clear | issues`, `checkedViews`, and typed `issues` for the projected view bounding boxes. `drawing.view.placement` warns if a rendered view leaves the frame, collides with another view, or obstructs the title-block/general-tolerance cell. This is a **geometric preflight**, not optical QA of captions, annotations, PDF pagination, GD&T, or manufacturing readiness. Check the rendered SVG/PDF and any incomplete engineering-review decisions separately.

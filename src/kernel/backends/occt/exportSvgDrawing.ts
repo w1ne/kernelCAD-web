@@ -89,17 +89,13 @@ import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } fr
 import { applyDraftingProfile, authoredAnnotationIds, invalidReview } from './draftingReview';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+import type { DrawingVisualQaOptions } from './drawingVisualQa';
+export type { DrawingVisualQaOptions, DrawingVisualQaReport, DrawingVisualQaIssue, DrawingVisualQaCheck, DrawingVisualQaAttempt, DrawingVisualQaPdfCheck } from './drawingVisualQa';
 
 export type { DrawingBomRow } from './drawingExplode';
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
-export type {
-  AutoAnnotateKind,
-  AutoAnnotateOptions,
-  DrawingReport,
-  DrawingReportAnnotation,
-  Iso2768Class,
-} from './drawingAuto';
+export type { AutoAnnotateKind, AutoAnnotateOptions, DrawingReport, DrawingReportAnnotation, Iso2768Class } from './drawingAuto';
 
 export type { DrawingSheetSize, ProjectionAngle } from './drawingLayout';
 
@@ -120,6 +116,9 @@ export interface DrawingTitleBlock {
 
 export interface SvgDrawingOptions extends DrawingReviewOptions {
   format: 'svg-drawing';
+  /** Inspect the bytes of the exported SVG. With autoRepair enabled, the
+   *  export may retry on up to three larger standard sheets. */
+  visualQa?: DrawingVisualQaOptions;
   /** Single front elevation, or the complete default four-view sheet. */
   views?: readonly DrawingViewName[];
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
