@@ -32,5 +32,11 @@ describe('SVG path bounds aligned with the vector PDF geometry parser', () => {
   it('does not silently accept unknown or incomplete commands', () => {
     expect(measureSvgPath('M 20 20 R 30 30')).toBeUndefined();
     expect(measureSvgPath('M 20 20 C 30 30')).toBeUndefined();
+    expect(measureSvgPath('M 0 0 Z 10 10')).toBeUndefined();
+    expect(measureSvgPath('M 0 0 L 10')).toBeUndefined();
+    expect(measureSvgPath('M 0 0 C 10 10 20 20 30')).toBeUndefined();
+    expect(measureSvgPath('M 0 0 A 5 5 0 0 1 10')).toBeUndefined();
+    expect(measureSvgPath('M 0 0 Z M 10 10 L 20 20')?.x1).toBe(20);
+
   });
 });

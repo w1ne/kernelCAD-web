@@ -188,6 +188,14 @@ describe('independent review regressions for drawing QA', () => {
     expect(qa.issues.map(i => i.code)).toContain('exported-sheet-invalid');
   });
 
+  it('flags a malformed close-path without stalling drawing verification', () => {
+    const qa = analyzeExportedDrawingSvg(fixture(
+      '<g id="dimensions"><path d="M 0 0 Z 10 10"/></g>'),
+      { requestedViews: ['front'] });
+    expect(qa.status).toBe('needs-review');
+    expect(qa.issues.map(i => i.code)).toContain('exported-sheet-invalid');
+  });
+
   it('does not claim dimensional completeness when no critical review was declared (P1)', () => {
     const qa = analyzeExportedDrawingSvg(fixture(''), { requestedViews: ['front'] });
     expect(qa.status).toBe('incomplete');

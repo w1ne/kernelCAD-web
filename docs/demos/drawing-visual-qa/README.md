@@ -13,6 +13,12 @@ retains the improvement, and **reads back the vector PDF**. The final result
 has no layout error and `pdf.status: passed`; engineering completeness and
 manufacturability are not certified.
 
+The consolidated release also feeds kernel `sheetPlacement` and `renderedText`
+preflight results into the authoritative `visualQa` verdict. The
+[machine-readable result](result.json) records one text placement warning
+before repair and zero after; the final review still has no declared critical
+dimension coverage and therefore stays `incomplete`.
+
 The real outputs are [A4 before](before.pdf) and [A3 after](after.pdf).
 They are independently rasterized by Poppler to [before.png](before.png) and
 [after.png](after.png). The [eight-second MP4](demo.mp4) shows those actual

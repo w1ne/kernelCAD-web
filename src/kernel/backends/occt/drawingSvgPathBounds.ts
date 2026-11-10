@@ -125,9 +125,6 @@ function visitOperation(cursor: PathCursor, op: string, matrix: Affine): boolean
  *  permissive unsupported-token skipping. Empty nonpainted paths are ignored. */
 export function measureSvgPath(d: string, matrix: Affine = IDENTITY): Bounds | undefined {
   if (!d.trim()) return undefined;
-  const remaining = d.replace(/[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g, '')
-    .replace(/[\s,]/g, '');
-  if (!/^[MmLlHhVvCcSsQqTtAaZz]+$/.test(remaining)) return undefined;
   try {
     const ops = pathDataToGeometry(d).ops;
     if (!ops.length) return undefined;

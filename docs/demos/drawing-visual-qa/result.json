@@ -16,6 +16,11 @@
         "source": "exported-svg",
         "checks": [
           {
+            "id": "vector-path-geometry",
+            "status": "passed",
+            "message": "0 visible paths with unmeasurable geometry."
+          },
+          {
             "id": "requested-views",
             "status": "passed",
             "message": "4 requested views present."
@@ -48,7 +53,12 @@
           {
             "id": "annotation-placement",
             "status": "passed",
-            "message": "0 crowded annotations."
+            "message": "0 crowded or overlapping annotations."
+          },
+          {
+            "id": "kernel-preflight",
+            "status": "failed",
+            "message": "0 geometry issues, 1 text issues."
           },
           {
             "id": "critical-dimensions",
@@ -110,7 +120,12 @@
           ]
         }
       },
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "code": "drawing.text.placement",
+          "severity": "warn"
+        }
+      ]
     },
     {
       "tag": "after",
@@ -124,6 +139,11 @@
         "status": "incomplete",
         "source": "exported-svg",
         "checks": [
+          {
+            "id": "vector-path-geometry",
+            "status": "passed",
+            "message": "0 visible paths with unmeasurable geometry."
+          },
           {
             "id": "requested-views",
             "status": "passed",
@@ -157,7 +177,12 @@
           {
             "id": "annotation-placement",
             "status": "passed",
-            "message": "0 crowded annotations."
+            "message": "0 crowded or overlapping annotations."
+          },
+          {
+            "id": "kernel-preflight",
+            "status": "passed",
+            "message": "0 geometry issues, 0 text issues."
           },
           {
             "id": "critical-dimensions",
