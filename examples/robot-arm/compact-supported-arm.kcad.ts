@@ -112,7 +112,8 @@ function sts3215Envelope(extras) {
   const hub = coat(rodZ(-0.2, 0.85, 7.1, 16), INK.servo);
   // Narrow stalk bridges the case to the pilot through the horn bore.
   const stalk = coat(rodZ(0.55, 2.05, 3.35, 12), INK.servo);
-  const pilot = coat(rodZ(1.55, 4.55, 3.85, 12), INK.servo);
+  // Pilot fills the output bore (r 5.05) to within 0.8 mm, still clear of it.
+  const pilot = coat(rodZ(1.55, 4.55, 4.25, 12), INK.servo);
   // Strain-relief boot on the cable face, then a short slack tail.
   const boot = coat(
     extrudeRoundedRect(9.4, 6.2, 1.8, 7.2, { axis: 'y' }).translate(0, -16.6, -24.6),
@@ -289,14 +290,26 @@ function pitchHorn() {
 function pitchPocket(hex) {
   // Ribs and ledges stay inside the ear silhouette (ears reach x = ±22.6
   // and z = ±12.3) so the tabs and spotfaces stay visible.
-  // Ribs stop before the horn disc (y 22.15). The clamp screws sweep
-  // through the old ear-ledge radius, so the pocket ends at the neck.
+  // Ribs stop before the horn disc (y 22.15). The ear seat stays outside
+  // the clamp-screw sweep (r 15.8) and ends 0.4 mm short of the servo ears.
   const neck = coat(rodY(16.2, 21.55, 11.4, 16), hex);
   const sideRib = (x0, x1) => coat(slab(x0, x1, 18.2, 21.7, -2.6, 2.6, hex), hex);
+  const seat = (sign: number) => {
+    const x0 = sign * 14.6;
+    const x1 = sign * 20.4;
+    const x2 = sign * 16.9;
+    const x3 = sign * 22.0;
+    return coat(fuse([
+      slab(Math.min(x0, x1), Math.max(x0, x1), 18.4, 24.85, -2.4, 2.4, hex),
+      slab(Math.min(x2, x3), Math.max(x2, x3), 24.6, 27.15, -3.0, 3.0, hex),
+    ]), hex);
+  };
   const positives = [
     neck,
     sideRib(11.2, 15.2),
     sideRib(-15.2, -11.2),
+    seat(1),
+    seat(-1),
   ];
   const cutters = [
     rodY(-22.4, -6.15, 3.5, 12),
