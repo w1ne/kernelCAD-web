@@ -77,42 +77,37 @@ function pushPt(pts, x, y) {
   pts.push([x, y]);
 }
 
-// Overlapping cylinders along the polyline. A smooth circular sweep was
-// measured at about 90 s to evaluate on this assembly, which blows the
-// live-physics test budget, so the dressed runs stay on analytic segments.
-// Each segment overlaps the next so the fuse is one solid. Callers spread
-// the array into fuse().
+// First-class pipe() along the polyline, with a bend radius large enough
+// to read as slack rather than a kinked truss. Returns a one-element
+// array so existing `...cable` / extras spreads stay valid.
 function cableRun(points, r) {
-  const segs = [];
-  for (let i = 0; i < points.length - 1; i++) {
-    const a = points[i];
-    const b = points[i + 1];
-    const dx = b[0] - a[0];
-    const dy = b[1] - a[1];
-    const dz = b[2] - a[2];
-    const len = Math.hypot(dx, dy, dz);
-    if (len < 0.4) continue;
-    const grow = Math.min(r * 0.65, len * 0.28);
-    segs.push(cylinder(len + grow * 2, r, 6).alongAxis([dx, dy, dz]).translate(
-      a[0] - (dx / len) * grow,
-      a[1] - (dy / len) * grow,
-      a[2] - (dz / len) * grow,
-    ));
-  }
-  return segs;
+  return [pipe(points, r, { bendRadius: Math.max(r * 2.2, r + 0.8) })];
 }
 
-// Two overlapping rounded extrudes. A ruled loft of the same sections
-// pushed livePhysicsPoses past 60 s. The step sits at mid-span; both
-// ends keep the tapered sizes. Axis-x extrude is centered on Y and Z.
+// Ruled loft of two low-segment rounded sections. Sketch X is the link's
+// lateral axis and sketch Y is vertical when the section sits on a YZ
+// plane. faceted: true keeps the sides polyhedral so livePhysicsPoses
+// stays under the 60 s file wall (#1316 / #1318).
+function sectionSketch(w, h, r) {
+  const pts = filletPolygon(
+    [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]],
+    Math.min(r, w * 0.42, h * 0.42),
+    { segments: 2 },
+  );
+  let builder = path().moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) builder = builder.lineTo(pts[i][0], pts[i][1]);
+  return builder.close();
+}
+
 function taperedLink(x0, x1, w0, h0, w1, h1, r) {
-  const mid = (x0 + x1) / 2;
-  const overlap = 3;
-  const r0 = Math.min(r, w0 * 0.42, h0 * 0.42);
-  const r1 = Math.min(r * 0.8, w1 * 0.42, h1 * 0.42);
-  const root = extrudeRoundedRect(w0, h0, r0, mid - x0 + overlap, { axis: 'x' }).translate(x0, 0, 0);
-  const tip = extrudeRoundedRect(w1, h1, r1, x1 - mid + overlap, { axis: 'x' }).translate(mid - overlap, 0, 0);
-  return root.union(tip);
+  return sectionSketch(w0, h0, r).loft(sectionSketch(w1, h1, r * 0.8), {
+    ruled: true,
+    faceted: true,
+    planes: [
+      { plane: 'YZ', origin: [x0, 0, 0] },
+      { plane: 'YZ', origin: [x1, 0, 0] },
+    ],
+  });
 }
 
 // Purchased-actuator envelope. Output face at z = 0, body toward -Z.
@@ -304,45 +299,51 @@ function splineRingY(y0, y1, rootR, tipR) {
     .translate(0, y1, 0);
 }
 
-// Y axis through the origin. The disc, clamp screws, and spline sit on the
-// outboard face of the +Y cheek. A cap bolt closes the other side.
+// Y axis through the origin. One horn disc, a long bar, a coarse spline,
+// and two slotted clamp screws sit on the outboard +Y cheek. A single cap
+// closes the far side of the same shaft — not a stack of washers.
 function pitchHorn() {
-  // Spindle reaches the cap bolt on the far cheek. The collar, horn bar,
-  // clamp screws, and spline sit outboard of the near cheek (cheek ends
-  // at y 21.8). Teeth stop short of the servo hub (hub begins at y 26.35).
-  // The bar runs in Z so its tips pass the cheek radius (16.2) and still
-  // miss the ear seats, which occupy |x| >= 14.6 and |z| <= 3.
+  // Spindle reaches the far cap. The disc, bar, clamp screws, and spline
+  // sit outboard of the near cheek (cheek ends at y 21.8). Teeth stop
+  // short of the servo hub (hub begins at y 26.35). The bar runs in Z so
+  // its tips pass the cheek radius (16.2) and still miss the ear seats,
+  // which occupy |x| >= 14.6 and |z| <= 3.
   const spindle = rodY(-26.8, 22.2, 2.9, 10);
-  const collar = rodY(21.95, 23.15, 13.4, 10);
-  const hub = rodY(22.7, 24.55, 7.2, 10);
-  // Flat arm past the cheek (r 16.2) and the cap washer (r 18.6).
+  // One disc (replaces the stacked collar + hub). Radius stays inside
+  // the ear-seat band so the sweep stays clear.
+  const disc = rodY(21.95, 24.85, 13.4, 12);
   // The +Z tip reaches 34 so it clears the disc in the front and side
   // cameras. The -Z tip stops at -28: at shoulder pitch 12° a longer
-  // downward tip clips the turret. Y stays outboard of the cheek end (21.8) and
-  // short of the servo hub (26.35). Thin in X so the sweep misses the
-  // ear seats (|x| >= 14.6, |z| <= 3). Clamp screws stay at |z| = 12.2;
-  // moving them out would sweep through those seats.
+  // downward tip clips the turret. Thin in X so the sweep misses the
+  // ear seats. Clamp screws stay at |z| = 12.2.
   const bar = slab(-3.2, 3.2, 22.15, 24.85, -28, 34, undefined);
-  const teeth = splineRingY(24.15, 25.95, 6.3, 13.2);
+  const teeth = splineRingY(24.15, 25.95, 5.8, 13.6);
   const bore = rodY(22.3, 26.4, 5.05, 10);
-  const capBolt = rodY(-27.7, -25.4, 5.4, 8);
-  const capWasher = rodY(-27.15, -25.55, 8.6, 8);
-  const capSlot = box(0.6, 2.4, 3.4).translate(-0.3, -27.85, -1.7);
+  const cap = rodY(-27.7, -25.45, 8.8, 10);
+  const capSlot = box(0.7, 2.6, 4.2).translate(-0.35, -27.85, -2.1);
   const screws = [-1, 1].map((sz) => {
     const z = sz * 12.2;
     return {
       hole: rodY(22.1, 24.7, 1.45, 6).translate(0, 0, z),
-      head: rodY(24.55, 26.55, 2.45, 8).translate(0, 0, z),
-      slot: box(0.45, 2.15, 2.8).translate(-0.225, 24.55, z - 1.4),
+      head: rodY(24.55, 26.55, 3.2, 8).translate(0, 0, z),
+      slot: box(0.55, 2.4, 3.6).translate(-0.275, 24.55, z - 1.8),
     };
   });
   return fuse([
-    spindle, collar, hub, bar, teeth, capBolt, capWasher,
+    spindle, disc, bar, teeth, cap,
     ...screws.map((screw) => screw.head),
   ]).subtract(fuse([
     bore, capSlot,
     ...screws.flatMap((screw) => [screw.hole, screw.slot]),
   ]));
+}
+
+// Far-side closer for a pitch pivot: one bushing into the cheek plus a
+// single cap head. Replaces the stacked cap + washer discs.
+function farPivotCap(hex) {
+  const bushing = coat(rodY(-23.35, -21.25, 6.8, 10), hex);
+  const head = coat(rodY(-25.15, -22.95, 13.4, 12), hex);
+  return fuse([bushing, head]);
 }
 
 // Open yoke in the joint frame. Output face at y = SERVO_FACE_Y, body
@@ -466,8 +467,7 @@ const yawTurret = arm.part('yaw-turret', (() => {
     rodY(y0, y0 + len, 16.2, 12).translate(0, 0, SHOULDER_Z),
     hex,
   );
-  const cap = coat(rodY(-25.05, -21.45, 11.2, 10).translate(0, 0, SHOULDER_Z), hex);
-  const capWasher = coat(rodY(-24.9, -23.05, 18.6, 12).translate(0, 0, SHOULDER_Z), hex);
+  const cap = farPivotCap(hex).translate(0, 0, SHOULDER_Z);
   const pocket = pitchPocket(hex);
   // Gussets sit outside the upper-link beam (|y| <= 13 at every pitch)
   // and tie the column top to the shoulder cheeks.
@@ -489,7 +489,7 @@ const yawTurret = arm.part('yaw-turret', (() => {
   const positives = [
     flange, skirt, column,
     cheek(-21.8, 15.2), cheek(CHEEK_GAP, 15.2),
-    cap, capWasher,
+    cap,
     gusset(14.6, 21.2), gusset(-21.2, -14.6),
     ...bolts.map((bolt) => bolt.head),
     ...at(pocket.positives, 0, 0, SHOULDER_Z),
@@ -540,8 +540,7 @@ const upperLink = arm.part('upper-link', (() => {
     hex,
   );
   const cheek = (y0, len) => coat(rodY(y0, y0 + len, 16.2, 12).translate(UPPER, 0, 0), hex);
-  const cap = coat(rodY(-25.05, -21.45, 11.2, 10).translate(UPPER, 0, 0), hex);
-  const capWasher = coat(rodY(-24.9, -23.05, 18.6, 12).translate(UPPER, 0, 0), hex);
+  const cap = farPivotCap(hex).translate(UPPER, 0, 0);
   const pocket = pitchPocket(hex);
   // Proud round bead in the top trough, with a lift at each pitch joint.
   // Bead on the servo side of the trough, with a lift at each pitch joint
@@ -553,8 +552,7 @@ const upperLink = arm.part('upper-link', (() => {
   // Anchored in the flare, with the slack belly at mid-span under the beam
   // so it stays clear of both pitch cheeks.
   // Dressed along the beam. The slack loop lives on the pitch servo.
-  // Keep this run even if the cylinder chain looks faceted — that is
-  // issue #1312 / PR #1314 (pipe()), not a reason to drop the cable.
+  // Dressed along the beam with pipe(). Slack loops live on the pitch servo.
   const cable = cableRun([
     [40, 1, -2],
     [58, 3, -5],
@@ -565,7 +563,7 @@ const upperLink = arm.part('upper-link', (() => {
     tongue, neck, flare, beam,
     bridge(-14, -CHEEK_GAP), bridge(CHEEK_GAP, 14),
     cheek(-21.8, 15.2), cheek(CHEEK_GAP, 15.2),
-    cap, capWasher,
+    cap,
     ...cable,
     ...at(pocket.positives, UPPER, 0, 0),
   ];
@@ -602,7 +600,7 @@ const forearmLink = arm.part('forearm-link', (() => {
   );
   // Inside the previous 20×15 beam. Local [80, 0, 0] stays on the solid axis.
   const beam = coat(taperedLink(22, 98, 16, 12.5, 10, 7.5, 6), hex);
-  // Keep this dressed run; a kinked cylinder-chain look is #1312 / #1314.
+  // Dressed along the beam with pipe(). Slack loops live on the pitch servo.
   const cable = cableRun([
     [32, 1, -2],
     [50, 3, -5],
@@ -823,10 +821,12 @@ const rightFinger = arm.part('right-finger', paint(fuse([
 function fingerPad(side) {
   const inward = side < 0;
   const ySign = inward ? -1 : 1;
-  // Taller and thicker than the orange jaw, with the contact face proud
-  // of the jaw. The dovetail neck and bulb are unchanged.
+  // Clearly larger than the orange jaw (18×8.2×16 vs the 8.6×8.4 finger
+  // beam). Extra thickness grows outward so the contact face stays at
+  // |y| ≈ 4 and the closed-grip gap does not collapse. The dovetail neck
+  // and bulb are unchanged.
   const body = coat(
-    extrudeRoundedRect(14, 6.4, 1.6, 12.2).translate(19, ySign * 7.2, -6.4),
+    extrudeRoundedRect(18, 8.2, 1.8, 16).translate(20, ySign * 8.1, -8),
     INK.pad,
   );
   // Reach 0.4 mm into the pad body. The jaw slot still owns the inboard end.
@@ -836,12 +836,17 @@ function fingerPad(side) {
   const bulb = inward
     ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
     : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
-  const ribs = [14, 18, 22].map((x) => {
-    const near = ySign * 9.0;
-    const far = ySign * 10.2;
-    return slab(x, x + 3.4, Math.min(near, far), Math.max(near, far), -5.2, 4.8, INK.pad);
+  const ribs = [12, 15, 18, 21, 24].map((x) => {
+    const contact = ySign * 3.65;
+    const inner = ySign * 5.0;
+    return slab(x, x + 2.2, Math.min(contact, inner), Math.max(contact, inner), -6.6, 6.6, INK.pad);
   });
-  return paint(fuse([body, neck, bulb, ...ribs]), INK.pad);
+  const grooves = [-4.2, 0, 4.2].map((z) => {
+    const contact = ySign * 3.7;
+    const inner = ySign * 5.1;
+    return slab(12.2, 27.6, Math.min(contact, inner), Math.max(contact, inner), z - 0.55, z + 0.55, INK.pad);
+  });
+  return paint(fuse([body, neck, bulb, ...ribs, ...grooves]), INK.pad);
 }
 
 const leftFingerPad = arm.part('left-finger-pad', fingerPad(-1), { density: 1150 });
