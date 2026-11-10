@@ -96,6 +96,9 @@ describe('OcctBackend.loftFromSketches', () => {
       { plane: 'XY', origin: [0, 0, 30] },
     ];
     const lofted = OcctBackend.loftFromSketches([s1, s2], planes, { ruled: true });
-    expect(lofted.volume()).toBeGreaterThan(0);
+    // Polyhedral frustum volume: h/3 × (A1 + A2 + √(A1·A2)) = 280
+    const v = lofted.volume();
+    expect(v).toBeGreaterThan(260);
+    expect(v).toBeLessThan(300);
   });
 });
