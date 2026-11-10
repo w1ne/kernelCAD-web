@@ -14,16 +14,21 @@ keywords:
 when_to_use: evaluate_script reported feature.edge-feature.short-edges-skipped (every target edge is shorter than twice the radius) and you want a bounded fix instead of guessing a new radius.
 ---
 
-A fillet consumes up to one radius from each side of an edge, so its radius
-can never exceed half the shortest edge it touches. When it does, the kernel
-skips every edge and reports `feature.edge-feature.short-edges-skipped`.
+When every target edge is shorter than twice the requested radius, the
+kernel skips them and reports `feature.edge-feature.short-edges-skipped`.
+Half the shortest adjacent edge is a geometric ceiling, not a radius that
+has been built.
 
-Do not guess a smaller number. Run the repair loop:
+Do not guess a smaller number, and do not label that ceiling feasible. Run
+the repair loop:
 
 1. `why_did_this_fail({ file })` returns the `repairRegion` (the fillet line
    and the line that built its input) and ranked `candidates`. Each candidate
-   includes the geometry it came from, e.g.
-   `{ shortestAdjacentEdgeMm: 8, maxFeasibleValueMm: 4 }`.
+   includes the geometry it came from. `shortestAdjacentEdgeMm` is the
+   measured edge. `maxFeasibleValueMm` is present only when the same-edge
+   kernel probe built that value. On this block the shortest edge is 8 mm
+   (ceiling 4 mm) and the probe builds 3.93 mm:
+   `{ shortestAdjacentEdgeMm: 8, maxFeasibleValueMm: 3.93 }`.
 2. `repair_script({ file, diagnostic, strategy: 'dry-run' })` previews every
    candidate as a diff without applying anything.
 3. `repair_script({ file, diagnostic, strategy: 'apply-first' })` (or
@@ -32,16 +37,16 @@ Do not guess a smaller number. Run the repair loop:
 
 The block below is the repaired result of `examples/repair/oversized-fillet.kcad.ts`,
 which started as `block.fillet(16)` on an 8 mm-thick block. The accepted
-candidate is 0.4 × the shortest edge, 3.2 mm, which keeps a flat band on
-each side face instead of rounding the block into a pill. Load the
-`kernelcad-repair` skill for the full loop.
+candidate is 3.2 mm, under the 3.93 mm radius the kernel probe built on
+these edges, which keeps a flat band on each side face instead of rounding
+the block into a pill. Load the `kernelcad-repair` skill for the full loop.
 
 ```typescript
 const blockLength = 30;
 const blockWidth = 20;
 const blockThickness = 8;
 
-// Fillet ceiling = shortest adjacent edge / 2 = blockThickness / 2 = 4 mm.
+// Kernel probe on these edges builds 3.93 mm. 3.2 mm stays under that.
 const edgeRound = 3.2;
 
 const block = box(blockLength, blockWidth, blockThickness);

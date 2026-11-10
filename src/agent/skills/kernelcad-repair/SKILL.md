@@ -80,18 +80,19 @@ Every candidate carries a real patch plus the geometry it was derived from:
   "summary": "Reduce fillet radius from 9 mm to 4 mm.",
   "predictedEffect": "fillet applies to every target edge instead of being skipped; the blend reads 4 mm.",
   "patch": { "startLine": 2, "endLine": 2, "before": "return b.fillet(9);", "after": "return b.fillet(4);" },
-  "evidence": { "shortestAdjacentEdgeMm": 10, "maxFeasibleValueMm": 5, "currentValueMm": 9 }
+  "evidence": { "shortestAdjacentEdgeMm": 10, "maxFeasibleValueMm": 4.99, "currentValueMm": 9 }
 }
 ```
 
-Read `evidence` before applying. It is the number the kernel measured, so you
-can tell a fix that respects the design from one that merely silences a gate.
+Read `evidence` before applying. `maxFeasibleValueMm`, when present, is a
+radius the same-edge kernel probe built, so you can tell that limit from a
+geometric ceiling such as half the shortest edge.
 
 ## Diagnostic kinds with automatic candidates
 
 | diagnostic | derivation |
 |---|---|
-| `feature.edge-feature.short-edges-skipped` | radius ladder under half the shortest adjacent edge |
+| `feature.edge-feature.short-edges-skipped` | radius ladder under the value the same-edge kernel probe built (`maxFeasibleValueMm`); half the shortest edge is not that value |
 | `feature.subtractive-noop` (boolean) | translate the cutter onto the base bbox centre |
 | `feature.subtractive-noop` (hole) | clamp `u` / `v` onto the entry face, one bore radius clear of its edge |
 | `feature.hole.cut-missing` (single `hole`) | same clamp: `u` / `v` onto the entry face, one bore radius clear of its edge. `holes` batches get no candidate. |

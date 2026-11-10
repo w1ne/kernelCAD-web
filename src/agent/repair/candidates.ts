@@ -77,10 +77,10 @@ export function deriveCandidates(ctx: CandidateContext): RepairCandidate[] {
 // --- feature.edge-feature.short-edges-skipped --------------------------------
 
 /**
- * A fillet/chamfer whose value exceeds every adjacent edge cannot round
- * anything. The ceiling is half the shortest adjacent edge; offer a ladder
- * under it, largest first, so the repair keeps as much of the intended blend
- * as the geometry allows.
+ * A fillet/chamfer the kernel refused because every selected edge is shorter
+ * than twice the requested value. Offer a ladder of smaller literals, none
+ * of them above the largest value the same-edge kernel probe built. Half the
+ * shortest adjacent edge is recorded as geometry, never as a feasible radius.
  */
 function shrinkEdgeFeatureValue(ctx: CandidateContext): RepairCandidate[] {
   const { record, spans } = ctx;
@@ -98,11 +98,12 @@ function shrinkEdgeFeatureValue(ctx: CandidateContext): RepairCandidate[] {
   if (call === undefined || valueChars === undefined) return [];
   if (!isNumericLiteralText(spans.text.slice(valueChars.start, valueChars.end))) return [];
 
-  const ceiling = minEdge / 2;
+  const verified = probedFeasibleMm(ctx);
   const candidates: RepairCandidate[] = [];
   for (const fraction of [0.4, 0.25, 0.1]) {
     const value = round(minEdge * fraction, 3);
     if (value <= 0 || value >= current) continue;
+    if (verified !== undefined && value > verified) continue;
     const patch = patchFromCharEdit(spans, valueChars, formatNumber(value));
     if (patch === undefined) continue;
     candidates.push({
@@ -113,14 +114,34 @@ function shrinkEdgeFeatureValue(ctx: CandidateContext): RepairCandidate[] {
       summary: `Reduce ${record.kind} ${paramName} from ${formatNumber(current)} mm to ${formatNumber(value)} mm.`,
       predictedEffect: `${record.kind} applies to every target edge instead of being skipped; the blend reads ${formatNumber(value)} mm.`,
       patch,
-      evidence: {
-        shortestAdjacentEdgeMm: round(minEdge, 4),
-        maxFeasibleValueMm: round(ceiling, 4),
-        currentValueMm: round(current, 4),
-      },
+      evidence: edgeShrinkEvidence(minEdge, current, verified),
     });
   }
   return candidates;
+}
+
+/** Largest value the kernel probe built on the failing edges, or nothing
+ *  when this diagnostic was not probed. A geometric ceiling has no
+ *  `probeAttempts` and must not be labeled feasible. */
+function probedFeasibleMm(ctx: CandidateContext): number | undefined {
+  const details = ctx.diagnostic.details;
+  const max = details?.maxFeasibleValue;
+  const attempts = details?.probeAttempts;
+  if (typeof max !== 'number' || !(max > 0)) return undefined;
+  if (typeof attempts !== 'number' || !(attempts > 0)) return undefined;
+  return max;
+}
+
+function edgeShrinkEvidence(
+  minEdge: number,
+  current: number,
+  verified: number | undefined,
+): Record<string, number> {
+  return {
+    shortestAdjacentEdgeMm: round(minEdge, 4),
+    ...(verified === undefined ? {} : { maxFeasibleValueMm: verified }),
+    currentValueMm: round(current, 4),
+  };
 }
 
 // --- feature.subtractive-noop ------------------------------------------------
