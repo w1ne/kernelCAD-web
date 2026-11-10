@@ -6,9 +6,11 @@
 // verify({ swept-collision }) + verify({ physics }) on the same file
 // currently rebuild the model (~7 s) and drop WeakMap identity, so the
 // physics pass repeats work the sweep already paid for. The cache is
-// keyed on file identity (path + mtime + size), and is
-// skipped when the caller supplies a custom API factory, baseline
-// selections, or skipDfmGate.
+// keyed on file identity (path + device + inode + mtime + ctime + size)
+// and is skipped when the caller supplies a custom API factory, baseline
+// selections, extra requirements, or skipDfmGate. A same-size rewrite
+// that restores mtime still changes ctime, so the key misses and we
+// rebuild.
 
 import { statSync } from 'node:fs';
 
@@ -19,10 +21,11 @@ export function clearEvaluateCache(): void {
 }
 
 export function evaluateCacheKey(
-  input: { file?: string; code?: string; kernel?: string; scriptDir?: string; baseline?: unknown },
+  input: { file?: string; code?: string; kernel?: string; scriptDir?: string; baseline?: unknown; requirements?: unknown },
   opts?: { apiFactory?: unknown; skipDfmGate?: boolean },
 ): string | undefined {
   if (input.baseline !== undefined) return undefined;
+  if (input.requirements !== undefined) return undefined;
   if (opts?.apiFactory !== undefined) return undefined;
   if (opts?.skipDfmGate === true) return undefined;
   // Inline `code` is what unit tests pass. Caching it would share one
@@ -33,7 +36,7 @@ export function evaluateCacheKey(
   if (input.file !== undefined) {
     try {
       const stat = statSync(input.file);
-      return `file:${kernel}:${input.file}:${stat.mtimeMs}:${stat.size}`;
+      return `file:${kernel}:${input.file}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}`;
     } catch {
       return undefined;
     }
@@ -42,6 +45,9 @@ export function evaluateCacheKey(
 }
 
 export function getEvaluatedScript<T>(key: string): T | undefined {
+  // Same object on purpose: sequential verify passes must share Assembly
+  // and OCCT shape identity so WeakMap memos (relative-pose, hull points)
+  // hit. Callers must not mutate the cached result.
   return cache.get(key) as T | undefined;
 }
 
