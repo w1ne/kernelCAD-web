@@ -119,16 +119,7 @@ export interface AssemblyToMjcfOptions {
     readonly scene?: SceneBackend;
 }
 
-/** Rest-pose MJCF already built for an assembly. A later playback export
- *  of the same captured assembly (no explicit scene) returns this instead
- *  of lowering and remeshing every part again. */
-const mjcfExportMemo = new WeakMap<Assembly, MjcfExportResult>();
-
 export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions = {}): Promise<MjcfExportResult> {
-    if (opts.scene === undefined) {
-        const cached = mjcfExportMemo.get(arm);
-        if (cached !== undefined) return cached;
-    }
     const parts = arm.__parts();
     const mates = arm.__mates();
     const tendons = arm.__tendons();
@@ -197,9 +188,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         '',
     ].join('\n');
 
-    const exported: MjcfExportResult = { mjcf, jointOrder, bodyOrder, inertiaNotes };
-    if (opts.scene === undefined) mjcfExportMemo.set(arm, exported);
-    return exported;
+    return { mjcf, jointOrder, bodyOrder, inertiaNotes };
 }
 
 interface MateTree {
