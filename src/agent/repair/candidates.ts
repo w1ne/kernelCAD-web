@@ -83,41 +83,66 @@ export function deriveCandidates(ctx: CandidateContext): RepairCandidate[] {
  * shortest adjacent edge is recorded as geometry, never as a feasible radius.
  */
 function shrinkEdgeFeatureValue(ctx: CandidateContext): RepairCandidate[] {
+  const inputs = edgeShrinkInputs(ctx);
+  if (inputs === undefined) return [];
+  const candidates: RepairCandidate[] = [];
+  for (const fraction of [0.4, 0.25, 0.1]) {
+    const candidate = edgeShrinkCandidate(ctx, inputs, fraction);
+    if (candidate !== undefined) candidates.push(candidate);
+  }
+  return candidates;
+}
+
+interface EdgeShrinkInputs {
+  paramName: 'radius' | 'distance';
+  current: number;
+  minEdge: number;
+  valueChars: CharRange;
+  verified: number | undefined;
+}
+
+/** Shared gates for every ladder step: a fillet or chamfer, a numeric literal,
+ *  and a measured shortest adjacent edge. */
+function edgeShrinkInputs(ctx: CandidateContext): EdgeShrinkInputs | undefined {
   const { record, spans } = ctx;
-  if (record.kind !== 'fillet' && record.kind !== 'chamfer') return [];
+  if (record.kind !== 'fillet' && record.kind !== 'chamfer') return undefined;
   const paramName = record.kind === 'fillet' ? 'radius' : 'distance';
   const current = record.params[paramName]?.evaluated;
-  if (typeof current !== 'number') return [];
+  if (typeof current !== 'number') return undefined;
 
-  const baseShape = inputShape(ctx, 'base');
-  const minEdge = minEdgeLengthOf(baseShape);
-  if (minEdge === undefined) return [];
+  const minEdge = minEdgeLengthOf(inputShape(ctx, 'base'));
+  if (minEdge === undefined) return undefined;
 
   const call = callOf(ctx);
   const valueChars = call === undefined ? undefined : spans.argumentChars(call, 0);
-  if (call === undefined || valueChars === undefined) return [];
-  if (!isNumericLiteralText(spans.text.slice(valueChars.start, valueChars.end))) return [];
+  if (call === undefined || valueChars === undefined) return undefined;
+  if (!isNumericLiteralText(spans.text.slice(valueChars.start, valueChars.end))) return undefined;
 
-  const verified = probedFeasibleMm(ctx);
-  const candidates: RepairCandidate[] = [];
-  for (const fraction of [0.4, 0.25, 0.1]) {
-    const value = round(minEdge * fraction, 3);
-    if (value <= 0 || value >= current) continue;
-    if (verified !== undefined && value > verified) continue;
-    const patch = patchFromCharEdit(spans, valueChars, formatNumber(value));
-    if (patch === undefined) continue;
-    candidates.push({
-      id: `${record.id}:shrink-${paramName}:${value}`,
-      diagnosticId: ctx.diagnosticId,
-      code: ctx.diagnostic.code,
-      featureId: record.id,
-      summary: `Reduce ${record.kind} ${paramName} from ${formatNumber(current)} mm to ${formatNumber(value)} mm.`,
-      predictedEffect: `${record.kind} applies to every target edge instead of being skipped; the blend reads ${formatNumber(value)} mm.`,
-      patch,
-      evidence: edgeShrinkEvidence(minEdge, current, verified),
-    });
-  }
-  return candidates;
+  return { paramName, current, minEdge, valueChars, verified: probedFeasibleMm(ctx) };
+}
+
+function edgeShrinkCandidate(
+  ctx: CandidateContext,
+  inputs: EdgeShrinkInputs,
+  fraction: number,
+): RepairCandidate | undefined {
+  const { paramName, current, minEdge, valueChars, verified } = inputs;
+  const value = round(minEdge * fraction, 3);
+  if (value <= 0 || value >= current) return undefined;
+  if (verified !== undefined && value > verified) return undefined;
+  const patch = patchFromCharEdit(ctx.spans, valueChars, formatNumber(value));
+  if (patch === undefined) return undefined;
+  const { record } = ctx;
+  return {
+    id: `${record.id}:shrink-${paramName}:${value}`,
+    diagnosticId: ctx.diagnosticId,
+    code: ctx.diagnostic.code,
+    featureId: record.id,
+    summary: `Reduce ${record.kind} ${paramName} from ${formatNumber(current)} mm to ${formatNumber(value)} mm.`,
+    predictedEffect: `${record.kind} applies to every target edge instead of being skipped; the blend reads ${formatNumber(value)} mm.`,
+    patch,
+    evidence: edgeShrinkEvidence(minEdge, current, verified),
+  };
 }
 
 /** Largest value the kernel probe built on the failing edges, or nothing
