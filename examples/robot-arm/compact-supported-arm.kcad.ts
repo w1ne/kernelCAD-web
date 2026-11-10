@@ -419,14 +419,22 @@ const gripNeck = rodZ(9.55, 13.7, 6.4, 16).translate(GRIP_X, 0, 0);
 const gripCoupler = rodZ(13.15, 16.7, 8.8, 20).translate(GRIP_X, 0, 0);
 const gripPilotBore = rodZ(11.5, 15.25, 5.1, 16).translate(GRIP_X, 0, 0);
 const gripHubBore = rodZ(14.95, 16.95, 7.3, 16).translate(GRIP_X, 0, 0);
-const pinion19 = gearBlank(
-  externalGearPoints(19, 4.7, TIP19, 0.2),
-  GEAR_LO_Z0, GEAR_LO_Z1, INK.gear,
-).translate(GRIP_X, 0, 0);
-const pinion57 = gearBlank(
-  externalGearPoints(57, 5.4, TIP57, -0.08),
-  GEAR_HI_Z0, GEAR_HI_Z1, INK.gear,
-).translate(GRIP_X, 0, 0);
+// Tooth sectors use the 19T and 57T pitch. A root disk closes each
+// sector so the blank stays one solid without a full ring of teeth.
+const pinion19 = fuse([
+  gearBlank(
+    externalGearPoints(19, 4.7, TIP19, 0.2, -Math.PI / 2 - 1.15, -Math.PI / 2 + 1.15),
+    GEAR_LO_Z0, GEAR_LO_Z1, INK.gear,
+  ),
+  coat(rodZ(GEAR_LO_Z0, GEAR_LO_Z1, 5.15, 16), INK.gear),
+]).translate(GRIP_X, 0, 0);
+const pinion57 = fuse([
+  gearBlank(
+    externalGearPoints(57, 5.4, TIP57, -0.08, -Math.PI / 2 - 1.35, -Math.PI / 2 + 1.35),
+    GEAR_HI_Z0, GEAR_HI_Z1, INK.gear,
+  ),
+  coat(rodZ(GEAR_HI_Z0, GEAR_HI_Z1, 6.05, 16), INK.gear),
+]).translate(GRIP_X, 0, 0);
 
 const gripDriver = arm.part('grip-driver', paint(fuse([
   coat(gripJournal, INK.gear),
@@ -742,9 +750,5 @@ arm.mechanicalJoint('right-finger-drive', {
     minBearingLengthMm: 8,
   },
 });
-
-gripDriver.collision([gripJournal, gripNeck]);
-leftFinger.collision([leftFingerParts.hub, leftFingerParts.jaw, leftFingerParts.nose]);
-rightFinger.collision([rightFingerParts.hub, rightFingerParts.jaw, rightFingerParts.nose]);
 
 return arm.solvedModel({});
