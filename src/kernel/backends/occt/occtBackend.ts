@@ -62,6 +62,29 @@ type ReplicadShape3D = replicad.Shape3D;
  * blob exporters are async. Use `exportSTLAsync` / `exportSTEPAsync` from
  * code that can await.
  */
+/** Collision vertex clouds, keyed by replicad-shape identity and the mesh
+ *  tolerances. Weak so a disposed solid does not pin its tessellation. */
+const collisionVertexMemo = new WeakMap<object, Map<string, Float32Array>>();
+
+function cachedCollisionVertices(
+  shape: { mesh: (opts: { tolerance: number; angularTolerance: number }) => { vertices: ArrayLike<number> } },
+  tolerance: number,
+  angularTolerance: number,
+): Float32Array {
+  const key = `${tolerance}|${angularTolerance}`;
+  let byTolerance = collisionVertexMemo.get(shape);
+  if (byTolerance === undefined) {
+    byTolerance = new Map();
+    collisionVertexMemo.set(shape, byTolerance);
+  }
+  const cached = byTolerance.get(key);
+  if (cached !== undefined) return cached;
+  const meshed = shape.mesh({ tolerance, angularTolerance });
+  const vertices = new Float32Array(meshed.vertices);
+  byTolerance.set(key, vertices);
+  return vertices;
+}
+
 export class OcctBackend implements ShapeBackend {
   readonly target: BackendTarget = 'export-occt';
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
@@ -1219,10 +1242,11 @@ export class OcctBackend implements ShapeBackend {
    * tolerance, for collision proxies. MuJoCo convexifies every mesh geom, so
    * a physics body needs only a vertex cloud whose hull matches the part;
    * an export-grade tessellation costs far more memory for the same hull.
+   * The cloud is memoized on the underlying replicad shape so a later MJCF
+   * export of the same rest-pose solid does not remesh it.
    */
   collisionVertices(tolerance = 0.5, angularTolerance = 0.6): Float32Array {
-    const meshed = this.shape.mesh({ tolerance, angularTolerance });
-    return new Float32Array(meshed.vertices);
+    return cachedCollisionVertices(this.shape, tolerance, angularTolerance);
   }
 
   getMesh(): RuntimeMesh {
