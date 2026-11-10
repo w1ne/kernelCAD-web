@@ -1,0 +1,14 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "pid": 13735,
+  "processEnded": true,
+  "exitCode": 0,
+  "status": "passed",
+  "durationSeconds": 464.35,
+  "completedAt": "2026-11-10T00:11:13Z",
+  "testFilesPassed": 4,
+  "testsPassed": 15,
+  "processCheckAt": "2026-11-10T00:11:51Z",
+  "processAlive": false,
+  "process": ""
+}

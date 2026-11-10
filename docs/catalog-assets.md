@@ -56,6 +56,18 @@ records source-driven variants, preview/index hashes, local checks and an
 inspected MP4. This is local branch evidence; the change is not deployed and
 does not establish product fit or physical acceptance.
 
+The Nov 9 industrial-plant follow-up refines three existing machine assets:
+the generator now has a louver-count choice and visible radiator/service
+details; the conveyor has separate rubber belt and roller materials, connected
+support legs, a drive motor and a support-station choice; and the transformer
+has adjustable fin banks with ribbed porcelain bushings and copper terminals.
+The kit remains **60/60 passing** and the global gate remains
+**2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. The
+[machine-detail handoff](../artifacts/catalog-demos/industrial-plant-machine-quality-20261109/README.md)
+contains before/after previews, source-driven variants, local checks and the
+inspected MP4. The branch is not deployed; this visual work does not verify
+equipment ratings, safety, process performance or physical acceptance.
+
 The Nov 6 construction-equipment visual follow-up refined three existing
 assets whose previews still read as stacked primitives. The towable tower now
 has a wheeled generator trailer, four screw jacks, a telescoping mast and a

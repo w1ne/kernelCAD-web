@@ -4,6 +4,18 @@ Sixty original low-poly factory scene assets for process equipment, power and co
 
 The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industrial-plant-wave-20261102/README.md) retains the original kit capture and verification. The [2026-11-05 quality promotion bundle](../../../artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/README.md) records the in-place material, preset, geometry, preview, and local validation work. Both bundles distinguish local source and preview checks from deployment and physical equipment acceptance.
 
+The Nov 9 machine-detail follow-up refines the existing diesel generator,
+belt conveyor, and distribution transformer after preview review. Their
+material controls distinguish enclosure paint, radiator metal, rubber
+isolators, belt rubber, porcelain insulation and copper terminals. The
+generator has a visible louvered radiator and service controls; the conveyor's
+support legs meet the deck and its belt rollers and drive motor are modelled;
+the transformer has two fin banks and ribbed primary and secondary bushings.
+Louver count, support-station count and radiator-fin count change geometry.
+The [machine-quality handoff](../../../artifacts/catalog-demos/industrial-plant-machine-quality-20261109/README.md)
+records source-driven variants, refreshed previews, local checks and an
+inspected MP4. No asset IDs or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -22,7 +34,7 @@ The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industr
 | `air-compressor` | Industrial air compressor | Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. | scale · steel · safety paint · gauge glass |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
 | `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |
-| `diesel-generator-set` | Diesel generator set | Packaged diesel generator with a sound enclosure, radiator grille, exhaust stack and skid base. | scale · steel · safety paint |
+| `diesel-generator-set` | Diesel generator set | Packaged generator with a louvered radiator, isolated skid mounts, service door, controls and exhaust stack. | scale · louver count · enclosure paint · steel · radiator core · rubber |
 | `industrial-boiler` | Industrial boiler | Packaged firetube steam boiler at about real size: banded shell on saddles and skid, dished doors, burner and blower housing with gas train and control panel, rear stack, stop and safety valves, water column with gauge glass. | scale · shell · trim · piping · gauge glass |
 | `burner-management-skid` | Burner management skid | Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. | scale · steel · safety paint |
 | `steam-header-manifold` | Steam header manifold | Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. | scale · steel · safety paint · gauge glass |
@@ -32,13 +44,13 @@ The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industr
 | `baghouse-dust-collector` | Baghouse dust collector | Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. | scale · steel · safety paint |
 | `cartridge-filter-housing` | Cartridge filter housing | Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. | scale · steel · safety paint |
 | `cyclone-separator` | Cyclone separator | Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. | scale · steel · safety paint |
-| `industrial-transformer` | Industrial distribution transformer | Compact distribution transformer with radiator panels, lifting lugs, bushings and wheel skids. | scale · steel · safety paint |
+| `industrial-transformer` | Industrial distribution transformer | Oil-filled transformer with two fin banks, ribbed porcelain bushings, copper terminals, lifting lugs and wheel skids. | scale · radiator fin count · tank paint · steel · porcelain · copper |
 | `electrical-control-cabinet` | Electrical control cabinet | Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. | scale · steel · safety paint · gauge glass |
 | `motor-control-center` | Motor control center | Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. | scale · steel · safety paint |
 | `plc-control-rack` | PLC control rack | Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. | scale · steel · safety paint |
 | `variable-frequency-drive-cabinet` | Variable frequency drive cabinet | Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. | scale · steel · safety paint · gauge glass |
 | `cable-tray-bridge` | Cable tray bridge | Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. | scale · steel · safety paint |
-| `belt-conveyor` | Belt conveyor | Straight belt conveyor with a raised deck, roller ends, side guides and adjustable support legs. | scale · steel · safety paint |
+| `belt-conveyor` | Belt conveyor | Straight conveyor with a rubber belt, transverse carrying and return rollers, guarded frame, adjustable support stations and drive motor. | scale · support stations · frame steel · belt rubber · roller steel · safety paint |
 | `roller-conveyor-line` | Roller conveyor line | Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. | scale · steel · safety paint |
 | `screw-conveyor` | Screw conveyor | Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. | scale · steel · safety paint |
 | `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. | scale · steel · safety paint |

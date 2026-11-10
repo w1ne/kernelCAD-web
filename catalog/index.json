@@ -140178,7 +140178,7 @@
       "id": "belt-conveyor",
       "kit": "industrial-plant",
       "title": "Belt conveyor",
-      "description": "Straight belt conveyor with a raised deck, roller ends, side guides and adjustable support legs. Controls: overall scale, steel, safety paint.",
+      "description": "Straight conveyor with a rubber belt, transverse rollers, guarded frame, adjustable support stations and drive motor. Controls: scale, support stations, frame steel, belt rubber, roller steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -140197,8 +140197,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/belt-conveyor.kcad.ts",
       "preview": "/assets/industrial-plant-belt-conveyor.png",
-      "sourceSha256": "3feecbc1964a1bc3c17c91a68a9c81fcf5cd425c2b0c05a2a33fd904a0d83b78",
-      "triangleBudget": 1400,
+      "sourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -140210,10 +140210,33 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "supportStations",
+          "type": "choice",
+          "default": "3",
+          "label": "Support stations",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "frameSteel",
           "type": "color",
           "default": "#687b83",
           "label": "Structural steel"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "rollerSteel",
+          "type": "color",
+          "default": "#a7b0b2",
+          "label": "Roller steel"
         },
         {
           "name": "safetyPaint",
@@ -140224,56 +140247,102 @@
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
+          "frameSteel": "#575851",
+          "beltRubber": "#292927",
+          "rollerSteel": "#89877f",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
+          "frameSteel": "#485c65",
+          "beltRubber": "#252a2c",
+          "rollerSteel": "#c0c7c8",
           "safetyPaint": "#f5c640"
+        },
+        "cleanPlant": {
+          "frameSteel": "#536d75",
+          "beltRubber": "#23292b",
+          "rollerSteel": "#adb8ba",
+          "safetyPaint": "#d46538"
         }
       },
       "stats": {
-        "triangles": 292,
+        "triangles": 992,
         "sizeM": [
-          1.1202,
+          1.084,
           0.462,
-          0.3336
+          0.33
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "frameSteel",
+          "color": "#687b83",
+          "parts": [
+            "side-stringer--1",
+            "side-stringer-1",
+            "conveyor-deck",
+            "support-leg-1--1",
+            "support-foot-1--1",
+            "support-leg-1-1",
+            "support-foot-1-1",
+            "support-cross-tie-1",
+            "support-leg-2--1",
+            "support-foot-2--1",
+            "support-leg-2-1",
+            "support-foot-2-1",
+            "support-cross-tie-2",
+            "support-leg-3--1",
+            "support-foot-3--1",
+            "support-leg-3-1",
+            "support-foot-3-1",
+            "support-cross-tie-3",
+            "drive-motor"
+          ],
+          "param": "frameSteel"
+        },
+        {
           "name": "safetyPaint",
           "color": "#e2a744",
           "parts": [
-            "side-frame--1",
-            "foot--1-0",
-            "foot--1-1",
-            "foot--1-2",
-            "side-frame-1",
-            "foot-1-0",
-            "foot-1-1",
-            "foot-1-2",
-            "roller-0",
-            "roller-1",
-            "belt-surface"
+            "belt-guide--1",
+            "belt-guide-1",
+            "tail-end-stop",
+            "drive-gearbox"
           ],
           "param": "safetyPaint"
         },
         {
-          "name": "steel",
-          "color": "#687b83",
+          "name": "beltRubber",
+          "color": "#292f32",
           "parts": [
-            "support--1-0",
-            "support--1-1",
-            "support--1-2",
-            "support-1-0",
-            "support-1-1",
-            "support-1-2",
-            "conveyor-deck",
-            "end-stop"
+            "belt-surface",
+            "return-belt"
           ],
-          "param": "steel"
+          "param": "beltRubber"
+        },
+        {
+          "name": "rollerSteel",
+          "color": "#a7b0b2",
+          "parts": [
+            "head-drum",
+            "tail-drum",
+            "carrying-idler-1",
+            "carrying-idler-2",
+            "carrying-idler-3",
+            "carrying-idler-4",
+            "carrying-idler-5",
+            "carrying-idler-6",
+            "carrying-idler-7",
+            "return-idler-1",
+            "return-idler-2",
+            "return-idler-3",
+            "return-idler-4",
+            "return-idler-5",
+            "motor-fan-cover"
+          ],
+          "param": "rollerSteel"
         }
       ]
     },
@@ -141681,7 +141750,7 @@
       "id": "diesel-generator-set",
       "kit": "industrial-plant",
       "title": "Diesel generator set",
-      "description": "Packaged diesel generator with a sound enclosure, radiator grille, exhaust stack and skid base. Controls: overall scale, steel, safety paint.",
+      "description": "Packaged generator with radiator louvers, isolated skid mounts, service access and exhaust. Controls: scale, louver count, enclosure paint, structural steel, radiator core, rubber mounts.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141700,8 +141769,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/diesel-generator-set.kcad.ts",
       "preview": "/assets/industrial-plant-diesel-generator-set.png",
-      "sourceSha256": "1653b51fa773c370efcb0320747a870f82055dd8420d5da281664c2e7cf9230a",
-      "triangleBudget": 1400,
+      "sourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "scale",
@@ -141713,63 +141782,130 @@
           "step": 0.05
         },
         {
+          "name": "louverCount",
+          "type": "choice",
+          "default": "8",
+          "label": "Radiator louvers",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
+        },
+        {
+          "name": "enclosurePaint",
+          "type": "color",
+          "default": "#587a78",
+          "label": "Enclosure paint"
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#647880",
+          "default": "#879398",
           "label": "Structural steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "radiatorCore",
           "type": "color",
-          "default": "#e0a23e",
-          "label": "Safety paint"
+          "default": "#303a3e",
+          "label": "Radiator core"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber mounts"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "enclosurePaint": "#655b4e",
+          "steel": "#8a8377",
+          "radiatorCore": "#393a38",
+          "rubber": "#252525"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "enclosurePaint": "#d96f3d",
+          "steel": "#c2c7c7",
+          "radiatorCore": "#303a3e",
+          "rubber": "#202426"
+        },
+        "cleanPlant": {
+          "enclosurePaint": "#416e68",
+          "steel": "#b5bec0",
+          "radiatorCore": "#263338",
+          "rubber": "#24292b"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 564,
         "sizeM": [
           0.88,
-          0.5856,
-          0.5074
+          0.619,
+          0.434
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e0a23e",
+          "name": "steel",
+          "color": "#879398",
           "parts": [
             "base-skid",
-            "radiator-grille",
-            "exhaust",
-            "service-door"
-          ],
-          "param": "safetyPaint"
-        },
-        {
-          "name": "steel",
-          "color": "#647880",
-          "parts": [
-            "generator-enclosure",
-            "grille-bar-0",
-            "grille-bar-1",
-            "grille-bar-2",
-            "grille-bar-3",
-            "grille-bar-4",
-            "exhaust-cap",
-            "control-panel"
+            "radiator-frame-left",
+            "radiator-frame-right",
+            "radiator-frame-top",
+            "radiator-frame-bottom",
+            "radiator-louver-1",
+            "radiator-louver-2",
+            "radiator-louver-3",
+            "radiator-louver-4",
+            "radiator-louver-5",
+            "radiator-louver-6",
+            "radiator-louver-7",
+            "radiator-louver-8",
+            "service-door-hinge-upper",
+            "service-door-hinge-lower",
+            "door-latch",
+            "control-panel",
+            "exhaust-stack",
+            "exhaust-muffler"
           ],
           "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
+            "vibration-mount--305--137",
+            "vibration-mount--305-137",
+            "vibration-mount-305--137",
+            "vibration-mount-305-137"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "enclosurePaint",
+          "color": "#587a78",
+          "parts": [
+            "generator-enclosure",
+            "service-door",
+            "control-button-1",
+            "control-button-2",
+            "control-button-3"
+          ],
+          "param": "enclosurePaint"
+        },
+        {
+          "name": "radiatorCore",
+          "color": "#303a3e",
+          "parts": [
+            "radiator-core",
+            "control-panel-display",
+            "exhaust-rain-cap"
+          ],
+          "param": "radiatorCore"
         }
       ]
     },
@@ -143532,7 +143668,7 @@
       "id": "industrial-transformer",
       "kit": "industrial-plant",
       "title": "Industrial distribution transformer",
-      "description": "Compact distribution transformer with radiator panels, lifting lugs, bushings and wheel skids. Controls: overall scale, steel, safety paint.",
+      "description": "Oil-filled transformer with adjustable radiator fin count, cooling banks, ribbed bushings, copper terminals and wheel skids. Controls: scale, radiator fins, tank paint, steel, porcelain, copper.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143551,8 +143687,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-transformer.kcad.ts",
       "preview": "/assets/industrial-plant-industrial-transformer.png",
-      "sourceSha256": "25721b2957f1d84b65773c5b000535dabf1ca446f45d4102596b75977d664e82",
-      "triangleBudget": 1400,
+      "sourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -143564,33 +143700,67 @@
           "step": 0.05
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#758080",
-          "label": "Structural steel"
+          "name": "radiatorFins",
+          "type": "choice",
+          "default": "8",
+          "label": "Radiator fins per bank",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
         },
         {
-          "name": "safetyPaint",
+          "name": "tankPaint",
           "type": "color",
-          "default": "#e0a744",
-          "label": "Safety paint"
+          "default": "#687c72",
+          "label": "Tank paint"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Frame and radiator steel"
+        },
+        {
+          "name": "porcelain",
+          "type": "color",
+          "default": "#d5c6a3",
+          "label": "Porcelain insulation"
+        },
+        {
+          "name": "copper",
+          "type": "color",
+          "default": "#a66b42",
+          "label": "Copper terminals"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "tankPaint": "#615b4d",
+          "steel": "#89857c",
+          "porcelain": "#b7a98d",
+          "copper": "#80583f"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "tankPaint": "#d7733e",
+          "steel": "#c0c6c7",
+          "porcelain": "#eee2c3",
+          "copper": "#b87342"
+        },
+        "utilityGreen": {
+          "tankPaint": "#4b7060",
+          "steel": "#8d999a",
+          "porcelain": "#ddd1b2",
+          "copper": "#a56c43"
         }
       },
       "stats": {
-        "triangles": 484,
+        "triangles": 2528,
         "sizeM": [
-          0.6048,
-          0.6278,
-          0.4536
+          0.604,
+          0.641,
+          0.47
         ],
         "minUpM": 0,
         "materials": 1
@@ -143598,36 +143768,111 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#758080",
+          "color": "#68747a",
           "parts": [
-            "tank",
-            "terminal-0",
-            "terminal-1",
-            "terminal-2",
-            "wheel--1",
-            "wheel-1"
+            "wheel-skid",
+            "tank-top-seam",
+            "radiator-bank--1-fin-1",
+            "radiator-bank--1-fin-2",
+            "radiator-bank--1-fin-3",
+            "radiator-bank--1-fin-4",
+            "radiator-bank--1-fin-5",
+            "radiator-bank--1-fin-6",
+            "radiator-bank--1-fin-7",
+            "radiator-bank--1-fin-8",
+            "radiator-header--1",
+            "radiator-footer--1",
+            "radiator-bank-1-fin-1",
+            "radiator-bank-1-fin-2",
+            "radiator-bank-1-fin-3",
+            "radiator-bank-1-fin-4",
+            "radiator-bank-1-fin-5",
+            "radiator-bank-1-fin-6",
+            "radiator-bank-1-fin-7",
+            "radiator-bank-1-fin-8",
+            "radiator-header-1",
+            "radiator-footer-1",
+            "tank-foot--168--126",
+            "tank-foot--168-126",
+            "tank-foot-168--126",
+            "tank-foot-168-126",
+            "skid-wheel--190",
+            "skid-wheel-190",
+            "hv-terminal-bolt-1",
+            "hv-terminal-bolt-2",
+            "hv-terminal-bolt-3",
+            "lifting-ear--218",
+            "lifting-ear-218",
+            "oil-sight-guard-upper",
+            "oil-sight-guard-lower"
           ],
           "param": "steel"
         },
         {
-          "name": "safetyPaint",
-          "color": "#e0a744",
+          "name": "tankPaint",
+          "color": "#687c72",
           "parts": [
-            "base-skid",
-            "radiator-fin-0",
-            "radiator-fin-1",
-            "radiator-fin-2",
-            "radiator-fin-3",
-            "radiator-fin-4",
-            "radiator-fin-5",
-            "radiator-fin-6",
-            "bushing-0",
-            "bushing-1",
-            "bushing-2",
-            "lifting-lug-left",
-            "lifting-lug-right"
+            "transformer-tank"
           ],
-          "param": "safetyPaint"
+          "param": "tankPaint"
+        },
+        {
+          "name": "copper",
+          "color": "#a66b42",
+          "parts": [
+            "skid-wheel-hub--190",
+            "skid-wheel-hub-190",
+            "hv-terminal-1",
+            "hv-terminal-2",
+            "hv-terminal-3",
+            "lv-terminal-1",
+            "lv-terminal-2",
+            "lv-terminal-3",
+            "lv-terminal-4"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "porcelain",
+          "color": "#d5c6a3",
+          "parts": [
+            "hv-bushing-stem-1",
+            "hv-bushing-1-shed-1",
+            "hv-bushing-1-shed-2",
+            "hv-bushing-1-shed-3",
+            "hv-bushing-1-shed-4",
+            "hv-bushing-1-shed-5",
+            "hv-bushing-stem-2",
+            "hv-bushing-2-shed-1",
+            "hv-bushing-2-shed-2",
+            "hv-bushing-2-shed-3",
+            "hv-bushing-2-shed-4",
+            "hv-bushing-2-shed-5",
+            "hv-bushing-stem-3",
+            "hv-bushing-3-shed-1",
+            "hv-bushing-3-shed-2",
+            "hv-bushing-3-shed-3",
+            "hv-bushing-3-shed-4",
+            "hv-bushing-3-shed-5",
+            "lv-bushing-stem-1",
+            "lv-bushing-1-shed-1",
+            "lv-bushing-1-shed-2",
+            "lv-bushing-1-shed-3",
+            "lv-bushing-stem-2",
+            "lv-bushing-2-shed-1",
+            "lv-bushing-2-shed-2",
+            "lv-bushing-2-shed-3",
+            "lv-bushing-stem-3",
+            "lv-bushing-3-shed-1",
+            "lv-bushing-3-shed-2",
+            "lv-bushing-3-shed-3",
+            "lv-bushing-stem-4",
+            "lv-bushing-4-shed-1",
+            "lv-bushing-4-shed-2",
+            "lv-bushing-4-shed-3",
+            "oil-level-sight"
+          ],
+          "param": "porcelain"
         }
       ]
     },
