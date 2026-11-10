@@ -104,11 +104,17 @@ function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
   for (const d of input.failures) {
-    if (d.code !== 'mechanism.unverified-budget-exceeded') continue;
-    const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
-    out.push(m
-      ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
-      : 'collision sweep across the joint travel skipped: over the work budget');
+    if (d.code === 'mechanism.unverified-budget-exceeded') {
+      const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
+      out.push(m
+        ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
+        : 'collision sweep across the joint travel skipped: over the work budget');
+    } else if (d.code === 'mechanism.physics-budget-exceeded') {
+      const m = /estimated mesh work (\d+) triangles exceeds the budget (\d+)/.exec(d.message);
+      out.push(m
+        ? `physics gravity check skipped: mesh work ${m[1]} is over the budget ${m[2]}`
+        : 'physics gravity check skipped: over the work budget or mesh work could not be measured');
+    }
   }
   if (out.length === 0 && input.coverage !== undefined && !input.coverage.sweep) {
     out.push('collision sweep across the joint travel did not run');

@@ -193,7 +193,7 @@ export interface MechanismCoverage {
   readonly fastened: number;
   /** False when the BREP pose sweep (collision / dof / tendon) was skipped. */
   readonly sweep: boolean;
-  /** True when gravity hold + drop-on-release (MuJoCo) ran. */
+  /** True when gravity criteria completed or were vacuous (zero DOF); false when skipped. */
   readonly physics: boolean;
   /** Animated joints whose animation keys were checked against their limits. */
   readonly limitsChecked: number;
@@ -231,6 +231,9 @@ interface MechanismTruthCommonOptions {
    * (pass `Infinity` to always sweep). Defaults to `BREP_SWEEP_BUDGET`.
    */
   readonly sweepBudget?: number;
+  /** Maximum rest-scene triangles for physics preparation. Zero forces a
+   *  typed physics skip; defaults to the internal physics mesh budget. */
+  readonly physicsBudget?: number;
 }
 
 /** Physics is host-injected so this module stays usable in browser workers. */
@@ -329,6 +332,35 @@ function coverageWithIgnoredPairs(
   return ignoredPairs.length > 0 ? { ...coverage, ignoredPairs } : coverage;
 }
 
+async function emptySolveResult(
+  arm: Assembly,
+  failures: CompilerDiagnostic[],
+  joints: number,
+  scope: { fastened: number; limitsChecked: number; matesChecked: boolean; skipped: readonly string[] },
+  opts: MechanismTruthOptions,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): Promise<MechanismTruthResult> {
+  if (opts.physicsCheck === true) {
+    const physics = await runPhysicsCriteria(arm, [], undefined, opts.physicsSessionFactory, opts.physicsBudget);
+    failures.push(...physics.failures);
+  }
+  const coverage = coverageWithIgnoredPairs({ poses: 0, joints, ...scope, sweep: false, physics: false }, ignoredPairs);
+  const mechanism = failures.some((failure) => failure.severity === 'error')
+    ? 'broken'
+    : opts.physicsCheck === true ? 'unverified' : 'real';
+  return { mechanism, failures, coverage };
+}
+
+function mechanismVerdict(
+  failures: CompilerDiagnostic[],
+  sweepSkipped: boolean,
+  physics: { ran: boolean } | undefined,
+): 'real' | 'broken' | 'unverified' {
+  if (failures.some((d) => d.severity === 'error')) return 'broken';
+  if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
+  return 'real';
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -387,14 +419,7 @@ export async function checkMechanismTruth(
   const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
   const ignoredPairs = arm.__ignoreInterference().map(([a, b]) => [a, b] as const);
   if (solved.length === 0) {
-    const coverage = coverageWithIgnoredPairs({
-      poses: 0,
-      joints,
-      ...scope,
-      sweep: false,
-      physics: false,
-    }, ignoredPairs);
-    return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
+    return emptySolveResult(arm, failures, joints, scope, opts, ignoredPairs);
   }
 
   // BREP-sweep budget gate (issue #348). Criteria 2/3/8 re-pose the rest
@@ -415,10 +440,10 @@ export async function checkMechanismTruth(
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
   // and the MJCF compile only happen once per call.
-  if (opts.physicsCheck === true) {
-    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory);
-    failures.push(...physicsFailures);
-  }
+  const physics = opts.physicsCheck === true
+    ? await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory, opts.physicsBudget)
+    : undefined;
+  if (physics !== undefined) failures.push(...physics.failures);
 
   // Precedence: a definitive failure (broken) dominates; otherwise a
   // skipped sweep leaves us unable to certify (unverified); otherwise
@@ -428,17 +453,17 @@ export async function checkMechanismTruth(
   // that lives in `failures` so consumers surface it — but it must NOT make
   // the verdict 'broken'. Only an error-severity criterion failure means
   // 'broken'.
-  const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
-  const mechanism: 'real' | 'broken' | 'unverified' =
-    hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = coverageWithIgnoredPairs({
-    poses: solved.length,
-    joints,
-    ...scope,
-    sweep: !sweepSkipped,
-    physics: opts.physicsCheck === true,
-  }, ignoredPairs);
-  return { mechanism, failures, coverage };
+  return {
+    mechanism: mechanismVerdict(failures, sweepSkipped, physics),
+    failures,
+    coverage: coverageWithIgnoredPairs({
+      poses: solved.length,
+      joints,
+      ...scope,
+      sweep: !sweepSkipped,
+      physics: physics?.ran ?? false,
+    }, ignoredPairs),
+  };
 }
 
 /**

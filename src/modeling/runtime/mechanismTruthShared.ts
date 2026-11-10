@@ -42,6 +42,7 @@ export function makeFailure(
     | 'mechanism.dof-mismatch'
     | 'mechanism.orphan-part'
     | 'mechanism.unstable-under-gravity'
+    | 'mechanism.physics-budget-exceeded'
     | 'mechanism.drops-on-release'
     | 'mechanism.joint-mesh-gap'
     | 'mechanism.tendon-body-intersect'
