@@ -22,6 +22,12 @@ manifolds, supports and control cabinet. The pump assets add capacity or casing
 size choices; the reverse-osmosis skid offers two, three or four horizontal
 membrane vessels. Existing material controls and named presets remain editable.
 
+The [vertical turbine pump head refinement](../../../artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/README.md)
+adds a four-direction outlet choice to the existing asset and makes its
+flanged discharge, motor cooling ribs, fan cowl and terminal box visible in the
+default preview. Its four material controls and `weathered` / `highVisibility`
+presets remain editable; the source triangle budget is 2,800.
+
 Five signature process units are rebuilt at about real size from turned
 profiles, extruded side sections and oriented members:
 `circular-clarifier` (18 m tank with still water, inboard launder, weir plate

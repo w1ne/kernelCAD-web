@@ -1,0 +1,9 @@
+2,276 default triangles under the 2,800-triangle budget; four source variants render successfully.
+Front/right discharge choices swap the measured width and depth; material preset images differ while the mesh count stays fixed.
+Four material-named color controls and both named presets appear in the generated index and local asset page.
+All 50 water-treatment previews regenerated; the edited source SHA-256 matches catalog/index.json.
+Water-treatment quality gate: 50/50 pass. Global catalog quality gate: 2,402/2,402 pass (100.00%; 50 rich kits, zero thin kits).
+Water-treatment ESLint: pass. Catalog integration suite: 4 files and 15 tests pass, including all-source rebuild and index freshness.
+Generated local catalog hub and vertical turbine pump detail page include the asset, preview, parameters, presets, and Studio link.
+Visual review: vertical turbine pump, horizontal split-case pump, and surface aerator previews read as distinct equipment in color.
+Local software renders and validation only; no simulation, deployment, or hardware acceptance.

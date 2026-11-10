@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-10",
+  "scope": "In-place refinement of water-treatment/vertical-turbine-pump; keep ID and add a four-direction discharge choice with four material controls.",
+  "asset": "vertical-turbine-pump",
+  "variants": [
+    { "id": "front-default", "choices": { "outletOrientation": "front" } },
+    { "id": "right-discharge", "choices": { "outletOrientation": "right" } },
+    { "id": "weathered-front", "choices": { "outletOrientation": "front" }, "preset": "weathered" },
+    { "id": "high-visibility-front", "choices": { "outletOrientation": "front" }, "preset": "highVisibility" }
+  ],
+  "previewInvocation": "python3 -c 'import pathlib,subprocess; ids=sorted(p.name.removesuffix(\".kcad.ts\") for p in pathlib.Path(\"catalog/kits/water-treatment\").glob(\"*.kcad.ts\")); subprocess.run([\"npx\",\"tsx\",\"scripts/renderCatalogPreviews.ts\",*ids],check=True)'",
+  "catalogBuildInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/render_variants.ts",
+  "indexVerificationInvocation": "python3 artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/verify_asset_index.py",
+  "qualityInvocation": "python3 scripts/checkCatalogQuality.py --kit water-treatment && python3 scripts/checkCatalogQuality.py",
+  "lintInvocation": "npx eslint catalog/kits/water-treatment/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "catalogPagesInvocation": "npm run catalog:pages",
+  "localPageVerificationInvocation": "python3 artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/verify_local_page.py",
+  "canvas": { "width": 1280, "height": 720, "frameRate": 24, "durationSeconds": 12 },
+  "captureInvocation": "python3 artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/capture_demo.py",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/inspect_video.py",
+  "caption": "Local kernelCAD source variants, software-rendered previews, regenerated catalog index, and local checks. Not deployed; no pump-performance or physical-acceptance claim.",
+  "provenance": "All variant frames are rendered from the checked-in vertical-turbine-pump.kcad.ts using native outletOrientation values and named material presets."
+}

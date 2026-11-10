@@ -1,0 +1,9 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/render_variants.ts
+(node:750715) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+front-default: 2276 triangles; size 650.0 × 1444.0 × 769.0 mm
+right-discharge: 2276 triangles; size 769.0 × 1444.0 × 650.0 mm
+weathered-front: 2276 triangles; size 650.0 × 1444.0 × 769.0 mm
+high-visibility-front: 2276 triangles; size 650.0 × 1444.0 × 769.0 mm
+Rendered 4 source variants; orientation, color, and triangle-budget checks passed.

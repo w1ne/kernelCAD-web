@@ -12,6 +12,20 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 10 water-treatment visual follow-up refines the existing
+`vertical-turbine-pump` head in place. Its four-way `outletOrientation` choice
+rotates the flanged discharge; the column, motor pedestal, cooling ribs, fan
+cowl and terminal box distinguish the pump head in the default preview. Four
+material-named controls and the `weathered` / `highVisibility` presets remain
+editable. The default mesh is 2,276 triangles under its 2,800-triangle budget.
+No IDs or kits were added; the kit remains **50/50 passing** and the catalog
+quality gate remains **2,402/2,402 passing (100.00%)**. The
+[vertical turbine pump handoff](../artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/README.md)
+contains the source-driven variants, regenerated previews and index, local
+catalog page checks, lint and integration results, and inspected MP4. This
+branch is not deployed; the model is generic visualization geometry and does
+not establish pump performance or physical acceptance.
+
 The Nov 10 standard-components follow-up refines three existing assets in place:
 the flange-bearing housing now exposes a steel race and rubber lip seal; the jaw
 coupling shows offset drive jaws around its elastomer spider with visible set
