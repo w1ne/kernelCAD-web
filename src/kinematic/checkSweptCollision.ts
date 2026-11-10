@@ -34,6 +34,8 @@ import { reposedLoweredAssemblyScene } from '../modeling/mates/loweredAssemblySc
 import { solveMates } from '../modeling/mates/solver';
 import type { Transform } from '../shared/runtime/se3';
 import { detectInterferences } from '../modeling/runtime/detectInterferences';
+import { buildSweepProxies } from '../modeling/runtime/sweepCollisionProxy';
+import { proxyPairsNeedingExactConfirm } from '../modeling/runtime/convexHullBroadphase';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import {
@@ -162,6 +164,7 @@ async function sweepWalks(
   // only swap world transforms; a missing transform falls back to a full
   // lower so a partial FK result cannot silently skip a pose.
   let cachedScene: SceneBackend | undefined;
+  let proxies: ReturnType<typeof buildSweepProxies> | undefined;
   for (const walk of walks) {
     continuation.reset();
     for (const pose of walk) {
@@ -180,9 +183,13 @@ async function sweepWalks(
       posesSampled++;
       const scene = await posedSceneForSweep(arm, { ...defaults, ...lowerPose }, cachedScene);
       if (scene !== undefined && cachedScene === undefined) cachedScene = scene;
+      if (scene !== undefined && proxies === undefined) proxies = buildSweepProxies(scene);
+      const explicit = scene === undefined || proxies === undefined
+        ? undefined
+        : proxyPairsNeedingExactConfirm(proxies, scene);
       const pairs = scene === undefined
         ? []
-        : detectInterferences(scene, epsilon, new Set()).pairs;
+        : detectInterferences(scene, epsilon, new Set(), [], undefined, explicit).pairs;
       if (pairs.length === 0) continue;
       const contacts: SweptCollisionContact[] = pairs.map((p) => ({
         partA: p.a,

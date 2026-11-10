@@ -44,6 +44,7 @@ import { detectDetachedMaterial } from '../modeling/validation/booleanIntegrity'
 import { Scene } from '../modeling/validation/scene';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
+import { evaluateCacheKey, getEvaluatedScript, rememberEvaluatedScript } from './evaluateCache';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
 import type { SelectionRecord } from '../shared/intent/selectionRecord';
@@ -317,6 +318,20 @@ function appendDeferredOverlapDiagnostics(model: BuiltModel): void {
 }
 
 export async function evaluateAndBuildScript(
+  input: EvaluateInput,
+  opts?: EvaluateOptions,
+): Promise<EvaluateAndBuildResult> {
+  const cacheKey = evaluateCacheKey(input, opts);
+  if (cacheKey !== undefined) {
+    const hit = getEvaluatedScript<EvaluateAndBuildResult>(cacheKey);
+    if (hit !== undefined) return hit;
+  }
+  const result = await evaluateAndBuildScriptFresh(input, opts);
+  if (cacheKey !== undefined) rememberEvaluatedScript(cacheKey, result);
+  return result;
+}
+
+async function evaluateAndBuildScriptFresh(
   input: EvaluateInput,
   opts?: EvaluateOptions,
 ): Promise<EvaluateAndBuildResult> {
