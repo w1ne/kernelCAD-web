@@ -108940,7 +108940,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts",
       "preview": "/assets/grid-substation-substation-cable-ladder-section.png",
-      "sourceSha256": "00593ecdc2d325f8af13ca38f2dc02c2eba70222ef3dd57142e60d219bea8ecd",
+      "sourceSha256": "4cf26290cabb3ec1f65a837eef68bbd11afe2cd571b1c87b01946af843d43f2a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -108981,7 +108981,7 @@
           0.132,
           0.6675
         ],
-        "minUpM": -0.012,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [

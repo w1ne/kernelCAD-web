@@ -31,12 +31,12 @@ describe('substation cable ladder CC0 low-poly geometry', () => {
     const range = (i: 0 | 1 | 2) => [Math.min(...vertices.map(v => v[i])), Math.max(...vertices.map(v => v[i]))] as const;
     expect(range(0)[0]).toBeCloseTo(-1.5, 4);
     expect(range(0)[1]).toBeCloseTo(1.5, 4);
-    expect(range(1)[0]).toBeCloseTo(-0.012, 4);
-    expect(range(1)[1]).toBeCloseTo(0.120, 4);
-    // The rung top is 60 mm above the ground. Side rails and mounting pads
+    expect(range(1)[0]).toBeCloseTo(0, 4);
+    expect(range(1)[1]).toBeCloseTo(0.132, 4);
+    // The rung top is 72 mm above the ground. Side rails and mounting pads
     // do not have vertices at that height, so the x coordinates identify all rungs.
     const rungEdges = [...new Set(vertices
-      .filter(v => Math.abs(v[1] - 0.060) < 1e-5)
+      .filter(v => Math.abs(v[1] - 0.072) < 1e-5)
       .map(v => Math.round(v[0] * 1e6) / 1e6))].sort((a, b) => a - b);
     expect(rungEdges).toHaveLength(26);
     for (let i = 0; i < 13; i++) {
@@ -62,7 +62,7 @@ describe('substation cable ladder CC0 low-poly geometry', () => {
       const xs = vertices.map(v => v[0]);
       expect(Math.min(...xs)).toBeCloseTo(-1.5 * scale, 4);
       expect(Math.max(...xs)).toBeCloseTo(1.5 * scale, 4);
-      const top = 0.060 * scale;
+      const top = 0.072 * scale;
       const rungEdges = [...new Set(vertices
         .filter(v => Math.abs(v[1] - top) < 1e-5)
         .map(v => Math.round(v[0] * 1e6) / 1e6))].sort((a, b) => a - b);
