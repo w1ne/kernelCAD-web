@@ -1,0 +1,41 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/inspect_video.py",
+  "video": "artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/beverage-cap-elevator-semantic-review.mp4",
+  "videoSha256": "78359db2f9b513183936edce2783714cd4fb704ba44d420a929aea86b75c7bcc",
+  "durationSeconds": 15.0,
+  "stream": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "24/1"
+  },
+  "samples": [
+    {
+      "second": 1.5,
+      "file": "sample-01.png",
+      "sha256": "ea0b1b9d32b1d976608b9fe4064a1c31808afb9989997180991830def015fd10"
+    },
+    {
+      "second": 4.5,
+      "file": "sample-02.png",
+      "sha256": "9585487b07aa48e4a0563f1c5c926ca71b0d541478dcb19e4055e4538ef0f412"
+    },
+    {
+      "second": 7.5,
+      "file": "sample-03.png",
+      "sha256": "7d67ad484b64d94d63f44fcfd43bd502f68b96f3354be72f8ebcd4dc6a7cdeb3"
+    },
+    {
+      "second": 10.5,
+      "file": "sample-04.png",
+      "sha256": "3a0e5cba9ba3d5457502e83be022f3ce317d5a5d3a68395cdf2e04945f198202"
+    },
+    {
+      "second": 13.5,
+      "file": "sample-05.png",
+      "sha256": "4fc73ebab5e9fbfd489435fbf1c87edf4c199673809ebc49366507d9bc0f3e88"
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png"
+}

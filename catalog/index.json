@@ -39887,7 +39887,7 @@
       "id": "cap-elevator",
       "kit": "beverage-bottling-line",
       "title": "Bottle-cap elevator",
-      "description": "Enclosed cleated elevator lifts closures from the hopper to an overhead cap sorter. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Guarded cleated belt lifts closures from an open feed hopper to an overhead cap-sorter chute. The visible belt flights, return rollers, drive motor, hopper and discharge distinguish the elevator. Knobs: overall scale and material colors for stainless steel, powder-coated steel, food-grade polymer and belt rubber.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -39906,7 +39906,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-elevator.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-elevator.png",
-      "sourceSha256": "7951bf937a4c775705be01618e8c8459caf4e0797678b5ddfc9342c1e89728a4",
+      "sourceSha256": "f97fb1ea21f20f6d7777ed2e5acb473cc577f4c95c412403c47ca63cc475d11e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -39933,28 +39933,36 @@
         {
           "name": "foodPolymer",
           "type": "color",
-          "default": "#3999a1",
+          "default": "#08b1c9",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#202a2e",
+          "label": "Belt rubber"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "beltRubber": "#26343c"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "beltRubber": "#171d21"
         }
       },
       "stats": {
-        "triangles": 188,
+        "triangles": 516,
         "sizeM": [
-          0.572,
-          1.22,
-          0.56
+          0.875,
+          2.064,
+          0.69
         ],
         "minUpM": 0,
         "materials": 1
@@ -39965,10 +39973,22 @@
           "color": "#397e91",
           "parts": [
             "base",
-            "lower-guard",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3",
+            "base-crossbeam-front",
+            "base-crossbeam-back",
+            "belt-back-rail-left",
+            "belt-back-rail-right",
             "side-rail-a",
             "side-rail-b",
-            "drive"
+            "upper-drive-roller",
+            "drive-motor",
+            "drive-gearbox",
+            "discharge-rail-front",
+            "discharge-rail-back",
+            "control-cabinet"
           ],
           "param": "powderCoat"
         },
@@ -39976,21 +39996,38 @@
           "name": "stainlessSteel",
           "color": "#aebdc1",
           "parts": [
-            "elevator-shroud",
-            "top-discharge"
+            "hopper-floor",
+            "hopper-rear",
+            "hopper-side-left",
+            "hopper-side-right",
+            "hopper-outlet-left",
+            "hopper-outlet-right",
+            "top-crossbar",
+            "lower-return-roller",
+            "discharge-floor"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "foodPolymer",
-          "color": "#3999a1",
+          "name": "beltRubber",
+          "color": "#202a2e",
           "parts": [
-            "cleat-0",
-            "cleat-1",
-            "cleat-2",
-            "cleat-3",
-            "cleat-4",
-            "cleat-5"
+            "belt-web"
+          ],
+          "param": "beltRubber"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#08b1c9",
+          "parts": [
+            "belt-cleat-0",
+            "belt-cleat-1",
+            "belt-cleat-2",
+            "belt-cleat-3",
+            "belt-cleat-4",
+            "belt-cleat-5",
+            "belt-cleat-6",
+            "belt-cleat-7"
           ],
           "param": "foodPolymer"
         }

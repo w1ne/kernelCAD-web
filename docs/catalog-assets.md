@@ -453,6 +453,15 @@ records the actual source-to-preview workflow, inspected MP4 and local checks.
 The models are visualization props and do not assert equipment performance,
 food-contact suitability, pressure ratings or physical acceptance.
 
+The [cap elevator semantic-review handoff](../artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/README.md)
+records a follow-up to the existing kit: its opaque enclosure was replaced with
+an open hopper, visible cleated lift, drive, support frame and discharge trough.
+The asset keeps its ID and 2,200-triangle budget; its refreshed preview is 516
+triangles. All 50 kit previews were rendered again and the catalog index rebuilt.
+The kit remains 50/50 (100%) and the whole catalog remains 2,402/2,402 (100%)
+on the structural quality gate. Local rendering and checks do not establish
+deployed behavior or physical acceptance.
+
 ## EV charging infrastructure assets
 
 The [EV charging infrastructure kit](../catalog/kits/ev-charging-infrastructure/README.md)
