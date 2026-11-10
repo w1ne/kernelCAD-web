@@ -350869,7 +350869,7 @@
       "id": "pressure-sand-filter-vessel",
       "kit": "water-treatment",
       "title": "Pressure sand filter vessel",
-      "description": "Vertical pressure vessel with domed-look end caps, inspection manway and side pipe nozzles. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Vertical pressure vessel with faceted end heads, an inspection manway, and lower inlet / upper outlet pipe stubs that enter the shell through visible stainless flange lips. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -350888,7 +350888,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-sand-filter-vessel.kcad.ts",
       "preview": "/assets/water-treatment-pressure-sand-filter-vessel.png",
-      "sourceSha256": "30d77511ba086265b66322d74859e4855250edd9b858fc9e3e3cecfda21dea4c",
+      "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -350932,11 +350932,11 @@
         }
       },
       "stats": {
-        "triangles": 464,
+        "triangles": 696,
         "sizeM": [
           0.62,
           1.1,
-          0.92
+          0.68
         ],
         "minUpM": 0,
         "materials": 1
@@ -350957,8 +350957,10 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "inlet",
-            "outlet"
+            "inlet-nozzle",
+            "inlet-flange",
+            "outlet-nozzle",
+            "outlet-flange"
           ],
           "param": "stainlessSteel"
         },

@@ -1,0 +1,16 @@
+{
+  "workflow": "live before preview + checked-in source -> updated catalog software render + existing weathered/highVisibility presets -> index refresh -> local checks",
+  "video": "artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/pressure-sand-filter-vessel-semantic-review.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/capture_demo.py",
+  "previewInvocation": "python3 artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/render_kit_previews.py",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/render_variants.ts",
+  "provenance": "Local software renders of source-defined kernelCAD geometry and presets. The before image is the current public pre-fix preview; the after image is not deployed. No pressure-performance or physical acceptance is shown."
+}

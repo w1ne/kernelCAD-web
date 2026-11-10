@@ -1,0 +1,50 @@
+{
+  "pass": true,
+  "asset": {
+    "id": "water-treatment/pressure-sand-filter-vessel",
+    "triangles": 696,
+    "budget": 2200,
+    "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+    "preview": "/assets/water-treatment-pressure-sand-filter-vessel.png"
+  },
+  "previewRender": {
+    "kit": "water-treatment",
+    "assetsRendered": 50
+  },
+  "quality": {
+    "kitPassing": 50,
+    "kitTotal": 50,
+    "catalogPassing": 2402,
+    "catalogTotal": 2402
+  },
+  "index": {
+    "result": "2,402 source hashes and all referenced previews verified"
+  },
+  "checks": {
+    "targetedTest": "PASS",
+    "integration": "6 files / 17 tests passed",
+    "eslint": "PASS",
+    "localPage": "PASS"
+  },
+  "variants": [
+    {
+      "id": "weathered",
+      "preset": "weathered",
+      "yawDeg": 35,
+      "pitchDeg": 22,
+      "triangles": 696,
+      "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+      "pngSha256": "8465088942e7de3e126009128147f4917447dfccb8e3e9444b9c46e9dca1580f"
+    },
+    {
+      "id": "highVisibility-side",
+      "preset": "highVisibility",
+      "yawDeg": 90,
+      "pitchDeg": 18,
+      "triangles": 696,
+      "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+      "pngSha256": "b30f7369aa6d2cda0e2012b6d466f59e4086193a941dead85092a51146b436fb"
+    }
+  ],
+  "provenance": "Local kernelCAD source evaluations, GLB geometry checks, and software renders only; no deployed or physical acceptance."
+}

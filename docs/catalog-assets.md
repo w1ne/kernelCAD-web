@@ -4,6 +4,18 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
+## Semantic correction (2026-11-10)
+
+The existing `water-treatment/pressure-sand-filter-vessel` now has lower and
+upper horizontal inlet/outlet stubs that enter the shell through visible
+stainless flange lips. A geometry regression checks the exported GLB bounds,
+separate port elevations, and shell overlap. The asset ID, kit membership,
+material controls, presets and 2,200-triangle budget are unchanged. The
+[semantic-review handoff](../artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/README.md)
+records the five-preview ledger, before/after renders, local checks and inspected
+MP4. This is generic scene geometry, not a pressure-rated or vendor-accurate
+design; the branch remains undeployed.
+
 ## Catalog quality snapshot (2026-11-10)
 
 The current catalog quality gate requires two material-named color controls and
