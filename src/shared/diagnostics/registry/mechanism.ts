@@ -86,7 +86,15 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
+    description: 'The deterministic BREP pose-sweep work estimate exceeded the budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
+  },
+  'mechanism.unverified-exact-probe': {
+    hintTemplate:
+      "An exact overlap boolean failed on a proxy candidate, so the pose sweep is unverified. A failed boolean is not clearance. Repair the named parts and run the mechanism check again.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A conservative pose-sweep proxy marked a part pair as a candidate, and the exact overlap boolean could not confirm it. The sweep is unverified. A failed boolean is not treated as no collision.',
   },
   'mechanism.physics-budget-exceeded': {
     hintTemplate:

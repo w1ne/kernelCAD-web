@@ -122,6 +122,8 @@ function skippedOf(input: MechanismVerdictInput): string[] {
       out.push(m
         ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
         : 'collision sweep across the joint travel skipped: over the work budget');
+    } else if (d.code === 'mechanism.unverified-exact-probe') {
+      out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
     } else {
       const physicsSkip = physicsSkipLine(d.code, d.message);
       if (physicsSkip !== undefined) out.push(physicsSkip);
