@@ -16,6 +16,16 @@ The [machine-quality handoff](../../../artifacts/catalog-demos/industrial-plant-
 records source-driven variants, refreshed previews, local checks and an
 inspected MP4. No asset IDs or kit counts changed.
 
+The Nov 10 air-compressor refinement turns the existing model into a joined
+receiver, saddle and skid package with a belt-driven motor, finned single/twin
+pump, open guard, intake filter and pressure controls. Its 80/120-gallon
+receiver choice changes the tank and frame geometry; four material controls
+separate receiver steel, pump iron, motor paint and rubber. The default render
+is 4,594 triangles under a 5,200 budget. The
+[air-compressor handoff](../../../artifacts/catalog-demos/industrial-plant-air-compressor-quality-20261110/README.md)
+records before/after previews, source variants, local checks and an inspected
+MP4. No asset IDs or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -31,7 +41,7 @@ inspected MP4. No asset IDs or kit counts changed.
 | `centrifugal-pump` | Centrifugal process pump | End-suction pump set at about real size: spiral volute with discharge neck and suction nozzle, bolted flanges, ribbed bearing frame, half-round coupling guard and finned TEFC motor on a drip-rim baseplate. | scale · casing · motor · base · metal |
 | `chemical-metering-skid` | Chemical metering skid | Chemical dosing skid with paired metering pumps, a shared manifold, gauges and a raised control box. | scale · steel · safety paint · gauge glass |
 | `positive-displacement-pump` | Positive displacement pump | Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. | scale · steel · safety paint |
-| `air-compressor` | Industrial air compressor | Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. | scale · steel · safety paint · gauge glass |
+| `air-compressor` | Industrial air compressor | Horizontal receiver on saddles and skid with a belt-driven motor, finned single/twin pump, intake filter and pressure controls. | scale · receiver capacity · pump arrangement · receiver steel · pump iron · motor paint · rubber |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
 | `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |
 | `diesel-generator-set` | Diesel generator set | Packaged generator with a louvered radiator, isolated skid mounts, service door, controls and exhaust stack. | scale · louver count · enclosure paint · steel · radiator core · rubber |

@@ -1,0 +1,55 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/industrial-plant-air-compressor-quality-20261110/render_air_compressor_variants.ts
+(node:254053) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "command": "npx tsx artifacts/catalog-demos/industrial-plant-air-compressor-quality-20261110/render_air_compressor_variants.ts",
+  "exporter": "exportLowPolyAsset(variantSource(source, indexedPresetAndChoices), sourceFileName)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "120-twin-plant",
+      "values": {
+        "receiverCapacity": "120-gallon",
+        "pumpArrangement": "twin"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4594,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-120-twin-plant.png"
+    },
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "80-single-weathered",
+      "values": {
+        "receiverSteel": "#59605f",
+        "pumpIron": "#383b3c",
+        "motorPaint": "#a77a32",
+        "rubber": "#353534",
+        "receiverCapacity": "80-gallon",
+        "pumpArrangement": "single"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4142,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-80-single-weathered.png"
+    },
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "120-twin-high-visibility",
+      "values": {
+        "receiverSteel": "#c5cbcd",
+        "pumpIron": "#48535a",
+        "motorPaint": "#e65d27",
+        "rubber": "#282d30",
+        "receiverCapacity": "120-gallon",
+        "pumpArrangement": "twin"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4594,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-120-twin-high-visibility.png"
+    }
+  ]
+}

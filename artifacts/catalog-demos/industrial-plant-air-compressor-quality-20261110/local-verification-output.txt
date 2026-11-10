@@ -1,0 +1,122 @@
+{
+  "kind": "source/index/preview and local page verification; no deployment performed",
+  "asset": {
+    "id": "industrial-plant/air-compressor",
+    "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
+    "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+    "preview": "/assets/industrial-plant-air-compressor.png",
+    "triangles": 4594,
+    "triangleBudget": 5200,
+    "materialControls": [
+      "receiverSteel",
+      "pumpIron",
+      "motorPaint",
+      "rubber"
+    ],
+    "presets": [
+      "plant",
+      "weathered",
+      "highVisibility"
+    ],
+    "choices": {
+      "receiverCapacity": [
+        "80-gallon",
+        "120-gallon"
+      ],
+      "pumpArrangement": [
+        "single",
+        "twin"
+      ]
+    }
+  },
+  "industrialPlantQuality": {
+    "passing": 60,
+    "total": 60
+  },
+  "catalogQuality": {
+    "passing": 2402,
+    "total": 2402
+  },
+  "variants": [
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "120-twin-plant",
+      "values": {
+        "receiverCapacity": "120-gallon",
+        "pumpArrangement": "twin"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4594,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-120-twin-plant.png"
+    },
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "80-single-weathered",
+      "values": {
+        "receiverSteel": "#59605f",
+        "pumpIron": "#383b3c",
+        "motorPaint": "#a77a32",
+        "rubber": "#353534",
+        "receiverCapacity": "80-gallon",
+        "pumpArrangement": "single"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4142,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-80-single-weathered.png"
+    },
+    {
+      "asset": "industrial-plant/air-compressor",
+      "variant": "120-twin-high-visibility",
+      "values": {
+        "receiverSteel": "#c5cbcd",
+        "pumpIron": "#48535a",
+        "motorPaint": "#e65d27",
+        "rubber": "#282d30",
+        "receiverCapacity": "120-gallon",
+        "pumpArrangement": "twin"
+      },
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangles": 4594,
+      "triangleBudget": 5200,
+      "png": "variants/air-compressor-120-twin-high-visibility.png"
+    }
+  ],
+  "checks": {
+    "sourceSha256MatchesIndex": true,
+    "previewExists": true,
+    "previewPathIndexed": true,
+    "qualityGate": true,
+    "fourMaterialControls": true,
+    "materialNamesAreSpecific": true,
+    "namedPresets": true,
+    "receiverCapacityChoices": true,
+    "pumpArrangementChoices": true,
+    "realSilhouetteGeometry": true,
+    "defaultUnderTriangleBudget": true,
+    "assetIdsUnchanged": true,
+    "industrialPlantQuality60of60": true,
+    "catalogQuality2402of2402": true,
+    "variantCount": true,
+    "variant1SourceHashMatches": true,
+    "variant1UnderBudget": true,
+    "variant1PreviewExists": true,
+    "variant2SourceHashMatches": true,
+    "variant2UnderBudget": true,
+    "variant2PreviewExists": true,
+    "variant3SourceHashMatches": true,
+    "variant3UnderBudget": true,
+    "variant3PreviewExists": true,
+    "localPageExists": true,
+    "localPagePreviewExists": true,
+    "localPageControlsAndPresetsVisible": true,
+    "eslintPassed": true,
+    "integrationPassed": true,
+    "lintIntegration": "passed",
+    "localPage": "passed"
+  },
+  "passed": 29,
+  "total": 29,
+  "pass": true
+}

@@ -139869,11 +139869,15 @@
       "id": "air-compressor",
       "kit": "industrial-plant",
       "title": "Industrial air compressor",
-      "description": "Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. Controls: overall scale, steel, safety paint, gauge glass.",
+      "description": "Horizontal receiver compressor package with a saddled pressure tank, skid frame, belt-driven motor, finned pump heads, intake filter, pressure gauge, safety valve and drain. Receiver capacity and pump arrangement change the model. Material controls: receiver steel, cast iron, motor paint and rubber. plant, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "industrial plant",
+        "air compressor",
+        "reciprocating compressor",
+        "receiver tank",
+        "belt drive",
         "factory",
         "process equipment",
         "low poly",
@@ -139888,8 +139892,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
       "preview": "/assets/industrial-plant-air-compressor.png",
-      "sourceSha256": "d5704085b2bd5b424ac88354ab7a7472afdfd4642727a0cd73b77969bb7984b6",
-      "triangleBudget": 1400,
+      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -139901,81 +139905,221 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "receiverCapacity",
+          "type": "choice",
+          "default": "120-gallon",
+          "label": "Receiver capacity",
+          "choices": [
+            "80-gallon",
+            "120-gallon"
+          ]
+        },
+        {
+          "name": "pumpArrangement",
+          "type": "choice",
+          "default": "twin",
+          "label": "Pump arrangement",
+          "choices": [
+            "single",
+            "twin"
+          ]
+        },
+        {
+          "name": "receiverSteel",
           "type": "color",
           "default": "#657c87",
-          "label": "Structural steel"
+          "label": "Receiver steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "pumpIron",
           "type": "color",
-          "default": "#e4ab45",
-          "label": "Safety paint"
+          "default": "#444b50",
+          "label": "Pump cast iron"
         },
         {
-          "name": "gaugeGlass",
+          "name": "motorPaint",
           "type": "color",
-          "default": "#91c6c8",
-          "label": "Gauge glass"
+          "default": "#e1a72f",
+          "label": "Motor paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282d30",
+          "label": "Belt and feet rubber"
         }
       ],
       "presets": {
+        "plant": {
+          "receiverSteel": "#657c87",
+          "pumpIron": "#444b50",
+          "motorPaint": "#e1a72f",
+          "rubber": "#282d30"
+        },
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f",
-          "gaugeGlass": "#78989b"
+          "receiverSteel": "#59605f",
+          "pumpIron": "#383b3c",
+          "motorPaint": "#a77a32",
+          "rubber": "#353534"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "receiverSteel": "#c5cbcd",
+          "pumpIron": "#48535a",
+          "motorPaint": "#e65d27",
+          "rubber": "#282d30"
         }
       },
       "stats": {
-        "triangles": 544,
+        "triangles": 4594,
         "sizeM": [
-          0.72,
-          0.481,
-          0.3746
+          1,
+          0.896,
+          0.372
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e4ab45",
+          "name": "motorPaint",
+          "color": "#e1a72f",
           "parts": [
-            "base-frame",
-            "motor",
-            "head-cap-0",
-            "head-cap-1",
-            "head-cap-2",
-            "intake-filter",
-            "vent-slot-0",
-            "vent-slot-1",
-            "vent-slot-2",
-            "vent-slot-3"
+            "skid-rail--150",
+            "rail-foot-0--150",
+            "rail-foot-1--150",
+            "skid-rail-150",
+            "rail-foot-0-150",
+            "rail-foot-1-150",
+            "skid-crossmember-0",
+            "skid-crossmember-1",
+            "receiver-saddle-0",
+            "receiver-saddle-1",
+            "inspection-cover",
+            "drain-handle",
+            "drive-deck",
+            "motor-body",
+            "motor-terminal-box",
+            "belt-guard-open-frame",
+            "pressure-switch",
+            "relief-cap"
           ],
-          "param": "safetyPaint"
+          "param": "motorPaint"
         },
         {
-          "name": "steel",
+          "name": "rubber",
+          "color": "#282d30",
+          "parts": [
+            "isolation-pad-0--150",
+            "isolation-pad-1--150",
+            "isolation-pad-0-150",
+            "isolation-pad-1-150",
+            "belt-loop",
+            "intake-filter"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "receiverSteel",
           "color": "#657c87",
           "parts": [
-            "receiver",
-            "cylinder-head-0",
-            "cylinder-head-1",
-            "cylinder-head-2",
-            "air-line"
+            "horizontal-receiver",
+            "receiver-weld-band-0",
+            "saddle-cap-0",
+            "receiver-weld-band-1",
+            "saddle-cap-1",
+            "inspection-boss",
+            "receiver-drain",
+            "motor-mount-left",
+            "motor-mount-right",
+            "motor-cooling-fin-0",
+            "motor-cooling-fin-1",
+            "motor-cooling-fin-2",
+            "motor-cooling-fin-3",
+            "motor-cooling-fin-4",
+            "motor-cooling-fin-5",
+            "motor-cooling-fin-6",
+            "motor-cooling-fin-7",
+            "motor-cooling-fin-8",
+            "pump-fin-0-0",
+            "pump-fin-0-1",
+            "pump-fin-0-2",
+            "pump-fin-0-3",
+            "pump-fin-0-4",
+            "pump-fin-0-5",
+            "head-bolt-0--28",
+            "head-bolt-0-28",
+            "pump-fin-1-0",
+            "pump-fin-1-1",
+            "pump-fin-1-2",
+            "pump-fin-1-3",
+            "pump-fin-1-4",
+            "pump-fin-1-5",
+            "head-bolt-1--28",
+            "head-bolt-1-28",
+            "intake-neck",
+            "aftercooler-riser",
+            "aftercooler-run",
+            "receiver-manifold",
+            "manifold-riser",
+            "relief-valve",
+            "outlet-elbow"
           ],
-          "param": "steel"
+          "param": "receiverSteel"
         },
         {
-          "name": "gaugeGlass",
-          "color": "#91c6c8",
+          "name": "pumpIron",
+          "color": "#444b50",
           "parts": [
-            "pressure-gauge"
+            "drain-valve",
+            "motor-fan-cover",
+            "pump-crankcase",
+            "pump-crankcase-end",
+            "pump-barrel-0",
+            "pump-head-0",
+            "head-cap-0",
+            "pump-barrel-1",
+            "pump-head-1",
+            "head-cap-1",
+            "motor-pulley",
+            "pump-pulley",
+            "guard-vent-slot-0",
+            "guard-vent-slot-1",
+            "guard-vent-slot-2",
+            "guard-vent-slot-3",
+            "pressure-switch-cap",
+            "gauge-body",
+            "outlet-coupling"
           ],
-          "param": "gaugeGlass"
+          "param": "pumpIron"
+        },
+        {
+          "name": "gauge-face",
+          "color": "#d9e0dc",
+          "parts": [
+            "gauge-face"
+          ]
+        },
+        {
+          "name": "gauge-pointer",
+          "color": "#bd4738",
+          "parts": [
+            "gauge-pointer",
+            "indicator-red"
+          ]
+        },
+        {
+          "name": "warning-label",
+          "color": "#ece7d8",
+          "parts": [
+            "warning-label"
+          ]
+        },
+        {
+          "name": "indicator-green",
+          "color": "#4c9c68",
+          "parts": [
+            "indicator-green"
+          ]
         }
       ]
     },
