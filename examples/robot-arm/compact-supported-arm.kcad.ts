@@ -325,10 +325,14 @@ function pitchHorn() {
   const spindle = rodY(-26.8, 22.2, 2.9, 10);
   const collar = rodY(21.95, 23.15, 13.4, 10);
   const hub = rodY(22.7, 24.55, 7.2, 10);
-  // Flat arm past the cheek (r 16.2). Y stays outboard of the cheek end
-  // (21.8) and short of the servo hub (26.35). Thin in X so the sweep
-  // misses the ear seats (|x| >= 14.6, |z| <= 3).
-  const bar = slab(-3.2, 3.2, 22.15, 24.85, -24, 24, undefined);
+  // Flat arm past the cheek (r 16.2) and the cap washer (r 18.6).
+  // The +Z tip reaches 34 so it clears the disc in the front and side
+  // cameras. The -Z tip stops at -28: at shoulder pitch 12° a longer
+  // downward tip clips the turret. Y stays outboard of the cheek end (21.8) and
+  // short of the servo hub (26.35). Thin in X so the sweep misses the
+  // ear seats (|x| >= 14.6, |z| <= 3). Clamp screws stay at |z| = 12.2;
+  // moving them out would sweep through those seats.
+  const bar = slab(-3.2, 3.2, 22.15, 24.85, -28, 34, undefined);
   const teeth = splineRingY(24.15, 25.95, 6.3, 13.2);
   const bore = rodY(22.3, 26.4, 5.05, 10);
   const capBolt = rodY(-27.7, -25.4, 5.4, 8);
