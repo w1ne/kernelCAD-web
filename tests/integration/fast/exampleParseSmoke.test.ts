@@ -31,7 +31,7 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts', '0.8 s local optical-frame feature chain'],
   ['examples/gallery/make-no-mistakes-keycap/model.kcad.ts', 'detailed keycap model'],
   ['examples/gallery/turbojet-engine.kcad.ts', 'detailed multi-part turbine geometry'],
-  ['examples/robot-arm/compact-supported-arm.kcad.ts', '6.2 s local evaluate; constructive arm booleans exceed the 4.5 s smoke budget'],
+  ['examples/robot-arm/compact-supported-arm.kcad.ts', '6.7 s local evaluate; constructive arm booleans exceed the 4.5 s smoke budget'],
   ['examples/robot-arm/desktop-3axis-mates.kcad.ts', 'mesh-heavy robot assembly'],
   ['examples/robot-arm/so100/so100-arm.kcad.ts', '13 imported STL solids'],
   ['examples/robot-arm/so100/so100.kcad.ts', '13 imported STL solids'],
