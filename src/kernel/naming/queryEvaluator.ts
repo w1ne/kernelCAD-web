@@ -405,15 +405,25 @@ function collectKnownOwners(scene: QueryScene): Set<string> {
 function collectKnownLabels(scene: QueryScene): Set<string> {
   const out = new Set<string>();
   const map = scene.backend.historyMap;
-  if (!map) return out;
-  for (const [, lineage] of map) {
-    if (lineage.labelName) out.add(lineage.labelName);
-    if (lineage.canonicalName) out.add(lineage.canonicalName);
+  if (map) {
+    for (const [, lineage] of map) {
+      if (lineage.labelName) out.add(lineage.labelName);
+      if (lineage.canonicalName) out.add(lineage.canonicalName);
+    }
+  }
+  const edges = scene.backend.edgeHistoryMap;
+  if (edges) {
+    for (const [, lineage] of edges) {
+      if (lineage.labelName) out.add(lineage.labelName);
+    }
   }
   return out;
 }
 
 function entityHasLabel(e: ResolvedEntity, label: string, scene: QueryScene): boolean {
+  if (e.kind === 'edge') {
+    return scene.backend.edgeHistoryMap?.get(e.handle)?.labelName === label;
+  }
   if (e.kind !== 'face') return false;
   const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
   return lineage?.labelName === label || lineage?.canonicalName === label;
