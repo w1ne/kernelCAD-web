@@ -59,6 +59,23 @@ describe('summarizeMechanism', () => {
     expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
   });
 
+  it('names an unsupported closed loop as skipped physics, not a broken mechanism', () => {
+    const unsupported = {
+      target: 'export-occt', code: 'mechanism.physics-unsupported', severity: 'warn',
+      message: 'Physics was not run because the mate graph is a closed loop.', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({
+      mechanism: 'unverified',
+      failures: [unsupported],
+      coverage: { ...coverage, sweep: true, physics: false },
+    });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.statement).toMatch(/closed-loop mate graphs are unsupported/);
+    expect(s.statement).toMatch(/Do not call this mechanism working/);
+    expect(s.failures).toEqual([]);
+  });
+
   it('names the joint of a broken verdict', () => {
     const d = {
       target: 'export-occt', code: 'mechanism.motion-on-fixed-joint', severity: 'error',

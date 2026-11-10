@@ -96,6 +96,17 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'The deterministic rest-scene physics mesh preflight could not certify that MJCF preparation fits its work budget, so physics was skipped and coverage records that it did not run.',
   },
+  // Closed-loop mate graphs are rejected by the MJCF emitter before any
+  // dynamics run. That is unsupported topology, not a failed simulation,
+  // so the verdict stays 'unverified' (severity 'warn').
+  'mechanism.physics-unsupported': {
+    hintTemplate:
+      "The physics gate only simulates tree-shaped mate graphs. A closed loop was not checked under gravity, so the mechanism stays unverified. This is not a dynamics failure. Open the loop into a tree before reading a physics verdict.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The physics gate rejected a closed-loop mate graph before simulation. Physics did not run, and the mechanism is unverified rather than broken.',
+  },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
       'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',

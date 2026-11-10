@@ -100,6 +100,19 @@ function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
   };
 }
 
+function physicsSkipLine(code: string, message: string): string | undefined {
+  if (code === 'mechanism.physics-budget-exceeded') {
+    const mesh = /estimated mesh work (\d+) triangles exceeds the budget (\d+)/.exec(message);
+    return mesh
+      ? `physics gravity check skipped: mesh work ${mesh[1]} is over the budget ${mesh[2]}`
+      : 'physics gravity check skipped: over the work budget or mesh work could not be measured';
+  }
+  if (code === 'mechanism.physics-unsupported') {
+    return 'physics gravity check skipped: closed-loop mate graphs are unsupported';
+  }
+  return undefined;
+}
+
 function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
@@ -109,11 +122,9 @@ function skippedOf(input: MechanismVerdictInput): string[] {
       out.push(m
         ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
         : 'collision sweep across the joint travel skipped: over the work budget');
-    } else if (d.code === 'mechanism.physics-budget-exceeded') {
-      const m = /estimated mesh work (\d+) triangles exceeds the budget (\d+)/.exec(d.message);
-      out.push(m
-        ? `physics gravity check skipped: mesh work ${m[1]} is over the budget ${m[2]}`
-        : 'physics gravity check skipped: over the work budget or mesh work could not be measured');
+    } else {
+      const physicsSkip = physicsSkipLine(d.code, d.message);
+      if (physicsSkip !== undefined) out.push(physicsSkip);
     }
   }
   if (out.length === 0 && input.coverage !== undefined && !input.coverage.sweep) {

@@ -43,6 +43,7 @@ export function makeFailure(
     | 'mechanism.orphan-part'
     | 'mechanism.unstable-under-gravity'
     | 'mechanism.physics-budget-exceeded'
+    | 'mechanism.physics-unsupported'
     | 'mechanism.drops-on-release'
     | 'mechanism.joint-mesh-gap'
     | 'mechanism.tendon-body-intersect'
