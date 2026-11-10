@@ -108,7 +108,8 @@ function polyTube(points, r) {
 function sts3215Envelope(extras) {
   const body = coat(extrudeRoundedRect(30, 20, 3.2, 35.6).translate(0, 0, -35.6), INK.servo);
   const ears = coat(extrudeRoundedRect(45.2, 24.7, 2.4, 4.6).translate(0, 0, -4.95), INK.servo);
-  const hub = coat(rodZ(-0.2, 1.05, 7.1, 16), INK.servo);
+  // Hub stops before the spline teeth, which sit just proud of the output face.
+  const hub = coat(rodZ(-0.2, 0.5, 7.1, 16), INK.servo);
   // Narrow stalk bridges the case to the pilot through the horn bore.
   const stalk = coat(rodZ(0.55, 2.05, 3.35, 12), INK.servo);
   const pilot = coat(rodZ(1.55, 4.55, 3.85, 12), INK.servo);
@@ -286,9 +287,11 @@ function pitchHorn() {
 function pitchPocket(hex) {
   // Ribs and ledges stay inside the ear silhouette (ears reach x = ±22.6
   // and z = ±12.3) so the tabs and spotfaces stay visible.
+  // Ribs stop before the horn disc (y 22.15). Ledges stop before the servo
+  // face (y 27.2) and clear the clamp-screw heads.
   const neck = coat(rodY(16.2, 21.55, 11.4, 16), hex);
-  const sideRib = (x0, x1) => coat(slab(x0, x1, 18.2, 26.2, -2.6, 2.6, hex), hex);
-  const ledge = (x0, x1) => coat(slab(x0, x1, 25.6, 27.55, -4.2, 4.2, hex), hex);
+  const sideRib = (x0, x1) => coat(slab(x0, x1, 18.2, 21.7, -2.6, 2.6, hex), hex);
+  const ledge = (x0, x1) => coat(slab(x0, x1, 25.6, 26.7, -4.2, 4.2, hex), hex);
   const positives = [
     neck,
     sideRib(11.2, 15.2),
@@ -297,8 +300,8 @@ function pitchPocket(hex) {
     ledge(-15.6, -12.4),
   ];
   const cutters = [
-    rodY(-21.7, -6.15, 3.5, 12),
-    rodY(6.15, 21.75, 3.5, 12),
+    rodY(-22.4, -6.15, 3.5, 12),
+    rodY(6.15, 22.4, 3.5, 12),
     rodY(21.35, 27.4, 10.7, 16),
   ];
   return { positives, cutters };
@@ -486,29 +489,32 @@ const forearmLink = arm.part('forearm-link', (() => {
   // Tongue centered on elbow-in, nested inside the upper-link cheeks.
   const tongue = coat(rodY(-TONGUE_HALF, TONGUE_HALF, 13.6, 18), hex);
   const neck = coat(extrudeRoundedRect(9.6, 11.4, 2.0, 12, { axis: 'x' }).translate(8, 0, 0), hex);
-  const flare = coat(extrudeRoundedRect(14.5, 13.2, 2.8, 10, { axis: 'x' }).translate(16, 0, 0), hex);
+  // Starts outside the elbow cheek (r 16.2). The neck stays in the cheek gap.
+  const flare = coat(extrudeRoundedRect(14.5, 13.2, 2.8, 9, { axis: 'x' }).translate(17.6, 0, 0), hex);
   const beam = coat(extrudeRoundedRect(20, 15, 3.6, 78, { axis: 'x' }).translate(22, 0, 0), hex);
   // Solid through local [80, 0, 0]. Side windows stop short of that web.
   const sideWindow = (x0, y0) => box(22, 7, 7).translate(x0, y0, -3.5);
   const trough = rodX(32, 92, 2.15, 8).translate(0, 0, 7.55);
+  // Rises off the beam, then steps outboard of the palm plate (y ±13.2
+  // from forearm x 104) so the run stays visible beside the wrist.
   const cable = polyTube([
-    [14, 1.2, 18.4],
-    [26, 3.8, 10.3],
-    [88, 3.8, 10.3],
-    [98, 2.4, 15.8],
-    [106, 1.4, 17.6],
-  ], 1.4);
+    [14, 1.4, 18.6],
+    [28, 4.2, 10.4],
+    [86, 6.5, 10.6],
+    [98, 15.2, 13.8],
+    [108, 16.4, 16.4],
+  ], 1.35);
   const palmFlange = coat(extrudeRoundedRect(40, 26, 3, 15.6, { axis: 'x' }).translate(96, 0, 0), hex);
   const pinionClear = rodZ(6.85, 10.5, 17.4, 24).translate(FORE + GRIP_X, 0, 0);
   // Through-bolts from the top face of the flange. Heads stay proud of the
   // shell and stop before the palm, which covers the flange end.
   const flangeBolts = [-1, 1].flatMap((sx) => [-1, 1].map((sy) => {
-    const x = 102 + sx * 4;
-    const y = sy * 11;
+    const x = 99.2 + sx * 1.6;
+    const y = sy * 8;
     return {
       hole: rodZ(-13.5, 13.15, 1.45, 8).translate(x, y, 0),
-      head: rodZ(13.2, 16.15, 2.65, 10).translate(x, y, 0),
-      socket: rodZ(14.85, 16.4, 1.1, 6).translate(x, y, 0),
+      head: rodZ(13.2, 16.05, 2.4, 10).translate(x, y, 0),
+      socket: rodZ(14.75, 16.25, 1.05, 6).translate(x, y, 0),
     };
   }));
   return paint(fuse([
@@ -545,8 +551,9 @@ const toolPalm = arm.part('tool-palm', (() => {
   const cupBore = rodZ(10.3, 13.05, 7.15, 16).translate(GRIP_X, 0, 0);
   const plate = slab(GRIP_X - 24, GRIP_X + 24, -13.2, 13.2, 14.3, 16.85, hex);
   const plateHole = rodZ(13.9, 17.2, 10.3, 20).translate(GRIP_X, 0, 0);
-  const earY = (y0, y1) => slab(GRIP_X - 23, GRIP_X + 23, y0, y1, 16.45, 17.85, hex);
-  const earX = (x0, x1) => slab(x0, x1, -12.2, 12.2, 16.45, 17.85, hex);
+  // Shelf tops stay under the servo ears (ear underside is at z 17.4).
+  const earY = (y0, y1) => slab(GRIP_X - 23, GRIP_X + 23, y0, y1, 16.45, 17.15, hex);
+  const earX = (x0, x1) => slab(x0, x1, -12.2, 12.2, 16.45, 17.15, hex);
   const pillarFoot = (y0, y1) => slab(GRIP_X - 6, GRIP_X + 6, y0, y1, -14.8, -11.7, hex);
   const pillar = (y0, y1) => slab(GRIP_X - 5, GRIP_X + 6, y0, y1, -14.5, 16.5, hex);
   const scallop = rodZ(6.7, 10.65, 17.5, 28).translate(GRIP_X, 0, 0);
@@ -707,7 +714,7 @@ function fingerPad(side) {
   // Taller than the orange jaw so the black pad reads as a border, and
   // still clear of the jaw face. The dovetail is unchanged.
   const body = coat(
-    extrudeRoundedRect(32.2, 3.45, 0.6, 10.9).translate(24.1, ySign * 5.275, -1.75),
+    extrudeRoundedRect(32.2, 3.45, 0.6, 10.9).translate(24.1, ySign * 5.275, -7.2),
     INK.pad,
   );
   const neck = inward
