@@ -77,17 +77,36 @@ function pushPt(pts, x, y) {
   pts.push([x, y]);
 }
 
+// Four broad flutes. A dense spline blows the sweep face budget, and these
+// stay inside the horn bore (outer radius about 4.6, bore 5.05).
+function outputFlutes() {
+  const flutes = [];
+  for (let i = 0; i < 4; i++) {
+    flutes.push(box(2.05, 1.35, 2.3).translate(2.5, -0.675, 2.5).rotateZ(i * 90));
+  }
+  return flutes;
+}
+
 // Purchased-actuator envelope. Output face at z = 0, body toward -Z.
 // Ears sit just below the face so a printed seat can land under the tabs.
 function sts3215Envelope() {
-  const body = coat(extrudeRoundedRect(30, 20, 2.4, 35.6).translate(0, 0, -35.6), INK.servo);
-  const ears = coat(extrudeRoundedRect(45.2, 24.7, 1.6, 3).translate(0, 0, -4.15), INK.servo);
-  const hub = coat(rodZ(0, 1.8, 6.5, 20), INK.servo);
-  const pilot = coat(rodZ(1.8, 5.2, 4.45, 16), INK.servo);
-  const tail = coat(box(10, 7, 12).translate(-5, -16, -28), INK.servo);
+  const body = coat(extrudeRoundedRect(30, 20, 3.2, 35.6).translate(0, 0, -35.6), INK.servo);
+  const ears = coat(extrudeRoundedRect(45.2, 24.7, 2.2, 3.4).translate(0, 0, -4.55), INK.servo);
+  const hub = coat(rodZ(-0.15, 0.75, 6.6, 14), INK.servo);
+  // Narrow stalk bridges the case to the pilot through the horn bore.
+  const stalk = coat(rodZ(0.4, 1.85, 3.4, 12), INK.servo);
+  const pilot = coat(rodZ(1.5, 4.7, 3.9, 10), INK.servo);
+  // Strain-relief boot on the cable face. Overlaps the case by 0.6 mm.
+  const boot = coat(
+    extrudeRoundedRect(7.2, 5.0, 1.5, 6.4, { axis: 'y' }).translate(0, -15.8, -25.2),
+    INK.servo,
+  );
+  const grommet = coat(rodY(-13.5, -11.15, 3.85, 12).translate(0, 0, -25.2), INK.servo);
   const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sy) =>
-    rodZ(-4.3, 0.3, 1.1, 10).translate(sx * 18.5, sy * 6, 0)));
-  return paint(fuse([body, ears, hub, pilot, tail]).subtract(fuse(holes)), INK.servo);
+    rodZ(-4.7, 0.35, 1.15, 8).translate(sx * 18.5, sy * 6, 0)));
+  return paint(fuse([
+    body, ears, hub, stalk, pilot, ...outputFlutes(), boot, grommet,
+  ]).subtract(fuse(holes)), INK.servo);
 }
 
 // Pitch radius minus 0.125 mm on an external tooth, plus 0.125 mm on an
@@ -180,44 +199,40 @@ function radialWall(r0, r1, angle, half, z0, z1, hex) {
 }
 
 // Y axis through the origin. Disc outboard of the +Y cheek. The spline
-// bore is open toward the servo pilot; four clamp holes sit in the disc.
+// bore is open toward the servo pilot; four clamp screws sit in the disc.
 function pitchHorn() {
-  const spindle = rodY(-20.5, 22.4, 3, 16);
+  const spindle = rodY(-20.5, 22.4, 3, 14);
   // Collar is outboard of the cheek bore and larger than the spline bore,
   // so the disc stays attached to the spindle.
-  const collar = rodY(21.38, 24.2, 6.9, 16);
-  const disc = rodY(21.45, 26.05, 9.95, 24);
-  const bore = rodY(21.75, 26.4, 5.05, 16);
-  const counter = rodY(25.15, 26.45, 7.25, 16);
+  const collar = rodY(21.38, 24.2, 6.9, 14);
+  const disc = rodY(21.45, 26.15, 9.95, 20);
+  const bore = rodY(21.85, 26.25, 5.05, 14);
   const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sz) =>
-    rodY(21.3, 26.2, 1.6, 10).translate(sx * 6.2, 0, sz * 6.2)));
-  return fuse([spindle, collar, disc]).subtract(fuse([bore, counter, ...holes]));
+    rodY(21.35, 24.85, 1.55, 8).translate(sx * 6.2, 0, sz * 6.2)));
+  const heads = [-1, 1].flatMap((sx) => [-1, 1].map((sz) =>
+    rodY(24.95, 26.25, 1.85, 10).translate(sx * 6.2, 0, sz * 6.2)));
+  return fuse([spindle, collar, disc, ...heads]).subtract(fuse([bore, ...holes]));
 }
 
-// Servo pocket in the joint frame: output face at y = SERVO_FACE_Y, body
-// toward +Y, ears resting on seats 0.35 mm under the tabs. The horn disc
-// and the servo pilot share a counterbore that stops short of the cheek.
+// Open yoke in the joint frame. Output face at y = SERVO_FACE_Y, body
+// toward +Y. A round neck stops before the horn disc. Side ribs and ear
+// ledges stay outside the case silhouette so the ears, spline side, and
+// cable boot remain visible. Cheek bores are cut with the yoke.
 function pitchPocket(hex) {
-  const neck = slab(-25.5, 25.5, 17.2, 26.85, -13.4, 13.4, hex);
-  const seatX = (x0, x1) => slab(x0, x1, 26.15, 28.0, -12.15, 12.15, hex);
-  const seatZ = (z0, z1) => slab(-14.6, 14.6, 26.15, 28.0, z0, z1, hex);
-  const rail = (x0, x1) => slab(x0, x1, 20.5, 64.4, -12.6, 12.6, hex);
-  const wall = (x0, x1) => slab(x0, x1, 31.75, 64.2, -10.7, 11.2, hex);
-  const tie = (x0, x1) => slab(x0, x1, 31.8, 35.4, -8.2, 8.2, hex);
+  const neck = coat(rodY(16.5, 22.15, 12.6, 16), hex);
+  const sideRib = (x0, x1) => coat(slab(x0, x1, 18.5, 26.95, -3.2, 3.2, hex), hex);
+  const ledge = (x0, x1, z0, z1) => coat(slab(x0, x1, 26.35, 28.05, z0, z1, hex), hex);
   const positives = [
     neck,
-    seatX(-22.35, -15.5), seatX(15.5, 22.35),
-    seatZ(10.95, 12.25), seatZ(-12.25, -10.95),
-    rail(-25.7, -22.95), rail(22.95, 25.7),
-    wall(-18.7, -15.55), wall(15.55, 18.7),
-    tie(-25.7, -15.3), tie(15.3, 25.7),
-    slab(-18.7, 18.7, 31.75, 64.2, 10.5, 13.4, hex),
-    slab(-18.7, 18.7, 63.35, 66.6, -11.0, 11.4, hex),
+    sideRib(10.9, 17.2),
+    sideRib(-17.2, -10.9),
+    ledge(15.8, 22.3, -5.2, 5.2),
+    ledge(-22.3, -15.8, -5.2, 5.2),
   ];
   const cutters = [
-    rodY(-21.4, -6.05, 3.4, 14),
-    rodY(6.05, 21.35, 3.4, 14),
-    rodY(21.2, 27.7, 10.7, 24),
+    rodY(-21.5, -6.05, 3.45, 12),
+    rodY(6.05, 21.45, 3.45, 12),
+    rodY(21.2, 27.15, 10.55, 16),
   ];
   return { positives, cutters };
 }
@@ -226,21 +241,28 @@ function pitchPocket(hex) {
 
 const basePlate = arm.part('base-plate', (() => {
   const plate = coat(extrudeRoundedRect(156, 130, 12, 8), INK.base);
-  const tower = coat(rodZ(8, 44, 38, 36), INK.base);
-  const race = coat(rodZ(44, 52.4, 30, 36), INK.base);
+  const foot = coat(rodZ(6.4, 13.5, 46, 24), INK.base);
+  const tower = coat(rodZ(8, 39.2, 38, 28), INK.base);
+  // Stationary race: a lip with a groove, then a journal the skirt clears.
+  const raceLip = coat(rodZ(38.6, 44.3, 36.6, 28), INK.base);
+  const journal = coat(rodZ(42.8, 52.2, 29.7, 24), INK.base);
+  const raceGroove = rodZ(40.5, 42.7, 37.1, 24).subtract(rodZ(40.3, 42.9, 33.2, 24));
   const bodyPocket = box(31, 21, 36.6).translate(-15.5, -10.5, 15.8);
-  const earPocket = box(46.1, 25.3, 5.4).translate(-23.05, -12.65, 47.5);
-  const hubBore = rodZ(51.2, 54, 7.4, 18);
+  const earPocket = box(46.4, 25.6, 6.2).translate(-23.2, -12.8, 47.1);
+  const hubBore = rodZ(51.2, 54, 7.4, 16);
   const cable = box(12, 14, 18).translate(-6, -24, 22);
+  const window = box(24, 14, 14).translate(15.4, -7, 21);
   const desk = [-1, 1].flatMap((sx) => [-1, 1].flatMap((sy) => {
     const x = sx * 62;
     const y = sy * 48;
     return [
-      rodZ(-0.4, 8.5, 2.25, 12).translate(x, y, 0),
-      rodZ(4.8, 8.6, 4, 14).translate(x, y, 0),
+      rodZ(-0.4, 8.5, 2.25, 10).translate(x, y, 0),
+      rodZ(4.8, 8.6, 4, 12).translate(x, y, 0),
     ];
   }));
-  return paint(fuse([plate, tower, race]).subtract(fuse([bodyPocket, earPocket, hubBore, cable, ...desk])), INK.base);
+  return paint(fuse([plate, foot, tower, raceLip, journal]).subtract(fuse([
+    bodyPocket, earPocket, hubBore, cable, window, raceGroove, ...desk,
+  ])), INK.base);
 })(), { material: 'petg' });
 
 const baseYawServo = arm.part('base-yaw-servo', sts3215Envelope(), {
@@ -249,43 +271,57 @@ const baseYawServo = arm.part('base-yaw-servo', sts3215Envelope(), {
 });
 
 const baseYawOutput = arm.part('base-yaw-output', (() => {
-  const hub = rodZ(2.35, 8.9, 5.15, 20);
-  const disc = rodZ(4.55, 9.05, 9.95, 24);
-  const bore = rodZ(1.65, 9.4, 5.05, 16);
+  const hub = rodZ(2.35, 8.9, 5.15, 16);
+  const disc = rodZ(4.55, 9.05, 9.95, 20);
+  const bore = rodZ(1.65, 9.4, 5.05, 12);
   const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sy) =>
-    rodZ(4.3, 9.2, 1.6, 10).translate(sx * 6.2, sy * 6.2, 0)));
+    rodZ(4.3, 9.2, 1.55, 8).translate(sx * 6.2, sy * 6.2, 0)));
   return fuse([hub, disc]).subtract(fuse([bore, ...holes]));
 })(), { material: 'aluminum-6061' });
 
 const yawTurret = arm.part('yaw-turret', (() => {
   const hex = INK.link;
-  const flange = coat(rodZ(0.75, 8.7, 41, 36), hex);
+  const flange = coat(rodZ(0.75, 8.7, 41, 28), hex);
   const skirt = coat(
-    rodZ(-7.2, 1.35, 35.2, 32).subtract(rodZ(-7.5, 0.8, 30.35, 32)),
+    rodZ(-7.2, 1.35, 35.2, 28).subtract(rodZ(-7.5, 0.8, 30.35, 28)),
     hex,
   );
-  const column = coat(extrudeRoundedRect(54, 42, 3, 102).translate(0, 0, 8), hex);
+  const skirtGroove = rodZ(-4.55, -2.55, 35.6, 24).subtract(rodZ(-4.75, -2.35, 33.5, 24));
+  const column = coat(extrudeRoundedRect(54, 42, 6, 102).translate(0, 0, 8), hex);
   const columnVoid = box(46, 34, 90).translate(-23, -17, 16);
   // The beam stays inside |y| <= 13. Open the column cap there so a 40°
   // shoulder clears it; the cheek gussets remain on the walls outside.
   const capRelief = box(56, 28, 18).translate(-28, -14, 100);
   const cable = box(10, 8, 78).translate(-5, -22, 24);
-  const cheek = (y0) => slab(-14, 14, y0, y0 + 14.2, 130, 158, hex);
+  const cheek = (y0, len) => coat(
+    rodY(y0, y0 + len, 13.6, 16).translate(0, 0, SHOULDER_Z),
+    hex,
+  );
+  const cap = coat(rodY(-23.5, -20.65, 8.5, 14).translate(0, 0, SHOULDER_Z), hex);
   const pocket = pitchPocket(hex);
   // Gussets sit outside the upper-link beam (|y| <= 13 at every pitch)
   // and tie the column top to the shoulder cheeks.
   const gusset = (y0, y1) => slab(-12, 12, y0, y1, 104, 136, hex);
+  const bolts = [0, 1, 2, 3].flatMap((i) => {
+    const a = Math.PI / 4 + i * Math.PI / 2;
+    const x = Math.cos(a) * 36;
+    const y = Math.sin(a) * 36;
+    return [rodZ(5.6, 9.2, 3.1, 8).translate(x, y, 0)];
+  });
   const positives = [
     flange, skirt, column,
-    cheek(-20.8), cheek(CHEEK_GAP),
+    cheek(-20.8, 14.2), cheek(CHEEK_GAP, 15),
+    cap,
     gusset(14.2, 20.4), gusset(-20.4, -14.2),
     ...at(pocket.positives, 0, 0, SHOULDER_Z),
   ];
   const cutters = [
-    columnVoid, capRelief, cable,
-    rodZ(0.45, 10.2, 5.85, 18),
-    rodZ(0.4, 2.15, 7.45, 18),
-    rodZ(4.2, 9.4, 10.75, 24),
+    columnVoid, capRelief, cable, skirtGroove,
+    rodZ(0.45, 10.2, 5.85, 16),
+    rodZ(0.4, 2.15, 7.45, 16),
+    rodZ(4.2, 9.4, 10.75, 20),
+    rodY(-23.7, -20.4, 3.75, 10).translate(0, 0, SHOULDER_Z),
+    ...bolts,
     ...at(pocket.cutters, 0, 0, SHOULDER_Z),
   ];
   return paint(fuse(positives).subtract(fuse(cutters)), hex);
@@ -305,22 +341,27 @@ const shoulderPitchShaft = arm.part('shoulder-pitch-shaft', pitchHorn(), {
 
 const upperLink = arm.part('upper-link', (() => {
   const hex = INK.link;
-  const tongue = coat(rodY(-TONGUE_HALF, TONGUE_HALF, 16, 24), hex);
-  const neck = slab(6, 26, -5.6, 5.6, -8, 8, hex);
-  const beam = coat(extrudeRoundedRect(26, 20, 2, 86, { axis: 'x' }).translate(22, 0, 0), hex);
-  const beamVoid = box(78, 16, 12).translate(32, -8, -6);
-  const bridge = (y0, y1) => slab(100, 128, y0, y1, -11, 11, hex);
-  const cheek = (y0) => slab(114, 138, y0, y0 + 15, -15, 15, hex);
+  const tongue = coat(rodY(-TONGUE_HALF, TONGUE_HALF, 16, 20), hex);
+  const neck = coat(extrudeRoundedRect(11.2, 15, 2.4, 16, { axis: 'x' }).translate(6, 0, 0), hex);
+  const flare = coat(extrudeRoundedRect(18, 17, 3.6, 14, { axis: 'x' }).translate(16, 0, 0), hex);
+  const beam = coat(extrudeRoundedRect(26, 20, 6, 84, { axis: 'x' }).translate(22, 0, 0), hex);
+  const beamVoid = box(74, 15, 11).translate(32, -7.5, -5.5);
+  const cable = rodX(38, 96, 2.1, 8).translate(0, 0, 10.35);
+  const bridge = (y0, y1) => slab(102, 130, y0, y1, -10, 10, hex);
+  const cheek = (y0, len) => coat(rodY(y0, y0 + len, 14.2, 16).translate(UPPER, 0, 0), hex);
+  const cap = coat(rodY(-24.3, -21.45, 8.6, 14).translate(UPPER, 0, 0), hex);
   const pocket = pitchPocket(hex);
   const positives = [
-    tongue, neck, beam,
+    tongue, neck, flare, beam,
     bridge(-14, -CHEEK_GAP), bridge(CHEEK_GAP, 14),
-    cheek(-21.6), cheek(CHEEK_GAP),
+    cheek(-21.6, 15), cheek(CHEEK_GAP, 15),
+    cap,
     ...at(pocket.positives, UPPER, 0, 0),
   ];
   const cutters = [
-    beamVoid,
-    rodY(-8, 8, 3.4, 14),
+    beamVoid, cable,
+    rodY(-8, 8, 3.45, 10),
+    rodY(-24.5, -21.2, 3.75, 10).translate(UPPER, 0, 0),
     ...at(pocket.cutters, UPPER, 0, 0),
   ];
   return paint(fuse(positives).subtract(fuse(cutters)), hex);
@@ -338,18 +379,18 @@ const elbowPitchShaft = arm.part('elbow-pitch-shaft', pitchHorn(), {
 
 const forearmLink = arm.part('forearm-link', (() => {
   const hex = INK.link;
-  const tongue = coat(rodY(-TONGUE_HALF, TONGUE_HALF, 15, 24), hex);
-  const neck = slab(8, 34, -5.7, 5.7, -8, 8, hex);
-  const web = slab(26, 104, -2.3, 2.3, -8, 8, hex);
-  const flangeTop = slab(30, 102, -13, 13, 5.1, 8.5, hex);
-  const flangeBot = slab(30, 102, -13, 13, -8.5, -5.1, hex);
-  const palmFlange = slab(96, 111.65, -20, 20, -13.1, 13.1, hex);
-  const cable = box(48, 6, 1.6).translate(42, -3, 7.2);
-  const pinionClear = rodZ(6.85, 10.5, 17.4, 28).translate(FORE + GRIP_X, 0, 0);
+  const tongue = coat(rodY(-TONGUE_HALF, TONGUE_HALF, 15, 18), hex);
+  const neck = coat(extrudeRoundedRect(10.4, 13.6, 2.2, 14, { axis: 'x' }).translate(7, 0, 0), hex);
+  const flare = coat(extrudeRoundedRect(16, 14.5, 3.2, 12, { axis: 'x' }).translate(18, 0, 0), hex);
+  const beam = coat(extrudeRoundedRect(22, 16, 4.5, 80, { axis: 'x' }).translate(20, 0, 0), hex);
+  // Solid through local [80, 0, 0]. A top groove is the cable race.
+  const cable = rodX(34, 90, 1.85, 8).translate(0, 0, 8.2);
+  const palmFlange = coat(extrudeRoundedRect(40, 26, 3, 15.6, { axis: 'x' }).translate(96, 0, 0), hex);
+  const pinionClear = rodZ(6.85, 10.5, 17.4, 24).translate(FORE + GRIP_X, 0, 0);
   const holes = [-1, 1].flatMap((sy) => [-1, 1].map((sz) =>
-    rodX(95, 112.1, 1.6, 10).translate(0, sy * 9, sz * 8)));
-  return paint(fuse([tongue, neck, web, flangeTop, flangeBot, palmFlange]).subtract(fuse([
-    rodY(-8, 8, 3.4, 14),
+    rodX(95, 112.1, 1.6, 8).translate(0, sy * 9, sz * 8)));
+  return paint(fuse([tongue, neck, flare, beam, palmFlange]).subtract(fuse([
+    rodY(-8, 8, 3.45, 10),
     cable,
     pinionClear,
     ...holes,
@@ -466,29 +507,40 @@ const LEFT_SECTOR_A1 = -Math.PI / 2 + 0.85;
 const RIGHT_SECTOR_A0 = 0.48;
 const RIGHT_SECTOR_A1 = 1.62;
 
+// sign +1 is the left jaw (inward face toward -Y). The right jaw is the
+// same section mirrored through XZ.
+function fingerJaw(sign) {
+  const beam = coat(
+    extrudeRoundedRect(8.6, 8.4, 2.0, 28, { axis: 'x' }).translate(5.5, sign * 1.05, -2.45),
+    INK.finger,
+  );
+  const nose = coat(
+    extrudeRoundedRect(6.6, 8.4, 1.8, 12.5, { axis: 'x' }).translate(30, sign * 0.55, -1.35),
+    INK.finger,
+  );
+  const knuckle = coat(rodZ(-10.7, 1.6, 8.35, 16), INK.finger);
+  return { beam, nose, knuckle };
+}
+
 const leftFingerParts = (() => {
-  const hub = coat(rodZ(-11.25, 1.75, 8, 20), INK.finger);
+  const hub = coat(rodZ(-11.25, 1.75, 8, 16), INK.finger);
   const hubBore = rodZ(-11.6, 2.05, 2.8, 12);
-  const jaw = slab(6, 34, -3.15, 5.05, -5.6, 1.45, INK.finger);
-  const spine = slab(8, 30, 4.35, 7.3, -6.3, 1.5, INK.finger);
-  const nose = slab(30, FINGER, -2.2, 3.9, -4.2, 1.15, INK.finger);
-  const slotMouth = box(26, 0.95, 2.5).translate(8.5, -3.15, -1.25);
-  const slotBulb = box(26, 0.95, 4.2).translate(8.5, -2.5, -2.1);
+  const jaw = fingerJaw(1);
+  const slotMouth = box(26, 2.3, 2.5).translate(9, -3.55, -1.4);
+  const slotBulb = box(24, 1.2, 2.7).translate(10, -2.25, -1.6);
   const sector = gearBlank(
     externalGearPoints(38, 7.05, TIP38, -Math.PI / 2, LEFT_SECTOR_A0, LEFT_SECTOR_A1),
     GEAR_LO_Z0, GEAR_LO_Z1, INK.finger,
   );
-  return { hub, hubBore, jaw, spine, nose, slotMouth, slotBulb, sector };
+  return { hub, hubBore, jaw, slotMouth, slotBulb, sector };
 })();
 
 const rightFingerParts = (() => {
-  const hub = coat(rodZ(-11.25, 1.75, 8, 20), INK.finger);
+  const hub = coat(rodZ(-11.25, 1.75, 8, 16), INK.finger);
   const hubBore = rodZ(-11.6, 2.05, 2.8, 12);
-  const jaw = slab(6, 34, -5.05, 3.15, -5.6, 1.45, INK.finger);
-  const spine = slab(8, 30, -7.3, -4.35, -6.3, 1.5, INK.finger);
-  const nose = slab(30, FINGER, -3.9, 1.45, -4.2, 1.15, INK.finger);
-  const slotMouth = box(26, 1.35, 2.9).translate(8.5, 1.9, -1.45);
-  const slotBulb = box(26, 1.2, 4.8).translate(8.5, 1.25, -2.4);
+  const jaw = fingerJaw(-1);
+  const slotMouth = box(26, 2.3, 2.5).translate(9, 1.25, -1.4);
+  const slotBulb = box(24, 1.2, 2.7).translate(10, 1.05, -1.6);
   const sector = gearBlank(
     internalSectorPoints(TIP114, 35.2, 36.7, RIGHT_SECTOR_A0, RIGHT_SECTOR_A1, 114, Math.PI / 2),
     GEAR_HI_Z0, GEAR_HI_Z1, INK.finger,
@@ -500,21 +552,21 @@ const rightFingerParts = (() => {
   const highArm = radialWall(18, 36.6, 0.08, 0.12, 6.7, 7.55, INK.finger);
   const outerArc = annular(34.6, 36.9, -0.05, 0.7, 7.2, 7.9, INK.finger);
   return {
-    hub, hubBore, jaw, spine, nose, slotMouth, slotBulb, sector,
+    hub, hubBore, jaw, slotMouth, slotBulb, sector,
     hubTab, lowRiser, highArm, outerArc,
   };
 })();
 
 const leftFinger = arm.part('left-finger', paint(fuse([
-  leftFingerParts.hub, leftFingerParts.jaw, leftFingerParts.spine,
-  leftFingerParts.nose, leftFingerParts.sector,
+  leftFingerParts.hub, leftFingerParts.jaw.beam, leftFingerParts.jaw.nose,
+  leftFingerParts.jaw.knuckle, leftFingerParts.sector,
 ]).subtract(fuse([leftFingerParts.hubBore, leftFingerParts.slotMouth, leftFingerParts.slotBulb])), INK.finger), {
   material: 'petg',
 });
 
 const rightFinger = arm.part('right-finger', paint(fuse([
-  rightFingerParts.hub, rightFingerParts.jaw, rightFingerParts.spine,
-  rightFingerParts.nose, rightFingerParts.sector,
+  rightFingerParts.hub, rightFingerParts.jaw.beam, rightFingerParts.jaw.nose,
+  rightFingerParts.jaw.knuckle, rightFingerParts.sector,
   rightFingerParts.hubTab, rightFingerParts.lowRiser,
   rightFingerParts.highArm, rightFingerParts.outerArc,
 ]).subtract(fuse([rightFingerParts.hubBore, rightFingerParts.slotMouth, rightFingerParts.slotBulb])), INK.finger), {
@@ -524,17 +576,17 @@ const rightFinger = arm.part('right-finger', paint(fuse([
 function fingerPad(side) {
   const inward = side < 0;
   const body = inward
-    ? slab(8, 39.2, -5.05, -3.55, -2.2, 1.05, INK.pad)
-    : slab(8, 39.2, 3.7, 5.15, -2.2, 1.05, INK.pad);
+    ? slab(8, 40.4, -6.4, -3.55, -4.6, 2.6, INK.pad)
+    : slab(8, 40.4, 3.55, 6.4, -4.6, 2.6, INK.pad);
   const neck = inward
-    ? slab(9.4, 33.4, -3.85, -1.9, -1.0, 0.9, INK.pad)
-    : slab(9.4, 33.4, 1.7, 4.0, -1.0, 0.9, INK.pad);
+    ? slab(10, 34, -3.75, -1.45, -1.15, 1.05, INK.pad)
+    : slab(10, 34, 1.45, 3.75, -1.15, 1.05, INK.pad);
   const bulb = inward
-    ? slab(9.4, 33.4, -2.2, -1.8, -1.7, 1.55, INK.pad)
-    : slab(9.4, 33.4, 1.65, 2.05, -1.85, 1.7, INK.pad);
-  const ribs = [16, 26, 35].map((x) => (inward
-    ? slab(x, x + 2.4, -5.6, -5.05, -1.0, 0.7, INK.pad)
-    : slab(x, x + 2.4, 5.05, 5.6, -1.0, 0.7, INK.pad)));
+    ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
+    : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
+  const ribs = [14, 23, 32].map((x) => (inward
+    ? slab(x, x + 2.3, -7.05, -6.15, -2.7, 1.6, INK.pad)
+    : slab(x, x + 2.3, 6.15, 7.05, -2.7, 1.6, INK.pad)));
   return paint(fuse([body, neck, bulb, ...ribs]), INK.pad);
 }
 
