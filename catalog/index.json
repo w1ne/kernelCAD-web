@@ -255047,14 +255047,17 @@
       "id": "pipe-union",
       "kit": "standard-components",
       "title": "Pipe union",
-      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.",
+      "description": "Illustrative CC0 low-poly straight pipe union: two detachable tubular tailpieces with external shoulders, a hollow six-flat coupling nut that captures them, and a separate sealing gasket between faces. The central fluid passage is open. Three scaled scene sizes; threaded engagement, pressure rating and leak-tight fit are not verified manufacturing details.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "pipe union",
         "union fitting",
         "pipe connector",
-        "plumbing"
+        "plumbing",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255065,14 +255068,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
       "preview": "/assets/standard-components-pipe-union.png",
-      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
-      "triangleBudget": 340,
+      "sourceSha256": "64734ca1f7ca5dd752d830f786d1c878edf4491dabc28aec91353eeb1dbec4fb",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative overall scale",
           "choices": [
             "compact",
             "standard",
@@ -255083,13 +255086,19 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel tailpieces"
         },
         {
           "name": "brass",
           "type": "color",
           "default": "#b28a4d",
-          "label": "Brass"
+          "label": "Brass coupling nut"
+        },
+        {
+          "name": "gasketColor",
+          "type": "color",
+          "default": "#353d41",
+          "label": "Sealing gasket"
         }
       ],
       "presets": {
@@ -255107,11 +255116,11 @@
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 744,
         "sizeM": [
-          0.036,
-          0.036,
-          0.036
+          0.038105,
+          0.049,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -255121,8 +255130,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "socket-a",
-            "socket-b"
+            "inlet-tailpiece",
+            "outlet-tailpiece"
           ],
           "param": "steel"
         },
@@ -255130,9 +255139,17 @@
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "nut"
+            "coupling-hex-nut"
           ],
           "param": "brass"
+        },
+        {
+          "name": "gasketColor",
+          "color": "#353d41",
+          "parts": [
+            "face-gasket"
+          ],
+          "param": "gasketColor"
         }
       ]
     },
