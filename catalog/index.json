@@ -309493,7 +309493,7 @@
       "id": "cable-gland",
       "kit": "standard-components",
       "title": "Cable gland",
-      "description": "Panel cable gland with a hollow body, stepped compression nut and wide sealing flange Knobs: model size, engineering polymer, rubber.",
+      "description": "Panel cable gland with a selectable nominal 4, 6, or 8 mm cable diameter that stays fixed across housing sizes, molded polymer body, six-flat stainless compression cap, rubber seal and jacketed cable stub. Material controls: engineering polymer, stainless steel, sealing rubber and cable PVC. Includes industrial, highVisibility and marine presets.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -309511,8 +309511,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-gland.kcad.ts",
       "preview": "/assets/standard-components-cable-gland.png",
-      "sourceSha256": "169ab289279c7e9a85f7b0643eee2a5f096e5cbb8b87436acc00b7de3afdfae6",
-      "triangleBudget": 420,
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "size",
@@ -309526,37 +309526,66 @@
           ]
         },
         {
+          "name": "cableDiameter",
+          "type": "choice",
+          "default": "6",
+          "label": "Cable diameter (mm)",
+          "choices": [
+            "4",
+            "6",
+            "8"
+          ]
+        },
+        {
           "name": "polymer",
           "type": "color",
-          "default": "#e46b3c",
+          "default": "#e06a31",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b7c1c5",
+          "label": "Stainless steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#353a3d",
-          "label": "Rubber"
+          "default": "#292e30",
+          "label": "Sealing rubber"
+        },
+        {
+          "name": "cablePvc",
+          "type": "color",
+          "default": "#24516b",
+          "label": "Cable PVC"
         }
       ],
       "presets": {
-        "dark": {
-          "polymer": "#244956",
-          "rubber": "#242729"
+        "industrial": {
+          "polymer": "#68777b",
+          "stainless": "#b7c1c5",
+          "rubber": "#292e30",
+          "cablePvc": "#343a40"
         },
-        "brass": {
-          "polymer": "#1d5364",
-          "rubber": "#2a2d2f"
+        "highVisibility": {
+          "polymer": "#e06a31",
+          "stainless": "#d0d6d8",
+          "rubber": "#25292b",
+          "cablePvc": "#e3a62f"
         },
-        "weathered": {
-          "polymer": "#96734f",
-          "rubber": "#3b3935"
+        "marine": {
+          "polymer": "#276b77",
+          "stainless": "#aebbc0",
+          "rubber": "#23292b",
+          "cablePvc": "#343a40"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 812,
         "sizeM": [
           0.04,
-          0.037,
+          0.047,
           0.04
         ],
         "minUpM": 0,
@@ -309565,21 +309594,36 @@
       "palette": [
         {
           "name": "polymer",
-          "color": "#e46b3c",
+          "color": "#e06a31",
           "parts": [
-            "body",
-            "flange",
-            "cap"
+            "molded-barrel",
+            "mounting-flange"
           ],
           "param": "polymer"
         },
         {
-          "name": "rubber",
-          "color": "#353a3d",
+          "name": "stainless",
+          "color": "#b7c1c5",
           "parts": [
-            "strain-relief"
+            "stainless-compression-cap"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#292e30",
+          "parts": [
+            "rubber-cable-seal"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "cablePvc",
+          "color": "#24516b",
+          "parts": [
+            "jacketed-cable"
+          ],
+          "param": "cablePvc"
         }
       ]
     },
@@ -313398,7 +313442,7 @@
       "id": "square-mounting-flange",
       "kit": "standard-components",
       "title": "Square mounting flange",
-      "description": "Square flange with a centered through bore, four corner holes and a short neck Knobs: model size, stainless steel, cast iron.",
+      "description": "Four-hole square equipment flange with a selectable 10, 14, or 18 mm through-bore that stays fixed across housing sizes, raised stainless neck, rubber neck seal and installed socket-head fasteners. Material controls: cast iron, stainless steel, sealing rubber and zinc-plated steel. Includes dark, brass and weathered presets.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -313416,8 +313460,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/square-mounting-flange.kcad.ts",
       "preview": "/assets/standard-components-square-mounting-flange.png",
-      "sourceSha256": "1e8988a11a7a8e2ab7e76131cbc5aa167eb1fbb55bb3695e9ea1d13405900a19",
-      "triangleBudget": 360,
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6",
+      "triangleBudget": 860,
       "params": [
         {
           "name": "size",
@@ -313431,38 +313475,67 @@
           ]
         },
         {
+          "name": "boreDiameter",
+          "type": "choice",
+          "default": "14",
+          "label": "Through-bore diameter (mm)",
+          "choices": [
+            "10",
+            "14",
+            "18"
+          ]
+        },
+        {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c1c6",
+          "default": "#d0d5d3",
           "label": "Stainless steel"
         },
         {
           "name": "castIron",
           "type": "color",
-          "default": "#68747a",
+          "default": "#526774",
           "label": "Cast iron"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#363a3b",
+          "label": "Sealing rubber"
+        },
+        {
+          "name": "zincSteel",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
         }
       ],
       "presets": {
         "dark": {
           "stainless": "#7d8a91",
-          "castIron": "#3b4246"
+          "castIron": "#3b4246",
+          "rubber": "#24282a",
+          "zincSteel": "#a0aaae"
         },
         "brass": {
           "stainless": "#b38b52",
-          "castIron": "#69645b"
+          "castIron": "#69645b",
+          "rubber": "#302b26",
+          "zincSteel": "#c29a5c"
         },
         "weathered": {
           "stainless": "#8b8275",
-          "castIron": "#4d4b46"
+          "castIron": "#4d4b46",
+          "rubber": "#302e2a",
+          "zincSteel": "#a19682"
         }
       },
       "stats": {
-        "triangles": 316,
+        "triangles": 764,
         "sizeM": [
-          0.056,
-          0.021,
-          0.056
+          0.072,
+          0.016,
+          0.072
         ],
         "minUpM": 0,
         "materials": 1
@@ -313470,19 +313543,42 @@
       "palette": [
         {
           "name": "castIron",
-          "color": "#68747a",
+          "color": "#526774",
           "parts": [
-            "plate"
+            "cast-iron-flange"
           ],
           "param": "castIron"
         },
         {
           "name": "stainless",
-          "color": "#b8c1c6",
+          "color": "#d0d5d3",
           "parts": [
-            "neck"
+            "stainless-bore-neck"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#363a3b",
+          "parts": [
+            "rubber-neck-seal"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "zincSteel",
+          "color": "#cbd1d5",
+          "parts": [
+            "zinc-fastener-shank--29--29",
+            "socket-head--29--29",
+            "zinc-fastener-shank--29-29",
+            "socket-head--29-29",
+            "zinc-fastener-shank-29--29",
+            "socket-head-29--29",
+            "zinc-fastener-shank-29-29",
+            "socket-head-29-29"
+          ],
+          "param": "zincSteel"
         }
       ]
     },

@@ -20,6 +20,21 @@ and an inspected MP4. Earlier round notes below retain their at-the-time results
 under the previous gate definition. This is a local branch snapshot, not a
 deployment or hardware-acceptance claim.
 
+Another Nov 10 quality pass refines the existing
+`standard-components/cable-gland` and `square-mounting-flange`. The gland's
+4/6/8 mm cable choice changes the cable and seal opening while keeping the
+nominal cable diameter fixed across housing sizes; the square flange's
+10/14/18 mm choice changes its through-bore while also staying fixed across
+housing sizes. The models now show the gland's
+polymer barrel, stainless cap, rubber seal and cable, and the flange's cast
+base, stainless neck, rubber seal and four zinc-plated fasteners. Each has
+four material-named controls and three named palettes. No IDs or kits were
+added. Their default meshes are 812/900 and 764/860 triangles. The
+[cable-gland and flange handoff](../artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/README.md)
+records bore variants, refreshed kit previews and index, local checks, and the
+inspected MP4. The branch is not deployed; these are generic visualizations,
+not vendor dimensions, fit verification or physical acceptance.
+
 The Nov 10 office writing-tool follow-up refines two existing assets in place:
 the highlighter now has a rounded barrel and cap, visible side clip and sloped
 felt nib; the mechanical pencil has a turned barrel, separately colored rubber

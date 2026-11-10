@@ -1,0 +1,19 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/inspect_video.py",
+  "ffprobe": {
+    "width": 1280,
+    "height": 720,
+    "frameRate": "24/1",
+    "durationSeconds": 18.0
+  },
+  "decodedSamples": [
+    "video-review/sample-01.png",
+    "video-review/sample-02.png",
+    "video-review/sample-03.png",
+    "video-review/sample-04.png",
+    "video-review/sample-05.png",
+    "video-review/sample-06.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "humanVisualReviewRequired": true
+}

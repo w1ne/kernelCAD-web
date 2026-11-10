@@ -4,6 +4,22 @@ Original parametric low-poly components for workshop, industrial, and mechanical
 
 Each model keeps its compact / standard / large size choice and exposes 2–4 independently editable, material-named visual color zones. Named appearance presets provide alternate palettes. Color labels identify visual zones; they do not certify physical material properties.
 
+The Nov 10 useful-parameter pass refines two existing models in place. The
+cable gland's nominal 4/6/8 mm cable choice changes the cable and seal opening
+while staying fixed across housing sizes; the body bore keeps clearance around
+that cable. Its polymer ribs, stainless cap, rubber seal and PVC cable have
+separate controls. The square flange's 10/14/18 mm bore choice changes the
+actual neck opening while staying fixed across housing sizes, with a rubber
+neck seal and four installed zinc-plated socket heads. Both retain
+compact/standard/large scaling and named palettes.
+Each gains two material controls, raising the kit average from 2.58 to 2.66;
+their default meshes are 812/900 and 764/860 triangles. No IDs or kit counts
+changed.
+The source-driven variants, refreshed kit previews, index evidence and
+inspected MP4 are recorded in the [cable-gland and flange handoff](../../../artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/README.md).
+These models remain generic scene geometry, not vendor dimensions or fit
+verification.
+
 The Nov 9 refinement added geometry choices to five existing assets without
 adding IDs: the base plate and both flange models switch between four/eight
 mounting holes and open/bolted layouts; the pipe coupling switches between a
@@ -76,7 +92,7 @@ models, not vendor specifications or manufacturing evidence.
 | [`blind-flange`](blind-flange.kcad.ts) | Blind flange | Solid pipe-end closure with raised sealing face, four/eight-hole bolt circle and optional installed bolts. | Cast iron, Bronze face, Zinc-plated bolts | 296 | [PNG](previews/blind-flange.png) |
 | [`bulkhead-adapter`](bulkhead-adapter.kcad.ts) | Bulkhead adapter | Hollow through-wall brass barrel with paired stainless flanges, rubber sealing washer and six-flat locknut. | Stainless steel, Brass, Sealing rubber | 456 | [PNG](previews/bulkhead-adapter.png) |
 | [`cable-clamp`](cable-clamp.kcad.ts) | Cable clamp | Low-profile cable saddle with two fixing ears and a rounded cable guide. | Steel, Rubber | 132 | [PNG](previews/cable-clamp.png) |
-| [`cable-gland`](cable-gland.kcad.ts) | Cable gland | Panel cable gland with a hollow body, stepped compression nut and wide sealing flange. | Engineering polymer, Rubber | 384 | [PNG](previews/cable-gland.png) |
+| [`cable-gland`](cable-gland.kcad.ts) | Cable gland | Ribbed polymer gland with selectable cable diameter, stainless compression cap, rubber seal and cable stub. | Polymer, Stainless steel, Rubber, PVC cable | 812 | [PNG](previews/cable-gland.png) |
 | [`caster-wheel`](caster-wheel.kcad.ts) | Caster wheel | Single low-poly swivel caster with a fork, mounting plate and centered wheel. | Steel, Zinc-plated steel, Rubber | 200 | [PNG](previews/caster-wheel.png) |
 | [`clevis-pin`](clevis-pin.kcad.ts) | Clevis pin | Round headed clevis pin with a straight shank and cross-hole collar. | Steel, Stainless steel | 156 | [PNG](previews/clevis-pin.png) |
 | [`din-rail`](din-rail.kcad.ts) | DIN rail | Short symmetric top-hat rail profile with a flat web and raised edge lips. | Steel, Stainless steel, Aluminum | 48 | [PNG](previews/din-rail.png) |
@@ -112,7 +128,7 @@ models, not vendor specifications or manufacturing evidence.
 | [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Two through-bored steel hubs around a bronze center band, with selectable set-screw or split-clamp retention. | Steel, Bronze, Zinc-plated set screws | 536 | [PNG](previews/shaft-coupling.png) |
 | [`shim-pack`](shim-pack.kcad.ts) | Shim pack | Stack of thin rectangular alignment shims with small offset pull tabs. | Steel, Stainless steel, Brass | 60 | [PNG](previews/shim-pack.png) |
 | [`split-shaft-collar`](split-shaft-collar.kcad.ts) | Split shaft collar | Split clamp collar with a through bore and a raised clamp lug. | Steel, Zinc-plated steel | 112 | [PNG](previews/split-shaft-collar.png) |
-| [`square-mounting-flange`](square-mounting-flange.kcad.ts) | Square mounting flange | Square flange with a centered through bore, four corner holes and a short neck. | Stainless steel, Cast iron | 316 | [PNG](previews/square-mounting-flange.png) |
+| [`square-mounting-flange`](square-mounting-flange.kcad.ts) | Square mounting flange | Four-hole cast flange with selectable through-bore, stainless neck, rubber seal and installed socket heads. | Cast iron, Stainless steel, Rubber, Zinc-plated steel | 764 | [PNG](previews/square-mounting-flange.png) |
 | [`t-slot-angle-bracket`](t-slot-angle-bracket.kcad.ts) | T-slot angle bracket | Compact external corner bracket for joining two perpendicular framing profiles. | Steel, Aluminum | 40 | [PNG](previews/t-slot-angle-bracket.png) |
 | [`t-slot-end-cap`](t-slot-end-cap.kcad.ts) | T-slot end cap | Polymer end cap with locating ribs seated in a short grooved aluminum extrusion profile. | Aluminum, Engineering polymer | 156 | [PNG](previews/t-slot-end-cap.png) |
 | [`timing-belt-pulley`](timing-belt-pulley.kcad.ts) | Timing belt pulley | Twenty-tooth crown with paired bolted retaining flanges and a keyed shaft bore. | Aluminum, Steel, Flange hardware | 1236 | [PNG](previews/timing-belt-pulley.png) |
