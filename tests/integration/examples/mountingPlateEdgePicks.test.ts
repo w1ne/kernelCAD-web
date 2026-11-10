@@ -1,38 +1,53 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Issue #1300. The drafting-review mounting plate fillets the four vertical
-// corners and chamfers the top perimeter. After an upstream width edit those
-// picks must still land on those edges, or fail with a typed miss. A
-// neighbouring edge (bottom perimeter, top edge taken as a corner fillet)
-// must not be blended in their place.
+// Issue #1300. The drafting-review mounting plate still fillets its four
+// vertical corners and chamfers its top perimeter, but the picks are stored
+// identity, not a geometric re-query:
+//
+//   q.edge(q.createdBy(stock.id)).and(q.withLabel('corner' | 'top-perimeter'))
+//
+// createdBy reads edgeHistoryMap. withLabel reads the birth label on that
+// lineage. The lowerer then bridges the query evaluator's edge handles back
+// onto the current shape by OCCT HashCode. A created edge ref for the same
+// slot goes through resolveEdgeRef. A width/depth/thickness edit moves and
+// lengthens those edges without deleting them, so the stored query must hit
+// them again. It must not blend a neighbour (the bottom perimeter).
+// `{ parallel: [0,0,1] }` and `{ face: 'top' }` are not the selectors under test.
 
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getOC } from 'replicad';
-import { buildModelFromFile, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
+import { buildModel, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
 import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { inspectEdgeBreaks } from '../../../src/kernel/backends/occt/edgeRadius';
+import { pickEdges } from '../../../src/kernel/backends/occt/edgeSelection';
+import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 import type { BindingFingerprint, SelectionRecord } from '../../../src/shared/intent/selectionRecord';
 import type { Vec3 } from '../../../src/shared/intent/types';
 
 const PLATE = 'examples/drafting-review/mounting-plate.kcad.ts';
-const WIDTH_EDIT = 130;
+const WIDTH_EDIT = 140;
+const DEPTH_EDIT = 100;
+const THICKNESS_EDIT = 18;
 
-/** Selection failures. A warning that the selector moved is not a miss. */
-const TYPED_MISS = new Set([
-  'feature.selection.no-match',
-  'feature.invalid-args',
-  'feature.face-ref.not-resolvable',
-  'feature.face-ref.not-supported',
-  'feature.face-ref.not-applicable',
-  'feature.face-ref.ambiguous-after-split',
-  'feature.face-ref.removed',
-  'feature.kernel-failed',
-  'query.empty',
-  'query.unsupported-entity-type',
-  'query.unknown-label',
-  'query.ambiguous',
-]);
+function identityPlateSource(): string {
+  const src = readFileSync(resolve(PLATE), 'utf8');
+  const rewritten = src.replace(
+    'return box(width, depth, thickness)\n  .fillet(6, { parallel: [0, 0, 1] })\n  .chamfer(0.5, { face: \'top\' })',
+    [
+      'const stock = box(width, depth, thickness);',
+      'return stock',
+      '  .fillet(6, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'corner\')))',
+      '  .chamfer(0.5, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'top-perimeter\')))',
+    ].join('\n'),
+  );
+  if (rewritten === src) {
+    throw new Error('mounting plate no longer has the geometric fillet/chamfer this test rewrites');
+  }
+  return rewritten;
+}
 
 function shapeOf(model: BuiltModel): OcctBackend {
   const shape = model.rootShape as OcctBackend | undefined;
@@ -96,14 +111,24 @@ function distTo(point: Vec3, targets: readonly Vec3[]): number {
   return Math.min(...targets.map((t) => Math.hypot(point[0] - t[0], point[1] - t[1], point[2] - t[2])));
 }
 
-function selection(selections: readonly SelectionRecord[], text: string): SelectionRecord {
-  const found = selections.find((s) => s.selectorText === text);
-  expect(found, `missing selection '${text}'`).toBeDefined();
+function identitySelection(selections: readonly SelectionRecord[], label: string): SelectionRecord {
+  const found = selections.find((s) => s.selectorText.includes('createdBy') && s.selectorText.includes(`withLabel("${label}")`));
+  expect(found, `missing identity selection for '${label}': ${selections.map((s) => s.selectorText).join(' | ')}`).toBeDefined();
   return found!;
 }
 
-function typedMisses(model: BuiltModel): string[] {
-  return model.diagnostics.filter((d) => d.severity === 'error' && TYPED_MISS.has(d.code)).map((d) => d.code);
+function assertStoredIdentityQuery(model: BuiltModel, kind: 'fillet' | 'chamfer', label: string): void {
+  const record = model.records.find((r) => r.kind === kind);
+  expect(record, kind).toBeDefined();
+  const edges = record!.inputs.edges;
+  expect(edges?.kind).toBe('edge');
+  if (edges?.kind !== 'edge') return;
+  expect(edges.ref.kind).toBe('queryDsl');
+  const ast = JSON.stringify(edges.ref.kind === 'queryDsl' ? edges.ref.queryAst : {});
+  expect(ast).toContain('createdBy');
+  expect(ast).toContain(label);
+  expect(ast).not.toContain('parallel');
+  expect(ast).not.toContain('"face"');
 }
 
 /** The four vertical corner edges, and only those, are the fillet pick. */
@@ -127,10 +152,15 @@ function expectCornerFilletPick(fingerprints: readonly BindingFingerprint[], pla
   expect(used.size).toBe(4);
 }
 
-function expectTopChamferPick(fingerprint: BindingFingerprint): void {
-  expect(fingerprint.entityKind).toBe('face');
-  expect(fingerprint.role).toBe('top');
-  expect(fingerprint.direction?.[2] ?? 0).toBeGreaterThan(0.99);
+function expectTopPerimeterPick(fingerprints: readonly BindingFingerprint[], plate: ReturnType<typeof frame>): void {
+  expect(fingerprints).toHaveLength(4);
+  for (const edge of fingerprints) {
+    expect(edge.entityKind).toBe('edge');
+    expect(edge.geomType).toBe('LINE');
+    expect(Math.abs(edge.direction?.[2] ?? 0)).toBeLessThan(0.1);
+    expect(edge.centroid[2]).toBeCloseTo(plate.thickness, 1);
+    expect(distTo(edge.centroid, plate.bottomMids), `chamfer edge at ${edge.centroid.join(',')} is on the bottom`).toBeGreaterThan(plate.thickness / 2);
+  }
 }
 
 /** Corner fillets present, top perimeter chamfered, bottom perimeter left sharp. */
@@ -169,39 +199,79 @@ function expectNoFalseFlag(model: BuiltModel): void {
   expect(errors, JSON.stringify(errors.map((d) => ({ code: d.code, message: d.message })))).toEqual([]);
 }
 
+/** Created edge ref for the box's birth label. This is the resolveEdgeRef path. */
+function expectCreatedCornerRef(model: BuiltModel, plate: ReturnType<typeof frame>): void {
+  const box = model.records.find((r) => r.kind === 'box');
+  expect(box).toBeDefined();
+  const base = model.shapes.get(box!.id) as OcctBackend;
+  const record = {
+    id: 'created_corner_probe',
+    kind: 'fillet',
+    inputs: {
+      base: { kind: 'feature', id: box!.id },
+      edges: {
+        kind: 'edge',
+        featureId: box!.id,
+        ref: { kind: 'created', rewriteId: box!.id, slot: 'corner', selector: 'edge' },
+      },
+    },
+    params: { radius: { expression: '6', unit: 'mm', evaluated: 6 } },
+    transforms: [],
+    suppressed: false,
+  } as FeatureRecord;
+  const picked = pickEdges(record, base, model.records);
+  if ('error' in picked) {
+    expect.fail(`created corner ref missed: ${picked.error.code} ${picked.error.message}`);
+  }
+  expect(picked).toHaveLength(4);
+  for (const edge of picked) {
+    const mid = edge.pointAt(0.5);
+    const tangent = edge.tangentAt(0.5);
+    expect(Math.abs(tangent.z)).toBeGreaterThan(0.99);
+    expect(distTo([mid.x, mid.y, mid.z], plate.corners)).toBeLessThan(1);
+    mid.delete?.();
+    tangent.delete?.();
+  }
+}
+
 describe('drafting-review mounting plate edge picks', () => {
-  it('keeps the corner fillet and top chamfer after the plate is widened', async () => {
-    const model = await buildModelFromFile({ file: PLATE });
+  it('keeps lineage corner and top-perimeter picks after the plate is resized', async () => {
+    const fileName = resolve(PLATE);
+    const model = await buildModel({
+      code: identityPlateSource(),
+      fileName,
+      scriptDir: dirname(fileName),
+    });
     expectNoFalseFlag(model);
+    assertStoredIdentityQuery(model, 'fillet', 'corner');
+    assertStoredIdentityQuery(model, 'chamfer', 'top-perimeter');
     const base = frame(shapeOf(model));
     expect(base.width).toBeCloseTo(100, 3);
     expect(base.depth).toBeCloseTo(70, 3);
     expect(base.thickness).toBeCloseTo(12, 3);
-    expectCornerFilletPick(selection(model.selections, '{"parallel":[0,0,1]}').fingerprints, base);
-    expectTopChamferPick(selection(model.selections, 'top').fingerprints[0]!);
+    expectCornerFilletPick(identitySelection(model.selections, 'corner').fingerprints, base);
+    expectTopPerimeterPick(identitySelection(model.selections, 'top-perimeter').fingerprints, base);
+    expectCreatedCornerRef(model, base);
     expectAppliedGeometry(shapeOf(model), base);
 
-    const { model: wide } = await updateModelParams(model, [{ name: 'width', value: WIDTH_EDIT }]);
-    const edited = frame(shapeOf(wide));
+    const { model: resized } = await updateModelParams(model, [
+      { name: 'width', value: WIDTH_EDIT },
+      { name: 'depth', value: DEPTH_EDIT },
+      { name: 'thickness', value: THICKNESS_EDIT },
+    ]);
+    const edited = frame(shapeOf(resized));
     expect(edited.width).toBeCloseTo(WIDTH_EDIT, 3);
-    expect(edited.depth).toBeCloseTo(70, 3);
-    expect(edited.thickness).toBeCloseTo(12, 3);
+    expect(edited.depth).toBeCloseTo(DEPTH_EDIT, 3);
+    expect(edited.thickness).toBeCloseTo(THICKNESS_EDIT, 3);
 
-    const misses = typedMisses(wide);
-    const otherErrors = wide.diagnostics.filter((d) => d.severity === 'error' && !TYPED_MISS.has(d.code));
-    expect(otherErrors, JSON.stringify(otherErrors.map((d) => d.code))).toEqual([]);
-
-    if (misses.length > 0) {
-      for (const corner of edited.corners) {
-        expect(distanceToSolid(shapeOf(wide), corner), 'typed miss still filleted a corner').toBeLessThan(0.05);
-      }
-      expectNeighboursSharp(shapeOf(wide), edited);
-      return;
-    }
-
-    expectNoFalseFlag(wide);
-    expectCornerFilletPick(selection(wide.selections, '{"parallel":[0,0,1]}').fingerprints, edited);
-    expectTopChamferPick(selection(wide.selections, 'top').fingerprints[0]!);
-    expectAppliedGeometry(shapeOf(wide), edited);
+    // This edit moves and lengthens the corners. It does not delete or split
+    // them, so a typed miss here would mean the stored identity was dropped.
+    expectNoFalseFlag(resized);
+    assertStoredIdentityQuery(resized, 'fillet', 'corner');
+    assertStoredIdentityQuery(resized, 'chamfer', 'top-perimeter');
+    expectCornerFilletPick(identitySelection(resized.selections, 'corner').fingerprints, edited);
+    expectTopPerimeterPick(identitySelection(resized.selections, 'top-perimeter').fingerprints, edited);
+    expectCreatedCornerRef(resized, edited);
+    expectAppliedGeometry(shapeOf(resized), edited);
   });
 });
