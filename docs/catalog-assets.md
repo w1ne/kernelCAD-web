@@ -736,3 +736,14 @@ contains source snapshots, before/after and parameter-variant renders, local
 page checks, lint/integration output and the inspected MP4. These remain
 stylized visualization props; they do not establish process performance,
 pressure ratings, installation suitability, deployment or physical acceptance.
+
+## Industrial exchanger materials
+
+The existing `industrial-plant/shell-and-tube-exchanger` keeps separate
+`steel` and `hardware` material controls. Tube sheets, process connections,
+saddles and the shell band now use a neutral metal palette rather than the
+previous ochre safety-paint color; the `weathered` and `stainless` presets keep
+those exposed parts metallic. The [material review handoff](../artifacts/catalog-demos/shell-tube-exchanger-material-review-20261110/README.md)
+contains before/after previews, the five-item audit ledger, the exported-GLB
+regression and the inspected local demo. The branch is not deployed. The asset
+is a generic scene prop, not a pressure-rated design or physical acceptance.

@@ -146497,7 +146497,7 @@
       "id": "shell-and-tube-exchanger",
       "kit": "industrial-plant",
       "title": "Shell and tube heat exchanger",
-      "description": "Horizontal shell-and-tube heat exchanger with tube sheets, saddle feet and paired process nozzles. Controls: overall scale, steel, safety paint.",
+      "description": "Horizontal shell-and-tube heat exchanger with tube sheets, saddle feet and paired process nozzles. Controls: overall scale, shell steel and exposed metalwork.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146516,7 +146516,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/shell-and-tube-exchanger.kcad.ts",
       "preview": "/assets/industrial-plant-shell-and-tube-exchanger.png",
-      "sourceSha256": "f16af3f6c71592d7f225ff385a6749c03f982793afb84b85d8c97f9de2d98666",
+      "sourceSha256": "512d385234f24ee98b721905f5988d76f3b82b38df8c56821acd7887ad2360e1",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146535,19 +146535,20 @@
           "label": "Structural steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "hardware",
           "type": "color",
-          "default": "#dca144",
-          "label": "Safety paint"
+          "default": "#89959a",
+          "label": "Tube sheets, nozzles and supports metal"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "hardware": "#747674"
         },
-        "highVisibility": {
-          "safetyPaint": "#f5c640"
+        "stainless": {
+          "steel": "#aab4b7",
+          "hardware": "#d2d7d8"
         }
       },
       "stats": {
@@ -146574,8 +146575,8 @@
           "param": "steel"
         },
         {
-          "name": "safetyPaint",
-          "color": "#dca144",
+          "name": "hardware",
+          "color": "#89959a",
           "parts": [
             "tube-sheet--1",
             "connection--1",
@@ -146585,7 +146586,7 @@
             "saddle-1",
             "shell-band"
           ],
-          "param": "safetyPaint"
+          "param": "hardware"
         }
       ]
     },

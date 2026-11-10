@@ -6,7 +6,7 @@ The bundle retains the [before/after source](before/pressure-sand-filter-vessel.
 
 ## Finding and change
 
-The public `water-treatment/pressure-sand-filter-vessel` source described side inlet/outlet nozzles, but built both as vertical cylinders centered 80 mm beyond the 310 mm vessel radius. Its preview showed a lone disconnected upright stub. The [ledger](preview-review.md) records all five previews and why the other four were left alone.
+The public `water-treatment/pressure-sand-filter-vessel` source described side inlet/outlet nozzles, but built both as vertical cylinders centered 80 mm beyond the 310 mm vessel radius. Its preview showed a lone disconnected upright stub. The [ledger](preview-review.md) records the five previews: three were left unchanged, the shell-and-tube exchanger had a material palette mismatch documented in the [companion handoff](../shell-tube-exchanger-material-review-20261110/README.md), and this vessel had the separate nozzle geometry/description mismatch fixed here.
 
 The existing inlet and outlet are now annular horizontal nozzles on the accessible vessel side: a lower inlet and an upper outlet that clears the inspection manway. Each nozzle overlaps the shell and ends in a visible stainless flange lip. No asset IDs, kit membership, palette controls, presets, or triangle budget changed. The default is **696 triangles / 2,200 budget**.
 

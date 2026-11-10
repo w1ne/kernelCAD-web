@@ -1,0 +1,14 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/shell-tube-exchanger-material-review-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + catalog software renderer",
+  "budget": 1400,
+  "variant": {
+    "id": "stainless",
+    "preset": "stainless",
+    "yawDeg": 35,
+    "pitchDeg": 22,
+    "triangles": 400,
+    "sourceSha256": "512d385234f24ee98b721905f5988d76f3b82b38df8c56821acd7887ad2360e1",
+    "pngSha256": "4a478f8af2db5a95d435b3e14d7e41c353a6484907ad8aef5631a51a18b18237"
+  }
+}
