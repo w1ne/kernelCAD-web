@@ -26,6 +26,16 @@ is 4,594 triangles under a 5,200 budget. The
 records before/after previews, source variants, local checks and an inspected
 MP4. No asset IDs or kit counts changed.
 
+The Nov 10 chiller refinement replaces the block silhouette with paired
+horizontal shell-and-tube vessels, dished heads, nozzles, a compressor and drive
+motor, pipework, controls, support steel and a skid. Its compact/large shell
+choice changes vessel and frame geometry; four material controls separate
+shell steel, support steel, compressor paint and pipework. The default render
+is 3,968 triangles under a 4,500 budget. The
+[chiller handoff](../../../artifacts/catalog-demos/industrial-plant-chiller-quality-20261110/README.md)
+records source variants, refreshed previews, local checks and an inspected
+MP4. No asset IDs or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -49,7 +59,7 @@ MP4. No asset IDs or kit counts changed.
 | `burner-management-skid` | Burner management skid | Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. | scale · steel · safety paint |
 | `steam-header-manifold` | Steam header manifold | Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. | scale · steel · safety paint · gauge glass |
 | `rooftop-air-handler` | Rooftop air handler | Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. | scale · steel · safety paint |
-| `centrifugal-chiller` | Centrifugal chiller | Industrial chiller package with two compressor domes, condenser barrels and pipe connections. | scale · steel · safety paint |
+| `centrifugal-chiller` | Centrifugal chiller | Water-cooled chiller package with two dished shell-and-tube vessels, a centrifugal compressor and drive motor, connecting pipework, controls cabinet and supported skid. | scale · shell package · shell steel · frame steel · compressor paint · pipework |
 | `axial-flow-fan` | Axial flow fan | Axial flow fan with a faceted shroud, central hub, support frame and adjustable service mount. | scale · steel · safety paint |
 | `baghouse-dust-collector` | Baghouse dust collector | Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. | scale · steel · safety paint |
 | `cartridge-filter-housing` | Cartridge filter housing | Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. | scale · steel · safety paint |
@@ -95,12 +105,16 @@ Search by object name through the catalog tools, or open a known asset directly 
 
 ## Rebuild and verify
 
+The Nov 2 wave generator recreates the original kit and would overwrite later
+source refinements, including this chiller. The checked-in `.kcad.ts` files are
+the current design sources; regenerate derived catalog data and pages from those
+files with the commands below.
+
 ```sh
-python3 -B artifacts/catalog-demos/industrial-plant-wave-20261102/generate_industrial_plant_assets.py
+npx tsx scripts/renderCatalogPreviews.ts centrifugal-chiller
 npx tsx scripts/buildAssetCatalog.ts
-npx eslint catalog/
+npx eslint catalog/kits/industrial-plant/
 npx vitest run tests/integration/catalog/
-npx tsx scripts/renderCatalogPreviews.ts vertical-storage-tank horizontal-pressure-vessel process-reactor-vessel distillation-column packed-scrubber-column shell-and-tube-exchanger plate-heat-exchanger evaporative-cooling-tower flare-stack process-water-silo centrifugal-pump chemical-metering-skid positive-displacement-pump air-compressor vacuum-pump-unit process-blower diesel-generator-set industrial-boiler burner-management-skid steam-header-manifold rooftop-air-handler centrifugal-chiller axial-flow-fan baghouse-dust-collector cartridge-filter-housing cyclone-separator industrial-transformer electrical-control-cabinet motor-control-center plc-control-rack variable-frequency-drive-cabinet cable-tray-bridge belt-conveyor roller-conveyor-line screw-conveyor bucket-elevator vibratory-feeder weigh-hopper bulk-loading-spout palletizer-robot-cell bridge-crane gantry-crane jib-crane electric-chain-hoist forklift-truck electric-pallet-jack scissor-lift-table pallet-rack-bay machine-guard-enclosure pipe-rack-bay grating-walkway-module maintenance-platform industrial-stair-tower vertical-cage-ladder steel-access-gate valve-manifold-station pressure-relief-valve inline-flow-meter compressed-air-receiver mobile-tool-cart
 npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-pages
 ```
 

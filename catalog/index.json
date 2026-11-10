@@ -141363,14 +141363,16 @@
       "id": "centrifugal-chiller",
       "kit": "industrial-plant",
       "title": "Centrifugal chiller",
-      "description": "Industrial chiller package with two compressor domes, condenser barrels and pipe connections. Controls: overall scale, steel, safety paint.",
+      "description": "Water-cooled chiller package with two dished shell-and-tube vessels, a centrifugal compressor and drive motor, connecting pipework, a controls cabinet and a supported skid. The compact/large shell choice changes vessel and frame geometry. Material controls separate shell steel, frame steel, compressor paint and pipework; plant, weathered, highVisibility and stainless presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
         "process equipment",
-        "low poly",
+        "chiller",
+        "centrifugal",
+        "heat exchanger",
         "CC0"
       ],
       "compat": [
@@ -141382,8 +141384,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/centrifugal-chiller.kcad.ts",
       "preview": "/assets/industrial-plant-centrifugal-chiller.png",
-      "sourceSha256": "10fe9c3b1cac3727222af1efbb97150bc170d38b30cc8a5c3e2b0d3b0ee7785e",
-      "triangleBudget": 1400,
+      "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -141395,64 +141397,199 @@
           "step": 0.05
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#657c83",
-          "label": "Structural steel"
+          "name": "shellCapacity",
+          "type": "choice",
+          "default": "large",
+          "label": "Shell package",
+          "choices": [
+            "compact",
+            "large"
+          ]
         },
         {
-          "name": "safetyPaint",
+          "name": "shellSteel",
           "type": "color",
-          "default": "#e4a940",
-          "label": "Safety paint"
+          "default": "#607982",
+          "label": "Heat-exchanger shell steel"
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#343e43",
+          "label": "Skid and support steel"
+        },
+        {
+          "name": "compressorPaint",
+          "type": "color",
+          "default": "#3f6b53",
+          "label": "Compressor paint"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#b7c0c2",
+          "label": "Pipework and flanges"
         }
       ],
       "presets": {
+        "plant": {
+          "shellSteel": "#496e7a",
+          "frameSteel": "#343e43",
+          "compressorPaint": "#47765b",
+          "pipework": "#c0c6c4"
+        },
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "shellSteel": "#59656a",
+          "frameSteel": "#454440",
+          "compressorPaint": "#4d5847",
+          "pipework": "#878b86"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "shellSteel": "#526f78",
+          "frameSteel": "#28343b",
+          "compressorPaint": "#f0b935",
+          "pipework": "#d5d7d1"
+        },
+        "stainless": {
+          "shellSteel": "#c2c9c9",
+          "frameSteel": "#657177",
+          "compressorPaint": "#364653",
+          "pipework": "#e0e3e2"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 3968,
         "sizeM": [
-          0.78,
-          0.5645,
-          0.49
+          1.01,
+          0.982,
+          0.636
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e4a940",
+          "name": "frameSteel",
+          "color": "#343e43",
           "parts": [
-            "base-frame",
-            "inspection-door-0",
-            "service-section-1",
-            "inspection-door-1",
-            "compressor-dome-0",
-            "compressor-dome-1",
-            "pipe-header"
+            "skid-left-rail",
+            "skid-right-rail",
+            "skid-crossmember-m383p8",
+            "skid-crossmember-0",
+            "skid-crossmember-383p8",
+            "support-post-m319p8-m190",
+            "support-saddle-m319p8-m190",
+            "support-post-m319p8-190",
+            "support-saddle-m319p8-190",
+            "support-post-319p8-m190",
+            "support-saddle-319p8-m190",
+            "support-post-319p8-190",
+            "support-saddle-319p8-190",
+            "upper-crossrail-m190",
+            "upper-crossrail-190",
+            "evaporator-band-m196p79999999999998",
+            "evaporator-band-196p79999999999998",
+            "condenser-band-m196p79999999999998",
+            "condenser-band-196p79999999999998",
+            "drive-motor-end-bell",
+            "drive-motor-fin-18",
+            "drive-motor-fin-40",
+            "drive-motor-fin-62",
+            "drive-motor-fin-84",
+            "drive-motor-fin-106",
+            "drive-motor-fin-128",
+            "motor-terminal-lid",
+            "controls-door",
+            "cabinet-base"
           ],
-          "param": "safetyPaint"
+          "param": "frameSteel"
         },
         {
-          "name": "steel",
-          "color": "#657c83",
+          "name": "compressorPaint",
+          "color": "#3f6b53",
           "parts": [
-            "main-casing",
-            "service-section-0",
-            "support-foot-0",
-            "support-foot-1",
-            "support-foot-2",
-            "support-foot-3"
+            "isolation-pad-m383p8-m205",
+            "isolation-pad-m383p8-205",
+            "isolation-pad-383p8-m205",
+            "isolation-pad-383p8-205",
+            "compressor-volute",
+            "drive-motor-frame",
+            "motor-terminal-box",
+            "controls-cabinet"
           ],
-          "param": "steel"
+          "param": "compressorPaint"
+        },
+        {
+          "name": "shellSteel",
+          "color": "#607982",
+          "parts": [
+            "evaporator-shell-course",
+            "evaporator-left-head",
+            "evaporator-right-head",
+            "condenser-shell-course",
+            "condenser-left-head",
+            "condenser-right-head"
+          ],
+          "param": "shellSteel"
+        },
+        {
+          "name": "pipework",
+          "color": "#b7c0c2",
+          "parts": [
+            "evaporator-head-flange-m386",
+            "evaporator-head-flange-374",
+            "evaporator-nozzle-m147p6",
+            "evaporator-nozzle-flange-m147p6",
+            "evaporator-nozzle-147p6",
+            "evaporator-nozzle-flange-147p6",
+            "condenser-head-flange-m386",
+            "condenser-head-flange-374",
+            "condenser-nozzle-m147p6",
+            "condenser-nozzle-flange-m147p6",
+            "condenser-nozzle-147p6",
+            "condenser-nozzle-flange-147p6",
+            "compressor-inlet-cover",
+            "compressor-discharge-nozzle",
+            "lower-shell-branch-m147p6",
+            "upper-shell-branch-m147p6",
+            "compressor-riser-m147p6",
+            "compressor-connection-m147p6",
+            "lower-shell-branch-147p6",
+            "upper-shell-branch-147p6",
+            "compressor-riser-147p6",
+            "compressor-connection-147p6",
+            "controller-display",
+            "cabinet-handle"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "display-screen",
+          "color": "#243c48",
+          "parts": [
+            "display-screen"
+          ]
+        },
+        {
+          "name": "status-lamp-0",
+          "color": "#54bd7a",
+          "parts": [
+            "status-lamp-0"
+          ]
+        },
+        {
+          "name": "status-lamp-1",
+          "color": "#e6bb49",
+          "parts": [
+            "status-lamp-1"
+          ]
+        },
+        {
+          "name": "status-lamp-2",
+          "color": "#c65b4d",
+          "parts": [
+            "status-lamp-2"
+          ]
         }
       ]
     },
