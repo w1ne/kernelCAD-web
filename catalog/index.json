@@ -140411,7 +140411,7 @@
       "id": "baghouse-dust-collector",
       "kit": "industrial-plant",
       "title": "Baghouse dust collector",
-      "description": "Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. Controls: overall scale, steel, safety paint.",
+      "description": "Baghouse collector with enclosed filter media, a tapered dust hopper and outlet, supported plenum, service walkway and induced-draft fan. Controls: scale, steel and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -140430,7 +140430,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/baghouse-dust-collector.kcad.ts",
       "preview": "/assets/industrial-plant-baghouse-dust-collector.png",
-      "sourceSha256": "0dd19cfbf5d210afe7f047a06476d9a51b2cb3fa2611b81f3b9651c366881663",
+      "sourceSha256": "a54575dda8981eb2aeb208056a1618a5150d81df5f2edd79f1c926f66f65d02d",
       "triangleBudget": 1400,
       "params": [
         {
@@ -140465,10 +140465,10 @@
         }
       },
       "stats": {
-        "triangles": 468,
+        "triangles": 552,
         "sizeM": [
           0.9301,
-          1.0948,
+          0.8632,
           0.439
         ],
         "minUpM": 0,
@@ -140480,7 +140480,12 @@
           "color": "#748088",
           "parts": [
             "collector-plenum",
-            "hopper",
+            "hopper-front",
+            "hopper-back",
+            "hopper-left",
+            "hopper-right",
+            "hopper-discharge",
+            "dust-outlet",
             "fan-motor",
             "walkway-rail"
           ],
@@ -140491,18 +140496,26 @@
           "color": "#dfa344",
           "parts": [
             "access-roof",
+            "support-leg--320--120",
+            "support-leg--320-120",
+            "support-leg-320--120",
+            "support-leg-320-120",
+            "fan-duct",
+            "service-walkway"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "filter-bag-0",
+          "color": "#c3b280",
+          "parts": [
             "filter-bag-0",
             "filter-bag-1",
             "filter-bag-2",
             "filter-bag-3",
             "filter-bag-4",
-            "filter-bag-5",
-            "support--1",
-            "support-1",
-            "fan-duct",
-            "service-walkway"
-          ],
-          "param": "safetyPaint"
+            "filter-bag-5"
+          ]
         }
       ]
     },

@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 645ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  329ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:32:58
+   Duration  6.82s (transform 4.72s, setup 109ms, import 5.92s, tests 645ms, environment 0ms)

@@ -1,0 +1,38 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-baghouse-semantic-review-20261110/inspect_video.py",
+  "video": "catalog-demos/industrial-plant-baghouse-semantic-review-20261110/industrial-plant-baghouse-semantic-review.mp4",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "15.000000",
+      "size": "198929"
+    }
+  },
+  "durationSeconds": 15.0,
+  "decodedTimestampsSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5
+  ],
+  "decodedFrames": [
+    "video-review/decoded-01.png",
+    "video-review/decoded-02.png",
+    "video-review/decoded-03.png",
+    "video-review/decoded-04.png",
+    "video-review/decoded-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "pass": true
+}

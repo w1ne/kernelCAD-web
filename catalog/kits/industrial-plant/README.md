@@ -36,6 +36,14 @@ is 3,968 triangles under a 4,500 budget. The
 records source variants, refreshed previews, local checks and an inspected
 MP4. No asset IDs or kit counts changed.
 
+The Nov 10 baghouse refinement moves the filter media inside the plenum,
+connects four tapered hopper walls to the dust outlet, and extends the support
+legs to the collector body. Its visible steel and safety-paint controls retain
+the `weathered` and `highVisibility` palettes. The default render is 552
+triangles under a 1,400 budget. The [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-baghouse-semantic-review-20261110/README.md)
+includes the audit ledger, before/after previews, regression test, local checks
+and inspected MP4. No asset IDs or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -61,7 +69,7 @@ MP4. No asset IDs or kit counts changed.
 | `rooftop-air-handler` | Rooftop air handler | Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. | scale · steel · safety paint |
 | `centrifugal-chiller` | Centrifugal chiller | Water-cooled chiller package with two dished shell-and-tube vessels, a centrifugal compressor and drive motor, connecting pipework, controls cabinet and supported skid. | scale · shell package · shell steel · frame steel · compressor paint · pipework |
 | `axial-flow-fan` | Axial flow fan | Axial flow fan with a faceted shroud, central hub, support frame and adjustable service mount. | scale · steel · safety paint |
-| `baghouse-dust-collector` | Baghouse dust collector | Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. | scale · steel · safety paint |
+| `baghouse-dust-collector` | Baghouse dust collector | Enclosed filter media inside a supported plenum, tapered dust hopper with outlet, service walkway and induced-draft fan. | scale · steel · safety paint |
 | `cartridge-filter-housing` | Cartridge filter housing | Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. | scale · steel · safety paint |
 | `cyclone-separator` | Cyclone separator | Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. | scale · steel · safety paint |
 | `industrial-transformer` | Industrial distribution transformer | Oil-filled transformer with two fin banks, ribbed porcelain bushings, copper terminals, lifting lugs and wheel skids. | scale · radiator fin count · tank paint · steel · porcelain · copper |
