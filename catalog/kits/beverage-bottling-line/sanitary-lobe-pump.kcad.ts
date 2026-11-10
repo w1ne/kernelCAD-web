@@ -96,8 +96,11 @@ add('pump-pedestal', box(150, 200, zc - 210, true).translate(-200, 0, 110 + (zc 
 add('pump-casing', alongX(oval(120, 150), -330, 150).color(stainlessSteel));
 add('front-cover', alongX(oval(110, 150), -365, 35).color(stainlessSteel));
 add('cover-seal', alongX(oval(122, 150), -335, 6).color(foodPolymer));
-for (const [i, v] of [-75, 75].entries()) {
-  const [y, z] = vertical ? [v, zc] : [0, zc + v];
+// Four separate front-cover fasteners. The pattern turns with the oval casing
+// so both port orientations keep the nuts on the removable cover face.
+const coverFasteners = [[-65, -110], [65, -110], [-65, 110], [65, 110]];
+for (const [i, [shortAxis, longAxis]] of coverFasteners.entries()) {
+  const [y, z] = vertical ? [longAxis, zc + shortAxis] : [shortAxis, zc + longAxis];
   add(`cap-nut-${i}`, turned([[0, 0], [30, 0], [30, 20], [18, 40], [0, 44]]).rotateY(-90).translate(-365, y, z).color(stainlessSteel));
 }
 // Ports either side (horizontal) or top and bottom with the outlet turned out to -Y (vertical).
