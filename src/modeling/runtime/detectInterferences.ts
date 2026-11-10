@@ -397,20 +397,28 @@ function probeCandidates(
       reusedPairCount += 1;
       continue;
     }
+    // changedParts is an explicit invalidation: even if the source-shape
+    // objects and relative pose still match a previous measurement, the
+    // caller has said this geometry may have changed. Do not use the
+    // process-wide pose memo or the cached AABB upper bound.
+    const skipPoseMemo = incremental?.changedParts !== undefined
+      && (incremental.changedParts.has(a.name) || incremental.changedParts.has(b.name));
     // The exact boolean and the rotated-AABB bound depend only on the
     // relative pose. A pair we already measured (or already proved below
     // epsilon) must not be re-bounded or re-booleaned just because the
     // whole assembly translated.
-    const memoized = overlapFromMemo(a, b, epsilonMm3);
-    if (memoized !== undefined) {
-      if (memoized !== null) pairs.push(memoized);
-      reusedPairCount += 1;
-      continue;
+    if (!skipPoseMemo) {
+      const memoized = overlapFromMemo(a, b, epsilonMm3);
+      if (memoized !== undefined) {
+        if (memoized !== null) pairs.push(memoized);
+        reusedPairCount += 1;
+        continue;
+      }
     }
     probedPairCount += 1;
     // Caller-selected pairs already survived the proxy pass. Do not drop
     // them on the source AABB or the rotated volume upper bound.
-    if (explicitPairs === undefined && boundsProveBelowThreshold(a, b, epsilonMm3)) continue;
+    if (explicitPairs === undefined && !skipPoseMemo && boundsProveBelowThreshold(a, b, epsilonMm3)) continue;
 
     const confirmed = confirmOverlap(a, b, epsilonMm3, diagnostics);
     if (confirmed === 'unconfirmed') {
