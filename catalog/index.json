@@ -308939,7 +308939,7 @@
       "id": "bulkhead-adapter",
       "kit": "standard-components",
       "title": "Bulkhead adapter",
-      "description": "Hollow through-wall adapter with a tube barrel and a flange on each side Knobs: model size, stainless steel, brass.",
+      "description": "Hollow through-wall fitting with a long brass barrel, paired stainless flanges, a sealing washer and a six-flat locknut. Knobs: size, stainless steel, brass and sealing rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -308957,8 +308957,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
       "preview": "/assets/standard-components-bulkhead-adapter.png",
-      "sourceSha256": "bc422c07194006826f4db862c32b3bb41b28f3a4830914f032f535f23cb562e9",
-      "triangleBudget": 340,
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5",
+      "triangleBudget": 620,
       "params": [
         {
           "name": "size",
@@ -308982,27 +308982,36 @@
           "type": "color",
           "default": "#b28a4d",
           "label": "Brass"
+        },
+        {
+          "name": "sealRubber",
+          "type": "color",
+          "default": "#343c3e",
+          "label": "Sealing rubber"
         }
       ],
       "presets": {
         "dark": {
           "stainless": "#7d8a91",
-          "brass": "#725938"
+          "brass": "#725938",
+          "sealRubber": "#252b2d"
         },
         "brass": {
           "stainless": "#b38b52",
-          "brass": "#c0944d"
+          "brass": "#c0944d",
+          "sealRubber": "#342d23"
         },
         "weathered": {
           "stainless": "#8b8275",
-          "brass": "#8c734d"
+          "brass": "#8c734d",
+          "sealRubber": "#4b4942"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 456,
         "sizeM": [
           0.042,
-          0.03,
+          0.0365,
           0.042
         ],
         "minUpM": 0,
@@ -309022,9 +309031,18 @@
           "color": "#b8c1c6",
           "parts": [
             "lower-flange",
-            "upper-flange"
+            "upper-flange",
+            "hex-locknut"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "sealRubber",
+          "color": "#343c3e",
+          "parts": [
+            "sealing-washer"
+          ],
+          "param": "sealRubber"
         }
       ]
     },
@@ -311037,7 +311055,7 @@
       "id": "linear-guide-rail",
       "kit": "standard-components",
       "title": "Linear guide rail",
-      "description": "Compact linear motion rail with a broad mounting foot and raised central raceway Knobs: model size, steel, aluminum.",
+      "description": "Linear guide with a drilled aluminum rail, raised steel raceway and a position-selectable carriage with top mounting wells and polymer wipers. Knobs: rail size, carriage position, aluminum, steel and engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -311055,8 +311073,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-rail.png",
-      "sourceSha256": "556238ab9b74cd8a4596103f0e14952e201c46f04e75ab6e55fa148a2bc6139b",
-      "triangleBudget": 300,
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5",
+      "triangleBudget": 760,
       "params": [
         {
           "name": "size",
@@ -311070,6 +311088,17 @@
           ]
         },
         {
+          "name": "carriagePosition",
+          "type": "choice",
+          "default": "center",
+          "label": "Carriage position",
+          "choices": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
@@ -311080,27 +311109,36 @@
           "type": "color",
           "default": "#aebac0",
           "label": "Aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Polymer end wipers"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "aluminum": "#586970"
+          "aluminum": "#586970",
+          "polymer": "#244956"
         },
-        "brass": {
-          "steel": "#646f75",
-          "aluminum": "#aab8bc"
+        "highVisibility": {
+          "steel": "#434b50",
+          "aluminum": "#bbc5c8",
+          "polymer": "#e97832"
         },
         "weathered": {
           "steel": "#665b4d",
-          "aluminum": "#788177"
+          "aluminum": "#788177",
+          "polymer": "#4b4942"
         }
       },
       "stats": {
-        "triangles": 232,
+        "triangles": 540,
         "sizeM": [
           0.12,
-          0.015,
+          0.028,
           0.032
         ],
         "minUpM": 0,
@@ -311119,9 +311157,21 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "raceway"
+            "raceway",
+            "carriage",
+            "left-race-contact",
+            "right-race-contact"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e46b3c",
+          "parts": [
+            "left-end-wiper",
+            "right-end-wiper"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -312584,7 +312634,7 @@
       "id": "shaft-coupling",
       "kit": "standard-components",
       "title": "Shaft coupling sleeve",
-      "description": "Straight shaft coupler with a thicker center band and two aligned shaft bores Knobs: model size, steel, bronze.",
+      "description": "Rigid shaft coupling with two through-bored steel hubs, a bronze center band and selectable set-screw or split-clamp retention. Knobs: size, retention style, steel, bronze and zinc-plated set screws.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -312602,8 +312652,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
       "preview": "/assets/standard-components-shaft-coupling.png",
-      "sourceSha256": "fd7cad44bf51a921b00b7124dc40a534079599941abf94997fe2687f850155b1",
-      "triangleBudget": 340,
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845",
+      "triangleBudget": 620,
       "params": [
         {
           "name": "size",
@@ -312617,6 +312667,16 @@
           ]
         },
         {
+          "name": "retention",
+          "type": "choice",
+          "default": "setScrews",
+          "label": "Shaft retention",
+          "choices": [
+            "setScrews",
+            "splitClamp"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
@@ -312627,24 +312687,33 @@
           "type": "color",
           "default": "#98714c",
           "label": "Bronze"
+        },
+        {
+          "name": "setScrewSteel",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated set screws"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "bronze": "#684d37"
+          "bronze": "#684d37",
+          "setScrewSteel": "#929da3"
         },
         "brass": {
           "steel": "#646f75",
-          "bronze": "#b0804d"
+          "bronze": "#b0804d",
+          "setScrewSteel": "#c29a5c"
         },
         "weathered": {
           "steel": "#665b4d",
-          "bronze": "#6e583f"
+          "bronze": "#6e583f",
+          "setScrewSteel": "#a19682"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 536,
         "sizeM": [
           0.038,
           0.038,
@@ -312670,6 +312739,15 @@
             "center-band"
           ],
           "param": "bronze"
+        },
+        {
+          "name": "setScrewSteel",
+          "color": "#cbd1d5",
+          "parts": [
+            "left-set-screw",
+            "right-set-screw"
+          ],
+          "param": "setScrewSteel"
         }
       ]
     },

@@ -126,3 +126,35 @@ undetailed housing cube.
 - Local catalog pages, lint and catalog integration were verified. The branch
   was not deployed; no vendor-standard, manufacturing or physical acceptance
   is claimed.
+
+## Guide and retention detail follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md)
+refines three existing models in place: `bulkhead-adapter`,
+`linear-guide-rail`, and `shaft-coupling`. No kit or asset ID was added.
+
+- Each model now exposes three independently editable material-named colors
+  and keeps its existing three named appearance presets.
+- The adapter has a through-bored brass barrel, paired stainless flanges, a
+  dark rubber washer, and a six-flat stainless locknut: **456 triangles / 620
+  budget**.
+- The guide has a drilled aluminum base, steel raceway, an underside-relieved
+  carriage with four top wells, two orange polymer wipers, and a left/center/
+  right carriage position choice: **540 / 760**.
+- The coupling has two bored steel hubs, a bronze center band, and a selectable
+  set-screw or split-clamp retention layout with zinc-plated hardware: **536 /
+  620**. The size choice continues to scale the entire model.
+- Preset count: **three retained and updated per asset; zero new preset names**.
+  Added material controls: **three total** (one each).
+- The kit remains **50/50 passing** and the global catalog remains
+  **2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. No IDs or count
+  were added.
+- All **50** previews were rerendered and the generated index rebuilt. The
+  verification bundle records source and preview hashes, local catalog pages,
+  quality output, lint, integration output, and inspected MP4 frames.
+
+The previews show a clear six-flat nut and gasket above the adapter flange, a
+carriage with visible top wells and orange end wipers on the guide rail, and
+contrasting set screws or clamp bolts around the coupling hubs. These are
+generic visualization assets, not supplier geometry, manufacturing evidence,
+or physical hardware acceptance. The branch is not deployed.

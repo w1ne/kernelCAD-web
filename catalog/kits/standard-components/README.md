@@ -21,6 +21,18 @@ continue to change the generated envelope. The [source-to-preview handoff](../..
 records the source variants, refreshed previews, generated index and inspected
 MP4. These remain generic low-poly scene models, not vendor-standard geometry.
 
+A second Nov 10 detail pass refines the existing bulkhead adapter, linear guide
+rail and shaft coupling. The adapter now shows a six-flat locknut and rubber
+sealing washer around its through-bored brass barrel. The guide includes a
+position-selectable carriage with four top mounting wells and orange polymer
+end wipers. The coupling exposes radial set screws or a split-clamp layout
+with crossing bolts. Each now has three material-named color controls; the
+existing three named presets remain and now vary all material zones. No IDs or
+kits were added. The [guide and retention handoff](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md)
+records the source variants, all 50 regenerated previews, rebuilt index,
+verification and inspected MP4. These remain generic low-poly visualization
+models, not vendor parts or manufacturing specifications.
+
 ## Assets
 
 | ID | Component | Description | Color controls | Default triangles | Preview |
@@ -29,7 +41,7 @@ MP4. These remain generic low-poly scene models, not vendor-standard geometry.
 | [`base-mounting-plate`](base-mounting-plate.kcad.ts) | Base mounting plate | Square equipment foot plate with a raised locating boss, four- or eight-hole layout and optional socket-head bolts. | Plate steel, Brass boss, Zinc-plated bolts | 264 | [PNG](previews/base-mounting-plate.png) |
 | [`beam-coupling`](beam-coupling.kcad.ts) | Beam coupling | Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve. | Steel, Aluminum | 428 | [PNG](previews/beam-coupling.png) |
 | [`blind-flange`](blind-flange.kcad.ts) | Blind flange | Solid pipe-end closure with raised sealing face, four/eight-hole bolt circle and optional installed bolts. | Cast iron, Bronze face, Zinc-plated bolts | 296 | [PNG](previews/blind-flange.png) |
-| [`bulkhead-adapter`](bulkhead-adapter.kcad.ts) | Bulkhead adapter | Hollow through-wall adapter with a tube barrel and a flange on each side. | Stainless steel, Brass | 288 | [PNG](previews/bulkhead-adapter.png) |
+| [`bulkhead-adapter`](bulkhead-adapter.kcad.ts) | Bulkhead adapter | Hollow through-wall brass barrel with paired stainless flanges, rubber sealing washer and six-flat locknut. | Stainless steel, Brass, Sealing rubber | 456 | [PNG](previews/bulkhead-adapter.png) |
 | [`cable-clamp`](cable-clamp.kcad.ts) | Cable clamp | Low-profile cable saddle with two fixing ears and a rounded cable guide. | Steel, Rubber | 132 | [PNG](previews/cable-clamp.png) |
 | [`cable-gland`](cable-gland.kcad.ts) | Cable gland | Panel cable gland with a hollow body, stepped compression nut and wide sealing flange. | Engineering polymer, Rubber | 384 | [PNG](previews/cable-gland.png) |
 | [`caster-wheel`](caster-wheel.kcad.ts) | Caster wheel | Single low-poly swivel caster with a fork, mounting plate and centered wheel. | Steel, Zinc-plated steel, Rubber | 200 | [PNG](previews/caster-wheel.png) |
@@ -49,7 +61,7 @@ MP4. These remain generic low-poly scene models, not vendor-standard geometry.
 | [`knurled-knob`](knurled-knob.kcad.ts) | Knurled knob | Compact control knob with a broad grip body, raised crown and center stem. | Steel, Aluminum, Engineering polymer | 228 | [PNG](previews/knurled-knob.png) |
 | [`leveling-foot`](leveling-foot.kcad.ts) | Leveling foot | Adjustable leveling foot with a wide circular pad and centered support stem. | Steel, Zinc-plated steel, Rubber | 132 | [PNG](previews/leveling-foot.png) |
 | [`linear-guide-carriage`](linear-guide-carriage.kcad.ts) | Linear guide carriage | Steel guide carriage with an open underside channel, polymer wiper end plates, four recessed top mounting wells, and a brass grease fitting. | Steel, Engineering polymer, Brass | 408 | [PNG](previews/linear-guide-carriage.png) |
-| [`linear-guide-rail`](linear-guide-rail.kcad.ts) | Linear guide rail | Compact linear motion rail with a broad mounting foot and raised central raceway. | Steel, Aluminum | 232 | [PNG](previews/linear-guide-rail.png) |
+| [`linear-guide-rail`](linear-guide-rail.kcad.ts) | Linear guide rail | Drilled aluminum rail with a steel raceway and position-selectable carriage, top mounting wells and polymer end wipers. | Steel, Aluminum, Polymer end wipers | 540 | [PNG](previews/linear-guide-rail.png) |
 | [`panel-clamp`](panel-clamp.kcad.ts) | Panel clamp | Small edge clamp with a broad base, upright jaw and adjustable pressure pad. | Steel, Zinc-plated steel, Rubber | 80 | [PNG](previews/panel-clamp.png) |
 | [`piano-hinge`](piano-hinge.kcad.ts) | Piano hinge | Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. | Steel, Stainless steel | 332 | [PNG](previews/piano-hinge.png) |
 | [`pillow-block-housing`](pillow-block-housing.kcad.ts) | Pillow block housing | Raised pillow-block support with a broad base, round bearing boss and two bolt feet. | Zinc-plated steel, Cast iron, Bronze | 132 | [PNG](previews/pillow-block-housing.png) |
@@ -64,7 +76,7 @@ MP4. These remain generic low-poly scene models, not vendor-standard geometry.
 | [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open retaining ring profile with two small installation ears. | Stainless steel, Spring steel | 124 | [PNG](previews/retaining-ring.png) |
 | [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Stepped vibration isolator with a broad foot and selectable male stud or recessed threaded insert. | Rubber, Stud steel, Zinc-plated hardware | 332 | [PNG](previews/rubber-bumper.png) |
 | [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | One-piece round shaft collar with a centered bore and a small radial set-screw boss. | Steel, Zinc-plated steel | 140 | [PNG](previews/shaft-collar.png) |
-| [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Straight shaft coupler with a thicker center band and two aligned shaft bores. | Steel, Bronze | 288 | [PNG](previews/shaft-coupling.png) |
+| [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Two through-bored steel hubs around a bronze center band, with selectable set-screw or split-clamp retention. | Steel, Bronze, Zinc-plated set screws | 536 | [PNG](previews/shaft-coupling.png) |
 | [`shim-pack`](shim-pack.kcad.ts) | Shim pack | Stack of thin rectangular alignment shims with small offset pull tabs. | Steel, Stainless steel, Brass | 60 | [PNG](previews/shim-pack.png) |
 | [`split-shaft-collar`](split-shaft-collar.kcad.ts) | Split shaft collar | Split clamp collar with a through bore and a raised clamp lug. | Steel, Zinc-plated steel | 112 | [PNG](previews/split-shaft-collar.png) |
 | [`square-mounting-flange`](square-mounting-flange.kcad.ts) | Square mounting flange | Square flange with a centered through bore, four corner holes and a short neck. | Stainless steel, Cast iron | 316 | [PNG](previews/square-mounting-flange.png) |
@@ -92,7 +104,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), and the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md), and the [2026-11-10 guide and retention detail follow-up](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 

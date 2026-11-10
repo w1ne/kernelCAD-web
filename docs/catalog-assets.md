@@ -27,6 +27,22 @@ local page and check evidence, and the inspected MP4. This branch is not
 deployed; these are generic visualization models, not vendor geometry or
 physical acceptance evidence.
 
+A second Nov 10 standard-components pass refines the existing `bulkhead-adapter`,
+`linear-guide-rail`, and `shaft-coupling` without adding IDs or kits. The adapter
+has a longer hollow brass barrel, a six-flat stainless locknut, and a sealing
+rubber washer; the guide now has a position-selectable carriage with four
+mounting wells and orange polymer wipers; and the coupling has either raised
+set screws or a split-clamp cut with crossing bolts. Each now has three
+material-named controls and three named palettes. Their default meshes are
+456, 540, and 536 triangles within budgets of 620, 760, and 620. All 50
+standard-components previews were regenerated and the index rebuilt. The kit
+remains **50/50 passing** and the global gate remains **2,402/2,402 passing
+(100.00%)**. The
+[guide and retention handoff](../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md)
+contains source variants, local page checks, lint and integration evidence, and
+the inspected MP4. This branch is not deployed; the assets remain low-poly
+visualizations without vendor dimensions or physical acceptance claims.
+
 The Nov 10 water-treatment follow-up refines the existing `backwash-pump-skid`
 in place. Its preview now shows end-suction pump casings, finned motors,
 separate suction and discharge headers, isolation valves, gauges, coupling
