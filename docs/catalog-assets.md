@@ -12,6 +12,21 @@ kit contains 153 assets, all passing; all 153 have kit-local rendered previews
 and matching source hashes in the generated index. This is a local branch
 snapshot, not a deployment or hardware-acceptance claim.
 
+The Nov 10 water-treatment follow-up refines the existing `backwash-pump-skid`
+in place. Its preview now shows end-suction pump casings, finned motors,
+separate suction and discharge headers, isolation valves, gauges, coupling
+guards, and a local control panel. The `pumpArrangement` choice changes between
+single and duplex layouts; coated pump steel, structural steel, stainless
+pipework, and rubber details have separate controls with `weathered` and
+`highVisibility` palettes. The default export is 2,648 triangles under its
+3,600-triangle budget. No IDs or kits were added: water-treatment remains
+50/50 passing and the catalog remains 2,402/2,402 passing (100%). The
+[backwash pump skid handoff](../artifacts/catalog-demos/water-treatment-backwash-pump-skid-20261110/README.md)
+contains the single/duplex renders, regenerated index evidence, local page
+review, lint and integration output, and inspected MP4. This branch is not
+deployed; these are generic visualization models and make no treatment or
+physical-acceptance claim.
+
 The Nov 9 space-exploration refinement keeps all 52 existing IDs and deepens
 the component materials on 36 assets. Every asset retains two to four
 material-specific controls and the `lunarDust` / `highVisibility` presets; the

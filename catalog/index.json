@@ -345998,12 +345998,15 @@
       "id": "backwash-pump-skid",
       "kit": "water-treatment",
       "title": "Filter backwash pump skid",
-      "description": "Twin backwash pump set on a shared base with suction headers and motor blocks. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Skid-mounted end-suction centrifugal pump package with suction and discharge manifolds, isolation valves, motor cooling fins, pressure gauges and a local control panel. Choose single or duplex duty, then tune coated pump steel, structural frame, stainless pipework and rubber details; weathered and highVisibility palettes included.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
         "water utility",
+        "backwash pump",
+        "centrifugal pump",
+        "pump skid",
         "infrastructure",
         "low poly",
         "scene prop"
@@ -346017,8 +346020,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/backwash-pump-skid.kcad.ts",
       "preview": "/assets/water-treatment-backwash-pump-skid.png",
-      "sourceSha256": "7faa4cda0584eeeeee94c22ff2de91d33170c6af8efff59750a62c06d57cc1c3",
-      "triangleBudget": 2200,
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -346030,42 +346033,60 @@
           "step": 0.05
         },
         {
+          "name": "pumpArrangement",
+          "type": "choice",
+          "default": "duplex",
+          "label": "Pump arrangement",
+          "choices": [
+            "single",
+            "duplex"
+          ]
+        },
+        {
           "name": "coatedSteel",
           "type": "color",
           "default": "#3d8589",
-          "label": "Coated equipment steel"
+          "label": "Coated pump and motor steel"
         },
         {
           "name": "structuralSteel",
           "type": "color",
           "default": "#68777b",
-          "label": "Structural steel"
+          "label": "Structural skid steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Stainless process pipework"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272c2e",
+          "label": "Rubber couplings and seals"
         }
       ],
       "presets": {
         "weathered": {
           "coatedSteel": "#687b78",
           "structuralSteel": "#6e6b63",
-          "stainlessSteel": "#9ca7a6"
+          "stainlessSteel": "#9ca7a6",
+          "rubber": "#333331"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
           "structuralSteel": "#505b60",
-          "stainlessSteel": "#e1ddd0"
+          "stainlessSteel": "#e1ddd0",
+          "rubber": "#272c2e"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 2648,
         "sizeM": [
-          1.25,
-          1.105,
-          0.56
+          1.38,
+          0.533,
+          0.96
         ],
         "minUpM": 0,
         "materials": 1
@@ -346075,31 +346096,135 @@
           "name": "structuralSteel",
           "color": "#68777b",
           "parts": [
-            "base",
-            "foot--420",
-            "foot-420"
+            "base-deck",
+            "skid-rail--350",
+            "skid-rail-350",
+            "skid-crossmember--520",
+            "leveling-pad--520-l",
+            "leveling-pad--520-r",
+            "skid-crossmember-0",
+            "leveling-pad-0-l",
+            "leveling-pad-0-r",
+            "skid-crossmember-520",
+            "leveling-pad-520-l",
+            "leveling-pad-520-r",
+            "suction-header-end-left",
+            "suction-header-end-right",
+            "pump-base--330",
+            "suction-valve-stem--330",
+            "suction-valve-handle--330",
+            "coupling-guard--330",
+            "motor-fan-cover--330",
+            "motor-foot-front--330",
+            "motor-foot-rear--330",
+            "discharge-valve-stem--330",
+            "discharge-valve-lever--330",
+            "pressure-gauge--330",
+            "pump-base-330",
+            "suction-valve-stem-330",
+            "suction-valve-handle-330",
+            "coupling-guard-330",
+            "motor-fan-cover-330",
+            "motor-foot-front-330",
+            "motor-foot-rear-330",
+            "discharge-valve-stem-330",
+            "discharge-valve-lever-330",
+            "pressure-gauge-330",
+            "discharge-header-end-left",
+            "discharge-header-end-right"
           ],
           "param": "structuralSteel"
-        },
-        {
-          "name": "coatedSteel",
-          "color": "#3d8589",
-          "parts": [
-            "pump-a",
-            "pump-b",
-            "motor-a",
-            "motor-b"
-          ],
-          "param": "coatedSteel"
         },
         {
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
             "suction-header",
-            "discharge-header"
+            "pump-cover--330",
+            "pump-inlet--330",
+            "pump-suction-branch--330",
+            "discharge-riser--330",
+            "discharge-elbow--330",
+            "pressure-gauge-stem--330",
+            "pressure-gauge-face--330",
+            "pump-cover-330",
+            "pump-inlet-330",
+            "pump-suction-branch-330",
+            "discharge-riser-330",
+            "discharge-elbow-330",
+            "pressure-gauge-stem-330",
+            "pressure-gauge-face-330",
+            "discharge-header",
+            "control-panel-face"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "pump-volute--330",
+            "suction-valve-body--330",
+            "motor-body--330",
+            "motor-cooling-fin--330-0",
+            "motor-cooling-fin--330-1",
+            "motor-cooling-fin--330-2",
+            "motor-cooling-fin--330-3",
+            "motor-cooling-fin--330-4",
+            "motor-terminal-box--330",
+            "discharge-valve--330",
+            "pump-volute-330",
+            "suction-valve-body-330",
+            "motor-body-330",
+            "motor-cooling-fin-330-0",
+            "motor-cooling-fin-330-1",
+            "motor-cooling-fin-330-2",
+            "motor-cooling-fin-330-3",
+            "motor-cooling-fin-330-4",
+            "motor-terminal-box-330",
+            "discharge-valve-330",
+            "control-panel-enclosure"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272c2e",
+          "parts": [
+            "coupling--330",
+            "coupling-330",
+            "control-display"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "control-display-glass",
+          "color": "#73b9d4",
+          "parts": [
+            "control-display-glass"
+          ]
+        },
+        {
+          "name": "status-lamp-0",
+          "color": "#45a85b",
+          "parts": [
+            "status-lamp-0"
+          ]
+        },
+        {
+          "name": "status-lamp-1",
+          "color": "#e0b23c",
+          "parts": [
+            "status-lamp-1"
+          ]
+        },
+        {
+          "name": "status-lamp-2",
+          "color": "#d95043",
+          "parts": [
+            "status-lamp-2",
+            "emergency-stop"
+          ]
         }
       ]
     },
