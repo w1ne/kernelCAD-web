@@ -76,6 +76,9 @@ export interface LoftOptions {
   twistDeg?: Editable<number>;
   twistCenter?: [Editable<number>, Editable<number>];
   ruled?: boolean;
+  /** With `ruled: true`, matching polyline sections become a triangulated
+   *  frustum (cheap to fuse and tessellate). Default is the NURBS loft. */
+  faceted?: boolean;
   startPoint?: [Editable<number>, Editable<number>, Editable<number>];
   endPoint?: [Editable<number>, Editable<number>, Editable<number>];
   faceLabels?: FaceLabelsMap;
@@ -96,7 +99,7 @@ export interface LoftOptions {
 /** Option keys `Sketch.loft` accepts. Anything else is a likely typo and is
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_LOFT_KEYS = new Set([
-  'spacing', 'planes', 'ruled', 'startPoint', 'endPoint', 'faceLabels',
+  'spacing', 'planes', 'ruled', 'faceted', 'startPoint', 'endPoint', 'faceLabels',
   'rails', 'twistDeg', 'twistCenter', 'continuity', 'spanSize', 'mode',
 ]);
 
@@ -1357,6 +1360,7 @@ function buildLoftParams(
     spacing: toParam(opts.spacing ?? 10, 'mm'),
     twistDeg: toParam(opts.twistDeg ?? 0, 'deg'),
     ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
+    faceted: { expression: String(opts.faceted ?? false), unit: 'unitless', evaluated: opts.faceted ? 1 : 0 },
     sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
     railCount: { expression: String(rails.length), unit: 'unitless', evaluated: rails.length },
   };

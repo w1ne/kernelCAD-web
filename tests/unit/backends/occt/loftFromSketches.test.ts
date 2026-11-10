@@ -96,7 +96,20 @@ describe('OcctBackend.loftFromSketches', () => {
       { plane: 'XY', origin: [0, 0, 30] },
     ];
     const lofted = OcctBackend.loftFromSketches([s1, s2], planes, { ruled: true });
-    // Polyhedral frustum volume: h/3 × (A1 + A2 + √(A1·A2)) = 280
+    // NURBS ruled frustum of two squares: h/3 × (A1 + A2 + √(A1·A2)) = 280
+    const v = lofted.volume();
+    expect(v).toBeGreaterThan(260);
+    expect(v).toBeLessThan(300);
+  });
+
+  it('ruled + faceted polyline loft is a polyhedral frustum with the analytic volume', () => {
+    const s1 = OcctBackend.fromSketchCommands(square2x2);
+    const s2 = OcctBackend.fromSketchCommands(square4x4);
+    const planes: Array<{ plane: 'XY'; origin: [number, number, number] }> = [
+      { plane: 'XY', origin: [0, 0, 0] },
+      { plane: 'XY', origin: [0, 0, 30] },
+    ];
+    const lofted = OcctBackend.loftFromSketches([s1, s2], planes, { ruled: true, faceted: true });
     const v = lofted.volume();
     expect(v).toBeGreaterThan(260);
     expect(v).toBeLessThan(300);
