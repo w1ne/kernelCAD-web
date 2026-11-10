@@ -27,6 +27,18 @@ local page and check evidence, and the inspected MP4. This branch is not
 deployed; these are generic visualization models, not vendor geometry or
 physical acceptance evidence.
 
+A third Nov 10 standard-components pass refines the existing
+`flat-joining-plate`: users can choose a three-, four-, or five-hole in-line
+layout, and the strap length, through-bores and installed zinc-plated fasteners
+update together. The default painted-steel body is blue against silver hardware;
+the existing `dark`, `brass` and `weathered` palettes remain. The largest
+variant measures 712 triangles under its updated 800-triangle budget. No IDs or
+kits were added; the global audit remains **2,402/2,402 passing (100.00%)**.
+The [hole-pattern handoff](../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md)
+contains variant renders, regenerated preview and index, check evidence, and
+the inspected MP4. This branch is not deployed and the generic visualization
+does not define a manufacturing-ready plate.
+
 A second Nov 10 standard-components pass refines the existing `bulkhead-adapter`,
 `linear-guide-rail`, and `shaft-coupling` without adding IDs or kits. The adapter
 has a longer hollow brass barrel, a six-flat stainless locknut, and a sealing

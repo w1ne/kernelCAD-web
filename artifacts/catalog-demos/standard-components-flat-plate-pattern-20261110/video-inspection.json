@@ -1,0 +1,33 @@
+{
+  "file": "standard-components-flat-plate-pattern.mp4",
+  "sha256": "45290f51d14bfbd993b80e1c619437b057316090e2678be0b6701e554c1f47b9",
+  "bytes": 187427,
+  "durationSeconds": 12.041667,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "codec": "h264",
+  "samples": [
+    {
+      "timeSeconds": 1.5,
+      "file": "sample-01.png",
+      "sha256": "8dc150c2cf5437409ddaf7681abf6e018ea2dec2f13800964623f065426a7c18"
+    },
+    {
+      "timeSeconds": 4.5,
+      "file": "sample-02.png",
+      "sha256": "d0a57906ba8d07572500265e3c0b22e5ba53f6800cf30620e2bf731247e19bea"
+    },
+    {
+      "timeSeconds": 7.5,
+      "file": "sample-03.png",
+      "sha256": "d5b7e73cc8437b1ec866b51f1f105b6e9d995a52c524daeca59703293380ab37"
+    },
+    {
+      "timeSeconds": 10.5,
+      "file": "sample-04.png",
+      "sha256": "2d4f2dc1df4af38853aea453dca1785d3dadcb09abdc7ab055a8fd05035ccf22"
+    }
+  ],
+  "inspection": "Four decoded samples were assembled into video-review/decoded-samples.png and visually reviewed."
+}

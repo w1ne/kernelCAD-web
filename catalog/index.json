@@ -310093,7 +310093,7 @@
       "id": "flat-joining-plate",
       "kit": "standard-components",
       "title": "Flat joining plate",
-      "description": "Flat strap plate with four zinc-plated fastener heads seated in its mounting holes for joining two parts in line. Knobs: model size, steel, zinc-plated steel.",
+      "description": "Flat powder-coated steel strap for joining two parts in line, with a selectable three-, four-, or five-hole layout. Changing the hole count resizes the strap and adds or removes matching zinc-plated fasteners. Knobs: model size, mounting-hole count, painted steel, zinc-plated fasteners.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -310111,8 +310111,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flat-joining-plate.kcad.ts",
       "preview": "/assets/standard-components-flat-joining-plate.png",
-      "sourceSha256": "3593b99d346b231e01536ebe2bfe67ee9704cc5c706bc93ed8cdfce80360f28e",
-      "triangleBudget": 620,
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "size",
@@ -310126,25 +310126,36 @@
           ]
         },
         {
+          "name": "holeCount",
+          "type": "choice",
+          "default": "four",
+          "label": "Mounting-hole count",
+          "choices": [
+            "three",
+            "four",
+            "five"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
+          "default": "#3d7290",
+          "label": "Painted steel"
         },
         {
           "name": "zinc",
           "type": "color",
-          "default": "#cbd1d5",
-          "label": "Zinc-plated steel"
+          "default": "#d9dfe2",
+          "label": "Zinc-plated fasteners"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "zinc": "#929da3"
+          "steel": "#33434b",
+          "zinc": "#9ca8ad"
         },
         "brass": {
-          "steel": "#646f75",
+          "steel": "#536d79",
           "zinc": "#c29a5c"
         },
         "weathered": {
@@ -310165,7 +310176,7 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#3d7290",
           "parts": [
             "plate"
           ],
@@ -310173,16 +310184,16 @@
         },
         {
           "name": "zinc",
-          "color": "#cbd1d5",
+          "color": "#d9dfe2",
           "parts": [
-            "bolt-shank-0",
-            "bolt-head-0",
             "bolt-shank-1",
             "bolt-head-1",
             "bolt-shank-2",
             "bolt-head-2",
             "bolt-shank-3",
-            "bolt-head-3"
+            "bolt-head-3",
+            "bolt-shank-4",
+            "bolt-head-4"
           ],
           "param": "zinc"
         }

@@ -1,0 +1,51 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'vitest' run tests/integration/catalog/
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 592ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 341ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 11578ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  10434ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  385ms
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 476665ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 476216ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 175ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: run: npx tsx scripts/buildAssetCatalog.ts: expected '{\n  "schemaVersion": 1,\n  "kits": […' to be '{\n  "schemaVersion": 1,\n  "kits": […' // Object.is equality
+
+- Expected
++ Received
+
+@@ -116083,11 +116083,11 @@
+          "maintenance": {
+            "galvanizedSteel": "#e1b63d"
+          }
+        },
+        "stats": {
+-         "triangles": 1552,
++         "triangles": 1550,
+          "sizeM": [
+            0.52,
+            1.55,
+            0.52
+          ],
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts:26:68
+     24|     const committed = readFileSync(join(repoRoot, 'catalog', 'index.js…
+     25|     CatalogIndexSchema.parse(JSON.parse(committed));
+     26|     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toB…
+       |                                                                    ^
+     27|   }, 900_000);
+     28|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 14 passed (15)
+   Start at  04:29:58
+   Duration  480.43s (transform 12.02s, setup 252ms, import 16.19s, tests 489.18s, environment 0ms)

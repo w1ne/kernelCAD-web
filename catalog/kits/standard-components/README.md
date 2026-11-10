@@ -33,6 +33,14 @@ records the source variants, all 50 regenerated previews, rebuilt index,
 verification and inspected MP4. These remain generic low-poly visualization
 models, not vendor parts or manufacturing specifications.
 
+The [flat joining plate follow-up](../../../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md)
+adds a three/four/five-hole choice to the existing plate. The strap length,
+native through-bores and zinc-plated fastener count change together; the 20 mm
+pitch and 12 mm edge margin keep the layouts symmetric. Its blue painted-steel
+default separates clearly from the silver hardware, while the `brass` palette
+remains available. The five-hole variant measures 712 triangles under an
+800-triangle budget. No IDs or kits were added.
+
 ## Assets
 
 | ID | Component | Description | Color controls | Default triangles | Preview |
@@ -52,7 +60,7 @@ models, not vendor parts or manufacturing specifications.
 | [`door-hinge`](door-hinge.kcad.ts) | Door hinge | Upright two-leaf butt hinge with alternating barrel knuckles, a brass pin and visible fasteners. | Steel, Brass, Fasteners | 1440 | [PNG](previews/door-hinge.png) |
 | [`drawer-slide-channel`](drawer-slide-channel.kcad.ts) | Drawer slide channel | Nested low-poly slide rails with C-channel lips for a telescoping drawer track. | Steel, Stainless steel | 60 | [PNG](previews/drawer-slide-channel.png) |
 | [`flange-bearing-housing`](flange-bearing-housing.kcad.ts) | Flange bearing housing | Two-hole cast-iron flange base with a raised boss, steel race, rubber lip seal and through-bore. | Cast iron, Bearing steel, Seal rubber | 456 | [PNG](previews/flange-bearing-housing.png) |
-| [`flat-joining-plate`](flat-joining-plate.kcad.ts) | Flat joining plate | Flat strap plate with four zinc-plated fastener heads seated in its mounting holes for joining two parts in line. | Steel, Zinc-plated steel | 572 | [PNG](previews/flat-joining-plate.png) |
+| [`flat-joining-plate`](flat-joining-plate.kcad.ts) | Flat joining plate | Selectable three/four/five-hole strap with matching through-bores and installed fasteners. | Painted steel, Zinc-plated fasteners | 572 | [PNG](previews/flat-joining-plate.png) |
 | [`gusset-bracket`](gusset-bracket.kcad.ts) | Gusset bracket | Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web. | Steel, Stainless steel | 32 | [PNG](previews/gusset-bracket.png) |
 | [`handle-pull`](handle-pull.kcad.ts) | Handle pull | Raised U-shaped cabinet pull with two mounting feet and a straight grip bar. | Steel, Engineering polymer | 220 | [PNG](previews/handle-pull.png) |
 | [`handwheel`](handwheel.kcad.ts) | Handwheel | Three-spoke handwheel with a raised center hub and a clear circular rim. | Steel, Cast iron, Brass | 176 | [PNG](previews/handwheel.png) |
@@ -104,7 +112,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md), and the [2026-11-10 guide and retention detail follow-up](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md), the [2026-11-10 guide and retention detail follow-up](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md), and the [2026-11-10 selectable hole-pattern follow-up](../../../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 
