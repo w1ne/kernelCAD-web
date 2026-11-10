@@ -10,10 +10,10 @@
 //
 // Reuses the existing in-process substrate:
 //   - sweptPoseEnumeration.enumeratePoses   — branch over opts shape.
-//   - mates/poseEnvelope.detectInterferencesForPoses — per-pose lower + FK
-//     + bbox-prefiltered pairwise BREP intersect (defined in modeling/mates
-//     because it predates this slice; v2 may inline the loop here once we
-//     cache the lowered SceneBackend across poses).
+//   - One full RecomputeEngine lower, then `reposedLoweredAssemblyScene`
+//     for every later sample (`solveMates` supplies the FK transforms).
+//     `detectInterferences` memoizes each pair on its relative pose, so a
+//     fastened cluster is measured once for the whole walk.
 //
 // Closed loops: each walk (one per swept joint) runs closed-loop
 // continuation (`loopContinuation`), seeding every pose from the previous
@@ -28,7 +28,13 @@
 //     joint whose (range, step) fell below the D3 safe floor.
 
 import type { Assembly } from '../modeling/capture/assembly';
-import { detectInterferencesForPoses } from '../modeling/mates/poseEnvelope';
+import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
+import { reposedLoweredAssemblyScene } from '../modeling/mates/loweredAssemblyScene';
+import { solveMates } from '../modeling/mates/solver';
+import { detectInterferences } from '../modeling/runtime/detectInterferences';
+import { initOcct } from '../kernel/backends/occt/occtBackend';
+import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import {
   DIAGNOSTIC_REGISTRY,
   type DiagnosticCode,
@@ -151,6 +157,10 @@ async function sweepWalks(
   const continuation = new LoopContinuation(arm);
   const hasMates = (arm.__mates?.() ?? []).length > 0;
   let posesSampled = 0;
+  // One lowered scene's part BREPs are local-frame geometry. Later samples
+  // only swap world transforms; a missing transform falls back to a full
+  // lower so a partial FK result cannot silently skip a pose.
+  let cachedScene: SceneBackend | undefined;
   for (const walk of walks) {
     continuation.reset();
     for (const pose of walk) {
@@ -167,7 +177,11 @@ async function sweepWalks(
         lowerPose = { ...pose, ...loopPose(arm, step.result.loop?.coordinates) };
       }
       posesSampled++;
-      const pairs = await detectInterferencesForPoses(arm, { ...defaults, ...lowerPose }, epsilon);
+      const scene = await posedSceneForSweep(arm, { ...defaults, ...lowerPose }, cachedScene);
+      if (scene !== undefined && cachedScene === undefined) cachedScene = scene;
+      const pairs = scene === undefined
+        ? []
+        : detectInterferences(scene, epsilon, new Set()).pairs;
       if (pairs.length === 0) continue;
       const contacts: SweptCollisionContact[] = pairs.map((p) => ({
         partA: p.a,
@@ -179,6 +193,47 @@ async function sweepWalks(
   }
   loopDiagnostics.unshift(...continuation.advisories());
   return { collidingPoses, posesSampled, loopDiagnostics };
+}
+
+/** Re-pose the cached lowered scene, or lower the feature tree once. */
+async function posedSceneForSweep(
+  arm: Assembly,
+  poses: FullPoses,
+  cached: SceneBackend | undefined,
+): Promise<SceneBackend | undefined> {
+  if (cached !== undefined) {
+    try {
+      const solved = await solveMates(arm, poses);
+      const reposed = reposedLoweredAssemblyScene(arm, cached, solved.poses);
+      if (reposed !== undefined) return reposed;
+    } catch {
+      // Incomplete FK is not clearance: fall through to a full lower.
+    }
+  }
+  return lowerAssemblySceneForPoses(arm, poses);
+}
+
+/** Full `solvedModel` + RecomputeEngine lower — the first sample, or any
+ *  sample whose `solveMates` map could not re-pose the cached scene. */
+async function lowerAssemblySceneForPoses(
+  arm: Assembly,
+  poses: FullPoses,
+): Promise<SceneBackend | undefined> {
+  await initOcct();
+  const scene = await arm.solvedModel(poses, { validate: 'off' });
+  const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
+  const result = await engine.run(arm.__session().getRecords(), {
+    paramTable: arm.__session().paramTable,
+    gatedFeatureNames: arm.__session().gatedFeatureNames,
+    // Only the appended pose scene needs lowering; the part records are
+    // unchanged since the last full lower.
+    seedShapes: arm.__session().reusableLoweredPrefix(),
+  });
+  const sourceId = scene.__sourceFeatureId();
+  if (sourceId === undefined) return undefined;
+  const lowered = result.shapes.get(sourceId);
+  if (!lowered || !isSceneBackend(lowered)) return undefined;
+  return lowered;
 }
 
 function buildSparseDensityWarn(

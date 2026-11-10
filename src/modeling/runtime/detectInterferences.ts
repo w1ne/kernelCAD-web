@@ -138,6 +138,11 @@ interface OverlapMetrics {
 
 const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, OverlapMetrics>>>();
 
+/** Conservative overlap-volume upper bounds from `boundsProveBelowThreshold`,
+ *  keyed like the exact-volume memo. A stored upper bound is safe to reuse
+ *  at the same relative pose whenever it is still ≤ the caller's epsilon. */
+const boundsUpperMemo = new WeakMap<object, WeakMap<object, Map<string, number>>>();
+
 function measureOverlap(a: OcctBackend, b: OcctBackend): OverlapMetrics {
   if (typeof a.intersectionMetrics !== 'function') return { volumeMm3: a.intersectionVolume(b) };
   const m = a.intersectionMetrics(b);
@@ -179,6 +184,41 @@ function memoSet(a: object, b: object, key: string, vol: OverlapMetrics): void {
     inner.set(b, byPose);
   }
   byPose.set(key, vol);
+}
+
+function boundsUpperGet(a: object, b: object, key: string): number | undefined {
+  return boundsUpperMemo.get(a)?.get(b)?.get(key);
+}
+
+function boundsUpperSet(a: object, b: object, key: string, upper: number): void {
+  let inner = boundsUpperMemo.get(a);
+  if (inner === undefined) {
+    inner = new WeakMap();
+    boundsUpperMemo.set(a, inner);
+  }
+  let byPose = inner.get(b);
+  if (byPose === undefined) {
+    byPose = new Map();
+    inner.set(b, byPose);
+  }
+  byPose.set(key, upper);
+}
+
+/** Already-measured overlap at this relative pose, compared to `epsilonMm3`.
+ *  `undefined` means the exact boolean has not run for this pair and pose. */
+function overlapFromMemo(
+  a: PosedPart,
+  b: PosedPart,
+  epsilonMm3: number,
+): InterferencePair | null | undefined {
+  const vol = memoGet(a.source, b.source, relativePoseKey(a.worldTransform, b.worldTransform));
+  if (vol === undefined || !Number.isFinite(vol.volumeMm3)) return undefined;
+  if (!(vol.volumeMm3 > epsilonMm3)) return null;
+  return {
+    a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
+    ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
+    ...(vol.bounds !== undefined ? { overlapBounds: vol.bounds } : {}),
+  };
 }
 
 /** Pairs involving a non-BRep (display mesh) part: exact intersection needs
@@ -271,10 +311,16 @@ function canReuseIncrementalPair(
 /** Conservative rigid-frame bounds prove some candidates cannot exceed the
  *  threshold. Returns false on any bound failure (the exact probe runs). */
 function boundsProveBelowThreshold(a: PosedPart, b: PosedPart, epsilonMm3: number): boolean {
+  const poseKey = relativePoseKey(a.worldTransform, b.worldTransform);
+  const cached = boundsUpperGet(a.source, b.source, poseKey);
+  if (cached !== undefined && cached <= epsilonMm3) return true;
   for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
     try {
       const upper = overlapVolumeUpperBound(boundsInFrame(a, frame), boundsInFrame(b, frame));
-      if (Number.isFinite(upper) && upper <= epsilonMm3) return true;
+      if (Number.isFinite(upper) && upper <= epsilonMm3) {
+        boundsUpperSet(a.source, b.source, poseKey, upper);
+        return true;
+      }
     } catch {
       return false;
     }
@@ -348,6 +394,16 @@ function probeCandidates(
     if (canReuseIncrementalPair(incremental, key, a.name, b.name)) {
       const previous = incremental!.previousResults.get(key);
       if (previous !== undefined && previous !== null) pairs.push(previous);
+      reusedPairCount += 1;
+      continue;
+    }
+    // The exact boolean and the rotated-AABB bound depend only on the
+    // relative pose. A pair we already measured (or already proved below
+    // epsilon) must not be re-bounded or re-booleaned just because the
+    // whole assembly translated.
+    const memoized = overlapFromMemo(a, b, epsilonMm3);
+    if (memoized !== undefined) {
+      if (memoized !== null) pairs.push(memoized);
       reusedPairCount += 1;
       continue;
     }
