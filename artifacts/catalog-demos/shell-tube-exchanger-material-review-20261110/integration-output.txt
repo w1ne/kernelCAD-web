@@ -14,3 +14,11 @@
      ✓ nature/pine-tree opens with its five knobs at their defaults  684ms
      ✓ a kit-representative sample opens with exactly the knobs its index row lists  17139ms
      ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  585ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 536060ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  535464ms
+
+ Test Files  7 passed (7)
+      Tests  18 passed (18)
+   Start at  21:12:49
+   Duration  542.64s (transform 34.54s, setup 1.06s, import 48.46s, tests 562.30s, environment 1ms)
+
