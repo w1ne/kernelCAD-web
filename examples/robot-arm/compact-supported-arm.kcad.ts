@@ -195,9 +195,10 @@ function gripSlack() {
   // x > -8 keeps the run out of the forearm flange.
   return cableRun([
     [0, -12.8, -24.6],
-    [12, -36, -16],
-    [6, -48, -8],
-    [-4, -20, -14],
+    [14, -34, -18],
+    [16, -54, -8],
+    [4, -60, 2],
+    [-6, -38, -8],
   ], 3.1);
 }
 
@@ -419,9 +420,10 @@ const baseYawServo = arm.part('base-yaw-servo', sts3215Envelope(cableRun([
   // then a slack loop outside the plate (|y| > 68).
   [0, -12.6, -24.6],
   [0, -46, -26],
-  [-4, -86, -28],
-  [8, -106, -58],
-  [-6, -88, -30],
+  [-10, -84, -32],
+  [-8, -112, -54],
+  [18, -124, -70],
+  [28, -98, -42],
 ], 3.2)), {
   material: 'petg',
   massKg: 0.055,
