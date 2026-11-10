@@ -7,12 +7,20 @@
 // currently rebuild the model (~7 s) and drop WeakMap identity, so the
 // physics pass repeats work the sweep already paid for. The cache is
 // keyed on file identity (path + device + inode + mtime + ctime + size)
-// and is skipped when the caller supplies a custom API factory, baseline
-// selections, extra requirements, or skipDfmGate. A same-size rewrite
-// that restores mtime still changes ctime, so the key misses and we
-// rebuild.
+// plus the identity of imported assets (STEP, STL, fonts, catalog parts).
+// It is skipped when the caller supplies a custom API factory, baseline
+// selections, extra requirements, or skipDfmGate, or when an import path
+// is not a literal we can hash. A same-size rewrite that restores mtime
+// still changes ctime, so the key misses and we rebuild. At most a few
+// successful evaluates are kept so older models can be collected.
 
-import { statSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { importIdentity } from '../modeling/warm/importIdentity';
+
+/** Sequential sweep + physics only need one live entry; keep a few more
+ *  so an interactive session evaluating several files still hits. */
+export const EVALUATE_CACHE_LIMIT = 4;
 
 const cache = new Map<string, unknown>();
 
@@ -20,10 +28,29 @@ export function clearEvaluateCache(): void {
   cache.clear();
 }
 
-export function evaluateCacheKey(
+export function evaluateCacheSize(): number {
+  return cache.size;
+}
+
+function fileIdentity(path: string, kernel: string): string | undefined {
+  try {
+    const stat = statSync(path);
+    return `file:${kernel}:${path}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function importsAreProvable(identity: string): boolean {
+  if (identity.includes('unprovable:') || identity.includes('unread:')) return false;
+  if (identity.includes('missing:') || identity.includes('unreadable:')) return false;
+  return true;
+}
+
+export async function evaluateCacheKey(
   input: { file?: string; code?: string; kernel?: string; scriptDir?: string; baseline?: unknown; requirements?: unknown },
   opts?: { apiFactory?: unknown; skipDfmGate?: boolean },
-): string | undefined {
+): Promise<string | undefined> {
   if (input.baseline !== undefined) return undefined;
   if (input.requirements !== undefined) return undefined;
   if (opts?.apiFactory !== undefined) return undefined;
@@ -33,22 +60,30 @@ export function evaluateCacheKey(
   // the sequential verify({ file }) path this cache exists for.
   if (input.code !== undefined) return undefined;
   const kernel = input.kernel ?? 'occt';
-  if (input.file !== undefined) {
-    try {
-      const stat = statSync(input.file);
-      return `file:${kernel}:${input.file}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}`;
-    } catch {
-      return undefined;
-    }
+  if (input.file === undefined) return undefined;
+  const fileKey = fileIdentity(input.file, kernel);
+  if (fileKey === undefined) return undefined;
+  let source: string;
+  try {
+    source = readFileSync(input.file, 'utf8');
+  } catch {
+    return undefined;
   }
-  return undefined;
+  const scriptDir = input.scriptDir ?? dirname(resolve(input.file));
+  const imports = await importIdentity(source, scriptDir);
+  if (!importsAreProvable(imports)) return undefined;
+  return `${fileKey}:imports:${imports}`;
 }
 
 export function getEvaluatedScript<T>(key: string): T | undefined {
   // Same object on purpose: sequential verify passes must share Assembly
   // and OCCT shape identity so WeakMap memos (relative-pose, hull points)
   // hit. Callers must not mutate the cached result.
-  return cache.get(key) as T | undefined;
+  const hit = cache.get(key);
+  if (hit === undefined) return undefined;
+  cache.delete(key);
+  cache.set(key, hit);
+  return hit as T;
 }
 
 export function rememberEvaluatedScript<T extends { evaluation: { exitCode: number } }>(
@@ -56,5 +91,11 @@ export function rememberEvaluatedScript<T extends { evaluation: { exitCode: numb
   result: T,
 ): void {
   if (result.evaluation.exitCode !== 0) return;
+  if (cache.has(key)) cache.delete(key);
   cache.set(key, result);
+  while (cache.size > EVALUATE_CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
 }

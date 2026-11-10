@@ -321,7 +321,7 @@ export async function evaluateAndBuildScript(
   input: EvaluateInput,
   opts?: EvaluateOptions,
 ): Promise<EvaluateAndBuildResult> {
-  const cacheKey = evaluateCacheKey(input, opts);
+  const cacheKey = await evaluateCacheKey(input, opts);
   if (cacheKey !== undefined) {
     const hit = getEvaluatedScript<EvaluateAndBuildResult>(cacheKey);
     if (hit !== undefined) return hit;
