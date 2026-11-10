@@ -1,0 +1,5 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/v-belt-pulley.kcad.ts
+(node:3153448) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"v-belt-pulley","triangles":518,"budget":700,"sizeM":[0.052,0.03,0.052],"minUpM":0,"materials":1,"knobs":["size:choice","castIron:color","steel:color","hardware:color"],"palette":["castIron=#68747a","steel=#9aa5aa","hardware=#d1aa54"]}

@@ -1,0 +1,6 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/shaft-collar.kcad.ts --png /tmp/shaft-collar-after.png
+(node:2930797) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"shaft-collar","triangles":416,"budget":560,"sizeM":[0.037566,0.012,0.039591],"minUpM":0,"materials":1,"knobs":["size:choice","retention:choice","steel:color","zinc:color"],"palette":["steel=#85929a","zinc=#cbd1d5"]}
+wrote /tmp/shaft-collar-after.png

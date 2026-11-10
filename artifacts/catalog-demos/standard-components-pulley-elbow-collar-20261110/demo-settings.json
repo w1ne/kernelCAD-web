@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-10",
+  "baselineCommit": "2dd5160ac",
+  "kit": "standard-components",
+  "assets": ["v-belt-pulley", "pipe-elbow-90", "shaft-collar"],
+  "variants": [
+    { "id": "pulley-default", "asset": "v-belt-pulley", "choices": { "size": "standard" } },
+    { "id": "pulley-large", "asset": "v-belt-pulley", "choices": { "size": "large" } },
+    { "id": "pulley-weathered", "asset": "v-belt-pulley", "preset": "weathered" },
+    { "id": "elbow-default", "asset": "pipe-elbow-90", "choices": { "size": "standard" } },
+    { "id": "elbow-brass", "asset": "pipe-elbow-90", "preset": "brass" },
+    { "id": "collar-split", "asset": "shaft-collar", "choices": { "size": "standard", "retention": "splitClamp" } },
+    { "id": "collar-set-screw", "asset": "shaft-collar", "choices": { "size": "standard", "retention": "setScrew" } },
+    { "id": "collar-large", "asset": "shaft-collar", "choices": { "size": "large", "retention": "splitClamp" } },
+    { "id": "collar-weathered", "asset": "shaft-collar", "preset": "weathered" }
+  ],
+  "commands": [
+    "npx tsx artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/render_variants.ts",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/render_kit_previews.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/v-belt-pulley.kcad.ts",
+    "npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
+    "npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/shaft-collar.kcad.ts",
+    "python3 scripts/checkCatalogQuality.py --kit standard-components",
+    "python3 scripts/checkCatalogQuality.py",
+    "npx eslint catalog/kits/standard-components/",
+    "npx vitest run tests/integration/catalog/",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/verify_asset_index.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-standard-components-pulley-elbow-collar-20261110",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/verify_local_pages.py /tmp/kernelcad-standard-components-pulley-elbow-collar-20261110",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/capture_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/inspect_video.py"
+  ],
+  "render": {
+    "engine": "kernelCAD source evaluation + GLB low-poly export + scripts/lib/glbSoftwareRender.ts",
+    "variantCanvas": "512x512 catalog-angle software render",
+    "defaultPreview": "npx tsx scripts/renderCatalogPreviews.ts [50 IDs from catalog/kits/standard-components/demo/settings.json#previewAssetIDs]",
+    "indexBuild": "npx tsx scripts/buildAssetCatalog.ts"
+  },
+  "caption": "Local source evaluation, software-rendered previews and catalog checks. The branch is not deployed; no vendor specification, fabrication suitability or physical acceptance is claimed."
+}

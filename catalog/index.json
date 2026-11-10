@@ -312033,14 +312033,15 @@
       "id": "pipe-elbow-90",
       "kit": "standard-components",
       "title": "90 degree pipe elbow",
-      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends Knobs: model size, steel, bronze.",
+      "description": "Hollow 90-degree pipe elbow with a faceted quarter-turn bend, perpendicular pipe legs, bronze compression nut and elastomer end seal. Knobs: model size, steel, bronze and elastomer; dark, brass and weathered presets.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "pipe elbow",
         "90 degree elbow",
         "plumbing fitting",
-        "tube"
+        "tube",
+        "hollow bend"
       ],
       "compat": [
         "mechanical",
@@ -312051,8 +312052,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
-      "triangleBudget": 380,
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "size",
@@ -312069,35 +312070,44 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel tube and bend"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Bronze compression nut"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Elastomer seal"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "bronze": "#684d37"
+          "bronze": "#684d37",
+          "elastomer": "#202629"
         },
         "brass": {
           "steel": "#646f75",
-          "bronze": "#b0804d"
+          "bronze": "#b0804d",
+          "elastomer": "#292b2c"
         },
         "weathered": {
           "steel": "#665b4d",
-          "bronze": "#6e583f"
+          "bronze": "#6e583f",
+          "elastomer": "#3b3935"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1528,
         "sizeM": [
-          0.039,
-          0.041,
-          0.026
+          0.028,
+          0.069295,
+          0.067295
         ],
         "minUpM": 0,
         "materials": 1
@@ -312107,8 +312117,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "upright",
-            "branch"
+            "continuous-hollow-elbow"
           ],
           "param": "steel"
         },
@@ -312116,9 +312125,17 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "bronze-compression-nut"
           ],
           "param": "bronze"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383b",
+          "parts": [
+            "elastomer-end-seal"
+          ],
+          "param": "elastomer"
         }
       ]
     },
@@ -312908,12 +312925,13 @@
       "id": "shaft-collar",
       "kit": "standard-components",
       "title": "Shaft collar",
-      "description": "One-piece round shaft collar with a centered bore and a small radial set-screw boss Knobs: model size, steel, zinc-plated steel.",
+      "description": "Bored shaft collar with a selectable split-clamp and cross-bolt style or a one-piece radial set-screw style. Knobs: model size, retention style, steel collar and zinc-plated hardware; dark, brass and weathered presets.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "shaft collar",
         "set collar",
+        "split clamp",
         "shaft hardware",
         "rotating shaft"
       ],
@@ -312926,8 +312944,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-shaft-collar.png",
-      "sourceSha256": "b046549659f6a6372449bfa84f77c54c608f28acb2d8e9448e97134c87366018",
-      "triangleBudget": 300,
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -312941,16 +312959,26 @@
           ]
         },
         {
+          "name": "retention",
+          "type": "choice",
+          "default": "splitClamp",
+          "label": "Shaft retention style",
+          "choices": [
+            "splitClamp",
+            "setScrew"
+          ]
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel collar"
         },
         {
           "name": "zinc",
           "type": "color",
           "default": "#cbd1d5",
-          "label": "Zinc-plated steel"
+          "label": "Zinc-plated fasteners"
         }
       ],
       "presets": {
@@ -312968,11 +312996,11 @@
         }
       },
       "stats": {
-        "triangles": 140,
+        "triangles": 416,
         "sizeM": [
-          0.038,
-          0.013,
-          0.038
+          0.037566,
+          0.012,
+          0.039591
         ],
         "minUpM": 0,
         "materials": 1
@@ -312982,7 +313010,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "ring"
+            "split-collar-with-clamp-ears"
           ],
           "param": "steel"
         },
@@ -312990,7 +313018,9 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "boss"
+            "cross-clamp-bolt",
+            "clamp-bolt-head",
+            "clamp-bolt-nut"
           ],
           "param": "zinc"
         }
@@ -314056,14 +314086,15 @@
       "id": "v-belt-pulley",
       "kit": "standard-components",
       "title": "V-belt pulley",
-      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore Knobs: model size, steel, cast iron.",
+      "description": "Two-groove V-belt sheave with paired retaining flanges, a keyed through-bore, steel key and radial zinc-plated locking screw. Knobs: model size, cast iron sheave, steel key and zinc-plated hardware; dark, brass and weathered presets.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "v-belt pulley",
         "sheave",
         "belt drive",
-        "shaft"
+        "shaft",
+        "grooved pulley"
       ],
       "compat": [
         "mechanical",
@@ -314074,8 +314105,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-v-belt-pulley.png",
-      "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
-      "triangleBudget": 420,
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141",
+      "triangleBudget": 700,
       "params": [
         {
           "name": "size",
@@ -314089,38 +314120,47 @@
           ]
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
-        },
-        {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
-          "label": "Cast iron"
+          "label": "Cast iron sheave"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#9aa5aa",
+          "label": "Steel shaft key"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#d1aa54",
+          "label": "Zinc-plated set screw"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "castIron": "#3b4246"
+          "castIron": "#3b4246",
+          "steel": "#59656b",
+          "hardware": "#a3adb2"
         },
         "brass": {
+          "castIron": "#69645b",
           "steel": "#646f75",
-          "castIron": "#69645b"
+          "hardware": "#c29a5c"
         },
         "weathered": {
+          "castIron": "#4d4b46",
           "steel": "#665b4d",
-          "castIron": "#4d4b46"
+          "hardware": "#a19682"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 518,
         "sizeM": [
-          0.048,
-          0.026,
-          0.048
+          0.052,
+          0.03,
+          0.052
         ],
         "minUpM": 0,
         "materials": 1
@@ -314130,19 +314170,25 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "hub"
+            "cast-iron-two-groove-sheave"
           ],
           "param": "castIron"
         },
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#9aa5aa",
           "parts": [
-            "rim-lower",
-            "rim-mid",
-            "rim-upper"
+            "shaft-key"
           ],
           "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#d1aa54",
+          "parts": [
+            "radial-set-screw"
+          ],
+          "param": "hardware"
         }
       ]
     },

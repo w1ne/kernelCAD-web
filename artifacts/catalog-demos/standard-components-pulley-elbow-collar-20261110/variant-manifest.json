@@ -1,0 +1,241 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "assertions": {
+    "pulleySizeChangesRenderedGeometry": true,
+    "pulleyPresetChangesAppearance": true,
+    "elbowPresetChangesAppearance": true,
+    "collarRetentionChangesRenderedGeometry": true,
+    "collarSizeChangesRenderedGeometry": true,
+    "collarPresetChangesAppearance": true,
+    "everyVariantWithinTriangleBudget": true
+  },
+  "budgets": {
+    "v-belt-pulley": 700,
+    "pipe-elbow-90": 2000,
+    "shaft-collar": 560
+  },
+  "sources": {
+    "v-belt-pulley": {
+      "file": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141"
+    },
+    "pipe-elbow-90": {
+      "file": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282"
+    },
+    "shaft-collar": {
+      "file": "catalog/kits/standard-components/shaft-collar.kcad.ts",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6"
+    }
+  },
+  "renders": [
+    {
+      "id": "pulley-default",
+      "asset": "v-belt-pulley",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 518,
+        "sizeM": [
+          0.052,
+          0.03,
+          0.052
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "6c123d7152f41465861bce962dc794d0db26b863c2fe32a3affba1682a642449",
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141"
+    },
+    {
+      "id": "pulley-large",
+      "asset": "v-belt-pulley",
+      "choices": {
+        "size": "large"
+      },
+      "stats": {
+        "triangles": 514,
+        "sizeM": [
+          0.065,
+          0.0375,
+          0.065
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "e5c63f0454f0e464ebf0703893ad65ac0aa720bb1eab83c0193c9ccbb4bddf51",
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141"
+    },
+    {
+      "id": "pulley-weathered",
+      "asset": "v-belt-pulley",
+      "preset": "weathered",
+      "choices": {},
+      "stats": {
+        "triangles": 518,
+        "sizeM": [
+          0.052,
+          0.03,
+          0.052
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "26267573fe4be8fea62653e18bf4a2220bbde581e904686c35e101dbddbc4762",
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141"
+    },
+    {
+      "id": "elbow-default",
+      "asset": "pipe-elbow-90",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 1528,
+        "sizeM": [
+          0.028,
+          0.069295,
+          0.067295
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "5e3e098f1ad1fa1db80cc83ef5899efb5d4dee336b050f19e225c44100a2e7f0",
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282"
+    },
+    {
+      "id": "elbow-brass",
+      "asset": "pipe-elbow-90",
+      "preset": "brass",
+      "choices": {},
+      "stats": {
+        "triangles": 1528,
+        "sizeM": [
+          0.028,
+          0.069295,
+          0.067295
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "06bb629ed3ba7ba25213dde4e68bc97775c361b5766302baeecfd29140e8f07f",
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282"
+    },
+    {
+      "id": "collar-split",
+      "asset": "shaft-collar",
+      "choices": {
+        "size": "standard",
+        "retention": "splitClamp"
+      },
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.037566,
+          0.012,
+          0.039591
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "d2fc32df5533356f09ef1ac40ccae1d9838965b49dc5a035e6d8b6f9d91c9468",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6"
+    },
+    {
+      "id": "collar-set-screw",
+      "asset": "shaft-collar",
+      "choices": {
+        "size": "standard",
+        "retention": "setScrew"
+      },
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.038,
+          0.013,
+          0.041
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "37d043046bd39416ffbd2a3180262d3b5be8779399cfb98a45d6fb185f142706",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6"
+    },
+    {
+      "id": "collar-large",
+      "asset": "shaft-collar",
+      "choices": {
+        "size": "large",
+        "retention": "splitClamp"
+      },
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.046957,
+          0.015,
+          0.049489
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "d4cb0e2802b33f6a937afb18a8bfce3aaf1861a89bfaa2d84b698236dad2a546",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6"
+    },
+    {
+      "id": "collar-weathered",
+      "asset": "shaft-collar",
+      "preset": "weathered",
+      "choices": {},
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.037566,
+          0.012,
+          0.039591
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "9a9969c39dd19343ebb3b0534d7cfb91a218457d6dbb53989fd3d01f47944674",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6"
+    }
+  ]
+}

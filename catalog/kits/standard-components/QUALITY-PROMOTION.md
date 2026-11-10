@@ -182,3 +182,31 @@ each gained one material control; no IDs or kits were added.
 
 The branch is not deployed; no vendor dimensions, fit, manufacturing, or
 physical-acceptance claims are made.
+
+## Pulley, elbow and collar silhouette follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/README.md)
+refines three existing models in place: `v-belt-pulley`, `pipe-elbow-90`, and
+`shaft-collar`. No IDs or kits were added.
+
+- The V-belt pulley has two revolved V valleys, retaining flanges, a keyed bore,
+  and a zinc-plated locking screw. It exposes cast-iron, steel-key, and hardware
+  colors: **518 triangles / 700 budget**.
+- The elbow is a hollow swept turn between perpendicular socket legs, with a
+  bronze compression nut and an elastomer end seal. It exposes steel, bronze,
+  and elastomer colors: **1,528 / 2,000**.
+- The collar's `retention` choice changes the geometry between a split clamp
+  with cross-bolt and a one-piece radial set-screw style. It exposes steel and
+  zinc-plated hardware colors: **416 / 560**.
+- The pulley and elbow each gained one material-named color control. Kit average
+  controls increased from **2.54 to 2.58** per asset. The kit remains **50/50
+  passing**; the global gate remains **2,402/2,402 (100.00%; 50 rich kits, zero
+  thin kits)**.
+- All **50** kit previews were refreshed and `catalog/index.json` regenerated.
+  The evidence bundle records source variants, preview/index hashes, lint,
+  integration results, local pages, and the inspected MP4.
+
+The refreshed views show the two pulley grooves, a hollow curved elbow with a
+distinct bronze socket, and the collar's visible front split and clamp bolt.
+These are local source renders, not vendor specifications or physical
+acceptance. The feature branch is not deployed.

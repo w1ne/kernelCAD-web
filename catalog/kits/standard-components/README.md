@@ -54,6 +54,18 @@ records source-driven options, the regenerated 50 previews and index, checks,
 and the inspected MP4. No IDs or kits were added; these generic scene models
 are not vendor geometry or manufacturing specifications.
 
+The Nov 10 silhouette pass updates three existing assets in place. The V-belt
+pulley now has two V-shaped belt valleys, a keyed bore and a visible locking
+screw; the 90-degree elbow uses a hollow swept turn with a bronze compression
+nut and an elastomer seal; the shaft collar switches between split-clamp and
+radial set-screw retention. The pulley and elbow each gained one material
+control, bringing the kit average from **2.54 to 2.58**. Their default meshes
+are **518/700**, **1,528/2,000**, and **416/560** triangles. The
+[pulley, elbow and collar handoff](../../../artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/README.md)
+records source-driven variants, regenerated previews and index, checks, and
+the inspected MP4. No IDs or kits were added; these remain generic visualization
+models, not vendor specifications or manufacturing evidence.
+
 ## Assets
 
 | ID | Component | Description | Color controls | Default triangles | Preview |
@@ -88,7 +100,7 @@ are not vendor geometry or manufacturing specifications.
 | [`pillow-block-housing`](pillow-block-housing.kcad.ts) | Pillow block housing | Raised pillow-block support with a broad base, round bearing boss and two bolt feet. | Zinc-plated steel, Cast iron, Bronze | 132 | [PNG](previews/pillow-block-housing.png) |
 | [`pipe-coupling`](pipe-coupling.kcad.ts) | Pipe coupling sleeve | Hollow sleeve with raised end collars and optional elastomer rings at both pipe entries. | Sleeve steel, Stainless collars, Elastomer seals | 480 | [PNG](previews/pipe-coupling.png) |
 | [`pipe-elbow-45`](pipe-elbow-45.kcad.ts) | 45 degree pipe elbow | Angled 45 degree pipe connector with open ends and a thicker low-poly center bend. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-45.png) |
-| [`pipe-elbow-90`](pipe-elbow-90.kcad.ts) | 90 degree pipe elbow | Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends. | Steel, Bronze | 236 | [PNG](previews/pipe-elbow-90.png) |
+| [`pipe-elbow-90`](pipe-elbow-90.kcad.ts) | 90 degree pipe elbow | Hollow swept 90 degree bend with a bronze compression nut and elastomer end seal. | Steel, Bronze, Elastomer | 1528 | [PNG](previews/pipe-elbow-90.png) |
 | [`pipe-flange`](pipe-flange.kcad.ts) | Pipe flange | Slip-on flange with a hollow raised neck, four/eight-hole bolt circle and optional installed bolts. | Stainless neck, Cast-iron flange, Zinc-plated bolts | 400 | [PNG](previews/pipe-flange.png) |
 | [`pipe-reducer`](pipe-reducer.kcad.ts) | Pipe reducer | Concentric hollow reducer with a tapered barrel, raised end collars, a visible seal, and selectable outlet ratio. | Painted steel, Zinc-plated steel, Elastomer | 474 | [PNG](previews/pipe-reducer.png) |
 | [`pipe-saddle-clamp`](pipe-saddle-clamp.kcad.ts) | Pipe saddle clamp | Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. | Steel, Rubber | 132 | [PNG](previews/pipe-saddle-clamp.png) |
@@ -96,7 +108,7 @@ are not vendor geometry or manufacturing specifications.
 | [`pipe-union`](pipe-union.kcad.ts) | Pipe union | Straight-through fitting with hollow steel sockets, six-flat brass nut and visible rubber joint seal. | Steel, Brass, Seal rubber | 360 | [PNG](previews/pipe-union.png) |
 | [`retaining-ring`](retaining-ring.kcad.ts) | Retaining ring | Open circlip with pierced plier ears and a selectable installation gap. | Spring steel, Stainless ear finish | 228 | [PNG](previews/retaining-ring.png) |
 | [`rubber-bumper`](rubber-bumper.kcad.ts) | Rubber bumper | Stepped vibration isolator with a broad foot and selectable male stud or recessed threaded insert. | Rubber, Stud steel, Zinc-plated hardware | 332 | [PNG](previews/rubber-bumper.png) |
-| [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | One-piece round shaft collar with a centered bore and a small radial set-screw boss. | Steel, Zinc-plated steel | 140 | [PNG](previews/shaft-collar.png) |
+| [`shaft-collar`](shaft-collar.kcad.ts) | Shaft collar | Bored collar with selectable split-clamp/cross-bolt or radial set-screw retention. | Steel, Zinc-plated fasteners | 416 | [PNG](previews/shaft-collar.png) |
 | [`shaft-coupling`](shaft-coupling.kcad.ts) | Shaft coupling sleeve | Two through-bored steel hubs around a bronze center band, with selectable set-screw or split-clamp retention. | Steel, Bronze, Zinc-plated set screws | 536 | [PNG](previews/shaft-coupling.png) |
 | [`shim-pack`](shim-pack.kcad.ts) | Shim pack | Stack of thin rectangular alignment shims with small offset pull tabs. | Steel, Stainless steel, Brass | 60 | [PNG](previews/shim-pack.png) |
 | [`split-shaft-collar`](split-shaft-collar.kcad.ts) | Split shaft collar | Split clamp collar with a through bore and a raised clamp lug. | Steel, Zinc-plated steel | 112 | [PNG](previews/split-shaft-collar.png) |
@@ -107,7 +119,7 @@ are not vendor geometry or manufacturing specifications.
 | [`tube-clamp`](tube-clamp.kcad.ts) | Tube clamp | Two-hole clamp with a semicircular lined saddle, paired side cheeks, and a raised retainer bridge. | Steel, Zinc-plated steel, Rubber | 164 | [PNG](previews/tube-clamp.png) |
 | [`tubular-spacer`](tubular-spacer.kcad.ts) | Tubular spacer | Hollow sleeve with polymer bore liner, chamfered ends, plated rims, and selectable length. | Steel, Engineering polymer, Zinc-plated steel | 432 | [PNG](previews/tubular-spacer.png) |
 | [`u-bracket`](u-bracket.kcad.ts) | U bracket | Open-top channel mounting bracket with a flat back and two parallel side ears. | Steel, Stainless steel | 80 | [PNG](previews/u-bracket.png) |
-| [`v-belt-pulley`](v-belt-pulley.kcad.ts) | V-belt pulley | Stepped V-belt pulley with two shallow belt grooves and a through bore. | Steel, Cast iron | 384 | [PNG](previews/v-belt-pulley.png) |
+| [`v-belt-pulley`](v-belt-pulley.kcad.ts) | V-belt pulley | Two V-shaped belt valleys, paired retaining flanges, keyed bore and locking screw. | Cast iron, Steel key, Zinc-plated hardware | 518 | [PNG](previews/v-belt-pulley.png) |
 
 ## Validate and preview
 
@@ -125,7 +137,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md), the [2026-11-10 guide and retention detail follow-up](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md), and the [2026-11-10 selectable hole-pattern follow-up](../../../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md), the [2026-11-09 installation-variant follow-up](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md), the [2026-11-10 coupling and bearing detail follow-up](../../../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md), the [2026-11-10 guide and retention detail follow-up](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md), the [2026-11-10 selectable hole-pattern follow-up](../../../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md), and the [2026-11-10 pulley, elbow and collar silhouette follow-up](../../../artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 
