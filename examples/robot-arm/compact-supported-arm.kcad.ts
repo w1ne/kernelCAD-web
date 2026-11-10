@@ -102,27 +102,17 @@ function cableRun(points, r) {
   return segs;
 }
 
-// Ruled loft of two low-segment rounded sections. Sketch X is the link's
-// lateral axis and sketch Y is vertical when the section sits on a YZ plane.
-function sectionSketch(w, h, r) {
-  const pts = filletPolygon(
-    [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]],
-    Math.min(r, w * 0.42, h * 0.42),
-    { segments: 2 },
-  );
-  let builder = path().moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) builder = builder.lineTo(pts[i][0], pts[i][1]);
-  return builder.close();
-}
-
+// Two overlapping rounded extrudes. A ruled loft of the same sections
+// pushed livePhysicsPoses past 60 s. The step sits at mid-span; both
+// ends keep the tapered sizes. Axis-x extrude is centered on Y and Z.
 function taperedLink(x0, x1, w0, h0, w1, h1, r) {
-  return sectionSketch(w0, h0, r).loft(sectionSketch(w1, h1, r * 0.8), {
-    ruled: true,
-    planes: [
-      { plane: 'YZ', origin: [x0, 0, 0] },
-      { plane: 'YZ', origin: [x1, 0, 0] },
-    ],
-  });
+  const mid = (x0 + x1) / 2;
+  const overlap = 3;
+  const r0 = Math.min(r, w0 * 0.42, h0 * 0.42);
+  const r1 = Math.min(r * 0.8, w1 * 0.42, h1 * 0.42);
+  const root = extrudeRoundedRect(w0, h0, r0, mid - x0 + overlap, { axis: 'x' }).translate(x0, 0, 0);
+  const tip = extrudeRoundedRect(w1, h1, r1, x1 - mid + overlap, { axis: 'x' }).translate(mid - overlap, 0, 0);
+  return root.union(tip);
 }
 
 // Purchased-actuator envelope. Output face at z = 0, body toward -Z.
