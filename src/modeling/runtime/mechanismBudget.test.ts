@@ -123,7 +123,9 @@ describe('mechanism rest checks under a skipped sweep', () => {
     expect(result.mechanism).toBe('broken');
     expect(result.failures.map((failure) => failure.code)).toContain('mechanism.rest-interpenetration');
     expect(result.failures.map((failure) => failure.code)).toContain('mechanism.unverified-budget-exceeded');
-    expect(result.failures.find((failure) => failure.code === 'mechanism.unverified-budget-exceeded')?.severity).toBe('warn');
+    const budgetWarning = result.failures.find((failure) => failure.code === 'mechanism.unverified-budget-exceeded');
+    expect(budgetWarning?.severity).toBe('warn');
+    expect(budgetWarning?.message).toContain('sweepBudget is 0 (forced skip)');
     expect(result.coverage?.sweep).toBe(false);
   }, 60000);
 

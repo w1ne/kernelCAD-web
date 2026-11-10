@@ -67,8 +67,7 @@ def base(title: str, subtitle: str, index: int) -> tuple[Image.Image, ImageDraw.
 
 
 def model_diagram(draw: ImageDraw.ImageDraw) -> None:
-    # Side section of a valid annular bearing. The center is intentionally
-    # open; material contact around the pivot supports the two mated parts.
+    # Simplified side section of the test's annular rim/disc geometry.
     draw.rounded_rectangle((170, 430, 365, 545), radius=8, fill=(68, 77, 96), outline=(147, 165, 190), width=3)
     draw.rounded_rectangle((475, 430, 670, 545), radius=8, fill=(68, 77, 96), outline=(147, 165, 190), width=3)
     draw.rounded_rectangle((170, 390, 670, 425), radius=8, fill=(45, 78, 117), outline=BLUE, width=3)
@@ -78,8 +77,8 @@ def model_diagram(draw: ImageDraw.ImageDraw) -> None:
     draw.line((420, 270, 420, 575), fill=(111, 135, 169), width=2)
     draw.ellipse((407, 386, 433, 412), fill=AMBER, outline=(255, 230, 180), width=2)
     put(draw, (455, 286), "joint axis", 18, AMBER)
-    put(draw, (730, 310), "The annular rim provides bearing contact.", 22)
-    put(draw, (730, 365), "Both pivot-distance paths are deliberately unavailable.", 18, MUTED)
+    put(draw, (730, 310), "Annular rim and disc test geometry.", 22)
+    put(draw, (730, 365), "Pivot-distance paths are deliberately unavailable.", 18, MUTED)
     put(draw, (730, 460), "Rest pose", 18, MUTED)
     put(draw, (730, 493), "revolute · travel sweep skipped", 20)
 
@@ -91,7 +90,7 @@ def make_frames(report: dict) -> list[Image.Image]:
     unknown_text = unknown["message"]
     images: list[Image.Image] = []
 
-    image, draw = base("Rest-pose joint continuity", "Annular bearing · local OCCT evaluation", 1)
+    image, draw = base("Rest-pose joint continuity", "Annular rim/disc · local OCCT evaluation", 1)
     model_diagram(draw)
     images.append(image)
 
@@ -114,8 +113,8 @@ def make_frames(report: dict) -> list[Image.Image]:
 
     image, draw = base("Evidence scope", "Keep each kind of result explicit.", 4)
     rows = [
-        ("LOCAL VALIDATION", "Real annular-bearing model; measurement paths stubbed unavailable", BLUE),
-        ("MOTION SWEEP", "Skipped at budget 0; rest-pose check still ran", AMBER),
+        ("LOCAL VALIDATION", "Annular rim/disc model; pivot paths stubbed unavailable", BLUE),
+        ("MOTION SWEEP", "Forced off by sweepBudget 0; rest-pose check still ran", AMBER),
         ("SIMULATION", "No physics or motion simulation was run", MUTED),
         ("DEPLOYMENT / HARDWARE", "Not deployed; no physical hardware acceptance", MUTED),
     ]

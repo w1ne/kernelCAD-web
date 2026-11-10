@@ -1310,13 +1310,16 @@ function makeBudgetExceeded(
 ): CompilerDiagnostic {
   const code = 'mechanism.unverified-budget-exceeded';
   const { work, candidates, parts, clusters, lowers } = estimate;
+  const skipReason = sweepBudget <= 0
+    ? `sweepBudget is ${sweepBudget} (forced skip)`
+    : `estimated work ${work} exceeds the budget ${sweepBudget}`;
   return {
     target: 'export-occt',
     code,
     severity: 'warn',
     message:
       `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
-      `estimated work ${work} exceeds the budget ${sweepBudget} ` +
+      `${skipReason} ` +
       `(${parts} part${parts === 1 ? '' : 's'} in ${clusters} rigid cluster${clusters === 1 ? '' : 's'}, ` +
       `${lowers} pose${lowers === 1 ? '' : 's'}, ${candidates} pair overlap probe${candidates === 1 ? '' : 's'}; ` +
       `work counts exact confirms selected by the proxy pass, as the summed ` +

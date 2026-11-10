@@ -45,6 +45,16 @@ describe('summarizeMechanism', () => {
     expect(s.checked).toEqual([]);
   });
 
+  it('describes a zero sweep budget as a forced skip', () => {
+    const budget = {
+      target: 'export-occt', code: 'mechanism.unverified-budget-exceeded', severity: 'warn',
+      message: 'The articulated BREP pose-sweep was SKIPPED: sweepBudget is 0 (forced skip) (2 parts ...)', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [budget], coverage: { ...coverage, sweep: false } });
+    expect(s.skipped).toContain('collision sweep across the joint travel skipped: sweepBudget is 0 (forced skip)');
+    expect(s.statement).toContain('sweepBudget is 0 (forced skip)');
+  });
+
   it('names declared ignore pairs when a collision sweep is unverified', () => {
     const budget = {
       target: 'export-occt', code: 'mechanism.unverified-budget-exceeded', severity: 'warn',

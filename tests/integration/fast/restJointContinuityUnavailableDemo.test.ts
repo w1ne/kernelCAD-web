@@ -13,7 +13,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const DEMO_DIR = resolve(HERE, '../../../docs/demos/rest-joint-continuity-925');
 
 describe('rest-pose joint continuity demo', () => {
-  it('keeps an unmeasurable annular bearing unverified when the sweep exceeds budget', async () => {
+  it('keeps unavailable annular-joint continuity unverified when the sweep is forced off', async () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const arm = kcad.assembly('rest-joint-continuity-demo');
@@ -43,11 +43,13 @@ describe('rest-pose joint continuity demo', () => {
       expect(unknown?.severity).toBe('warn');
       expect(result.mechanism).toBe('unverified');
       expect(result.coverage?.sweep).toBe(false);
-      expect(result.failures.map((diagnostic) => diagnostic.code)).toContain('mechanism.unverified-budget-exceeded');
+      const sweepWarning = result.failures.find((diagnostic) => diagnostic.code === 'mechanism.unverified-budget-exceeded');
+      expect(sweepWarning?.message).toContain('sweepBudget is 0 (forced skip)');
+      expect(sweepWarning?.message).not.toContain('exceeds the budget 0');
 
       const report = {
         invocation: 'npx vitest run tests/integration/fast/restJointContinuityUnavailableDemo.test.ts',
-        case: 'Annular rim and disc bearing with mesh and BREP pivot-distance measurements unavailable; sweep skipped at budget 0.',
+        case: 'Annular rim/disc model with mesh and BREP pivot-distance measurements unavailable; sweep forced off at zero budget.',
         settings,
         evidence: {
           verdict: result.mechanism,
@@ -55,8 +57,8 @@ describe('rest-pose joint continuity demo', () => {
           diagnostics: result.failures.map(({ code, severity, message }) => ({ code, severity, message })),
         },
         scope: {
-          localValidation: 'Direct checkMechanismTruth call on a locally constructed OCCT annular-bearing model.',
-          simulation: 'No physics or motion simulation was run; the over-budget BREP pose sweep was skipped.',
+          localValidation: 'Direct checkMechanismTruth call on an annular rim/disc model; mesh and BREP pivot-distance paths were stubbed unavailable.',
+          simulation: 'No physics or motion simulation was run; the BREP pose sweep was forced off by sweepBudget: 0.',
           deployment: 'Not deployed; this is branch-local evidence.',
           hardware: 'No physical hardware was used or accepted.',
         },

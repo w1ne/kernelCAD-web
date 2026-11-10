@@ -123,15 +123,23 @@ function jointContinuitySkipLine(message: string): string {
     : 'rest-pose joint continuity could not be measured';
 }
 
+function budgetSkipLine(message: string): string {
+  const forced = /sweepBudget is (-?\d+(?:\.\d+)?) \(forced skip\)/.exec(message)?.[1];
+  if (forced !== undefined) {
+    return `collision sweep across the joint travel skipped: sweepBudget is ${forced} (forced skip)`;
+  }
+  const estimate = /estimated work (\d+) exceeds the budget (\d+)/.exec(message);
+  return estimate
+    ? `collision sweep across the joint travel skipped: work ${estimate[1]} is over the budget ${estimate[2]}`
+    : 'collision sweep across the joint travel skipped: budget reason is unavailable';
+}
+
 function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
   for (const d of input.failures) {
     if (d.code === 'mechanism.unverified-budget-exceeded') {
-      const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
-      out.push(m
-        ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
-        : 'collision sweep across the joint travel skipped: over the work budget');
+      out.push(budgetSkipLine(d.message));
     } else if (d.code === 'mechanism.unverified-exact-probe') {
       out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
     } else if (d.code === 'mechanism.joint-mesh-unverified') {
