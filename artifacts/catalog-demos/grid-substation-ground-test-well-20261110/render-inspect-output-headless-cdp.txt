@@ -1,0 +1,7 @@
+kernelcad: mesh-heavy command 'render' with a 2144 MB heap limit — re-executing with --max-old-space-size=8192
+kernelcad render: render surface = static-player (http://127.0.0.1:35463)
+browserType.connectOverCDP: Timeout 30000ms exceeded.
+Call log:
+[2m  - <ws preparing> retrieving websocket url from http://127.0.0.1:9333[22m
+[2m  - <ws connecting> ws://127.0.0.1:9333/devtools/browser/23bef27e-c9cf-4de8-85d6-681fe0771cfd[22m
+[2m  - <ws connected> ws://127.0.0.1:9333/devtools/browser/23bef27e-c9cf-4de8-85d6-681fe0771cfd[22m

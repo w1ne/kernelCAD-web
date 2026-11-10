@@ -658,6 +658,19 @@ retains the source-to-preview workflow. These are visualization props; checks
 do not establish equipment ratings, electrical safety, grid compliance,
 operating procedures, or field acceptance.
 
+The follow-up refined the existing ground-grid test well, whose preview still
+read as a plain block despite its material controls and presets. Its selectable
+360/480/620 mm chamber depth now changes the hollow chamber geometry; a raised
+collar, bolted access lid, side conduit entries, and copper test terminal make
+the object readable at preview scale. The three material controls and both
+named palettes remain. Its 1,128-triangle default stays under the 1,800 budget.
+The kit remains **80/80 passing**, and the catalog remains **2,402/2,402 passing
+(100.00%; 50 rich kits, 0 thin kits)**. The
+[ground test well handoff](../artifacts/catalog-demos/grid-substation-ground-test-well-20261110/README.md)
+records the refreshed kit previews and index, depth/palette variants, local
+page check, lint, integration test, and inspected demo. This branch is not
+deployed; no electrical rating, safety, or field-acceptance claim is made.
+
 ## Telecom infrastructure assets
 
 The [telecom infrastructure kit](../catalog/kits/telecom-infrastructure/README.md)

@@ -119035,11 +119035,14 @@
       "id": "substation-ground-grid-test-well",
       "kit": "grid-substation",
       "title": "Ground grid test well",
-      "description": "Small inspection well with a removable cap and a visible ground riser. Material controls: concrete, stainless steel, copper; finish presets: weathered and maintenance.",
+      "description": "Substation ground-grid test well with a hollow precast chamber, raised collar, bolted access lid, side conduit entries, and a clamped copper test terminal. Choose the well depth and overall scale. Material controls: concrete, stainless steel, copper; weathered and maintenance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
+        "ground grid",
+        "test well",
+        "inspection chamber",
         "electrical infrastructure",
         "utility yard",
         "low poly",
@@ -119054,7 +119057,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-ground-grid-test-well.kcad.ts",
       "preview": "/assets/grid-substation-substation-ground-grid-test-well.png",
-      "sourceSha256": "b618655a3e5d19c9896a9719b345cddb7dd37ea6468354678b15004a5c0c7e9d",
+      "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870",
       "triangleBudget": 1800,
       "params": [
         {
@@ -119065,6 +119068,17 @@
           "min": 0.65,
           "max": 1.35,
           "step": 0.05
+        },
+        {
+          "name": "wellDepth",
+          "type": "choice",
+          "default": "480",
+          "label": "Chamber depth (mm)",
+          "choices": [
+            "360",
+            "480",
+            "620"
+          ]
         },
         {
           "name": "concrete",
@@ -119088,19 +119102,21 @@
       "presets": {
         "weathered": {
           "concrete": "#88887f",
-          "stainlessSteel": "#9da4a0",
+          "stainlessSteel": "#858f90",
           "copper": "#9f704a"
         },
         "maintenance": {
-          "concrete": "#c1b46a"
+          "concrete": "#c5c8bc",
+          "stainlessSteel": "#eef2ef",
+          "copper": "#e99a32"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 1128,
         "sizeM": [
+          1.08,
           0.728,
-          0.6955,
-          0.728
+          0.77
         ],
         "minUpM": 0,
         "materials": 1
@@ -119110,7 +119126,8 @@
           "name": "concrete",
           "color": "#92938b",
           "parts": [
-            "inspection-box"
+            "inspection-chamber",
+            "concrete-access-collar"
           ],
           "param": "concrete"
         },
@@ -119118,7 +119135,27 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "cover-lid"
+            "ground-conduit--1",
+            "conduit-entry-collar--1",
+            "ground-conduit-1",
+            "conduit-entry-collar-1",
+            "lid-seat-north-south--1",
+            "lid-seat-east-west--1",
+            "lid-seat-north-south-1",
+            "lid-seat-east-west-1",
+            "removable-access-lid",
+            "lid-fastener--215--215",
+            "lid-fastener--215-215",
+            "lid-fastener-215--215",
+            "lid-fastener-215-215",
+            "lid-grip-foot--155",
+            "lid-grip-stem--155",
+            "lid-grip-foot-155",
+            "lid-grip-stem-155",
+            "lid-grip-bar",
+            "terminal-clamp-bolt--46",
+            "terminal-clamp-bolt-46",
+            "inspection-nameplate"
           ],
           "param": "stainlessSteel"
         },
@@ -119126,7 +119163,14 @@
           "name": "copper",
           "color": "#b87545",
           "parts": [
-            "ground-riser"
+            "test-terminal-foot",
+            "ground-test-riser",
+            "test-terminal-clamp",
+            "bonding-bar",
+            "nameplate-fastener--82--35",
+            "nameplate-fastener--82-35",
+            "nameplate-fastener-82--35",
+            "nameplate-fastener-82-35"
           ],
           "param": "copper"
         }

@@ -46,6 +46,17 @@ sagging conductors and down-drop jumpers). Each has four material-named
 controls and three presets; triangle budgets are 6,000 to 10,000 (actual
 4,508 to 9,400).
 
+The existing ground-grid test well now has a selectable chamber
+depth of 360, 480, or 620 mm. Its hollow precast chamber, raised collar,
+fastened removable lid, side conduit entries, and clamped copper test terminal
+replace the earlier block-like default. The concrete, stainless-steel, and
+copper controls remain independently editable; both weathered and
+maintenance presets set all three materials. The default mesh is 1,128
+triangles under the existing 1,800-triangle budget. The
+[ground test well refinement handoff](../../../artifacts/catalog-demos/grid-substation-ground-test-well-20261110/README.md)
+contains its source variants, refreshed previews, local checks, and inspected
+MP4.
+
 ## Preview and verification
 
 The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough. The [silhouette-refinement handoff](../../../artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/README.md) records three in-place placement and shape corrections, refreshed kit previews, checks, and an inspected MP4.
