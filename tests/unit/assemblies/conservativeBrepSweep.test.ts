@@ -348,7 +348,9 @@ describe('detailed arm under the default sweep budget', () => {
     expect(arm.__ignoreInterference()).toEqual([]);
     expect(arm.__parts().every((part) => part.collisionShapes.length === 0)).toBe(true);
 
-    const skipped = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    // A zero budget uses the explicit forced-skip message, which omits the
+    // work estimate. A small nonzero budget exercises the estimate-over-budget path.
+    const skipped = await checkMechanismTruth(arm, { sweepBudget: 1 });
     const work = estimatedWork(skipped.failures.find((failure) => failure.code === 'mechanism.unverified-budget-exceeded')?.message);
     expect(work).toBeGreaterThan(0);
     expect(work).toBeLessThanOrEqual(40_000);
