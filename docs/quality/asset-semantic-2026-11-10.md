@@ -6,7 +6,7 @@
 - Production source and PNG for three MIT assets `manufacturing/deep-groove-bearing`, `manufacturing/socket-head-cap-screw`, and `manufacturing/hex-head-bolt` now reflect [merged server PR #623](https://github.com/w1ne/kernelCAD-server/pull/623). Verified live 2026-11-10: bearing wrapper creates distinct races and balls; both bolt wrappers request `detail: full`. A full four-variant assembly tolerance validation was **not** done in this run.
 - This pass samples **18 further recently changed/high-visibility assets across 9 kits**, preserving downloaded source + PNG hashes and the visual contact sheet locally on work-1: `/home/andrii/ventures/state/kernelcad-asset-review-20261110/sampled-live/contact-18.jpg`; 18/18 URL downloads worked, 18 unique preview SHA-256 values and no blank/near-uniform PNGs. These are CC0 **scene props**, not OEM/engineering geometry. Preview checks alone do not prove physical fidelity.
 
-## P1 improvement: `standard-components/beam-coupling`
+## P1 improvement: `standard-components/beam-coupling` ([web PR #1297](https://github.com/w1ne/kernelCAD-web/pull/1297))
 
 - **Before:** four straight parallel slots down a solid cylindrical sleeve plus disconnected-looking end hubs. This cannot be advertised as a continuous helical beam coupling. Published [source](https://kernelcad.com/assets/standard-components-beam-coupling.kcad.ts) and [PNG](https://kernelcad.com/assets/standard-components-beam-coupling.png) were sampled on 2026-11-10; PNG SHA-256 `2637c7c734214e971be10ee29507335e433542bd707b1c86ff124496ca69c3b6`.
 - **After (source PR, not yet deployed):** one connected BRep with real three-turn helical subtraction, axial through-bore and two radial set-screw access bores. Metadata clearly states *illustrative CC0*, not a rated manufactured coupling. Renderer PNG SHA-256 `f530f2c04f32a0ea8235062e9aa38eb6c3d449e7b2fafe6087a7487877e08f65`. Source SHA-256 `05bd36abfe771f271e54147b74ec439aca6c6b5ad078f3b26f39f5cbdbf17795`.
@@ -39,7 +39,7 @@
 
 ## Follow-up gates
 
-- Review CI and normal repository merge gates for the focused beam PR. Verify production **source, preview, title, and parameter choices** after a successful deploy; until then keep production state unchanged.
+- Review CI and normal repository merge gates for [beam PR #1297](https://github.com/w1ne/kernelCAD-web/pull/1297). Verify production **source, preview, title, and parameter choices** after a successful deploy; until then keep production state unchanged.
 - Fix [#1296](https://github.com/w1ne/kernelCAD-web/issues/1296): six detached substation cable-ladder rungs at X=1,800..4,050 mm exceed ±1,500 mm stringers. This is independent of the beam defect and remains open.
 - Continue existing [manufacturing audit issue #622](https://github.com/w1ne/kernelCAD-server/issues/622): P1 envelopes / missing manufacturing features in bearing-and-shaft assembly, hex nut and heat-set insert; P2 marked illustrative only. Do not promote CC0 props as manufacturer-grade CAD.
 - This run inspected all 18 downloaded PNGs as a contact sheet. No mechanical evaluation was performed on those 18, and no inference about deployment quality beyond downloaded source and preview is made.
