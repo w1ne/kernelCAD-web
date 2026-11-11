@@ -30,12 +30,25 @@ describe('dfm_review', () => {
     ]);
     expect(r.checks.filter(c => c.status !== 'pass')).toEqual([]);
     expect(r.verdict).toBe('pass');
+    expect(r.ok).toBe(true); // Successful review execution; it is not itself the manufacturing verdict.
+    expect(r.checks.every(c => c.source === c.process)).toBe(true);
   }, 60000);
 
   it('fails a T cantilever on FDM overhangs and on CNC undercuts from +z, and passes with a flipped second setup', async () => {
     const r = await dfmReviewTool({ code: TEE });
     expect(status(r, 'fdm.overhangs')).toBe('fail');
     expect(status(r, 'cnc.undercuts')).toBe('fail');
+    expect(r.ok).toBe(true); // A checked manufacturing failure still has a successful tool result.
+    const overhang = r.checks.find(c => c.id === 'fdm.overhangs')!;
+    expect(overhang.unit).toBe('mm2');
+    expect(overhang.limit).toBeUndefined(); // Unsupported area is not comparable to the angular setting.
+    expect(overhang.op).toBeUndefined();
+    expect(overhang.refs).toEqual(r.fdm![0].result.orientation.overhangs
+      .filter(region => region.status === 'unsupported' && !(region.horizontal && region.spanMm !== undefined))
+      .flatMap(region => region.faceRef === undefined ? [] : [region.faceRef]));
+    const cncUndercuts = r.checks.find(c => c.id === 'cnc.undercuts')!;
+    expect(cncUndercuts).toMatchObject({ unit: 'mm2', op: '<=', source: 'cnc' });
+    expect(cncUndercuts.value).toBeCloseTo(r.cnc![0].result.undercut.areaMm2, 2);
     expect(r.cnc![0].result.undercut.areaMm2).toBeCloseTo(600, 0); // arm undersides 2 × 100 + the stem walls they shadow 2 × 200
     expect(r.verdict).toBe('fail');
     const two = await dfmReviewTool({ code: TEE, processes: ['cnc'], approach_axes: ['+z', '-z'] });
@@ -135,6 +148,7 @@ describe('dfm_review', () => {
     ]) {
       const r = await dfmReviewTool({ code: 'return box(1, 1, 1);', ...(bad as object) });
       expect(r.ok).toBe(false);
+      expect(r.verdict).toBeUndefined(); // Invalid calls have no manufacturing verdict.
       expect(r.diagnostics[0].code).toBe('cli.invalid-args');
     }
   });
