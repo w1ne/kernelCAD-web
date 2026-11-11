@@ -348163,7 +348163,7 @@
       "id": "chlorine-dosing-skid",
       "kit": "water-treatment",
       "title": "Chlorine dosing skid",
-      "description": "Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Chemical dosing skid with a polyethylene day tank, coated metering pump and controls, stainless tube rack, and structural spill tray. Material controls: chemical-tank polyethylene, coated equipment steel, structural steel, and stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -348182,7 +348182,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/chlorine-dosing-skid.kcad.ts",
       "preview": "/assets/water-treatment-chlorine-dosing-skid.png",
-      "sourceSha256": "67118697138e902f59dfbd058d85a73bc9707019798a1a3497d8e129c62d4867",
+      "sourceSha256": "d7c0ea4b218a08d79fa77ba79337e65485bb7f63b1c42fe952318ff667caab44",
       "triangleBudget": 2200,
       "params": [
         {
@@ -348193,6 +348193,12 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "chemicalTankPolyethylene",
+          "type": "color",
+          "default": "#c7dce0",
+          "label": "Chemical day tank (polyethylene)"
         },
         {
           "name": "coatedSteel",
@@ -348215,11 +348221,13 @@
       ],
       "presets": {
         "weathered": {
+          "chemicalTankPolyethylene": "#aebbbc",
           "coatedSteel": "#687b78",
           "structuralSteel": "#6e6b63",
           "stainlessSteel": "#9ca7a6"
         },
         "highVisibility": {
+          "chemicalTankPolyethylene": "#ebf2f1",
           "coatedSteel": "#e5682d",
           "structuralSteel": "#505b60",
           "stainlessSteel": "#e1ddd0"
@@ -348246,10 +348254,17 @@
           "param": "structuralSteel"
         },
         {
+          "name": "chemicalTankPolyethylene",
+          "color": "#c7dce0",
+          "parts": [
+            "day-tank"
+          ],
+          "param": "chemicalTankPolyethylene"
+        },
+        {
           "name": "coatedSteel",
           "color": "#3d8589",
           "parts": [
-            "day-tank",
             "pump",
             "control"
           ],

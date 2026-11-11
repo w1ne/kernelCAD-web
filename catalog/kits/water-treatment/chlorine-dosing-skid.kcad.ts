@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Chlorine dosing skid: Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Low-poly visualization geometry in millimetres, Z up.
+// Chlorine dosing skid: chemical day tank in polyethylene, separate coated pump and controls, stainless tubing, and a structural spill tray. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "chlorine-dosing-skid",
   license: 'CC0-1.0',
   title: "Chlorine dosing skid",
-  description: "Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+  description: "Chemical dosing skid with a polyethylene day tank, coated metering pump and controls, stainless tube rack, and structural spill tray. Material controls: chemical-tank polyethylene, coated equipment steel, structural steel, and stainless steel; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -15,12 +15,13 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
+const chemicalTankPolyethylene = param('chemicalTankPolyethylene', '#c7dce0', { label: 'Chemical day tank (polyethylene)' });
 const coatedSteel = param('coatedSteel', '#3d8589', { label: 'Coated equipment steel' });
 const structuralSteel = param('structuralSteel', '#68777b', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
 presets({
-  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6' },
-  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0' },
+  weathered: { chemicalTankPolyethylene: '#aebbbc', coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6' },
+  highVisibility: { chemicalTankPolyethylene: '#ebf2f1', coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const section = (radius:number, sides:number) => {
@@ -44,7 +45,7 @@ const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n)
 
 const p=assembly("chlorine-dosing-skid");
 p.part("tray",b(0,0,0,880,520,50).color(structuralSteel));
-p.part("day-tank",c(-240,0,50,460,170,12).color(coatedSteel));
+p.part("day-tank",c(-240,0,50,460,170,12).color(chemicalTankPolyethylene));
 p.part("pump",b(230,-80,70,210,170,190).color(coatedSteel));
 p.part("control",b(230,140,115,230,150,280).color(coatedSteel));
 p.part("tube-0",b(-100,-210,65,25,30,260).color(stainlessSteel));
