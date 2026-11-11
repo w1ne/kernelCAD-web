@@ -1,0 +1,27 @@
+{
+    "programs": [
+
+    ],
+    "stream_groups": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "h264",
+            "width": 720,
+            "height": 640,
+            "pix_fmt": "yuv420p",
+            "avg_frame_rate": "24/1"
+        }
+    ],
+    "format": {
+        "duration": "12.000000",
+        "size": "56384"
+    },
+    "visual_review": {
+        "before_frame": "The six yellow blocks are clearly outside the opaque casing.",
+        "after_frame": "Six wider bucket cups are visible through the front inspection opening; the casing, head, boot, and ladder remain clear.",
+        "captions_readable": true,
+        "reviewed_by": "visual inspection of extracted MP4 frames"
+    }
+}

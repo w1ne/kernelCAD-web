@@ -81,7 +81,7 @@ and inspected MP4. No asset IDs or kit counts changed.
 | `belt-conveyor` | Belt conveyor | Straight conveyor with a rubber belt, transverse carrying and return rollers, guarded frame, adjustable support stations and drive motor. | scale · support stations · frame steel · belt rubber · roller steel · safety paint |
 | `roller-conveyor-line` | Roller conveyor line | Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. | scale · steel · safety paint |
 | `screw-conveyor` | Screw conveyor | Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. | scale · steel · safety paint |
-| `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. | scale · steel · safety paint |
+| `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, front inspection cutaway showing the contained bucket belt, boot housing, head pulley cover and service ladder. | scale · steel · safety paint · belt rubber · bucket polymer |
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |
 | `weigh-hopper` | Weigh hopper | Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. | scale · steel · safety paint · wear liner |
 | `bulk-loading-spout` | Bulk loading spout | Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. | scale · steel · safety paint |

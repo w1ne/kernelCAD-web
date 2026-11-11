@@ -141019,7 +141019,7 @@
       "id": "bucket-elevator",
       "kit": "industrial-plant",
       "title": "Bucket elevator",
-      "description": "Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. Controls: overall scale, steel, safety paint.",
+      "description": "Bucket elevator with a tall casing, visible enclosed bucket belt, boot housing, head pulley cover and service ladder. Controls: overall scale, structural steel, safety paint, belt rubber, bucket polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -141038,7 +141038,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bucket-elevator.kcad.ts",
       "preview": "/assets/industrial-plant-bucket-elevator.png",
-      "sourceSha256": "1823419b094433df04532e33e74ab66d55351c0b206c86008bd8ccc9409fb355",
+      "sourceSha256": "547c3bb07b3fb18b992a828db9162a6518f38e4887a89a446928686846dfe67d",
       "triangleBudget": 1400,
       "params": [
         {
@@ -141061,19 +141061,36 @@
           "type": "color",
           "default": "#dfa747",
           "label": "Safety paint"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#283238",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "bucketPolymer",
+          "type": "color",
+          "default": "#d6982d",
+          "label": "Bucket polymer"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "beltRubber": "#202629",
+          "bucketPolymer": "#89643a"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "steel": "#718087",
+          "safetyPaint": "#f5c640",
+          "beltRubber": "#30373b",
+          "bucketPolymer": "#e2a52d"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 780,
         "sizeM": [
           0.465,
           1.0836,
@@ -141087,7 +141104,19 @@
           "name": "steel",
           "color": "#718087",
           "parts": [
-            "elevator-casing",
+            "casing-back-panel",
+            "casing-side-left",
+            "casing-side-right",
+            "casing-front-left",
+            "casing-front-right",
+            "inspection-panel-lower",
+            "inspection-panel-upper",
+            "inspection-frame-left",
+            "inspection-frame-right",
+            "inspection-sill",
+            "inspection-header",
+            "bucket-head-pulley",
+            "bucket-boot-pulley",
             "head-shaft",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -141100,17 +141129,57 @@
           "param": "steel"
         },
         {
+          "name": "beltRubber",
+          "color": "#283238",
+          "parts": [
+            "bucket-belt-rising",
+            "bucket-belt-return"
+          ],
+          "param": "beltRubber"
+        },
+        {
+          "name": "bucketPolymer",
+          "color": "#d6982d",
+          "parts": [
+            "bucket-0-back",
+            "bucket-0-floor",
+            "bucket-0-left-cheek",
+            "bucket-0-right-cheek",
+            "bucket-0-front-lip",
+            "bucket-1-back",
+            "bucket-1-floor",
+            "bucket-1-left-cheek",
+            "bucket-1-right-cheek",
+            "bucket-1-front-lip",
+            "bucket-2-back",
+            "bucket-2-floor",
+            "bucket-2-left-cheek",
+            "bucket-2-right-cheek",
+            "bucket-2-front-lip",
+            "bucket-3-back",
+            "bucket-3-floor",
+            "bucket-3-left-cheek",
+            "bucket-3-right-cheek",
+            "bucket-3-front-lip",
+            "bucket-4-back",
+            "bucket-4-floor",
+            "bucket-4-left-cheek",
+            "bucket-4-right-cheek",
+            "bucket-4-front-lip",
+            "bucket-5-back",
+            "bucket-5-floor",
+            "bucket-5-left-cheek",
+            "bucket-5-right-cheek",
+            "bucket-5-front-lip"
+          ],
+          "param": "bucketPolymer"
+        },
+        {
           "name": "safetyPaint",
           "color": "#dfa747",
           "parts": [
             "boot",
             "head-house",
-            "bucket-0",
-            "bucket-1",
-            "bucket-2",
-            "bucket-3",
-            "bucket-4",
-            "bucket-5",
             "service-ladder-left",
             "service-ladder-right"
           ],
