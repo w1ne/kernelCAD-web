@@ -856,18 +856,10 @@ function applySolvedMateFk(
 }
 
 type PartPlacementMeta = {
-  at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+  at?: Vec3Param;
   placedBy?: unknown;
   partName?: string;
 };
-
-/** Read the authored `at:` vec3; defaults every missing coordinate to 0. */
-function readPartAtVector(partAt: PartPlacementMeta['at']): [number, number, number] {
-  const ax = partAt?.x?.evaluated ?? 0;
-  const ay = partAt?.y?.evaluated ?? 0;
-  const az = partAt?.z?.evaluated ?? 0;
-  return [ax, ay, az];
-}
 
 function emitPlacementIgnoredByMateFk(
   ctx: LowerContext,
@@ -911,7 +903,7 @@ function warnPlacementIgnoredByMateFk(
   // connector pair — that's not a conflict, it's how connect
   // was designed; skip those).
   const partMeta = partRec?.metadata as PartPlacementMeta | undefined;
-  const [ax, ay, az] = readPartAtVector(partMeta?.at);
+  const [ax, ay, az] = loweredPartAt(ctx, partRec);
   const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
   const placedByConnect = partMeta?.placedBy !== undefined;
   if (partRec && atIsNonTrivial && !placedByConnect) {

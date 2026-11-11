@@ -39,6 +39,28 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
     expect(placementIgnored[0].hint).toMatch(/mate connector/i);
   });
 
+  it('resolves a parameter-driven `at:` before checking whether mate FK ignores it', async () => {
+    const model = await buildModel({
+      fileName: 'param-placement-ignored.kcad.ts',
+      code: `
+        const offset = param('offset', 125);
+        const arm = assembly('test');
+        arm.part('base', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('child', box(10, 10, 10), { at: [offset, 0, 0] })
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        arm.mate('m', 'base.p', 'child.q', 'fastened');
+        return arm.solvedModel({});
+      `,
+    });
+    const placementIgnored = model.diagnostics.find(
+      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
+    );
+
+    expect(placementIgnored).toBeDefined();
+    expect(placementIgnored?.message).toContain('(125.00, 0.00, 0.00)');
+  });
+
   it('does NOT emit when the mated part has no `at:`', async () => {
     const model = await buildModel({
       fileName: 'no-at.kcad.ts',
