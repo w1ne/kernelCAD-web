@@ -144657,14 +144657,16 @@
       "id": "maintenance-platform",
       "kit": "industrial-plant",
       "title": "Maintenance platform",
-      "description": "Raised maintenance platform with toe boards, guarded perimeter, access ladder and braced legs. Controls: overall scale, steel, safety paint.",
+      "description": "Fixed-height maintenance platform at about real size: steel deck on four corner legs and base plates, three-sided safety guard with top rails, midrails and toe boards, and a three-tread open-riser access stair with paired handrails. Material controls: structural steel and safety paint; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
-        "process equipment",
-        "low poly",
+        "maintenance",
+        "work platform",
+        "access stair",
+        "manufacturing",
         "CC0"
       ],
       "compat": [
@@ -144676,7 +144678,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/maintenance-platform.kcad.ts",
       "preview": "/assets/industrial-plant-maintenance-platform.png",
-      "sourceSha256": "12b16e0be40e9be297215013b90aec3e14dc1ca9d84fd508177dfe479a2f9be9",
+      "sourceSha256": "0b5ba4b746871027c209a2c4f7286efd10b98137a70eb62b3af6549d3ce7eff0",
       "triangleBudget": 1400,
       "params": [
         {
@@ -144711,45 +144713,67 @@
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 456,
         "sizeM": [
-          0.7446,
-          0.776,
-          0.54
+          1.339562,
+          1.744,
+          0.642
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e0a33f",
-          "parts": [
-            "deck",
-            "base-foot--260-4--226-79999999999998",
-            "base-foot--260-4-226-79999999999998",
-            "base-foot-260-4--226-79999999999998",
-            "base-foot-260-4-226-79999999999998",
-            "rail-long--1",
-            "rail-long-1"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "steel",
           "color": "#738087",
           "parts": [
-            "post--260-4--226-79999999999998",
-            "post--260-4-226-79999999999998",
-            "post-260-4--226-79999999999998",
-            "post-260-4-226-79999999999998",
-            "mid-rail--1--1",
-            "mid-rail--1-1",
-            "mid-rail-1--1",
-            "mid-rail-1-1",
-            "access-step"
+            "platform-deck",
+            "platform-leg-back-left",
+            "platform-leg-back-right",
+            "platform-leg-front-left",
+            "platform-leg-front-right",
+            "stair-tread-lower",
+            "stair-tread-middle",
+            "stair-tread-upper",
+            "stair-stringer-left",
+            "stair-stringer-right"
           ],
           "param": "steel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e0a33f",
+          "parts": [
+            "base-foot-back-left",
+            "guard-post-back-left",
+            "base-foot-back-right",
+            "guard-post-back-right",
+            "base-foot-front-left",
+            "guard-post-front-left",
+            "base-foot-front-right",
+            "guard-post-front-right",
+            "platform-top-rail-side-left",
+            "platform-mid-rail-side-left",
+            "platform-toe-board-side-left",
+            "platform-top-rail-side-right",
+            "platform-mid-rail-side-right",
+            "platform-toe-board-side-right",
+            "platform-top-rail-back",
+            "platform-mid-rail-back",
+            "platform-toe-board-back",
+            "stair-nosing-lower",
+            "stair-nosing-middle",
+            "stair-nosing-upper",
+            "stair-handrail-left",
+            "stair-handrail-post-left-lower",
+            "stair-handrail-post-left-middle",
+            "stair-handrail-post-left-upper",
+            "stair-handrail-right",
+            "stair-handrail-post-right-lower",
+            "stair-handrail-post-right-middle",
+            "stair-handrail-post-right-upper"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },

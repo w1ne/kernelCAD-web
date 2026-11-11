@@ -1,0 +1,18 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 669ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  341ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 848ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 870ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  521ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 931ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  590ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 933ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  471ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 1126ms
+     ✓ keeps its belt flights visible in the generated catalog preview  730ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 342ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 12269ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  10786ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  423ms
