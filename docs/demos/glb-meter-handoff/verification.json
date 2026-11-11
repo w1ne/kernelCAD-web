@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-11-11T14:09:37.415Z",
+  "source": "examples/exports/glb-meter-handoff.kcad.ts",
+  "invocation": "UPDATE_GLB_METER_DEMO=1 npx vitest run tests/integration/kernel/export/glbMeterScaleDemoCapture.test.ts --reporter=dot",
+  "exporter": "runAndExport(format=\"glb\")",
+  "glbBytes": 20784,
+  "glbSha256": "bdc9c4a7bde0b67a5d0c88b16964f3f21dbd519f29a7d05ad669a8a076743bab",
+  "authoredSizeMm": [
+    700,
+    300,
+    12
+  ],
+  "importedSizeM": [
+    0.012,
+    0.3,
+    0.7000000000000001
+  ],
+  "rootScale": [
+    0.001,
+    0.001,
+    0.001
+  ],
+  "units": "m",
+  "nodes": [
+    "base_plate",
+    "brass_standoff",
+    ""
+  ],
+  "materials": [
+    "anodized aluminium",
+    "brass"
+  ],
+  "exportWarnings": [],
+  "claims": {
+    "localGlbExport": true,
+    "standardGltfDimensionConvention": true,
+    "vectorDiagramIsNotViewerRender": true,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}
