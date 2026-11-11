@@ -89710,7 +89710,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/orchard-air-blast-sprayer.kcad.ts",
       "preview": "/assets/farm-machinery-orchard-air-blast-sprayer.png",
-      "sourceSha256": "1c11b797a30cd865dbd8a52e1c84bc59f13ac5d95bfc082597656743770b1870",
+      "sourceSha256": "ed2a7144aa5381cf0593bac6b97cb587c9be832e015d338704101e95ee2a05c9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -89727,6 +89727,12 @@
           "type": "color",
           "default": "#397747",
           "label": "Painted steel"
+        },
+        {
+          "name": "tankPolymerColor",
+          "type": "color",
+          "default": "#e7eadf",
+          "label": "Tank polymer"
         },
         {
           "name": "rubberColor",
@@ -89750,12 +89756,14 @@
       "presets": {
         "weathered": {
           "paintedSteelColor": "#53694d",
+          "tankPolymerColor": "#d4d7c9",
           "rubberColor": "#252927",
           "glassColor": "#54757b",
           "steelColor": "#737d7b"
         },
         "highVisibility": {
           "paintedSteelColor": "#db762c",
+          "tankPolymerColor": "#eff1e8",
           "rubberColor": "#292e2d",
           "glassColor": "#79aeb4",
           "steelColor": "#abb2ad"
@@ -89777,10 +89785,17 @@
           "color": "#397747",
           "parts": [
             "sprayer-chassis",
-            "chemical-tank",
             "operator-cab"
           ],
           "param": "paintedSteelColor"
+        },
+        {
+          "name": "tankPolymerColor",
+          "color": "#e7eadf",
+          "parts": [
+            "chemical-tank"
+          ],
+          "param": "tankPolymerColor"
         },
         {
           "name": "rubberColor",

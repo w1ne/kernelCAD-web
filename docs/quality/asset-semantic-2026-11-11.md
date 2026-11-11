@@ -131,3 +131,21 @@ This is a semantic feature correction from a local preview audit. It does not ve
 | `construction-equipment/transit-mixer-truck` | Before: all six rims shared the yellow enamel control. After: rims use structural steel gray; black tires and yellow cab/drum bands remain distinct. | 8.269668 × 3.6 × 2.72 | Before source `49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937`; after source `f491239865e81de5af9a2e1ffb82c5cb068369bf619dc08c1e33cc1a1755c5e1` | Before `63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5`; after `716154169343616e9ed2907d6cc692798f7a7bbc607055db1b4a85d9bc471095` | Material assignment corrected; no geometry change. |
 
 This local preview and material-control correction does not verify mixer capacity, roadworthiness, manufacturer-specific fit, safety, deployment, or physical acceptance.
+
+## Seventh sample — farm machinery tank material review
+
+- Rechecked PR #1258 at baseline head `ab53fd09d49557505f43806b031bf27b6c88790a`: the required CI gates passed on that exact commit (workflow run `43048742152`), and no review had been submitted. The optional external-tools job was still running. Exact open-issue and open-PR title/body searches returned no matches for the five sample IDs; none of the 17 other open PRs changed their source paths. PR #1258 is the destination for this round and was excluded only from changed-source conflict checks.
+- Opened the rendered previews for `orchard-air-blast-sprayer`, `potato-harvester`, `self-propelled-field-sprayer`, `grain-dryer`, and `farm-grain-auger`. The tank was the material-control mismatch: it shared `paintedSteelColor` with the chassis and cab. The other four samples showed plausible material zoning. The preview/source also expose separate semantic-fidelity concerns: the orchard asset does not visibly model the fan/nozzle bank named in its source description, and the potato harvester's separator/digging assembly is not recognizable in the render. These shape concerns were recorded but not folded into the material-only edit.
+- Added `tankPolymerColor` and used it only for the `chemical-tank`; existing painted steel, rubber, cab glass, exposed steel, preset names, geometry, and triangle budget remain. The official-material comparison is retained privately in `kernelCAD-private/docs/competitors/2026-11-11-farm-orchard-sprayer-tank-material.md`.
+- Re-rendered the preview and regenerated `catalog/index.json`. The source hash is fresh; the asset remains 400 triangles with the same 0.9964 × 1.68 × 1.78 m envelope. The farm-machinery quality gate passes 60/60; ESLint is clean; the focused exported-GLB regression passes; the catalog integration suite passes 28 files / 43 tests, including catalog-index freshness. The local generated detail page shows the new control and existing presets.
+- The complete five-preview ledger, before/after preview, local page evidence, source copies, test output, render settings, open-target check, and inspected 20-second MP4 are in the [orchard sprayer handoff bundle](../../artifacts/catalog-demos/farm-machinery-orchard-tank-material-review-20261111/README.md). The correction is local to this PR and is not deployed.
+
+| Asset | Preview observation | Result |
+|---|---|---|
+| `farm-machinery/orchard-air-blast-sprayer` | Before: tank and chassis shared green painted steel. After: the pale tank has an independent polymer control; fan/nozzle bank remains absent from the current geometry. | Material-control mismatch corrected. |
+| `farm-machinery/potato-harvester` | Boxy bunker and flat chassis dominate; separator web and digging assembly are not legible. | No material mismatch; silhouette concern recorded. |
+| `farm-machinery/self-propelled-field-sprayer` | Cab/body, four wheels, and lateral booms visible; high-clearance stance and spray hardware are weak. | No material mismatch. |
+| `farm-machinery/grain-dryer` | Vented vertical tower, cap, base, and ladder rails read as a grain-dryer scene asset. | No material mismatch. |
+| `farm-machinery/farm-grain-auger` | Inclined tube, hopper, support rails, wheels, and crop feed visible. | No material mismatch. |
+
+This review is limited to local scene previews and material assignment; it does not verify agricultural performance, product dimensions, chemical compatibility, safe use, deployment, or equipment acceptance.
