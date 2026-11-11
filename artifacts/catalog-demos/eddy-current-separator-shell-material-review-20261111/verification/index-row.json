@@ -1,0 +1,19 @@
+{
+  "kit": "recycling-facility",
+  "id": "eddy-current-separator",
+  "sourceSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
+  "actualSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
+  "matches": true,
+  "preview": "/assets/recycling-facility-eddy-current-separator.png",
+  "triangleBudget": 3200,
+  "stats": {
+    "triangles": 1972,
+    "sizeM": [
+      6.19,
+      1.96,
+      2.52
+    ],
+    "minUpM": 0,
+    "materials": 1
+  }
+}

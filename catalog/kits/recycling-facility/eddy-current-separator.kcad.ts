@@ -2,7 +2,8 @@
 // Eddy-current separator: the machine that throws aluminium and copper out
 // of a mixed stream. A vibratory pan feeds a single layer of material onto
 // a short fast belt. The head pulley is a shell spinning around a
-// high-speed magnetic rotor, which induces eddy currents in non-ferrous
+// high-speed magnetic rotor inside a nonconductive composite shell, which
+// allows the field to induce eddy currents in non-ferrous
 // metal so cans leap off in a long arc and clear an adjustable splitter
 // into the metals chute, while plastics, paper and glass just drop off the
 // end into the residue chute. What makes it that machine rather than a
@@ -15,7 +16,7 @@ meta({
   name: "eddy-current-separator",
   license: 'CC0-1.0',
   title: "Eddy-current separator",
-  description: "Eddy-current separator at about real size: spring-mounted vibratory feeder pan with twin vibrator motors, short fast belt over a tail pulley, magnetic rotor head drum with its own drive motor, knife-edge splitter, residue and metals chutes over collection bins, aluminium cans in flight over the splitter and mixed residue on the belt, rear guard wall and control cabinet. Material controls: machine frame, belt, magnetic rotor, recovered metal. plant, weathered, copper and highVisibility presets.",
+  description: "Eddy-current separator at about real size: spring-mounted vibratory feeder pan with twin vibrator motors, short fast belt over a tail pulley, nonconductive composite shell around the internal magnetic rotor, knife-edge splitter, residue and metals chutes over collection bins, aluminium cans in flight over the splitter and mixed residue on the belt, rear guard wall and control cabinet. Material controls: machine frame, belt, composite shell, recovered metal. plant, weathered, copper and highVisibility presets.",
   tags: ["recycling", "eddy-current separator", "ECS", "non-ferrous", "aluminium recovery", "magnetic rotor", "metal separation", "materials recovery", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
@@ -27,13 +28,15 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const frame = param('frame', '#2f6f9e', { label: 'Machine frame (paint)' });
 const belt = param('belt', '#2a2e31', { label: 'Belt (rubber)' });
-const rotor = param('rotor', '#c23b2f', { label: 'Magnetic rotor shell' });
+// Keep the public param key `rotor` for existing asset overrides. It colors
+// the outer nonconductive composite shell; the magnet rotor sits inside it.
+const rotor = param('rotor', '#33393d', { label: 'Outer shell (nonconductive composite)' });
 const metal = param('metal', '#c9d0d4', { label: 'Recovered metal (cans)' });
 
 presets({
-  plant: { frame: '#2f6f9e', belt: '#2a2e31', rotor: '#c23b2f', metal: '#c9d0d4' },
-  weathered: { frame: '#58645e', belt: '#3a3b38', rotor: '#8a4b3c', metal: '#a7aaa5' },
-  copper: { frame: '#e7e3d6', belt: '#2a2e31', rotor: '#2c5d8a', metal: '#c77b45' },
+  plant: { frame: '#2f6f9e', belt: '#2a2e31', rotor: '#33393d', metal: '#c9d0d4' },
+  weathered: { frame: '#58645e', belt: '#3a3b38', rotor: '#505452', metal: '#a7aaa5' },
+  copper: { frame: '#e7e3d6', belt: '#2a2e31', rotor: '#3d4549', metal: '#c77b45' },
   highVisibility: { frame: '#e3742b', belt: '#1f2326', rotor: '#2f3438', metal: '#e0e5e8' },
 });
 

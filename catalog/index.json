@@ -243908,7 +243908,7 @@
       "id": "eddy-current-separator",
       "kit": "recycling-facility",
       "title": "Eddy-current separator",
-      "description": "Eddy-current separator at about real size: spring-mounted vibratory feeder pan with twin vibrator motors, short fast belt over a tail pulley, magnetic rotor head drum with its own drive motor, knife-edge splitter, residue and metals chutes over collection bins, aluminium cans in flight over the splitter and mixed residue on the belt, rear guard wall and control cabinet. Material controls: machine frame, belt, magnetic rotor, recovered metal. plant, weathered, copper and highVisibility presets.",
+      "description": "Eddy-current separator at about real size: spring-mounted vibratory feeder pan with twin vibrator motors, short fast belt over a tail pulley, nonconductive composite shell around the internal magnetic rotor, knife-edge splitter, residue and metals chutes over collection bins, aluminium cans in flight over the splitter and mixed residue on the belt, rear guard wall and control cabinet. Material controls: machine frame, belt, composite shell, recovered metal. plant, weathered, copper and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -243932,7 +243932,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/eddy-current-separator.kcad.ts",
       "preview": "/assets/recycling-facility-eddy-current-separator.png",
-      "sourceSha256": "df45d32bd86ffa22e52249458c3a3b3fe76ee508fc2243fc1e9973bb232fc088",
+      "sourceSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
       "triangleBudget": 3200,
       "params": [
         {
@@ -243959,8 +243959,8 @@
         {
           "name": "rotor",
           "type": "color",
-          "default": "#c23b2f",
-          "label": "Magnetic rotor shell"
+          "default": "#33393d",
+          "label": "Outer shell (nonconductive composite)"
         },
         {
           "name": "metal",
@@ -243973,19 +243973,19 @@
         "plant": {
           "frame": "#2f6f9e",
           "belt": "#2a2e31",
-          "rotor": "#c23b2f",
+          "rotor": "#33393d",
           "metal": "#c9d0d4"
         },
         "weathered": {
           "frame": "#58645e",
           "belt": "#3a3b38",
-          "rotor": "#8a4b3c",
+          "rotor": "#505452",
           "metal": "#a7aaa5"
         },
         "copper": {
           "frame": "#e7e3d6",
           "belt": "#2a2e31",
-          "rotor": "#2c5d8a",
+          "rotor": "#3d4549",
           "metal": "#c77b45"
         },
         "highVisibility": {
@@ -244017,7 +244017,7 @@
         },
         {
           "name": "rotor",
-          "color": "#c23b2f",
+          "color": "#33393d",
           "parts": [
             "head-shell"
           ],
