@@ -37,7 +37,7 @@ function frame(section) {
       ? 'Default units: m · scene-root scale: 0.001 · named nodes retained'
       : 'Imported bounds: 0.7 × 0.3 × 0.012 m · dimensions match the source';
   const rows = section === 0
-    ? `<text x="92" y="285" font-family="monospace" font-size="20" fill="#284a7a">box(700, 300, 12)</text><text x="92" y="333" font-family="monospace" font-size="20" fill="#284a7a">.material({ name: 'anodized aluminium', ... })</text><text x="92" y="381" font-family="monospace" font-size="20" fill="#284a7a">cylinder(40, 25).finish('brass')</text>`
+    ? `<text x="92" y="285" font-family="monospace" font-size="20" fill="#284a7a">box(700, 300, 12)</text><text x="92" y="333" font-family="monospace" font-size="16" fill="#284a7a">.material({ name: 'anodized aluminium', ... })</text><text x="92" y="381" font-family="monospace" font-size="20" fill="#284a7a">cylinder(40, 25).finish('brass')</text>`
     : section === 1
       ? `<text x="92" y="285" font-family="monospace" font-size="20" fill="#284a7a">units: m</text><text x="92" y="333" font-family="monospace" font-size="20" fill="#284a7a">asset.extras.kernelcad.units = "m"</text><text x="92" y="381" font-family="monospace" font-size="20" fill="#284a7a">nodes: base_plate · brass_standoff</text>`
       : `<text x="92" y="285" font-family="monospace" font-size="20" fill="#284a7a">${escapeXml(evidence.importedSizeM.map((value) => value.toFixed(3)).join(' × '))} m</text><text x="92" y="333" font-family="monospace" font-size="20" fill="#284a7a">materials: anodized aluminium · brass</text><text x="92" y="381" font-family="monospace" font-size="16" fill="#53657f">sha256 ${escapeXml(evidence.glbSha256.slice(0, 26))}…</text>`;
