@@ -1,10 +1,10 @@
-// Reverse-osmosis skid: parallel horizontal membrane pressure vessels connect to inlet and permeate manifolds above a braced frame, feed pump and local control cabinet. Low-poly visualization geometry in millimetres, Z up.
+// Reverse-osmosis skid: parallel horizontal glass-reinforced epoxy membrane pressure vessels connect to stainless inlet and permeate manifolds above a braced frame, feed pump and local control cabinet. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "reverse-osmosis-skid",
   license: 'CC0-1.0',
   title: "Reverse osmosis skid",
-  description: "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+  description: "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -22,10 +22,11 @@ const vesselCount = Number(membraneVessels.value);
 const coatedSteel = param('coatedSteel', '#3d8589', { label: 'Coated equipment steel' });
 const structuralSteel = param('structuralSteel', '#68777b', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+const reinforcedComposite = param('reinforcedComposite', '#f0eee7', { label: 'Glass-reinforced epoxy shells' });
 
 presets({
-  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6' },
-  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0' },
+  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6', reinforcedComposite: '#d7d3c8' },
+  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0', reinforcedComposite: '#f7f4e9' },
 });
 
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) =>
@@ -66,7 +67,7 @@ const vesselSpacing = 155;
 const manifoldLength = (vesselCount - 1) * vesselSpacing + 150;
 for (let i = 0; i < vesselCount; i += 1) {
   const y = (i - (vesselCount - 1) / 2) * vesselSpacing;
-  p.part(`membrane-vessel-${i + 1}`, xCylinder(-315, y, 245, 630, 68).color(stainlessSteel));
+  p.part(`membrane-vessel-${i + 1}`, xCylinder(-315, y, 245, 630, 68).color(reinforcedComposite));
   p.part(`membrane-cap-left-${i + 1}`, xCylinder(-333, y, 245, 20, 78).color(coatedSteel));
   p.part(`membrane-cap-right-${i + 1}`, xCylinder(313, y, 245, 20, 78).color(coatedSteel));
   p.part(`vessel-band-left-${i + 1}`, xCylinder(-280, y, 245, 12, 73).color(structuralSteel));

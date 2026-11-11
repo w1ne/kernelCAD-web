@@ -351710,7 +351710,7 @@
       "id": "reverse-osmosis-skid",
       "kit": "water-treatment",
       "title": "Reverse osmosis skid",
-      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351729,7 +351729,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
       "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
-      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "sourceSha256": "be04d7237e0df2c1cd0ce473ef7e779fe0ef37f372d6d10e39864ea24629e695",
       "triangleBudget": 3300,
       "params": [
         {
@@ -351769,18 +351769,26 @@
           "type": "color",
           "default": "#b5c0c0",
           "label": "Stainless steel"
+        },
+        {
+          "name": "reinforcedComposite",
+          "type": "color",
+          "default": "#f0eee7",
+          "label": "Glass-reinforced epoxy shells"
         }
       ],
       "presets": {
         "weathered": {
           "coatedSteel": "#687b78",
           "structuralSteel": "#6e6b63",
-          "stainlessSteel": "#9ca7a6"
+          "stainlessSteel": "#9ca7a6",
+          "reinforcedComposite": "#d7d3c8"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
           "structuralSteel": "#505b60",
-          "stainlessSteel": "#e1ddd0"
+          "stainlessSteel": "#e1ddd0",
+          "reinforcedComposite": "#f7f4e9"
         }
       },
       "stats": {
@@ -351820,26 +351828,14 @@
           "param": "structuralSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "reinforcedComposite",
+          "color": "#f0eee7",
           "parts": [
             "membrane-vessel-1",
-            "feed-branch-1",
-            "permeate-branch-1",
             "membrane-vessel-2",
-            "feed-branch-2",
-            "permeate-branch-2",
-            "membrane-vessel-3",
-            "feed-branch-3",
-            "permeate-branch-3",
-            "feed-manifold",
-            "permeate-manifold",
-            "pump-coupling",
-            "pump-discharge-pipe",
-            "cabinet-door",
-            "status-lamp-green"
+            "membrane-vessel-3"
           ],
-          "param": "stainlessSteel"
+          "param": "reinforcedComposite"
         },
         {
           "name": "coatedSteel",
@@ -351865,6 +351861,25 @@
             "status-lamp-red"
           ],
           "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "feed-branch-1",
+            "permeate-branch-1",
+            "feed-branch-2",
+            "permeate-branch-2",
+            "feed-branch-3",
+            "permeate-branch-3",
+            "feed-manifold",
+            "permeate-manifold",
+            "pump-coupling",
+            "pump-discharge-pipe",
+            "cabinet-door",
+            "status-lamp-green"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
