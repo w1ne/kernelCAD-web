@@ -1,0 +1,11 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "result": "wrote catalog/index.json",
+  "exitCode": 0,
+  "asset": "grid-substation/substation-center-break-disconnector",
+  "sourceSha256": "3fb73e7be29aed29dd35ceca700ab4110e6355581f3e7e39b04dfe0850c5663a",
+  "preview": "/assets/grid-substation-substation-center-break-disconnector.png",
+  "previewSha256": "63c07dd895cd17e47dda19484de3e79f1f1d1d6aa7d50bb8b1f954107b0c1c09",
+  "triangles": 2020,
+  "triangleBudget": 2200
+}

@@ -117055,7 +117055,7 @@
       "id": "substation-center-break-disconnector",
       "kit": "grid-substation",
       "title": "Center break disconnector",
-      "description": "Center break switch geometry with paired contact supports and a raised center blade. Material controls: galvanized steel, porcelain, copper, powder-coated steel; finish presets: weathered and maintenance.",
+      "description": "Generic three-pole center-break disconnector with a galvanized channel base, paired porcelain post insulators, aluminum current-path arms and copper contact inserts. The editable blade-position choice shows an open center gap or closed contacts. Weathered and maintenance material presets; visualization only.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -117074,8 +117074,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-center-break-disconnector.kcad.ts",
       "preview": "/assets/grid-substation-substation-center-break-disconnector.png",
-      "sourceSha256": "5b4dc8b60d4e80fec47fa40e00683d2cb7513e42c897534bd0625a8d822553ce",
-      "triangleBudget": 1800,
+      "sourceSha256": "3fb73e7be29aed29dd35ceca700ab4110e6355581f3e7e39b04dfe0850c5663a",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -117085,6 +117085,16 @@
           "min": 0.65,
           "max": 1.35,
           "step": 0.05
+        },
+        {
+          "name": "switchState",
+          "type": "choice",
+          "default": "open",
+          "label": "Blade position",
+          "choices": [
+            "open",
+            "closed"
+          ]
         },
         {
           "name": "galvanizedSteel",
@@ -117099,10 +117109,10 @@
           "label": "Porcelain"
         },
         {
-          "name": "copper",
+          "name": "aluminum",
           "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
+          "default": "#b9c1c5",
+          "label": "Aluminum current-path arms"
         },
         {
           "name": "powderCoat",
@@ -117115,7 +117125,7 @@
         "weathered": {
           "galvanizedSteel": "#778080",
           "porcelain": "#cac4b1",
-          "copper": "#9f704a",
+          "aluminum": "#9ea8ad",
           "powderCoat": "#586b63"
         },
         "maintenance": {
@@ -117123,10 +117133,10 @@
         }
       },
       "stats": {
-        "triangles": 1648,
+        "triangles": 2020,
         "sizeM": [
           4.1,
-          2.382411,
+          2.109,
           1.2
         ],
         "minUpM": 0,
@@ -117143,7 +117153,8 @@
             "phase-2-support--1",
             "phase-2-support-1",
             "phase-3-support--1",
-            "phase-3-support-1"
+            "phase-3-support-1",
+            "operating-link"
           ],
           "param": "galvanizedSteel"
         },
@@ -117161,23 +117172,43 @@
           "param": "porcelain"
         },
         {
-          "name": "copper",
-          "color": "#b87545",
-          "parts": [
-            "phase-1-blade",
-            "phase-2-blade",
-            "phase-3-blade",
-            "operating-link"
-          ],
-          "param": "copper"
-        },
-        {
           "name": "powderCoat",
           "color": "#526f68",
           "parts": [
             "drive-cabinet"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b9c1c5",
+          "parts": [
+            "phase-1-blade-pivot-a",
+            "phase-1-blade-arm-a",
+            "phase-1-blade-pivot-b",
+            "phase-1-blade-arm-b",
+            "phase-2-blade-pivot-a",
+            "phase-2-blade-arm-a",
+            "phase-2-blade-pivot-b",
+            "phase-2-blade-arm-b",
+            "phase-3-blade-pivot-a",
+            "phase-3-blade-arm-a",
+            "phase-3-blade-pivot-b",
+            "phase-3-blade-arm-b"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "phase-1-contact-insert-a",
+          "color": "#b87545",
+          "parts": [
+            "phase-1-contact-insert-a",
+            "phase-1-contact-insert-b",
+            "phase-2-contact-insert-a",
+            "phase-2-contact-insert-b",
+            "phase-3-contact-insert-a",
+            "phase-3-contact-insert-b"
+          ]
         }
       ]
     },
