@@ -255664,14 +255664,17 @@
       "id": "split-shaft-collar",
       "kit": "standard-components",
       "title": "Split shaft collar",
-      "description": "Split clamp collar with a through bore and a raised clamp lug Knobs: model size, steel, zinc-plated steel.",
+      "description": "Illustrative CC0 low-poly split shaft collar with 18 mm through bore, radial slot, two opposed clamp lugs, a crosswise clamp-screw clearance hole and a distinct simplified clamp screw. Three uniform size choices; not vendor manufacturing CAD or a load-rated shaft connection. Color controls: steel and zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "shaft collar",
         "split collar",
         "clamp",
-        "rotating shaft"
+        "rotating shaft",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255682,8 +255685,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-split-shaft-collar.png",
-      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
-      "triangleBudget": 300,
+      "sourceSha256": "a767037b46ecfda9b55a479658bedde86153db98bbbe40835f0895bcde1d1314",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "size",
@@ -255724,11 +255727,11 @@
         }
       },
       "stats": {
-        "triangles": 112,
+        "triangles": 364,
         "sizeM": [
-          0.03995,
+          0.035962,
           0.01,
-          0.036988
+          0.039991
         ],
         "minUpM": 0,
         "materials": 1
@@ -255738,7 +255741,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "collar"
+            "split-collar-body"
           ],
           "param": "steel"
         },
@@ -255746,7 +255749,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "lug"
+            "clamp-screw"
           ],
           "param": "zinc"
         }
