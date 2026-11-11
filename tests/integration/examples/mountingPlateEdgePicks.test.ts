@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Issue #1300. The drafting-review mounting plate still fillets its four
-// vertical corners and chamfers its top perimeter, but the picks are stored
-// identity, not a geometric re-query:
+// Issue #1300. The drafting-review mounting plate fillets its four vertical
+// corners and chamfers its top perimeter using lineage-based edge selectors:
 //
 //   q.edge(q.createdBy(stock.id)).and(q.withLabel('corner' | 'top-perimeter'))
 //
@@ -13,7 +12,7 @@
 // slot goes through resolveEdgeRef. A width/depth/thickness edit moves and
 // lengthens those edges without deleting them, so the stored query must hit
 // them again. It must not blend a neighbour (the bottom perimeter).
-// `{ parallel: [0,0,1] }` and `{ face: 'top' }` are not the selectors under test.
+// The test lowers the authored source directly, then rebuilds it after edits.
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -33,20 +32,7 @@ const DEPTH_EDIT = 100;
 const THICKNESS_EDIT = 18;
 
 function identityPlateSource(): string {
-  const src = readFileSync(resolve(PLATE), 'utf8');
-  const rewritten = src.replace(
-    'return box(width, depth, thickness)\n  .fillet(6, { parallel: [0, 0, 1] })\n  .chamfer(0.5, { face: \'top\' })',
-    [
-      'const stock = box(width, depth, thickness);',
-      'return stock',
-      '  .fillet(6, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'corner\')))',
-      '  .chamfer(0.5, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'top-perimeter\')))',
-    ].join('\n'),
-  );
-  if (rewritten === src) {
-    throw new Error('mounting plate no longer has the geometric fillet/chamfer this test rewrites');
-  }
-  return rewritten;
+  return readFileSync(resolve(PLATE), 'utf8');
 }
 
 function notchedIdentityPlateSource(): string {
