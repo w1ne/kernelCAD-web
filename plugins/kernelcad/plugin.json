@@ -79,7 +79,7 @@
               "description": "Printability review for FDM and CNC",
               "prompt": "Is it printable on a Bambu A1 mini? Check it for CNC too.",
               "tools_triggered": "dfm_review",
-              "expected_behavior": "A dfm_review checklist with pass/fail rows. The plate passes FDM, and CNC is flagged only if there are sharp internal corners."
+              "expected_behavior": "A dfm_review checklist with pass, fail, warn and not-checked rows. A checked CNC or FDM finding can fail while ok is true; verdict is the manufacturing outcome, and a requested process that cannot be checked never passes."
             },
             {
               "description": "STEP and PDF drawing export",

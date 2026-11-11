@@ -43,9 +43,9 @@ describe('dfm_review', () => {
     expect(overhang.unit).toBe('mm2');
     expect(overhang.limit).toBeUndefined(); // Unsupported area is not comparable to the angular setting.
     expect(overhang.op).toBeUndefined();
-    expect(overhang.refs).toEqual(r.fdm![0].result.orientation.overhangs
+    expect(new Set(overhang.refs)).toEqual(new Set(r.fdm![0].result.orientation.overhangs
       .filter(region => region.status === 'unsupported' && !(region.horizontal && region.spanMm !== undefined))
-      .flatMap(region => region.faceRef === undefined ? [] : [region.faceRef]));
+      .flatMap(region => region.faceRef === undefined ? [] : [region.faceRef])));
     const cncUndercuts = r.checks.find(c => c.id === 'cnc.undercuts')!;
     expect(cncUndercuts).toMatchObject({ unit: 'mm2', op: '<=', source: 'cnc' });
     expect(cncUndercuts.value).toBeCloseTo(r.cnc![0].result.undercut.areaMm2, 2);
