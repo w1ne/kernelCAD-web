@@ -29,15 +29,16 @@ const a = assembly('pipe-tee');
 // bore and must not pierce the opposite wall.
 const r=12*s;
 const alongZ=cylinder(44*s,r,16);
-const alongY=cylinder(18*s,r,16).rotateX(90).translate(0,18*s,22*s);
+// Point the single outlet toward the canonical camera so its bore remains visible.
+const alongY=cylinder(18*s,r,16).rotateX(90).translate(0,0,22*s);
 let tee=alongZ.union(alongY);
 tee=tee.subtract(cylinder(46*s,8*s,16).translate(0,0,-s));
-tee=tee.subtract(cylinder(20*s,8*s,16).rotateX(90).translate(0,19*s,22*s));
+tee=tee.subtract(cylinder(20*s,8*s,16).rotateX(90).translate(0,s,22*s));
 a.part('continuous-tee-fitting',tee.color(steel));
 // A removable bronze coupling ring at the branch outlet is a separate part,
 // not a decorative colour stripe across the flow passage.
 const collar=cylinder(6*s,13*s,16)
   .subtract(cylinder(8*s,8*s,16).translate(0,0,-s))
-  .rotateX(90).translate(0,19*s,22*s);
+  .rotateX(90).translate(0,-13*s,22*s);
 a.part('branch-outlet-collar',collar.color(bronze));
 return a.model();

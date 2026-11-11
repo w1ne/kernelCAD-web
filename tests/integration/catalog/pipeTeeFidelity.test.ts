@@ -31,12 +31,12 @@ function verify(tris: SoftTriangle[],scale: number) {
     const junction: V=[x*scale,0.022*scale,0];
     expect(intersects(tris,junction,[0,1,0]),'upper run port blocked').toBe(false);
     expect(intersects(tris,junction,[0,-1,0]),'lower run port blocked').toBe(false);
-    expect(intersects(tris,junction,[0,0,-1]),'side branch blocked').toBe(false);
-    expect(intersects(tris,junction,[0,0,1]),'fourth port exists: this is a cross, not a tee').toBe(true);
+    expect(intersects(tris,junction,[0,0,1]),'side branch blocked').toBe(false);
+    expect(intersects(tris,junction,[0,0,-1]),'fourth port exists: this is a cross, not a tee').toBe(true);
   }
   const vertices=tris.flatMap(t=>t.v);
-  expect(Math.max(...vertices.map(p=>p[2]))).toBeCloseTo(0.012*scale,5);
-  expect(Math.min(...vertices.map(p=>p[2]))).toBeCloseTo(-0.019*scale,5);
+  expect(Math.max(...vertices.map(p=>p[2]))).toBeCloseTo(0.019*scale,5);
+  expect(Math.min(...vertices.map(p=>p[2]))).toBeCloseTo(-0.012*scale,5);
   expect(Math.min(...vertices.map(p=>p[1]))).toBeCloseTo(0,6);
 }
 beforeAll(async()=>{await initOcct();},30000);
