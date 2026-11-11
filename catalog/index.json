@@ -185651,7 +185651,7 @@
       "id": "rock-breaker-boom",
       "kit": "mining",
       "title": "Pedestal rock breaker",
-      "description": "Pedestal rock-breaker system at about real size: concrete plinth with anchor-bolted base plate, tapered steel pedestal, slewing ring and turret with slew cylinders, tapered main boom and stick with boom, stick and tool cylinders, hydraulic hammer with chisel, hose bundle along the boom, hydraulic power unit with motor, oil cooler and tank, remote control station, and a grizzly of heavy steel bars over an ore pit between concrete walls carrying oversize boulders, one under the chisel. Material controls: boom paint, pedestal and grizzly steel, hammer steel and concrete, plus a pose choice (working with the chisel on a boulder, parked folded over the plinth). weathered, safetyYellow and highVisibility presets.",
+      "description": "Pedestal rock-breaker system at about real size: concrete plinth with anchor-bolted base plate, tapered steel pedestal, slewing ring and turret with slew cylinders, tapered main boom and stick with boom, stick and tool cylinders, hydraulic hammer with chisel, hose bundle along the boom, hydraulic power unit with motor, oil cooler and tank, remote control station, and a grizzly of heavy steel bars over an ore pit between concrete walls carrying oversize boulders, one under the chisel. Two yellow warning posts stand on bolted base plates centered on the long pit wall. Material controls: boom paint, pedestal and grizzly steel, hammer steel and concrete, plus a pose choice (working with the chisel on a boulder, parked folded over the plinth). weathered, safetyYellow and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -185673,7 +185673,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/rock-breaker-boom.kcad.ts",
       "preview": "/assets/mining-rock-breaker-boom.png",
-      "sourceSha256": "9cdbf9ee3569af74c29aaf13de82643a01da44cff2145de44085520c83ff7218",
+      "sourceSha256": "c0d34ff178ebecb8ffe7a72e6614cd05c861e7f2322ce1ed7c52b3da33e896c6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -185741,11 +185741,11 @@
         }
       },
       "stats": {
-        "triangles": 1294,
+        "triangles": 1638,
         "sizeM": [
           14,
           6.478106,
-          4.543301
+          4.5
         ],
         "minUpM": 0,
         "materials": 1
@@ -185779,6 +185779,8 @@
             "grizzly-bar-6",
             "grizzly-bar-7",
             "grizzly-bar-8",
+            "warning-post-base-0",
+            "warning-post-base-1",
             "hpu-skid",
             "hpu-motor",
             "control-station"
@@ -185798,6 +185800,22 @@
             "stick-pin",
             "hammer-body",
             "hammer-front-head",
+            "warning-post-anchor-0-0",
+            "warning-post-anchor-nut-0-0",
+            "warning-post-anchor-0-1",
+            "warning-post-anchor-nut-0-1",
+            "warning-post-anchor-0-2",
+            "warning-post-anchor-nut-0-2",
+            "warning-post-anchor-0-3",
+            "warning-post-anchor-nut-0-3",
+            "warning-post-anchor-1-0",
+            "warning-post-anchor-nut-1-0",
+            "warning-post-anchor-1-1",
+            "warning-post-anchor-nut-1-1",
+            "warning-post-anchor-1-2",
+            "warning-post-anchor-nut-1-2",
+            "warning-post-anchor-1-3",
+            "warning-post-anchor-nut-1-3",
             "hpu-pump",
             "oil-cooler"
           ],

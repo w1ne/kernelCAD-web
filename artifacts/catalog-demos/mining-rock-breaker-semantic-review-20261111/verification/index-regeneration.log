@@ -1,0 +1,3 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Result: completed successfully before integration suite; catalog/index.json regenerated from all current sources.
+Changed rows: rock-breaker-boom metadata/source digest and merged develop updates; no hand edits to generated index.

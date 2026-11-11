@@ -9,12 +9,13 @@
 // concrete walls, with oversize boulders lying on the bars. A hydraulic
 // power unit sits on the ground behind the plinth with the hose bundle
 // running up the pedestal and along the boom.
+// Two yellow warning posts are bolted through base plates into the long pit wall.
 // Millimetres, Z up, grizzly towards +X.
 meta({
   name: "rock-breaker-boom",
   license: 'CC0-1.0',
   title: "Pedestal rock breaker",
-  description: "Pedestal rock-breaker system at about real size: concrete plinth with anchor-bolted base plate, tapered steel pedestal, slewing ring and turret with slew cylinders, tapered main boom and stick with boom, stick and tool cylinders, hydraulic hammer with chisel, hose bundle along the boom, hydraulic power unit with motor, oil cooler and tank, remote control station, and a grizzly of heavy steel bars over an ore pit between concrete walls carrying oversize boulders, one under the chisel. Material controls: boom paint, pedestal and grizzly steel, hammer steel and concrete, plus a pose choice (working with the chisel on a boulder, parked folded over the plinth). weathered, safetyYellow and highVisibility presets.",
+  description: "Pedestal rock-breaker system at about real size: concrete plinth with anchor-bolted base plate, tapered steel pedestal, slewing ring and turret with slew cylinders, tapered main boom and stick with boom, stick and tool cylinders, hydraulic hammer with chisel, hose bundle along the boom, hydraulic power unit with motor, oil cooler and tank, remote control station, and a grizzly of heavy steel bars over an ore pit between concrete walls carrying oversize boulders, one under the chisel. Two yellow warning posts stand on bolted base plates centered on the long pit wall. Material controls: boom paint, pedestal and grizzly steel, hammer steel and concrete, plus a pose choice (working with the chisel on a boulder, parked folded over the plinth). weathered, safetyYellow and highVisibility presets.",
   tags: ['mining', 'mineral processing', 'crushing', 'rock breaker', 'hydraulic hammer', 'grizzly', 'pedestal boom', 'oversize'],
   kit: 'mining',
   category: 'prop',
@@ -138,7 +139,15 @@ for (let i = 0; i < 9; i++) {
 add('boulder-target', sphere(560).scale([1.15, 1, 0.75]).translate(working ? hx : 6600, 0, Z0 + 420).color(rock));
 add('boulder-2', sphere(420).scale([1.2, 1, 0.8]).translate(8200, -800, Z0 + 336).color(rockDark));
 add('boulder-3', sphere(360).scale([1, 1.2, 0.8]).translate(5200, 900, Z0 + 288).color(rock));
-for (const [k, x] of [4300, 8800].entries()) add(`warning-post-${k}`, rod(50, Z0 + 600, Z0 + 1600, 6).translate(x, 1800, 0).color(warn));
+const warningPostY = 1600;
+for (const [k, x] of [4300, 8800].entries()) {
+  add(`warning-post-base-${k}`, blk(x - 120, warningPostY - 120, Z0, x + 120, warningPostY + 120, Z0 + 60).color(steelwork));
+  for (const [j, [dx, dy]] of [[-80, -80], [80, -80], [-80, 80], [80, 80]].entries()) {
+    add(`warning-post-anchor-${k}-${j}`, rod(18, Z0 - 100, Z0 + 60, 6).translate(x + dx, warningPostY + dy, 0).color(hammerSteel));
+    add(`warning-post-anchor-nut-${k}-${j}`, rod(28, Z0 + 60, Z0 + 95, 6).translate(x + dx, warningPostY + dy, 0).color(hammerSteel));
+  }
+  add(`warning-post-${k}`, rod(50, Z0 + 60, Z0 + 1600, 6).translate(x, warningPostY, 0).color(warn));
+}
 
 // ---- Hydraulic power unit and remote control station ----
 add('hpu-skid', blk(-4400, -1200, 0, -1800, 1200, 150).color(steelwork));
