@@ -37615,7 +37615,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-lobe-pump.png",
-      "sourceSha256": "b91fc409e35e3d16c0d67fd70a6ba9aebf22a053f678ffcf73fe2bb61965174f",
+      "sourceSha256": "fe361b52b2b0c13c864ffeedf47063082734b003c56cf3d5f40f3779ab7df9ba",
       "triangleBudget": 2000,
       "params": [
         {
@@ -37677,7 +37677,7 @@
         }
       },
       "stats": {
-        "triangles": 1584,
+        "triangles": 1724,
         "sizeM": [
           1.141,
           0.557,
@@ -37701,6 +37701,8 @@
             "front-cover",
             "cap-nut-0",
             "cap-nut-1",
+            "cap-nut-2",
+            "cap-nut-3",
             "inlet-pipe",
             "inlet-ferrule",
             "outlet-pipe",
