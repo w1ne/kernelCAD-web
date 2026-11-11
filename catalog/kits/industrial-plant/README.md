@@ -44,6 +44,15 @@ triangles under a 1,400 budget. The [semantic-review handoff](../../../artifacts
 includes the audit ledger, before/after previews, regression test, local checks
 and inspected MP4. No asset IDs or kit counts changed.
 
+The Nov 11 positive-displacement-pump refinement makes the pump head distinct
+from its motor: a bolted circular service cover, raised suction/discharge
+flanges and an integral relief-return feature now sit on a separate skid with a
+guarded coupling. The palette distinguishes pump steel, motor enamel and the
+safety finish. The default render is 1,508 triangles under a 1,800 budget. Its
+[semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-positive-displacement-pump-semantic-review-20261111/README.md)
+records the five-preview ledger, before/after evidence, GLB regression, local
+checks and inspected MP4. No asset IDs or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -58,7 +67,7 @@ and inspected MP4. No asset IDs or kit counts changed.
 | `process-water-silo` | Process water silo | Tall process silo with a roof cap, ring stiffeners, discharge hopper and four support legs. | scale · steel · safety paint |
 | `centrifugal-pump` | Centrifugal process pump | End-suction pump set at about real size: spiral volute with discharge neck and suction nozzle, bolted flanges, ribbed bearing frame, half-round coupling guard and finned TEFC motor on a drip-rim baseplate. | scale · casing · motor · base · metal |
 | `chemical-metering-skid` | Chemical metering skid | Chemical dosing skid with paired metering pumps, a shared manifold, gauges and a raised control box. | scale · steel · safety paint · gauge glass |
-| `positive-displacement-pump` | Positive displacement pump | Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. | scale · steel · safety paint |
+| `positive-displacement-pump` | Positive displacement pump | Compact external-gear pump scene prop with a horizontal motor, guarded coupling, bolted circular head, raised suction/discharge flanges and a relief return. | scale · steel · motor enamel · safety finish |
 | `air-compressor` | Industrial air compressor | Horizontal receiver on saddles and skid with a belt-driven motor, finned single/twin pump, intake filter and pressure controls. | scale · receiver capacity · pump arrangement · receiver steel · pump iron · motor paint · rubber |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
 | `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |

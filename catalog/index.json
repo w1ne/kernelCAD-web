@@ -145771,13 +145771,14 @@
       "id": "positive-displacement-pump",
       "kit": "industrial-plant",
       "title": "Positive displacement pump",
-      "description": "Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. Controls: overall scale, steel, safety paint.",
+      "description": "Compact external-gear pump scene prop with a horizontal electric motor, guarded coupling, bolted circular pump-head cover, raised suction and discharge flanges, a relief valve and return line, and a steel skid. Controls: overall scale, pump steel, motor enamel and safety finish.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
         "process equipment",
+        "gear pump",
         "low poly",
         "CC0"
       ],
@@ -145790,8 +145791,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/positive-displacement-pump.kcad.ts",
       "preview": "/assets/industrial-plant-positive-displacement-pump.png",
-      "sourceSha256": "c62f78bb4afaa190769854bdaec77fd2cbcc4f7e93b1ed91124a39346867792c",
-      "triangleBudget": 1400,
+      "sourceSha256": "04f703f66678508e4dd23a39639dd38145f4280de16ca6c22954d4f7d74ae641",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "scale",
@@ -145806,30 +145807,39 @@
           "name": "steel",
           "type": "color",
           "default": "#647985",
-          "label": "Structural steel"
+          "label": "Pump casing and pipe metal"
+        },
+        {
+          "name": "motorPaint",
+          "type": "color",
+          "default": "#315c4a",
+          "label": "Drive motor enamel"
         },
         {
           "name": "safetyPaint",
           "type": "color",
           "default": "#e2a747",
-          "label": "Safety paint"
+          "label": "Skid and safety finish"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
+          "motorPaint": "#424c45",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
+          "steel": "#647985",
+          "motorPaint": "#315c4a",
           "safetyPaint": "#f5c640"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1508,
         "sizeM": [
-          0.5291,
-          0.3156,
-          0.25
+          0.887,
+          0.406,
+          0.3
         ],
         "minUpM": 0,
         "materials": 1
@@ -145839,11 +145849,19 @@
           "name": "safetyPaint",
           "color": "#e2a747",
           "parts": [
-            "skid",
-            "coupling",
-            "gearbox",
-            "inlet",
-            "outlet"
+            "skid-deck",
+            "coupling-hub-motor",
+            "coupling-hub-pump",
+            "coupling-guard",
+            "cover-bolt-0",
+            "cover-bolt-1",
+            "cover-bolt-2",
+            "cover-bolt-3",
+            "cover-bolt-4",
+            "cover-bolt-5",
+            "cover-bolt-6",
+            "cover-bolt-7",
+            "pressure-relief-cap"
           ],
           "param": "safetyPaint"
         },
@@ -145851,13 +145869,51 @@
           "name": "steel",
           "color": "#647985",
           "parts": [
-            "motor-foot",
-            "motor",
-            "coupling-guard",
-            "pump-head",
-            "outlet-flange"
+            "skid-rail--122",
+            "skid-rail-122",
+            "skid-crossmember--280",
+            "skid-crossmember-190",
+            "motor-foot--345",
+            "motor-foot--155",
+            "motor-shaft",
+            "pump-drive-shaft",
+            "gear-pump-case",
+            "pump-foot-112",
+            "pump-foot-228",
+            "pump-service-cover",
+            "pump-cover-center",
+            "suction-nozzle",
+            "suction-flange",
+            "discharge-nozzle",
+            "discharge-flange",
+            "relief-branch",
+            "pressure-relief-valve",
+            "bypass-return-drop"
           ],
           "param": "steel"
+        },
+        {
+          "name": "motorPaint",
+          "color": "#315c4a",
+          "parts": [
+            "motor-frame",
+            "motor-cooling-fin-0",
+            "motor-cooling-fin-1",
+            "motor-cooling-fin-2",
+            "motor-cooling-fin-3",
+            "motor-cooling-fin-4",
+            "motor-fan-cowl",
+            "motor-terminal-box"
+          ],
+          "param": "motorPaint"
+        },
+        {
+          "name": "suction-bore",
+          "color": "#252b2d",
+          "parts": [
+            "suction-bore",
+            "discharge-bore"
+          ]
         }
       ]
     },
