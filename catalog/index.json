@@ -143142,7 +143142,7 @@
       "id": "evaporative-cooling-tower",
       "kit": "industrial-plant",
       "title": "Evaporative cooling tower",
-      "description": "Industrial cooling tower with a broad basin, tapered-looking shell and rooftop fan assembly. Controls: overall scale, steel, safety paint.",
+      "description": "Induced-draft evaporative cooling tower with a broad basin, necked drift shell, throat ring and top fan deck carrying two four-blade axial rotors inside raised shrouds. Controls: overall scale, structural steel, safety paint and fan blades.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -143161,7 +143161,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/evaporative-cooling-tower.kcad.ts",
       "preview": "/assets/industrial-plant-evaporative-cooling-tower.png",
-      "sourceSha256": "1bd413dfdaf64d7c522cfe270f4602b8afc8836dd797cc68bda083f2639995e9",
+      "sourceSha256": "ebdc1480e5a871d242a0712000552719754b9c7a73284f84d8f3834b7bf1c472",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143184,22 +143184,30 @@
           "type": "color",
           "default": "#dda946",
           "label": "Safety paint"
+        },
+        {
+          "name": "fanBlades",
+          "type": "color",
+          "default": "#c0c9cb",
+          "label": "Axial fan blades"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "fanBlades": "#858e90"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "safetyPaint": "#f5c640",
+          "fanBlades": "#d5dcdd"
         }
       },
       "stats": {
-        "triangles": 320,
+        "triangles": 648,
         "sizeM": [
           0.68,
-          0.9985,
+          0.99,
           0.68
         ],
         "minUpM": 0,
@@ -143212,8 +143220,8 @@
           "parts": [
             "basin",
             "throat-ring",
-            "fan-ring-0",
-            "fan-ring-1"
+            "fan-shroud-0",
+            "fan-shroud-1"
           ],
           "param": "safetyPaint"
         },
@@ -143231,6 +143239,21 @@
             "basin-leg-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "fanBlades",
+          "color": "#c0c9cb",
+          "parts": [
+            "fan-blade-0-0",
+            "fan-blade-0-1",
+            "fan-blade-0-2",
+            "fan-blade-0-3",
+            "fan-blade-1-0",
+            "fan-blade-1-1",
+            "fan-blade-1-2",
+            "fan-blade-1-3"
+          ],
+          "param": "fanBlades"
         }
       ]
     },
