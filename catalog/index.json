@@ -253183,7 +253183,7 @@
       "id": "gusset-bracket",
       "kit": "standard-components",
       "title": "Gusset bracket",
-      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web Knobs: model size, steel, stainless steel.",
+      "description": "Illustrative right-angle gusset bracket with touching wall, toe and diagonal web, plus four through mounting holes. Not a load-rated fabrication drawing. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253201,7 +253201,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
       "preview": "/assets/standard-components-gusset-bracket.png",
-      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+      "sourceSha256": "1468f622e5a27f819c9b1755948d6509d581bb03eb730d2bb94c49ede23f3b50",
       "triangleBudget": 380,
       "params": [
         {
@@ -253243,11 +253243,11 @@
         }
       },
       "stats": {
-        "triangles": 32,
+        "triangles": 240,
         "sizeM": [
           0.056,
-          0.042,
-          0.031
+          0.044,
+          0.046
         ],
         "minUpM": 0,
         "materials": 1
@@ -253257,8 +253257,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "wall",
-            "toe"
+            "wall-plate",
+            "horizontal-toe"
           ],
           "param": "steel"
         },
@@ -253266,7 +253266,7 @@
           "name": "stainless",
           "color": "#b8c1c6",
           "parts": [
-            "gusset"
+            "diagonal-web"
           ],
           "param": "stainless"
         }
