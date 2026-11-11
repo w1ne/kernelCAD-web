@@ -59,7 +59,8 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences, pairKey } from './detectInterferences';
-import { buildSweepProxies, collectSweepProxyCandidates, type SweepProxy } from './sweepCollisionProxy';
+import { buildSweepProxies, type SweepProxy } from './sweepCollisionProxy';
+import { proxyPairsNeedingExactConfirm } from './convexHullBroadphase';
 import { describeOverlap, describeOverlapLocation, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { rememberRestScene, reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
@@ -1326,7 +1327,7 @@ function proxyPairIndexes(
   scene: SceneBackend,
   ignored: ReadonlySet<string>,
 ): ReadonlyArray<readonly [number, number]> {
-  return collectSweepProxyCandidates(proxies, scene, ignored).map((pair) => [pair.i, pair.j] as const);
+  return proxyPairsNeedingExactConfirm(proxies, scene, ignored);
 }
 
 function makeExactProbeUnconfirmed(

@@ -27,6 +27,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
 import { Transform } from '../../shared/runtime/se3';
 import { relativePoseKey } from './sweepCollisionProxy';
+import { hullsProveSeparated } from './convexHullBroadphase';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -401,6 +402,9 @@ function measureCandidatePair(
     if (memoized !== undefined) return { kind: 'reused', pair: memoized };
   }
   if (allowBoundsFilter && !skipPoseMemo && boundsProveBelowThreshold(a, b, epsilonMm3)) {
+    return { kind: 'below-bounds' };
+  }
+  if (allowBoundsFilter && !skipPoseMemo && hullsProveSeparated(a.source, a.worldTransform, b.source, b.worldTransform)) {
     return { kind: 'below-bounds' };
   }
   const confirmed = confirmOverlap(a, b, epsilonMm3, diagnostics);

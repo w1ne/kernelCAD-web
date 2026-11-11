@@ -1083,7 +1083,7 @@ export class OcctBackend implements ShapeBackend {
         const props = new oc.GProp_GProps_1();
         oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
         const volumeMm3 = Math.abs(props.Mass());
-        props.delete();
+        props.delete(); if (!(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
         const surface = new oc.GProp_GProps_1();
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
@@ -1091,8 +1091,7 @@ export class OcctBackend implements ShapeBackend {
         const bounds = optimalBoundsOf(shape);
         return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
-        // The handle holds a reference to the common solid; without this the
-        // result of every probe stays in the WASM heap until GC.
+        // The handle holds a reference to the common solid; without this the result of every probe stays in the WASM heap until GC.
         shape.delete();
       }
     } finally {
