@@ -364,6 +364,42 @@ ${siblingList(asset, siblings)}
 
 export const HUB_TITLE = 'Free low-poly 3D model catalog (CC0) | kernelCAD';
 
+/** Describe the published collection, without asserting reviews, sales or indexing. */
+export function catalogHubJsonLd(index: CatalogIndex): Record<string, unknown> {
+    const url = `${ORIGIN}catalog/`;
+    const description = metaDescription(
+        `${index.assets.length} free CC0 low-poly 3D models in ${index.kits.length} kits: ${index.kits.map((k) => k.title).join(', ')}. Every model has editable knobs.`,
+    );
+    return {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: HUB_TITLE,
+                description,
+                inLanguage: 'en',
+                isPartOf: { '@id': `${ORIGIN}#website` },
+                mainEntity: {
+                    '@type': 'ItemList',
+                    name: 'Free CC0 3D models',
+                    numberOfItems: index.assets.length,
+                    url,
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': `${url}#breadcrumb`,
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: 'Catalog', item: url },
+                ],
+            },
+        ],
+    };
+}
+
 export function renderHub(index: CatalogIndex): string {
     const byKey = new Map(index.assets.map((a) => [`${a.kit}/${a.id}`, a]));
     const total = index.assets.length;
@@ -375,7 +411,10 @@ export function renderHub(index: CatalogIndex): string {
     const head = `  <title>${escapeHtml(HUB_TITLE)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${url}" />
-${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}`;
+${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}
+  <script type="application/ld+json">
+${jsonForScript(catalogHubJsonLd(index))}
+  </script>`;
     const kits = index.kits.map((kit) => {
         const cards = kit.assets.map((id) => byKey.get(`${kit.id}/${id}`)).filter((a): a is CatalogAsset => a !== undefined).map((a) =>
             `          <li data-search="${escapeHtml(searchKey(a))}"><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
@@ -390,6 +429,10 @@ ${cards.join('\n')}
     });
     const body = `      <h1>Low-poly 3D model catalog</h1>
       <p>${escapeHtml(description)}</p>
+      <section aria-label="Use models with kernelCAD">
+        <h2>Use these models in kernelCAD</h2>
+        <p>Select a model to open it in Studio and edit its parameters. You can also <a href="/code-cad/">design a model with code</a> or use <a href="/mcp/">kernelCAD MCP tools with an AI assistant</a>.</p>
+      </section>
 ${FINDER}
 ${kits.join('\n')}
       <p class="empty" id="catalog-empty" hidden>No model matches that. Try a kit name, or <a href="/catalog/">clear the search</a>.</p>`;
