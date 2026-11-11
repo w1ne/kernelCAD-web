@@ -34,14 +34,18 @@ export interface DfmFinding {
   id: string;
   process: string;
   part: string;
-  status: 'fail' | 'warn';
+  status: 'fail' | 'warn' | 'not-checked';
   summary: string;
   value?: number;
   limit?: number;
+  unit?: DfmReviewOutput['checks'][number]['unit'];
+  op?: DfmReviewOutput['checks'][number]['op'];
+  source?: string;
+  refs?: string[];
 }
 
 export interface DfmFixSnapshot {
-  verdict: 'pass' | 'fail';
+  verdict?: 'pass' | 'fail' | 'not-checked';
   findings: DfmFinding[];
 }
 
@@ -60,7 +64,7 @@ export interface DfmFixRecheckOutput {
   material?: string;
   before: DfmFixSnapshot;
   after?: DfmFixSnapshot;
-  cleared: Array<{ id: string; part: string; was: 'fail' | 'warn' }>;
+  cleared: Array<{ id: string; part: string; was: 'fail' | 'warn' | 'not-checked' }>;
   remaining: DfmFinding[];
   suggestions: DfmFixSuggestion[];
   change?: DfmFixChange;
@@ -82,17 +86,17 @@ function findingKey(f: { id: string; part: string }): string {
   return `${f.part}\0${f.id}`;
 }
 
-function isFailOrWarnFinding(
+function isOpenReviewFinding(
   c: DfmReviewOutput['checks'][number],
-): c is DfmReviewOutput['checks'][number] & { status: 'fail' | 'warn' } {
-  return c.status === 'fail' || c.status === 'warn';
+): c is DfmReviewOutput['checks'][number] & { status: 'fail' | 'warn' | 'not-checked' } {
+  return c.status === 'fail' || c.status === 'warn' || c.status === 'not-checked';
 }
 
 function snapshot(review: DfmReviewOutput): DfmFixSnapshot {
   return {
-    verdict: review.verdict,
+    ...(review.verdict !== undefined ? { verdict: review.verdict } : {}),
     findings: review.checks
-      .filter(isFailOrWarnFinding)
+      .filter(isOpenReviewFinding)
       .map(c => ({
         id: c.id,
         process: c.process,
@@ -101,6 +105,10 @@ function snapshot(review: DfmReviewOutput): DfmFixSnapshot {
         summary: c.summary,
         ...(c.value !== undefined ? { value: c.value } : {}),
         ...(c.limit !== undefined ? { limit: c.limit } : {}),
+        ...(c.unit !== undefined ? { unit: c.unit } : {}),
+        ...(c.op !== undefined ? { op: c.op } : {}),
+        ...(c.source !== undefined ? { source: c.source } : {}),
+        ...(c.refs !== undefined ? { refs: c.refs } : {}),
       })),
   };
 }
@@ -129,7 +137,7 @@ function invalid(message: string, processes: string[] = []): DfmFixRecheckOutput
     applied: false,
     status: 'invalid',
     processes,
-    before: { verdict: 'fail', findings: [] },
+    before: { findings: [] },
     cleared: [],
     remaining: [],
     suggestions: [],

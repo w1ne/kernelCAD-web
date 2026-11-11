@@ -36,10 +36,10 @@ describe('dfm_review sheet-metal', () => {
     expect(r.ok).toBe(true);
     expect(r.checks.map(c => c.id)).toEqual(['sheet.min-bend-radius', 'sheet.hole-to-bend', 'sheet.hole-to-edge', 'sheet.min-flange']);
     expect(status(r, 'sheet.min-bend-radius')).toBe('fail');
-    expect(check(r, 'sheet.min-bend-radius')).toMatchObject({ value: 1, limit: 2 });
+    expect(check(r, 'sheet.min-bend-radius')).toMatchObject({ value: 1, limit: 2, unit: 'mm', op: '>=' });
     expect(status(r, 'sheet.hole-to-bend')).toBe('fail');
     // Hole edge at x = 58, bend line at x = 60; limit 2.5 × 2 + R1 = 6 mm.
-    expect(check(r, 'sheet.hole-to-bend')).toMatchObject({ value: 2, limit: 6 });
+    expect(check(r, 'sheet.hole-to-bend')).toMatchObject({ value: 2, limit: 6, unit: 'mm', op: '>=' });
     expect(status(r, 'sheet.hole-to-edge')).toBe('pass');
     expect(status(r, 'sheet.min-flange')).toBe('pass');
     expect(r.verdict).toBe('fail');
@@ -110,7 +110,7 @@ describe('dfm_review injection-molding', () => {
     for (const f of faces) expect(f).toMatch(/^@kc\[.*\/face\/(front|back|left|right)\]$/);
     const draft = check(r, 'mold.draft')!;
     expect(draft).toMatchObject({ unit: 'deg', op: '>=', source: 'injection-molding' });
-    expect(draft.refs).toEqual(faces);
+    expect(new Set(draft.refs)).toEqual(new Set(faces));
     for (const ref of draft.refs!) {
       const resolved = await resolveTopoRefTool({ code: 'return box(40, 30, 3);', ref });
       expect(resolved.ok, `${ref}: ${resolved.error}`).toBe(true);

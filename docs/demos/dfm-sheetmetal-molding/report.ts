@@ -12,19 +12,29 @@ import { dfmReviewTool } from '../../../src/agent/mcp/tools/dfmReview';
 const here = dirname(fileURLToPath(import.meta.url));
 await initOcct();
 const runs = [
-  ['tray-undrafted', 'injection-molding'],
-  ['tray-drafted', 'injection-molding'],
-  ['bracket-tight', 'sheet-metal'],
-  ['bracket-fixed', 'sheet-metal'],
+  ['tray-undrafted', 'tray-undrafted', 'injection-molding'],
+  ['tray-drafted', 'tray-drafted', 'injection-molding'],
+  ['bracket-tight', 'bracket-tight', 'sheet-metal'],
+  ['bracket-fixed', 'bracket-fixed', 'sheet-metal'],
+  ['tray-not-sheet-metal', 'tray-undrafted', 'sheet-metal'],
+  ['tray-fdm', 'tray-undrafted', 'fdm'],
 ] as const;
 const out: Record<string, unknown> = {};
-for (const [name, process] of runs) {
-  const call = { file: join(here, `${name}.kcad.ts`), processes: [process] };
+for (const [name, fixture, process] of runs) {
+  const call = { file: join(here, `${fixture}.kcad.ts`), processes: [process] };
   const r = await dfmReviewTool(call);
   out[name] = {
-    call: { file: `${name}.kcad.ts`, processes: [process] },
+    call: { file: `${fixture}.kcad.ts`, processes: [process] },
+    ok: r.ok,
     verdict: r.verdict,
-    checks: r.checks.map(c => ({ id: c.id, status: c.status, summary: c.summary, value: c.value, limit: c.limit })),
+    checks: r.checks.map(c => ({
+      id: c.id, process: c.process, source: c.source, status: c.status, summary: c.summary,
+      ...(c.value !== undefined ? { value: c.value } : {}),
+      ...(c.limit !== undefined ? { limit: c.limit } : {}),
+      ...(c.unit !== undefined ? { unit: c.unit } : {}),
+      ...(c.op !== undefined ? { op: c.op } : {}),
+      ...(c.refs !== undefined ? { refs: c.refs } : {}),
+    })),
     ...(r.injectionMolding ? {
       undraftedFaces: r.injectionMolding[0].result.draft.insufficient.map(f => f.faceRef),
       undercutFaces: r.injectionMolding[0].result.undercut.faces.map(f => ({ face: f.faceRef, location: f.location })),
@@ -34,7 +44,7 @@ for (const [name, process] of runs) {
       bends: r.sheetMetal[0].result.bends,
     } : {}),
   };
-  console.log(name, r.verdict, r.checks.map(c => `${c.id}=${c.status}`).join(' '));
+  console.log(name, `ok=${r.ok}`, `verdict=${r.verdict ?? 'omitted'}`, r.checks.map(c => `${c.id}=${c.status}`).join(' '));
 }
 writeFileSync(join(here, 'result.json'), JSON.stringify(out, null, 2) + '\n');
 process.exit(0);

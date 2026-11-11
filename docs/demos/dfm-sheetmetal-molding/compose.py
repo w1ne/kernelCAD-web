@@ -1,8 +1,6 @@
-# Compose the demo frames (1280x720) from `render inspect` PNGs and the
-# dfm_review rows in result.json, then encode demo.mp4.
-# Usage: python3 -I compose.py <render-dir> <out-dir>
-# <render-dir>/<part>/channels/rgb/{iso,front,top}.png from
-#   kernelcad render inspect docs/demos/dfm-sheetmetal-molding/<part>.kcad.ts <render-dir>/<part>
+# Compose the demo frames (1280x720) from retained render-inspection viewports
+# and the freshly generated dfm_review rows in result.json, then encode demo.mp4.
+# Usage: python3 -I compose.py <out-dir>
 import json
 import subprocess
 import sys
@@ -11,16 +9,22 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-src, out = Path(sys.argv[1]), Path(sys.argv[2])
+out = Path(sys.argv[1]).resolve()
 out.mkdir(parents=True, exist_ok=True)
 here = Path(__file__).resolve().parent
 res = json.loads((here / "result.json").read_text())
+VIEW_CROP = {
+    "tray-undrafted": {"iso": (30, 80, 460, 510), "front": (110, 470, 320, 680)},
+    "tray-drafted": {"iso": (30, 80, 460, 510), "front": (110, 470, 320, 680)},
+    "bracket-tight": {"top": (30, 80, 460, 510), "iso": (110, 470, 320, 680)},
+    "bracket-fixed": {"top": (30, 80, 460, 510), "iso": (110, 470, 320, 680)},
+}
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 title_f = ImageFont.truetype(FONT, 28)
 small = ImageFont.truetype(FONT, 18)
 mono = ImageFont.truetype(MONO, 17)
-COLORS = {"pass": (110, 200, 120), "fail": (235, 95, 85), "warn": (235, 190, 80)}
+COLORS = {"pass": (110, 200, 120), "fail": (235, 95, 85), "warn": (235, 190, 80), "not-checked": (130, 170, 235)}
 FOOT = "kernelCAD local validation (dfm_review run by the CLI on this machine) - renders, not a molded or bent part"
 
 
@@ -33,7 +37,9 @@ def base(title):
 
 
 def paste(f, part, view, box, size):
-    im = Image.open(src / part / "channels" / "rgb" / f"{view}.png").convert("RGB")
+    source_part = "tray-undrafted" if part in ("tray-not-sheet-metal", "tray-fdm") else part
+    crop = VIEW_CROP[source_part][view]
+    im = Image.open(here / f"viewport-source-{source_part}.png").convert("RGB").crop(crop)
     im.thumbnail((size, size))
     f.paste(im, box)
 
@@ -45,15 +51,26 @@ def rows(d, part, x, y, width=60):
     d.text((x, y), f"             processes: {r['call']['processes']} }})", font=mono, fill=(170, 190, 230))
     y += 34
     for c in r["checks"]:
-        d.text((x, y), f"{c['status'].upper():4}", font=mono, fill=COLORS[c["status"]])
-        d.text((x + 60, y), c["id"], font=mono, fill=(225, 225, 225))
-        y += 24
-        for ln in textwrap.wrap(c["summary"], width)[:3]:
-            d.text((x + 60, y), ln, font=small, fill=(180, 188, 198))
+        d.text((x, y), c["status"].upper(), font=mono, fill=COLORS[c["status"]])
+        d.text((x + 180, y), c["id"], font=mono, fill=(225, 225, 225))
+        y += 21
+        if c.get("value") is not None:
+            metric = f"value {c['value']} {c.get('unit', '')}".strip()
+            if c.get("op") is not None and c.get("limit") is not None:
+                metric += f" {c['op']} {c['limit']} {c.get('unit', '')}"
+            d.text((x + 180, y), f"source {c['source']} · {metric}", font=small, fill=(145, 180, 215))
+            y += 21
+        if c.get("refs"):
+            refs = ", ".join(c["refs"][:2])
+            if len(c["refs"]) > 2:
+                refs += f" +{len(c['refs']) - 2}"
+            d.text((x + 180, y), f"refs: {refs}", font=small, fill=(145, 180, 215))
+            y += 21
+        for ln in textwrap.wrap(c["summary"], width)[:2]:
+            d.text((x + 180, y), ln, font=small, fill=(180, 188, 198))
             y += 22
-        y += 6
     v = r["verdict"]
-    d.text((x, y + 4), f"verdict: {v}", font=title_f, fill=COLORS[v])
+    d.text((x, y + 4), f"ok: {r['ok']}   verdict: {v}", font=title_f, fill=COLORS[v] if v is not None else (235, 190, 80))
 
 
 frames = []
@@ -65,23 +82,24 @@ def save(f):
     frames.append(p)
 
 
-f, d = base("dfm_review: new processes 'sheet-metal' and 'injection-molding'")
+f, d = base("dfm_review: structured outcomes for sheet metal and injection molding")
 for i, ln in enumerate([
-    "dfm_review({ file, processes: ['sheet-metal'] })",
-    "  sheet.min-bend-radius  inner R >= 1 x t",
-    "  sheet.hole-to-bend     hole edge to bend line >= 2.5 x t + R",
-    "  sheet.hole-to-edge     hole edge to blank edge >= 2 x t",
-    "  sheet.min-flange       outside of bend to edge >= 4 x t",
+    "verdict: pass | fail | not-checked",
+    "warn: evaluated warning that does not fail a review",
+    "ok: invocation and analysis execution, not manufacturability",
+    "id: stable DFM rule key; source: KernelCAD process engine",
+    "unit/op: comparable quantities only; refs: emitted @kc topology",
     "",
-    "dfm_review({ file, processes: ['injection-molding'], pull_direction: '+z' })",
-    "  mold.draft             faces under min_draft_deg (1), by @kc face ref",
-    "  mold.wall-thickness    1-4 mm, max/min ratio 2.5 (warn)",
-    "  mold.undercuts         faces neither mold half releases",
-    "  mold.sharp-internal-corners  (warn)",
+    "sheet-metal: inner R >= 1 x t; hole-to-bend >= 2.5 x t + R",
+    "hole-to-edge >= 2 x t; flange >= 4 x t",
+    "",
+    "injection-molding, pull_direction '+z':",
+    "draft >= 1 deg; walls 1-4 mm, max/min ratio 2.5",
+    "undercuts block either mold half; corners under R0.5 warn",
     "",
     "Defaults stay ['fdm', 'cnc']; every limit is a call option.",
 ]):
-    d.text((60, 100 + i * 34), ln, font=mono if ln.startswith(" ") or ln.startswith("d") else small, fill=(210, 215, 225))
+    d.text((60, 100 + i * 32), ln, font=mono if ln.startswith(" ") or ln.startswith("d") else small, fill=(210, 215, 225))
 save(f)
 
 for part, title, views in [
@@ -89,18 +107,30 @@ for part, title, views in [
     ("tray-drafted", "Fixed: 2 deg draft inside and out, window removed", ("iso", "front")),
     ("bracket-tight", "2 mm sheet bracket, first pass: R1 bend, hole 2 mm from bend", ("top", "iso")),
     ("bracket-fixed", "Fixed: R2 bend, hole moved 10 mm back", ("top", "iso")),
+    ("tray-not-sheet-metal", "Requested sheet-metal check on a regular solid", ("iso", "front")),
+    ("tray-fdm", "FDM review reports overhang area in its own unit", ("iso", "front")),
 ]:
     f, d = base(title)
-    paste(f, part, views[0], (30, 80), 430)
-    paste(f, part, views[1], (110, 470), 210)
-    d.text((340, 560), f"render inspect:\n{views[0]} (large),\n{views[1]} (small)", font=small, fill=(150, 150, 150))
+    render_part = "tray-undrafted" if part in ("tray-not-sheet-metal", "tray-fdm") else part
+    paste(f, render_part, views[0], (30, 80), 430)
+    paste(f, render_part, views[1], (110, 470), 210)
+    d.text((340, 560), f"retained view:\n{views[0]} (large),\n{views[1]} (small)", font=small, fill=(150, 150, 150))
     rows(d, part, 480, 90)
     save(f)
 
-f, d = base("Where the findings point")
+f, d = base("Structured evidence keeps rule, measurement, and topology distinct")
 u = res["tray-undrafted"]
 b = res["bracket-tight"]
-lines = ["mold.draft  undrafted faces (@kc refs):"] + [f"  {x}" for x in u["undraftedFaces"][:6]]
+draft = next(c for c in u["checks"] if c["id"] == "mold.draft")
+overhang = next(c for c in res["tray-fdm"]["checks"] if c["id"] == "fdm.overhangs")
+missing = res["tray-not-sheet-metal"]["checks"][0]
+lines = ["id stays the DFM rule key; source identifies the running engine.",
+         f"mold.draft: source {draft['source']}, {draft['value']} {draft['unit']} {draft['op']} {draft['limit']} {draft['unit']}",
+         "refs: existing @kc face ids, directly resolvable by resolve_topo_ref:"] + [f"  {x}" for x in draft["refs"][:4]]
+lines += ["", f"{missing['id']}: {missing['status']} (this solid has no sheetMetal chain)",
+          "ok is true: the call ran; verdict is not-checked.", ""]
+lines += ["Area and angular limits are not combined into a comparison.",
+          f"fdm.overhangs value: {overhang['value']} {overhang['unit']} (no op or degree limit)"]
 lines += ["", "mold.undercuts  locked faces:"] + [f"  {x['face']} at ({', '.join(f'{v:.1f}' for v in x['location'])})" for x in u["undercutFaces"][:3]]
 h = b["holeToBend"][1] if len(b["holeToBend"]) > 1 else b["holeToBend"][0]
 lines += ["", "sheet.hole-to-bend  (flat-pattern coordinates):",
@@ -108,7 +138,7 @@ lines += ["", "sheet.hole-to-bend  (flat-pattern coordinates):",
           f"  limit {h['limitMm']:.2f} mm = 2.5 x 2 mm + R1",
           f"sheet.min-bend-radius  {b['bends'][0]['featureId']}: R{b['bends'][0]['radiusMm']} < R{b['bends'][0]['minRadiusMm']}"]
 for i, ln in enumerate(lines):
-    d.text((60, 90 + i * 28), ln, font=mono, fill=(210, 215, 225))
+    d.text((60, 90 + i * 24), ln, font=mono, fill=(210, 215, 225))
 save(f)
 
 list_file = out / "frames.txt"
