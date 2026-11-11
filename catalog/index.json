@@ -287359,7 +287359,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-panel-turnover-cradle.kcad.ts",
       "preview": "/assets/shipyard-hull-panel-turnover-cradle.png",
-      "sourceSha256": "89db03968217ebeceb6ca63e10ebf914ff75856e9bb31e6aa23062d7e79ad1f8",
+      "sourceSha256": "330ceb2e5badccfc2fcaa40bb3a597d0016de44c1f7057e4a3ee7a5979ba6457",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287409,7 +287409,8 @@
           "name": "yardPaint",
           "color": "#70837d",
           "parts": [
-            "end-frame-0"
+            "end-frame-0",
+            "end-frame-1"
           ],
           "param": "yardPaint"
         },
@@ -287417,7 +287418,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "end-frame-1",
             "turnover-axle",
             "saddle-arm-0",
             "saddle-arm-1",

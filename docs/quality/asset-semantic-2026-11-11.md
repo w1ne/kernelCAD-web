@@ -20,3 +20,30 @@
 ## Outcome
 
 No valid material mismatch was found in this five-asset sample. No asset source, preview, test, or generated index was changed; no before/after render was produced. This records a visual semantic pass only, not engineering acceptance.
+
+## Second sample — shipyard manufacturing assets
+
+- Rechecked PR #1258 before sampling. Baseline head `d9169b05845b7f8ab8e07d47fd1c0c8bcb914d7c` had all 18 reported CI and DCO checks successful, with no submitted review or inline review thread.
+- Checked five shipyard manufacturing assets against open issue title/body searches, open PR title/body searches, and exact open PR changed-source paths. No matches were found; the result is retained in the handoff bundle's `open-target-check-output.json`.
+- Opened all five rendered previews. Four were semantically plausible and had coherent material zoning. `hull-panel-turnover-cradle` showed its two same-sized end frames in different finishes: `yardPaint` on one and `structuralSteel` on the other. Both are matching fabricated frame members, so the mixed treatment read as a material assignment error.
+- Changed only the second frame's material assignment to `yardPaint`. The axle, saddle arms, panel stops, and stabilizing feet remain `structuralSteel`. The GLB regression checks both exported frame colors, both existing presets, the 420-triangle count, and the 2.18 × 1.76 × 1.76 m envelope.
+- The local preview was re-rendered and `catalog/index.json` regenerated. Its source hash now matches the edited `.kcad.ts`. The local generated detail page includes the updated preview, both material controls, and both presets.
+- The live preview route still serves the original image (`4b6931370c89f2f05df1f6397cbb7e142b6cf952e087b7cb0da515c9d90fddec`). The live detail page and `/catalog/` returned HTTP 404; the updated local page is not deployed.
+
+| Asset | Rendered observation | Envelope (m) | Source SHA-256 | Preview SHA-256 | Result |
+|---|---|---:|---|---|---|
+| `shipyard/plate-rolling-machine` | Three bright rolls, side housings, drive and a curled plate read as a plate roller; blue machine paint and steel rolls are distinct. | 6.18 × 2.015644 × 3.061673 | `9a6e9f3f430e311241585a1181022fb180e0fa73c9beef83e9c9d554ccf3d6de` | `38c0ec11072992f939a47a5a362f5a3fd3b865e1f94571c54da81b57ffe6b1cb` | No mismatch found. |
+| `shipyard/plasma-cutting-gantry-head` | Orange bridge and carriages span a dark slat table; the down-facing torch, extraction riser and console are visible. | 8.257 × 2.05 × 5.478 | `6908bf4c7ebabf079b961ef38b51fe107a61f4566453cd738004600432608835` | `606a5f803535b46324dc1f5a0b5b9199b2eca87bebde89b6e0cc7e98d8b12044` | No mismatch found. |
+| `shipyard/pipe-spool-rotator` | Steel pipe rests across two painted stands and orange paired rollers; the drive motor and pendant are visible. | 5.229 × 1.957076 × 2.38 | `070a2922dba06e147942effd7342b488341201110b6329e0fb5e6ba6fed6a7c5` | `8b2b7c4dba38fe3000bfc00d42d4273d60fd86649487ee1aa6ea8411b831c0d6` | No mismatch found. |
+| `shipyard/hull-panel-cutting-table` | Slatted cutting bed, end rails and side tray read as a rectilinear shipyard table; yard and structural finishes are coherent. | 2.66 × 1.065 × 1.95 | `e1a8df969f477ee0986873de9ed004327b64511bb312f9fc3a1f6e94093ac5a8` | `b4c43e239b43823428c7d517493faf741179f235ddb302e0f0c6501a30791162` | No mismatch found. |
+| `shipyard/hull-panel-turnover-cradle` | Before: matching end frames used two finishes. After: both end frames use yard paint; the axle, arms, stops and feet remain structural steel. | 2.18 × 1.76 × 1.76 | `330ceb2e5badccfc2fcaa40bb3a597d0016de44c1f7057e4a3ee7a5979ba6457` | `6f4c8664a9668676724a0a99892f1eb907dfe028ba9f605d17ca4422a8713648` | Material mismatch corrected; no geometry change. |
+
+The complete before/after preview, source, regression, index evidence, validation
+logs, local page check, and inspected MP4 are linked from the [shipyard kit
+handoff](../../artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/README.md).
+The dated product-context comparison is stored privately in
+`kernelCAD-private/docs/competitors/2026-11-11-shipyard-turnover-cradle-material-review.md`.
+
+This is a local visual and material-assignment correction. It does not verify
+turnover capacity, structural strength, safe operation, vendor dimensions,
+deployment, or physical acceptance.

@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 565ms
+     ✓ keeps the matching end frames on the same yard-finish control  301ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  10:33:33
+   Duration  5.77s (transform 4.10s, setup 92ms, import 4.98s, tests 565ms, environment 0ms)

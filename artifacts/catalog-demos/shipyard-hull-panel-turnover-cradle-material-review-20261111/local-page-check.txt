@@ -1,0 +1,2 @@
+Verified local page: /tmp/kernelcad-shipyard-turnover-pages/catalog/shipyard/hull-panel-turnover-cradle/index.html
+Preview SHA-256: 6f4c8664a9668676724a0a99892f1eb907dfe028ba9f605d17ca4422a8713648
