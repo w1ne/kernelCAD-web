@@ -46,6 +46,9 @@ export interface MujocoBodyPose {
     readonly matrix: MujocoBodyMatrix;
 }
 
+/** Per-integration-step position snapshot, used for physics invariants. */
+export type MujocoStepObserver = (qpos: readonly number[], step: number) => void;
+
 const METRES_TO_MM = 1000;
 
 function bodyPoseAt(xpos: ArrayLike<number>, xmat: ArrayLike<number>, bodyIdx: number): MujocoBodyPose {
@@ -193,7 +196,7 @@ export class MujocoSession {
      * positions in metres, and per-part placements in millimetres.
      * Criterion 6 reads `xpos`; playback applies `bodyPoses`.
      */
-    step(seconds: number, dt = 0.001): {
+    step(seconds: number, dt = 0.001, observeQpos?: MujocoStepObserver): {
         qpos: number[];
         xpos: Map<string, [number, number, number]>;
         bodyPoses: Map<string, MujocoBodyPose>;
@@ -205,6 +208,9 @@ export class MujocoSession {
         const steps = Math.max(1, Math.round(seconds / dt));
         for (let i = 0; i < steps; i++) {
             this.mujoco.mj_step(this.model, this.data);
+            if (observeQpos !== undefined) {
+                observeQpos(Array.from(this.data.qpos as ArrayLike<number>), i + 1);
+            }
         }
         const qpos = Array.from(this.data.qpos as ArrayLike<number>);
         return { qpos, xpos: this.xposNow(), bodyPoses: this.bodyPosesNow() };

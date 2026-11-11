@@ -61,6 +61,7 @@
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
+import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { Connector } from '../mates/connector';
 import { connectorDirection, resolveConnectorFrame, resolveConnectorOrigin } from '../mates/connector';
 import type { TendonRecord, TendonViaRef } from '../mates/tendon';
@@ -74,6 +75,14 @@ import { xmlAttributionComment } from '../../shared/links/attribution';
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
+
+/** A coupling kind that this physics backend cannot faithfully map. */
+export class UnsupportedMjcfCouplingError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'UnsupportedMjcfCouplingError';
+    }
+}
 
 /**
  * Default density (kg/m³) when a part doesn't declare one. Aluminum;
@@ -123,6 +132,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     const parts = arm.__parts();
     const mates = arm.__mates();
     const tendons = arm.__tendons();
+    const couplingBlockLines = emitMateCouplingBlock(mates, arm.__mateCouplings());
     if (parts.length === 0) {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
@@ -181,14 +191,72 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         '  <worldbody>',
         ...worldbodyBlocks,
         '  </worldbody>',
-        ...tendonBlockLines,
         ...contactBlockLines,
+        ...couplingBlockLines,
+        ...tendonBlockLines,
         ...actuatorBlockLines,
         '</mujoco>',
         '',
     ].join('\n');
 
     return { mjcf, jointOrder, bodyOrder, inertiaNotes };
+}
+
+type ScalarCoordinate = { readonly kind: 'angle' | 'length'; readonly toSi: number };
+
+function scalarCoordinate(mate: MateRecord): ScalarCoordinate | undefined {
+    switch (mate.type) {
+        case 'revolute':
+        case 'cylindrical': // MJCF intentionally models the rotational scalar only.
+        case 'pin_slot': // MJCF intentionally models the rotational scalar only.
+            return { kind: 'angle', toSi: DEG_TO_RAD };
+        case 'prismatic':
+            return { kind: 'length', toSi: MM_TO_M };
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Map authored single-scalar mate couplings to MuJoCo joint equalities.
+ * `coupleMates(driven, { source, ratio, offset })` means
+ * `qDriven = ratio * qSource + offset`; MJCF stores joint positions in
+ * radians/metres, so convert the ratio as well as the offset.
+ */
+function emitMateCouplingBlock(
+    mates: readonly MateRecord[],
+    couplings: readonly MateCouplingRecord[],
+): string[] {
+    if (couplings.length === 0) return [];
+    const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
+    const lines = ['  <equality>'];
+    for (const coupling of couplings) {
+        const source = mateByName.get(coupling.source);
+        const driven = mateByName.get(coupling.driven);
+        if (source === undefined || driven === undefined) {
+            throw new UnsupportedMjcfCouplingError(
+                `Coupling '${coupling.driven}' from '${coupling.source}' cannot be represented because one of its mate names is missing. Declare both mates before requesting a physics verdict.`,
+            );
+        }
+        const sourceCoordinate = scalarCoordinate(source);
+        const drivenCoordinate = scalarCoordinate(driven);
+        if (sourceCoordinate === undefined || drivenCoordinate === undefined) {
+            const unsupported = sourceCoordinate === undefined ? source : driven;
+            throw new UnsupportedMjcfCouplingError(
+                `Coupling '${coupling.driven}' from '${coupling.source}' cannot be represented because mate '${unsupported.name}' has type '${unsupported.type}'. Physics supports scalar revolute, prismatic, cylindrical-angle, and pin-slot-angle couplings; this coupling remains unverified.`,
+            );
+        }
+
+        // MuJoCo equality joint uses qDriven - qDriven0 = a0 + a1 *
+        // (qSource - qSource0). Both emitted joints have qpos0 = 0.
+        const ratioSi = coupling.ratio * drivenCoordinate.toSi / sourceCoordinate.toSi;
+        const offsetSi = (coupling.offset ?? 0) * drivenCoordinate.toSi;
+        lines.push(
+            `    <joint name="${escapeXml(`kc-coupling-${coupling.driven}`)}" joint1="${escapeXml(sanitizeJointName(driven.name))}" joint2="${escapeXml(sanitizeJointName(source.name))}" polycoef="${fmtNum(offsetSi)} ${fmtNum(ratioSi)} 0 0 0" solref="0.001 1" solimp="0.9999 0.9999 0.001"/>`,
+        );
+    }
+    lines.push('  </equality>');
+    return lines;
 }
 
 interface MateTree {

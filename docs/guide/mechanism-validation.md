@@ -9,3 +9,11 @@
 The result is local CAD validation of the model's declared mates and geometry. It does not claim a physical simulation, a deployed result, or hardware acceptance.
 
 The [rest-pose continuity demo and evidence bundle](../demos/rest-joint-continuity-925/README.md) shows an annular bearing whose mesh and exact BREP joint-distance queries are unavailable while the travel sweep is skipped at budget zero.
+
+## Scalar mate couplings in physics verification
+
+When mates are coupled with `arm.coupleMates(driven, { source, ratio, offset })`, the physics pose sweep samples the independent source coordinate and derives the driven coordinate from that signed relation. The MuJoCo release model carries supported scalar revolute and prismatic couplings as joint equality constraints. The release check measures the relation at each integration observation; a residual beyond 5° for angular coordinates or 0.01 mm for linear coordinates reports `mechanism.coupling-residual`.
+
+If the physics backend cannot map a declared coupling, `verify({ check: 'physics' })` reports `mechanism.physics-unsupported` and leaves physics coverage false. A passing ratio check validates the authored coordinate relation in the native physics model. It does not simulate involute tooth contact or certify a physical gear mesh.
+
+The [12:48 coupled-gear release demo and evidence bundle](../demos/issue-1321-coupled-gear/README.md) records the signed input sweep and native release residual from the regression fixture.

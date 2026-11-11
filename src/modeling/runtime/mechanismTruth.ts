@@ -1204,7 +1204,13 @@ function buildPoseSamples(arm: Assembly): PoseSample[] {
   ];
   const mates = arm.__mates();
   const couplings = arm.__mateCouplings();
+  const coupledDriven = new Set(couplings.map((coupling) => coupling.driven));
   for (const mate of mates) {
+    // A driven mate is a dependent coordinate. Sampling it independently
+    // creates a pose that contradicts coupleMates and can make the physics
+    // gate test a fictitious joint configuration. Drive the source and let
+    // expandCoupledPoses derive each output instead.
+    if (coupledDriven.has(mate.name)) continue;
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
     const [min, max] = limits;
