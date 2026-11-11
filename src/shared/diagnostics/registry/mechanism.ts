@@ -123,6 +123,14 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'A joint pivot lies outside its mated body BREP surface at rest pose and the mated rigid groups have no bearing contact within tolerance anywhere — the link is floating on the joint it pivots on.',
   },
+  'mechanism.joint-mesh-unverified': {
+    hintTemplate:
+      'The evaluator could not measure the rest-pose connection between this joint and one of its bodies, so the mechanism is unverified. Inspect or rebuild the affected solid and rerun the mechanism check; a completed collision sweep does not prove joint continuity.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The evaluator could not measure rest-pose joint continuity for at least one mated body. It reports explicit unknown evidence and keeps the mechanism unverified rather than treating the missing measurement as a pass.',
+  },
   // Physics-grounded loop — P6 slice. The two physics criteria
   // (static-equilibrium + drop-on-release) emit these codes from
   // `src/modeling/runtime/mechanismTruth.ts` when `physicsCheck` is

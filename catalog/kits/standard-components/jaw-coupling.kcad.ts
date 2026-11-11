@@ -1,50 +1,44 @@
-// Two bored steel hubs drive across a three-lobe elastomer spider; offset hub jaws interleave around the flexible insert.
+// Distinctive geometry: Two jaw hubs with a visible flexible center spider between the shaft bores
 meta({
   name: 'jaw-coupling',
   license: 'CC0-1.0',
   title: 'Jaw coupling',
-  description: 'Two bored steel hubs with offset driving jaws around a three-lobe elastomer spider and visible set-screw heads. Knobs: model size, hub steel, engineering polymer and set-screw steel.',
+  description: 'Illustrative CC0 low-poly jaw coupling: two bored hubs with three offset jaws each, and a separate six-lobed elastomer spider seated in the six alternating spaces. Not a rated torque/fatigue or vendor manufacturing model. Controls: model size, steel and polymer colors.',
   tags: ['jaw coupling', 'flexible coupling', 'shaft connector', 'rotary'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 640,
+  triangleBudget: 520,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
 const steel = param('steel', '#85929a', { label: 'Steel' });
 const polymer = param('polymer', '#e46b3c', { label: 'Engineering polymer' });
-const setScrewSteel = param('setScrewSteel', '#343a3e', { label: 'Set-screw steel' });
 presets({
-  dark: { steel: '#3e484e', polymer: '#244956', setScrewSteel: '#171b1d' },
-  highTorque: { steel: '#aeb8be', polymer: '#d74631', setScrewSteel: '#343a3e' },
-  weathered: { steel: '#665b4d', polymer: '#96734f', setScrewSteel: '#34312d' }
+  dark: { steel: '#3e484e', polymer: '#244956' },
+  brass: { steel: '#646f75', polymer: '#1d5364' },
+  weathered: { steel: '#665b4d', polymer: '#96734f' }
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
+const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('jaw-coupling');
-const jawHub = (bottom: number, phase: number, jawsDown = false) => {
-  let hub = cylinder(18*s, 16*s, 14).translate(0, 0, bottom)
-    .subtract(cylinder(20*s, 8*s, 12).translate(0, 0, bottom - s));
-  for (let i = 0; i < 3; i++) {
-    const angle = phase + (120 * i * Math.PI) / 180;
-    const jawZ = jawsDown ? bottom - 2*s : bottom + 14*s;
-    const jaw = box(9*s, 7*s, 6*s).translate(9*s, -3.5*s, jawZ).rotateZ((angle * 180) / Math.PI);
-    hub = hub.union(jaw);
-  }
-  return hub;
-};
-let spider = cylinder(12*s, 7*s, 12).translate(0, 0, 15*s);
-for (let i = 0; i < 3; i++) {
-  const angle = ((60 + 120 * i) * Math.PI) / 180;
-  const lobe = box(11*s, 7*s, 12*s).translate(4*s, -3.5*s, 15*s).rotateZ((angle * 180) / Math.PI);
-  // The lobes overlap the center web so the elastomer insert remains one body.
-  spider = spider.union(lobe);
+// Two interleaved three-jaw hubs and a six-lobed elastomer spider.
+// The jaws are visible geometry; the assembly remains an illustrative prop.
+const hubA=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+const hubB=cylinder(12*s,18*s,20).subtract(cylinder(14*s,7*s,20).translate(0,0,-s));
+a.part('drive-hub',hubA.color(steel));
+a.part('driven-hub',hubB.translate(0,0,24*s).color(steel));
+for (let i=0;i<3;i++) {
+  const angle=120*i;
+  a.part(`drive-jaw-${i}`,block(10*s,-3*s,12*s,9*s,6*s,8*s).rotateZ(angle).color(steel));
+  a.part(`driven-jaw-${i}`,block(10*s,-3*s,16*s,9*s,6*s,8*s).rotateZ(angle+60).color(steel));
 }
-a.part('lower-jaw-hub', jawHub(0, 0).color(steel));
-a.part('elastomer-spider', spider.color(polymer));
-a.part('upper-jaw-hub', jawHub(24*s, Math.PI / 3, true).color(steel));
-a.part('lower-set-screw', cylinder(3*s, 2.4*s, 8).rotateX(90).translate(0, -15*s, 9*s).color(setScrewSteel));
-a.part('upper-set-screw', cylinder(3*s, 2.4*s, 8).rotateX(90).translate(0, -15*s, 33*s).color(setScrewSteel));
+a.part('elastomer-core',cylinder(7*s,8*s,16).translate(0,0,15*s).color(polymer));
+// Metal jaws are centred at 0, 60, 120 ... degrees. The spider fingers must
+// occupy the intervening spaces, not coincide with and penetrate those jaws.
+for (let i=0;i<6;i++) {
+  a.part(`spider-lobe-${i}`,block(7*s,-1.4*s,15*s,8*s,2.8*s,7*s).rotateZ(i*60+30).color(polymer));
+}
 return a.model();

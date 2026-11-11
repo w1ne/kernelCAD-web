@@ -1,5 +1,7 @@
 # Check assembly removal paths
 
+For a mate's rest-pose connection and motion verdict, see [mechanism validation](mechanism-validation.md). An assembly-path result checks disassembly travel, not whether a declared joint is supported by its two bodies.
+
 Use the MCP verifier to test whether assembly parts can leave along a straight line:
 
 ```json

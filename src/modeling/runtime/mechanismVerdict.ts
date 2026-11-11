@@ -91,7 +91,9 @@ function plural(n: number, word: string): string {
 }
 
 function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
-  const { mateName: joint, partName: part } = d as { mateName?: unknown; partName?: unknown };
+  const legacy = d as { mateName?: unknown; partName?: unknown };
+  const joint = typeof d.details?.mateName === 'string' ? d.details.mateName : legacy.mateName;
+  const part = typeof d.details?.partName === 'string' ? d.details.partName : legacy.partName;
   return {
     code: d.code,
     reason: d.message,
@@ -113,17 +115,35 @@ function physicsSkipLine(code: string, message: string): string | undefined {
   return undefined;
 }
 
+function jointContinuitySkipLine(message: string): string {
+  const joint = /Joint '([^']+)'/.exec(message)?.[1];
+  const part = /body '([^']+)'/.exec(message)?.[1];
+  return joint !== undefined && part !== undefined
+    ? `rest-pose joint continuity could not be measured at '${joint}' on '${part}'`
+    : 'rest-pose joint continuity could not be measured';
+}
+
+function budgetSkipLine(message: string): string {
+  const forced = /sweepBudget is (-?\d+(?:\.\d+)?) \(forced skip\)/.exec(message)?.[1];
+  if (forced !== undefined) {
+    return `collision sweep across the joint travel skipped: sweepBudget is ${forced} (forced skip)`;
+  }
+  const estimate = /estimated work (\d+) exceeds the budget (\d+)/.exec(message);
+  return estimate
+    ? `collision sweep across the joint travel skipped: work ${estimate[1]} is over the budget ${estimate[2]}`
+    : 'collision sweep across the joint travel skipped: budget reason is unavailable';
+}
+
 function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
   for (const d of input.failures) {
     if (d.code === 'mechanism.unverified-budget-exceeded') {
-      const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
-      out.push(m
-        ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
-        : 'collision sweep across the joint travel skipped: over the work budget');
+      out.push(budgetSkipLine(d.message));
     } else if (d.code === 'mechanism.unverified-exact-probe') {
       out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
+    } else if (d.code === 'mechanism.joint-mesh-unverified') {
+      out.push(jointContinuitySkipLine(d.message));
     } else {
       const physicsSkip = physicsSkipLine(d.code, d.message);
       if (physicsSkip !== undefined) out.push(physicsSkip);

@@ -360,6 +360,7 @@ function mechanismVerdict(
   physics: { ran: boolean } | undefined,
 ): 'real' | 'broken' | 'unverified' {
   if (failures.some((d) => d.severity === 'error')) return 'broken';
+  if (failures.some((d) => d.code === 'mechanism.joint-mesh-unverified')) return 'unverified';
   if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
   return 'real';
 }
@@ -1097,6 +1098,15 @@ async function checkJointMeshContinuityCriterion(
 
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
+    if (r.status === 'unavailable') {
+      const failure = makeFailure(
+        'mechanism.joint-mesh-unverified',
+        `Joint '${r.mateName}' ${r.side} body '${r.partName}': rest-pose continuity could not be measured because ${r.reason}. This joint cannot be certified connected.`,
+        'warn',
+      );
+      out.push({ ...failure, details: { mateName: r.mateName, partName: r.partName, side: r.side } });
+      continue;
+    }
     // Decision #3 reframe: the knuckle SOLID must be present around the
     // pivot, not the pivot POINT inside solid. A drilled clevis knuckle's
     // nearest solid is the bore wall at `clearanceRadiusMm`; accept a gap up
@@ -1301,20 +1311,24 @@ function makeBudgetExceeded(
 ): CompilerDiagnostic {
   const code = 'mechanism.unverified-budget-exceeded';
   const { work, candidates, parts, clusters, lowers } = estimate;
+  const skipReason = sweepBudget <= 0
+    ? `sweepBudget is ${sweepBudget} (forced skip)`
+    : `estimated work ${work} exceeds the budget ${sweepBudget}`;
   return {
     target: 'export-occt',
     code,
     severity: 'warn',
     message:
       `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
-      `estimated work ${work} exceeds the budget ${sweepBudget} ` +
+      `${skipReason} ` +
       `(${parts} part${parts === 1 ? '' : 's'} in ${clusters} rigid cluster${clusters === 1 ? '' : 's'}, ` +
       `${lowers} pose${lowers === 1 ? '' : 's'}, ${candidates} pair overlap probe${candidates === 1 ? '' : 's'}; ` +
       `work counts exact confirms selected by the proxy pass, as the summed ` +
       `analysis-body face count of those pairs). The mechanism ` +
       `is NOT certified collision-free across its travel. Rest-pose joint-mesh ` +
-      `continuity still ran — a link that does not meet its body is 'broken', ` +
-      `not unverified. Reduce the part/pose count, verify a tractable ` +
+      `continuity still ran: measured gaps remain errors, and unavailable ` +
+      `joint measurements keep the mechanism unverified. Reduce the part/pose ` +
+      `count, verify a tractable ` +
       `sub-assembly, or pass a larger sweepBudget to force the full sweep.`,
     hint: HINT_TEMPLATES[code].template,
     nextAction: HINT_TEMPLATES[code].nextAction,
