@@ -1,30 +1,56 @@
-// Distinctive geometry: Compact union fitting with two hollow sockets and a broad central hex-like nut body
+// SPDX-License-Identifier: CC0-1.0
+// Four separate parts of an illustrative straight pipe union: inlet and
+// outlet tailpieces, the removable hex coupling nut, and a gasket captured
+// between the opposed ends. Threads and sealing fits are NOT modeled; this
+// is low-poly scene geometry, not a pressure-rated or fabrication-ready part.
 meta({
   name: 'pipe-union',
   license: 'CC0-1.0',
   title: 'Pipe union',
-  description: 'Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.',
-  tags: ['pipe union', 'union fitting', 'pipe connector', 'plumbing'],
+  description: 'Illustrative CC0 low-poly straight pipe union: two detachable tubular tailpieces with external shoulders, a hollow six-flat coupling nut that captures them, and a separate sealing gasket between faces. The central fluid passage is open. Three scaled scene sizes; threaded engagement, pressure rating and leak-tight fit are not verified manufacturing details.',
+  tags: ['pipe union', 'union fitting', 'pipe connector', 'plumbing', 'low poly', 'scene prop', 'CC0'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 340,
+  triangleBudget: 800,
 });
-
-const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
-const steel = param('steel', '#85929a', { label: 'Steel' });
-const brass = param('brass', '#b28a4d', { label: 'Brass' });
+const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Illustrative overall scale' });
+const steel = param('steel', '#85929a', { label: 'Steel tailpieces' });
+const brass = param('brass', '#b28a4d', { label: 'Brass coupling nut' });
+const gasketColor = param('gasketColor', '#353d41', { label: 'Sealing gasket' });
 presets({
   dark: { steel: '#3e484e', brass: '#725938' },
   brass: { steel: '#646f75', brass: '#c0944d' },
-  weathered: { steel: '#665b4d', brass: '#8c734d' }
+  weathered: { steel: '#665b4d', brass: '#8c734d' },
 });
-
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
+const tube = (lo: number, hi: number, ro: number, ri = 9) =>
+  cylinder((hi-lo)*s, ro*s, 12).translate(0,0,lo*s)
+    .subtract(cylinder((hi-lo+2)*s, ri*s, 12).translate(0,0,(lo-1)*s));
+
+// The lower tailpiece has a full-size pipe, a raised retaining shoulder and
+// a smaller spigot which fits inside the nut without intersecting its bore.
+const inlet = tube(0, 15, 15).union(tube(11, 15, 18))
+  .union(tube(14, 22.5, 12.5));
+// The upper tailpiece presents the mating spigot to the face gasket. The
+// shoulders remain outside the nut so the collar captures each tailpiece.
+const outlet = tube(23.5, 34, 12.5).union(tube(33, 37, 18))
+  .union(tube(36, 49, 15));
+const hexPoints = Array.from({ length: 6 }, (_, i) => {
+  const angle = (i + 0.5) * Math.PI / 3;
+  return [22 * Math.cos(angle)*s, 22 * Math.sin(angle)*s];
+});
+// Across-flats ~= 38.1 mm at default scale. Hollow: neither a solid block
+// nor a squared-off sleeve masquerading as a pipe union.
+const nut = extrudePolygon(hexPoints, 18*s).translate(0,0,15*s)
+  .subtract(cylinder(20*s, 13.4*s, 12).translate(0,0,14*s));
+// Replaceable, visible in an exploded view; outer radius stays below the
+// coupling nut bore and the central 18 mm fluid passage is uninterrupted.
+const gasket = tube(22.5, 23.5, 12.7, 9.05);
 const a = assembly('pipe-union');
-a.part('socket-a',cylinder(12*s,16*s,12).subtract(cylinder(14*s,10*s,12).translate(0,0,-s)).color(steel));
-a.part('nut',block(-18*s,-18*s,12*s,36*s,36*s,12*s).subtract(cylinder(14*s,10*s,12).translate(0,0,11*s)).color(brass));
-a.part('socket-b',cylinder(12*s,16*s,12).subtract(cylinder(14*s,10*s,12).translate(0,0,-s)).translate(0,0,24*s).color(steel));
+a.part('inlet-tailpiece', inlet.color(steel));
+a.part('coupling-hex-nut', nut.color(brass));
+a.part('face-gasket', gasket.color(gasketColor));
+a.part('outlet-tailpiece', outlet.color(steel));
 return a.model();
