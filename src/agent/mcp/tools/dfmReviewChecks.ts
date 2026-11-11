@@ -170,28 +170,53 @@ function draftCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck {
   });
 }
 
-function wallCheck(c: CheckFn, rep: MouldingPartReport, maxRatio: number): DfmReviewCheck {
-  const s = rep.settings;
+function thinWallCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck | undefined {
   const thin = rep.walls;
+  if (thin.violations.length === 0) return undefined;
   const thinnest = thin.thinnestMm;
+  return withEvidence(c('mold.wall-thickness', 'fail', `Walls as thin as ${r2(thinnest)} mm, below the ${r2(rep.settings.minWallMm)} mm minimum (worst at ${xy(thin.violations[0].location)}); the melt may not fill them.`, thinnest, rep.settings.minWallMm), { unit: 'mm', op: '>=' });
+}
+
+function thickWallCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck | undefined {
+  const s = rep.settings;
   const thickest = rep.thickest?.thicknessMm;
-  const range = `${r2(s.minWallMm)}–${r2(s.maxWallMm)} mm`;
-  const wallMissing = unmeasured(rep, 'wall thickness');
-  const thickMissing = unmeasured(rep, 'thickest section');
-  if (thin.violations.length > 0) {
-    return withEvidence(c('mold.wall-thickness', 'fail', `Walls as thin as ${r2(thinnest)} mm, below the ${r2(s.minWallMm)} mm minimum (worst at ${xy(thin.violations[0].location)}); the melt may not fill them.`, thinnest, s.minWallMm), { unit: 'mm', op: '>=' });
-  }
-  if (rep.thickest !== null && thickest !== undefined && thickest > s.maxWallMm + MOULDING_MAX_WALL_TOLERANCE_MM) {
-    return withEvidence(c('mold.wall-thickness', 'warn', `A ${r2(thickest)} mm thick section at ${xy(rep.thickest.location)} exceeds the ${r2(s.maxWallMm)} mm maximum; it will sink and void. Core it out to a uniform wall.`, thickest, s.maxWallMm), { unit: 'mm', op: '<=', tolerance: MOULDING_MAX_WALL_TOLERANCE_MM });
-  }
+  if (rep.thickest === null || thickest === undefined || !(thickest > s.maxWallMm + MOULDING_MAX_WALL_TOLERANCE_MM)) return undefined;
+  return withEvidence(c('mold.wall-thickness', 'warn', `A ${r2(thickest)} mm thick section at ${xy(rep.thickest.location)} exceeds the ${r2(s.maxWallMm)} mm maximum; it will sink and void. Core it out to a uniform wall.`, thickest, s.maxWallMm), { unit: 'mm', op: '<=', tolerance: MOULDING_MAX_WALL_TOLERANCE_MM });
+}
+
+function wallRatioCheck(c: CheckFn, rep: MouldingPartReport, maxRatio: number): DfmReviewCheck | undefined {
+  const thinnest = rep.walls.thinnestMm;
+  const thickest = rep.thickest?.thicknessMm;
+  if (thickest === undefined || !Number.isFinite(thinnest) || thinnest <= 0) return undefined;
+  const ratio = thickest / thinnest;
+  if (!(ratio > maxRatio)) return undefined;
+  const range = `${r2(rep.settings.minWallMm)}–${r2(rep.settings.maxWallMm)} mm`;
+  return withEvidence(c('mold.wall-thickness', 'warn', `Walls stay within ${range} but vary ${r2(ratio)}× (${r2(thinnest)} to ${r2(thickest)} mm, limit ${maxRatio}×); uneven walls cool unevenly and warp or sink.`, ratio, maxRatio), { unit: 'ratio', op: '<=' });
+}
+
+function unmeasuredWallCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck | undefined {
+  const thinnest = rep.walls.thinnestMm;
+  const thickest = rep.thickest?.thicknessMm;
+  const missing = [unmeasured(rep, 'wall thickness'), unmeasured(rep, 'thickest section')];
+  if (missing[0] === undefined && missing[1] === undefined && Number.isFinite(thinnest) && thickest !== undefined) return undefined;
+  return c('mold.wall-thickness', 'not-checked', `Wall thickness was not fully measured (${missing.filter(Boolean).join('; ') || 'a required wall measurement is unavailable'}).`);
+}
+
+function passingWallCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck {
+  const s = rep.settings;
+  const thinnest = rep.walls.thinnestMm;
+  const thickest = rep.thickest?.thicknessMm;
   const ratio = thickest !== undefined && Number.isFinite(thinnest) && thinnest > 0 ? thickest / thinnest : undefined;
-  if (ratio !== undefined && ratio > maxRatio) {
-    return withEvidence(c('mold.wall-thickness', 'warn', `Walls stay within ${range} but vary ${r2(ratio)}× (${r2(thinnest)} to ${r2(thickest!)} mm, limit ${maxRatio}×); uneven walls cool unevenly and warp or sink.`, ratio, maxRatio), { unit: 'ratio', op: '<=' });
-  }
-  if (wallMissing !== undefined || thickMissing !== undefined || !Number.isFinite(thinnest) || thickest === undefined) {
-    return c('mold.wall-thickness', 'not-checked', `Wall thickness was not fully measured (${[wallMissing, thickMissing].filter(Boolean).join('; ') || 'a required wall measurement is unavailable'}).`);
-  }
+  const range = `${r2(s.minWallMm)}–${r2(s.maxWallMm)} mm`;
   return withEvidence(c('mold.wall-thickness', 'pass', `Walls are within ${range} and uniform to ${r2(ratio!)}×.`, thickest, s.maxWallMm), { unit: 'mm', op: '<=', tolerance: MOULDING_MAX_WALL_TOLERANCE_MM });
+}
+
+function wallCheck(c: CheckFn, rep: MouldingPartReport, maxRatio: number): DfmReviewCheck {
+  return thinWallCheck(c, rep)
+    ?? thickWallCheck(c, rep)
+    ?? wallRatioCheck(c, rep, maxRatio)
+    ?? unmeasuredWallCheck(c, rep)
+    ?? passingWallCheck(c, rep);
 }
 
 function undercutCheck(c: CheckFn, rep: MouldingPartReport): DfmReviewCheck {

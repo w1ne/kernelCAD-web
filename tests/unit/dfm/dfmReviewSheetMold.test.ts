@@ -120,6 +120,54 @@ describe('dfm_review sheet-metal', () => {
 describe('dfm_review injection-molding', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
 
+  it('keeps wall finding priority and evidence for thin, thick, ratio, and unavailable measurements', () => {
+    const base: MouldingPartReport = {
+      settings: { ...MOULDING_DEFAULTS, pullDirection: [...MOULDING_DEFAULTS.pullDirection] },
+      draft: { checkedFaces: 0, insufficient: [], minDraftDeg: Infinity },
+      undercut: { areaMm2: 0, faces: [] },
+      walls: { violations: [], truncated: false, sampleCount: 1, thinnestMm: 2 },
+      thickest: { thicknessMm: 3, location: [1, 2, 3], voxelMm: 0.5 },
+      sharpCorners: [],
+      unmeasured: [],
+      limitations: [],
+      verdict: 'pass',
+    };
+    const wallCheck = (report: MouldingPartReport) => moldChecks('part', report, 2.5)[1];
+    const thin = wallCheck({
+      ...base,
+      walls: { ...base.walls, thinnestMm: 0.8, violations: [{ thicknessMm: 0.8, location: [4, 5, 6], sampleCount: 1 }] },
+      thickest: { ...base.thickest!, thicknessMm: 8 },
+    });
+    expect(thin).toMatchObject({ status: 'fail', value: 0.8, limit: 1, unit: 'mm', op: '>=' });
+    expect(thin.summary).toContain('worst at (4, 5, 6)');
+
+    const thick = wallCheck({ ...base, thickest: { ...base.thickest!, thicknessMm: 8 } });
+    expect(thick).toMatchObject({ status: 'warn', value: 8, limit: 4, unit: 'mm', op: '<=', tolerance: 1e-9 });
+    expect(thick.summary).toContain('exceeds the 4 mm maximum');
+
+    const ratio = wallCheck({
+      ...base,
+      walls: { ...base.walls, thinnestMm: 1 },
+      thickest: { ...base.thickest!, thicknessMm: 3 },
+      unmeasured: ['wall thickness (ray sampling incomplete)'],
+    });
+    expect(ratio).toMatchObject({ status: 'warn', value: 3, limit: 2.5, unit: 'ratio', op: '<=' });
+    expect(ratio.summary).toContain('vary 3×');
+
+    const unavailable = wallCheck({
+      ...base,
+      walls: { ...base.walls, thinnestMm: Infinity },
+      thickest: null,
+      unmeasured: ['wall thickness (no inward wall ray hit the far side)', 'thickest section (no solid voxel)'],
+    });
+    expect(unavailable).toMatchObject({ status: 'not-checked' });
+    expect(unavailable.summary).toContain('wall thickness (no inward wall ray hit the far side); thickest section (no solid voxel)');
+
+    const pass = wallCheck(base);
+    expect(pass).toMatchObject({ status: 'pass', value: 3, limit: 4, unit: 'mm', op: '<=', tolerance: 1e-9 });
+    expect(pass.summary).toContain('Walls are within 1–4 mm and uniform to 1.5×');
+  });
+
   it('emits only boolean-derived topology refs that resolve uniquely on the same part', async () => {
     const code = `
       let part = box(40, 30, 6).union(box(10, 10, 8).translate(15, 10, 6));
