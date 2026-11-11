@@ -29,6 +29,12 @@ interface Sample {
   readonly residualDeg: number;
 }
 
+interface PoseSample {
+  readonly inputDeg: number;
+  readonly outputDeg: number;
+  readonly residualDeg: number;
+}
+
 async function loadAssembly(): Promise<Assembly> {
   const result = await runScript({
     code: await readFile(MODEL, 'utf8'),
@@ -40,48 +46,47 @@ async function loadAssembly(): Promise<Assembly> {
   return arm;
 }
 
-function chartSvg(samples: readonly Sample[], frame: number, verdict: string): string {
-  const visible = samples.slice(0, Math.max(1, Math.ceil(samples.length * frame / 5)));
+function chartSvg(poseSamples: readonly PoseSample[], frame: number, verdict: string, releaseMaxResidual: number): string {
+  const visible = poseSamples.slice(0, Math.max(1, Math.ceil(poseSamples.length * frame / 5)));
   const x0 = 102;
   const y0 = 544;
   const plotW = 1070;
   const plotH = 350;
-  const x = (step: number) => x0 + (step / Math.max(1, samples.length - 1)) * plotW;
-  const yAngle = (degrees: number) => y0 - ((degrees + 200) / 400) * plotH;
+  const xInput = (degrees: number) => x0 + ((degrees + 720) / 1440) * plotW;
+  const yOutput = (degrees: number) => y0 - ((degrees + 200) / 400) * plotH;
   const yResidual = (degrees: number) => y0 - (degrees / 5) * plotH;
-  const polyline = (key: 'inputDeg' | 'outputDeg' | 'residualDeg', map: (n: number) => number) =>
-    visible.map((sample) => `${x(sample.step - 1).toFixed(1)},${map(sample[key]).toFixed(1)}`).join(' ');
-  const residualMax = Math.max(0, ...visible.map((sample) => Math.abs(sample.residualDeg)));
-  const endTime = visible.at(-1)?.seconds.toFixed(3) ?? '0.000';
+  const outputTrace = visible.map((sample) => `${xInput(sample.inputDeg).toFixed(1)},${yOutput(sample.outputDeg).toFixed(1)}`).join(' ');
+  const residualTrace = visible.map((sample) => `${xInput(sample.inputDeg).toFixed(1)},${yResidual(sample.residualDeg).toFixed(1)}`).join(' ');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <rect width="100%" height="100%" fill="#10151d"/>
   <text x="70" y="68" fill="#f2f5f8" font-family="Arial,sans-serif" font-size="32" font-weight="700">KernelCAD · coupled 12:48 gear release</text>
-  <text x="70" y="105" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="18">Native MuJoCo scalar constraint · authored ratio −1/4 · 500 integration observations</text>
+  <text x="70" y="105" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="18">Authored input sweep → driven output · ratio −1/4 · native release checked separately</text>
   <rect x="${x0}" y="194" width="${plotW}" height="${plotH}" rx="8" fill="#171f2a" stroke="#384451"/>
-  ${[-180, -90, 0, 90, 180].map((value) => `<line x1="${x0}" y1="${yAngle(value)}" x2="${x0 + plotW}" y2="${yAngle(value)}" stroke="#364250"/><text x="${x0 - 16}" y="${yAngle(value) + 6}" text-anchor="end" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="15">${value}°</text>`).join('')}
+  ${[-180, -90, 0, 90, 180].map((value) => `<line x1="${x0}" y1="${yOutput(value)}" x2="${x0 + plotW}" y2="${yOutput(value)}" stroke="#364250"/><text x="${x0 - 16}" y="${yOutput(value) + 6}" text-anchor="end" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="15">${value}°</text>`).join('')}
   ${[0, 2.5, 5].map((value) => `<text x="${x0 + plotW + 14}" y="${yResidual(value) + 6}" fill="#68d391" font-family="Arial,sans-serif" font-size="14">${value}°</text>`).join('')}
-  ${[0, 100, 200, 300, 400, 500].map((step) => `<line x1="${x(step)}" y1="194" x2="${x(step)}" y2="${y0}" stroke="#26303c"/><text x="${x(step)}" y="${y0 + 25}" text-anchor="middle" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="14">${step}</text>`).join('')}
-  <polyline fill="none" stroke="#55b7ff" stroke-width="3" points="${polyline('inputDeg', yAngle)}"/>
-  <polyline fill="none" stroke="#ffb454" stroke-width="3" points="${polyline('outputDeg', yAngle)}"/>
-  <polyline fill="none" stroke="#68d391" stroke-width="2" stroke-dasharray="7 6" points="${polyline('residualDeg', yResidual)}"/>
-  <text x="102" y="158" fill="#55b7ff" font-family="Arial,sans-serif" font-size="17">Input (°)</text>
-  <text x="210" y="158" fill="#ffb454" font-family="Arial,sans-serif" font-size="17">Driven output (°)</text>
-  <text x="405" y="158" fill="#68d391" font-family="Arial,sans-serif" font-size="17">Coupling residual (°)</text>
+  ${[-720, -360, 0, 360, 720].map((value) => `<line x1="${xInput(value)}" y1="194" x2="${xInput(value)}" y2="${y0}" stroke="#26303c"/><text x="${xInput(value)}" y="${y0 + 25}" text-anchor="middle" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="14">${value}°</text>`).join('')}
+  <polyline fill="none" stroke="#ffb454" stroke-width="4" points="${outputTrace}"/>
+  ${visible.map((sample) => `<circle cx="${xInput(sample.inputDeg)}" cy="${yOutput(sample.outputDeg)}" r="5" fill="#ffb454"/>`).join('')}
+  <polyline fill="none" stroke="#68d391" stroke-width="2" stroke-dasharray="7 6" points="${residualTrace}"/>
+  <text x="102" y="158" fill="#ffb454" font-family="Arial,sans-serif" font-size="17">Driven output vs authored motor input (°)</text>
+  <text x="450" y="158" fill="#68d391" font-family="Arial,sans-serif" font-size="17">Coupling residual (right axis, °)</text>
   <text x="70" y="624" fill="#f2f5f8" font-family="Arial,sans-serif" font-size="18" font-weight="700">${verdict}</text>
-  <text x="70" y="657" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="16">Visible simulation time: ${endTime}s · max observed |output − (−0.25 × input)|: ${residualMax.toFixed(5)}°</text>
-  <text x="70" y="690" fill="#8895a3" font-family="Arial,sans-serif" font-size="14">Focused ratio replay · fixture geometry has intentional overlaps; no overall mechanism, deployment, or hardware acceptance claim.</text>
+  <text x="70" y="657" fill="#aeb8c4" font-family="Arial,sans-serif" font-size="16">Native release from rest: 500 steps / 0.500s · maximum observed residual: ${releaseMaxResidual.toFixed(5)}°</text>
+  <text x="70" y="690" fill="#8895a3" font-family="Arial,sans-serif" font-size="14">Ratio replay only · bearing and geometry findings remain separate; no overall mechanism, deployment, or hardware acceptance claim.</text>
   </svg>`;
 }
 
 async function main(): Promise<void> {
   await mkdir(FRAMES, { recursive: true });
   const samples: Sample[] = [];
+  const poseSamplesByInput = new Map<number, PoseSample>();
   let exportedXml = '';
   let releaseStart: number[] | undefined;
   const assembly = await loadAssembly();
   const result = await checkMechanismTruth(assembly, {
     physicsCheck: true,
+    physicsBudget: Number.POSITIVE_INFINITY,
     physicsSessionFactory: async (xml, bodies, joints) => {
       exportedXml = xml;
       const inputIndex = joints.findIndex((joint) => joint.mateName === 'motor-input');
@@ -90,6 +95,13 @@ async function main(): Promise<void> {
       const session = await loadMujocoSession(xml, bodies, joints);
       const setPose = session.setPose.bind(session);
       session.setPose = (qpos) => {
+        const inputDeg = (qpos[inputIndex] ?? 0) * RAD_TO_DEG;
+        const outputDeg = (qpos[outputIndex] ?? 0) * RAD_TO_DEG;
+        poseSamplesByInput.set(Number(inputDeg.toFixed(6)), {
+          inputDeg,
+          outputDeg,
+          residualDeg: outputDeg - RATIO * inputDeg,
+        });
         setPose(qpos);
       };
       const step = session.step.bind(session);
@@ -113,10 +125,22 @@ async function main(): Promise<void> {
   });
 
   if (samples.length !== 500) throw new Error(`Expected 500 release observations; got ${samples.length}.`);
-  const maxResidualDeg = Math.max(...samples.map((sample) => Math.abs(sample.residualDeg)));
+  const poseSamples = [...poseSamplesByInput.values()].sort((a, b) => a.inputDeg - b.inputDeg);
+  const requiredInputPoses = [-720, 0, 720];
+  const observedInputPoses = poseSamples.map((sample) => Number(sample.inputDeg.toFixed(3)));
+  if (requiredInputPoses.some((pose) => !observedInputPoses.includes(pose))) {
+    throw new Error(`Expected the negative limit, zero crossing, and positive limit; got ${observedInputPoses.join(', ')}.`);
+  }
+  const releaseMaxResidualDeg = Math.max(...samples.map((sample) => Math.abs(sample.residualDeg)));
+  const poseMaxResidualDeg = Math.max(...poseSamples.map((sample) => Math.abs(sample.residualDeg)));
+  const maxResidualDeg = Math.max(releaseMaxResidualDeg, poseMaxResidualDeg);
   const couplingXml = /<equality>[\s\S]*joint1="rear-drive-output" joint2="motor-input" polycoef="0 -0\.250000 0 0 0"/.test(exportedXml);
   const couplingPass = couplingXml && maxResidualDeg <= 5;
-  const verdict = `Coupling residual gate: ${couplingPass ? 'PASS' : 'FAIL'} · max ${maxResidualDeg.toFixed(5)}° ≤ 5° · native equality ${couplingXml ? 'emitted' : 'missing'}`;
+  const verdict = `Authored sweep residual gate: ${couplingPass ? 'PASS' : 'FAIL'} · max ${maxResidualDeg.toFixed(5)}° ≤ 5° · native equality ${couplingXml ? 'emitted' : 'missing'}`;
+  await writeFile(resolve(ROOT, 'authored-pose-sweep.csv'), [
+    'inputDeg,outputDeg,residualDeg',
+    ...poseSamples.map((sample) => [sample.inputDeg.toFixed(6), sample.outputDeg.toFixed(6), sample.residualDeg.toFixed(6)].join(',')),
+  ].join('\n') + '\n');
   await writeFile(resolve(ROOT, 'release-samples.csv'), [
     'step,seconds,inputDeg,outputDeg,residualDeg',
     ...samples.map((sample) => [sample.step, sample.seconds.toFixed(3), sample.inputDeg.toFixed(6), sample.outputDeg.toFixed(6), sample.residualDeg.toFixed(6)].join(',')),
@@ -131,18 +155,22 @@ async function main(): Promise<void> {
     emittedNativeEquality: couplingXml,
     couplingResidualGatePassed: couplingPass,
     maxResidualDegrees: maxResidualDeg,
+    nativeReleaseMaxResidualDegrees: releaseMaxResidualDeg,
+    authoredSweepMaxResidualDegrees: poseMaxResidualDeg,
+    authoredSweepPoseCount: poseSamples.length,
     residualGateDegrees: 5,
-    coveredInputPosesDegrees: [-720, 0, 720],
+    coveredInputPosesDegrees: requiredInputPoses,
+    authoredPoseSweepFile: 'authored-pose-sweep.csv',
     sourceLimitsDegrees: [-720, 720],
     drivenLimitsDegrees: [-180, 180],
     capturedReleaseStartQpos: releaseStart,
     failures: result.failures.map((failure) => ({ code: failure.code, message: failure.message })),
     coverage: result.coverage,
-    fixtureLimitation: 'Simplified offset boxes excite release; the fixture does not model involute tooth contact.',
+    fixtureLimitation: 'The fixture uses real involute gears but omits bearing shoulders. Joint-continuity and geometry findings are separate from the coupling-residual regression; MuJoCo does not calculate tooth-contact forces.',
   }, null, 2)}\n`);
 
   for (let frame = 1; frame <= 5; frame++) {
-    const svg = Buffer.from(chartSvg(samples, frame, verdict));
+    const svg = Buffer.from(chartSvg(poseSamples, frame, verdict, releaseMaxResidualDeg));
     await sharp(svg).png().toFile(resolve(FRAMES, `frame-${String(frame - 1).padStart(2, '0')}.png`));
   }
   const video = spawnSync('ffmpeg', [
@@ -153,7 +181,7 @@ async function main(): Promise<void> {
   ], { encoding: 'utf8' });
   if (video.status !== 0) throw new Error(`ffmpeg failed: ${video.stderr || video.error}`);
   await rm(FRAMES, { recursive: true, force: true });
-  console.log(JSON.stringify({ samples: samples.length, maxResidualDeg, couplingXml, video: resolve(ROOT, 'coupled-gear-release.mp4') }, null, 2));
+  console.log(JSON.stringify({ releaseSamples: samples.length, authoredPoses: observedInputPoses, maxResidualDeg, couplingXml, video: resolve(ROOT, 'coupled-gear-release.mp4') }, null, 2));
 }
 
 await main();

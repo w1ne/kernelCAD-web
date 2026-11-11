@@ -1,7 +1,7 @@
-// Compact regression model for the authored 12:48 gear coupling used by
-// https://app.kernelcad.com/p/nMQXpIBa?version=1. The offset blocks excite
-// gravity release so the test can observe the native scalar constraint;
-// this fixture does not model involute tooth contact.
+// Regression model for the authored 12:48 gear coupling used by
+// https://app.kernelcad.com/p/nMQXpIBa?version=1. It keeps real involute
+// gear geometry so the native release test covers tooth contact as well as
+// the ideal coupling equality emitted for the declared gear-pair path.
 const gearModule = 1;
 const smallTeeth = 12;
 const largeTeeth = 48;
@@ -9,14 +9,21 @@ const ratio = -smallTeeth / largeTeeth;
 const centerDistance = gearModule * (smallTeeth + largeTeeth) / 2;
 const motorDeg = param('motorDeg', 0, { min: -720, max: 720 });
 
+const chassisShape = box(90, 70, 5).translate(-15, -35, 0);
+const motorShape = spurGear({ module: gearModule, teeth: smallTeeth, faceWidth: 10, bore: 4, backlash: 0.15 })
+  .translate(0, 0, 5);
+const axleShape = spurGear({ module: gearModule, teeth: largeTeeth, faceWidth: 10, bore: 8, backlash: 0.15 })
+  .rotateZ(180 / largeTeeth)
+  .translate(centerDistance, 0, 5);
+
 const car = assembly('coupled 12:48 gear physics regression');
-const chassis = car.part('chassis', box(100, 60, 8, true));
-const motor = car.part('motor-rotor', box(20, 6, 6, true).translate(10, 0, 0));
-const axle = car.part('rear-live-axle', box(20, 6, 6, true).translate(10, 0, 0));
+const chassis = car.part('chassis', chassisShape, { material: 'aluminum-6061' });
+const motor = car.part('motor-rotor', motorShape, { material: 'nylon' });
+const axle = car.part('rear-live-axle', axleShape, { material: 'nylon' });
 const axis = (origin: [number, number, number]) => ({
   type: 'axis' as const,
   origin: { kind: 'vec3' as const, value: origin },
-  axis: [0, 1, 0] as [number, number, number],
+  axis: [0, 0, 1] as [number, number, number],
 });
 
 chassis.connector('motor-axis', axis([0, 0, 0]));

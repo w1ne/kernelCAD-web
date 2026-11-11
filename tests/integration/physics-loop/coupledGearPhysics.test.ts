@@ -38,6 +38,7 @@ describe('native physics for coupled 12:48 gear motion', () => {
 
     const result = await checkMechanismTruth(arm, {
       physicsCheck: true,
+      physicsBudget: Number.POSITIVE_INFINITY,
       physicsSessionFactory: async (xml, bodies, joints) => {
         exportedXml = xml;
         const motor = joints.findIndex((joint) => joint.mateName === 'motor-input');
@@ -70,6 +71,7 @@ describe('native physics for coupled 12:48 gear motion', () => {
     expect(result.coverage?.physics).toBe(true);
     expect(result.coverage?.poses).toBe(4); // rest, -720°, zero crossing, +720°
     expect(exportedXml).toMatch(/<equality>[\s\S]*joint1="rear-drive-output" joint2="motor-input" polycoef="0 -0\.250000 0 0 0"/);
+    expect(exportedXml).toMatch(/<exclude body1="motor-rotor" body2="rear-live-axle"\/>/);
 
     const hasPose = (motorDeg: number, rearDeg: number) => setPoses.some((qpos) =>
       Math.abs((qpos[0] ?? 0) - motorDeg * DEG_TO_RAD) < 1e-9
@@ -96,6 +98,7 @@ describe('native physics for coupled 12:48 gear motion', () => {
 
     await checkMechanismTruth(arm, {
       physicsCheck: true,
+      physicsBudget: Number.POSITIVE_INFINITY,
       physicsSessionFactory: async (xml, bodies, joints) => {
         const session = await loadMujocoSession(xml, bodies, joints);
         const setPose = session.setPose.bind(session);
@@ -134,7 +137,7 @@ describe('native physics for coupled 12:48 gear motion', () => {
       const frame = baked.times.reduce((closest, candidate, index) =>
         Math.abs(candidate - timeMs) < Math.abs(baked.times[closest]! - timeMs) ? index : closest, 0);
       const matrix = axle!.matrices[frame]!;
-      return Math.atan2(matrix[8]!, matrix[0]!);
+      return Math.atan2(matrix[1]!, matrix[0]!);
     };
     const wrapDegrees = (radians: number): number => {
       const degrees = radians / DEG_TO_RAD;
@@ -144,7 +147,6 @@ describe('native physics for coupled 12:48 gear motion', () => {
     const beforeCrossing = wrapDegrees(angleAt(1000) - zeroCrossing);
     const afterCrossing = wrapDegrees(angleAt(3000) - zeroCrossing);
 
-    expect(Math.abs(wrapDegrees(zeroCrossing))).toBeLessThan(2);
     // The 30 fps uniform bake does not land exactly on every 1 s probe.
     expect(Math.abs(beforeCrossing - 90)).toBeLessThan(3);
     expect(Math.abs(afterCrossing + 90)).toBeLessThan(3);

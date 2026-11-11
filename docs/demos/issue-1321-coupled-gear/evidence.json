@@ -7,13 +7,17 @@
   "integrationObservations": 500,
   "emittedNativeEquality": true,
   "couplingResidualGatePassed": true,
-  "maxResidualDegrees": 0.000038802289827361,
+  "maxResidualDegrees": 0,
+  "nativeReleaseMaxResidualDegrees": 0,
+  "authoredSweepMaxResidualDegrees": 0,
+  "authoredSweepPoseCount": 3,
   "residualGateDegrees": 5,
   "coveredInputPosesDegrees": [
     -720,
     0,
     720
   ],
+  "authoredPoseSweepFile": "authored-pose-sweep.csv",
   "sourceLimitsDegrees": [
     -720,
     720
@@ -28,56 +32,16 @@
   ],
   "failures": [
     {
-      "code": "mechanism.rest-interpenetration",
-      "message": "Parts 'chassis' and 'motor-rotor' interpenetrate by 720.00 mm³ at the rest pose (6.00 mm thick; rule: overlap > 0.01 mm³ and thicker than 0.3 mm (thinner = face contact); shared region centred near [10.0, 0.0, 0.0] mm, 0.25 mm voxels). Seated parts share faces, not volume."
-    },
-    {
-      "code": "mechanism.rest-interpenetration",
-      "message": "Parts 'chassis' and 'rear-live-axle' interpenetrate by 720.00 mm³ at the rest pose (6.00 mm thick; rule: overlap > 0.01 mm³ and thicker than 0.3 mm (thinner = face contact); shared region centred near [40.0, 0.0, 0.0] mm, 0.25 mm voxels). Seated parts share faces, not volume."
+      "code": "mechanism.joint-mesh-gap",
+      "message": "Joint 'rear-drive-output' child body 'rear-live-axle': nearest solid is 7.2mm from the pivot origin (allowed 1.0mm = clearance bore 0.0mm + 1.0mm margin). The link mesh does not reach the joint it pivots on — extend the body geometry so its OCCT knuckle solid surrounds the joint origin at rest pose. The closest surface contact sits 47.9mm off the joint axis, outside the 32mm knuckle radius, so it does not connect the link to the body. Do not fix this by moving the connector alone: the mate re-aligns the mated part 'chassis' onto the moved connector, which can silently reopen a collision elsewhere — re-run the collision check after any connector move."
     },
     {
       "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'motor-rotor' interpenetrate by 720.00 mm³ (2.6 mm thick) near (10.0, 0.0, 0.0) at pose sample 'rest' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
+      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 561.17 mm³ (1.0 mm thick) near (0.0, 0.0, 10.0) at pose sample 'motor-input:-720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
     },
     {
       "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'rear-live-axle' interpenetrate by 720.00 mm³ (2.6 mm thick) near (40.0, 0.0, 0.0) at pose sample 'rest' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'motor-rotor' interpenetrate by 720.00 mm³ (2.6 mm thick) near (10.0, 0.0, 0.0) at pose sample 'motor-input:-720' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'rear-live-axle' interpenetrate by 720.00 mm³ (2.6 mm thick) near (20.0, 0.0, -0.0) at pose sample 'motor-input:-720' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 360.00 mm³ (2.3 mm thick) near (15.0, 0.0, -0.0) at pose sample 'motor-input:-720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'motor-rotor' interpenetrate by 720.00 mm³ (2.6 mm thick) near (10.0, 0.0, 0.0) at pose sample 'motor-input:0' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'rear-live-axle' interpenetrate by 720.00 mm³ (2.6 mm thick) near (40.0, 0.0, 0.0) at pose sample 'motor-input:0' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'motor-rotor' interpenetrate by 720.00 mm³ (2.6 mm thick) near (10.0, 0.0, 0.0) at pose sample 'motor-input:720' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'chassis' and 'rear-live-axle' interpenetrate by 720.00 mm³ (2.6 mm thick) near (20.0, 0.0, -0.0) at pose sample 'motor-input:720' — they overlap far more than the revolute joint's clearance-fit contact (rule: overlap > 0.01 mm³ and thicker than 0.01 mm (thinner = face contact) — a drilled clearance bore has ~0 overlap). A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 360.00 mm³ (2.3 mm thick) near (15.0, 0.0, -0.0) at pose sample 'motor-input:720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.drops-on-release",
-      "message": "Mate 'motor-input' swung 46.9° from rest in 0.5 s under gravity. It is a free passive joint (no actuator, no declared load), so this is informational, not a defect — declared limitsDeg / limitsMm are end stops, not a holding requirement. If 'motor-input' must HOLD its pose (a stay, a detent, a lid that stays open), declare it and the drop test will fail it when it sags: give the mate a load rating — arm.mate('motor-input', a, b, type, { limitsDeg, capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } }) — or a load case — arm.physicalUseCase('<name>', { stableParts: ['<base>'], loads: [{ part: '<moving part>', force: [0, 0, -<N>] }] }); a motor-held joint is arm.mechanicalJoint(...), a spring-balanced one arm.tendon(...)."
+      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 561.17 mm³ (1.0 mm thick) near (0.0, 0.0, 10.0) at pose sample 'motor-input:720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
     }
   ],
   "coverage": {
@@ -90,5 +54,5 @@
     "sweep": true,
     "physics": true
   },
-  "fixtureLimitation": "Simplified offset boxes excite release; the fixture does not model involute tooth contact."
+  "fixtureLimitation": "The fixture uses real involute gears but omits bearing shoulders. Joint-continuity and geometry findings are separate from the coupling-residual regression; MuJoCo does not calculate tooth-contact forces."
 }
