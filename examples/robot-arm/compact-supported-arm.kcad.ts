@@ -6,8 +6,10 @@
 // here until its output axis already points the right way. Pitch is +Y:
 // a positive angle sends local +X toward -Z.
 //
-// Gear stages are module 0.6, 19/38 external and 57/114 internal, on a
-// 17.1 mm centre. Trapezoid teeth are one extruded outline per gear.
+// Gear stages are module 2/3, 19/38 external and 57/114 internal, on a
+// 19.0 mm centre (widened from 17.1 mm so the pads can grow). Trapezoid
+// teeth are one extruded outline per gear. Tooth counts stay at the v5
+// values so sweep-work face counts do not jump.
 // Tip circles are pulled back 0.125 mm each (0.25 mm combined) so the
 // mesh stays clear when a curl is sampled apart from the grip.
 
@@ -20,7 +22,7 @@ const UPPER = 126;
 const FORE = 112;
 const SHOULDER_Z = 140;
 const GRIP_X = 16;
-const HINGE_Y = 17.1;
+const HINGE_Y = 19.0;
 const FINGER = 42;
 const CHEEK_GAP = 6.6;
 const TONGUE_HALF = 6.25;
@@ -32,6 +34,7 @@ const INK = {
   base: '#2b3036',
   link: '#4c6274',
   servo: '#17191b',
+  horn: '#d9b45c',
   finger: '#e07a3d',
   pad: '#2a2a2a',
   gear: '#2c3328',
@@ -115,14 +118,14 @@ function taperedLink(x0, x1, w0, h0, w1, h1, r) {
 // outside of the cradle so they still read after rotateX(90).
 function sts3215Envelope(extras) {
   const body = coat(
-    extrudeRoundedRect(30, 20, 6.8, 35.6).translate(0, 0, -35.6),
+    extrudeRoundedRect(30, 20, 8.6, 35.6).translate(0, 0, -35.6),
     INK.servo,
   );
   // Ears stand proud of the 30×20 case: ±23 in X and ±16 in Y. The pitch
   // seats stop at |x| = 22, so the side lip and the top/bottom lip both
   // clear the cradle. Output face of the ear stays 0.25 mm behind z = 0.
   const ears = coat(
-    extrudeRoundedRect(46, 32, 3.6, 6.2).translate(0, 0, -6.45),
+    extrudeRoundedRect(46, 32, 6.2, 6.2).translate(0, 0, -6.45),
     INK.servo,
   );
   // Hub meets the stalk. Spline teeth start clear of this face (see pitchHorn).
@@ -158,7 +161,7 @@ function servoEarWings() {
   // ±33 in X, past the cradle seats (|x| = 22). The slab stays at
   // z <= -0.6 so it does not drop into the ear-seat band after rotateX(90).
   return coat(
-    extrudeRoundedRect(66, 13, 2.2, 5.3).translate(0, 0, -5.9),
+    extrudeRoundedRect(66, 13, 4.6, 5.3).translate(0, 0, -5.9),
     INK.servo,
   );
 }
@@ -166,9 +169,9 @@ function servoEarWings() {
 // Grip tabs grow in Y so they pass the palm plate without reaching
 // back along X into the forearm.
 function gripEarLips() {
-  // ±23 in Y passes the palm plate (±14) and stops short of the pillars (25.9).
+  // ±23 in Y passes the palm plate (±18) and stops short of the pillars.
   return coat(
-    extrudeRoundedRect(26, 46, 2.2, 5.0).translate(0, 0, -5.7),
+    extrudeRoundedRect(26, 46, 4.4, 5.0).translate(0, 0, -5.7),
     INK.servo,
   );
 }
@@ -177,37 +180,37 @@ function gripEarLips() {
 // (output +Z). After rotateX(90) it hangs beside the cheek, clear of the
 // ear tabs, with a belly that is obviously slack.
 function pitchSlack() {
-  // Stay at |x| >= 36 once the loop leaves the boot. Seats reach |x| = 22
-  // and sit at positive envelope z, so the return stays outboard and low.
+  // Short dressed pigtail from the boot toward the link. Stays outside
+  // the ear seats (|x| >= 22) without swinging out into a hanging loop.
   return cableRun([
     [0, -12.8, -24.6],
-    [-22, -34, -14],
-    [-56, -38, -2],
-    [-42, 2, 4],
-  ], 3.2);
+    [-16, -20, -22],
+    [-30, -24, -14],
+    [-28, -14, -2],
+  ], 3.0);
 }
 
 // Grip servo is rotateX(180) on the palm. This run leaves the boot, sags
 // out to the side, and comes back over the wrist. It stays above the jaws.
 function gripSlack() {
-  // rotateX(180) sends -Z upward. Stay above the pillar tops (z 16.5)
-  // and outside their Y (25.9..32.2) on the low part of the loop.
-  // x > -8 keeps the run out of the forearm flange.
+  // rotateX(180) sends -Z upward. Stay above the pillar tops (world z > 20)
+  // and inside their inner Y while turning back toward the forearm.
+  // Envelope x > -8 keeps the run out of the forearm flange.
   return cableRun([
     [0, -12.8, -24.6],
-    [14, -34, -18],
-    [16, -54, -8],
-    [4, -60, 2],
-    [-6, -38, -8],
-  ], 3.1);
+    [12, -18, -14],
+    [2, -14, -6],
+    [-6, -10, -10],
+  ], 2.9);
 }
 
 // Pitch radius minus 0.125 mm on an external tooth, plus 0.125 mm on an
 // internal tooth. The two tip circles then miss by 0.25 mm at every angle.
-const P19 = (19 * 0.6) / 2;
-const P38 = (38 * 0.6) / 2;
-const P57 = (57 * 0.6) / 2;
-const P114 = (114 * 0.6) / 2;
+const GEAR_M = 2 / 3;
+const P19 = (19 * GEAR_M) / 2;
+const P38 = (38 * GEAR_M) / 2;
+const P57 = (57 * GEAR_M) / 2;
+const P114 = (114 * GEAR_M) / 2;
 const TIP19 = P19 - 0.125;
 const TIP38 = P38 - 0.125;
 const TIP57 = P57 - 0.125;
@@ -308,43 +311,41 @@ function pitchHorn() {
   // sit outboard of the near cheek (cheek ends at y 21.8). Teeth stop
   // short of the servo hub (hub begins at y 26.35). The bar runs in Z so
   // its tips pass the cheek radius (16.2) and still miss the ear seats,
-  // which occupy |x| >= 14.6 and |z| <= 3.
+  // which occupy |x| >= 14.6 and |z| <= 3. Brass paint keeps the horn
+  // readable against the blue-gray housing and the black servo.
   const spindle = rodY(-26.8, 22.2, 2.9, 10);
-  // One disc (replaces the stacked collar + hub). Radius stays inside
-  // the ear-seat band so the sweep stays clear.
   const disc = rodY(21.95, 24.85, 13.4, 12);
-  // The +Z tip reaches 34 so it clears the disc in the front and side
-  // cameras. The -Z tip stops at -28: at shoulder pitch 12° a longer
-  // downward tip clips the turret. Thin in X so the sweep misses the
-  // ear seats. Clamp screws stay at |z| = 12.2.
   const bar = slab(-3.2, 3.2, 22.15, 24.85, -28, 34, undefined);
   const teeth = splineRingY(24.15, 25.95, 5.8, 13.6);
   const bore = rodY(22.3, 26.4, 5.05, 10);
   const cap = rodY(-27.7, -25.45, 8.8, 10);
   const capSlot = box(0.7, 2.6, 4.2).translate(-0.35, -27.85, -2.1);
+  const spokes = [[1, 1], [1, -1], [-1, 1], [-1, -1]].map(([sx, sz]) => (
+    rodY(21.7, 25.1, 2.9, 8).translate(sx * 7.4, 0, sz * 7.4)
+  ));
   const screws = [-1, 1].map((sz) => {
     const z = sz * 12.2;
     return {
-      hole: rodY(22.1, 24.7, 1.45, 6).translate(0, 0, z),
-      head: rodY(24.55, 26.55, 3.2, 8).translate(0, 0, z),
-      slot: box(0.55, 2.4, 3.6).translate(-0.275, 24.55, z - 1.8),
+      hole: rodY(22.1, 24.7, 1.55, 6).translate(0, 0, z),
+      head: rodY(24.55, 26.85, 3.85, 8).translate(0, 0, z),
+      slot: box(0.7, 2.6, 4.4).translate(-0.35, 24.55, z - 2.2),
     };
   });
-  return fuse([
+  return paint(fuse([
     spindle, disc, bar, teeth, cap,
     ...screws.map((screw) => screw.head),
   ]).subtract(fuse([
-    bore, capSlot,
+    bore, capSlot, ...spokes,
     ...screws.flatMap((screw) => [screw.hole, screw.slot]),
-  ]));
+  ])), INK.horn);
 }
 
 // Far-side closer for a pitch pivot: one bushing into the cheek plus a
 // single cap head. Replaces the stacked cap + washer discs.
 function farPivotCap(hex) {
-  const bushing = coat(rodY(-23.35, -21.25, 6.8, 10), hex);
-  const head = coat(rodY(-25.15, -22.95, 13.4, 12), hex);
-  return fuse([bushing, head]);
+  // Single cap matching the cheek OD so the far side reads as the end of
+  // the housing rather than a second stacked washer.
+  return coat(rodY(-25.05, -21.35, 16.0, 14), hex);
 }
 
 // Open yoke in the joint frame. Output face at y = SERVO_FACE_Y, body
@@ -417,14 +418,13 @@ const basePlate = arm.part('base-plate', (() => {
 
 const baseYawServo = arm.part('base-yaw-servo', sts3215Envelope(cableRun([
   // Channel through the tower (y -8..-48, z 20..36 in the base frame),
-  // then a slack loop outside the plate (|y| > 68).
+  // then a short dressed run along the plate rim instead of a hanging hook.
   [0, -12.6, -24.6],
-  [0, -46, -26],
-  [-10, -84, -32],
-  [-8, -112, -54],
-  [18, -124, -70],
-  [28, -98, -42],
-], 3.2)), {
+  [0, -34, -26],
+  [0, -52, -28],
+  [0, -66, -40],
+  [16, -70, -46],
+], 3.0)), {
   material: 'petg',
   massKg: 0.055,
 });
@@ -610,10 +610,10 @@ const forearmLink = arm.part('forearm-link', (() => {
     [90, 1, -2],
   ], 2.5);
   const palmFlange = coat(
-    extrudeRoundedRect(36, 28, 3.2, 17.6, { axis: 'x' }).translate(94, 0, 0),
+    extrudeRoundedRect(44, 28, 3.2, 17.6, { axis: 'x' }).translate(94, 0, 0),
     hex,
   );
-  const pinionClear = rodZ(6.85, 10.5, 17.4, 24).translate(FORE + GRIP_X, 0, 0);
+  const pinionClear = rodZ(6.85, 10.5, 19.4, 24).translate(FORE + GRIP_X, 0, 0);
   // Through-bolts from the top face of the flange. Heads stay proud of the
   // shell and stop before the palm, which covers the flange end.
   const flangeBolts = [-1, 1].flatMap((sx) => [-1, 1].map((sy) => {
@@ -626,7 +626,8 @@ const forearmLink = arm.part('forearm-link', (() => {
     };
   }));
   return paint(fuse([
-    tongue, neck, flare, beam, palmFlange, ...cable, ...flangeBolts.map((bolt) => bolt.head),
+    tongue, neck, flare, beam, palmFlange, ...cable,
+    ...flangeBolts.map((bolt) => bolt.head),
   ]).subtract(fuse([
     rodY(-8, 8, 3.5, 10),
     pinionClear,
@@ -648,7 +649,7 @@ const toolPalm = arm.part('tool-palm', (() => {
     hex,
   );
   const floor = coat(
-    extrudeRoundedRect(46, 56, 3.2, 3.3).translate(26.4, 0, -14.9),
+    extrudeRoundedRect(46, 64, 3.2, 3.3).translate(26.4, 0, -14.9),
     hex,
   );
   const lug = (y, z0, z1) => coat(rodZ(z0, z1, 7.5, 18).translate(GRIP_X, y, 0), hex);
@@ -668,16 +669,17 @@ const toolPalm = arm.part('tool-palm', (() => {
   const earX = (x0, x1) => slab(x0, x1, -12.2, 12.2, 16.45, 17.15, hex);
   const pillarFoot = (y0, y1) => slab(GRIP_X - 6, GRIP_X + 6, y0, y1, -14.8, -11.7, hex);
   const pillar = (y0, y1) => slab(GRIP_X - 5, GRIP_X + 6, y0, y1, -14.5, 16.5, hex);
-  const scallop = rodZ(6.7, 10.65, 17.5, 28).translate(GRIP_X, 0, 0);
+  const scallop = rodZ(6.7, 10.65, 19.4, 28).translate(GRIP_X, 0, 0);
+  const lowScallop = rodZ(-11.15, -7.45, 13.5, 24).translate(GRIP_X, 0, 0);
   // Swing room for the internal sector at full right-curl. The rear wall
   // stays below the sector and on the far side of this notch.
-  const sectorNotch = box(8, 12, 4.2).translate(-0.4, 12, 6.7);
+  const sectorNotch = box(10, 15, 4.2).translate(-0.6, 14, 6.7);
   const positives = [
     rear, floor, sleeve, sleeveRib, cup, plate,
     lug(HINGE_Y, -15.15, -11.6), lug(HINGE_Y, 2.15, 6.55),
     lug(-HINGE_Y, -15.15, -11.6), lug(-HINGE_Y, 2.15, 6.55),
-    pillarFoot(21.8, 28.5), pillar(25.9, 32.2),
-    pillarFoot(-28.5, -21.8), pillar(-32.2, -25.9),
+    pillarFoot(23.6, 30.3), pillar(27.7, 34.0),
+    pillarFoot(-30.3, -23.6), pillar(-34.0, -27.7),
     earY(10.55, 12.35), earY(-12.35, -10.55),
     earX(GRIP_X - 23.2, GRIP_X - 15.55), earX(GRIP_X + 15.55, GRIP_X + 23.2),
     slab(0.05, 6.6, -5, 5, 12.2, 16.9, hex),
@@ -685,11 +687,11 @@ const toolPalm = arm.part('tool-palm', (() => {
     // and the pillars without entering the hub.
     slab(GRIP_X - 5, GRIP_X + 5, 5.2, 12.4, 2.4, 6.3, hex),
     slab(GRIP_X - 5, GRIP_X + 5, -12.4, -5.2, 2.4, 6.3, hex),
-    slab(GRIP_X - 4, GRIP_X + 5, 23.8, 27.2, 2.3, 6.4, hex),
-    slab(GRIP_X - 4, GRIP_X + 5, -27.2, -23.8, 2.3, 6.4, hex),
+    slab(GRIP_X - 4, GRIP_X + 5, 25.6, 29.0, 2.3, 6.4, hex),
+    slab(GRIP_X - 4, GRIP_X + 5, -29.0, -25.6, 2.3, 6.4, hex),
   ];
   const cutters = [
-    sleeveBore, cupBore, plateHole, scallop, sectorNotch,
+    sleeveBore, cupBore, plateHole, scallop, lowScallop, sectorNotch,
     lugBore(HINGE_Y, -15.15, -11.6), lugBore(HINGE_Y, 2.15, 6.55),
     lugBore(-HINGE_Y, -15.15, -11.6), lugBore(-HINGE_Y, 2.15, 6.55),
   ];
@@ -707,21 +709,21 @@ const gripNeck = rodZ(9.55, 13.7, 6.4, 16).translate(GRIP_X, 0, 0);
 const gripCoupler = rodZ(13.15, 16.7, 8.8, 20).translate(GRIP_X, 0, 0);
 const gripPilotBore = rodZ(11.5, 15.25, 5.1, 16).translate(GRIP_X, 0, 0);
 const gripHubBore = rodZ(14.95, 16.95, 7.3, 16).translate(GRIP_X, 0, 0);
-// Tooth sectors use the 19T and 57T pitch. A root disk closes each
-// sector so the blank stays one solid without a full ring of teeth.
+// Tooth sectors use the 19T and 57T pitch at module 2/3. A root disk
+// closes each sector so the blank stays one solid without a full ring.
 const pinion19 = fuse([
   gearBlank(
-    externalGearPoints(19, 4.7, TIP19, 0.2, -Math.PI / 2 - 1.15, -Math.PI / 2 + 1.15),
+    externalGearPoints(19, 5.22, TIP19, 0.2, -Math.PI / 2 - 1.15, -Math.PI / 2 + 1.15),
     GEAR_LO_Z0, GEAR_LO_Z1, INK.gear,
   ),
-  coat(rodZ(GEAR_LO_Z0, GEAR_LO_Z1, 5.15, 16), INK.gear),
+  coat(rodZ(GEAR_LO_Z0, GEAR_LO_Z1, 5.72, 16), INK.gear),
 ]).translate(GRIP_X, 0, 0);
 const pinion57 = fuse([
   gearBlank(
-    externalGearPoints(57, 5.4, TIP57, -0.08, -Math.PI / 2 - 1.35, -Math.PI / 2 + 1.35),
+    externalGearPoints(57, 6.0, TIP57, -0.08, -Math.PI / 2 - 1.35, -Math.PI / 2 + 1.35),
     GEAR_HI_Z0, GEAR_HI_Z1, INK.gear,
   ),
-  coat(rodZ(GEAR_HI_Z0, GEAR_HI_Z1, 6.05, 16), INK.gear),
+  coat(rodZ(GEAR_HI_Z0, GEAR_HI_Z1, 6.72, 16), INK.gear),
 ]).translate(GRIP_X, 0, 0);
 
 const gripDriver = arm.part('grip-driver', paint(fuse([
@@ -776,7 +778,7 @@ const leftFingerParts = (() => {
   const slotMouth = box(26, 2.3, 2.5).translate(9, -3.55, -1.4);
   const slotBulb = box(24, 1.2, 2.7).translate(10, -2.25, -1.6);
   const sector = gearBlank(
-    externalGearPoints(38, 7.05, TIP38, -Math.PI / 2, LEFT_SECTOR_A0, LEFT_SECTOR_A1),
+    externalGearPoints(38, 7.83, TIP38, -Math.PI / 2, LEFT_SECTOR_A0, LEFT_SECTOR_A1),
     GEAR_LO_Z0, GEAR_LO_Z1, INK.finger,
   );
   return { hub, hubBore, jaw, slotMouth, slotBulb, sector };
@@ -789,15 +791,15 @@ const rightFingerParts = (() => {
   const slotMouth = box(26, 2.3, 2.5).translate(9, 1.25, -1.4);
   const slotBulb = box(24, 1.2, 2.7).translate(10, 1.05, -1.6);
   const sector = gearBlank(
-    internalSectorPoints(TIP114, 35.2, 36.7, RIGHT_SECTOR_A0, RIGHT_SECTOR_A1, 114, Math.PI / 2),
+    internalSectorPoints(TIP114, 39.11, 40.78, RIGHT_SECTOR_A0, RIGHT_SECTOR_A1, 114, Math.PI / 2),
     GEAR_HI_Z0, GEAR_HI_Z1, INK.finger,
   );
   // The internal sector sits above the palm bearing. The riser stops below
   // the 57T blank; the arm that crosses that blank stays outside its tip.
   const hubTab = radialWall(5.6, 9.6, 0.12, 0.12, 1.25, 1.95, INK.finger);
-  const lowRiser = radialWall(8.4, 20, 0.08, 0.07, 1.2, 7.05, INK.finger);
-  const highArm = radialWall(18, 36.6, 0.08, 0.12, 6.7, 7.55, INK.finger);
-  const outerArc = annular(34.6, 36.9, -0.05, 0.7, 7.2, 7.9, INK.finger);
+  const lowRiser = radialWall(8.4, 20.4, 0.08, 0.07, 1.2, 7.05, INK.finger);
+  const highArm = radialWall(20.2, 40.7, 0.08, 0.12, 6.7, 7.55, INK.finger);
+  const outerArc = annular(38.4, 41.0, -0.05, 0.7, 7.2, 7.9, INK.finger);
   return {
     hub, hubBore, jaw, slotMouth, slotBulb, sector,
     hubTab, lowRiser, highArm, outerArc,
@@ -823,13 +825,12 @@ const rightFinger = arm.part('right-finger', paint(fuse([
 function fingerPad(side) {
   const inward = side < 0;
   const ySign = inward ? -1 : 1;
-  // Keep the v4 collision envelope that stayed clean through grip 28°:
-  // x 12..26, top z 5.8, contact face at |y| ≈ 4. The first v5 pads grew
-  // past that envelope and collided pad-to-pad and pad-to-palm from
-  // grip 23°. Contact texture is cut into the face (not proud) and the
-  // outer ribs stay on the back, matching v4's side silhouette.
+  // Wider than v4/v5 (16.4×7.6×13.2 vs 14×6.4×12.2). The gripper centre
+  // distance is now 19.0 mm, which buys closed-grip clearance so the pad
+  // can grow in X and outward in Y. Contact stays at |y| ≈ 4; the top
+  // stays at z 5.8 so it cannot clip the high drive arm (z 6.7–7.55).
   const body = coat(
-    extrudeRoundedRect(14, 6.4, 1.6, 12.2).translate(19, ySign * 7.2, -6.4),
+    extrudeRoundedRect(16.4, 7.6, 1.8, 13.2).translate(20.2, ySign * 7.8, -7.4),
     INK.pad,
   );
   // Reach 0.4 mm into the pad body. The jaw slot still owns the inboard end.
@@ -839,17 +840,17 @@ function fingerPad(side) {
   const bulb = inward
     ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
     : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
-  const outerRibs = [14, 18, 22].map((x) => {
-    const near = ySign * 9.0;
-    const far = ySign * 10.2;
-    return slab(x, x + 3.4, Math.min(near, far), Math.max(near, far), -5.2, 4.8, INK.pad);
+  const outerRibs = [13.4, 17.2, 21.0, 24.8].map((x) => {
+    const near = ySign * 10.4;
+    const far = ySign * 11.8;
+    return slab(x, x + 3.0, Math.min(near, far), Math.max(near, far), -6.0, 5.0, INK.pad);
   });
   const face = ySign * 4.0;
-  const cut = ySign * 5.2;
+  const cut = ySign * 5.4;
   const y0 = Math.min(face, cut);
   const y1 = Math.max(face, cut);
-  const hGrooves = [-3.4, 0, 3.4].map((z) => (
-    slab(13, 25, y0, y1, z - 0.55, z + 0.55, INK.pad)
+  const hGrooves = [-4.0, 0, 4.0].map((z) => (
+    slab(13.2, 27.2, y0, y1, z - 0.6, z + 0.6, INK.pad)
   ));
   return paint(
     fuse([body, neck, bulb, ...outerRibs]).subtract(fuse(hGrooves)),
