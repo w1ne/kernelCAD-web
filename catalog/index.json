@@ -253550,7 +253550,7 @@
       "id": "jaw-coupling",
       "kit": "standard-components",
       "title": "Jaw coupling",
-      "description": "Two jaw hubs with a visible flexible center spider between the shaft bores Knobs: model size, steel, engineering polymer.",
+      "description": "Illustrative CC0 low-poly jaw coupling: two bored hubs with three offset jaws each, and a separate six-lobed elastomer spider seated in the six alternating spaces. Not a rated torque/fatigue or vendor manufacturing model. Controls: model size, steel and polymer colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253568,7 +253568,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
       "preview": "/assets/standard-components-jaw-coupling.png",
-      "sourceSha256": "ace285ea7862a81465665e856227d92eeaee46d50cf4f2f887a2971f7a3731d2",
+      "sourceSha256": "b3d3cf362ac4658a9df93d52d3140da746923adf9fac1efdd4811dfb55d18247",
       "triangleBudget": 520,
       "params": [
         {
@@ -253614,7 +253614,7 @@
         "sizeM": [
           0.038,
           0.036,
-          0.036909
+          0.036
         ],
         "minUpM": 0,
         "materials": 1

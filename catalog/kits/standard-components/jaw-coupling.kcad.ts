@@ -3,7 +3,7 @@ meta({
   name: 'jaw-coupling',
   license: 'CC0-1.0',
   title: 'Jaw coupling',
-  description: 'Two jaw hubs with a visible flexible center spider between the shaft bores Knobs: model size, steel, engineering polymer.',
+  description: 'Illustrative CC0 low-poly jaw coupling: two bored hubs with three offset jaws each, and a separate six-lobed elastomer spider seated in the six alternating spaces. Not a rated torque/fatigue or vendor manufacturing model. Controls: model size, steel and polymer colors.',
   tags: ['jaw coupling', 'flexible coupling', 'shaft connector', 'rotary'],
   kit: 'standard-components',
   category: 'attachment',
@@ -32,11 +32,13 @@ a.part('drive-hub',hubA.color(steel));
 a.part('driven-hub',hubB.translate(0,0,24*s).color(steel));
 for (let i=0;i<3;i++) {
   const angle=120*i;
-  a.part(`drive-jaw-${i}`,block(10*s,-4*s,12*s,9*s,8*s,8*s).rotateZ(angle).color(steel));
-  a.part(`driven-jaw-${i}`,block(10*s,-4*s,16*s,9*s,8*s,8*s).rotateZ(angle+60).color(steel));
+  a.part(`drive-jaw-${i}`,block(10*s,-3*s,12*s,9*s,6*s,8*s).rotateZ(angle).color(steel));
+  a.part(`driven-jaw-${i}`,block(10*s,-3*s,16*s,9*s,6*s,8*s).rotateZ(angle+60).color(steel));
 }
 a.part('elastomer-core',cylinder(7*s,8*s,16).translate(0,0,15*s).color(polymer));
+// Metal jaws are centred at 0, 60, 120 ... degrees. The spider fingers must
+// occupy the intervening spaces, not coincide with and penetrate those jaws.
 for (let i=0;i<6;i++) {
-  a.part(`spider-lobe-${i}`,block(7*s,-2.5*s,15*s,8*s,5*s,7*s).rotateZ(i*60).color(polymer));
+  a.part(`spider-lobe-${i}`,block(7*s,-1.4*s,15*s,8*s,2.8*s,7*s).rotateZ(i*60+30).color(polymer));
 }
 return a.model();
