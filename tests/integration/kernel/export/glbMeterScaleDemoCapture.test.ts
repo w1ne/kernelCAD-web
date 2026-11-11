@@ -62,7 +62,8 @@ describe('GLB metre-scale handoff demo evidence', () => {
         claims: {
           localGlbExport: true,
           standardGltfDimensionConvention: true,
-          vectorDiagramIsNotViewerRender: true,
+          softwareRenderOfExportedGlbTriangles: true,
+          interactiveViewer: false,
           simulation: false,
           deployedBehavior: false,
           hardwareAcceptance: false,

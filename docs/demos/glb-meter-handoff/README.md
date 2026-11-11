@@ -12,7 +12,7 @@ From the repository root, with dependencies and ffmpeg installed:
 
 ```sh
 UPDATE_GLB_METER_DEMO=1 npx vitest run tests/integration/kernel/export/glbMeterScaleDemoCapture.test.ts --reporter=dot
-node docs/demos/glb-meter-handoff/generate-video.mjs
+npx tsx docs/demos/glb-meter-handoff/generate-video.mjs
 ```
 
 The test runs the source through `runAndExport(format="glb")`, imports the
@@ -24,8 +24,9 @@ in memory.
 ## Provenance and scope
 
 - Geometry and materials come from the linked kernelCAD source example.
-- The MP4 is a vector diagram of dimensions and hierarchy data verified from
-  the emitted GLB. It is **not** a standard viewer render or a simulation.
+- The MP4 renders the emitted GLB's actual triangle mesh with the repository's
+  fixed-view software renderer and shows the measured bounds. It is **not** an
+  interactive browser viewer, a standard viewer render, or a simulation.
 - This proves local export serialization only; it does not claim deployed
   behavior or hardware acceptance.
 - For a metadata-aware receiver that expects raw millimetre coordinates, pass
