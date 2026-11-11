@@ -215470,7 +215470,7 @@
       "id": "crossbelt-sorter-section",
       "kit": "postal-logistics",
       "title": "Crossbelt sorter section",
-      "description": "Elevated sortation track section with repeated shallow crossbelt carriage trays. Scale, painted steel, structural steel, moulded polymer, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Elevated sortation track section with molded-polymer carriers and visible rubber crossbelts. Scale, painted steel, structural steel, moulded polymer, conveyor-belt rubber, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -215491,7 +215491,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/crossbelt-sorter-section.kcad.ts",
       "preview": "/assets/postal-logistics-crossbelt-sorter-section.png",
-      "sourceSha256": "9988f43e145afc7ba8b887a7e5590b8b0248df32a44db664f6166c3b53127e80",
+      "sourceSha256": "168e3077a650e57b4a40218933be3f8826d4c04040d5c25d090bc69c8704e974",
       "triangleBudget": 1800,
       "params": [
         {
@@ -215522,6 +215522,12 @@
           "label": "Moulded polymer"
         },
         {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Conveyor-belt rubber"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#bbc4c4",
@@ -215533,17 +215539,19 @@
           "paintedSteel": "#68777a",
           "structuralSteel": "#67675f",
           "polymer": "#6c7c7c",
+          "beltRubber": "#3d3d39",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
           "paintedSteel": "#e36d32",
           "structuralSteel": "#454f54",
           "polymer": "#e0b245",
+          "beltRubber": "#252b2e",
           "stainlessSteel": "#d9e0de"
         }
       },
       "stats": {
-        "triangles": 720,
+        "triangles": 960,
         "sizeM": [
           0.775,
           0.84,
@@ -215584,6 +215592,17 @@
             "tray-4"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "beltRubber",
+          "color": "#30373b",
+          "parts": [
+            "crossbelt-1",
+            "crossbelt-2",
+            "crossbelt-3",
+            "crossbelt-4"
+          ],
+          "param": "beltRubber"
         },
         {
           "name": "stainlessSteel",

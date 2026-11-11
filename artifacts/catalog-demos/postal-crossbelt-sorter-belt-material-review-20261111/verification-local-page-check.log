@@ -1,0 +1,3 @@
+Local crossbelt detail page contains the rubber control, both preset values, and copied preview.
+Preview sha256: f2d0d6887c1629e100f42c6873908cd442d267a99bfe61c102feff3fd348e860
+Checks: {'title': True, 'rubber control': True, 'default color': True, 'weathered preset': True, 'high-visibility preset': True, 'preview image copied': True, 'preview hash matches source': True}
