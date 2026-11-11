@@ -42,13 +42,16 @@ describe('planetary gearbox animation on a fastened cover (#1262)', () => {
     await initOcct();
   }, 60_000);
 
-  it('keeps the clean recipe real and rejects the animated geometry seed', async () => {
+  it('keeps the unmodified shop-release recipe real', async () => {
     const source = recipeSource();
     const clean = await evaluateScriptTool({ code: source });
     expect(clean.ok).toBe(true);
     expect(clean.mechanism).toBe('real');
     expect(clean.diagnostics.some(d => d.code === 'mechanism.motion-on-fixed-joint')).toBe(false);
+  }, 60_000);
 
+  it('rejects an animation that translates the fastened cover through geometry', async () => {
+    const source = recipeSource();
     const seeded = await evaluateScriptTool({ code: translatedCoverSeed(source) });
     const failure = seeded.diagnostics.find(d => d.code === 'mechanism.motion-on-fixed-joint');
     expect(seeded.ok).toBe(false);
