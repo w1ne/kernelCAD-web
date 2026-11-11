@@ -10,6 +10,16 @@
 
 import { describe, it, expect } from 'vitest';
 import { loadMujocoSession } from './mujocoSession';
+import type { MujocoBodyMatrix } from './mujocoSessionCore';
+
+function applyPlacement(matrix: MujocoBodyMatrix, point: readonly [number, number, number]): [number, number, number] {
+    const [x, y, z] = point;
+    return [
+        matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12],
+        matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13],
+        matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14],
+    ];
+}
 
 const PENDULUM_MJCF = `<?xml version="1.0" ?>
 <mujoco model="pendulum">
@@ -64,6 +74,32 @@ describe('MujocoSession', () => {
             expect(Math.abs(qposFinal[0])).toBeGreaterThan(0.5); // > ~30 deg drop
             // Sanity: the arm body's origin remains at the hinge.
             expect(Math.hypot(armFinal[0] - armRest[0], armFinal[1] - armRest[1], armFinal[2] - armRest[2])).toBeLessThan(1e-6);
+        } finally {
+            sess.dispose();
+        }
+    });
+
+    it('step() poses the pendulum mass with a millimetre placement, not just the body origin', async () => {
+        const sess = await loadMujocoSession(
+            PENDULUM_MJCF,
+            ['arm'],
+            [{ mjcfName: 'hinge', mateName: 'hinge' }],
+        );
+        try {
+            sess.setPose([0]);
+            sess.forward();
+            const restTip = applyPlacement(sess.bodyPosesNow().get('arm')!.matrix, [500, 0, 0]);
+            expect(restTip[0]).toBeCloseTo(500, 3);
+            expect(restTip[2]).toBeCloseTo(0, 3);
+
+            const stepped = sess.step(0.5, 0.001);
+            const dropped = applyPlacement(stepped.bodyPoses.get('arm')!.matrix, [500, 0, 0]);
+            expect(dropped[2]).toBeLessThan(-100);
+            expect(Math.hypot(
+                stepped.bodyPoses.get('arm')!.matrix[12],
+                stepped.bodyPoses.get('arm')!.matrix[13],
+                stepped.bodyPoses.get('arm')!.matrix[14],
+            )).toBeLessThan(1);
         } finally {
             sess.dispose();
         }

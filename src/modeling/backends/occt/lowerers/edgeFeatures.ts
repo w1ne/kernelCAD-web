@@ -540,7 +540,9 @@ function applyConstantEdgeFeature(
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
   if (filter.diagnostic?.severity === 'error') {
-    ctx.diagnostics.push(filter.diagnostic);
+    // The length screen explains the refusal. It is not a feasible radius.
+    // The same probe used for kernel-failed measures one on these edges.
+    ctx.diagnostics.push(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op));
     return built(base);
   }
   if (filter.diagnostic && filter.kept.length > 0) {
@@ -698,6 +700,40 @@ interface EdgeFeatureFailure {
 }
 
 const fmtMm = (v: number): string => String(Number(v.toPrecision(4)));
+
+/**
+ * Attach the largest fillet/chamfer value `probeMaxFeasible` built on
+ * `edges`. The short-edge diagnostic stays a short-edge diagnostic; only a
+ * value the probe built is recorded as feasible. Nothing is applied.
+ */
+function withVerifiedEdgeFeasible(
+  diagnostic: CompilerDiagnostic,
+  base: OcctBackend,
+  edges: Edge[],
+  op: EdgeOp,
+): CompilerDiagnostic {
+  const param = op.kind === 'fillet' ? 'radius' : 'distance';
+  const { maxFeasible, attempts } = probeMaxFeasible(
+    op.value,
+    (value) => edgeFeatureBuilds(base, edges, { ...op, value }),
+    PROBE_ITERATIONS,
+  );
+  const verified = maxFeasible !== undefined && maxFeasible > 0 ? maxFeasible : undefined;
+  const key = op.kind === 'fillet' ? 'maxFeasibleRadius' : 'maxFeasibleDistance';
+  return {
+    ...diagnostic,
+    hint: verified === undefined
+      ? diagnostic.hint
+      : `${diagnostic.hint} The largest ${param} that builds on these ${edges.length} edges is ${fmtMm(verified)} mm (kernel probe).`,
+    details: {
+      param,
+      requestedValue: op.value,
+      probeAttempts: attempts,
+      edgeCount: edges.length,
+      ...(verified === undefined ? {} : { maxFeasibleValue: verified, [key]: verified }),
+    },
+  };
+}
 
 /**
  * `feature.kernel-failed` for a constant fillet/chamfer, with the largest

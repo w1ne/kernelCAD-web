@@ -36,12 +36,73 @@ export interface BvhClosestPoint {
   triIndex: number;
 }
 
+export interface BvhClosestPair {
+  pointA: Vec3;
+  pointB: Vec3;
+  distance: number;
+  triIndexA: number;
+  triIndexB: number;
+}
+
 /** Indexed triangle soup, same shape as `meshShapeForExport`'s return:
  *  `vertices` is a flat xyz array, `triangles` holds vertex indices in
  *  groups of three. */
 export interface DfmMesh {
   vertices: readonly number[];
   triangles: readonly number[];
+}
+
+/** Mesh input accepted by the BVH, including typed arrays. */
+export interface DfmMeshInput {
+  vertices: ArrayLike<number>;
+  triangles: ArrayLike<number>;
+}
+
+function closestSegmentPair(p1: Vec3, q1: Vec3, p2: Vec3, q2: Vec3): [Vec3, Vec3] {
+  const d1: Vec3 = [q1[0]-p1[0], q1[1]-p1[1], q1[2]-p1[2]];
+  const d2: Vec3 = [q2[0]-p2[0], q2[1]-p2[1], q2[2]-p2[2]];
+  const r: Vec3 = [p1[0]-p2[0], p1[1]-p2[1], p1[2]-p2[2]];
+  const a = d1[0]**2+d1[1]**2+d1[2]**2;
+  const e = d2[0]**2+d2[1]**2+d2[2]**2;
+  const f = d2[0]*r[0]+d2[1]*r[1]+d2[2]*r[2];
+  let s = 0, t = 0;
+  if (a <= 1e-30 && e <= 1e-30) return [p1, p2];
+  if (a <= 1e-30) t = Math.max(0, Math.min(1, f/e));
+  else {
+    const c = d1[0]*r[0]+d1[1]*r[1]+d1[2]*r[2];
+    if (e <= 1e-30) s = Math.max(0, Math.min(1, -c/a));
+    else {
+      const b = d1[0]*d2[0]+d1[1]*d2[1]+d1[2]*d2[2];
+      const denom = a*e-b*b;
+      if (denom !== 0) s = Math.max(0, Math.min(1, (b*f-c*e)/denom));
+      t = (b*s+f)/e;
+      if (t < 0) { t = 0; s = Math.max(0, Math.min(1, -c/a)); }
+      else if (t > 1) { t = 1; s = Math.max(0, Math.min(1, (b-c)/a)); }
+    }
+  }
+  return [
+    [p1[0]+d1[0]*s, p1[1]+d1[1]*s, p1[2]+d1[2]*s],
+    [p2[0]+d2[0]*t, p2[1]+d2[1]*t, p2[2]+d2[2]*t],
+  ];
+}
+
+function segmentTriangleIntersection(p: Vec3, q: Vec3, a: Vec3, b: Vec3, c: Vec3): Vec3 | null {
+  const d: Vec3 = [q[0]-p[0], q[1]-p[1], q[2]-p[2]];
+  const e1: Vec3 = [b[0]-a[0], b[1]-a[1], b[2]-a[2]];
+  const e2: Vec3 = [c[0]-a[0], c[1]-a[1], c[2]-a[2]];
+  const h: Vec3 = [d[1]*e2[2]-d[2]*e2[1], d[2]*e2[0]-d[0]*e2[2], d[0]*e2[1]-d[1]*e2[0]];
+  const det = e1[0]*h[0]+e1[1]*h[1]+e1[2]*h[2];
+  const e1Length = Math.hypot(...e1), e2Length = Math.hypot(...e2), segmentLength = Math.hypot(...d);
+  if (Math.abs(det) <= Number.EPSILON * 16 * e1Length * e2Length * segmentLength) return null;
+  const inv = 1/det;
+  const s: Vec3 = [p[0]-a[0], p[1]-a[1], p[2]-a[2]];
+  const u = (s[0]*h[0]+s[1]*h[1]+s[2]*h[2])*inv;
+  if (u < 0 || u > 1) return null;
+  const r: Vec3 = [s[1]*e1[2]-s[2]*e1[1], s[2]*e1[0]-s[0]*e1[2], s[0]*e1[1]-s[1]*e1[0]];
+  const v = (d[0]*r[0]+d[1]*r[1]+d[2]*r[2])*inv;
+  const t = (e2[0]*r[0]+e2[1]*r[1]+e2[2]*r[2])*inv;
+  if (v < 0 || u+v > 1 || t < 0 || t > 1) return null;
+  return [p[0]+t*d[0], p[1]+t*d[1], p[2]+t*d[2]];
 }
 
 export interface BvhHit {
@@ -99,7 +160,7 @@ export class TriangleBvh {
 
   private readonly consumeBuildWork: (amount?: number) => void;
 
-  constructor(mesh: DfmMesh, consumeWork?: (amount?: number) => void) {
+  constructor(mesh: DfmMeshInput, consumeWork?: (amount?: number) => void) {
     this.consumeBuildWork = consumeWork ?? ((): void => {});
     const { vertices, triangles } = mesh;
     const numTris = (triangles.length / 3) | 0;
@@ -524,6 +585,107 @@ export class TriangleBvh {
       }
     }
     return best;
+  }
+
+  /** Closest surface points between two meshes, using node-pair AABB
+   *  distance to prune triangle-pair work. */
+  closestPoints(other: TriangleBvh): BvhClosestPair | null {
+    if (this.triangleCount === 0 || other.triangleCount === 0) return null;
+    const state: { best2: number; best: BvhClosestPair | null } = { best2: Infinity, best: null };
+    const stack: Array<[number, number]> = [[0, 0]];
+    while (stack.length) {
+      const [nodeA, nodeB] = stack.pop()!;
+      if (this.nodePairDistanceSquared(nodeA, other, nodeB) > state.best2) continue;
+      const leafA = this.count[nodeA] > 0, leafB = other.count[nodeB] > 0;
+      if (leafA && leafB) {
+        if (this.refineClosestFromLeaves(other, nodeA, nodeB, state)) return state.best;
+      } else if (!leafA && (leafB || this.nodeExtentSquared(nodeA) >= other.nodeExtentSquared(nodeB))) {
+        stack.push([nodeA + 1, nodeB], [this.rightChild[nodeA], nodeB]);
+      } else {
+        stack.push([nodeA, nodeB + 1], [nodeA, other.rightChild[nodeB]]);
+      }
+    }
+    return state.best;
+  }
+
+  private refineClosestFromLeaves(
+    other: TriangleBvh,
+    nodeA: number,
+    nodeB: number,
+    state: { best2: number; best: BvhClosestPair | null },
+  ): boolean {
+    const endA = this.start[nodeA] + this.count[nodeA];
+    const endB = other.start[nodeB] + other.count[nodeB];
+    for (let ka = this.start[nodeA]; ka < endA; ka++) {
+      const sa = this.triOrder[ka], oa = sa * 9;
+      const av: Vec3[] = [
+        [this.triVerts[oa], this.triVerts[oa+1], this.triVerts[oa+2]],
+        [this.triVerts[oa+3], this.triVerts[oa+4], this.triVerts[oa+5]],
+        [this.triVerts[oa+6], this.triVerts[oa+7], this.triVerts[oa+8]],
+      ];
+      for (let kb = other.start[nodeB]; kb < endB; kb++) {
+        const sb = other.triOrder[kb], ob = sb * 9;
+        const bv: Vec3[] = [
+          [other.triVerts[ob], other.triVerts[ob+1], other.triVerts[ob+2]],
+          [other.triVerts[ob+3], other.triVerts[ob+4], other.triVerts[ob+5]],
+          [other.triVerts[ob+6], other.triVerts[ob+7], other.triVerts[ob+8]],
+        ];
+        if (this.considerClosestTrianglePair(other, av, bv, sa, sb, state)) return true;
+      }
+    }
+    return false;
+  }
+
+  private considerClosestTrianglePair(
+    other: TriangleBvh,
+    av: Vec3[],
+    bv: Vec3[],
+    sa: number,
+    sb: number,
+    state: { best2: number; best: BvhClosestPair | null },
+  ): boolean {
+    const consider = (pa: Vec3, pb: Vec3): void => {
+      const d2 = distanceSquared(pa, pb);
+      if (d2 < state.best2) {
+        state.best2 = d2;
+        state.best = { pointA: pa, pointB: pb, distance: Math.sqrt(d2),
+          triIndexA: this.srcIndex[sa], triIndexB: other.srcIndex[sb] };
+      }
+    };
+    for (const p of av) consider(p, closestPointOnTriangle(p, bv[0], bv[1], bv[2]));
+    if (state.best2 === 0) return true;
+    for (const p of bv) consider(closestPointOnTriangle(p, av[0], av[1], av[2]), p);
+    if (state.best2 === 0) return true;
+    for (let ea = 0; ea < 3; ea++) for (let eb = 0; eb < 3; eb++) {
+      const pair = closestSegmentPair(av[ea], av[(ea+1)%3], bv[eb], bv[(eb+1)%3]);
+      consider(pair[0], pair[1]);
+      if (state.best2 === 0) return true;
+    }
+    for (let edge = 0; edge < 3; edge++) {
+      const hitB = segmentTriangleIntersection(av[edge], av[(edge+1)%3], bv[0], bv[1], bv[2]);
+      if (hitB) consider(hitB, hitB);
+      if (state.best2 === 0) return true;
+      const hitA = segmentTriangleIntersection(bv[edge], bv[(edge+1)%3], av[0], av[1], av[2]);
+      if (hitA) consider(hitA, hitA);
+      if (state.best2 === 0) return true;
+    }
+    return false;
+  }
+
+  private nodePairDistanceSquared(node: number, other: TriangleBvh, otherNode: number): number {
+    let d2 = 0;
+    for (let axis = 0; axis < 3; axis++) {
+      const delta = Math.max(this.bounds[6*node+axis] - other.bounds[6*otherNode+axis+3], 0,
+        other.bounds[6*otherNode+axis] - this.bounds[6*node+axis+3]);
+      d2 += delta * delta;
+    }
+    return d2;
+  }
+
+  private nodeExtentSquared(node: number): number {
+    const o = node * 6;
+    const x = this.bounds[o+3]-this.bounds[o], y = this.bounds[o+4]-this.bounds[o+1], z = this.bounds[o+5]-this.bounds[o+2];
+    return x*x+y*y+z*z;
   }
 
   private nodeDistanceSquared(node: number, point: Vec3): number {

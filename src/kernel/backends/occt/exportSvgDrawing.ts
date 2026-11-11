@@ -27,12 +27,12 @@
 // landing on the same 2D arc) are deduplicated visible-first, so a segment
 // never renders twice and never renders dashed underneath a solid copy.
 
-import { evaluateDrawingReview, validateDrawingReviewOptions, invalidDrawingReview } from '../../../shared/intent/drawingReview';
+import { validateDrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import type { DrawingReviewOptions } from '../../../shared/intent/drawingReview';
-import { makeCompound, type AnyShape } from 'replicad';
+import type { AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import type { ArchitecturalPlanOptions } from './drawingArchitectural';
-import { DRAWING_VIEW_NAMES as VIEW_NAMES, isFrontOnlyDrawing, selectedDrawingLayout, validateDrawingViewSelection } from './drawingViewSelection';
+import { DRAWING_VIEW_NAMES as VIEW_NAMES, selectedDrawingLayout, validateDrawingViewSelection } from './drawingViewSelection';
 import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
@@ -40,13 +40,11 @@ import {
   projectShapeForDrawing,
 } from './drawingProjection';
 import {
-  SHEETS,
   SHEET_SERIES,
   dedupPolylineClasses,
   shiftOrthographicViews,
   dimensionToSvg,
   formatDimValue,
-  straightSpans,
   viewBoxOfPolylines,
   type DrawingSheetSize,
   type DrawingViewName,
@@ -65,12 +63,10 @@ import {
   type DrawingAnnotation,
 } from './drawingAnnotations';
 import { renderSections, type DrawingSectionSpec } from './drawingSections';
-import type { Box } from './drawingObstacles';
 import {
   balloonAndTraceSvg,
   partsListSvg,
   explodeLabelOverlaps,
-  partCentroids,
   type DrawingBomRow,
 } from './drawingExplode';
 import {
@@ -80,23 +76,26 @@ import {
   type DrawingReportAnnotation,
 } from './drawingAuto';
 import { attributionGenerator } from '../../../shared/links/attribution';
-import { generalToleranceCell, sheetTitleBlock, FULL_TITLE_BLOCK } from './drawingTitleBlock';
+import { generalToleranceCell, sheetTitleBlock } from './drawingTitleBlock';
+import { reviewDrawingTextSvg } from '../../export/pdf/drawingTextReview';
+import { renderViewGroups } from './drawingViewSvg';
+import { reviewSheetViewPlacement } from './drawingSheetPreflight';
+import { gridShift, resolveSheet, SECTION_BAND_H } from './drawingSheetSizing';
+import { resolveDrawingBodies } from './drawingBodies';
+import { finalizeDrawingReview } from './drawingReportReview';
+import type { Box } from './drawingObstacles';
 import type { DrawingDeclarations } from '../../../shared/intent/drawingGdtRecord';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../../shared/intent/drafting';
-import { applyDraftingProfile, authoredAnnotationIds, invalidReview, resolveDraftingProfile } from './draftingReview';
+import { applyDraftingProfile, authoredAnnotationIds, invalidReview } from './draftingReview';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+import type { DrawingVisualQaOptions } from './drawingVisualQa';
+export type { DrawingVisualQaOptions, DrawingVisualQaReport, DrawingVisualQaIssue, DrawingVisualQaCheck, DrawingVisualQaAttempt, DrawingVisualQaPdfCheck } from './drawingVisualQa';
 
 export type { DrawingBomRow } from './drawingExplode';
 export type { DrawingAnnotation, DrawingAnchor } from './drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from './drawingSections';
-export type {
-  AutoAnnotateKind,
-  AutoAnnotateOptions,
-  DrawingReport,
-  DrawingReportAnnotation,
-  Iso2768Class,
-} from './drawingAuto';
+export type { AutoAnnotateKind, AutoAnnotateOptions, DrawingReport, DrawingReportAnnotation, Iso2768Class } from './drawingAuto';
 
 export type { DrawingSheetSize, ProjectionAngle } from './drawingLayout';
 
@@ -117,6 +116,9 @@ export interface DrawingTitleBlock {
 
 export interface SvgDrawingOptions extends DrawingReviewOptions {
   format: 'svg-drawing';
+  /** Inspect the bytes of the exported SVG. With autoRepair enabled, the
+   *  export may retry on up to three larger standard sheets. */
+  visualQa?: DrawingVisualQaOptions;
   /** Single front elevation, or the complete default four-view sheet. */
   views?: readonly DrawingViewName[];
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
@@ -127,6 +129,10 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
    *  `'auto-ansi'` pick the smallest ISO / ANSI sheet that holds the views at
    *  1:1 or larger, else the largest sheet of the series. */
   sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** Try at most two larger standard sheets when measured annotation/view
+   *  placement improves. For explicit sheet sizes this is opt-in; auto/auto-ansi
+   *  always allow bounded growth. Never changes 3D source geometry. */
+  layoutRepair?: boolean;
   /** View arrangement and title-block symbol; default `'third'`. */
   projection?: ProjectionAngle;
   /** Full title block; see `DrawingTitleBlock`. */
@@ -218,48 +224,10 @@ type StyledView = StyledDrawingView;
 
 
 /** Height of the band reserved below the standard view grid for sections. */
-const SECTION_BAND_H = 70;
 
-const round3 = (n: number): string => {
-  const r = Math.round(n * 1000) / 1000;
-  return Object.is(r, -0) ? '0' : String(r);
-};
-
-/** Bake one model-space polyline into a sheet-space SVG path `d` string. */
-function bakePath(pl: Polyline2, p: ViewPlacement, s: number): string {
-  return pl
-    .map(([mx, my], i) =>
-      `${i === 0 ? 'M' : 'L'} ${round3(p.tx + mx * s)} ${round3(p.ty - my * s)}`)
-    .join(' ');
-}
-
-function pathGroup(
-  cls: string,
-  style: string,
-  polylines: Polyline2[],
-  placement: ViewPlacement,
-  scale: number,
-  view?: DrawingViewName,
-): string {
-  const paths = polylines
-    .map(pl => `<path d="${bakePath(pl, placement, scale)}"/>`)
-    .join('');
-  const spans = cls === 'visible' && view !== 'iso' ? polylines.flatMap((pl) => straightSpans(pl)) : [];
-  const edges = spans.length
-    ? ` data-kc-edges="${spans.map(([a, b]) => [a[0], a[1], b[0], b[1]].map(round3).join(' ')).join(';')}"`
-    : '';
-  return `<g class="${cls}" ${style}${edges}>${paths}</g>`;
-}
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const VIEW_LABELS: Record<DrawingViewName, string> = {
-  front: 'FRONT',
-  top: 'TOP',
-  left: 'LEFT',
-  iso: 'ISOMETRIC',
-};
 
 /**
  * Classify and dedup one projected view. Class order is the dedup priority:
@@ -284,6 +252,22 @@ function styleProjectedView(raw: ReturnType<typeof projectShapeForDrawing>): Sty
   const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
   if (box) view.box = box;
   return view;
+}
+
+function warnAboutSheetPlacement(
+  sheetPlacement: ReturnType<typeof reviewSheetViewPlacement>,
+  diagnosticsOut: CompilerDiagnostic[],
+): void {
+  if (sheetPlacement.issues.length) {
+    const summary = sheetPlacement.issues.map(issue => `${issue.kind} (${issue.views.join('/')})`).join(', ');
+    diagnosticsOut.push({
+      target: 'export-occt', code: 'drawing.view.placement', severity: 'warn',
+      message: `svg-drawing: projected view placement has ${sheetPlacement.issues.length} geometric issue(s): ${summary}.`,
+      hint: 'Increase options.sheet (or use auto), then re-export and inspect the sheet. Check projected view placement and title-block clearance.',
+      nextAction: NEXT_ACTIONS['drawing.view.placement'],
+      details: { issueCount: sheetPlacement.issues.length },
+    });
+  }
 }
 
 /**
@@ -333,6 +317,126 @@ export function exportSvgDrawing(
   return r.bytes;
 }
 
+interface DrawingStageInput {
+  parts: WorldFramePart[];
+  options: SvgDrawingOptions;
+  dims: { w: number; d: number; h: number };
+  sectionSpecs: readonly DrawingSectionSpec[];
+  shape: AnyShape;
+  styled: Record<DrawingViewName, StyledView>;
+  viewBoxes: Record<DrawingViewName, ViewBox2>;
+  projection: ProjectionAngle;
+  frontOnly: boolean;
+  explodedShape: AnyShape | undefined;
+  assembledCentroids: Map<string, [number, number, number]>;
+  explodedCentroids: Map<string, [number, number, number]>;
+  explodedParts: readonly WorldFramePart[] | undefined;
+}
+
+type DrawingPagePass = {
+  layout: SheetLayout;
+  sectionStage: ReturnType<typeof renderSheetSections>;
+  autoStage: ReturnType<typeof renderAutoStage>;
+  diagnostics: CompilerDiagnostic[];
+};
+
+interface DrawingPageCandidate {
+  sheet: SheetSpec;
+  page: SheetSpec;
+  sheetSize: DrawingSheetSize;
+  s: number;
+  pass: DrawingPagePass;
+  score: { issueCount: number; overlapped: number; textIssueCount: number; total: number };
+}
+
+function scoreDrawingPage(ctx: DrawingStageInput, candidate: Omit<DrawingPageCandidate, 'score'>, checkText: boolean) {
+  const { pass, page, s, sheetSize } = candidate;
+  const { options, frontOnly, styled, explodedShape, assembledCentroids, explodedCentroids,
+    explodedParts, projection } = ctx;
+  const placement = reviewSheetViewPlacement(pass.layout, page,
+    frontOnly ? ['front'] : VIEW_NAMES, pass.autoStage.generalTolerance !== undefined);
+  let textIssueCount = 0;
+  if (checkText) {
+    const diagnostics: CompilerDiagnostic[] = [];
+    const preview = buildSheetSvg({
+      effSheet: page, usesHatchPattern: pass.sectionStage.usesHatchPattern,
+      viewGroups: renderViewGroups(styled, pass.layout, pass.autoStage.bottomReserve, s,
+        explodedShape !== undefined, frontOnly ? ['front'] : VIEW_NAMES),
+      dimBodies: pass.autoStage.dimBodies, sectionsSvg: pass.sectionStage.svg,
+      explodeSvg: renderExplodeOverlays({
+        options, assembledCentroids, explodedCentroids, explodedParts,
+        layout: pass.layout, s, effSheet: page, diagnosticsOut: diagnostics,
+      }),
+      generalTolerance: pass.autoStage.generalTolerance,
+      layout: pass.layout, options, explodedShape, diagnosticsOut: diagnostics,
+      report: undefined, sheetSize, projection,
+    });
+    textIssueCount = reviewDrawingTextSvg(new TextDecoder().decode(preview.bytes), {
+      w: page.w, h: page.h, margin: page.margin, titleBlock: page.titleBlock,
+      generalTolerance: pass.autoStage.generalTolerance !== undefined,
+    }).issues.length;
+  }
+  const issueCount = placement.issues.length;
+  const overlapped = pass.autoStage.report?.overlapped ?? 0;
+  return { issueCount, overlapped, textIssueCount,
+    total: issueCount * 1000 + overlapped * 100 + textIssueCount };
+}
+
+function computeDrawingPage(ctx: DrawingStageInput,
+  size: SvgDrawingOptions['sheet'], checkText: boolean): DrawingPageCandidate {
+  const { parts, options, dims, sectionSpecs, shape, styled, viewBoxes, projection, frontOnly } = ctx;
+  const hasSections = sectionSpecs.length > 0;
+  const { sheet, page, size: sheetSize } = resolveSheet({ ...options, sheet: size }, viewBoxes, projection, hasSections);
+  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection);
+  const s = gridLayout.scale;
+  const annotate = (layout: SheetLayout): DrawingPagePass => {
+    const diagnostics: CompilerDiagnostic[] = [];
+    const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnostics);
+    const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
+    const autoStage = renderAutoStage({
+      parts, options, shape, layout, styled, s, sheet,
+      sectionsSvg: sectionStage.svg, dimBodies: dimensionStage.dimBodies,
+      bottomReserve: dimensionStage.bottomReserve, rightReserve: dimensionStage.rightReserve,
+      report: dimensionStage.report, diagnosticsOut: diagnostics,
+    });
+    return { layout, sectionStage, autoStage, diagnostics };
+  };
+  let pass = annotate(gridLayout);
+  const crowded = pass.autoStage.report?.overlapped ?? 0;
+  const dy = crowded > 0 ? gridShift(sheet, gridLayout, pass.autoStage.labelBoxes) : 0;
+  if (dy !== 0) {
+    const moved = annotate(shiftOrthographicViews(gridLayout, dy));
+    if ((moved.autoStage.report?.overlapped ?? 0) < crowded) pass = moved;
+  }
+  const candidate = { sheet, page, sheetSize, s, pass };
+  return { ...candidate, score: scoreDrawingPage(ctx, candidate, checkText) };
+}
+
+function selectDrawingPage(ctx: DrawingStageInput) {
+  const { options } = ctx;
+  const repairEnabled = options.layoutRepair === true ||
+    (options.layoutRepair !== false && (options.sheet === 'auto' || options.sheet === 'auto-ansi'));
+  let selected = computeDrawingPage(ctx, options.sheet, repairEnabled);
+  const initialSize = selected.sheetSize;
+  const summary = (c: DrawingPageCandidate) => ({
+    sheet: c.sheetSize, issueCount: c.score.issueCount,
+    overlapped: c.score.overlapped, textIssueCount: c.score.textIssueCount,
+  });
+  const attempts = [summary(selected)];
+  if (repairEnabled && selected.score.total > 0) {
+    const series = SHEET_SERIES[selected.sheetSize.startsWith('ansi-') ? 'ansi' : 'iso'];
+    for (const size of series.slice(series.indexOf(selected.sheetSize) + 1,
+      series.indexOf(selected.sheetSize) + 3)) {
+      const next = computeDrawingPage(ctx, size, true);
+      attempts.push(summary(next));
+      if (next.score.total >= selected.score.total) break;
+      selected = next;
+      if (selected.score.total === 0) break;
+    }
+  }
+  return { ...selected, repairEnabled, initialSize, attempts };
+}
+
 /** Same sheet as `exportSvgDrawing`, returning diagnostics and the placement
  *  report alongside the bytes. */
 export function renderSvgDrawing(
@@ -365,60 +469,12 @@ export function renderSvgDrawing(
     iso: styled.iso.box,
   };
   const projection = options.projection ?? 'third';
-  const sectionSpecs = options.sections ?? [];
-  const hasSections = sectionSpecs.length > 0;
-  // `sheet` is the region the standard view grid is laid out in; `page` is
-  // the drawn sheet (frame, title block, parts list).
-  const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
-
-  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection);
-  const s = gridLayout.scale;
-
-  // Dimensions, sections and automatic annotation all hang off the view
-  // placements, so they run as one pass over a layout.
-  const annotate = (layout: SheetLayout) => {
-    const diagnostics: CompilerDiagnostic[] = [];
-    const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnostics);
-
-    // --- section views -------------------------------------------------
-    // The standard 4-view grid above is computed against the UNMODIFIED
-    // `sheet` spec, so a drawing with no sections is byte-identical to one
-    // from before this feature existed. Sections add a reserved band BELOW
-    // that grid (where the title block used to sit) and push the title block
-    // + frame down — into a taller page for the compact title block, or into
-    // the named sheet itself for the full one (see resolveSheet).
-    const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
-
-    // --- automatic annotation + declared GD&T ----------------------------
-    const autoStage = renderAutoStage({
-      parts,
-      options,
-      shape,
-      layout,
-      styled,
-      s,
-      sheet,
-      sectionsSvg: sectionStage.svg,
-      dimBodies: dimensionStage.dimBodies,
-      bottomReserve: dimensionStage.bottomReserve,
-      rightReserve: dimensionStage.rightReserve,
-      report: dimensionStage.report,
-      diagnosticsOut: diagnostics,
-    });
-    return { layout, sectionStage, autoStage, diagnostics };
-  };
-  let pass = annotate(gridLayout);
-  // The grid is centred with fixed dimension bands; automatic dimension
-  // stacks can outgrow them and run into the frame or the title block. When
-  // that crowds a label and the opposite side has room, move the
-  // orthographic views over and annotate again — kept only if it crowds
-  // fewer labels.
-  const crowded = pass.autoStage.report?.overlapped ?? 0;
-  const dy = crowded > 0 ? gridShift(sheet, gridLayout, pass.autoStage.labelBoxes) : 0;
-  if (dy !== 0) {
-    const moved = annotate(shiftOrthographicViews(gridLayout, dy));
-    if ((moved.autoStage.report?.overlapped ?? 0) < crowded) pass = moved;
-  }
+  const selection = selectDrawingPage({
+    parts, options, dims, sectionSpecs: options.sections ?? [], shape, styled, viewBoxes,
+    projection, frontOnly, explodedShape, assembledCentroids, explodedCentroids, explodedParts,
+  });
+  const { pass, page, sheetSize, s, repairEnabled, initialSize, attempts } = selection;
+  const resultScore = selection.score;
   diagnosticsOut.push(...pass.diagnostics);
   const { layout } = pass;
   const effSheet: SheetSpec = page;
@@ -426,11 +482,17 @@ export function renderSvgDrawing(
   const usesHatchPattern = pass.sectionStage.usesHatchPattern;
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
-  const report = pass.autoStage.report ?? (reviewPlans.length ? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] } : undefined);
-  finalizeDrawingReview(report, options, diagnosticsOut);
   const generalTolerance = pass.autoStage.generalTolerance;
+  const visibleViews = frontOnly ? (['front'] as const) : VIEW_NAMES;
+  const sheetPlacement = reviewSheetViewPlacement(layout, effSheet, visibleViews, generalTolerance !== undefined);
+  warnAboutSheetPlacement(sheetPlacement, diagnosticsOut);
+  const report = pass.autoStage.report ?? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
+  report.sheetPlacement = sheetPlacement;
+  if (repairEnabled) report.sheetRepair = { applied: initialSize !== sheetSize, attempts,
+    status: resultScore.total === 0 ? 'clear' : 'issues' };
+  finalizeDrawingReview(report, options, diagnosticsOut);
 
-  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape, frontOnly ? ['front'] : VIEW_NAMES);
+  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape !== undefined, visibleViews);
 
   const explodeSvg = renderExplodeOverlays({
     options,
@@ -443,7 +505,7 @@ export function renderSvgDrawing(
     diagnosticsOut,
   });
 
-  return buildSheetSvg({
+  const rendered = buildSheetSvg({
     effSheet,
     usesHatchPattern,
     viewGroups,
@@ -459,111 +521,24 @@ export function renderSvgDrawing(
     sheetSize,
     projection,
   });
-}
-
-/** Complete review metadata after selecting the final placement pass. */
-function finalizeDrawingReview(report: DrawingReport | undefined, options: SvgDrawingOptions, diagnosticsOut: CompilerDiagnostic[]): void {
-  const review = evaluateDrawingReview(options.reviewPlans ?? [], report?.annotations ?? [], options.decisionResolutions);
-  if (options.requireCompleteReview && review.status !== 'complete') invalidDrawingReview('requireCompleteReview', `a complete declared review; current status is ${review.status}`);
-  if (review.status === 'incomplete') diagnosticsOut.push({ target: 'export-occt', code: 'drawing.review.incomplete', severity: 'warn',
-    message: 'Declared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.',
-    hint: 'Inspect report.review requirements and decisions; coverage is not fit, tolerance or manufacturing certification.',
-    nextAction: NEXT_ACTIONS['drawing.review.incomplete'] });
-  if (report) {
-    report.review = review;
-    report.suppressed = report.annotations.filter(a => a.suppressed).length;
-    const profile = resolveDraftingProfile(options.draftingProfile);
-    if (profile) report.draftingProfile = profile.id;
+  // Inspect the actual serialized SVG sheet using the same XML/Helvetica
+  // text geometry as the SVG-to-vector-PDF path, not an unrendered model.
+  const renderedText = reviewDrawingTextSvg(new TextDecoder().decode(rendered.bytes), {
+    w: effSheet.w, h: effSheet.h, margin: effSheet.margin,
+    titleBlock: effSheet.titleBlock, generalTolerance: generalTolerance !== undefined,
+  });
+  report.renderedText = renderedText;
+  if (renderedText.issues.length) {
+    const kinds = [...new Set(renderedText.issues.map(i => i.kind))].join(', ');
+    diagnosticsOut.push({
+      target: 'export-occt', code: 'drawing.text.placement', severity: 'warn',
+      message: `svg-drawing: ${renderedText.issues.length} serialized-sheet text placement issue(s): ${kinds}.`,
+      hint: 'Inspect the exported SVG/PDF, move authored annotation offsets or increase the sheet size, then re-export. Review the specific renderedText issues.',
+      nextAction: NEXT_ACTIONS['drawing.text.placement'],
+      details: { issueCount: renderedText.issues.length, checkedText: renderedText.checkedText },
+    });
   }
-  const ids = new Set(report?.annotations.map(a => a.id) ?? []);
-  const missing = Object.keys(options.annotationOverrides ?? {}).filter(id => !ids.has(id));
-  if (missing.length) diagnosticsOut.push({ target: 'export-occt', code: 'drawing.annotation.override-missing', severity: 'warn',
-    message: `Drawing annotation override IDs not found: ${missing.join(', ')}.`,
-    hint: 'Review the current report and remove or replace stale annotation IDs after geometry or dimension strategy changes.',
-    nextAction: NEXT_ACTIONS['drawing.annotation.override-missing'] });
-}
-
-/**
- * Resolve the sheet: a named size as-is, or for `'auto'` / `'auto-ansi'` the
- * smallest sheet of the series whose view grid reaches 1:1, else the largest.
- *
- * Returns the grid region (`sheet`) and the drawn page. With the compact
- * title block they are the same size and section views grow the page
- * downward (the historical svg-drawing behaviour). The full title block
- * (`options.titleBlock`) means a standard sheet: it is swapped into the
- * spec, and section views take their band out of the grid region so the
- * page keeps the named size.
- */
-function resolveSheet(
-  options: SvgDrawingOptions,
-  boxes: Record<DrawingViewName, ViewBox2>,
-  projection: ProjectionAngle,
-  hasSections: boolean,
-): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } {
-  const standard = options.titleBlock !== undefined;
-  const resolve = (size: DrawingSheetSize): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } => {
-    const base = standard ? { ...SHEETS[size], titleBlock: { ...FULL_TITLE_BLOCK } } : SHEETS[size];
-    if (!hasSections) return { sheet: base, page: base, size };
-    return standard
-      ? { sheet: { ...base, h: base.h - SECTION_BAND_H }, page: base, size }
-      : { sheet: base, page: { ...base, h: base.h + SECTION_BAND_H }, size };
-  };
-  const requested = options.sheet ?? 'a4';
-  if (requested !== 'auto' && requested !== 'auto-ansi') {
-    if (!(requested in SHEETS)) {
-      throw new Error(
-        `drawing sheet '${String(requested)}' is not a sheet size; use one of ${Object.keys(SHEETS).join(', ')}, auto, auto-ansi.`,
-      );
-    }
-    return resolve(requested);
-  }
-  const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
-  for (const size of series) {
-    const r = resolve(size);
-    const frontOnly = isFrontOnlyDrawing(options.views);
-    const layout = selectedDrawingLayout(frontOnly, boxes, r.sheet, projection);
-    if (layout.scale >= 1) return r;
-  }
-  return resolve(series[series.length - 1]!);
-}
-
-/**
- * Resolve the lowered shape(s) and the part centroids the overlays need.
- *
- * Centroids must be read BEFORE makeCompound / getReplicadShape: those
- * consume the replicad handles, and a later boundingBox would throw
- * "This object has been deleted". Skip the read unless balloons,
- * parts-list, or an exploded iso actually need them — exact bbox
- * tessellation would otherwise perturb the automatic dimensions.
- */
-function resolveDrawingBodies(
-  parts: WorldFramePart[],
-  options: SvgDrawingOptions,
-): {
-  explodedParts: readonly WorldFramePart[] | undefined;
-  assembledCentroids: Map<string, [number, number, number]>;
-  explodedCentroids: Map<string, [number, number, number]>;
-  shape: AnyShape;
-  explodedShape: AnyShape | undefined;
-} {
-  const explodedParts = options.explodedParts;
-  const needCentroids =
-    options.balloons === true || options.partsList === true || explodedParts !== undefined;
-  const assembledCentroids = needCentroids ? partCentroids(parts) : new Map();
-  const explodedCentroids = explodedParts !== undefined
-    ? partCentroids(explodedParts)
-    : assembledCentroids;
-  const shape: AnyShape =
-    parts.length === 1
-      ? parts[0].shape.getReplicadShape()
-      : makeCompound(parts.map(p => p.shape.getReplicadShape()));
-  const explodedShape: AnyShape | undefined =
-    explodedParts === undefined || explodedParts.length === 0
-      ? undefined
-      : explodedParts.length === 1
-        ? explodedParts[0]!.shape.getReplicadShape()
-        : makeCompound(explodedParts.map(p => p.shape.getReplicadShape()));
-  return { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape };
+  return rendered;
 }
 
 /**
@@ -873,78 +848,6 @@ function renderAutoStage(input: {
   }
 
   return { dimBodies, bottomReserve, report, generalTolerance, labelBoxes };
-}
-
-/**
- * Vertical move (sheet mm, down positive) of the orthographic views that
- * brings them and their labels inside the frame and clear of the
- * title-block band — the region the automatic placer counts as free — when
- * they spill over one side and the other side has the room. Labels of the
- * isometric cell (it does not move) are left out. 0 when nothing spills or
- * the move cannot fit.
- */
-function gridShift(sheet: SheetSpec, layout: SheetLayout, labels: readonly Box[]): number {
-  // The placer's free region, less its label padding.
-  const top = sheet.margin + 2;
-  const bottom = sheet.h - sheet.margin - sheet.titleBlock.h - 2;
-  const iso = layout.views.iso.box;
-  const inIsoCell = (b: Box) => {
-    const cx = (b.x0 + b.x1) / 2;
-    const cy = (b.y0 + b.y1) / 2;
-    return cx >= iso.x && cx <= iso.x + iso.w && cy >= iso.y && cy <= iso.y + iso.h + ISO_CAPTION_BAND;
-  };
-  let y0 = Infinity;
-  let y1 = -Infinity;
-  for (const b of labels) {
-    if (inIsoCell(b)) continue;
-    y0 = Math.min(y0, b.y0);
-    y1 = Math.max(y1, b.y1);
-  }
-  for (const name of ['front', 'top', 'left'] as const) {
-    const b = layout.views[name].box;
-    y0 = Math.min(y0, b.y);
-    y1 = Math.max(y1, b.y + b.h);
-  }
-  if (y1 > bottom && y0 - (y1 - bottom) >= top) return -(y1 - bottom);
-  if (y0 < top && y1 + (top - y0) <= bottom) return top - y0;
-  return 0;
-}
-
-/** Depth under the isometric view that holds its caption. */
-const ISO_CAPTION_BAND = 8;
-
-/** View-groups phase: one styled `<g>` per standard view, with the caption
- *  pushed below any dimension band the view carries. */
-function renderViewGroups(
-  styled: Record<DrawingViewName, StyledView>,
-  layout: SheetLayout,
-  bottomReserve: Record<DrawingViewName, number>,
-  s: number,
-  explodedShape: AnyShape | undefined,
-  names: readonly DrawingViewName[] = VIEW_NAMES,
-): string[] {
-  return names.map(name => {
-    const v = styled[name];
-    const p = layout.views[name];
-    // A view carrying dimensions underneath must push its caption below the
-    // deepest of them, or the two collide. With the automatic bbox dimensions
-    // this reserves the front view's single 8 mm band (label at 13 mm), which
-    // is exactly where the caption sat before annotations existed.
-    const labelOffset = 5 + bottomReserve[name];
-    const label =
-      `<text class="view-label" x="${round3(p.box.x + p.box.w / 2)}" ` +
-      `y="${round3(p.box.y + p.box.h + labelOffset)}" font-size="2.6" text-anchor="middle" ` +
-      `fill="#555" stroke="none">${name === 'iso' && explodedShape !== undefined ? 'ISOMETRIC — EXPLODED' : VIEW_LABELS[name]}</text>`;
-    return (
-      `<g id="view-${name}" data-view="${name}" data-kc-tx="${round3(p.tx)}" data-kc-ty="${round3(p.ty)}" data-kc-s="${round3(s)}" fill="none" stroke="#000" ` +
-      `stroke-linecap="round" stroke-linejoin="round">` +
-      pathGroup('hidden', 'stroke-width="0.25" stroke-dasharray="1.6 0.8"', v.hidden, p, s) +
-      pathGroup('tangent', 'stroke-width="0.13"', v.tangent, p, s) +
-      pathGroup('visible', 'stroke-width="0.5"', v.visible, p, s, name) +
-      label +
-      `</g>`
-    );
-  });
 }
 
 /** Balloon / parts-list phase: draw the exploded isometric overlays and warn

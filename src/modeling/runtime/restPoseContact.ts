@@ -34,17 +34,19 @@
 //      be physically consistent, and a blanket ignore of every parent and
 //      child pair is exactly how a colliding arm used to pass.
 //
-//   2. Contact. The two parts of every mate must meet: their minimum BREP
+//   2. Contact. The two parts of every mate must meet: their minimum
 //      distance at rest must be within `REST_MATE_CONTACT_TOLERANCE_MM`.
 //      A link mated to a servo it hovers next to is not seated.
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
-import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { CONTACT_THICKNESS_MM, isActionableOverlap, overlapThicknessMm } from './jointContactCap';
 import { JOINT_MESH_GAP_TOLERANCE_MM, measureBodyToBodyGap } from './jointMeshContinuity';
+import { restWorldMesh, restMeshContact, type WorldMesh } from './restAnalysisMesh';
+export { worldMesh } from './restAnalysisMesh';
+export type { WorldMesh } from './restAnalysisMesh';
 
 /** Largest rest-pose gap (mm) between the two parts of a mate. */
 export const REST_MATE_CONTACT_TOLERANCE_MM = JOINT_MESH_GAP_TOLERANCE_MM;
@@ -56,19 +58,6 @@ export const REST_MATE_CONTACT_TOLERANCE_MM = JOINT_MESH_GAP_TOLERANCE_MM;
  * line width and above the 0.05 mm analysis-mesh deflection on both sides.
  */
 export const REST_PENETRATION_DEPTH_MM = 0.3;
-
-/** Voxel edge bounds (mm) and the grid size cap per pair. */
-const MIN_CELL_MM = 0.25;
-const MAX_CELLS_PER_PAIR = 96 * 96 * 96;
-
-export interface WorldMesh {
-  /** Mesh volume agrees with the BREP volume (the tessellation is closed). */
-  readonly closed: boolean;
-  readonly positions: Float64Array;
-  readonly indices: Uint32Array;
-  readonly min: [number, number, number];
-  readonly max: [number, number, number];
-}
 
 export interface RestPenetration {
   readonly a: string;
@@ -91,47 +80,9 @@ export interface RestMateGap {
   readonly gapMm: number;
 }
 
-export function worldMesh(shape: OcctBackend, worldTransform: Transform): WorldMesh | undefined {
-  let mesh;
-  try {
-    mesh = shape.getMesh();
-  } catch {
-    return undefined;
-  }
-  const n = mesh.positions.length / 3;
-  if (n === 0 || mesh.indices.length === 0) return undefined;
-  const positions = new Float64Array(n * 3);
-  const min: [number, number, number] = [Infinity, Infinity, Infinity];
-  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
-  for (let i = 0; i < n; i++) {
-    const p = worldTransform.point([mesh.positions[3 * i], mesh.positions[3 * i + 1], mesh.positions[3 * i + 2]]);
-    for (let k = 0; k < 3; k++) {
-      positions[3 * i + k] = p[k];
-      if (p[k] < min[k]) min[k] = p[k];
-      if (p[k] > max[k]) max[k] = p[k];
-    }
-  }
-  // Divergence-theorem volume of the triangles against the BREP volume. A
-  // face the mesher dropped (complex toothed faces sometimes do) leaves a
-  // hole that ray parity would read as solid; such a part is measured with
-  // the BREP boolean instead.
-  let six = 0;
-  const I = mesh.indices;
-  for (let t = 0; t < I.length; t += 3) {
-    const a = 3 * I[t], b = 3 * I[t + 1], c = 3 * I[t + 2];
-    six += positions[a] * (positions[b + 1] * positions[c + 2] - positions[b + 2] * positions[c + 1])
-      - positions[a + 1] * (positions[b] * positions[c + 2] - positions[b + 2] * positions[c])
-      + positions[a + 2] * (positions[b] * positions[c + 1] - positions[b + 1] * positions[c]);
-  }
-  let brep = NaN;
-  try {
-    brep = shape.volume();
-  } catch {
-    // keep NaN: treated as not closed
-  }
-  const closed = Number.isFinite(brep) && Math.abs(Math.abs(six / 6) - Math.abs(brep)) <= 0.005 * Math.abs(brep) + 1;
-  return { closed, positions, indices: mesh.indices, min, max };
-}
+/** Voxel edge bounds (mm) and the grid size cap per pair. */
+const MIN_CELL_MM = 0.25;
+const MAX_CELLS_PER_PAIR = 96 * 96 * 96;
 
 /**
  * For axis `k`, cast one ray per grid column (the other two axes) and mark
@@ -355,7 +306,7 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
     // Exact/closed-solid validation does not currently classify display-only
     // triangle soups. Leave those pairs unchecked while retaining BRep checks.
     if (!(p.shape instanceof OcctBackend)) continue;
-    const mesh = worldMesh(analysisBodyOf(p.shape) as OcctBackend, p.worldTransform);
+    const mesh = restWorldMesh(p, 'analysis')?.mesh;
     if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }
   const out: RestPenetration[] = [];
@@ -385,6 +336,40 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
 }
 
 /** Every mate whose two parts do not meet at rest. */
+function restPoseMateGapFor(
+  mate: MateRecord,
+  byName: Map<string, SceneBackend['parts'][number]>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+): RestMateGap | undefined {
+  let a: string;
+  let b: string;
+  try {
+    a = parseConnectorRef(mate.a).partName;
+    b = parseConnectorRef(mate.b).partName;
+  } catch {
+    return undefined;
+  }
+  if (a === b) return undefined;
+  const pa = byName.get(a);
+  const pb = byName.get(b);
+  if (pa === undefined || pb === undefined) return undefined;
+  if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) return undefined;
+  const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
+  if (!seen.has(key)) {
+    const meshContact = restMeshContact(pa, pb, 'analysis');
+    seen.set(key, meshContact !== undefined && Math.abs(meshContact.distanceMm - toleranceMm) > 0.25
+      ? meshContact.distanceMm
+      : measureBodyToBodyGap(
+        analysisBodyOf(pa.shape) as OcctBackend, pa.worldTransform,
+        analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
+      ));
+  }
+  const gap = seen.get(key);
+  if (gap !== undefined && gap > toleranceMm) return { mateName: mate.name, a, b, gapMm: gap };
+  return undefined;
+}
+
 export function restPoseMateGaps(
   arm: Assembly,
   scene: SceneBackend,
@@ -396,27 +381,8 @@ export function restPoseMateGaps(
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
     if (!includeMate(mate)) continue;
-    let a: string;
-    let b: string;
-    try {
-      a = parseConnectorRef(mate.a).partName;
-      b = parseConnectorRef(mate.b).partName;
-    } catch {
-      continue;
-    }
-    if (a === b) continue;
-    const pa = byName.get(a);
-    const pb = byName.get(b);
-    if (pa === undefined || pb === undefined) continue;
-    if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) continue;
-    const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
-    if (!seen.has(key)) {
-      seen.set(key, measureBodyToBodyGap(
-        analysisBodyOf(pa.shape) as OcctBackend, pa.worldTransform, analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
-      ));
-    }
-    const gap = seen.get(key);
-    if (gap !== undefined && gap > toleranceMm) out.push({ mateName: mate.name, a, b, gapMm: gap });
+    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm);
+    if (gap !== undefined) out.push(gap);
   }
   return out;
 }

@@ -1,9 +1,9 @@
-// Distinctive geometry: Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web
+// CC0 low-poly welded-style bracket; the plates are separate illustrative members, not a load-rated weldment.
 meta({
   name: 'gusset-bracket',
   license: 'CC0-1.0',
   title: 'Gusset bracket',
-  description: 'Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web Knobs: model size, steel, stainless steel.',
+  description: 'Illustrative right-angle gusset bracket with touching wall, toe and diagonal web, plus four through mounting holes. Not a load-rated fabrication drawing. Knobs: model size, steel, stainless steel.',
   tags: ['gusset bracket', 'shelf support', 'mounting bracket', 'plate'],
   kit: 'standard-components',
   category: 'attachment',
@@ -24,7 +24,21 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('gusset-bracket');
-a.part('wall', block(-28*s, -3*s, 0, 56*s, 6*s, 42*s).color(steel));
-a.part('toe', block(-28*s, -28*s, 0, 56*s, 28*s, 6*s).color(steel));
-a.part('gusset', extrudePolygon([[-26*s,0],[26*s,0],[26*s,34*s]], 5*s).rotateX(90).translate(0,0,6*s).color(stainless));
+
+// Y = -3*s is the common wall/toe contact plane; no floating plate or web.
+// All three bodies remain separate to represent the welded-style construction.
+let wall = block(-28*s, -3*s, 0, 56*s, 6*s, 44*s);
+let toe = block(-28*s, -43*s, 0, 56*s, 40*s, 6*s);
+for (const x of [-18, 18]) {
+  // Clearance bores go all the way through both plates (not surface decals).
+  wall = wall.subtract(cylinder(8*s, 3.2*s, 20).rotateX(90).translate(x*s, 4*s, 31*s));
+  toe = toe.subtract(cylinder(8*s, 3.2*s, 20).translate(x*s, -30*s, -1*s));
+}
+// Polygon in the YZ plane after rotation: bottom contacts toe at Z=6*s;
+// rear edge contacts wall at Y=-3*s. The web occupies X=+-2.5*s.
+const web = extrudePolygon([[-41*s, 6*s], [-3*s, 6*s], [-3*s, 38*s]], 5*s)
+  .rotateX(90).rotateZ(90).translate(-2.5*s, 0, 0);
+a.part('wall-plate', wall.color(steel));
+a.part('horizontal-toe', toe.color(steel));
+a.part('diagonal-web', web.color(stainless));
 return a.model();

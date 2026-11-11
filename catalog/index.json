@@ -37615,7 +37615,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-lobe-pump.png",
-      "sourceSha256": "b91fc409e35e3d16c0d67fd70a6ba9aebf22a053f678ffcf73fe2bb61965174f",
+      "sourceSha256": "fe361b52b2b0c13c864ffeedf47063082734b003c56cf3d5f40f3779ab7df9ba",
       "triangleBudget": 2000,
       "params": [
         {
@@ -37677,7 +37677,7 @@
         }
       },
       "stats": {
-        "triangles": 1584,
+        "triangles": 1724,
         "sizeM": [
           1.141,
           0.557,
@@ -37701,6 +37701,8 @@
             "front-cover",
             "cap-nut-0",
             "cap-nut-1",
+            "cap-nut-2",
+            "cap-nut-3",
             "inlet-pipe",
             "inlet-ferrule",
             "outlet-pipe",
@@ -70364,16 +70366,19 @@
       "id": "storage-array-chassis",
       "kit": "data-center-infrastructure",
       "title": "Storage array chassis",
-      "description": "Rack storage chassis with drive carriers, controller bays, and paired handles. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Illustrative CC0 low-poly 4U storage array with 24 distinct front drive carriers in a 6×4 grid, paired pull handles, two rear controller bays, two rear power modules, rack ears and slide rails. Not a vendor manufacturing model. Material controls: painted steel and engineering polymer; facilityStandard and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
-        "critical infrastructure",
+        "storage array",
+        "rack enclosure",
+        "server storage",
+        "drive bay",
         "IT equipment",
-        "power",
-        "cooling",
-        "scene prop"
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "data-center",
@@ -70384,7 +70389,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/storage-array-chassis.kcad.ts",
       "preview": "/assets/data-center-infrastructure-storage-array-chassis.png",
-      "sourceSha256": "bd1d39aae61e3af3c3c5f6062d398479fec69e70c636e7481b8f3de6b8b9f413",
+      "sourceSha256": "f19037ea5f002f24d961ed319dcf955c8e7fd9ef14e658a74b92418b92e5bd44",
       "triangleBudget": 2200,
       "params": [
         {
@@ -70420,11 +70425,11 @@
         }
       },
       "stats": {
-        "triangles": 276,
+        "triangles": 792,
         "sizeM": [
-          0.56,
-          0.135,
-          0.792
+          0.484,
+          0.176,
+          0.772
         ],
         "minUpM": 0,
         "materials": 1
@@ -70435,11 +70440,43 @@
           "color": "#4f7485",
           "parts": [
             "chassis-shell",
-            "front-face",
-            "left-mounting-ear",
-            "right-mounting-ear",
+            "front-panel",
+            "rack-ear-left",
             "slide-rail-left",
-            "slide-rail-right"
+            "handle-left-lower-mount",
+            "handle-left-upper-mount",
+            "rack-ear-right",
+            "slide-rail-right",
+            "handle-right-lower-mount",
+            "handle-right-upper-mount",
+            "drive-grip-0-0",
+            "drive-grip-0-1",
+            "drive-grip-0-2",
+            "drive-grip-0-3",
+            "drive-grip-0-4",
+            "drive-grip-0-5",
+            "drive-grip-1-0",
+            "drive-grip-1-1",
+            "drive-grip-1-2",
+            "drive-grip-1-3",
+            "drive-grip-1-4",
+            "drive-grip-1-5",
+            "drive-grip-2-0",
+            "drive-grip-2-1",
+            "drive-grip-2-2",
+            "drive-grip-2-3",
+            "drive-grip-2-4",
+            "drive-grip-2-5",
+            "drive-grip-3-0",
+            "drive-grip-3-1",
+            "drive-grip-3-2",
+            "drive-grip-3-3",
+            "drive-grip-3-4",
+            "drive-grip-3-5",
+            "rear-controller-pull-left",
+            "rear-power-module-left",
+            "rear-controller-pull-right",
+            "rear-power-module-right"
           ],
           "param": "steel"
         },
@@ -70447,15 +70484,34 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "drive-carrier-0",
-            "drive-carrier-1",
-            "drive-carrier-2",
-            "drive-carrier-3",
-            "drive-carrier-4",
-            "drive-carrier-5",
-            "drive-carrier-6",
-            "drive-carrier-7",
-            "status-control"
+            "handle-left",
+            "handle-right",
+            "drive-carrier-0-0",
+            "drive-carrier-0-1",
+            "drive-carrier-0-2",
+            "drive-carrier-0-3",
+            "drive-carrier-0-4",
+            "drive-carrier-0-5",
+            "drive-carrier-1-0",
+            "drive-carrier-1-1",
+            "drive-carrier-1-2",
+            "drive-carrier-1-3",
+            "drive-carrier-1-4",
+            "drive-carrier-1-5",
+            "drive-carrier-2-0",
+            "drive-carrier-2-1",
+            "drive-carrier-2-2",
+            "drive-carrier-2-3",
+            "drive-carrier-2-4",
+            "drive-carrier-2-5",
+            "drive-carrier-3-0",
+            "drive-carrier-3-1",
+            "drive-carrier-3-2",
+            "drive-carrier-3-3",
+            "drive-carrier-3-4",
+            "drive-carrier-3-5",
+            "rear-controller-left",
+            "rear-controller-right"
           ],
           "param": "polymer"
         }
@@ -108921,7 +108977,7 @@
       "id": "substation-cable-ladder-section",
       "kit": "grid-substation",
       "title": "Substation cable ladder section",
-      "description": "Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
+      "description": "Illustrative low-poly cable ladder with twin stringers, evenly spaced rungs, and mounting pads; not a fabrication model. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108940,7 +108996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts",
       "preview": "/assets/grid-substation-substation-cable-ladder-section.png",
-      "sourceSha256": "ec81b93850372ca97602836e9dfd9a1ef05904a05f35b5cbaa8afd34830eace1",
+      "sourceSha256": "4cf26290cabb3ec1f65a837eef68bbd11afe2cd571b1c87b01946af843d43f2a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -108975,11 +109031,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 292,
         "sizeM": [
-          5.5975,
-          0.5,
-          0.6925
+          3,
+          0.132,
+          0.6675
         ],
         "minUpM": 0,
         "materials": 1
@@ -109011,8 +109067,10 @@
             "rung-11",
             "rung-12",
             "rung-13",
-            "support-foot",
-            "support-foot-2"
+            "mounting-pad-1-1",
+            "mounting-pad-1-2",
+            "mounting-pad-2-1",
+            "mounting-pad-2-2"
           ],
           "param": "stainlessSteel"
         }
@@ -251738,15 +251796,17 @@
     {
       "id": "beam-coupling",
       "kit": "standard-components",
-      "title": "Beam coupling",
-      "description": "Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve Knobs: model size, steel, aluminum.",
+      "title": "Helical beam coupling (illustrative)",
+      "description": "One-piece bored shaft coupling with a continuous helical flexure cut, integral end hubs, and two radial set-screw bores. Illustrative geometry only; no fit tolerance, torque rating, or fatigue verification.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "beam coupling",
-        "flexible coupling",
-        "shaft coupling",
-        "rotary"
+        "helical coupling",
+        "flexible shaft coupling",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -251757,14 +251817,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/beam-coupling.kcad.ts",
       "preview": "/assets/standard-components-beam-coupling.png",
-      "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
-      "triangleBudget": 480,
+      "sourceSha256": "05bd36abfe771f271e54147b74ec439aca6c6b5ad078f3b26f39f5cbdbf17795",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model scale",
           "choices": [
             "compact",
             "standard",
@@ -251772,59 +251832,41 @@
           ]
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
-        },
-        {
-          "name": "aluminum",
+          "name": "metal",
           "type": "color",
           "default": "#aebac0",
-          "label": "Aluminum"
+          "label": "Alloy surface (color only)"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "aluminum": "#586970"
+          "metal": "#586970"
         },
         "brass": {
-          "steel": "#646f75",
-          "aluminum": "#aab8bc"
+          "metal": "#c29a5c"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "aluminum": "#788177"
+          "metal": "#788177"
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 676,
         "sizeM": [
-          0.036,
+          0.018,
           0.03,
-          0.036
+          0.018
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminum",
+          "name": "metal",
           "color": "#aebac0",
           "parts": [
-            "sleeve"
+            "part"
           ],
-          "param": "aluminum"
-        },
-        {
-          "name": "steel",
-          "color": "#85929a",
-          "parts": [
-            "end-a",
-            "end-b"
-          ],
-          "param": "steel"
+          "param": "metal"
         }
       ]
     },
@@ -253140,7 +253182,7 @@
       "id": "gusset-bracket",
       "kit": "standard-components",
       "title": "Gusset bracket",
-      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web Knobs: model size, steel, stainless steel.",
+      "description": "Illustrative right-angle gusset bracket with touching wall, toe and diagonal web, plus four through mounting holes. Not a load-rated fabrication drawing. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253158,7 +253200,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
       "preview": "/assets/standard-components-gusset-bracket.png",
-      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+      "sourceSha256": "1468f622e5a27f819c9b1755948d6509d581bb03eb730d2bb94c49ede23f3b50",
       "triangleBudget": 380,
       "params": [
         {
@@ -253200,11 +253242,11 @@
         }
       },
       "stats": {
-        "triangles": 32,
+        "triangles": 240,
         "sizeM": [
           0.056,
-          0.042,
-          0.031
+          0.044,
+          0.046
         ],
         "minUpM": 0,
         "materials": 1
@@ -253214,8 +253256,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "wall",
-            "toe"
+            "wall-plate",
+            "horizontal-toe"
           ],
           "param": "steel"
         },
@@ -253223,7 +253265,7 @@
           "name": "stainless",
           "color": "#b8c1c6",
           "parts": [
-            "gusset"
+            "diagonal-web"
           ],
           "param": "stainless"
         }
@@ -255071,14 +255113,17 @@
       "id": "pipe-union",
       "kit": "standard-components",
       "title": "Pipe union",
-      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.",
+      "description": "Illustrative CC0 low-poly straight pipe union: two detachable tubular tailpieces with external shoulders, a hollow six-flat coupling nut that captures them, and a separate sealing gasket between faces. The central fluid passage is open. Three scaled scene sizes; threaded engagement, pressure rating and leak-tight fit are not verified manufacturing details.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "pipe union",
         "union fitting",
         "pipe connector",
-        "plumbing"
+        "plumbing",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255089,14 +255134,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
       "preview": "/assets/standard-components-pipe-union.png",
-      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
-      "triangleBudget": 340,
+      "sourceSha256": "64734ca1f7ca5dd752d830f786d1c878edf4491dabc28aec91353eeb1dbec4fb",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative overall scale",
           "choices": [
             "compact",
             "standard",
@@ -255107,13 +255152,19 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel tailpieces"
         },
         {
           "name": "brass",
           "type": "color",
           "default": "#b28a4d",
-          "label": "Brass"
+          "label": "Brass coupling nut"
+        },
+        {
+          "name": "gasketColor",
+          "type": "color",
+          "default": "#353d41",
+          "label": "Sealing gasket"
         }
       ],
       "presets": {
@@ -255131,11 +255182,11 @@
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 744,
         "sizeM": [
-          0.036,
-          0.036,
-          0.036
+          0.038105,
+          0.049,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -255145,8 +255196,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "socket-a",
-            "socket-b"
+            "inlet-tailpiece",
+            "outlet-tailpiece"
           ],
           "param": "steel"
         },
@@ -255154,9 +255205,17 @@
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "nut"
+            "coupling-hex-nut"
           ],
           "param": "brass"
+        },
+        {
+          "name": "gasketColor",
+          "color": "#353d41",
+          "parts": [
+            "face-gasket"
+          ],
+          "param": "gasketColor"
         }
       ]
     },
@@ -255646,14 +255705,17 @@
       "id": "split-shaft-collar",
       "kit": "standard-components",
       "title": "Split shaft collar",
-      "description": "Split clamp collar with a through bore and a raised clamp lug Knobs: model size, steel, zinc-plated steel.",
+      "description": "Illustrative CC0 low-poly split shaft collar with 18 mm through bore, radial slot, two opposed clamp lugs, a crosswise clamp-screw clearance hole and a distinct simplified clamp screw. Three uniform size choices; not vendor manufacturing CAD or a load-rated shaft connection. Color controls: steel and zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "shaft collar",
         "split collar",
         "clamp",
-        "rotating shaft"
+        "rotating shaft",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255664,8 +255726,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-split-shaft-collar.png",
-      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
-      "triangleBudget": 300,
+      "sourceSha256": "a767037b46ecfda9b55a479658bedde86153db98bbbe40835f0895bcde1d1314",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "size",
@@ -255706,11 +255768,11 @@
         }
       },
       "stats": {
-        "triangles": 112,
+        "triangles": 364,
         "sizeM": [
-          0.03995,
+          0.035962,
           0.01,
-          0.036988
+          0.039991
         ],
         "minUpM": 0,
         "materials": 1
@@ -255720,7 +255782,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "collar"
+            "split-collar-body"
           ],
           "param": "steel"
         },
@@ -255728,7 +255790,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "lug"
+            "clamp-screw"
           ],
           "param": "zinc"
         }

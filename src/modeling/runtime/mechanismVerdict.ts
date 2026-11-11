@@ -91,7 +91,9 @@ function plural(n: number, word: string): string {
 }
 
 function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
-  const { mateName: joint, partName: part } = d as { mateName?: unknown; partName?: unknown };
+  const legacy = d as { mateName?: unknown; partName?: unknown };
+  const joint = typeof d.details?.mateName === 'string' ? d.details.mateName : legacy.mateName;
+  const part = typeof d.details?.partName === 'string' ? d.details.partName : legacy.partName;
   return {
     code: d.code,
     reason: d.message,
@@ -100,15 +102,52 @@ function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
   };
 }
 
+function physicsSkipLine(code: string, message: string): string | undefined {
+  if (code === 'mechanism.physics-budget-exceeded') {
+    const mesh = /estimated mesh work (\d+) triangles exceeds the budget (\d+)/.exec(message);
+    return mesh
+      ? `physics gravity check skipped: mesh work ${mesh[1]} is over the budget ${mesh[2]}`
+      : 'physics gravity check skipped: over the work budget or mesh work could not be measured';
+  }
+  if (code === 'mechanism.physics-unsupported') {
+    return 'physics gravity check skipped: closed-loop mate graphs are unsupported';
+  }
+  return undefined;
+}
+
+function jointContinuitySkipLine(message: string): string {
+  const joint = /Joint '([^']+)'/.exec(message)?.[1];
+  const part = /body '([^']+)'/.exec(message)?.[1];
+  return joint !== undefined && part !== undefined
+    ? `rest-pose joint continuity could not be measured at '${joint}' on '${part}'`
+    : 'rest-pose joint continuity could not be measured';
+}
+
+function budgetSkipLine(message: string): string {
+  const forced = /sweepBudget is (-?\d+(?:\.\d+)?) \(forced skip\)/.exec(message)?.[1];
+  if (forced !== undefined) {
+    return `collision sweep across the joint travel skipped: sweepBudget is ${forced} (forced skip)`;
+  }
+  const estimate = /estimated work (\d+) exceeds the budget (\d+)/.exec(message);
+  return estimate
+    ? `collision sweep across the joint travel skipped: work ${estimate[1]} is over the budget ${estimate[2]}`
+    : 'collision sweep across the joint travel skipped: budget reason is unavailable';
+}
+
 function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
   for (const d of input.failures) {
-    if (d.code !== 'mechanism.unverified-budget-exceeded') continue;
-    const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
-    out.push(m
-      ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
-      : 'collision sweep across the joint travel skipped: over the work budget');
+    if (d.code === 'mechanism.unverified-budget-exceeded') {
+      out.push(budgetSkipLine(d.message));
+    } else if (d.code === 'mechanism.unverified-exact-probe') {
+      out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
+    } else if (d.code === 'mechanism.joint-mesh-unverified') {
+      out.push(jointContinuitySkipLine(d.message));
+    } else {
+      const physicsSkip = physicsSkipLine(d.code, d.message);
+      if (physicsSkip !== undefined) out.push(physicsSkip);
+    }
   }
   if (out.length === 0 && input.coverage !== undefined && !input.coverage.sweep) {
     out.push('collision sweep across the joint travel did not run');

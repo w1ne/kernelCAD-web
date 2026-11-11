@@ -1,0 +1,88 @@
+{
+  "mode": "local public export -> vector PDF -> Poppler raster",
+  "source": "fixture-block.kcad.ts; geometry 80 x 50 x 12 mm",
+  "annotation": "INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH",
+  "evidence": [
+    {
+      "tag": "before",
+      "repairEnabled": false,
+      "page": "Page size:       841.89 x 595.276 pts (A4)",
+      "raster": {
+        "width": 1404,
+        "height": 993
+      },
+      "sheetPlacement": {
+        "status": "clear",
+        "checkedViews": [
+          "front",
+          "top",
+          "left",
+          "iso"
+        ],
+        "issues": []
+      },
+      "renderedText": {
+        "status": "issues",
+        "checkedText": 23,
+        "issues": [
+          {
+            "kind": "text-outside-page",
+            "texts": [
+              "INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH"
+            ]
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "code": "drawing.text.placement",
+          "severity": "warn"
+        }
+      ]
+    },
+    {
+      "tag": "after",
+      "repairEnabled": true,
+      "page": "Page size:       1190.55 x 841.89 pts (A3)",
+      "raster": {
+        "width": 1985,
+        "height": 1404
+      },
+      "sheetRepair": {
+        "applied": true,
+        "attempts": [
+          {
+            "sheet": "a4",
+            "issueCount": 0,
+            "overlapped": 0,
+            "textIssueCount": 1
+          },
+          {
+            "sheet": "a3",
+            "issueCount": 0,
+            "overlapped": 0,
+            "textIssueCount": 0
+          }
+        ],
+        "status": "clear"
+      },
+      "sheetPlacement": {
+        "status": "clear",
+        "checkedViews": [
+          "front",
+          "top",
+          "left",
+          "iso"
+        ],
+        "issues": []
+      },
+      "renderedText": {
+        "status": "clear",
+        "checkedText": 23,
+        "issues": []
+      },
+      "diagnostics": []
+    }
+  ],
+  "limits": "Vector text-box preflight and actual raster inspection; not OCR, fit or GD&T certification"
+}

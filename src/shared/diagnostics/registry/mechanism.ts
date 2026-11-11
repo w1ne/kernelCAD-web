@@ -86,7 +86,34 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
+    description: 'The deterministic BREP pose-sweep work estimate exceeded the budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
+  },
+  'mechanism.unverified-exact-probe': {
+    hintTemplate:
+      "An exact overlap boolean failed on a proxy candidate, so the pose sweep is unverified. A failed boolean is not clearance. Repair the named parts and run the mechanism check again.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A conservative pose-sweep proxy marked a part pair as a candidate, and the exact overlap boolean could not confirm it. The sweep is unverified. A failed boolean is not treated as no collision.',
+  },
+  'mechanism.physics-budget-exceeded': {
+    hintTemplate:
+      "Physics preparation was skipped because the lowered rest-scene mesh work exceeded the physics budget or could not be measured. The mechanism is unverified unless another criterion found a defect. Simplify the physics geometry or verify a smaller assembly.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The deterministic rest-scene physics mesh preflight could not certify that MJCF preparation fits its work budget, so physics was skipped and coverage records that it did not run.',
+  },
+  // Closed-loop mate graphs are rejected by the MJCF emitter before any
+  // dynamics run. That is unsupported topology, not a failed simulation,
+  // so the verdict stays 'unverified' (severity 'warn').
+  'mechanism.physics-unsupported': {
+    hintTemplate:
+      "The physics gate only simulates tree-shaped mate graphs. A closed loop was not checked under gravity, so the mechanism stays unverified. This is not a dynamics failure. Open the loop into a tree before reading a physics verdict.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The physics gate rejected a closed-loop mate graph before simulation. Physics did not run, and the mechanism is unverified rather than broken.',
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
@@ -95,6 +122,14 @@ export const MECHANISM_CODES = {
     defaultSeverity: 'error',
     group: 'mechanism',
     description: 'A joint pivot lies outside its mated body BREP surface at rest pose and the mated rigid groups have no bearing contact within tolerance anywhere — the link is floating on the joint it pivots on.',
+  },
+  'mechanism.joint-mesh-unverified': {
+    hintTemplate:
+      'The evaluator could not measure the rest-pose connection between this joint and one of its bodies, so the mechanism is unverified. Inspect or rebuild the affected solid and rerun the mechanism check; a completed collision sweep does not prove joint continuity.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The evaluator could not measure rest-pose joint continuity for at least one mated body. It reports explicit unknown evidence and keeps the mechanism unverified rather than treating the missing measurement as a pass.',
   },
   // Physics-grounded loop — P6 slice. The two physics criteria
   // (static-equilibrium + drop-on-release) emit these codes from

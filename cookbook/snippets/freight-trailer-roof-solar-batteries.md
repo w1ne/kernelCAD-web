@@ -77,6 +77,12 @@ const ROOF_TOP = ROOF_Z + ROOF_T;
 const AXLE_Z = 550;
 const RAIL_Z = 820;
 const RAIL_H = 300;
+const SEAT_OVERLAP = 0.005;
+const CONNECTOR_Z = RAIL_Z + SEAT_OVERLAP / 2;
+const LANDING_POST_TOP = RAIL_Z + SEAT_OVERLAP;
+const BOGIE_BEAM_TOP = RAIL_Z + SEAT_OVERLAP;
+const WHEEL_AXLE_LENGTH = 1534 + 2 * SEAT_OVERLAP;
+const WHEEL_MOUNT_Y = 767 + SEAT_OVERLAP / 2;
 
 function maxFit(usable, size, gap) {
   if (usable < size) return 1;
@@ -160,10 +166,12 @@ function fuse(parts) {
   return acc;
 }
 
-function frameConnector(part, name) {
+// These solids are authored in one world frame. Matched fastened connectors
+// share a world origin so solving them preserves that authored placement.
+function frameConnector(part, name, origin) {
   part.connector(name, {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: origin },
   });
 }
 
@@ -208,7 +216,7 @@ const chassisParts = [
   iBeam(LENGTH - 200, 100, 500),
 ];
 for (let x = 500; x <= LENGTH - 700; x += 1450) {
-  chassisParts.push(box(70, 1160, 95.5).translate(x, -580, RAIL_Z + RAIL_H - 36));
+  chassisParts.push(box(70, 1160, 96 + SEAT_OVERLAP).translate(x, -580, RAIL_Z + RAIL_H - 36));
 }
 chassisParts.push(box(700, 1400, 28).translate(850, -700, RAIL_Z - 8));
 chassisParts.push(cylinder(90, 28).translate(KINGPIN_X, 0, RAIL_Z - 80));
@@ -222,8 +230,8 @@ chassisParts.push(box(6400, 70, 70).translate(2800, -690, 440));
 
 const landingParts = [];
 function legPost(y) {
-  const outer = box(110, 110, 791.5).translate(2460, y, 28);
-  const inner = box(86, 86, 800).translate(2472, y + 12, 20);
+  const outer = box(110, 110, LANDING_POST_TOP - 28).translate(2460, y, 28);
+  const inner = box(86, 86, LANDING_POST_TOP - 20).translate(2472, y + 12, 20);
   const foot = box(240, 200, 36).translate(2395, y - 45, 0);
   return fuse([outer.subtract(inner), foot]);
 }
@@ -234,11 +242,11 @@ landingParts.push(box(160, 140, 180).translate(2440, 400, 520));
 landingParts.push(cylinder(180, 14).rotateY(90).translate(2440, 470, 600));
 
 const bogieParts = [
-  box(2800, 140, 120).translate(8800, -570, 699.5),
-  box(2800, 140, 120).translate(8800, 430, 699.5),
+  box(2800, 140, BOGIE_BEAM_TOP - 699.5).translate(8800, -570, 699.5),
+  box(2800, 140, BOGIE_BEAM_TOP - 699.5).translate(8800, 430, 699.5),
 ];
 for (const axleX of [FRONT_AXLE_X, REAR_AXLE_X]) {
-  bogieParts.push(alongY(1533, 42).translate(axleX, 766.5, AXLE_Z));
+  bogieParts.push(alongY(WHEEL_AXLE_LENGTH, 42).translate(axleX, WHEEL_AXLE_LENGTH / 2, AXLE_Z));
   bogieParts.push(box(90, 150, 280).translate(axleX - 45, -560, 500));
   bogieParts.push(box(90, 150, 280).translate(axleX - 45, 410, 500));
 }
@@ -258,6 +266,9 @@ function dualWheels(axleX) {
 }
 
 function batteryModule() {
+  // The shallow tray seats the cabinet on the roof and spans the full
+  // parameter-driven travel, so its fixed mate point stays in the solid.
+  const mountingTray = box(MODULE_L, MODULE_W, 6);
   const foot = (x, y) => box(72, 72, 34).translate(x, y, 0).finish('aluminium');
   const bolt = (x, y) => cylinder(10, 8).translate(x, y, 26).finish('steel');
   const pack = box(MODULE_L - 96, MODULE_W - 96, 128)
@@ -274,6 +285,7 @@ function batteryModule() {
     .translate(18, 18, 166)
     .finish('paint-matte', { color: '#0c2340' });
   return fuse([
+    mountingTray,
     foot(8, 8),
     foot(MODULE_L - 80, 8),
     foot(8, MODULE_W - 80),
@@ -352,13 +364,13 @@ const body = trailer.part(
   { material: 'aluminum-6061' },
 );
 
-frameConnector(chassis, 'origin');
-frameConnector(chassis, 'to-landing');
-frameConnector(chassis, 'to-bogie');
-frameConnector(chassis, 'to-body');
-frameConnector(landing, 'mount');
-frameConnector(bogie, 'mount');
-frameConnector(body, 'mount');
+frameConnector(chassis, 'origin', [0, 0, 0]);
+frameConnector(chassis, 'to-landing', [2465, -465, CONNECTOR_Z]);
+frameConnector(chassis, 'to-bogie', [9000, -500, CONNECTOR_Z]);
+frameConnector(chassis, 'to-body', [535, 0, 1180 + SEAT_OVERLAP / 2]);
+frameConnector(landing, 'mount', [2465, -465, CONNECTOR_Z]);
+frameConnector(bogie, 'mount', [9000, -500, CONNECTOR_Z]);
+frameConnector(body, 'mount', [535, 0, 1180 + SEAT_OVERLAP / 2]);
 trailer.mate('landing-mount', 'chassis.to-landing', 'landing-legs.mount', 'fastened');
 trailer.mate('bogie-mount', 'chassis.to-bogie', 'bogie.mount', 'fastened');
 trailer.mate('body-mount', 'chassis.to-body', 'box-body.mount', 'fastened');
@@ -367,26 +379,35 @@ for (let a = 0; a < 2; a++) {
   const axleX = a === 0 ? FRONT_AXLE_X : REAR_AXLE_X;
   const right = trailer.part('wheel-axle' + a + '-right', dualWheels(axleX), { density: 1200 });
   const left = trailer.part('wheel-axle' + a + '-left', dualWheels(axleX).reflect('xz'), { density: 1200 });
-  frameConnector(bogie, 'to-wheel-' + a + '-right');
-  frameConnector(bogie, 'to-wheel-' + a + '-left');
-  frameConnector(right, 'mount');
-  frameConnector(left, 'mount');
+  frameConnector(bogie, 'to-wheel-' + a + '-right', [axleX, WHEEL_MOUNT_Y, AXLE_Z]);
+  frameConnector(bogie, 'to-wheel-' + a + '-left', [axleX, -WHEEL_MOUNT_Y, AXLE_Z]);
+  frameConnector(right, 'mount', [axleX, WHEEL_MOUNT_Y, AXLE_Z]);
+  frameConnector(left, 'mount', [axleX, -WHEEL_MOUNT_Y, AXLE_Z]);
   trailer.mate('wheel-' + a + '-right', 'bogie.to-wheel-' + a + '-right', 'wheel-axle' + a + '-right.mount', 'fastened');
   trailer.mate('wheel-' + a + '-left', 'bogie.to-wheel-' + a + '-left', 'wheel-axle' + a + '-left.mount', 'fastened');
 }
 
 const pitchX = gapAlong.add(MODULE_L);
 const pitchY = gapAcross.add(MODULE_W);
+const moduleMountStartX = centroidX - packLen0 / 2;
+const moduleMountStartY = -(MODULE_W * colN + GAP_ACROSS_0 * Math.max(colN - 1, 0)) / 2;
 for (let r = 0; r < rowN; r++) {
   for (let c = 0; c < colN; c++) {
     const name = 'pack-r' + r + '-c' + c;
+    const moduleX = startX.add(pitchX.multiply(r));
+    const moduleY = startY.add(pitchY.multiply(c));
+    const moduleConnector = [
+      moduleMountStartX + MODULE_L / 2 + (MODULE_L + GAP_ALONG_0) * r,
+      moduleMountStartY + MODULE_W / 2 + (MODULE_W + GAP_ACROSS_0) * c,
+      ROOF_TOP - SEAT_OVERLAP / 2,
+    ];
     const mod = trailer.part(
       name,
-      batteryModule().translate(startX.add(pitchX.multiply(r)), startY.add(pitchY.multiply(c)), ROOF_TOP + 0.5),
+      batteryModule().translate(moduleX, moduleY, ROOF_TOP - SEAT_OVERLAP),
       { material: 'aluminum-6061' },
     );
-    frameConnector(body, 'to-' + name);
-    frameConnector(mod, 'mount');
+    frameConnector(body, 'to-' + name, moduleConnector);
+    frameConnector(mod, 'mount', moduleConnector);
     trailer.mate(name + '-mount', 'box-body.to-' + name, name + '.mount', 'fastened');
   }
 }

@@ -478,6 +478,7 @@ function resolveCreatedEdgesRef(
     surface: 'edge-feature',
   });
   if (!result.ok) return { error: result.diagnostic };
+  if ('edgeHashes' in result) return edgesMatchingHashes(record, base, result.edgeHashes);
   if (result.warnings) {
     (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
       ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
@@ -485,6 +486,44 @@ function resolveCreatedEdgesRef(
     ];
   }
   return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
+}
+
+const EDGE_HASH_UPPER = 2147483647;
+
+function edgeHashHex(edge: Edge): string | undefined {
+  const wrapped = (edge as unknown as { wrapped?: { HashCode?(upper: number): number } }).wrapped;
+  const code = wrapped?.HashCode?.(EDGE_HASH_UPPER);
+  return code === undefined ? undefined : code.toString(16);
+}
+
+/**
+ * Bridge stored edge hashes onto the current shape's wrappers. A hash that is
+ * not on this shape is a miss — never the next edge in the list.
+ */
+function edgesMatchingHashes(
+  record: FeatureRecord,
+  base: OcctBackend,
+  hashes: readonly string[],
+): EdgeList | { error: CompilerDiagnostic } {
+  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
+  const out: Edge[] = [];
+  for (const hash of hashes) {
+    const match = all.find((edge) => edgeHashHex(edge) === hash);
+    if (!match) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.selection.no-match',
+          featureId: record.id,
+          severity: 'error',
+          message: `Stored edge '${hash}' is not on the current shape.`,
+          hint: 'The edge was deleted or its lineage hash was not carried onto this shape. The selector did not substitute a neighbour.',
+        },
+      };
+    }
+    out.push(match);
+  }
+  return out;
 }
 
 function resolveQueryEdgesRef(
@@ -848,11 +887,7 @@ function resolveQueryDslEdges(
     const out: Edge[] = [];
     for (const e of entities) {
       if (e.kind === 'edge') {
-        const matchByHash = allEdges.find((edge) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const h = ((edge as any).wrapped ?? edge as any).HashCode(2147483647).toString(16);
-          return h === e.handle;
-        });
+        const matchByHash = allEdges.find((edge) => edgeHashHex(edge) === e.handle);
         if (matchByHash) out.push(matchByHash);
       }
     }

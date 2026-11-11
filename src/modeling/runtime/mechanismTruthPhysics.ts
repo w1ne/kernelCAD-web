@@ -12,6 +12,8 @@ import { collectFreePassiveMates } from '../mates/passiveJoints';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { assemblyToMjcf } from './mjcfExport';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
+import { cachedRestWorldMesh } from './restAnalysisMesh';
 import type { MujocoSession, MujocoSessionFactory } from './mujocoSessionCore';
 import { makeFailure, type SolvedSample } from './mechanismTruthShared';
 
@@ -43,6 +45,34 @@ const DROP_TEST_BODY_DRIFT_M = 0.05;
 const DROP_TEST_DURATION_S = 0.5;
 const DROP_TEST_DT_S = 0.001;
 
+/** Maximum cached fine-analysis triangles accepted as a conservative proxy
+ * for MJCF's coarser collision mesh workload. Custom collision pieces have
+ * separate geometry and are treated as unmeasured. */
+export const PHYSICS_MESH_TRIANGLE_BUDGET = 100_000;
+
+function physicsMeshWork(arm: Assembly, restScene: SceneBackend | undefined): number | undefined {
+  if (restScene === undefined || restScene.parts.length !== arm.__parts().length) return undefined;
+  const names = new Set(arm.__parts().map((part) => part.name));
+  let triangles = 0;
+  for (const part of restScene.parts) {
+    if (!names.delete(part.name) || !(part.shape instanceof OcctBackend)) return undefined;
+    // MJCF uses the original part shape. A distinct analysis body or missing
+    // rest-check cache cannot bound that work without another tessellation.
+    if (analysisBodyOf(part.shape) !== part.shape) return undefined;
+    const mesh = cachedRestWorldMesh(part, 'analysis')?.mesh;
+    if (mesh === undefined || mesh.indices.length === 0 || mesh.indices.length % 3 !== 0) return undefined;
+    triangles += mesh.indices.length / 3;
+    if (!Number.isSafeInteger(triangles)) return undefined;
+  }
+  return names.size === 0 ? triangles : undefined;
+}
+
+export interface PhysicsCriteriaResult {
+  readonly failures: CompilerDiagnostic[];
+  /** True when the physics criteria completed, including vacuous zero-DOF cases. */
+  readonly ran: boolean;
+}
+
 /**
  * Run criteria 5 + 6 against the assembly. Loads MuJoCo, emits the
  * MJCF once, then runs:
@@ -62,27 +92,84 @@ const DROP_TEST_DT_S = 0.001;
  * will reshape). For now, criterion 5 reports a finite-torque failure
  * only.
  */
+
+/** Closed-loop rejection from `assemblyToMjcf`. Unsupported topology,
+ *  not a dynamics failure: warn, and leave the physics check unverified. */
+function unsupportedClosedLoopFailure(error: unknown): CompilerDiagnostic | undefined {
+  const msg = error instanceof Error ? error.message : String(error);
+  if (!/multiple parents|mate graph has a cycle/.test(msg)) return undefined;
+  return makeFailure(
+    'mechanism.physics-unsupported',
+    `Physics was not run because the mate graph is a closed loop, which this physics gate does not support. ${msg} The check is unverified, not a dynamics failure.`,
+    'warn',
+  );
+}
+
+function invalidPhysicsBudgetReason(budget: unknown): string | undefined {
+  if (typeof budget !== 'number') return 'the physics budget has an invalid type';
+  if (budget === 0) return 'the physics budget is 0 (force skip)';
+  if (Number.isNaN(budget) || budget < 0 || budget === -Infinity) return `the physics budget ${budget} is invalid`;
+  return undefined;
+}
+
+function physicsMeshWorkSkipReason(
+  arm: Assembly,
+  restScene: SceneBackend | undefined,
+  budget: number,
+): string | undefined {
+  if (arm.__parts().some((part) => part.collisionShapes.length > 0)) {
+    return 'custom collision shapes have mesh work that cannot be measured from the lowered rest scene';
+  }
+  const work = physicsMeshWork(arm, restScene);
+  if (work === undefined) return 'the lowered rest-scene mesh work could not be measured';
+  if (work > budget) return `estimated mesh work ${work} triangles exceeds the budget ${budget}`;
+  return undefined;
+}
+
 export async function runPhysicsCriteria(
   arm: Assembly,
   solved: readonly SolvedSample[],
   restScene: SceneBackend | undefined,
   loadSession: MujocoSessionFactory,
-): Promise<CompilerDiagnostic[]> {
+  budget = PHYSICS_MESH_TRIANGLE_BUDGET,
+): Promise<PhysicsCriteriaResult> {
   const out: CompilerDiagnostic[] = [];
+
+  const skipped = (reason: string): PhysicsCriteriaResult => ({
+    failures: [makeFailure(
+      'mechanism.physics-budget-exceeded',
+      `Physics preparation was skipped: ${reason}. MuJoCo gravity criteria were not checked.`,
+      'warn',
+    )],
+    ran: false,
+  });
+
+  // The test seam must short-circuit before even reading a rest mesh.
+  const invalidBudget = invalidPhysicsBudgetReason(budget);
+  if (invalidBudget !== undefined) return skipped(invalidBudget);
+  // A rigid assembly has no generalized coordinates to hold or drop.
+  // Preserve the vacuous physics result without requiring a rest mesh.
+  if (arm.__mates().every((mate) => mate.type === 'fastened')) return { failures: out, ran: true };
+  const workSkip = physicsMeshWorkSkipReason(arm, restScene, budget);
+  if (workSkip !== undefined) return skipped(workSkip);
 
   let mjcfResult: Awaited<ReturnType<typeof assemblyToMjcf>>;
   try {
     mjcfResult = await assemblyToMjcf(arm, restScene === undefined ? {} : { scene: restScene });
   } catch (e) {
-    // Closed-loop graphs or other emitter failures. The kinematic
-    // criteria already surface their own failures; don't double-fail
-    // here. Surface a single hint that physics couldn't run.
+    const unsupported = unsupportedClosedLoopFailure(e);
+    if (unsupported !== undefined) {
+      out.push(unsupported);
+      return { failures: out, ran: false };
+    }
+    // Other emitter failures. The kinematic criteria already surface
+    // their own failures; don't double-fail here.
     const msg = e instanceof Error ? e.message : String(e);
     out.push(makeFailure(
       'mechanism.unstable-under-gravity',
       `Could not run the physics gate: ${msg}. The kinematic checks (criteria 1-4) still apply.`,
     ));
-    return out;
+    return { failures: out, ran: false };
   }
 
   let session: MujocoSession;
@@ -99,13 +186,13 @@ export async function runPhysicsCriteria(
       'mechanism.unstable-under-gravity',
       `Could not load the assembly in MuJoCo: ${msg}. The MJCF emitter produced XML the engine rejected — file a follow-up issue with the MJCF dump if this surfaces on a previously-passing example.`,
     ));
-    return out;
+    return { failures: out, ran: false };
   }
 
   try {
     // Mechanisms with zero DOFs (all-fastened or single-part) skip the
     // physics check; gravity has nothing to act on dynamically.
-    if (session.nq === 0) return out;
+    if (session.nq === 0) return { failures: out, ran: true };
 
     // ── Criterion 5: static equilibrium at every sampled pose ──────────
     out.push(...await runStaticEquilibrium(session, solved, mjcfResult.jointOrder));
@@ -116,7 +203,7 @@ export async function runPhysicsCriteria(
     session.dispose();
   }
 
-  return out;
+  return { failures: out, ran: true };
 }
 
 /**

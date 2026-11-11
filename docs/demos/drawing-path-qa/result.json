@@ -1,0 +1,31 @@
+{
+  "source": "80 x 50 x 12 mm fixture; original SVG from real OCCT export",
+  "injection": "additional cubic SVG path in front view extends past A4 boundary",
+  "repair": "original SVG restored; no automatic CAD/annotation repair is claimed",
+  "outcomes": [
+    {
+      "id": "before",
+      "injected": true,
+      "status": "needs-review",
+      "issueCodes": [
+        "view-overflow",
+        "view-overlap",
+        "view-overlap",
+        "view-overlap"
+      ],
+      "page": "Page size:       841.89 x 595.276 pts (A4)",
+      "pdfBytes": 2116,
+      "sourceIsRealOCCT": true
+    },
+    {
+      "id": "after",
+      "injected": false,
+      "status": "incomplete",
+      "issueCodes": [],
+      "page": "Page size:       841.89 x 595.276 pts (A4)",
+      "pdfBytes": 2077,
+      "sourceIsRealOCCT": true
+    }
+  ],
+  "limitations": "Geometry bound validation and real PDF raster evidence, not manufacturing approval"
+}

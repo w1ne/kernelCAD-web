@@ -28,14 +28,20 @@ describe('evaluate_script connector-in-solid gate', () => {
   it('fails a fastened mate whose connector is 60 mm from both parts, as review_cad does', async () => {
     const r = await evaluateScriptTool({ code: script([20, 20, 64]), autosave: false });
     expect(r.ok).toBe(false);
+    expect(r.mechanism).toBe('broken');
     const errs = r.diagnostics.filter((d) => d.code === CODE);
     expect(errs.length).toBe(2);
     expect(errs.every((d) => d.severity === 'error')).toBe(true);
-  }, 120_000);
+    const messages = errs.map((d) => d.message).join('\n');
+    expect(messages).toMatch(/Mate 'lid-fixed' connector 'base\.lid' is \d+\.\d mm away from modeled material on part 'base'\./);
+    expect(messages).toMatch(/Mate 'lid-fixed' connector 'lid\.seat' is \d+\.\d mm away from modeled material on part 'lid'\./);
+    expect(errs.every((d) => d.hint?.includes('move') && d.hint.includes('add support geometry'))).toBe(true);
+  }, 60_000);
 
   it('NEGATIVE CONTROL: the same assembly with the connector on the shared face passes', async () => {
     const r = await evaluateScriptTool({ code: script([20, 20, 4]), autosave: false });
     expect(r.diagnostics.filter((d) => d.code === CODE)).toEqual([]);
+    expect(r.mechanism).toBe('real');
     expect(r.ok).toBe(true);
-  }, 120_000);
+  }, 60_000);
 });
