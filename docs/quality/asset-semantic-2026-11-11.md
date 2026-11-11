@@ -168,3 +168,22 @@ This review is limited to local scene previews and material assignment; it does 
 | `mining/continuous-miner` | Crawler chassis, cutter drum and picks, gathering pan, conveyor, tail boom, and canopy read as a continuous miner; material zones are coherent. | 13.198869 × 2.539194 × 4.167631 | `30222da0d2f76236e55d70934f4fcb613144fc65419d78081fe1ae4443df785b` | `ba180ae2e930fb7ed88f2b94444a0c5521a909db35289e48d1be6569576da33c` | No mismatch found. |
 
 The correction is limited to local source, palette, preview, and index output. It is not deployed and does not establish chemical compatibility, process performance, vendor fidelity, or physical acceptance.
+
+## Ninth sample — grid-substation conservator nozzle
+
+- Rechecked PR #1258 before sampling. The exact current head `953857820198ab5529527c54f3b57eb8c57af347` passed CI run `43065196489`; no review had been submitted. GitHub marked the PR `DIRTY` against `develop` because of a merge conflict.
+- Reviewed five previews with no open issue/PR title or body matches and no changed-source path matches in other open PRs: `substation-main-power-transformer`, `substation-surge-arrester`, `substation-transformer-radiator-bank`, `substation-live-tank-breaker`, and `substation-transformer-conservator`. PR #1258 was excluded as the destination. The five source files were unchanged in its pre-audit diff.
+- The conservator preview showed a copper-colored square nozzle floating 245 mm above the painted shell. It now has a painted flange overlapping the shell roof by 10 mm and a hollow neck joined to that flange; both use `transformerEnamel`. The copper control, which no longer maps to a modeled part, was removed from the source and both preset maps. Existing preset names remain `weathered` and `maintenance`.
+- The focused GLB regression checks the exported flange and neck colors, 10 mm roof overlap, placement within the vessel footprint, 244-triangle count and 1.918 × 1.395 × 0.792 m envelope. Re-rendered only the conservator preview and regenerated `catalog/index.json`; its source hash matches and only its row changes.
+- Grid-substation quality gate: 80/80 (100%). ESLint is clean. `npx vitest run tests/integration/catalog/` passes 30 files / 45 tests, including catalog-index freshness. The global structural scan is 2,401/2,402 (99.96%); the unchanged sole outlier is `standard-components/beam-coupling`.
+- The surge-arrester preview also shows a detached copper-colored terminal block. This is recorded for a separate geometry correction; it was not changed in this material round. The remaining three samples show recognizable objects and coherent material zoning. In the radiator bank, the brown manifolds were left unchanged because the preview/source does not establish that they are non-copper oil lines.
+
+| Asset | Preview observation | Result |
+|---|---|---|
+| `grid-substation/substation-main-power-transformer` | Main tank, bushings, radiator banks, base rails and cooling fittings read as a power transformer; visible material zones are coherent. | No material mismatch found. |
+| `grid-substation/substation-surge-arrester` | Ribbed arrester column and pedestal are legible; the copper-colored terminal block floats above the column. | Separate geometry concern recorded. |
+| `grid-substation/substation-transformer-radiator-bank` | Pressed fins and headers read as a radiator bank; brown manifolds may be oil piping. | No material mismatch established. |
+| `grid-substation/substation-live-tank-breaker` | Three live poles, support beam, braced legs and mechanism cabinet read as a live-tank breaker; material zones are coherent. | No material mismatch found. |
+| `grid-substation/substation-transformer-conservator` | Before: copper-colored block floated above the vessel. After: a painted flange and hollow neck are seated at the shell roof. | Material and physical feature corrected. |
+
+The [conservator nozzle handoff](../../artifacts/catalog-demos/grid-substation-transformer-conservator-nozzle-material-review-20261111/README.md) contains all five baseline previews and source snapshots, before/after target previews, source hashes, target checks, test and quality logs, the regenerated index, and an inspected local MP4. This correction is not deployed and does not establish transformer design approval, performance, safety, or physical acceptance.

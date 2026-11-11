@@ -124304,7 +124304,7 @@
       "id": "substation-transformer-conservator",
       "kit": "grid-substation",
       "title": "Transformer oil conservator",
-      "description": "Raised conservator vessel with saddles, end caps, and a level indicator box. Material controls: galvanized steel, transformer enamel, glass, copper; finish presets: weathered and maintenance.",
+      "description": "Raised conservator vessel with saddles, end caps, and a level indicator box. Material controls: galvanized steel, transformer enamel, glass; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -124323,7 +124323,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-transformer-conservator.kcad.ts",
       "preview": "/assets/grid-substation-substation-transformer-conservator.png",
-      "sourceSha256": "b1c2d6e575816de15887e095c1aad1f5ee7d85a85e217d5e2901671ec41e5ee7",
+      "sourceSha256": "adbdc1283601635fa686ba5ecf7db07dc8b6a045354b33228ee484402bf71a78",
       "triangleBudget": 1800,
       "params": [
         {
@@ -124352,30 +124352,23 @@
           "type": "color",
           "default": "#4d929b",
           "label": "Glass"
-        },
-        {
-          "name": "copper",
-          "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
         }
       ],
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
           "transformerEnamel": "#5a6c53",
-          "glass": "#52888c",
-          "copper": "#9f704a"
+          "glass": "#52888c"
         },
         "maintenance": {
           "transformerEnamel": "#9a7040"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 244,
         "sizeM": [
           1.918,
-          1.65,
+          1.395,
           0.792
         ],
         "minUpM": 0,
@@ -124397,7 +124390,9 @@
           "parts": [
             "vessel-shell",
             "end-cap-left",
-            "end-cap-right"
+            "end-cap-right",
+            "nozzle-flange",
+            "top-nozzle"
           ],
           "param": "transformerEnamel"
         },
@@ -124408,14 +124403,6 @@
             "level-gauge"
           ],
           "param": "glass"
-        },
-        {
-          "name": "copper",
-          "color": "#b87545",
-          "parts": [
-            "top-nozzle"
-          ],
-          "param": "copper"
         }
       ]
     },
