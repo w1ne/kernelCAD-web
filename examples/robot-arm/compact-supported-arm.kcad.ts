@@ -823,12 +823,13 @@ const rightFinger = arm.part('right-finger', paint(fuse([
 function fingerPad(side) {
   const inward = side < 0;
   const ySign = inward ? -1 : 1;
-  // Clearly larger than the orange jaw (18×8.2×16 vs the 8.6×8.4 finger
-  // beam). Extra thickness grows outward so the contact face stays at
-  // |y| ≈ 4 and the closed-grip gap does not collapse. The dovetail neck
-  // and bulb are unchanged.
+  // Keep the v4 collision envelope that stayed clean through grip 28°:
+  // x 12..26, top z 5.8, contact face at |y| ≈ 4. The first v5 pads grew
+  // past that envelope and collided pad-to-pad and pad-to-palm from
+  // grip 23°. Contact texture is cut into the face (not proud) and the
+  // outer ribs stay on the back, matching v4's side silhouette.
   const body = coat(
-    extrudeRoundedRect(18, 8.2, 1.8, 16).translate(20, ySign * 8.1, -8),
+    extrudeRoundedRect(14, 6.4, 1.6, 12.2).translate(19, ySign * 7.2, -6.4),
     INK.pad,
   );
   // Reach 0.4 mm into the pad body. The jaw slot still owns the inboard end.
@@ -838,19 +839,23 @@ function fingerPad(side) {
   const bulb = inward
     ? slab(10, 34, -2.15, -1.45, -1.55, 1.05, INK.pad)
     : slab(10, 34, 1.45, 2.15, -1.55, 1.05, INK.pad);
-  const ribs = [12, 15, 18, 21, 24].map((x) => {
-    const contact = ySign * 3.65;
-    const inner = ySign * 5.0;
-    return slab(x, x + 2.2, Math.min(contact, inner), Math.max(contact, inner), -6.6, 6.6, INK.pad);
+  const outerRibs = [14, 18, 22].map((x) => {
+    const near = ySign * 9.0;
+    const far = ySign * 10.2;
+    return slab(x, x + 3.4, Math.min(near, far), Math.max(near, far), -5.2, 4.8, INK.pad);
   });
-  const grooves = [-4.2, 0, 4.2].map((z) => {
-    const contact = ySign * 3.7;
-    const inner = ySign * 5.1;
-    return slab(12.2, 27.6, Math.min(contact, inner), Math.max(contact, inner), z - 0.55, z + 0.55, INK.pad);
-  });
-  return paint(fuse([body, neck, bulb, ...ribs, ...grooves]), INK.pad);
+  const face = ySign * 4.0;
+  const cut = ySign * 5.2;
+  const y0 = Math.min(face, cut);
+  const y1 = Math.max(face, cut);
+  const hGrooves = [-3.4, 0, 3.4].map((z) => (
+    slab(13, 25, y0, y1, z - 0.55, z + 0.55, INK.pad)
+  ));
+  return paint(
+    fuse([body, neck, bulb, ...outerRibs]).subtract(fuse(hGrooves)),
+    INK.pad,
+  );
 }
-
 const leftFingerPad = arm.part('left-finger-pad', fingerPad(-1), { density: 1150 });
 const rightFingerPad = arm.part('right-finger-pad', fingerPad(1), { density: 1150 });
 
