@@ -170,7 +170,7 @@ function gjkSeparated(
     const next = support(direction);
     if (dot(next, direction) <= 0) return true;
     simplex.push(next);
-    const evolved = evolveSimplex(simplex, direction);
+    const evolved = evolveSimplex(simplex);
     if (evolved === 'intersecting') return false;
     direction = evolved;
     if (!Number.isFinite(direction[0]) || !Number.isFinite(direction[1]) || !Number.isFinite(direction[2])) {
@@ -181,13 +181,13 @@ function gjkSeparated(
   return false;
 }
 
-function evolveSimplex(simplex: V[], direction: V): V | 'intersecting' {
-  if (simplex.length === 2) return lineCase(simplex, direction);
-  if (simplex.length === 3) return triangleCase(simplex, direction);
-  return tetrahedronCase(simplex, direction);
+function evolveSimplex(simplex: V[]): V | 'intersecting' {
+  if (simplex.length === 2) return lineCase(simplex);
+  if (simplex.length === 3) return triangleCase(simplex);
+  return tetrahedronCase(simplex);
 }
 
-function lineCase(simplex: V[], _direction: V): V {
+function lineCase(simplex: V[]): V {
   const a = simplex[1]!;
   const b = simplex[0]!;
   const ab = sub(b, a);
@@ -197,7 +197,7 @@ function lineCase(simplex: V[], _direction: V): V {
   return ao;
 }
 
-function triangleCase(simplex: V[], direction: V): V {
+function triangleCase(simplex: V[]): V {
   const a = simplex[2]!;
   const b = simplex[1]!;
   const c = simplex[0]!;
@@ -207,18 +207,18 @@ function triangleCase(simplex: V[], direction: V): V {
   const abc = cross(ab, ac);
   if (dot(cross(abc, ab), ao) > 0) {
     simplex.splice(0, simplex.length, b, a);
-    return lineCase(simplex, direction);
+    return lineCase(simplex);
   }
   if (dot(cross(ac, abc), ao) > 0) {
     simplex.splice(0, simplex.length, c, a);
-    return lineCase(simplex, direction);
+    return lineCase(simplex);
   }
   if (dot(abc, ao) > 0) return abc;
   simplex.splice(0, simplex.length, b, c, a);
   return neg(abc);
 }
 
-function tetrahedronCase(simplex: V[], direction: V): V | 'intersecting' {
+function tetrahedronCase(simplex: V[]): V | 'intersecting' {
   const a = simplex[3]!;
   const b = simplex[2]!;
   const c = simplex[1]!;
@@ -232,15 +232,15 @@ function tetrahedronCase(simplex: V[], direction: V): V | 'intersecting' {
   const adb = cross(ad, ab);
   if (dot(abc, ao) > 0) {
     simplex.splice(0, simplex.length, c, b, a);
-    return triangleCase(simplex, direction);
+    return triangleCase(simplex);
   }
   if (dot(acd, ao) > 0) {
     simplex.splice(0, simplex.length, d, c, a);
-    return triangleCase(simplex, direction);
+    return triangleCase(simplex);
   }
   if (dot(adb, ao) > 0) {
     simplex.splice(0, simplex.length, b, d, a);
-    return triangleCase(simplex, direction);
+    return triangleCase(simplex);
   }
   return 'intersecting';
 }

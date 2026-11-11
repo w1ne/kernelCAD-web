@@ -7,10 +7,13 @@
 // currently rebuild the model (~7 s) and drop WeakMap identity, so the
 // physics pass repeats work the sweep already paid for. The cache is
 // keyed on file identity (path + device + inode + mtime + ctime + size)
-// plus the identity of imported assets (STEP, STL, fonts, catalog parts).
-// It is skipped when the caller supplies a custom API factory, baseline
-// selections, extra requirements, or skipDfmGate, or when an import path
-// is not a literal we can hash. A same-size rewrite that restores mtime
+// plus the identity of imported assets (STEP, STL, fonts, catalog parts
+// loaded through literal fetchPart calls). It is skipped when the caller
+// supplies a custom API factory, baseline selections, extra requirements,
+// or skipDfmGate, when an import path is not a literal we can hash, or
+// when the script uses lib.part / lib.stack / lib.standard / lib.findPart
+// / lib.insert (those load catalog geometry that importIdentity does not
+// yet hash). A same-size rewrite that restores mtime
 // still changes ctime, so the key misses and we rebuild. At most a few
 // successful evaluates are kept so older models can be collected.
 
@@ -47,6 +50,12 @@ function importsAreProvable(identity: string): boolean {
   return true;
 }
 
+/** Catalog loaders that are not hashed by importIdentity. */
+function usesUnhashedCatalogApi(source: string): boolean {
+  return /\blib\s*\.\s*(?:part|stack|findPart|insert)\s*\(/.test(source)
+    || /\blib\s*\.\s*standard\s*\./.test(source);
+}
+
 export async function evaluateCacheKey(
   input: { file?: string; code?: string; kernel?: string; scriptDir?: string; baseline?: unknown; requirements?: unknown },
   opts?: { apiFactory?: unknown; skipDfmGate?: boolean },
@@ -69,6 +78,7 @@ export async function evaluateCacheKey(
   } catch {
     return undefined;
   }
+  if (usesUnhashedCatalogApi(source)) return undefined;
   const scriptDir = input.scriptDir ?? dirname(resolve(input.file));
   const imports = await importIdentity(source, scriptDir);
   if (!importsAreProvable(imports)) return undefined;

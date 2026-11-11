@@ -168,39 +168,67 @@ async function sweepWalks(
   for (const walk of walks) {
     continuation.reset();
     for (const pose of walk) {
-      let lowerPose: FullPoses = pose;
-      if (hasMates) {
-        const step = await continuation.step(pose);
-        if (step.stop !== undefined) {
-          loopDiagnostics.push(step.stop);
-          break;
-        }
-        // Lower exactly the configuration continuation solved: every loop
-        // coordinate is passed, so the lowerer's loop solve is already
-        // closed and cannot pick another branch.
-        lowerPose = { ...pose, ...loopPose(arm, step.result.loop?.coordinates) };
+      const sample = await sampleSweepPose(
+        arm, pose, defaults, continuation, hasMates, cachedScene, proxies, epsilon,
+      );
+      if (sample.stop !== undefined) {
+        loopDiagnostics.push(sample.stop);
+        break;
       }
       posesSampled++;
-      const scene = await posedSceneForSweep(arm, { ...defaults, ...lowerPose }, cachedScene);
-      if (scene !== undefined && cachedScene === undefined) cachedScene = scene;
-      if (scene !== undefined && proxies === undefined) proxies = buildSweepProxies(scene);
-      const explicit = scene === undefined || proxies === undefined
-        ? undefined
-        : proxyPairsNeedingExactConfirm(proxies, scene);
-      const pairs = scene === undefined
-        ? []
-        : detectInterferences(scene, epsilon, new Set(), [], undefined, explicit).pairs;
-      if (pairs.length === 0) continue;
-      const contacts: SweptCollisionContact[] = pairs.map((p) => ({
-        partA: p.a,
-        partB: p.b,
-        volumeMm3: p.volumeMm3,
-      }));
-      collidingPoses.push({ pose: { ...pose }, contacts });
+      cachedScene = sample.cachedScene;
+      proxies = sample.proxies;
+      if (sample.contacts !== undefined) {
+        collidingPoses.push({ pose: { ...pose }, contacts: sample.contacts });
+      }
     }
   }
   loopDiagnostics.unshift(...continuation.advisories());
   return { collidingPoses, posesSampled, loopDiagnostics };
+}
+
+/** Solve one walk sample and measure it against the cached scene. */
+async function sampleSweepPose(
+  arm: Assembly,
+  pose: NumericPoses,
+  defaults: FullPoses,
+  continuation: LoopContinuation,
+  hasMates: boolean,
+  cachedScene: SceneBackend | undefined,
+  proxies: ReturnType<typeof buildSweepProxies> | undefined,
+  epsilon: number,
+): Promise<{
+  stop?: KinematicDiagnostic;
+  cachedScene?: SceneBackend;
+  proxies?: ReturnType<typeof buildSweepProxies>;
+  contacts?: SweptCollisionContact[];
+}> {
+  let lowerPose: FullPoses = pose;
+  if (hasMates) {
+    const step = await continuation.step(pose);
+    if (step.stop !== undefined) return { stop: step.stop, cachedScene, proxies };
+    // Lower exactly the configuration continuation solved: every loop
+    // coordinate is passed, so the lowerer's loop solve is already
+    // closed and cannot pick another branch.
+    lowerPose = { ...pose, ...loopPose(arm, step.result.loop?.coordinates) };
+  }
+  const scene = await posedSceneForSweep(arm, { ...defaults, ...lowerPose }, cachedScene);
+  const nextScene = cachedScene ?? scene;
+  const nextProxies = proxies ?? (scene === undefined ? undefined : buildSweepProxies(scene));
+  const explicit = scene === undefined || nextProxies === undefined
+    ? undefined
+    : proxyPairsNeedingExactConfirm(nextProxies, scene);
+  const pairs = scene === undefined
+    ? []
+    : detectInterferences(scene, epsilon, new Set(), [], undefined, explicit).pairs;
+  const contacts = pairs.length === 0
+    ? undefined
+    : pairs.map((p) => ({
+      partA: p.a,
+      partB: p.b,
+      volumeMm3: p.volumeMm3,
+    }));
+  return { cachedScene: nextScene, proxies: nextProxies, contacts };
 }
 
 /** Re-pose the cached lowered scene, or lower the feature tree once. */

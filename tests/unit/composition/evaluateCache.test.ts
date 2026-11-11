@@ -76,6 +76,22 @@ describe('evaluateCache', () => {
     expect(after).not.toBe(before);
   });
 
+  it('does not cache a script that loads catalog geometry through lib.part', async () => {
+    const path = writeScript(
+      'lib-part',
+      "const screw = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });\nreturn screw;\n",
+    );
+    expect(await evaluateCacheKey({ file: path })).toBeUndefined();
+  });
+
+  it('does not cache a script that loads catalog geometry through lib.standard', async () => {
+    const path = writeScript(
+      'lib-standard',
+      "const servo = await lib.standard.sg90();\nreturn servo;\n",
+    );
+    expect(await evaluateCacheKey({ file: path })).toBeUndefined();
+  });
+
   it('does not cache a script whose import path is not a hashable literal', async () => {
     const path = writeScript(
       'dynamic',
