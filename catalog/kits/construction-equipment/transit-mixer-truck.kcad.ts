@@ -67,7 +67,7 @@ const wheel = (name, x, y, r, w) => {
   ]);
   const rim = turned([[0, -w * 0.42], [r * 0.62, -w * 0.42], [r * 0.62, w * 0.42], [0, w * 0.42]]);
   add(`${name}-tyre`, tyre.rotateX(90).translate(x, y, r), tireRubberColor);
-  add(`${name}-rim`, rim.rotateX(90).translate(x, y, r), equipmentPaintColor);
+  add(`${name}-rim`, rim.rotateX(90).translate(x, y, r), structuralSteelColor);
   // Tread lugs across the crown, chevron-ish by alternating offset.
   for (let i = 0; i < 16; i++) {
     const a = (360 * i) / 16;

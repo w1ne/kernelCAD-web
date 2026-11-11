@@ -68794,7 +68794,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/transit-mixer-truck.kcad.ts",
       "preview": "/assets/construction-equipment-transit-mixer-truck.png",
-      "sourceSha256": "49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937",
+      "sourceSha256": "f491239865e81de5af9a2e1ffb82c5cb068369bf619dc08c1e33cc1a1755c5e1",
       "triangleBudget": 6000,
       "params": [
         {
@@ -68978,37 +68978,16 @@
           "param": "tireRubberColor"
         },
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "structuralSteelColor",
+          "color": "#89969a",
           "parts": [
             "front-wheel-right-rim",
             "rear-wheel-right-0-rim",
             "rear-wheel-right-1-rim",
-            "front-fender--1",
+            "rear-fender--1",
             "front-wheel-left-rim",
             "rear-wheel-left-0-rim",
             "rear-wheel-left-1-rim",
-            "front-fender-1",
-            "cab",
-            "sun-visor",
-            "front-pedestal",
-            "rear-stand",
-            "rear-stand-beam",
-            "drum-band-0",
-            "drum-band-1",
-            "drum-band-2",
-            "drum-band-3",
-            "chute",
-            "chute-lip--1",
-            "chute-lip-1"
-          ],
-          "param": "equipmentPaintColor"
-        },
-        {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
-          "parts": [
-            "rear-fender--1",
             "rear-fender-1",
             "chassis",
             "fuel-tank",
@@ -69033,6 +69012,27 @@
             "ladder-platform"
           ],
           "param": "structuralSteelColor"
+        },
+        {
+          "name": "equipmentPaintColor",
+          "color": "#e1a31b",
+          "parts": [
+            "front-fender--1",
+            "front-fender-1",
+            "cab",
+            "sun-visor",
+            "front-pedestal",
+            "rear-stand",
+            "rear-stand-beam",
+            "drum-band-0",
+            "drum-band-1",
+            "drum-band-2",
+            "drum-band-3",
+            "chute",
+            "chute-lip--1",
+            "chute-lip-1"
+          ],
+          "param": "equipmentPaintColor"
         },
         {
           "name": "drumPaintColor",

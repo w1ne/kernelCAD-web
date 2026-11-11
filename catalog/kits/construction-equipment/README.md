@@ -6,6 +6,14 @@ The 2026-11-06 silhouette refinement improved three existing defaults without ch
 
 The earlier [kit creation bundle](../../../artifacts/catalog-demos/construction-equipment-wave-20261102/README.md) retains the original wave generator.
 
+The Nov 11 transit-mixer review moves all six steel wheel rims from the
+equipment-enamel control to `structuralSteelColor`. The cab and drum bands keep
+their equipment paint; tyre rubber and the model's geometry are unchanged. The
+[wheel-material handoff](../../../artifacts/catalog-demos/construction-transit-mixer-wheel-material-review-20261111/README.md)
+records the five-preview ledger, before/after preview, regression test, local
+checks and inspected MP4. The branch is not deployed; this color assignment
+does not make the scene prop an OEM or roadworthiness model.
+
 | id | asset | description | material controls and presets |
 | --- | --- | --- | --- |
 | `track-asphalt-paver` | Tracked asphalt paver | Tracked paving machine with front material hopper, operator canopy, feeder deck and rear screed. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
