@@ -161,6 +161,48 @@ describe('a mate places a part that has `at` where the mate says', () => {
   }
 });
 
+describe('connect-placed parts inherit their parent mate motion', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  for (const entry of ['model', 'solvedModel'] as const) {
+    it(`${entry}: a connected child moves with its revolute parent`, async () => {
+      const code = `
+        const arm = assembly('rig');
+        const root = arm.part('root', box(2, 2, 2, true));
+        root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+
+        const parent = arm.part('parent', box(20, 4, 2, false), {
+          at: [100, 0, 0],
+          connectors: { childMount: { origin: [20, 0, 0] } },
+        });
+        parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('child', box(10, 2, 2, false), {
+          connectors: { root: { origin: [0, 0, 0] } },
+          connect: { connector: 'root', to: parent.connector('childMount') },
+        });
+        arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+        return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
+      `;
+      const boxes = await builtBoxes(code);
+
+      // The parent rotates around the origin from +X onto +Y. The child was
+      // connector-placed at the parent's far end, so its entire box
+      // must receive the same rigid motion.
+      expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+      expectBox(boxes.get('child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+
+      if (entry === 'solvedModel') {
+        const { arm, scene, lowered } = await build(code);
+        const solved = await solveMates(arm);
+        near(solved.poses.get('child')!.point([0, 0, 0]), [0, 120, 0]);
+        near(scene.part('child').worldTransform.point([120, 0, 0]), [0, 120, 0]);
+        const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses)!;
+        expectBox(boxOf(reposed, 'child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+      }
+    });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Every path that poses a mated part agrees with the built scene: the
 // capture-time Scene, the `solveMates` placement (with `at` taken back out),

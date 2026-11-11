@@ -8,4 +8,8 @@
 
 The result is local CAD validation of the model's declared mates and geometry. It does not claim a physical simulation, a deployed result, or hardware acceptance.
 
+## Connector-placed descendants
+
+A part placed with `connect` stays attached to its target connector. When a parent moves through a mate, the evaluated `model()` and `solvedModel()` scenes carry that same rigid motion through connected descendants. A descendant with its own mate or legacy joint keeps that solver placement.
+
 The [rest-pose continuity demo and evidence bundle](../demos/rest-joint-continuity-925/README.md) shows an annular bearing whose mesh and exact BREP joint-distance queries are unavailable while the travel sweep is skipped at budget zero.
