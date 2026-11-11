@@ -70,4 +70,32 @@ describe('GLB metre-scale handoff demo evidence', () => {
       }, null, 2)}\n`);
     }
   });
+
+  it('honors an explicit millimetre selection through the script export path', { timeout: 60_000 }, async () => {
+    const repository = resolve(import.meta.dirname, '../../../..');
+    const sourcePath = join(repository, 'examples/exports/glb-meter-handoff.kcad.ts');
+    const code = readFileSync(sourcePath, 'utf8');
+    const result = await runAndExport({
+      code,
+      fileName: 'glb-meter-handoff.kcad.ts',
+      format: 'glb',
+      options: { format: 'glb', units: 'mm' },
+    });
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
+
+    const doc = await new NodeIO().readBinary(result.bytes);
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const plate = doc.getRoot().listNodes().find((node) => node.getName() === 'base_plate')!;
+    const position = plate.getMesh()!.listPrimitives()[0]!.getAttribute('POSITION')!;
+    const min = position.getMin([]);
+    const max = position.getMax([]);
+    const sizeMm = max.map((value, axis) => value - min[axis]!);
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+
+    expect(extras.units).toBe('mm');
+    expect(root.getScale()).toEqual([1, 1, 1]);
+    sizeMm.sort((a, b) => a - b).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([12, 300, 700][index]!, 4);
+    });
+  });
 });
