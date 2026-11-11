@@ -57,7 +57,6 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | pocket, recess | blind `cutout` or blind `hole` (`depth: n`) | blind-pocket-from-top |
 | enclosure, box, case, hollow, wall thickness | `.shell(wall, { face: 'top' })` on the outer body, or subtract the inner box; lid = second part | enclosure-lid-with-screw-bosses |
 | standoffs, bosses, PCB / Raspberry Pi mount | union `cylinder` bosses on the floor, then `holes(..., { thread })` or insert pilots through them | enclosure-lid-with-screw-bosses |
-| structural rib, stiffening web on a plate | `rib(base, centerline, { thickness, height, startZ })` makes a constant-thickness vertical wall from an open XY polyline; overlap it with the base so the B-rep union is connected | rib-stiffened-plate |
 | gear, involute, module, pinion | `spurGear({ module, teeth, faceWidth, bore, backlash })`, `ringGear`; centre distance m(z1+z2)/2 | involute-spur-gear-pair |
 | sheet metal, bend, flange, flat pattern | `sheetMetal(profile, { thickness, kFactor }).bend({ atX }, angle, radius)` — lines in blank coordinates, the shorter side folds, chain bends for U / Z; drill the blank before bending; MCP `flatten_pattern` | sheet-metal-l-bracket-bend |
 | fit, clearance, tolerance, printer | clearance param (per side: press 0.05 · snap 0.15 · slip 0.2 · running 0.3) + `dfmSpec({ process: 'fdm', printer, minClearance })` | fdm-fit-clearance-by-fit-type |
