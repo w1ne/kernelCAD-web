@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { buildModel } from '../../../src/modeling/buildModel';
+import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
 
 const OUTPUT_DIR = dirname(fileURLToPath(import.meta.url));
 const MODEL_FILE = join(OUTPUT_DIR, 'param-placement.kcad.ts');
@@ -54,14 +54,21 @@ async function main(): Promise<void> {
   await initOcct();
   const modelSource = await readFile(MODEL_FILE, 'utf8');
   const model = await buildModel({ fileName: MODEL_FILE, code: modelSource });
-  const diagnostic = model.diagnostics.find(
+  const initialDiagnostic = model.diagnostics.find(
     (item) => item.code === 'assembly.placement-ignored-by-mate-fk',
   );
-  if (diagnostic === undefined) {
+  if (initialDiagnostic === undefined) {
     throw new Error('The model did not emit assembly.placement-ignored-by-mate-fk.');
   }
-  if (!diagnostic.message.includes('(125.00, 0.00, 0.00)')) {
-    throw new Error(`Unexpected resolved placement in diagnostic: ${diagnostic.message}`);
+  if (!initialDiagnostic.message.includes('(125.00, 0.00, 0.00)')) {
+    throw new Error(`Unexpected default placement in diagnostic: ${initialDiagnostic.message}`);
+  }
+  const edited = await updateModelParams(model, [{ name: 'offset', value: 275 }]);
+  const diagnostic = edited.model.diagnostics.find(
+    (item) => item.code === 'assembly.placement-ignored-by-mate-fk',
+  );
+  if (diagnostic === undefined || !diagnostic.message.includes('(275.00, 0.00, 0.00)')) {
+    throw new Error(`Unexpected edited placement in diagnostic: ${diagnostic?.message ?? 'missing diagnostic'}`);
   }
 
   const tempDir = await mkdtemp(join(tmpdir(), 'kernelcad-param-placement-'));
@@ -72,15 +79,15 @@ async function main(): Promise<void> {
         "arm.part('child', box(10, 10, 10), { at: [offset, 0, 0] });",
         "arm.mate('m', 'base.p', 'child.q', 'fastened');",
       ], "The mate-derived pose overrides the child's non-root at: value."),
-      renderSlide('Resolve before checking for an override', 'EMITTED MODEL DIAGNOSTIC · INFO', [
+      renderSlide('The note follows a parameter edit', 'PARAMETER TABLE EDIT · 125 MM → 275 MM', [
         'assembly.placement-ignored-by-mate-fk',
-        'resolved at: (125.00, 0.00, 0.00) mm',
+        'resolved at: (275.00, 0.00, 0.00) mm',
         'the mate-FK-derived pose takes precedence',
-      ], 'The diagnostic uses the assembly parameter table.'),
+      ], 'The diagnostic resolves the current assembly parameter table.'),
       renderSlide('The regression now reports the real value', 'LOCAL MODEL BUILD · NOT A SIMULATION', [
         `severity: ${diagnostic.severity}`,
         `matching diagnostic: ${diagnostic.code}`,
-        'focused regression: 7 tests passed',
+        'default 125 mm → edited 275 mm',
       ], 'Compiler diagnostic evidence only; no physics integration was run.'),
     ];
     const imagePaths: string[] = [];
@@ -128,9 +135,15 @@ async function main(): Promise<void> {
         message: diagnostic.message,
         hint: diagnostic.hint,
       },
+      initialDiagnostic: {
+        code: initialDiagnostic.code,
+        severity: initialDiagnostic.severity,
+        message: initialDiagnostic.message,
+      },
       checks: {
         localModelBuild: true,
-        resolvedParameterValueInDiagnostic: true,
+        defaultParameterValueInDiagnostic: true,
+        editedParameterValueInDiagnostic: true,
         physicsIntegration: false,
         deployedBehavior: false,
         hardwareAcceptance: false,

@@ -9,7 +9,7 @@
 // severity diagnostic surfaces the conflict at the override point.
 
 import { describe, expect, it, beforeAll } from 'vitest';
-import { buildModel } from '../../../src/modeling/buildModel';
+import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
@@ -59,6 +59,13 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
 
     expect(placementIgnored).toBeDefined();
     expect(placementIgnored?.message).toContain('(125.00, 0.00, 0.00)');
+
+    const edited = await updateModelParams(model, [{ name: 'offset', value: 275 }]);
+    const editedPlacementIgnored = edited.model.diagnostics.find(
+      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
+    );
+    expect(editedPlacementIgnored).toBeDefined();
+    expect(editedPlacementIgnored?.message).toContain('(275.00, 0.00, 0.00)');
   });
 
   it('does NOT emit when the mated part has no `at:`', async () => {
