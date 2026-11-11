@@ -7,7 +7,6 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../../../src/agent/catalog/buildCatalog';
 import { glbTriangles, renderTrianglesPng } from '../../../scripts/lib/glbSoftwareRender';
 
-const repoRoot = resolve(import.meta.dirname, '../../..');
 const bundle = resolve(import.meta.dirname);
 const sourceDir = resolve(bundle, 'source');
 const previewDir = resolve(bundle, 'previews');
