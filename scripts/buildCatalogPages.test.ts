@@ -93,6 +93,28 @@ describe('catalog SEO page export', () => {
         expect([...broken]).toEqual([]);
     });
 
+    it('publishes a truthful CollectionPage schema and code/MCP entry points on the catalog hub', () => {
+        const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
+        const markup = jsonLd(hub);
+        expect(markup).toHaveLength(1);
+        const graph = markup[0]['@graph'] as Record<string, unknown>[];
+        expect(graph.find((item) => item['@type'] === 'CollectionPage')).toMatchObject({
+            url: `${ORIGIN}catalog/`,
+            name: 'Free low-poly 3D model catalog (CC0) | kernelCAD',
+            mainEntity: { '@type': 'ItemList', numberOfItems: index.assets.length },
+        });
+        expect(graph.find((item) => item['@type'] === 'BreadcrumbList')).toMatchObject({
+            itemListElement: [
+                { position: 1, item: ORIGIN },
+                { position: 2, item: `${ORIGIN}catalog/` },
+            ],
+        });
+        expect(hub).toContain('aria-label="Use models with kernelCAD"');
+        expect(hub).toContain('href="/code-cad/"');
+        expect(hub).toContain('href="/mcp/"');
+        expect(hub).not.toMatch(/aggregateRating|reviewCount|fake customer/i);
+    });
+
     it('offers the hub and every asset page as sitemap URLs, without writing the site sitemap', () => {
         // The site owns sitemap.xml and robots.txt. The catalog contributes its
         // URLs through catalogUrls() so build-sitemap.ts can merge them; it must
