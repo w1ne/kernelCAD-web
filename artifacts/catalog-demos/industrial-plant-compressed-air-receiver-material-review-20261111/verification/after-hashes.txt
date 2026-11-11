@@ -1,0 +1,2 @@
+078566a98ef6db9eeec5c6c67723cda8bf0f702e3c9ab6b424da8bc1a6128e42  artifacts/catalog-demos/industrial-plant-compressed-air-receiver-material-review-20261111/source/after/compressed-air-receiver.kcad.ts
+482fedf983831b7ddf17cf6970f455caeb1cc0cfc79118e400031d396cd746c4  artifacts/catalog-demos/industrial-plant-compressed-air-receiver-material-review-20261111/previews/after/compressed-air-receiver.png

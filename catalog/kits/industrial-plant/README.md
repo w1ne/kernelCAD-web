@@ -53,6 +53,13 @@ safety finish. The default render is 1,508 triangles under a 1,800 budget. Its
 records the five-preview ledger, before/after evidence, GLB regression, local
 checks and inspected MP4. No asset IDs or kit counts changed.
 
+The Nov 11 compressed-air-receiver material review gives the welded heads and
+top nozzle necks the same steel control as the pressure shell; the safety
+finish remains on the supports and skid. Geometry, scale, presets, and asset
+count are unchanged. Its [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-compressed-air-receiver-material-review-20261111/README.md)
+records the five-preview ledger, before/after images, GLB color regression,
+local checks, and inspected MP4.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |

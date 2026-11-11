@@ -142168,7 +142168,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/compressed-air-receiver.kcad.ts",
       "preview": "/assets/industrial-plant-compressed-air-receiver.png",
-      "sourceSha256": "c70f0d653418f4ecad7d8c597a70a6ca455507bcb082d1247e412d23f08b2e9b",
+      "sourceSha256": "078566a98ef6db9eeec5c6c67723cda8bf0f702e3c9ab6b424da8bc1a6128e42",
       "triangleBudget": 1400,
       "params": [
         {
@@ -142225,10 +142225,15 @@
           "color": "#6a7e87",
           "parts": [
             "pressure-shell",
+            "left-head",
+            "right-head",
             "saddle-foot-0",
             "saddle-foot-1",
+            "top-port-0",
             "port-flange-0",
+            "top-port-1",
             "port-flange-1",
+            "top-port-2",
             "port-flange-2"
           ],
           "param": "steel"
@@ -142237,15 +142242,10 @@
           "name": "safetyPaint",
           "color": "#e6ae48",
           "parts": [
-            "left-head",
-            "right-head",
             "skid-rail-left",
             "skid-rail-right",
             "saddle-0",
             "saddle-1",
-            "top-port-0",
-            "top-port-1",
-            "top-port-2",
             "drain"
           ],
           "param": "safetyPaint"

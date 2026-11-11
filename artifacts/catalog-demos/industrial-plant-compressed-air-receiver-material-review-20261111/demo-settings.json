@@ -1,0 +1,19 @@
+{
+  "captureDate": "2026-11-11",
+  "workflow": "Compare the committed preview with the named-source local render after changing pressure-vessel heads and nozzle necks to the existing steel material control.",
+  "sourceRender": "npx tsx scripts/renderCatalogPreviews.ts compressed-air-receiver",
+  "videoInvocation": "bash artifacts/catalog-demos/industrial-plant-compressed-air-receiver-material-review-20261111/build-demo.sh",
+  "video": {
+    "codec": "H.264 / libx264",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "resolution": "720x640",
+    "crf": 22,
+    "preset": "medium",
+    "segments": [
+      { "seconds": 6, "label": "Before: vessel heads and nozzle necks use safety paint" },
+      { "seconds": 6, "label": "After: heads and nozzle necks share vessel steel" }
+    ]
+  },
+  "evidenceBoundary": "Local source render and regression evidence only. This branch is not deployed; no simulation, hardware test, or physical acceptance is shown."
+}
