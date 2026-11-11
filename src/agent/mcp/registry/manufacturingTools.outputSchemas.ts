@@ -25,12 +25,13 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
             limit: { type: 'number' },
             unit: { type: 'string', enum: ['mm', 'mm2', 'deg', 'ratio'], description: 'Present when numeric evidence has a meaningful unit.' },
             op: { type: 'string', enum: ['>=', '<='], description: 'Passing comparison, only when value and limit have matching units.' },
+            tolerance: { type: 'number', minimum: 0, description: 'Inclusive tolerance in the same unit as value and limit. Absent means zero. For >=, pass when value + tolerance >= limit; for <=, pass when value - tolerance <= limit.' },
             refs: { type: 'array', items: { type: 'string' }, description: 'Inspectable @kc topology references emitted by the analysis engine.' },
           },
           required: ['id', 'process', 'part', 'source', 'status', 'summary'],
           additionalProperties: true,
         },
-        description: "Checklist rows keep `id` as the rule key. A `warn` row is an evaluated warning; `not-checked` means required analysis or measurement is unavailable. `unit` and `op` are included only for comparable measured values and limits. `refs` contains only topology refs already emitted by the DFM engine.",
+        description: "Checklist rows keep `id` as the rule key. A `warn` row is an evaluated warning; `not-checked` means required analysis or measurement is unavailable. `unit` and `op` are included only for comparable measured values and limits. `tolerance` is the inclusive allowance used by that comparison, in the same unit; when absent it is zero. For `>=`, pass when value + tolerance >= limit; for `<=`, pass when value - tolerance <= limit. `refs` contains only topology refs already emitted by the DFM engine.",
       },
       fdm: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part FDM engine report (part-local coordinates).' },
       cnc: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part CNC engine report (part-local coordinates).' },
@@ -52,7 +53,7 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       before: {
         type: 'object',
         additionalProperties: true,
-        description: "{ verdict?: 'pass'|'fail'|'not-checked', findings: [{ id, process, part, status: 'fail'|'warn'|'not-checked', summary, value?, limit?, unit?, op?, source?, refs? }] }. Findings retain incomplete checks; input/model errors can have no verdict.",
+        description: "{ verdict?: 'pass'|'fail'|'not-checked', findings: [{ id, process, part, status: 'fail'|'warn'|'not-checked', summary, value?, limit?, unit?, op?, tolerance?, source?, refs? }] }. Tolerance uses the same units as value and limit; absent means zero. For >=, pass when value + tolerance >= limit; for <=, pass when value - tolerance <= limit. Findings retain incomplete checks; input/model errors can have no verdict.",
       },
       after: {
         type: 'object',

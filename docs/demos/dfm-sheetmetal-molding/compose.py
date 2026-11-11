@@ -2,6 +2,7 @@
 # and the freshly generated dfm_review rows in result.json, then encode demo.mp4.
 # Usage: python3 -I compose.py <out-dir>
 import json
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -25,7 +26,7 @@ title_f = ImageFont.truetype(FONT, 28)
 small = ImageFont.truetype(FONT, 18)
 mono = ImageFont.truetype(MONO, 17)
 COLORS = {"pass": (110, 200, 120), "fail": (235, 95, 85), "warn": (235, 190, 80), "not-checked": (130, 170, 235)}
-FOOT = "kernelCAD local validation (dfm_review run by the CLI on this machine) - renders, not a molded or bent part"
+FOOT = "kernelCAD local validation (report.ts calls dfmReviewTool directly) - renders, not a molded or bent part"
 
 
 def base(title):
@@ -44,7 +45,11 @@ def paste(f, part, view, box, size):
     f.paste(im, box)
 
 
-def rows(d, part, x, y, width=60):
+def number(value):
+    return f"{value:.6g}"
+
+
+def rows(d, part, x, y, width=54):
     r = res[part]
     d.text((x, y), f"dfm_review({{ file: '{r['call']['file']}',", font=mono, fill=(170, 190, 230))
     y += 22
@@ -55,18 +60,28 @@ def rows(d, part, x, y, width=60):
         d.text((x + 180, y), c["id"], font=mono, fill=(225, 225, 225))
         y += 21
         if c.get("value") is not None:
-            metric = f"value {c['value']} {c.get('unit', '')}".strip()
+            metric = f"value {number(c['value'])} {c.get('unit', '')}".strip()
             if c.get("op") is not None and c.get("limit") is not None:
-                metric += f" {c['op']} {c['limit']} {c.get('unit', '')}"
-            d.text((x + 180, y), f"source {c['source']} · {metric}", font=small, fill=(145, 180, 215))
-            y += 21
+                metric += f" {c['op']} {number(c['limit'])} {c.get('unit', '')}"
+            if c.get("tolerance") is not None:
+                metric += f" (tol {number(c['tolerance'])} {c.get('unit', '')})"
+            for line in textwrap.wrap(f"source {c['source']} · {metric}", width=52):
+                d.text((x + 180, y), line, font=small, fill=(145, 180, 215))
+                y += 21
         if c.get("refs"):
             refs = ", ".join(c["refs"][:2])
             if len(c["refs"]) > 2:
                 refs += f" +{len(c['refs']) - 2}"
             d.text((x + 180, y), f"refs: {refs}", font=small, fill=(145, 180, 215))
             y += 21
-        for ln in textwrap.wrap(c["summary"], width)[:2]:
+        elif c["id"] in {"mold.draft", "mold.undercuts", "mold.sharp-internal-corners"} and c["status"] != "not-checked":
+            d.text((x + 180, y), "refs: none emitted (no unique resolvable lineage)", font=small, fill=(145, 180, 215))
+            y += 21
+        summary_lines = textwrap.wrap(c["summary"], width)
+        if len(summary_lines) > 2:
+            summary_lines = summary_lines[:2]
+            summary_lines[-1] = summary_lines[-1].rstrip(" .") + "…"
+        for ln in summary_lines:
             d.text((x + 180, y), ln, font=small, fill=(180, 188, 198))
             y += 22
     v = r["verdict"]
@@ -88,7 +103,8 @@ for i, ln in enumerate([
     "warn: evaluated warning that does not fail a review",
     "ok: invocation and analysis execution, not manufacturability",
     "id: stable DFM rule key; source: KernelCAD process engine",
-    "unit/op: comparable quantities only; refs: emitted @kc topology",
+    "unit/op: comparable quantities only; refs: optional, emitted only when resolvable",
+    "tolerance: inclusive, same unit as value/limit; zero when absent",
     "",
     "sheet-metal: inner R >= 1 x t; hole-to-bend >= 2.5 x t + R",
     "hole-to-edge >= 2 x t; flange >= 4 x t",
@@ -124,14 +140,24 @@ b = res["bracket-tight"]
 draft = next(c for c in u["checks"] if c["id"] == "mold.draft")
 overhang = next(c for c in res["tray-fdm"]["checks"] if c["id"] == "fdm.overhangs")
 missing = res["tray-not-sheet-metal"]["checks"][0]
+draft_refs = draft.get("refs", [])
 lines = ["id stays the DFM rule key; source identifies the running engine.",
          f"mold.draft: source {draft['source']}, {draft['value']} {draft['unit']} {draft['op']} {draft['limit']} {draft['unit']}",
-         "refs: existing @kc face ids, directly resolvable by resolve_topo_ref:"] + [f"  {x}" for x in draft["refs"][:4]]
+         f"tolerance {draft.get('tolerance', 0)} {draft['unit']}; value + tolerance >= limit"]
+if draft_refs:
+    lines += ["refs: each emitted @kc face id resolved on this fixture:"] + [f"  {x}" for x in draft_refs[:4]]
+else:
+    lines.append("refs: none emitted (no unique resolvable lineage)")
 lines += ["", f"{missing['id']}: {missing['status']} (this solid has no sheetMetal chain)",
           "ok is true: the call ran; verdict is not-checked.", ""]
 lines += ["Area and angular limits are not combined into a comparison.",
           f"fdm.overhangs value: {overhang['value']} {overhang['unit']} (no op or degree limit)"]
-lines += ["", "mold.undercuts  locked faces:"] + [f"  {x['face']} at ({', '.join(f'{v:.1f}' for v in x['location'])})" for x in u["undercutFaces"][:3]]
+undercut_refs = [x["face"] for x in u["undercutFaces"] if x.get("face") is not None]
+lines += ["", f"mold.undercuts  locked faces (refs: {'emitted' if undercut_refs else 'none emitted'}):"]
+lines += [
+    f"  {x['face'] + ' ' if x.get('face') is not None else ''}at ({', '.join(f'{v:.1f}' for v in x['location'])})"
+    for x in u["undercutFaces"][:3]
+]
 h = b["holeToBend"][1] if len(b["holeToBend"]) > 1 else b["holeToBend"][0]
 lines += ["", "sheet.hole-to-bend  (flat-pattern coordinates):",
           f"  hole #{h['hole']} edge at ({h['location'][0]:.1f}, {h['location'][1]:.1f}), {h['distanceMm']:.2f} mm from bend #{h['bend']}",
@@ -140,6 +166,14 @@ lines += ["", "sheet.hole-to-bend  (flat-pattern coordinates):",
 for i, ln in enumerate(lines):
     d.text((60, 90 + i * 24), ln, font=mono, fill=(210, 215, 225))
 save(f)
+
+for still, index in [
+    ("still-tray-undrafted.png", 1),
+    ("still-tray-drafted.png", 2),
+    ("still-bracket-tight.png", 3),
+    ("still-bracket-fixed.png", 4),
+]:
+    shutil.copyfile(frames[index], out / still)
 
 list_file = out / "frames.txt"
 with list_file.open("w") as fh:

@@ -28,11 +28,17 @@ import type { ResolvedPart } from '../../../modeling/runtime/dfm/runDfmChecks';
 import type { CncSettings } from '../../../modeling/runtime/dfm/cncCheck';
 import { FDM_DEFAULTS, type DfmFdmMetadata } from '../../../shared/intent/dfmSpecRecord';
 import { findDfmSpec, resolveParts } from '../../../modeling/runtime/dfm/runDfmChecks';
-import { checkFdmPrintability, type FdmPartReport } from '../../../modeling/runtime/dfm/fdmCheck';
-import { axisVector, checkCncMachinability, type CncPartReport, type Vec3 } from '../../../modeling/runtime/dfm/cncCheck';
+import {
+  checkFdmPrintability, FDM_FEATURE_DIAMETER_TOLERANCE_MM, type FdmPartReport,
+} from '../../../modeling/runtime/dfm/fdmCheck';
+import {
+  axisVector, checkCncMachinability, CNC_CORNER_RADIUS_TOLERANCE_MM,
+  type CncPartReport, type Vec3,
+} from '../../../modeling/runtime/dfm/cncCheck';
 import { TriangleBvh } from '../../../modeling/runtime/dfm/meshBvh';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
+import { FDM_BRIDGE_LENGTH_TOLERANCE_MM } from '../../../modeling/runtime/dfm/fdmOrientation';
 import {
   checkSheetMetal, SHEET_METAL_DEFAULTS, type SheetMetalPartReport, type SheetMetalSettings,
 } from '../../../modeling/runtime/dfm/sheetMetalCheck';
@@ -102,7 +108,7 @@ export interface DfmReviewOutput {
   cnc?: { part: string; result: CncPartReport }[];
   /** Sheet-metal reports; locations are FLAT-PATTERN [x, y] mm. */
   sheetMetal?: { part: string; result: SheetMetalPartReport }[];
-  /** Injection-molding reports (the dfmSpec moulding engine's report; part-local coordinates, `@kc` face refs). */
+  /** Injection-molding reports (the dfmSpec moulding engine's report; part-local coordinates, with optional `@kc` face refs). */
   injectionMolding?: { part: string; result: MouldingPartReport }[];
   diagnostics: CompilerDiagnostic[];
   error?: string;
@@ -418,16 +424,17 @@ function perPart<T>(reviews: { part: string; review: PartReview }[], pick: (r: P
   });
 }
 
-type CheckEvidence = { unit?: DfmMeasurementUnit; op?: DfmComparisonOp; refs?: string[] };
+type CheckEvidence = { unit?: DfmMeasurementUnit; op?: DfmComparisonOp; tolerance?: number; refs?: string[] };
 type CheckFn = (id: string, status: DfmCheckStatus, summary: string, value?: number, limit?: number, evidence?: CheckEvidence) => DfmReviewCheck;
 
 function checkMaker(part: string): CheckFn {
   return (id, status, summary, value, limit, evidence) => ({
     id, process: 'fdm', source: 'fdm', part, status, summary,
-    ...(value !== undefined && Number.isFinite(value) ? { value: r2(value) } : {}),
-    ...(limit !== undefined ? { limit: r2(limit) } : {}),
+    ...(value !== undefined && Number.isFinite(value) ? { value } : {}),
+    ...(limit !== undefined ? { limit } : {}),
     ...(evidence?.unit !== undefined ? { unit: evidence.unit } : {}),
     ...(evidence?.op !== undefined ? { op: evidence.op } : {}),
+    ...(evidence?.tolerance !== undefined ? { tolerance: evidence.tolerance } : {}),
     ...(evidence?.refs !== undefined && evidence.refs.length > 0 ? { refs: [...new Set(evidence.refs)] } : {}),
   });
 }
@@ -446,7 +453,7 @@ function overhangChecks(c: CheckFn, rep: FdmPartReport): DfmReviewCheck[] {
       ? c('fdm.overhangs', 'fail', `${r1(area)} mm² of unsupported overhang steeper than ${s.maxOverhangDeg}° in ${overhangs.length} region(s); add supports, reorient or chamfer.`, area, undefined, { unit: 'mm2', refs: overhangRefs })
       : c('fdm.overhangs', 'pass', `No unsupported overhang steeper than ${s.maxOverhangDeg}°.`, 0, undefined, { unit: 'mm2' }),
     longBridges.length > 0
-      ? c('fdm.bridging', 'fail', `${longBridges.length} bridge(s) longer than ${s.maxBridgeMm} mm (longest ${r1(longest)} mm).`, longest, s.maxBridgeMm, { unit: 'mm', op: '<=', refs: bridgeRefs })
+      ? c('fdm.bridging', 'fail', `${longBridges.length} bridge(s) longer than ${s.maxBridgeMm} mm (longest ${r1(longest)} mm).`, longest, s.maxBridgeMm, { unit: 'mm', op: '<=', tolerance: FDM_BRIDGE_LENGTH_TOLERANCE_MM, refs: bridgeRefs })
       : c('fdm.bridging', 'pass', `All bridges within ${s.maxBridgeMm} mm.`),
   ];
 }
@@ -465,10 +472,10 @@ function featureChecks(c: CheckFn, rep: FdmPartReport): DfmReviewCheck[] {
   return [
     wallCheck,
     holes.length > 0
-      ? c('fdm.min-hole', 'fail', `${holes.length} hole(s) below the ${r2(holes[0].minDiameterMm)} mm minimum (smallest Ø${r2(smallest)} mm); they print undersized or close up.`, smallest, holes[0].minDiameterMm, { unit: 'mm', op: '>=' })
+      ? c('fdm.min-hole', 'fail', `${holes.length} hole(s) below the ${r2(holes[0].minDiameterMm)} mm minimum (smallest Ø${r2(smallest)} mm); they print undersized or close up.`, smallest, holes[0].minDiameterMm, { unit: 'mm', op: '>=', tolerance: FDM_FEATURE_DIAMETER_TOLERANCE_MM })
       : c('fdm.min-hole', 'pass', 'No holes below the printable minimum diameter.'),
     pins.length > 0
-      ? c('fdm.min-pin', 'warn', `${pins.length} pin(s)/boss(es) below the ${r2(pins[0].minDiameterMm)} mm minimum; fragile.`, smallestPin, pins[0].minDiameterMm, { unit: 'mm', op: '>=' })
+      ? c('fdm.min-pin', 'warn', `${pins.length} pin(s)/boss(es) below the ${r2(pins[0].minDiameterMm)} mm minimum; fragile.`, smallestPin, pins[0].minDiameterMm, { unit: 'mm', op: '>=', tolerance: FDM_FEATURE_DIAMETER_TOLERANCE_MM })
       : c('fdm.min-pin', 'pass', 'No pins below the robust minimum diameter.'),
   ];
 }
@@ -514,7 +521,7 @@ export function cncChecks(part: string, rep: CncPartReport): DfmReviewCheck[] {
       summary: undercutFail
         ? `${r1(u.areaMm2)} mm² of surface is unreachable from the allowed tool approach axes; needs another setup, a 4/5-axis machine or a redesign.`
         : 'No undercuts: every surface is reachable from the allowed approach axes.',
-      value: r2(u.areaMm2), limit: r2(rep.settings.maxUndercutAreaMm2), unit: 'mm2', op: '<=',
+      value: u.areaMm2, limit: rep.settings.maxUndercutAreaMm2, unit: 'mm2', op: '<=',
     },
     {
       id: 'cnc.internal-corner-radius', process: 'cnc', source: 'cnc', part,
@@ -522,9 +529,12 @@ export function cncChecks(part: string, rep: CncPartReport): DfmReviewCheck[] {
       summary: cornerFail
         ? `${found.join(' and ')} below the R${r2(toolR)} mm tool radius (Ø${r2(rep.settings.toolDiameterMm)} mm end mill); add fillets ≥ R${r2(toolR)} mm or use a smaller tool.`
         : `All internal corners along the approach axes are ≥ R${r2(toolR)} mm.`,
-      ...(cornerValue !== undefined ? { value: r2(cornerValue) } : {}),
-      limit: r2(toolR),
-      ...(cornerValue !== undefined ? { unit: 'mm', op: '>=' } : {}),
+      ...(cornerValue !== undefined ? { value: cornerValue } : {}),
+      limit: toolR,
+      ...(cornerValue !== undefined ? {
+        unit: 'mm', op: '>=',
+        ...(sharp.length === 0 && tight.length > 0 ? { tolerance: CNC_CORNER_RADIUS_TOLERANCE_MM } : {}),
+      } : {}),
     },
   ];
 }

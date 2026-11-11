@@ -11,17 +11,24 @@ their model views and structured rows. The calls cover a failing molded tray,
 a drafted tray with an evaluated warning, failing and passing bent brackets,
 a requested sheet-metal review on a regular solid, and an FDM row whose area
 unit stays separate from its angular setting. [`result.json`](result.json)
-retains the exact invocations and outputs; [`report.ts`](report.ts),
+retains the exact invocations and outputs; it also records a same-fixture
+`resolveTopoRefTool` round-trip for every emitted topology reference. On-frame
+summaries use `…` when truncated and show the comparison tolerance when one is
+used. [`report.ts`](report.ts),
 [`compose.py`](compose.py), the `.kcad.ts` fixtures, the
 `viewport-source-*.png` files and current `still-*.png` frames retain the
 reproducible source and visual evidence.
 
 The normalized rows keep `id` as the rule key and include `source`, the
 KernelCAD process engine that produced the row. Numeric `unit` and `op` appear
-when `value` and `limit` are comparable. For example, unsupported FDM area is
-reported in `mm2` without attaching a degree limit. `refs` contains only
-existing `@kc[...]` topology references emitted by an analysis engine; the
-molding face refs shown here resolve with `resolve_topo_ref`.
+when `value` and `limit` are comparable. Optional `tolerance` is the inclusive
+allowance used by that comparison, in the same unit; when absent it is zero.
+For `>=`, pass when `value + tolerance >= limit`; for `<=`, pass when
+`value - tolerance <= limit`. Unsupported FDM area is reported in `mm2`
+without attaching a degree limit. Face refs are optional and are omitted when
+unique resolvable lineage is unavailable. The tray runs emitted no refs; the
+result records `no-refs-emitted` for its verification status instead of
+inventing names.
 
 `ok` reports invocation, model evaluation and analysis execution. It is not a
 manufacturing pass indicator: a completed review with a failing check can
@@ -38,8 +45,11 @@ ffprobe -v error -show_entries format=duration:stream=codec_name,width,height -o
 ```
 
 The viewport crops in this bundle reuse retained local render-inspection
-stills for these unchanged fixtures; `report.ts` reruns all six tool calls to
-create the displayed result rows. The handler run is local validation on this machine.
+views for these unchanged fixtures; `report.ts` reruns all six tool calls,
+serializes optional references without null placeholders, and resolves every
+emitted reference against the same fixture used by that call. `compose.py`
+regenerates the video, frame list, and four `still-*.png` review frames from
+the current results. The handler run is local validation on this machine.
 The video does not show hosted behavior, a mold-flow or press-brake simulation,
 or a fabricated part. It is verification evidence for this contract change,
 not a manufacturing acceptance result.

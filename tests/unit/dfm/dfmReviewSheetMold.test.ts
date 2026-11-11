@@ -42,12 +42,31 @@ describe('dfm_review sheet-metal', () => {
     expect(check(r, 'sheet.hole-to-bend')).toMatchObject({ value: 2, limit: 6, unit: 'mm', op: '>=' });
     expect(status(r, 'sheet.hole-to-edge')).toBe('pass');
     expect(status(r, 'sheet.min-flange')).toBe('pass');
+    expect(r.checks.filter(c => c.op !== undefined).map(c => c.tolerance)).toEqual([1e-9, 1e-9, 1e-9, 1e-9]);
     expect(r.verdict).toBe('fail');
     const rep = r.sheetMetal![0].result;
     expect(rep.thicknessMm).toBe(2);
     expect(rep.bends[0].featureId).toMatch(/^sheetMetalBend/);
     expect(rep.holeToBend[0].location[0]).toBeCloseTo(58, 1);
     expect(rep.holeToBend[0].location[1]).toBeCloseTo(20, 1);
+  }, 120000);
+
+  it('keeps full-precision bend evidence at the 1.999 mm boundary', async () => {
+    const r = await dfmReviewTool({ code: sheet({ radius: 1.999, holeU: 0 }), processes: ['sheet-metal'] });
+    const bend = check(r, 'sheet.min-bend-radius')!;
+    expect(bend.status).toBe('fail');
+    expect(bend.value).toBeCloseTo(1.999, 6);
+    expect(bend.limit).toBe(2);
+    expect(bend.op).toBe('>=');
+  }, 120000);
+
+  it('reports the sheet-metal epsilon used by a just-under-limit bend comparison', async () => {
+    const r = await dfmReviewTool({ code: sheet({ radius: 2 - 0.5e-9, holeU: 0 }), processes: ['sheet-metal'] });
+    const bend = check(r, 'sheet.min-bend-radius')!;
+    expect(bend.status).toBe('pass');
+    expect(bend.value).toBeLessThan(bend.limit!);
+    expect(bend.tolerance).toBe(1e-9);
+    expect(bend.value! + bend.tolerance!).toBeGreaterThanOrEqual(bend.limit!);
   }, 120000);
 
   it('passes the same part with R = t and the hole moved away', async () => {
@@ -101,6 +120,35 @@ describe('dfm_review sheet-metal', () => {
 describe('dfm_review injection-molding', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
 
+  it('emits only boolean-derived topology refs that resolve uniquely on the same part', async () => {
+    const code = `
+      let part = box(40, 30, 6).union(box(10, 10, 8).translate(15, 10, 6));
+      part = part.subtract(box(4, 40, 4).translate(18, -5, 8));
+      return part;
+    `;
+    const r = await dfmReviewTool({ code, processes: ['fdm', 'injection-molding'] });
+    const refs = new Set([
+      ...r.checks.flatMap(c => c.refs ?? []),
+      ...(r.fdm ?? []).flatMap(({ result }) => result.orientation.overhangs.flatMap(region =>
+        region.faceRef === undefined ? [] : [region.faceRef])),
+      ...(r.injectionMolding ?? []).flatMap(({ result }) => [
+        ...result.draft.insufficient.flatMap(face => face.faceRef === undefined ? [] : [face.faceRef]),
+        ...result.undercut.faces.flatMap(face => face.faceRef === undefined ? [] : [face.faceRef]),
+        ...result.sharpCorners.flatMap(corner => corner.faceRefs ?? []),
+      ]),
+    ]);
+    const knownInvalid = '@kc[boolean_2/face/back]';
+    expect([...refs]).not.toContain(knownInvalid);
+    expect(r.checks.some(c => c.status === 'fail')).toBe(true);
+    for (const ref of refs) {
+      const resolved = await resolveTopoRefTool({ code, ref });
+      expect(resolved.ok, `${ref}: ${resolved.error}`).toBe(true);
+      expect(resolved.entity?.kind).toBe('face');
+    }
+    const omitted = await resolveTopoRefTool({ code, ref: knownInvalid });
+    expect(omitted.errorCode).toBe('feature.face-ref.not-resolvable');
+  }, 180000);
+
   it('fails an undrafted box on mold.draft and names its side faces', async () => {
     const r = await dfmReviewTool({ code: 'return box(40, 30, 3);', processes: ['injection-molding'] });
     expect(r.checks.map(c => c.id)).toEqual(['mold.draft', 'mold.wall-thickness', 'mold.undercuts', 'mold.sharp-internal-corners']);
@@ -145,6 +193,52 @@ describe('dfm_review injection-molding', () => {
     expect(checks.find(c => c.id === 'mold.unmeasured')?.status).toBe('not-checked');
   });
 
+  it('reports not-checked on a real moulding result when required measurements are unavailable', async () => {
+    const r = await dfmReviewTool({
+      code: "dfmSpec({ process: 'moulding', minWallMm: 0.01, minDraftDeg: 0 }); return box(30, 30, 0.05);",
+      processes: ['injection-molding'],
+    });
+    expect(r.ok).toBe(true);
+    const report = r.injectionMolding![0].result;
+    expect(report.unmeasured.length).toBeGreaterThan(0);
+    expect(report.verdict).toBe('not-checked');
+    expect(r.verdict).toBe('not-checked');
+  }, 120000);
+
+  it('does not call an unreferenced crease a fillet', () => {
+    const rep = {
+      settings: { ...MOULDING_DEFAULTS, pullDirection: [...MOULDING_DEFAULTS.pullDirection] },
+      draft: { checkedFaces: 0, insufficient: [], minDraftDeg: Infinity },
+      undercut: { areaMm2: 0, faces: [] },
+      walls: { violations: [], truncated: false, sampleCount: 0, thinnestMm: Infinity },
+      thickest: null,
+      sharpCorners: [{ kind: 'crease', radiusMm: 0, location: [0, 0, 0], lengthMm: 4, turnDeg: 90 }],
+      unmeasured: [],
+      limitations: [],
+      verdict: 'fail',
+    } satisfies MouldingPartReport;
+    const corner = moldChecks('part', rep, 2.5).find(c => c.id === 'mold.sharp-internal-corners')!;
+    expect(corner.status).toBe('warn');
+    expect(corner.summary).toContain('sharp crease');
+    expect(corner.summary).not.toContain('R0.00 mm fillet');
+  });
+
+  it('reports the fillet radius tolerance only for measured fillet comparisons', () => {
+    const rep = {
+      settings: { ...MOULDING_DEFAULTS, pullDirection: [...MOULDING_DEFAULTS.pullDirection] },
+      draft: { checkedFaces: 0, insufficient: [], minDraftDeg: Infinity },
+      undercut: { areaMm2: 0, faces: [] },
+      walls: { violations: [], truncated: false, sampleCount: 0, thinnestMm: Infinity },
+      thickest: null,
+      sharpCorners: [{ kind: 'tight-fillet', radiusMm: 0.3, location: [0, 0, 0] }],
+      unmeasured: [],
+      limitations: [],
+      verdict: 'pass',
+    } satisfies MouldingPartReport;
+    const corner = moldChecks('part', rep, 2.5).find(c => c.id === 'mold.sharp-internal-corners')!;
+    expect(corner).toMatchObject({ value: 0.3, limit: 0.5, unit: 'mm', op: '>=', tolerance: 1e-6 });
+  });
+
   it('passes the same box drafted 2° on every side', async () => {
     const r = await dfmReviewTool({ code: DRAFTED, processes: ['injection-molding'] });
     expect(r.checks.filter(c => c.status !== 'pass')).toEqual([]);
@@ -154,14 +248,28 @@ describe('dfm_review injection-molding', () => {
     expect(status(strict, 'mold.draft')).toBe('fail');
   }, 60000);
 
+  it('reports the moulding draft tolerance for a just-under-limit passing face', async () => {
+    const code = DRAFTED.replaceAll('.draft(2,', '.draft(0.9995,');
+    const r = await dfmReviewTool({ code, processes: ['injection-molding'], min_draft_deg: 1 });
+    const draft = check(r, 'mold.draft')!;
+    expect(draft.status).toBe('pass');
+    expect(draft.value).toBeLessThan(draft.limit!);
+    expect(draft.tolerance).toBe(0.001);
+    expect(draft.value! + draft.tolerance!).toBeGreaterThanOrEqual(draft.limit!);
+  }, 60000);
+
   it('flags a side slot as an undercut along +z (two-part mold), with a location', async () => {
     const r = await dfmReviewTool({ code: SIDE_SLOT, processes: ['injection-molding'] });
     expect(status(r, 'mold.undercuts')).toBe('fail');
+    expect(check(r, 'mold.undercuts')?.tolerance).toBeUndefined();
     const u = r.injectionMolding![0].result.undercut;
     expect(u.areaMm2).toBeGreaterThan(100);
     expect(u.faces[0].location[2]).toBeGreaterThan(5.9);
     expect(u.faces[0].location[2]).toBeLessThan(9.1);
-    expect(u.faces[0].faceRef).toMatch(/^@kc\[/);
+    if (u.faces[0].faceRef !== undefined) {
+      const resolved = await resolveTopoRefTool({ code: SIDE_SLOT, ref: u.faces[0].faceRef });
+      expect(resolved.ok, `${u.faces[0].faceRef}: ${resolved.error}`).toBe(true);
+    }
     expect(status(r, 'mold.sharp-internal-corners')).toBe('warn');
     // The engine's own diagnostics come with it, at the same severity as the row.
     expect(r.diagnostics.some(d => d.code === 'dfm.moulding.undercut' && d.severity === 'error')).toBe(true);
@@ -171,6 +279,7 @@ describe('dfm_review injection-molding', () => {
     const thin = await dfmReviewTool({ code: DRAFTED.replace('box(40, 30, 3)', 'box(40, 30, 0.5)'), processes: ['injection-molding'] });
     expect(status(thin, 'mold.wall-thickness')).toBe('fail');
     expect(check(thin, 'mold.wall-thickness')?.limit).toBe(1); // MOULDING_DEFAULTS.minWallMm
+    expect(check(thin, 'mold.wall-thickness')?.tolerance).toBeUndefined();
     const thinner = await dfmReviewTool({ code: DRAFTED.replace('box(40, 30, 3)', 'box(40, 30, 0.5)'), processes: ['injection-molding'], min_wall_mm: 0.4 });
     expect(status(thinner, 'mold.wall-thickness')).not.toBe('fail');
     // A solid 10 mm block: thick section (warn, like the dfmSpec gate's dfm.moulding.thick-wall).
@@ -178,13 +287,17 @@ describe('dfm_review injection-molding', () => {
     expect(status(thick, 'mold.wall-thickness')).toBe('warn');
     expect(check(thick, 'mold.wall-thickness')?.value).toBeGreaterThan(9);
     expect(check(thick, 'mold.wall-thickness')?.limit).toBe(4);
+    expect(check(thick, 'mold.wall-thickness')?.tolerance).toBe(1e-9);
+    expect(check(thick, 'mold.sharp-internal-corners')?.tolerance).toBeUndefined();
     // 3.5 mm plate with a 1.2 mm rib: within 1–4 mm but ~2.9× non-uniform.
     const RIB = 'return box(40, 30, 3.5).union(box(1.2, 30, 8).translate(20, 0, 3.5));';
     const rib = await dfmReviewTool({ code: RIB, processes: ['injection-molding'] });
     expect(status(rib, 'mold.wall-thickness')).toBe('warn');
     expect(check(rib, 'mold.wall-thickness')?.limit).toBe(2.5);
+    expect(check(rib, 'mold.wall-thickness')?.tolerance).toBeUndefined();
     const relaxed = await dfmReviewTool({ code: RIB, processes: ['injection-molding'], max_wall_ratio: 4 });
     expect(status(relaxed, 'mold.wall-thickness')).toBe('pass');
+    expect(check(relaxed, 'mold.wall-thickness')?.tolerance).toBe(1e-9);
   }, 120000);
 
   it('uses the script dfmSpec moulding settings as defaults, call options on top', async () => {

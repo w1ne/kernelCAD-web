@@ -38,6 +38,7 @@ export interface DfmFinding {
   summary: string;
   value?: number;
   limit?: number;
+  tolerance?: number;
   unit?: DfmReviewOutput['checks'][number]['unit'];
   op?: DfmReviewOutput['checks'][number]['op'];
   source?: string;
@@ -105,6 +106,7 @@ function snapshot(review: DfmReviewOutput): DfmFixSnapshot {
         summary: c.summary,
         ...(c.value !== undefined ? { value: c.value } : {}),
         ...(c.limit !== undefined ? { limit: c.limit } : {}),
+        ...(c.tolerance !== undefined ? { tolerance: c.tolerance } : {}),
         ...(c.unit !== undefined ? { unit: c.unit } : {}),
         ...(c.op !== undefined ? { op: c.op } : {}),
         ...(c.source !== undefined ? { source: c.source } : {}),
