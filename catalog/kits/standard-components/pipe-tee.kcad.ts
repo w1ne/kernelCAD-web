@@ -3,7 +3,7 @@ meta({
   name: 'pipe-tee',
   license: 'CC0-1.0',
   title: 'Pipe tee fitting',
-  description: 'Three-way T pipe fitting with a vertical run and perpendicular side branch Knobs: model size, steel, bronze.',
+  description: 'Illustrative CC0 low-poly three-port pipe tee with two inline openings, one side branch and continuous internal flow passages. Not a pressure-rated fitting or vendor manufacturing model. Controls: model size, steel and bronze colors.',
   tags: ['pipe tee', 'tee fitting', 'plumbing', 'pipe connector'],
   kit: 'standard-components',
   category: 'attachment',
@@ -24,13 +24,15 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const a = assembly('pipe-tee');
 // Union the two perpendicular outer pipes before boring the intersecting
-// passages. Separate hollow cylinders leave a blocked joint internally.
+// passages. The side branch ends at the run centreline: extending both ways
+// creates a four-port cross, not a tee. The branch bore stops inside the main
+// bore and must not pierce the opposite wall.
 const r=12*s;
 const alongZ=cylinder(44*s,r,16);
-const alongY=cylinder(36*s,r,16).rotateX(90).translate(0,18*s,22*s);
+const alongY=cylinder(18*s,r,16).rotateX(90).translate(0,18*s,22*s);
 let tee=alongZ.union(alongY);
 tee=tee.subtract(cylinder(46*s,8*s,16).translate(0,0,-s));
-tee=tee.subtract(cylinder(38*s,8*s,16).rotateX(90).translate(0,19*s,22*s));
+tee=tee.subtract(cylinder(20*s,8*s,16).rotateX(90).translate(0,19*s,22*s));
 a.part('continuous-tee-fitting',tee.color(steel));
 // A removable bronze coupling ring at the branch outlet is a separate part,
 // not a decorative colour stripe across the flow passage.

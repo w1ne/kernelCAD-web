@@ -252247,7 +252247,7 @@
       "id": "caster-wheel",
       "kit": "standard-components",
       "title": "Caster wheel",
-      "description": "Single low-poly swivel caster with a fork, mounting plate and centered wheel Knobs: model size, steel, zinc-plated steel, rubber.",
+      "description": "Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Single low-poly swivel caster with a fork, mounting plate and centered wheel Knobs: model size, steel, zinc-plated steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -252265,8 +252265,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
       "preview": "/assets/standard-components-caster-wheel.png",
-      "sourceSha256": "a4ce57050b2d81e1a25af52667010c87e06318eca7736cb377dcf194e6efb79e",
-      "triangleBudget": 520,
+      "sourceSha256": "1a150f94d257d8989ee425fde84074eead4e376e31a016ef1045858d199f2a22",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "size",
@@ -252316,7 +252316,7 @@
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 660,
         "sizeM": [
           0.05,
           0.051,
@@ -252331,8 +252331,7 @@
           "color": "#85929a",
           "parts": [
             "mounting-plate",
-            "fork-left",
-            "fork-right"
+            "swivel-fork"
           ],
           "param": "steel"
         },
@@ -252340,7 +252339,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "swivel-stem",
+            "wheel-axle",
             "wheel-hub"
           ],
           "param": "zinc"
@@ -254249,7 +254248,7 @@
       "id": "piano-hinge",
       "kit": "standard-components",
       "title": "Piano hinge",
-      "description": "Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. Knobs: model size, steel, stainless steel.",
+      "description": "Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254267,8 +254266,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
       "preview": "/assets/standard-components-piano-hinge.png",
-      "sourceSha256": "4cacc597acb24b5f89ee37f62921688020f5b4e753f4afd578d98d75028e2a0d",
-      "triangleBudget": 1550,
+      "sourceSha256": "ec834ce0dc1c580cf1b533d57ec7cbee2d986ffb2645ab5ce9bb9da31dfea9e2",
+      "triangleBudget": 1900,
       "params": [
         {
           "name": "size",
@@ -254309,10 +254308,10 @@
         }
       },
       "stats": {
-        "triangles": 1340,
+        "triangles": 1776,
         "sizeM": [
           0.09,
-          0.009,
+          0.007947,
           0.062
         ],
         "minUpM": 0,
@@ -254324,17 +254323,7 @@
           "color": "#85929a",
           "parts": [
             "left-leaf",
-            "right-leaf",
-            "hinge-knuckle-0",
-            "hinge-knuckle-1",
-            "hinge-knuckle-2",
-            "hinge-knuckle-3",
-            "hinge-knuckle-4",
-            "hinge-knuckle-5",
-            "hinge-knuckle-6",
-            "hinge-knuckle-7",
-            "hinge-knuckle-8",
-            "hinge-knuckle-9"
+            "right-leaf"
           ],
           "param": "steel"
         },
@@ -254352,7 +254341,7 @@
       "id": "pillow-block-housing",
       "kit": "standard-components",
       "title": "Pillow block housing",
-      "description": "Raised pillow-block support with a broad base, round bearing boss and two bolt feet Knobs: model size, zinc-plated steel, cast iron, bronze.",
+      "description": "Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Raised pillow-block support with a broad base, round bearing boss and two bolt feet Knobs: model size, zinc-plated steel, cast iron, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254370,7 +254359,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
       "preview": "/assets/standard-components-pillow-block-housing.png",
-      "sourceSha256": "8dba052a2df41e0247203a1310f0f2d648cd8381ec0e8a68710b6464b5881bc2",
+      "sourceSha256": "9a35b9c4bdffd1512c60e413547eee13f77bca23fabaf1a3a2dc71ad4949af16",
       "triangleBudget": 480,
       "params": [
         {
@@ -254421,7 +254410,7 @@
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 404,
         "sizeM": [
           0.084,
           0.054,
@@ -254435,9 +254424,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "two-bolt-base",
-            "support-riser",
-            "horizontal-bearing-housing"
+            "pillow-block-casting"
           ],
           "param": "castIron"
         },
@@ -255021,7 +255008,7 @@
       "id": "pipe-tee",
       "kit": "standard-components",
       "title": "Pipe tee fitting",
-      "description": "Three-way T pipe fitting with a vertical run and perpendicular side branch Knobs: model size, steel, bronze.",
+      "description": "Illustrative CC0 low-poly three-port pipe tee with two inline openings, one side branch and continuous internal flow passages. Not a pressure-rated fitting or vendor manufacturing model. Controls: model size, steel and bronze colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -255039,7 +255026,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
       "preview": "/assets/standard-components-pipe-tee.png",
-      "sourceSha256": "750669ba7023a004496fac030d660dc15b919070950ef13d7e253c106a56897d",
+      "sourceSha256": "faeae6990f94fdb7e304b111c02e613d5ff7808aec1c12a5dd19fb1d3190a7e2",
       "triangleBudget": 520,
       "params": [
         {
@@ -255081,11 +255068,11 @@
         }
       },
       "stats": {
-        "triangles": 416,
+        "triangles": 354,
         "sizeM": [
           0.026,
           0.044,
-          0.037
+          0.031
         ],
         "minUpM": 0,
         "materials": 1
@@ -255892,7 +255879,7 @@
       "id": "t-slot-angle-bracket",
       "kit": "standard-components",
       "title": "T-slot angle bracket",
-      "description": "Compact external corner bracket for joining two perpendicular framing profiles Knobs: model size, steel, aluminum.",
+      "description": "Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Compact external corner bracket for joining two perpendicular framing profiles Knobs: model size, steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -255910,7 +255897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
       "preview": "/assets/standard-components-t-slot-angle-bracket.png",
-      "sourceSha256": "b9b678956a9b15c77c8ae1e5e8191eb076adda077bf316ab3af8514fcc2c5c8e",
+      "sourceSha256": "a411ee445a665ba0735824d898e5671d391b3c56cbb6767fcb7ce75a7d223e71",
       "triangleBudget": 600,
       "params": [
         {
@@ -255954,7 +255941,7 @@
       "stats": {
         "triangles": 248,
         "sizeM": [
-          0.072,
+          0.048,
           0.039,
           0.04
         ],

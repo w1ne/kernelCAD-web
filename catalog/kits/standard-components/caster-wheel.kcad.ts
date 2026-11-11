@@ -3,13 +3,13 @@ meta({
   name: 'caster-wheel',
   license: 'CC0-1.0',
   title: 'Caster wheel',
-  description: 'Single low-poly swivel caster with a fork, mounting plate and centered wheel Knobs: model size, steel, zinc-plated steel, rubber.',
+  description: 'Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Single low-poly swivel caster with a fork, mounting plate and centered wheel Knobs: model size, steel, zinc-plated steel, rubber.',
   tags: ['caster wheel', 'swivel caster', 'wheel', 'mobile base'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 520,
+  triangleBudget: 800,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -31,11 +31,18 @@ let mount=block(-25*s,-19*s,46*s,50*s,38*s,5*s);
 for (const x of [-18,18]) for (const y of [-12,12])
   mount=mount.subtract(cylinder(7*s,2.5*s,12).translate(x*s,y*s,45*s));
 a.part('mounting-plate',mount.color(steel));
-a.part('swivel-stem',cylinder(10*s,6*s,16).translate(0,0,36*s).color(zinc));
-a.part('fork-left',block(-8*s,-12*s,18*s,16*s,4*s,27*s).color(steel));
-a.part('fork-right',block(-8*s,8*s,18*s,16*s,4*s,27*s).color(steel));
+// One connected fork casting: crown joins both cheeks and the swivel stem.
+// The axle passes through real clearance bores, not floating above the cheeks.
+let fork=block(-8*s,-12*s,12*s,16*s,4*s,24*s)
+  .union(block(-8*s,8*s,12*s,16*s,4*s,24*s))
+  .union(block(-8*s,-12*s,34*s,16*s,24*s,4*s))
+  .union(cylinder(10*s,6*s,16).translate(0,0,36*s));
+fork=fork.subtract(cylinder(28*s,3.2*s,20).rotateX(90).translate(0,14*s,16*s));
+a.part('swivel-fork',fork.color(steel));
+a.part('wheel-axle',cylinder(26*s,3*s,20).rotateX(90).translate(0,13*s,16*s).color(zinc));
 let tire=cylinder(13*s,16*s,24).rotateX(90).translate(0,6.5*s,16*s);
 tire=tire.subtract(cylinder(15*s,5*s,24).rotateX(90).translate(0,7.5*s,16*s));
 a.part('rubber-tire',tire.color(rubber));
-a.part('wheel-hub',cylinder(13*s,5*s,20).rotateX(90).translate(0,6.5*s,16*s).color(zinc));
+const hub=cylinder(13*s,5*s,20).subtract(cylinder(15*s,3.2*s,20).translate(0,0,-s));
+a.part('wheel-hub',hub.rotateX(90).translate(0,6.5*s,16*s).color(zinc));
 return a.model();

@@ -3,7 +3,7 @@ meta({
   name: 'pillow-block-housing',
   license: 'CC0-1.0',
   title: 'Pillow block housing',
-  description: 'Raised pillow-block support with a broad base, round bearing boss and two bolt feet Knobs: model size, zinc-plated steel, cast iron, bronze.',
+  description: 'Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Raised pillow-block support with a broad base, round bearing boss and two bolt feet Knobs: model size, zinc-plated steel, cast iron, bronze.',
   tags: ['pillow block', 'bearing housing', 'shaft support', 'machine'],
   kit: 'standard-components',
   category: 'attachment',
@@ -29,10 +29,13 @@ const a = assembly('pillow-block-housing');
 // This is a visual CC0 prop; it is not a dimensioned vendor housing.
 let base=block(-42*s,-21*s,0,84*s,42*s,7*s);
 for (const x of [-30,30]) base=base.subtract(cylinder(9*s,4*s,16).translate(x*s,0,-s));
-a.part('two-bolt-base',base.color(castIron));
-a.part('support-riser',block(-18*s,-12*s,7*s,36*s,24*s,20*s).color(castIron));
-const housing=cylinder(20*s,22*s,24).subtract(cylinder(22*s,11*s,24).translate(0,0,-s));
-a.part('horizontal-bearing-housing',housing.rotateX(90).translate(0,10*s,28*s).color(castIron));
+// Bore the entire connected casting. A solid riser behind the ring blocks
+// the lower shaft bore even when the visible front ring looks hollow.
+const riser=block(-18*s,-12*s,7*s,36*s,24*s,20*s);
+const housing=cylinder(20*s,22*s,24).rotateX(90).translate(0,10*s,28*s);
+const casting=base.union(riser).union(housing)
+  .subtract(cylinder(44*s,11*s,24).rotateX(90).translate(0,22*s,28*s));
+a.part('pillow-block-casting',casting.color(castIron));
 const insert=cylinder(18*s,11*s,24).subtract(cylinder(20*s,7*s,24).translate(0,0,-s));
 a.part('inner-bearing-ring',insert.rotateX(90).translate(0,9*s,28*s).color(zinc));
 a.part('grease-nipple',cylinder(5*s,3*s,12).translate(0,0,49*s).color(bronze));

@@ -3,7 +3,7 @@ meta({
   name: 't-slot-angle-bracket',
   license: 'CC0-1.0',
   title: 'T-slot angle bracket',
-  description: 'Compact external corner bracket for joining two perpendicular framing profiles Knobs: model size, steel, aluminum.',
+  description: 'Illustrative CC0 low-poly scene prop; not a vendor manufacturing or load-rated model. Compact external corner bracket for joining two perpendicular framing profiles Knobs: model size, steel, aluminum.',
   tags: ['t-slot', 'angle bracket', 'frame connector', 'extrusion'],
   kit: 'standard-components',
   category: 'attachment',
@@ -32,6 +32,10 @@ for (const x of [-13,13]) {
 }
 a.part('horizontal-mount',base.color(aluminum));
 a.part('vertical-mount',upright.color(aluminum));
-a.part('web-a',extrudePolygon([[-20*s,0],[0,0],[0,24*s]],4*s).rotateX(90).translate(-18*s,15*s,5*s).color(steel));
-a.part('web-b',extrudePolygon([[0,0],[20*s,0],[0,24*s]],4*s).rotateX(90).translate(14*s,15*s,5*s).color(steel));
+// Each triangular web lies in a YZ plane and spans from the horizontal
+// foot to the upright. Keep it outside the mounting-hole columns.
+const web=extrudePolygon([[-18*s,5*s],[15*s,5*s],[15*s,35*s]],4*s)
+  .rotateX(90).rotateZ(90);
+a.part('web-a',web.translate(-24*s,0,0).color(steel));
+a.part('web-b',web.translate(20*s,0,0).color(steel));
 return a.model();
