@@ -253183,7 +253183,7 @@
       "id": "gusset-bracket",
       "kit": "standard-components",
       "title": "Gusset bracket",
-      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web Knobs: model size, steel, stainless steel.",
+      "description": "Illustrative right-angle gusset bracket with touching wall, toe and diagonal web, plus four through mounting holes. Not a load-rated fabrication drawing. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253201,7 +253201,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
       "preview": "/assets/standard-components-gusset-bracket.png",
-      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+      "sourceSha256": "1468f622e5a27f819c9b1755948d6509d581bb03eb730d2bb94c49ede23f3b50",
       "triangleBudget": 380,
       "params": [
         {
@@ -253243,11 +253243,11 @@
         }
       },
       "stats": {
-        "triangles": 32,
+        "triangles": 240,
         "sizeM": [
           0.056,
-          0.042,
-          0.031
+          0.044,
+          0.046
         ],
         "minUpM": 0,
         "materials": 1
@@ -253257,8 +253257,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "wall",
-            "toe"
+            "wall-plate",
+            "horizontal-toe"
           ],
           "param": "steel"
         },
@@ -253266,7 +253266,7 @@
           "name": "stainless",
           "color": "#b8c1c6",
           "parts": [
-            "gusset"
+            "diagonal-web"
           ],
           "param": "stainless"
         }
@@ -255089,14 +255089,17 @@
       "id": "pipe-union",
       "kit": "standard-components",
       "title": "Pipe union",
-      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.",
+      "description": "Illustrative CC0 low-poly straight pipe union: two detachable tubular tailpieces with external shoulders, a hollow six-flat coupling nut that captures them, and a separate sealing gasket between faces. The central fluid passage is open. Three scaled scene sizes; threaded engagement, pressure rating and leak-tight fit are not verified manufacturing details.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "pipe union",
         "union fitting",
         "pipe connector",
-        "plumbing"
+        "plumbing",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255107,14 +255110,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
       "preview": "/assets/standard-components-pipe-union.png",
-      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
-      "triangleBudget": 340,
+      "sourceSha256": "64734ca1f7ca5dd752d830f786d1c878edf4491dabc28aec91353eeb1dbec4fb",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative overall scale",
           "choices": [
             "compact",
             "standard",
@@ -255125,13 +255128,19 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel tailpieces"
         },
         {
           "name": "brass",
           "type": "color",
           "default": "#b28a4d",
-          "label": "Brass"
+          "label": "Brass coupling nut"
+        },
+        {
+          "name": "gasketColor",
+          "type": "color",
+          "default": "#353d41",
+          "label": "Sealing gasket"
         }
       ],
       "presets": {
@@ -255149,11 +255158,11 @@
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 744,
         "sizeM": [
-          0.036,
-          0.036,
-          0.036
+          0.038105,
+          0.049,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -255163,8 +255172,8 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "socket-a",
-            "socket-b"
+            "inlet-tailpiece",
+            "outlet-tailpiece"
           ],
           "param": "steel"
         },
@@ -255172,9 +255181,17 @@
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "nut"
+            "coupling-hex-nut"
           ],
           "param": "brass"
+        },
+        {
+          "name": "gasketColor",
+          "color": "#353d41",
+          "parts": [
+            "face-gasket"
+          ],
+          "param": "gasketColor"
         }
       ]
     },
@@ -255664,14 +255681,17 @@
       "id": "split-shaft-collar",
       "kit": "standard-components",
       "title": "Split shaft collar",
-      "description": "Split clamp collar with a through bore and a raised clamp lug Knobs: model size, steel, zinc-plated steel.",
+      "description": "Illustrative CC0 low-poly split shaft collar with 18 mm through bore, radial slot, two opposed clamp lugs, a crosswise clamp-screw clearance hole and a distinct simplified clamp screw. Three uniform size choices; not vendor manufacturing CAD or a load-rated shaft connection. Color controls: steel and zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "shaft collar",
         "split collar",
         "clamp",
-        "rotating shaft"
+        "rotating shaft",
+        "low poly",
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "mechanical",
@@ -255682,8 +255702,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-split-shaft-collar.png",
-      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
-      "triangleBudget": 300,
+      "sourceSha256": "a767037b46ecfda9b55a479658bedde86153db98bbbe40835f0895bcde1d1314",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "size",
@@ -255724,11 +255744,11 @@
         }
       },
       "stats": {
-        "triangles": 112,
+        "triangles": 364,
         "sizeM": [
-          0.03995,
+          0.035962,
           0.01,
-          0.036988
+          0.039991
         ],
         "minUpM": 0,
         "materials": 1
@@ -255738,7 +255758,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "collar"
+            "split-collar-body"
           ],
           "param": "steel"
         },
@@ -255746,7 +255766,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "lug"
+            "clamp-screw"
           ],
           "param": "zinc"
         }
