@@ -1,0 +1,24 @@
+{
+  "issue": 1270,
+  "created": "2026-11-09",
+  "input": "cookbook/snippets/multi-dof-robot-arm-4axis.md",
+  "tool": "verifyTool({ check: 'static-hold', code })",
+  "invocation": "node --import tsx docs/demos/issue-1270-static-hold/capture-demo.mjs",
+  "videoInvocation": "bash docs/demos/issue-1270-static-hold/render-demo.sh",
+  "expected": {
+    "ok": false,
+    "diagnostic": "assembly.joint.static-hold.no-actuator",
+    "severity": "warn",
+    "namedSkippedMates": ["base-yaw", "shoulder-pitch", "elbow-pitch", "wrist-pitch"]
+  },
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "durationSeconds": 12,
+    "renderer": "Pillow PNG slides + FFmpeg concat",
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "font": "/System/Library/Fonts/Supplemental/Andale Mono.ttf"
+  }
+}

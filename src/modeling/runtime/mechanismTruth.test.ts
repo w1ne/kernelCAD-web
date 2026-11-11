@@ -339,11 +339,10 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     expect(interps[0].message).toMatch(/overlap/);
   }, 90000);
 
-  it('5b. an overlapping pair declared in solvedModel({ ignore }) is not interpenetration (symmetric ignore honored)', async () => {
-    // Same geometry as test 5, but the model declares the overlap as an
-    // intended contact via `solvedModel({ ignore })` — the documented
-    // escape hatch. The mechanism-truth criterion must honor it, exactly
-    // like the validator diagnostic stream does.
+  it('5b. an overlapping pair declared in solvedModel({ ignore }) is listed as a rest-pose exception', async () => {
+    // Same geometry as test 5, but the model declares the overlap in
+    // `solvedModel({ ignore })`. The authored-pose exception is retained;
+    // the mechanism verdict reports it, and joint-travel samples do not use it.
     const { arm, kcad } = makeArm('overlap-ignored');
     const boxA = kcad.box(20, 20, 20, true);
     const boxB = kcad.box(20, 20, 20, true).translate(15, 0, 0);
@@ -359,12 +358,13 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     });
     arm.mate('weld', 'a.frame', 'b.frame', 'fastened');
     // Record the ignore list on the assembly. Reversed spelling on purpose:
-    // pairKey must silence (a,b) and (b,a) alike.
+    // the pair is reported in coverage in its declared order.
     await arm.solvedModel({}, { ignore: [['b', 'a']] });
 
     const result = await checkMechanismTruth(arm);
     const interps = result.failures.filter((f) => f.code === 'mechanism.interpenetration');
     expect(interps).toEqual([]);
+    expect(result.coverage?.ignoredPairs).toEqual([['b', 'a']]);
   }, 90000);
 
   it('6. spring with connector ON rotation axis but body offset elsewhere (P2 Luxo pattern) → broken with mechanism.disconnect at a bbox corner', async () => {
@@ -802,4 +802,38 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     expect(result.mechanism).toBe('unverified');
     expect(result.mechanismFailures).toEqual([]);
   }, 30000);
+});
+
+describe('mechanism truth — animation joint limits', () => {
+  it('marks a mechanism broken when param bounds hide an out-of-limit animation key', async () => {
+    const { arm, kcad } = makeArm('clamped-animation-key');
+    const hingeDeg = kcad.param('hingeDeg', 0, { min: -65, max: 65 });
+    const base = arm.part('base', kcad.box(40, 40, 10).translate(-40, -20, -5));
+    const link = arm.part('link', kcad.box(60, 8, 4).translate(0, -4, -2));
+    const pivot = {
+      type: 'axis' as const,
+      origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] },
+      axis: [0, 0, 1] as [number, number, number],
+    };
+    base.connector('pivot', pivot);
+    link.connector('pivot', pivot);
+    arm.mate('hinge', 'base.pivot', 'link.pivot', 'revolute', {
+      pose: hingeDeg,
+      limitsDeg: [-65, 65],
+    });
+    kcad.animationView({
+      tracks: [{
+        param: 'hingeDeg',
+        keys: [
+          { atMs: 0, value: 897, ease: 'easeInOut' },
+          { atMs: 1000, value: 0, ease: 'easeInOut' },
+        ],
+      }],
+    });
+
+    const result = await checkMechanismTruth(arm);
+
+    expect(result.failures.some((failure) => failure.code === 'kinematic.pose.out-of-limits')).toBe(true);
+    expect(result.mechanism).toBe('broken');
+  }, 60000);
 });

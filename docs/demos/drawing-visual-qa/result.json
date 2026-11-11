@@ -1,0 +1,238 @@
+{
+  "mode": "local public export -> vector PDF -> Poppler raster",
+  "source": "fixture-block.kcad.ts; geometry 80 x 50 x 12 mm",
+  "annotation": "INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH",
+  "evidence": [
+    {
+      "tag": "before",
+      "repairEnabled": false,
+      "page": "Page size:       841.89 x 595.276 pts (A4)",
+      "raster": {
+        "width": 1404,
+        "height": 993
+      },
+      "visualQa": {
+        "status": "needs-review",
+        "source": "exported-svg",
+        "checks": [
+          {
+            "id": "vector-path-geometry",
+            "status": "passed",
+            "message": "0 visible paths with unmeasurable geometry."
+          },
+          {
+            "id": "requested-views",
+            "status": "passed",
+            "message": "4 requested views present."
+          },
+          {
+            "id": "view-bounds",
+            "status": "passed",
+            "message": "0 view overflows."
+          },
+          {
+            "id": "view-separation",
+            "status": "passed",
+            "message": "0 view overlaps."
+          },
+          {
+            "id": "title-block-clearance",
+            "status": "passed",
+            "message": "0 view/title-block intersections."
+          },
+          {
+            "id": "dimension-geometry",
+            "status": "passed",
+            "message": "0 dimensions off page; 0 title-block intersections."
+          },
+          {
+            "id": "text-bounds",
+            "status": "failed",
+            "message": "1 clipped labels."
+          },
+          {
+            "id": "annotation-placement",
+            "status": "passed",
+            "message": "0 crowded or overlapping annotations."
+          },
+          {
+            "id": "kernel-preflight",
+            "status": "failed",
+            "message": "0 geometry issues, 1 text issues."
+          },
+          {
+            "id": "critical-dimensions",
+            "status": "not-declared",
+            "message": "Dimension requirements not declared."
+          },
+          {
+            "id": "drafting-decisions",
+            "status": "not-declared",
+            "message": "Drafting decisions not declared."
+          }
+        ],
+        "issues": [
+          {
+            "code": "text-clipping",
+            "severity": "error",
+            "message": "Text extends outside the page.",
+            "action": "Adjust the text position or sheet size.",
+            "location": {
+              "x": -26.265600000000006,
+              "y": 106.925,
+              "width": 123.7536,
+              "height": 3.3599999999999994
+            }
+          },
+          {
+            "code": "pdf-content-missing",
+            "severity": "error",
+            "message": "Required SVG dimension text missing from PDF: INSPECTMACHINEDEDGEBEFOREASSEMBLYANDRECORDACTUALLENGTH",
+            "action": "Check the PDF text layer against source dimensions."
+          }
+        ],
+        "attempts": [
+          {
+            "attempt": 0,
+            "sheet": "a4",
+            "issueCodes": [
+              "text-clipping"
+            ],
+            "layoutIssueCount": 1,
+            "accepted": true
+          }
+        ],
+        "attemptCount": 0,
+        "repaired": false,
+        "limitations": [
+          "Text bounds are estimated from SVG fonts; visual QA is not a tolerance or manufacturing certification.",
+          "Critical-dimension completeness must be explicitly declared before verified status."
+        ],
+        "pdf": {
+          "status": "incomplete",
+          "pageCount": 1,
+          "widthMm": 297.0000127777778,
+          "heightMm": 210.00000333333332,
+          "vectorPathCount": 22,
+          "imageCount": 0,
+          "missingText": [
+            "INSPECTMACHINEDEDGEBEFOREASSEMBLYANDRECORDACTUALLENGTH"
+          ]
+        }
+      },
+      "diagnostics": [
+        {
+          "code": "drawing.text.placement",
+          "severity": "warn"
+        }
+      ]
+    },
+    {
+      "tag": "after",
+      "repairEnabled": true,
+      "page": "Page size:       1190.55 x 841.89 pts (A3)",
+      "raster": {
+        "width": 1985,
+        "height": 1404
+      },
+      "visualQa": {
+        "status": "incomplete",
+        "source": "exported-svg",
+        "checks": [
+          {
+            "id": "vector-path-geometry",
+            "status": "passed",
+            "message": "0 visible paths with unmeasurable geometry."
+          },
+          {
+            "id": "requested-views",
+            "status": "passed",
+            "message": "4 requested views present."
+          },
+          {
+            "id": "view-bounds",
+            "status": "passed",
+            "message": "0 view overflows."
+          },
+          {
+            "id": "view-separation",
+            "status": "passed",
+            "message": "0 view overlaps."
+          },
+          {
+            "id": "title-block-clearance",
+            "status": "passed",
+            "message": "0 view/title-block intersections."
+          },
+          {
+            "id": "dimension-geometry",
+            "status": "passed",
+            "message": "0 dimensions off page; 0 title-block intersections."
+          },
+          {
+            "id": "text-bounds",
+            "status": "passed",
+            "message": "0 clipped labels."
+          },
+          {
+            "id": "annotation-placement",
+            "status": "passed",
+            "message": "0 crowded or overlapping annotations."
+          },
+          {
+            "id": "kernel-preflight",
+            "status": "passed",
+            "message": "0 geometry issues, 0 text issues."
+          },
+          {
+            "id": "critical-dimensions",
+            "status": "not-declared",
+            "message": "Dimension requirements not declared."
+          },
+          {
+            "id": "drafting-decisions",
+            "status": "not-declared",
+            "message": "Drafting decisions not declared."
+          }
+        ],
+        "issues": [],
+        "attempts": [
+          {
+            "attempt": 0,
+            "sheet": "a4",
+            "issueCodes": [
+              "text-clipping"
+            ],
+            "layoutIssueCount": 1,
+            "accepted": true
+          },
+          {
+            "attempt": 1,
+            "sheet": "a3",
+            "strategy": "larger-sheet",
+            "issueCodes": [],
+            "layoutIssueCount": 0,
+            "accepted": true
+          }
+        ],
+        "attemptCount": 1,
+        "repaired": true,
+        "limitations": [
+          "Text bounds are estimated from SVG fonts; visual QA is not a tolerance or manufacturing certification.",
+          "Critical-dimension completeness must be explicitly declared before verified status."
+        ],
+        "pdf": {
+          "status": "passed",
+          "pageCount": 1,
+          "widthMm": 420.00000666666665,
+          "heightMm": 297.0000127777778,
+          "vectorPathCount": 22,
+          "imageCount": 0,
+          "missingText": []
+        }
+      },
+      "diagnostics": []
+    }
+  ],
+  "limits": "SVG font-metric preflight, PDF vector readback and independently inspected raster; not OCR, fit or GD&T certification"
+}

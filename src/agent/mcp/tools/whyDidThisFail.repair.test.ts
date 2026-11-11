@@ -59,7 +59,8 @@ describe('why_did_this_fail — repair plan', () => {
     expect(top.predictedEffect.length).toBeGreaterThan(0);
     // The fix is derived from geometry, and says which geometry.
     expect(top.evidence.shortestAdjacentEdgeMm).toBe(10);
-    expect(top.evidence.maxFeasibleValueMm).toBe(5);
+    // Half the 10 mm edge is 5. The label is the radius the kernel probe built.
+    expect(top.evidence.maxFeasibleValueMm).toBe(4.99);
   }, 120000);
 
   it('hands repair_script a diagnostic id that selects the same failure', async () => {

@@ -353,9 +353,10 @@ export class Assembly {
   /**
    * Last `ignore` list passed to `solvedModel`. External review surfaces
    * (`reviewCadTool`) read this so the validator they re-run honors the same
-   * known-acceptable contacts the script silenced. Empty when no
-   * `solvedModel({}, { ignore })` has been called yet. Mirrors the `__mates()` /
-   * `__parts()` underscore-prefixed convention; not part of the agent-facing
+   * known-acceptable contacts the script silenced; mechanism truth reports
+   * these declarations but still checks each pair during joint travel.
+   * Empty when no `solvedModel({}, { ignore })` has been called yet. Mirrors
+   * the `__mates()` / `__parts()` underscore-prefixed convention; not part of the agent-facing
    * surface.
    */
   __ignoreInterference(): ReadonlyArray<readonly [string, string]> {

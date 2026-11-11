@@ -2,19 +2,20 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/naming/resolveEdgeRef.ts
 //
-// Slice scope: edge `created` refs are resolved by delegating to
-// resolveFaceRef on a synthesized face ref ({ kind:'created', rewriteId,
-// slot }), then the caller (edgeSelection) collects boundary edges of the
-// resolved face. Full edge-lineage parity (separate EdgeLineage with
-// featureId/featureKind/snapshotAtCreate) is deferred to a follow-up patch.
+// A created edge ref resolves in two steps, both on the lineage that already
+// exists. A birth label on EdgeLineage (`corner`, `top-perimeter`, a sketch
+// segment label) returns those edge hashes. Otherwise the ref is a face slot:
+// resolveFaceRef on a synthesized face ref, and the caller takes that face's
+// boundary edges.
 
 import type { EdgeRef } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { OcctBackend } from '../backends/occt/occtBackend';
-import type { FaceHash } from './evolutionRecord';
+import type { EdgeHash, EdgeHistoryMap, FaceHash } from './evolutionRecord';
 import { resolveFaceRef } from './resolveFaceRef';
 
 export type EdgeResolveResult =
+  | { ok: true; edgeHashes: readonly EdgeHash[] }
   | { ok: true; faceHashForBoundaryEdges: FaceHash; warnings?: CompilerDiagnostic[] }
   | { ok: false; diagnostic: CompilerDiagnostic };
 
@@ -22,6 +23,20 @@ export interface EdgeResolveContext {
   currentShape: OcctBackend;
   featureId: string;
   surface: 'edge-feature' | 'face-feature';
+}
+
+/** Edges whose stored birth label is this slot, born on `rewriteId`. */
+function edgesWithBirthLabel(
+  map: EdgeHistoryMap | undefined,
+  ref: Extract<EdgeRef, { kind: 'created' }>,
+): EdgeHash[] {
+  if (!map) return [];
+  const out: EdgeHash[] = [];
+  for (const [hash, lineage] of map) {
+    if (lineage.labelName !== ref.slot) continue;
+    if (lineage.featureId === ref.rewriteId || lineage.rootFeatureId === ref.rewriteId) out.push(hash);
+  }
+  return out;
 }
 
 export function resolveEdgeRef(ref: EdgeRef, ctx: EdgeResolveContext): EdgeResolveResult {
@@ -38,6 +53,8 @@ export function resolveEdgeRef(ref: EdgeRef, ctx: EdgeResolveContext): EdgeResol
       },
     };
   }
+  const labeled = edgesWithBirthLabel(ctx.currentShape.edgeHistoryMap, ref);
+  if (labeled.length > 0) return { ok: true, edgeHashes: labeled };
   const synth = resolveFaceRef(
     { kind: 'created', rewriteId: ref.rewriteId, slot: ref.slot },
     { currentShape: ctx.currentShape, featureId: ctx.featureId, surface: ctx.surface },

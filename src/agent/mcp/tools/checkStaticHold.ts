@@ -20,8 +20,9 @@ import type {
 export interface CheckStaticHoldInput extends EvaluateInput {
   /** Assembly name when the script defines more than one. */
   assembly?: string;
-  /** Joint name to evaluate. Omit to evaluate every joint with a declared
-   *  actuator. */
+  /** Joint name to evaluate. Omit to evaluate every arm.revolute / arm.prismatic
+   *  joint with a declared actuator. Mate-driven mechanicalJoint chains are
+   *  not covered by this check. */
   joint?: string;
   /** Explicit pose(s) to check. Omit to sample a grid across the
    *  evaluated joint's declared range. */
@@ -46,10 +47,12 @@ export type CheckStaticHoldOutput =
 
 /**
  * `check_static_hold` MCP tool (wired through `verify({ check: 'static-hold' })`).
- * Evaluates every revolute/prismatic joint with a declared `actuator`
+ * Evaluates every arm.revolute/arm.prismatic joint with a declared `actuator`
  * (or the single `joint` named) across a sampled pose grid, reporting the
  * worst-pose gravitational holding requirement vs the declared actuator
- * capacity, plus structured margin diagnostics.
+ * capacity, plus structured margin diagnostics. If no such capacity is
+ * evaluated, returns `ok: false` with a no-coverage diagnostic. Mate-only
+ * mechanicalJoint chains are not covered.
  */
 export async function checkStaticHoldTool(
   input: CheckStaticHoldInput,

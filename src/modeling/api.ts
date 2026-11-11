@@ -73,6 +73,7 @@ import { makeRequirementMethods } from './apiRequirementMethods';
 import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -229,6 +230,21 @@ export interface KernelCadApi {
    * along lamp arms.
    */
   spring(opts: SpringOptions): Shape;
+  /**
+   * Solid circular pipe along a polyline. Corners become tangent circular
+   * bends (`opts.bendRadius` defaults to 1.5 × `radius`). Built with OCCT
+   * `BRepOffsetAPI_MakePipe` on exact line and arc edges — cylinders and
+   * torus segments, few faces, cheap to boolean. Use this for dressed
+   * cables and hose runs instead of `circle().sweep(points, { spine: 'smooth' })`
+   * (a B-spline pipe-shell that is expensive to evaluate) or a chain of
+   * overlapping cylinders.
+   *
+   * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
+   * rules, and no ports. `bendRadius` is the centreline radius and must
+   * exceed `radius`; every straight between corners must be long enough
+   * for the bends (same centreline geometry as `tube()` paths).
+   */
+  pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
   /**
    * Build an involute spur gear as ONE manifold solid: the tooth is generated
    * by the standard basic rack (true involute above the base circle, trochoid
@@ -853,6 +869,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
   const api: KernelCadApi = {
     ...makePrimitiveMethods(session),
     spring: makeSpringMethod(session, () => api),
+    pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),

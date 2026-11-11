@@ -99,16 +99,15 @@ export class Scene implements Iterable<ScenePart> {
    *  `connectors` arrays surfaced above. */
   readonly tendons?: readonly TendonRecord[];
   /** Validator diagnostics attached by `Assembly.solvedModel({validate: 'warn'})`
-   *  (v0.6 Task 9). Populated from `validateAssemblyWithMates(arm)` when the
-   *  gate is in `warn` mode; empty when validation is skipped (`mode: 'off'`)
-   *  or when `mode: 'error'` is used (in which case error-severity diagnostics
-   *  throw, and the surviving warnings/info are silently dropped). Always
-   *  present (possibly empty); never undefined, so consumers don't need a
-   *  presence check. */
+   *  (v0.6 Task 9), or an overlap-only error deferred to mechanism truth.
+   *  Always present (possibly empty); never undefined, so consumers don't need
+   *  a presence check. */
   readonly warnings: readonly SceneDiagnostic[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
+  /** Strict-mode overlap errors awaiting the evaluator's mechanism verdict. */
+  private readonly _deferredValidationDiagnostics: readonly ValidatorDiagnostic[];
   /**
    * Underlying capture-time feature id for the upstream `solvedAssembly` /
    * `assemblyModel` record. Internal — used by `runAndExport` to route a
@@ -127,6 +126,7 @@ export class Scene implements Iterable<ScenePart> {
     mates?: readonly MateRecord[],
     warnings?: readonly SceneDiagnostic[],
     tendons?: readonly TendonRecord[],
+    deferredValidationDiagnostics?: readonly ValidatorDiagnostic[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
@@ -140,11 +140,17 @@ export class Scene implements Iterable<ScenePart> {
       this.tendons = Object.freeze([...tendons]);
     }
     // `warnings` is always present (possibly empty) — keep it a frozen array
-    // so callers can `.some(...)` / iterate without a null-check. Inserted as
-    // the last constructor arg so existing v0.5 call sites (Scene built by
-    // SolvedKinematics.toScene, Assembly.makeScene before T9) keep working
-    // without an explicit `[]`.
+    // so callers can `.some(...)` / iterate without a null-check.
     this.warnings = Object.freeze(warnings ? [...warnings] : []);
+    this._deferredValidationDiagnostics = Object.freeze(
+      deferredValidationDiagnostics ? [...deferredValidationDiagnostics] : [],
+    );
+  }
+
+  /** Internal handoff for strict assembly diagnostics deferred until after
+   *  build, when evaluate_script can attach its mechanism-specific verdict. */
+  __deferredValidationDiagnostics(): readonly ValidatorDiagnostic[] {
+    return this._deferredValidationDiagnostics;
   }
 
   /** Lazily-computed AABB over all transformed parts. */

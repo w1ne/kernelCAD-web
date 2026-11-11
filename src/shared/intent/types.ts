@@ -213,6 +213,8 @@ export type FeatureKind =
   | 'surfaceSew'
   // Bent tube: corner points, one bend radius, round hollow section.
   | 'tube'
+  // Solid circular pipe along a polyline (lines + fillet arcs, no tubeSpec).
+  | 'pipe'
   // Capture-only bending and clearance rules for the tubes in the model.
   | 'tubeSpec'
   // S2: capture-only named requirement declaration, measured by the ledger.
