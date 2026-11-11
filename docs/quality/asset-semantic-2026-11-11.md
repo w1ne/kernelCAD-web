@@ -205,3 +205,23 @@ The [conservator nozzle handoff](../../artifacts/catalog-demos/grid-substation-t
 | `recycling-facility/recycling-trommel-screen` | Inclined screen drum, feed hopper, overs chute, fines conveyor and piles are recognizable; visible finishes are plausible. | 7.81 × 4.06 × 10.38 | `60ea2ddfa957547b4b920bca8b35c013b87e544201f67a97332028fae4224ee6` | `78e74ab493b2895e472e892e702c39dec1df46e6e379d73ddabf550428989da4` | No material mismatch found. |
 
 The live `assets.json` generation was `2026-11-11T17:45:06.972Z`. The public glass-crusher source and preview returned HTTP 200 but differed from the reviewed local branch versions; this correction is not deployed. The local preview fix is a material mapping, not a product specification, vendor replica, equipment-performance claim, or physical acceptance.
+
+## Eleventh sample — data-center cooling equipment
+
+- At audit start, PR #1258 was at `bbb6eecf2ad34561747524b5e80734766c2aee1a`, open with no submitted review. GitHub reported it `DIRTY` against `develop`; two exact-head Actions runs (`43095511171` and `43098030575`) ended `startup_failure` with no jobs. The earlier successful run was for the previous commit, so it did not establish CI for the audited head. The baseline is retained in the [handoff bundle](../../artifacts/catalog-demos/data-center-cooling-tower-access-door-material-review-20261111/README.md).
+- Synced the branch with `develop`, accepting upstream versions for the standard-component and generated-index conflicts. This resolved the stale merge base locally; the PR was not merged.
+- Reviewed `air-cooled-chiller`, `cooling-tower-cell`, `dry-type-transformer`, `standby-generator-enclosure`, and `clean-agent-cylinder-bank`. Exact open issue and PR title/body searches and the open-PR changed-source-path checks found no duplicates for these assets. The complete responses are in `open-target-check-output.json`.
+- All five preview renders had recognizable silhouettes and coherent material zoning. The cooling-tower access panel alone used the independent `stack` finish while sitting in the FRP casing wall. Changed that part to use the existing `casing` control; the fan stack remains controlled separately. No geometry, dimensions, presets, color parameters, triangle budget, asset IDs, or asset count changed.
+- The five-preview ledger, baseline and corrected sources, before/after renders, public-site snapshot, regenerated index evidence, regression test, and inspected MP4 are retained in the handoff bundle. A dated industry-reference comparison is stored privately in `kernelCAD-private`.
+- The focused exported-GLB regression passed 1/1; data-center-infrastructure quality is 50/50 (100%); ESLint is clean; and the catalog integration suite passed 39 files / 64 tests, including the all-catalog source/index freshness check. The global mechanical scan reports 2,401/2,402 (99.96%), with the unchanged `standard-components/beam-coupling` as its sole outlier.
+- The generated index contains 2,402 assets across 50 kits. It refreshed 542 source-hash rows against the synced source tree; among these five reviewed rows, only `cooling-tower-cell` changed. The target row points to its rendered preview, matches the current source hash, and remains at 2,110 / 9,000 triangles with the 3.3 × 3.906 × 2.53 m envelope.
+
+| Asset | Preview review | Result |
+|---|---|---|
+| `data-center-infrastructure/air-cooled-chiller` | Six guarded roof fans, V-coil faces, compressor/control enclosure, and water nozzles read clearly; visible finishes are distinct. | No mismatch found. |
+| `data-center-infrastructure/cooling-tower-cell` | Counterflow casing, inlet louvres, fan stack, access ladder/handrail and water piping are recognizable. Baseline access panel followed the stack finish; the corrected render follows casing. | Material mapping corrected; geometry unchanged. |
+| `data-center-infrastructure/dry-type-transformer` | Cast-resin coils, laminated core, copper links, insulators and wheeled base read as a transformer. | No mismatch found. |
+| `data-center-infrastructure/standby-generator-enclosure` | Genset canopy, louvred doors, sub-base tank, exhaust silencer, control window and emergency stop are visible. | No mismatch found. |
+| `data-center-infrastructure/clean-agent-cylinder-bank` | Five cylinders, brass valves/gauges, common manifold and galvanized rack read as a suppression bank. | No mismatch found. |
+
+The public kernelCAD preview/source matched the pre-fix local baseline; the detail route returned HTTP 404. This correction is local to the feature branch and is not deployed. It is a visual material-control correction, not an equipment specification, performance claim, or physical acceptance.

@@ -1,0 +1,16 @@
+{
+  "video": "../data-center-cooling-tower-access-door-material-review.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "20/1",
+  "durationSeconds": 10.4,
+  "sizeBytes": 147502,
+  "inspectedSlides": 4,
+  "inspection": "Extracted one encoded frame from each of the four slides and checked the montage. The five audit renders and before/after material mapping are readable; captions match the recorded local checks and do not imply deployment or physical acceptance.",
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/data-center-cooling-tower-access-door-material-review-20261111/create_demo.py",
+    "ffprobe -v error -show_streams -show_format -of json data-center-cooling-tower-access-door-material-review.mp4",
+    "ffmpeg -i data-center-cooling-tower-access-door-material-review.mp4 -vf \"select=not(mod(n,52))\" -fps_mode passthrough -frames:v 5 video-review/inspected-frames/slide-%02d.png"
+  ]
+}

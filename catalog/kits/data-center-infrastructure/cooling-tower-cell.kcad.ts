@@ -78,7 +78,8 @@ for (const t of [-800, -400, 0, 400, 800]) {
 }
 add('belt-rail-y', blk(-H - 40, -H - 40, inletTop, H + 40, -H, inletTop + 80).color(casing));
 add('belt-rail-x', blk(-H - 40, -H - 40, inletTop, -H, H + 40, inletTop + 80).color(casing));
-add('access-door', blk(-H - 44, 300, 1700, -H - 30, 900, 2450).color(stack));
+// The molded FRP access door is part of the tower casing.
+add('access-door', blk(-H - 44, 300, 1700, -H - 30, 900, 2450).color(casing));
 add('access-door-handle', blk(-H - 70, 360, 2040, -H - 44, 390, 2140).color(galv));
 
 // ---- Fan deck and flared velocity-recovery stack with fan ----

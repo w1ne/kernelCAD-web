@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-11-11T21:00:29.802829+00:00",
+  "currentHeadRuns": [
+    {
+      "conclusion": "startup_failure",
+      "event": "workflow_dispatch",
+      "id": 43098030575,
+      "jobs": [],
+      "url": "https://github.com/w1ne/kernelCAD-web/actions/runs/43098030575"
+    },
+    {
+      "conclusion": "startup_failure",
+      "event": "workflow_dispatch",
+      "id": 43095511171,
+      "jobs": [],
+      "url": "https://github.com/w1ne/kernelCAD-web/actions/runs/43095511171"
+    }
+  ],
+  "headSha": "bbb6eecf2ad34561747524b5e80734766c2aee1a",
+  "interpretation": "The exact current head has no completed CI job results; both current-head workflow_dispatch attempts failed before creating jobs. The earlier successful run is for the previous commit and does not verify this head.",
+  "latestSuccessfulPriorHeadRun": {
+    "conclusion": "success",
+    "headSha": "20eef047461206ae733d0c2e7362903d83471c08",
+    "id": 43078454085,
+    "url": "https://github.com/w1ne/kernelCAD-web/actions/runs/43078454085"
+  },
+  "mergeStateStatus": "DIRTY",
+  "pullRequest": 1258,
+  "pullRequestStatusChecks": [],
+  "reviewDecision": "",
+  "submittedReviews": [],
+  "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+}
