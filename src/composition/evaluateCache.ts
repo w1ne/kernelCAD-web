@@ -7,14 +7,14 @@
 // currently rebuild the model (~7 s) and drop WeakMap identity, so the
 // physics pass repeats work the sweep already paid for. The cache is
 // keyed on file identity (path + device + inode + mtime + ctime + size)
-// plus the identity of imported assets (STEP, STL, fonts, catalog parts
-// loaded through literal fetchPart calls). It is skipped when the caller
-// supplies a custom API factory, baseline selections, extra requirements,
-// or skipDfmGate, when an import path is not a literal we can hash, or
-// when the script uses lib.part / lib.stack / lib.standard / lib.findPart
-// / lib.insert, including aliases such as `const makePart = lib.part` or
-// `const { part } = lib` (those load catalog geometry that importIdentity
-// does not hash). A same-size rewrite that restores mtime
+// plus the identity of imported assets (STEP, STL, fonts, and catalog
+// parts loaded through a literal fetchPart call that does not go through
+// the `lib` namespace). It is skipped when the caller supplies a custom
+// API factory, baseline selections, extra requirements, or skipDfmGate,
+// when an import path is not a literal we can hash, or when the script
+// mentions `lib` at all — aliases such as `const parts = lib` can load
+// catalog geometry that cannot be hashed statically. A same-size rewrite
+// that restores mtime
 // still changes ctime, so the key misses and we rebuild. At most a few
 // successful evaluates are kept so older models can be collected.
 
@@ -51,16 +51,12 @@ function importsAreProvable(identity: string): boolean {
   return true;
 }
 
-/** Catalog loaders that importIdentity does not hash, including aliases.
- *  `lib.fetchPart('id')` is hashed when the id is a literal; an extracted
- *  `const load = lib.fetchPart` call is not, so that form is refused. */
+/** Any use of the script `lib` namespace can load catalog geometry
+ *  (including `const parts = lib; parts.part(...)`). Those paths cannot
+ *  all be hashed statically, so the cache is skipped. Direct
+ *  `fromSTEP('file.step')` calls without `lib.` remain eligible. */
 function usesUnhashedCatalogApi(source: string): boolean {
-  if (/\blib\s*\.\s*(?:part|stack|findPart|insert|standard)\b/.test(source)) return true;
-  if (/\blib\s*\.\s*fetchPart\s*(?!\s*\()/.test(source)) return true;
-  if (/(?:const|let|var)\s*\{[^}]*\b(?:part|stack|findPart|insert|fetchPart|standard)\b[^}]*\}\s*=\s*lib\b/.test(source)) {
-    return true;
-  }
-  return false;
+  return /\blib\b/.test(source);
 }
 
 export async function evaluateCacheKey(

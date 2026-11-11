@@ -108,6 +108,14 @@ describe('evaluateCache', () => {
     expect(await evaluateCacheKey({ file: path })).toBeUndefined();
   });
 
+  it('does not cache a script that aliases the lib namespace before calling a loader', async () => {
+    const path = writeScript(
+      'lib-namespace-alias',
+      "const parts = lib;\nconst makePart = parts.part;\nconst screw = await makePart({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });\nreturn screw;\n",
+    );
+    expect(await evaluateCacheKey({ file: path })).toBeUndefined();
+  });
+
   it('does not cache a script whose import path is not a hashable literal', async () => {
     const path = writeScript(
       'dynamic',
