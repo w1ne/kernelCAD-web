@@ -8,6 +8,10 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { dfmReviewTool, type DfmReviewOutput } from '../../../src/agent/mcp/tools/dfmReview';
 import { analyzeSheetMetalFlat, SHEET_METAL_DEFAULTS } from '../../../src/modeling/runtime/dfm/sheetMetalCheck';
+import { moldChecks } from '../../../src/agent/mcp/tools/dfmReviewChecks';
+import { MOULDING_DEFAULTS } from '../../../src/shared/intent/dfmSpecRecord';
+import type { MouldingPartReport } from '../../../src/modeling/runtime/dfm/mouldingCheck';
+import { resolveTopoRefTool } from '../../../src/agent/mcp/tools/resolveTopoRef';
 
 const check = (r: DfmReviewOutput, id: string) => r.checks.find(c => c.id === id);
 const status = (r: DfmReviewOutput, id: string): string | undefined => check(r, id)?.status;
@@ -67,10 +71,11 @@ describe('dfm_review sheet-metal', () => {
     expect(status(loose, 'sheet.min-flange')).toBe('pass');
   }, 120000);
 
-  it('returns one warn row for a part that is not sheet metal', async () => {
+  it('returns not-checked for a part that is not sheet metal', async () => {
     const r = await dfmReviewTool({ code: 'return box(20, 20, 2);', processes: ['sheet-metal'] });
-    expect(r.checks).toEqual([expect.objectContaining({ id: 'sheet.not-sheet-metal', process: 'sheet-metal', status: 'warn' })]);
-    expect(r.verdict).toBe('pass');
+    expect(r.checks).toEqual([expect.objectContaining({ id: 'sheet.not-sheet-metal', process: 'sheet-metal', status: 'not-checked' })]);
+    expect(r.verdict).toBe('not-checked');
+    expect(r.ok).toBe(true); // The call ran; its requested manufacturing process did not apply.
     expect(r.sheetMetal).toBeUndefined();
   }, 60000);
 
@@ -103,10 +108,42 @@ describe('dfm_review injection-molding', () => {
     const faces = r.injectionMolding![0].result.draft.insufficient.map(d => d.faceRef).sort();
     expect(faces).toHaveLength(4);
     for (const f of faces) expect(f).toMatch(/^@kc\[.*\/face\/(front|back|left|right)\]$/);
+    const draft = check(r, 'mold.draft')!;
+    expect(draft).toMatchObject({ unit: 'deg', op: '>=', source: 'injection-molding' });
+    expect(draft.refs).toEqual(faces);
+    for (const ref of draft.refs!) {
+      const resolved = await resolveTopoRefTool({ code: 'return box(40, 30, 3);', ref });
+      expect(resolved.ok, `${ref}: ${resolved.error}`).toBe(true);
+      expect(resolved.entity?.kind).toBe('face');
+    }
     expect(status(r, 'mold.wall-thickness')).toBe('pass');
     expect(status(r, 'mold.undercuts')).toBe('pass');
     expect(r.verdict).toBe('fail');
   }, 60000);
+
+  it('marks each moulding rule not-checked when its required measurement is unavailable', () => {
+    const rep = {
+      settings: { ...MOULDING_DEFAULTS, pullDirection: [...MOULDING_DEFAULTS.pullDirection] },
+      draft: { checkedFaces: 0, insufficient: [], minDraftDeg: Infinity },
+      undercut: { areaMm2: 0, faces: [] },
+      walls: { violations: [], truncated: false, sampleCount: 0, thinnestMm: Infinity },
+      thickest: null,
+      sharpCorners: [],
+      unmeasured: ['draft, undercut and sharp corners (the kernel returned no face triangulation)',
+        'wall thickness (no inward wall ray hit the far side)',
+        'thickest section (the voxel grid holds no solid voxel inside the part)'],
+      limitations: [],
+      verdict: 'pass',
+    } satisfies MouldingPartReport;
+    const checks = moldChecks('part', rep, 2.5);
+    expect(checks.filter(c => c.id !== 'mold.unmeasured').map(c => [c.id, c.status])).toEqual([
+      ['mold.draft', 'not-checked'],
+      ['mold.wall-thickness', 'not-checked'],
+      ['mold.undercuts', 'not-checked'],
+      ['mold.sharp-internal-corners', 'not-checked'],
+    ]);
+    expect(checks.find(c => c.id === 'mold.unmeasured')?.status).toBe('not-checked');
+  });
 
   it('passes the same box drafted 2° on every side', async () => {
     const r = await dfmReviewTool({ code: DRAFTED, processes: ['injection-molding'] });
