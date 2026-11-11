@@ -234857,7 +234857,7 @@
       "id": "battery-quarantine-drum",
       "kit": "recycling-facility",
       "title": "Battery quarantine drum",
-      "description": "Lithium battery quarantine drum at about real size: open-head UN steel drum with bolted closing ring and lever lug, lid pressure-relief vent and lifting handle, temperature probe wired to an alarm box on a post, Class 9 striped hazard label, vermiculite sack, on a galvanised grated sump tray. Material controls: drum, closing ring, sump tray and alarm/labels. Optional vermiculite sack. lithiumBlue, leadAcidBlack and weathered presets.",
+      "description": "Lithium battery quarantine drum at about real size: open-head UN steel drum with bolted closing ring and lever lug, lid pressure-relief vent and lifting handle, temperature probe wired to an alarm box on a post, Class 9 striped hazard label, kraft-paper vermiculite sack, on a galvanised grated sump tray. Material controls: painted drum, zinc closing hardware, galvanised tray and alarm cabinet. Optional vermiculite sack. lithiumBlue, leadAcidBlack and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234885,7 +234885,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/battery-quarantine-drum.kcad.ts",
       "preview": "/assets/recycling-facility-battery-quarantine-drum.png",
-      "sourceSha256": "7fdbf12f4d85fb0e1446ab95f3173905c12c904f4f8602b192f1bd4c72c23523",
+      "sourceSha256": "d7f55cae736c0c040c84d52f492a572ce979d043a15372121f160c0a06e26a2d",
       "triangleBudget": 3000,
       "params": [
         {
@@ -234919,7 +234919,7 @@
           "name": "alarm",
           "type": "color",
           "default": "#e2b41f",
-          "label": "Alarm box and sack"
+          "label": "Alarm cabinet and probe head (paint)"
         },
         {
           "name": "withSack",
@@ -235031,9 +235031,7 @@
           "color": "#e2b41f",
           "parts": [
             "probe-head",
-            "alarm-box",
-            "sack",
-            "sack-top"
+            "alarm-box"
           ],
           "param": "alarm"
         },
@@ -235075,6 +235073,14 @@
             "class9-stripe-1",
             "class9-stripe-2",
             "un-plate-text"
+          ]
+        },
+        {
+          "name": "sack",
+          "color": "#b8a47d",
+          "parts": [
+            "sack",
+            "sack-top"
           ]
         }
       ]

@@ -14,7 +14,7 @@ meta({
   name: "battery-quarantine-drum",
   license: 'CC0-1.0',
   title: "Battery quarantine drum",
-  description: "Lithium battery quarantine drum at about real size: open-head UN steel drum with bolted closing ring and lever lug, lid pressure-relief vent and lifting handle, temperature probe wired to an alarm box on a post, Class 9 striped hazard label, vermiculite sack, on a galvanised grated sump tray. Material controls: drum, closing ring, sump tray and alarm/labels. Optional vermiculite sack. lithiumBlue, leadAcidBlack and weathered presets.",
+  description: "Lithium battery quarantine drum at about real size: open-head UN steel drum with bolted closing ring and lever lug, lid pressure-relief vent and lifting handle, temperature probe wired to an alarm box on a post, Class 9 striped hazard label, kraft-paper vermiculite sack, on a galvanised grated sump tray. Material controls: painted drum, zinc closing hardware, galvanised tray and alarm cabinet. Optional vermiculite sack. lithiumBlue, leadAcidBlack and weathered presets.",
   tags: ['battery', 'lithium battery', 'quarantine', 'battery fire', 'drum', 'open head drum', 'class 9', 'hazardous waste', 'containers', 'recycling', 'materials recovery', 'waste management', 'low poly', 'scene prop'],
   kit: "recycling-facility",
   category: 'prop',
@@ -27,8 +27,9 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const drum = param('drum', '#2f5f8f', { label: 'Drum (painted steel)' });
 const ring = param('ring', '#b9c0c2', { label: 'Closing ring and fittings (zinc)' });
 const tray = param('tray', '#8e979a', { label: 'Sump tray (galvanised)' });
-const alarm = param('alarm', '#e2b41f', { label: 'Alarm box and sack' });
+const alarm = param('alarm', '#e2b41f', { label: 'Alarm cabinet and probe head (paint)' });
 const withSack = param('withSack', true, { label: 'Vermiculite sack' });
+const kraftPaper = '#b8a47d';
 
 presets({
   lithiumBlue: { drum: '#2f5f8f', ring: '#b9c0c2', tray: '#8e979a', alarm: '#e2b41f' },
@@ -92,10 +93,10 @@ for (const [i, w] of [[0, 150], [1, 230], [2, 290]] as const) add(`class9-stripe
 add("un-plate", blk(0, -R - 4, DZ + 300, 220, 4, 110).rotateZ(-65).color('#f2f0ea'));
 add("un-plate-text", blk(0, -R - 7, DZ + 340, 160, 3, 26).rotateZ(-65).color('#1b1c1d'));
 
-// Vermiculite sack slumped against the tray.
+// Beige kraft-paper sack of vermiculite slumped against the tray.
 if (withSack.value) {
-  add("sack", extrudeRoundedRect(420, 520, 90, 170).rotateZ(20).translate(-560, -380, 0).color(alarm));
-  add("sack-top", extrudeRoundedRect(300, 400, 80, 70).rotateZ(20).translate(-560, -380, 170).color(alarm));
+  add("sack", extrudeRoundedRect(420, 520, 90, 170).rotateZ(20).translate(-560, -380, 0).color(kraftPaper));
+  add("sack-top", extrudeRoundedRect(300, 400, 80, 70).rotateZ(20).translate(-560, -380, 170).color(kraftPaper));
   add("sack-label", blk(0, 0, 0, 220, 260, 4).rotateZ(20).translate(-560, -380, 240).color('#f2f0ea'));
 }
 
