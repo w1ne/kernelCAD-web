@@ -108,7 +108,8 @@ add('transom', blk(-HX - 160, -280, 1000, HX + 160, 280, 1400).color(structuralS
 
 // ---- Head rope through a cappel socket ----
 for (const x of [-220, 220]) add(`suspension-link-${x < 0 ? 'l' : 'r'}`, tube([x, 0, 11050], [0, 0, 11700], 55, 6).color(manganeseSteel));
-add('cappel', lathe([[150, 11650], [210, 11900], [190, 12300], [90, 12600]], 10).color(guard));
+// The cappel is the load-bearing steel rope termination, not a safety marking.
+add('cappel', lathe([[150, 11650], [210, 11900], [190, 12300], [90, 12600]], 10).color(structuralSteel));
 add('head-rope', rod(36, 12600, 16000, 8).color(rope));
 
 // ---- Shaft guides, buntons, guide shoes and rollers ----

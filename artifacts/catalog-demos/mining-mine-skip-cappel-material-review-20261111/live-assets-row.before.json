@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-11-11T02:39:30.846Z",
+  "row": {
+    "id": "mine-skip",
+    "kit": "mining",
+    "title": "Mine skip conveyance",
+    "tags": [
+      "mining",
+      "mineral processing",
+      "ore handling",
+      "infrastructure",
+      "low poly",
+      "scene prop"
+    ],
+    "preview": "/assets/mining-mine-skip.png",
+    "sourceUrl": "/assets/mining-mine-skip.kcad.ts",
+    "studioUrl": "/studio?catalog=mining/mine-skip",
+    "triangles": 172,
+    "license": "CC0",
+    "category": "kit"
+  }
+}

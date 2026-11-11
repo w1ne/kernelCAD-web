@@ -47,3 +47,26 @@ The dated product-context comparison is stored privately in
 This is a local visual and material-assignment correction. It does not verify
 turnover capacity, structural strength, safe operation, vendor dimensions,
 deployment, or physical acceptance.
+
+## Third sample — mining equipment
+
+- Rechecked PR #1258 before sampling at head `d47f29eac7cfe46d75f48020c7ad886683cf273f`: all 18 reported checks succeeded and no review had been submitted.
+- Checked `ball-mill`, `mine-locomotive`, `mine-skip`, `sag-mill`, and `tailings-filter-press`. Exact open-issue and open-PR searches returned no matches, and none of the 20 currently open PRs changes a `catalog/kits/mining/` source. The already-audited `underground-shuttle-car` and `rock-breaker-boom` were excluded.
+- Four previews showed coherent machine silhouettes and plausible material zoning. In `mine-skip`, the steel rope cappel was grouped with the yellow warning stripe, guide rollers, and landing keps. It now uses the existing `structuralSteel` control. The regression checks the exported cappel color, existing presets, 1,490-triangle count, and 5.2 × 16 × 5.4 m envelope.
+- Re-rendered the `mine-skip` preview and regenerated `catalog/index.json` from the source. The checked-in image and index describe the local 1,490-triangle model.
+- `npx eslint catalog/kits/mining/ tests/integration/catalog/mineSkipCappelMaterials.test.ts` is clean. `npx vitest run tests/integration/catalog/` passed all 24 files and 39 tests, including the all-catalog index freshness check.
+- The live `assets.json` snapshot reports the older `mine-skip` at 172 triangles; its PNG is a box-like legacy preview. The asset-library route loads, while `/asset-library/mining/mine-skip/` returns 404. The local correction is not deployed.
+
+| Asset | Rendered observation | Envelope (m) | Source SHA-256 | Preview SHA-256 | Result |
+|---|---|---:|---|---|---|
+| `mining/ball-mill` | Long cylindrical grinding shell, trunnion supports, drive train, feed and discharge equipment read as a mill; coating, steel and concrete are distinct. | 15.054532 × 6.828922 × 9.000000 | `a7533658535acef38bbd93e1c73c77c7fbef0cc6c69714e7236d674bd5e290af` | `6a13f3209c9bb34299230b6d524aca0e454e0b0fbc134312279bac438bf5e253` | No mismatch found. |
+| `mining/mine-locomotive` | Low locomotive reads on its narrow-gauge rails; body coating, frame steel, rubber and lamp glass are distinct. | 8.400000 × 3.700000 × 2.480000 | `469d9bf10f652afde393cb82d1fd31cdaf5b2dccb66763cd5082ef19324a2c90` | `ec79f939270e520e5728e219e5521c8c6d298abf96fb0ccb023759e3881fc76f` | No mismatch found. |
+| `mining/mine-skip` | Open-topped skip, bridle, guide shoes and rope connection read as a shaft conveyance. Before: cappel used warning yellow. After: cappel uses structural steel; no geometry change. | 5.200000 × 16.000000 × 5.400000 | `82bed1f18f1d4948687ac7e418e499f8f51b77954a5e204394616897138d028d` | `c2e17680a2c7a4de726c2632613eec0b474f143160feeef13f2170b76e35da95` | Material assignment corrected; see [mine-skip handoff](../../artifacts/catalog-demos/mining-mine-skip-cappel-material-review-20261111/README.md). |
+| `mining/sag-mill` | Large grinding drum with feed opening, drive and support piers reads as a SAG mill; shell coating, drive steel and concrete are coherent. | 17.055211 × 10.090000 × 12.023301 | `efd8df99e197a36aae39c4b543cefc8165ed7f9ac9d7151bf78b482b4279b259` | `9e7711fb9f0c165fe576f12a05858576396532879bbc8a3452eab1d7d8dff236` | No mismatch found. |
+| `mining/tailings-filter-press` | Plate pack, end frames, access platform, discharge area and safety railings read as a filter press; machine paint, steel, concrete and safety markings are distinct. | 18.020000 × 7.460000 × 10.600000 | `fda14597914dbee8c78cca72b0ba23766b0cb11d80a034a00097304144f625c5` | `669e00a7de6edab1d27b23b85f242cdaed5f746fb1def2a1107c921d8714ad50` | No mismatch found. |
+
+The [mine-skip handoff bundle](../../artifacts/catalog-demos/mining-mine-skip-cappel-material-review-20261111/README.md)
+contains before/after previews, the inspected MP4, source and render settings,
+open-target checks, regression output, and index evidence. This is local visual
+and material-assignment evidence only; it does not establish skip capacity,
+structural strength, safe operation, deployment, or hardware acceptance.

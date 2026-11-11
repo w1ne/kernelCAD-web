@@ -183689,7 +183689,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-skip.kcad.ts",
       "preview": "/assets/mining-mine-skip.png",
-      "sourceSha256": "3adc6876caaae1e111165e47ca36d470494411f1d124479eac606b465020cc96",
+      "sourceSha256": "82bed1f18f1d4948687ac7e418e499f8f51b77954a5e204394616897138d028d",
       "triangleBudget": 2000,
       "params": [
         {
@@ -183779,7 +183779,6 @@
           "color": "#e8c21a",
           "parts": [
             "floor-edge-stripe",
-            "cappel",
             "guide-roller-l-1200-f",
             "guide-roller-l-1200-b",
             "guide-roller-l-10200-f",
@@ -183820,6 +183819,7 @@
             "stile-stay-rear-r",
             "crosshead",
             "transom",
+            "cappel",
             "guide-l",
             "bunton-bracket-l-3500",
             "bunton-bracket-l-7500",
