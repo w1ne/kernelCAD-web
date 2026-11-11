@@ -104,11 +104,10 @@ export interface JointMeshContinuityRestSample {
 }
 
 /**
- * One row of helper output: a single (joint, side) check. The caller
- * filters for `signedDistanceMm > clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM`
- * and emits one diagnostic per failing row.
+ * One row of helper output: a single (joint, side) check. Unavailable
+ * measurements are retained so callers cannot mistake them for a pass.
  */
-export interface JointMeshGapResult {
+interface JointMeshGapBase {
   readonly mateName: string;
   readonly side: 'parent' | 'child';
   readonly partName: string;
@@ -116,6 +115,12 @@ export interface JointMeshGapResult {
    *  when this side's connector moves. */
   readonly otherPartName: string;
   readonly pivotWorld: readonly [number, number, number];
+  readonly clearanceRadiusMm: number;
+}
+
+export type JointMeshGapResult = JointMeshGapBase & (
+  | {
+    readonly status: 'measured';
   /**
    * Signed surface distance in mm. Negative when the pivot is inside
    * the body, positive when it is outside (above the surface in the
@@ -124,16 +129,7 @@ export interface JointMeshGapResult {
    * body — computing the true depth is unnecessary because the gate
    * only inspects the positive (outside) side.
    */
-  readonly signedDistanceMm: number;
-  /**
-   * Pin clearance-bore radius (mm) carried by this side's connector
-   * (`jointClearanceRadius`), or 0 when the connector is not a drilled
-   * knuckle. The gate's per-side allowed gap is
-   * `clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM`: a drilled knuckle's
-   * nearest solid is the bore wall at `clearanceRadiusMm`, so it passes,
-   * while a link floating in air fails.
-   */
-  readonly clearanceRadiusMm: number;
+    readonly signedDistanceMm: number;
   /**
    * Minimum world-space distance (mm) between the two mated rigid
    * groups (parts joined transitively by fastened mates on each side).
@@ -143,15 +139,21 @@ export interface JointMeshGapResult {
    * away from the axis. `undefined` when the pivot probes passed or the
    * OCCT distance solver failed.
    */
-  readonly bearingGapMm?: number;
+    readonly bearingGapMm?: number;
   /**
    * Set when the closest surface contact sits farther than
    * {@link JOINT_BEARING_AXIS_RADIUS_MM} from the joint axis. That
    * contact is not a bearing: a fingertip pinch or a distant box graze
    * must not pass a joint whose pivot is in the air.
    */
-  readonly bearingOffAxisRadialMm?: number;
-}
+    readonly bearingOffAxisRadialMm?: number;
+  }
+  | {
+    readonly status: 'unavailable';
+    /** Why the rest-pose body measurement could not be completed. */
+    readonly reason: string;
+  }
+);
 
 /**
  * Run criterion 7 (joint-mesh-continuity) over every mate in the
@@ -246,9 +248,19 @@ function buildSideRow(
   pivotWorld: Vec3,
   scenePart: SceneBackend['parts'][number],
   connector: MateConnector,
-): JointMeshGapResult | undefined {
-  if (!(scenePart.shape instanceof OcctBackendClass)) return undefined;
+): JointMeshGapResult {
   const allowed = (connector.jointClearanceRadius ?? 0) + JOINT_MESH_GAP_TOLERANCE_MM;
+  const base: JointMeshGapBase = {
+    mateName,
+    side,
+    partName,
+    otherPartName,
+    pivotWorld,
+    clearanceRadiusMm: connector.jointClearanceRadius ?? 0,
+  };
+  if (!(scenePart.shape instanceof OcctBackendClass)) {
+    return { ...base, status: 'unavailable', reason: 'the lowered body has no supported solid BREP representation' };
+  }
   const bvh = restMeshBvh(scenePart, 'shape');
   const probePoint: [number, number, number] = [pivotWorld[0], pivotWorld[1], pivotWorld[2]];
   const closest = bvh?.closestPoint(probePoint);
@@ -257,15 +269,17 @@ function buildSideRow(
   const gap = meshGap !== undefined && Math.abs(meshGap - allowed) > 0.25
     ? meshGap
     : measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
-  if (gap === undefined) return undefined;
+  if (gap === undefined || !Number.isFinite(gap)) {
+    return {
+      ...base,
+      status: 'unavailable',
+      reason: 'the mesh and exact BREP queries could not certify a distance',
+    };
+  }
   return {
-    mateName,
-    side,
-    partName,
-    otherPartName,
-    pivotWorld,
+    ...base,
+    status: 'measured',
     signedDistanceMm: gap,
-    clearanceRadiusMm: connector.jointClearanceRadius ?? 0,
   };
 }
 
@@ -286,10 +300,11 @@ function applyBearingGap(
   // fastened to one of them — those used to graze the neighbour and
   // pass a link that never reaches its joint. Contact farther than
   // JOINT_BEARING_AXIS_RADIUS_MM from the axis is not a seat either.
-  if (rows.some((r) => r.signedDistanceMm > r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM)) {
+  if (rows.some((r) => r.status === 'measured'
+    && r.signedDistanceMm > r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM)) {
     const bearing = measureMateBearingGap(sceneByPartName, parentPartName, childPartName, axis);
     if (bearing !== undefined) {
-      return rows.map((r) => ({ ...r, ...bearing }));
+      return rows.map((r) => r.status === 'measured' ? { ...r, ...bearing } : r);
     }
   }
   return rows;
@@ -309,12 +324,33 @@ function collectMateRows(
 
   const rows: JointMeshGapResult[] = [];
 
-  if (aScenePart !== undefined) {
-    const row = buildSideRow(mate.name, 'parent', ctx.parsedA.partName, ctx.parsedB.partName, ctx.pivotWorld, aScenePart, ctx.aConn);
-    if (row !== undefined) rows.push(row);
+  if (aScenePart === undefined) {
+    rows.push({
+      mateName: mate.name,
+      side: 'parent',
+      partName: ctx.parsedA.partName,
+      otherPartName: ctx.parsedB.partName,
+      pivotWorld: ctx.pivotWorld,
+      clearanceRadiusMm: ctx.aConn.jointClearanceRadius ?? 0,
+      status: 'unavailable',
+      reason: 'the parent body is missing from the lowered rest-pose scene',
+    });
+  } else {
+    rows.push(buildSideRow(mate.name, 'parent', ctx.parsedA.partName, ctx.parsedB.partName, ctx.pivotWorld, aScenePart, ctx.aConn));
   }
 
-  if (bScenePart !== undefined) {
+  if (bScenePart === undefined) {
+    rows.push({
+      mateName: mate.name,
+      side: 'child',
+      partName: ctx.parsedB.partName,
+      otherPartName: ctx.parsedA.partName,
+      pivotWorld: ctx.T_B.point(ctx.bLocal),
+      clearanceRadiusMm: ctx.bConn.jointClearanceRadius ?? 0,
+      status: 'unavailable',
+      reason: 'the child body is missing from the lowered rest-pose scene',
+    });
+  } else {
     // Probe the child body at the SAME world point — at rest pose the
     // solver places the child's connector origin there too. (We
     // intentionally probe the world pivot, not a separate
@@ -322,7 +358,7 @@ function collectMateRows(
     // bodies must contain the single physical pivot.)
     const probePointForChild = ctx.T_B.point(ctx.bLocal);
     const row = buildSideRow(mate.name, 'child', ctx.parsedB.partName, ctx.parsedA.partName, probePointForChild, bScenePart, ctx.bConn);
-    if (row !== undefined) rows.push(row);
+    rows.push(row);
   }
 
   const axis = bearingAxisFromParent(ctx);
