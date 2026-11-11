@@ -1,0 +1,3 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts grit-classifier
+Result: water-treatment/grit-classifier: 1132 tris
+SHA-256: bf83818b992481cf034cd0bd80bd9b29794104a036030db9c54aac35342efcdc

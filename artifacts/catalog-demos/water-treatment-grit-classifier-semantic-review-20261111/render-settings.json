@@ -1,0 +1,33 @@
+{
+  "assetId": "water-treatment/grit-classifier",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts grit-classifier",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "renderer": "scripts/renderCatalogPreviews.ts / catalog low-poly software renderer",
+  "camera": "fixed catalog 3/4 view",
+  "preset": "default values",
+  "beforeSource": "source/grit-classifier.before.kcad.ts",
+  "beforeSourceSha256": "a96dec6ee15e0a1a9c34d1fcb7fee1390caed58717817475eae5b14377499a5a",
+  "afterSource": "source/grit-classifier.after.kcad.ts",
+  "afterSourceSha256": "dfbaf808ef9ff40f9d6b0a46246e43d25d756f931f2e091a2be087a8922a88b9",
+  "beforePreview": "previews/before.png",
+  "beforePreviewSha256": "4b35371646184f2bbaa457ad3cb0d617ca80c14b3f40b175ac0cc4cc14bf920b",
+  "afterPreview": "previews/after.png",
+  "afterPreviewSha256": "bf83818b992481cf034cd0bd80bd9b29794104a036030db9c54aac35342efcdc",
+  "semanticChange": {
+    "before": "level box trough, cuboid feed hopper and no grit-extraction screw",
+    "after": "open settling trough, inclined helical screw, raised discharge chute and coaxial drive",
+    "materialControls": ["coatedSteel", "structuralSteel", "stainlessSteel"]
+  },
+  "detailCrop": {
+    "sourcePixels": "250x210+240+45",
+    "videoPixels": "450x300",
+    "purpose": "show the newly visible helical screw and raised outlet"
+  },
+  "video": {
+    "creationInvocation": "bash create-demo.sh",
+    "frameSize": "1280x720",
+    "frameRate": 24,
+    "durationSeconds": 8,
+    "caption": "Local source preview only; not deployed and not process-performance or equipment acceptance."
+  }
+}
