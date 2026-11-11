@@ -59323,7 +59323,7 @@
       "id": "portable-floor-grinder",
       "kit": "construction-equipment",
       "title": "Portable floor grinder",
-      "description": "Concrete surface grinder with circular shroud, handlebar and motor enclosure. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Illustrative CC0 low-poly walk-behind floor grinder with a circular open-bottom dust shroud, separate floor-contact disc, two rear wheels and inclined handlebar. Not a manufacturing drawing or performance/safety model. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -59342,7 +59342,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-floor-grinder.kcad.ts",
       "preview": "/assets/construction-equipment-portable-floor-grinder.png",
-      "sourceSha256": "de406714c0a98a9c30a46c30aa0b809008bc4915fb149b62a659b7ec8d5eed0e",
+      "sourceSha256": "05f1cd9dd3d40fef93ec226f87c77f4f01b43e3bc3a03c690f1df42f90258ab0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -59386,41 +59386,32 @@
         }
       },
       "stats": {
-        "triangles": 664,
+        "triangles": 960,
         "sizeM": [
-          0.6328,
-          0.613,
-          0.42648
+          0.799,
+          0.915,
+          0.468
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "tireRubberColor",
-          "color": "#252a2d",
-          "parts": [
-            "floor-wheel-0--1",
-            "floor-wheel-0-1",
-            "floor-wheel-1--1",
-            "floor-wheel-1-1"
-          ],
-          "param": "tireRubberColor"
-        },
-        {
           "name": "structuralSteelColor",
           "color": "#89969a",
           "parts": [
-            "floor-wheel-0--1-hub--1",
-            "floor-wheel-0--1-hub-1",
-            "floor-wheel-0-1-hub--1",
-            "floor-wheel-0-1-hub-1",
-            "floor-wheel-1--1-hub--1",
-            "floor-wheel-1--1-hub-1",
-            "floor-wheel-1-1-hub--1",
-            "floor-wheel-1-1-hub-1",
-            "machine-frame",
-            "handle-post",
+            "grinding-head",
+            "rear-axle",
+            "wheel-hub--1",
+            "frame-rail--1",
+            "axle-support--1",
+            "wheel-hub-1",
+            "frame-rail-1",
+            "axle-support-1",
+            "motor-mount",
+            "dust-outlet",
+            "handle-post--1",
+            "handle-post-1",
             "handle-bar"
           ],
           "param": "structuralSteelColor"
@@ -59429,11 +59420,24 @@
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
+            "dust-shroud",
+            "gearbox",
             "motor-housing",
-            "grinding-head",
-            "dust-shroud"
+            "motor-cover"
           ],
           "param": "equipmentPaintColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#252a2d",
+          "parts": [
+            "dust-skirt",
+            "rear-wheel--1",
+            "rear-wheel-1",
+            "handle-grip--1",
+            "handle-grip-1"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },
