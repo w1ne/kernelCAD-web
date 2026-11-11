@@ -92,6 +92,22 @@ describe('evaluateCache', () => {
     expect(await evaluateCacheKey({ file: path })).toBeUndefined();
   });
 
+  it('does not cache a script that aliases lib.part before calling it', async () => {
+    const path = writeScript(
+      'lib-part-alias',
+      "const makePart = lib.part;\nconst screw = await makePart({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });\nreturn screw;\n",
+    );
+    expect(await evaluateCacheKey({ file: path })).toBeUndefined();
+  });
+
+  it('does not cache a script that destructures a catalog loader from lib', async () => {
+    const path = writeScript(
+      'lib-part-destructure',
+      "const { part } = lib;\nconst screw = await part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });\nreturn screw;\n",
+    );
+    expect(await evaluateCacheKey({ file: path })).toBeUndefined();
+  });
+
   it('does not cache a script whose import path is not a hashable literal', async () => {
     const path = writeScript(
       'dynamic',

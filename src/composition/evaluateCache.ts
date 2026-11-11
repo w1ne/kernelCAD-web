@@ -12,8 +12,9 @@
 // supplies a custom API factory, baseline selections, extra requirements,
 // or skipDfmGate, when an import path is not a literal we can hash, or
 // when the script uses lib.part / lib.stack / lib.standard / lib.findPart
-// / lib.insert (those load catalog geometry that importIdentity does not
-// yet hash). A same-size rewrite that restores mtime
+// / lib.insert, including aliases such as `const makePart = lib.part` or
+// `const { part } = lib` (those load catalog geometry that importIdentity
+// does not hash). A same-size rewrite that restores mtime
 // still changes ctime, so the key misses and we rebuild. At most a few
 // successful evaluates are kept so older models can be collected.
 
@@ -50,10 +51,16 @@ function importsAreProvable(identity: string): boolean {
   return true;
 }
 
-/** Catalog loaders that are not hashed by importIdentity. */
+/** Catalog loaders that importIdentity does not hash, including aliases.
+ *  `lib.fetchPart('id')` is hashed when the id is a literal; an extracted
+ *  `const load = lib.fetchPart` call is not, so that form is refused. */
 function usesUnhashedCatalogApi(source: string): boolean {
-  return /\blib\s*\.\s*(?:part|stack|findPart|insert)\s*\(/.test(source)
-    || /\blib\s*\.\s*standard\s*\./.test(source);
+  if (/\blib\s*\.\s*(?:part|stack|findPart|insert|standard)\b/.test(source)) return true;
+  if (/\blib\s*\.\s*fetchPart\s*(?!\s*\()/.test(source)) return true;
+  if (/(?:const|let|var)\s*\{[^}]*\b(?:part|stack|findPart|insert|fetchPart|standard)\b[^}]*\}\s*=\s*lib\b/.test(source)) {
+    return true;
+  }
+  return false;
 }
 
 export async function evaluateCacheKey(
