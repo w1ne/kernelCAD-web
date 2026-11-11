@@ -152,6 +152,10 @@ const STYLE = `  <style>
     .catalog .finder .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); margin-left: 0.6rem; }
     .catalog [hidden] { display: none !important; }
     .catalog .empty { margin: 2rem 0; color: var(--ink-faint); }
+    .catalog .next-step { margin-top: 2rem; padding: 1.2rem 1.5rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--card-stage); }
+    .catalog .next-step h2 { margin-top: 0; }
+    .catalog .next-step-links { display: flex; gap: 0.75rem 1.25rem; flex-wrap: wrap; align-items: center; }
+    .catalog .next-step-links a { font-weight: 500; }
     @media (max-width: 720px) { .catalog .hero { grid-template-columns: 1fr; } }
   </style>`;
 
@@ -304,6 +308,23 @@ export function previewAlt(asset: CatalogAsset): string {
     return `${asset.title}: low-poly ${asset.category} 3D model preview`;
 }
 
+/** Explain the product workflow without diluting this model's unique technical content. */
+function productNextStep(asset: CatalogAsset): string {
+    const model = escapeHtml(asset.title);
+    const controls = asset.params.length;
+    const action = controls > 0
+        ? `change its ${controls} published parameter${controls === 1 ? '' : 's'}`
+        : 'inspect the model';
+    return `      <section class="next-step" aria-label="Continue with kernelCAD">
+        <h2>Build your own model with kernelCAD</h2>
+        <p>Start with ${model} in kernelCAD Studio to ${action}. For a new design, kernelCAD also supports code-based CAD and MCP tools for AI assistants.</p>
+        <div class="next-step-links">
+          <a href="/code-cad/">Design with code</a>
+          <a href="/mcp/">Use kernelCAD with an AI assistant</a>
+        </div>
+      </section>`;
+}
+
 export function renderAssetPage(asset: CatalogAsset, kit: CatalogKit | undefined, siblings: readonly CatalogAsset[]): string {
     const url = assetUrl(asset);
     const title = pageTitle(asset);
@@ -335,6 +356,7 @@ ${factsList(asset, kit)}
       <p>${asset.params.length} parameter${asset.params.length === 1 ? '' : 's'} you can change in Studio before export.</p>
 ${knobTable(asset)}
 ${presetsSection(asset)}
+${productNextStep(asset)}
 ${siblingList(asset, siblings)}
       <p><a href="/catalog/">← Back to the full catalog</a></p>`;
     return document(head, body);

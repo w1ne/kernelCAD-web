@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { assetPath, assetUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
+import { assetPath, assetUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, renderAssetPage, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
@@ -66,6 +66,22 @@ describe('catalog SEO page export', () => {
             });
         }
         expect(titles.size).toBe(index.assets.length);
+    });
+
+    it('turns asset pages into truthful kernelCAD product entry points', () => {
+        for (const a of index.assets.slice(0, 20)) {
+            const html = readFileSync(join(out, assetPath(a), 'index.html'), 'utf8');
+            expect(html).toContain('aria-label="Continue with kernelCAD"');
+            expect(html).toContain(`Start with ${escapeHtml(a.title)} in kernelCAD Studio`);
+            expect(html).toContain('href="/code-cad/"');
+            expect(html).toContain('href="/mcp/"');
+            expect(html).toContain('MCP tools for AI assistants');
+            expect(html).not.toMatch(/aggregateRating|fake customer|certified manufacturer/i);
+        }
+        const sample = index.assets[0];
+        const withoutKnobs = renderAssetPage({ ...sample, params: [] }, index.kits[0], []);
+        expect(withoutKnobs).toContain('inspect the model');
+        expect(withoutKnobs).not.toContain('change its 0 published parameters');
     });
 
     it('makes every asset crawlable from the hub and every internal catalog link resolve', () => {
