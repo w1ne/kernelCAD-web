@@ -1,0 +1,20 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "secondsPerSlide": 2.6,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts glass-crusher",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "verificationLines": [
+    "Focused GLB regression: 1/1 passed",
+    "Recycling-facility quality gate: 153/153 (100.00%)",
+    "Catalog integration suite: 31 files / 46 tests passed",
+    "Generated index source hash and preview path: current"
+  ],
+  "caveat": "Local kernelCAD source render and GLB checks; not a vendor replica, equipment performance claim, deployed update, or physical acceptance."
+}

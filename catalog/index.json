@@ -248008,7 +248008,7 @@
       "id": "glass-crusher",
       "kit": "recycling-facility",
       "title": "Glass crusher",
-      "description": "Hammer-mill glass crusher at about real size: low tipping hopper and cleated inclined belt carrying whole bottles up into a drum-shaped mill housing on an open steel stand, direct-coupled motor with coupling guard, discharge chute into a floor skip heaped with cullet. Material controls: mill housing, stand and conveyor frame, belt, skip. plant, weathered, stainless and highVisibility presets; green, amber or clear (flint) glass.",
+      "description": "Hammer-mill glass crusher at about real size: low tipping hopper and cleated inclined belt carrying whole bottles up into a drum-shaped mill housing on an open steel stand, separate direct-coupled motor with coupling guard, discharge chute into a floor skip heaped with cullet. Material controls: mill enamel, painted steel structure and motor casing, rubber belt, skip finish. plant, weathered, stainless and highVisibility presets; green, amber or clear (flint) glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248032,7 +248032,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-crusher.kcad.ts",
       "preview": "/assets/recycling-facility-glass-crusher.png",
-      "sourceSha256": "0dcdc9c441a03f0deeeb9d7f25c247a76440e67ecdc8dde7bb53965f44b9a985",
+      "sourceSha256": "396a4b46f08054ce67748545eb3fb7ea8d112ade309157ca57f7219e82273596",
       "triangleBudget": 3600,
       "params": [
         {
@@ -248048,13 +248048,13 @@
           "name": "housing",
           "type": "color",
           "default": "#2f6f8f",
-          "label": "Mill housing (paint)"
+          "label": "Mill housing enamel"
         },
         {
           "name": "stand",
           "type": "color",
           "default": "#3b4248",
-          "label": "Stand and conveyor frame"
+          "label": "Painted steel frame, motor and conveyor structure"
         },
         {
           "name": "belt",
@@ -248066,7 +248066,7 @@
           "name": "skip",
           "type": "color",
           "default": "#d8a428",
-          "label": "Cullet skip"
+          "label": "Cullet skip paint"
         },
         {
           "name": "glass",
@@ -248137,6 +248137,7 @@
             "motor-bracket",
             "bracket-strut-f",
             "bracket-strut-b",
+            "motor",
             "motor-feet",
             "skip-lug-l",
             "skip-lug-r",
@@ -248161,7 +248162,6 @@
             "mill-drum",
             "mill-base",
             "inlet-throat",
-            "motor",
             "discharge-chute",
             "tipping-hopper"
           ],

@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-11-11",
+  "site": "https://kernelcad.com",
+  "assetsIndex": {
+    "url": "https://kernelcad.com/assets.json",
+    "httpStatus": 200,
+    "generatedAt": "2026-11-11T17:45:06.972Z"
+  },
+  "catalogHub": {
+    "url": "https://kernelcad.com/catalog/",
+    "httpStatus": 200
+  },
+  "target": {
+    "id": "recycling-facility/glass-crusher",
+    "previewUrl": "https://kernelcad.com/assets/recycling-facility-glass-crusher.png",
+    "previewHttpStatus": 200,
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-glass-crusher.kcad.ts",
+    "sourceHttpStatus": 200,
+    "localBaselinePreviewSha256": "8fa08d73367b003a8095bfbf1e7d0c34c961c16407000995f5e62f1b95f44d4b",
+    "publicPreviewSha256": "8457583ea5f527942d68651bd9e65ef5007fa5a31cfe3291d9e45fd7cbd9017e",
+    "localBaselineSourceSha256": "0dcdc9c441a03f0deeeb9d7f25c247a76440e67ecdc8dde7bb53965f44b9a985",
+    "publicSourceSha256": "cbf04528eedf73d6e76ec70dceeb055eadd9a79415f07e62787a855dc04afbab",
+    "publicSourceAndPreviewMatchLocalBaseline": false
+  },
+  "changedBranchDeployed": false
+}

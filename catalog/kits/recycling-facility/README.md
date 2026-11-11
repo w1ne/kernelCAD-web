@@ -50,6 +50,12 @@ regression, five-preview audit ledger, before/after previews and local demo are
 in the bundle. Geometry, presets, asset ID, triangle budget and kit count are
 unchanged.
 
+The [glass-crusher motor material review](../../../artifacts/catalog-demos/recycling-facility-glass-crusher-motor-material-review-20261111/README.md)
+moves the separate drive motor from mill enamel to the existing painted-steel
+finish. Its original parameter keys and four material controls remain intact;
+the GLB regression, five-preview audit, before/after renders and inspected local
+MP4 are in the bundle.
+
 These are visualization assets. They do not represent equipment specifications,
 process performance, operator safety, regulatory compliance, or physical
 acceptance.
