@@ -41081,7 +41081,7 @@
       "id": "case-layer-palletizer",
       "kit": "beverage-bottling-line",
       "title": "Case layer palletizer",
-      "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and corrugated board.",
+      "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and pallet timber.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -41100,7 +41100,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-layer-palletizer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-layer-palletizer.png",
-      "sourceSha256": "24d6e63d5f67fc6d5ae0f2f231bcfc9e39a2eb879d32a54bb12c7ed5c3d85b4b",
+      "sourceSha256": "f7040c36ccab96af3997f0dee2e7be6480ed6f2a44706aee3c41d99b672ffafd",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41131,10 +41131,10 @@
           "label": "Safety paint"
         },
         {
-          "name": "corrugatedBoard",
+          "name": "palletTimber",
           "type": "color",
-          "default": "#b18a5d",
-          "label": "Corrugated board"
+          "default": "#95683f",
+          "label": "Pallet timber"
         }
       ],
       "presets": {
@@ -41142,13 +41142,13 @@
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
           "safetyPaint": "#f0b336",
-          "corrugatedBoard": "#c49b6b"
+          "palletTimber": "#a9794c"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
           "safetyPaint": "#bd7b24",
-          "corrugatedBoard": "#886342"
+          "palletTimber": "#704d31"
         }
       },
       "stats": {
@@ -41186,12 +41186,12 @@
           "param": "stainlessSteel"
         },
         {
-          "name": "corrugatedBoard",
-          "color": "#b18a5d",
+          "name": "palletTimber",
+          "color": "#95683f",
           "parts": [
             "pallet-deck"
           ],
-          "param": "corrugatedBoard"
+          "param": "palletTimber"
         },
         {
           "name": "safetyPaint",

@@ -70,3 +70,25 @@ contains before/after previews, the inspected MP4, source and render settings,
 open-target checks, regression output, and index evidence. This is local visual
 and material-assignment evidence only; it does not establish skip capacity,
 structural strength, safe operation, deployment, or hardware acceptance.
+
+## Fourth sample — beverage packaging material assignment
+
+- Rechecked PR #1258 before sampling at head `da8dad80d47526d03557b959405797c7f5e43d0a`: all 18 reported checks succeeded and no review had been submitted.
+- Reviewed five beverage-line previews: `pet-blow-molder`, `rotary-filler`, `bottle-rinser-carousel`, `case-layer-palletizer`, and `bottle-unscrambler`. Exact open issue/PR title and body searches returned no matches. An open-PR file-path query also returned no matches. At audit start, the branch diff changed only `cap-elevator` among these five assets.
+- Checked the live asset image and `.kcad.ts` source before editing; both matched their checked-in counterparts byte for byte.
+- Four samples showed plausible material zones. `case-layer-palletizer` assigned its outfeed `pallet-deck` to `corrugatedBoard`, despite having no corrugated layer pad. The pallet deck now uses `palletTimber`, with a distinctly darker wood palette. Geometry, 132-triangle count, 2.39 × 2.025 × 1.1875 m envelope, and preset names are unchanged.
+- Re-rendered only the target preview and rebuilt `catalog/index.json`; the generated diff changes only the palletizer row, and the row's `sourceSha256` matches its source.
+
+| Asset | Rendered observation | Envelope (m) | Baseline source SHA-256 | Baseline preview SHA-256 | Result |
+|---|---|---:|---|---|---|
+| `beverage-bottling-line/pet-blow-molder` | Guarded machine enclosure, side module, service doors, base and mold-column supports are visible; no clear material mismatch found. | 1.515 × 1.510 × 0.720 | `b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb` | `d6f5019c87ce4b80e9e781befbbd453866da78bea38969192d533c613d6813a8` | No material mismatch found. |
+| `beverage-bottling-line/rotary-filler` | Carousel, ring bowl, valves over bottles, infeed/outfeed belts and guard frame are visible; material zones are plausible. | 3.000 × 1.840 × 1.49668 | `05e6214ab84cc8e9cf18fa95ec05b9f24ca857d4064b872fe5e4e1fe72c8c1af` | `153302383773399caf0a1553ae14e08058d1b82b6a7a084d0031c21a8b51e8d0` | No material mismatch found. |
+| `beverage-bottling-line/bottle-rinser-carousel` | Rotary table, rinse turret, spray nozzles, catch basin and two lanes are visible; no clear material mismatch found. | 1.420 × 1.050 × 0.960 | `dc00c4af37bea6206eb023d88cd963867559388fa327a92fba44082cb7fe26e5` | `5eb1b35219f05a1afced551ed9825ffe9a088b969e55cfea830d64af23edb810` | No material mismatch found. |
+| `beverage-bottling-line/case-layer-palletizer` | Gantry and layer plate are recognizable. Before: the outfeed pallet deck used the corrugated-board control; after: timber control. | 2.390 × 2.025 × 1.1875 | `24d6e63d5f67fc6d5ae0f2f231bcfc9e39a2eb879d32a54bb12c7ed5c3d85b4b` | `fce331bee93a711dbdf2878ba482436a7fd26ed44b04be2c87146807c2e866ad` | Corrected to `palletTimber`; after source SHA-256 `f7040c36ccab96af3997f0dee2e7be6480ed6f2a44706aee3c41d99b672ffafd`, preview SHA-256 `fbc36f859a6b468803604680e8e219b2f3f991e048c447e161c80e7c034b3734`. |
+| `beverage-bottling-line/bottle-unscrambler` | Circular bowl, center column, motor and discharge lane read as an unscrambler; material zones are plausible. | 1.255 × 0.850 × 0.940 | `d38fdb9af117adf2779eba2e14b993a7f955494e04216f66d8277245a77028f4` | `a4dd4876e3f3b1b98203a06d7599cc70d9ec75bd7e64583fafd64888e87597c5` | No material mismatch found. |
+
+- The GLB regression checks the exported pallet color, existing presets, 132-triangle count, and envelope. Beverage-line lint is clean; focused test passes 1/1. The full catalog integration result is recorded in the handoff bundle.
+- The handoff contains before/after previews, an inspected eight-second MP4, render settings/source invocation, sample hashes, PR/open-target status, generated index rows, and verification logs: [case-layer-palletizer material review](../../artifacts/catalog-demos/beverage-case-layer-palletizer-material-review-20261111/README.md).
+- The dated product-context comparison is stored privately at `kernelCAD-private/docs/competitors/2026-11-11-case-layer-palletizer-pallet-material.md`.
+
+This is a local source, material-control, and preview correction; it is not deployed. The outfeed deck remains a simplified solid slab. No pallet capacity, strength, safety, or physical acceptance is verified.
