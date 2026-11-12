@@ -165,7 +165,7 @@ describe('connect-placed parts inherit their parent mate motion', () => {
   beforeAll(async () => { await initOcct(); });
 
   for (const entry of ['model', 'solvedModel'] as const) {
-    it(`${entry}: a connected child moves with its revolute parent`, async () => {
+    it(`${entry}: connected descendants inherit motion through a connect chain`, async () => {
       const code = `
         const arm = assembly('rig');
         const root = arm.part('root', box(2, 2, 2, true));
@@ -176,9 +176,16 @@ describe('connect-placed parts inherit their parent mate motion', () => {
           connectors: { childMount: { origin: [20, 0, 0] } },
         });
         parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
-        arm.part('child', box(10, 2, 2, false), {
-          connectors: { root: { origin: [0, 0, 0] } },
+        const child = arm.part('child', box(10, 2, 2, false), {
+          connectors: {
+            root: { origin: [0, 0, 0] },
+            tipMount: { origin: [10, 0, 0] },
+          },
           connect: { connector: 'root', to: parent.connector('childMount') },
+        });
+        arm.part('grandchild', box(2, 2, 2, false), {
+          connectors: { root: { origin: [0, 0, 0] } },
+          connect: { connector: 'root', to: child.connector('tipMount') },
         });
         arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
         return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
@@ -190,14 +197,18 @@ describe('connect-placed parts inherit their parent mate motion', () => {
       // must receive the same rigid motion.
       expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
       expectBox(boxes.get('child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+      expectBox(boxes.get('grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
 
       if (entry === 'solvedModel') {
         const { arm, scene, lowered } = await build(code);
         const solved = await solveMates(arm);
         near(solved.poses.get('child')!.point([0, 0, 0]), [0, 120, 0]);
         near(scene.part('child').worldTransform.point([120, 0, 0]), [0, 120, 0]);
+        near(solved.poses.get('grandchild')!.point([0, 0, 0]), [0, 130, 0]);
+        near(scene.part('grandchild').worldTransform.point([130, 0, 0]), [0, 130, 0]);
         const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses)!;
         expectBox(boxOf(reposed, 'child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+        expectBox(boxOf(reposed, 'grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
       }
     });
   }
