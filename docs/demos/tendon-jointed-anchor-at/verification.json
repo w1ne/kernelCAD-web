@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-12T07:14:48.448Z",
+  "checkedAt": "2026-11-12T07:33:50.490Z",
   "source": "examples/kinematic/jointed-tendon-anchor-at.kcad.ts",
   "verification": "local-kernelcad-mesh-endpoint-rings",
   "command": "node --import tsx docs/demos/tendon-jointed-anchor-at/verify.ts",
