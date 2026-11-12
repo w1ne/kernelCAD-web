@@ -16,6 +16,7 @@
 //          connector `base` at local [1, 2, -4] (on the bottom face)
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
@@ -399,16 +400,7 @@ describe('tendon anchors and fastened-drift boxes of posed parts with `at`', () 
   beforeAll(async () => { await initOcct(); });
 
   it('a tendon on a part joined by a legacy joint includes the part at placement', async () => {
-    const code = `
-      const arm = assembly('rig');
-      const base = arm.part('base', box(20, 20, 10, true), { at: [100, 0, 0] });
-      base.connector('hook', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
-      const link = arm.part('link', box(20, 20, 10, true));
-      link.connector('eye', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] });
-      arm.revolute('hinge', base, link, { axis: [0, 0, 1], origin: [0, 0, 0] });
-      arm.tendon('spring', { from: 'base.hook', to: 'link.eye', restLengthMm: 120, stiffnessNmm: 0.5 });
-      return arm.solvedModel({ hinge: 0 }, { validate: 'off' });
-    `;
+    const code = readFileSync('examples/kinematic/jointed-tendon-anchor-at.kcad.ts', 'utf8');
     const { records, paramTable, session } = await runScript({ code, fileName: 'joint-at-tendon.kcad.ts' });
     const { features } = await meshFeaturesPerFeature(records, paramTable, session);
     const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');

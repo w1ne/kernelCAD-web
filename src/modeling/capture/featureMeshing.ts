@@ -484,23 +484,9 @@ function collectTendonLookups(
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
   const wrapByRef = new Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>();
-  // The scene transforms below move shapes that already carry `at`; a part
-  // placed by mates or a legacy joint needs its `at` added to connector and
-  // wrap origins so they land on that body.
+  // A posed part's connectors and wraps need the `at` already on its scene shape.
   const parts = arm.__parts();
-  const partNameById = new Map(parts.flatMap((part) =>
-    part.id === undefined ? [] : [[part.id, part.name] as const],
-  ));
-  const jointPartNames = (arm.__joints?.() ?? []).flatMap((joint) =>
-    [partNameById.get(joint.parentPartId), partNameById.get(joint.childPartId)]
-      .filter((name): name is string => name !== undefined),
-  );
-  const atOf = partAtFor(
-    arm.__mates?.() ?? [],
-    parts,
-    arm.__session?.().paramTable,
-    jointPartNames,
-  );
+  const atOf = partAtFor(arm.__mates?.() ?? [], parts, arm.__session?.().paramTable, arm.__joints?.() ?? []);
   for (const part of parts) {
     const at = atOf(part.name) ?? ([0, 0, 0] as const);
     const onPart = (v: Vec3): Vec3 => [v[0] + at[0], v[1] + at[1], v[2] + at[2]];
