@@ -153,10 +153,10 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.solver.did-not-converge': {
     hintTemplate:
-      "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
+      "Check the loop's link lengths and connector origins/axes, and set each prismatic mate's pose to its as-built slider offset. Drive only the loop's independent degrees of freedom, then solve again.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift',
+      guidance: 'correct the loop link lengths, prismatic slider pose, or connector placement so the named mate closes',
     },
     defaultSeverity: 'error',
     group: 'assembly',
@@ -397,6 +397,17 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement exceeds the declared actuator torque/force capacity.',
+  },
+  'assembly.joint.static-hold.no-actuator': {
+    hintTemplate:
+      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'declare an actuator capacity on an arm.revolute/arm.prismatic joint; mate-only mechanicalJoint chains are not covered by checkStaticHold yet',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'checkStaticHold evaluated no arm.revolute/arm.prismatic joint with a declared actuator capacity, so the result has no holding-capacity coverage.',
   },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {

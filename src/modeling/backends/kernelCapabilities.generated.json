@@ -43,6 +43,7 @@
         "moveFaces",
         "offsetFaces",
         "pattern",
+        "pipe",
         "projectCurve",
         "referenceImage",
         "renderEnvironment",

@@ -29,7 +29,7 @@ export const PT_PER_MM = 72 / 25.4;
 
 type Attrs = Record<string, string>;
 
-interface XmlNode {
+export interface XmlNode {
   tag: string;
   attrs: Attrs;
   children: XmlNode[];
@@ -60,7 +60,7 @@ function parseAttrs(src: string): Attrs {
 }
 
 /** Parse XML into a tree rooted at a synthetic `#document` node. */
-function parseXml(src: string): XmlNode {
+export function parseXml(src: string): XmlNode {
   const doc: XmlNode = { tag: '#document', attrs: {}, children: [], text: '' };
   const stack: XmlNode[] = [doc];
   const re = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!\[CDATA\[([\s\S]*?)\]\]>|<!DOCTYPE[^>]*>|<(\/?)([\w:.-]+)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(\/?)>|([^<]+)/g;
@@ -320,9 +320,54 @@ function quadTo(st: PathState, qx: number, qy: number, x: number, y: number): vo
   st.lastCubic = undefined;
 }
 
+const SVG_PATH_TOKEN = /([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/g;
+const SVG_PATH_ARITY: Readonly<Record<string, number>> = {
+  M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7,
+};
+
+function consumeSvgPathGroups(tokens: readonly RegExpMatchArray[], start: number, arity: number): number | undefined {
+  let index = start;
+  let groups = 0;
+  while (index < tokens.length && tokens[index]![2] !== undefined) {
+    if (index + arity > tokens.length
+      || tokens.slice(index, index + arity).some(token =>
+        token[2] === undefined || !Number.isFinite(Number(token[2])))) return undefined;
+    index += arity;
+    groups++;
+  }
+  return groups ? index : undefined;
+}
+
+/** Reject malformed path argument groups before the PDF/QA geometry pass.
+ *  In particular, numbers after Z are not an implicit drawing command. */
+export function isWellFormedSvgPath(d: string): boolean {
+  const tokens = [...d.matchAll(SVG_PATH_TOKEN)];
+  if (!tokens.length || d.replace(SVG_PATH_TOKEN, '').replace(/[\s,]/g, '')) return false;
+  let i = 0;
+  let hasMoveto = false;
+  while (i < tokens.length) {
+    const command = tokens[i]![1]?.toUpperCase();
+    if (!command) return false;
+    i++;
+    if (command === 'Z') {
+      if (!hasMoveto) return false;
+      continue;
+    }
+    if (!hasMoveto && command !== 'M') return false;
+    const arity = SVG_PATH_ARITY[command];
+    if (!arity) return false;
+    const end = consumeSvgPathGroups(tokens, i, arity);
+    if (end === undefined) return false;
+    i = end;
+    hasMoveto = true;
+  }
+  return hasMoveto;
+}
+
 /** Parse SVG path data into PDF path construction operators. */
 export function pathDataToGeometry(d: string): Geometry {
-  const st = new PathState([...d.matchAll(/([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/g)]);
+  if (d.trim() && !isWellFormedSvgPath(d)) throw new Error('svgSheetToPdf: invalid SVG path data');
+  const st = new PathState([...d.matchAll(SVG_PATH_TOKEN)]);
   let cmd = '';
   while (!st.done()) {
     const next = st.command();
@@ -411,7 +456,7 @@ function num(v: string | undefined, fallback = 0): number {
 
 /** Resolve the element's effective style: inherited keys, then its own
  *  attributes, then its `style` declarations. */
-function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
+export function effectiveStyle(inherited: Attrs, attrs: Attrs): Attrs {
   const style: Attrs = { ...inherited };
   for (const k of INHERITED) if (attrs[k] !== undefined) style[k] = attrs[k];
   if (attrs.style !== undefined) {

@@ -1099,10 +1099,10 @@
       }
     },
     "assembly.solver.did-not-converge": {
-      "template": "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
+      "template": "Check the loop's link lengths and connector origins/axes, and set each prismatic mate's pose to its as-built slider offset. Drive only the loop's independent degrees of freedom, then solve again.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
+        "guidance": "correct the loop link lengths, prismatic slider pose, or connector placement so the named mate closes"
       }
     },
     "assembly.pose.out-of-limits": {
@@ -1337,7 +1337,7 @@
       }
     },
     "mechanism.interpenetration": {
-      "template": "Two non-mated parts overlap at a sampled pose. Add clearance, reduce mate travel, or move the mounting geometry so the swept pose stays collision-free. If the contact is intentional, declare a mate between the parts so the loop knows about it.",
+      "template": "Two parts overlap at a sampled pose. Remove this pair from the solvedModel ignore list, then add clearance, reduce mate travel, or correct the geometry so every sampled pose stays collision-free. An ignore declaration does not waive the mechanism collision check.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "partGeometry"
@@ -1358,7 +1358,7 @@
       }
     },
     "mechanism.unverified-budget-exceeded": {
-      "template": "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "template": "The articulated collision/pose sweep was skipped, so the mechanism is 'unverified' (NOT certified collision-free). Read the diagnostic message for the skip reason. If the estimated work exceeds the configured budget, verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
       "nextAction": {
         "kind": "inspect-message"
       }
@@ -2823,7 +2823,7 @@
     },
     "assembly.solver.did-not-converge": {
       "kind": "rewrite-feature",
-      "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
+      "guidance": "correct the loop link lengths, prismatic slider pose, or connector placement so the named mate closes"
     },
     "assembly.pose.out-of-limits": {
       "kind": "fix-arg",

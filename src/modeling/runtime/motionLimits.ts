@@ -96,7 +96,7 @@ export function currentValue(table: ParamTable, name: string): number {
   return typeof v === 'boolean' ? (v ? 1 : 0) : Number.NaN;
 }
 
-/** Key value as the timeline applies it: clamped to the param's own range. */
+/** Clamp a sampled animation value to the param range used by pose evaluation. */
 export function clampToParam(table: ParamTable, name: string, value: number): number {
   const meta = table.has(name) ? table.get(name).meta : undefined;
   return Math.min(meta?.max ?? Infinity, Math.max(meta?.min ?? -Infinity, value));
@@ -144,7 +144,12 @@ function trackKeys(arm: Assembly): Map<string, Key[]> {
   for (const r of sessionRecords(arm)) {
     if (r.kind !== 'animationView' || r.suppressed) continue;
     const tracks = (r.metadata as { tracks?: NormalizedAnimationTrack[] } | undefined)?.tracks ?? [];
-    for (const t of tracks) keys.set(t.param, [...(keys.get(t.param) ?? []), ...t.keys]);
+    for (const t of tracks) {
+      keys.set(t.param, [
+        ...(keys.get(t.param) ?? []),
+        ...t.keys.map((key) => ({ atMs: key.atMs, value: key.authoredValue ?? key.value })),
+      ]);
+    }
   }
   return keys;
 }
@@ -158,11 +163,10 @@ function firstKeyOutside(
   keys: readonly Key[],
 ): { key: Key; pose: number } | undefined {
   for (const key of keys) {
-    const value = clampToParam(table, param, key.value);
-    const pose = evaluate(expr, (n) => (n === param ? value : currentValue(table, n)));
+    const pose = evaluate(expr, (n) => (n === param ? key.value : currentValue(table, n)));
     if (!Number.isFinite(pose)) continue;
     if (pose < joint.limits[0] - LIMIT_EPS || pose > joint.limits[1] + LIMIT_EPS) {
-      return { key: { atMs: key.atMs, value }, pose };
+      return { key, pose };
     }
   }
   return undefined;

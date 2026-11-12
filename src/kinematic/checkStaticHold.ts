@@ -3,7 +3,7 @@
 // src/kinematic/checkStaticHold.ts
 //
 // Static-hold gravitational torque/force check. For each evaluated
-// actuated joint (revolute/prismatic, `actuator` declared), computes the
+// arm.revolute/arm.prismatic joint (`actuator` declared), computes the
 // gravitational torque (revolute) or force (prismatic) that the actuator
 // must supply to hold the assembly still against gravity at a sampled pose,
 // and compares it against the joint's declared actuator capacity.
@@ -29,6 +29,7 @@
 //     cases — pair with `checkLoadCapacity` for applied external loads).
 
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../modeling/capture/assembly';
+import type { MateRecord } from '../modeling/mates/mate';
 import { forwardKinematics, type NumericPoses as FkNumericPoses } from '../modeling/capture/forwardKinematics';
 import type { FeatureId } from '../shared/intent/types';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
@@ -60,14 +61,17 @@ const DEFAULT_PRISMATIC_LIMITS: readonly [number, number] = [0, 100];
 const MM_TO_M = 1e-3;
 
 /**
- * Static-hold check. Evaluates every actuated joint with a declared
- * `actuator` (or the single `opts.joint` named) across a pose grid (or
+ * Static-hold check. Evaluates every arm.revolute/arm.prismatic joint with a
+ * declared `actuator` (or the single `opts.joint` named) across a pose grid (or
  * explicit `opts.pose`), computing the worst-case gravitational holding
  * torque/force and comparing against the declared actuator capacity.
  *
  * Emits:
  *   - `kinematic.static-hold.no-actuator-declared` (error) for a
  *     joint named/selected that has no `actuator` declaration.
+ *   - `assembly.joint.static-hold.no-actuator` (warn) when the request
+ *     selects no evaluable arm.revolute/arm.prismatic joint, including
+ *     mate-only mechanisms that this checker does not cover.
  *   - `assembly.joint.static-hold.margin-low` (warn) when the worst-pose
  *     margin falls below `opts.minTorqueMarginPct` (default 20%) but the
  *     actuator is not exceeded.
@@ -80,6 +84,7 @@ const MM_TO_M = 1e-3;
  *
  * @see DIAGNOSTIC_REGISTRY['assembly.joint.static-hold.margin-low']
  * @see DIAGNOSTIC_REGISTRY['assembly.joint.static-hold.exceeded']
+ * @see DIAGNOSTIC_REGISTRY['assembly.joint.static-hold.no-actuator']
  * @see DIAGNOSTIC_REGISTRY['kinematic.static-hold.no-actuator-declared']
  */
 export async function checkStaticHold(
@@ -89,12 +94,7 @@ export async function checkStaticHold(
   const diagnostics: KinematicDiagnostic[] = [];
   const allJoints = arm.__joints();
   const parts = arm.__parts();
-
-  if (parts.length === 0 || allJoints.length === 0) {
-    return { ok: true, joints: [], posesSampled: 0, diagnostics, source: 'local' };
-  }
-
-  const selection = selectEvaluableJoints(allJoints, opts, diagnostics);
+  const selection = selectEvaluableJoints(allJoints, arm.__mates(), opts, diagnostics);
   if (selection.earlyResult !== undefined) return selection.earlyResult;
 
   const masses = await lowerPartMasses(arm, parts, allJoints);
@@ -133,6 +133,7 @@ export async function checkStaticHold(
 
 function selectEvaluableJoints(
   allJoints: readonly AssemblyJointStored[],
+  mates: readonly MateRecord[],
   opts: StaticHoldOpts | undefined,
   diagnostics: KinematicDiagnostic[],
 ): { evaluable: AssemblyJointStored[]; earlyResult?: StaticHoldResult } {
@@ -142,10 +143,9 @@ function selectEvaluableJoints(
   const evaluable: AssemblyJointStored[] = [];
   for (const j of targetJoints) {
     if (j.actuator === undefined) {
-      // Only fire the no-actuator diagnostic when the joint was explicitly
-      // named, or when NO joint qualifies at all (an assembly with zero
-      // actuated joints is a vacuous-pass otherwise, mirroring K9's
-      // no-coverage convention).
+      // An explicitly selected joint gets a joint-specific diagnostic.
+      // Without a selection, report one aggregate diagnostic after scanning
+      // the candidate pool.
       if (opts?.joint !== undefined) {
         diagnostics.push(
           buildDiag(
@@ -170,10 +170,25 @@ function selectEvaluableJoints(
           `checkStaticHold found ${targetJoints.length} revolute/prismatic joint(s) but none declares an actuator. Add actuator: { torqueNm } / { forceN } to at least one joint.`,
         ),
       );
+    } else if (targetJoints.length === 0) {
+      const movingMates = mates.filter((mate) => mate.type !== 'fastened').map((mate) => mate.name);
+      const requestedJoint = opts?.joint === undefined
+        ? ''
+        : ` Requested joint '${opts.joint}' did not resolve to an evaluable arm.revolute/arm.prismatic joint.`;
+      const skippedMates = movingMates.length === 0
+        ? ''
+        : ` Moving mate(s) skipped: ${movingMates.map((name) => `'${name}'`).join(', ')}. Mate-only mechanicalJoint chains are not yet covered by checkStaticHold.`;
+      diagnostics.push(
+        buildDiag(
+          'assembly.joint.static-hold.no-actuator',
+          'warn',
+          `No arm.revolute/arm.prismatic joint with a declared actuator capacity was evaluated, so this check has no holding-capacity coverage.${requestedJoint}${skippedMates} Declare actuator: { torqueNm } on arm.revolute(...) or actuator: { forceN } on arm.prismatic(...).`,
+        ),
+      );
     }
     return {
       evaluable,
-      earlyResult: { ok: diagnostics.length === 0, joints: [], posesSampled: 0, diagnostics, source: 'local' },
+      earlyResult: { ok: false, joints: [], posesSampled: 0, diagnostics, source: 'local' },
     };
   }
   return { evaluable };

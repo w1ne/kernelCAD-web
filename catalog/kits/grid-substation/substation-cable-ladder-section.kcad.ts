@@ -3,7 +3,7 @@ meta({
   name: "substation-cable-ladder-section",
   license: "CC0-1.0",
   title: "Substation cable ladder section",
-  description: "Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
+  description: "Illustrative low-poly cable ladder with twin stringers, evenly spaced rungs, and mounting pads; not a fabrication model. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "cable and grounding"],
   kit: "grid-substation",
   category: "prop",
@@ -28,22 +28,18 @@ const beveledPlate = (width: number, depth: number, thickness: number, cut: numb
     .lineTo(-width / 2, depth / 2 - cut).lineTo(-width / 2, -depth / 2 + cut)
     .close().extrude(thickness);
 
-p.part("stringer-left", box(3000, 130, 500, true).translate(0, -281.25, 250).scale(scale).color(galvanizedSteel));
-p.part("stringer-right", box(3000, 130, 500, true).translate(0, 281.25, 250).scale(scale).color(galvanizedSteel));
-p.part("rung-1", box(95, 570, 90, true).translate(-1350, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-2", box(95, 570, 90, true).translate(-900, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-3", box(95, 570, 90, true).translate(-450, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-4", box(95, 570, 90, true).translate(0, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-5", box(95, 570, 90, true).translate(450, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-6", box(95, 570, 90, true).translate(900, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-7", box(95, 570, 90, true).translate(1350, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-8", box(95, 570, 90, true).translate(1800, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-9", box(95, 570, 90, true).translate(2250, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-10", box(95, 570, 90, true).translate(2700, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-11", box(95, 570, 90, true).translate(3150, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-12", box(95, 570, 90, true).translate(3600, 0, 205).scale(scale).color(stainlessSteel));
-p.part("rung-13", box(95, 570, 90, true).translate(4050, 0, 205).scale(scale).color(stainlessSteel));
-p.part("support-foot", beveledPlate(240, 285, 160, 14.40).translate(-975, 0, 0).scale(scale).color(stainlessSteel));
-p.part("support-foot-2", beveledPlate(240, 285, 160, 14.40).translate(975, 0, 0).scale(scale).color(stainlessSteel));
+// Pads occupy Z=0..12 mm; rails rest on them at Z=12 mm.
+p.part("stringer-left", box(3000, 40, 120, true).translate(0, -281.25, 72).scale(scale).color(galvanizedSteel));
+p.part("stringer-right", box(3000, 40, 120, true).translate(0, 281.25, 72).scale(scale).color(galvanizedSteel));
+// 13 rungs fit inside the 3000 mm stringers; the outer edges stop 122.5 mm short of each end.
+for (let i = 0; i < 13; i++) {
+  const x = -1350 + i * 225;
+  p.part(`rung-${i + 1}`, box(55, 570, 30, true).translate(x, 0, 57).scale(scale).color(stainlessSteel));
+}
+for (const [xi, x] of [-975, 975].entries()) {
+  for (const [yi, y] of [-281.25, 281.25].entries()) {
+    p.part(`mounting-pad-${xi + 1}-${yi + 1}`, beveledPlate(220, 105, 12, 12).translate(x, y, 0).scale(scale).color(stainlessSteel));
+  }
+}
 
 return p.model();

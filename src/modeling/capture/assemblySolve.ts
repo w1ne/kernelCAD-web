@@ -400,6 +400,7 @@ export function makeScene(
   sceneShape: Shape,
   warnings: readonly SceneDiagnostic[] = [],
   matePartTransforms?: ReadonlyMap<string, Transform>,
+  deferredValidationDiagnostics: readonly ValidatorDiagnostic[] = [],
 ): Scene {
   const sceneFeatureId = sceneShape.id;
   const session = state.session;
@@ -434,6 +435,7 @@ export function makeScene(
     state.mates.length > 0 ? [...state.mates] : undefined,
     warnings,
     state.tendons.length > 0 ? [...state.tendons] : undefined,
+    deferredValidationDiagnostics,
   );
 }
 
@@ -946,11 +948,11 @@ async function validateSolvedModelGate(
   return { result, envelopeDiagnostics };
 }
 
-/** Phase 4 of `solvedModel` — turn the validator result into either a thrown
- *  `KernelError` (`mode === 'error'`) or an aggregated-warnings `Scene`
- *  (`mode === 'warn'`). Split out of `recordSolvedModel` for the same
- *  complexity-budget reason as `applySolvedModelEntryChecks`; no behavior
- *  change. */
+/** Phase 4 of `solvedModel` — turn the validator result into a thrown
+ *  `KernelError` or an aggregated-diagnostics `Scene`. Overlap-only errors
+ *  are deferred to mechanism truth so evaluate_script can report its
+ *  mechanism-specific verdict. Split out of `recordSolvedModel` for the same
+ *  complexity-budget reason as `applySolvedModelEntryChecks`. */
 /**
  * Prefer mate-solver structural failures over secondary pose/BREP clashes
  * when `validate:'error'` throws a single KernelError.
@@ -992,11 +994,21 @@ function finalizeSolvedModelScene(
 ): Scene {
   if (mode === 'error') {
     const errDiag = pickPrimaryValidateError(result);
+    const errorDiagnostics = result.diagnostics.filter((d) => d.severity === 'error');
+    // `evaluate_script` runs mechanism truth only after the script has built.
+    // Let the overlap-only validator result reach that pass, which reports
+    // the same rest-pose defect as `mechanism.rest-interpenetration` and sets
+    // mechanism=broken. Preserve the validator diagnostics on the Scene for
+    // callers that inspect it directly. Any additional error family remains
+    // a throwing validation failure.
+    const onlyRestPoseOverlaps = errorDiagnostics.length > 0
+      && errorDiagnostics.every((d) => d.code === 'assembly.interference.overlap')
+      && envelopeDiagnostics.every((d) => d.severity !== 'error');
     // Status-driven fallback: `over-constrained` / `did-not-converge`
     // always carry an error-severity diagnostic per validator.ts, so the
     // `errDiag` lookup catches them; the explicit status check below is
     // a belt-and-suspenders guarantee for the spec wording.
-    if (errDiag) {
+    if (errDiag && !onlyRestPoseOverlaps) {
       const siblingErrors = result.diagnostics.filter(
         (d) => d.severity === 'error' && d !== errDiag,
       );
@@ -1009,6 +1021,14 @@ function finalizeSolvedModelScene(
         undefined,
         errDiag.hint,
       );
+    }
+    if (onlyRestPoseOverlaps) {
+      return makeScene(state, sceneShape, [
+        ...result.diagnostics,
+        ...envelopeDiagnostics,
+        ...limitWarnings,
+        ...overlayIntentDiagnostics(state),
+      ], mateT, errorDiagnostics);
     }
     if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
       throw new KernelError(
@@ -1071,9 +1091,11 @@ function finalizeSolvedModelScene(
  * Returns a `Promise<Scene>` (multi-body view, frozen). The Promise
  * wraps the v0.6 mate-aware validator pass — the `opts.validate` gate
  * runs `validateAssemblyWithMates(this)` and either attaches
- * diagnostics to `scene.warnings` (`'warn'`, default), throws on the
- * first error-severity diagnostic (`'error'`), or skips validation
- * (`'off'`). The default flips to `'error'` when
+ * diagnostics to `scene.warnings` (`'warn'`, default), throws on error
+ * diagnostics (`'error'`), or skips validation (`'off'`). An overlap-only
+ * error is retained on the Scene and deferred to evaluate_script's mechanism
+ * truth pass so it can report `mechanism.rest-interpenetration`. The default
+ * flips to `'error'` when
  * `KERNELCAD_VALIDATE_DEFAULT=error` is set in the environment (T10
  * wires this from `kernelcad evaluate`).
  *

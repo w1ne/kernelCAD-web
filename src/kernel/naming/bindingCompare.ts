@@ -55,6 +55,9 @@ function identityReasons(before: BindingFingerprint, after: BindingFingerprint):
     reasons.push(`producing feature ${before.producer ?? 'unknown'} -> ${after.producer ?? 'unknown'}`);
   }
   if (before.role !== after.role) reasons.push(`name ${before.role ?? 'unnamed'} -> ${after.role ?? 'unnamed'}`);
+  if (before.sourceId !== after.sourceId && (before.sourceId !== undefined || after.sourceId !== undefined)) {
+    reasons.push(`edge lineage ${before.sourceId ?? 'untracked'} -> ${after.sourceId ?? 'untracked'}`);
+  }
   return reasons;
 }
 
@@ -98,7 +101,7 @@ export interface BindingPair {
   comparison: BindingComparison;
 }
 
-const identityKey = (f: BindingFingerprint) => `${f.entityKind}|${f.geomType}|${f.producer ?? ''}|${f.role ?? ''}`;
+const identityKey = (f: BindingFingerprint) => `${f.entityKind}|${f.geomType}|${f.producer ?? ''}|${f.role ?? ''}|${f.sourceId ?? ''}`;
 
 /** Pair the entities of two selections of the same selector. Entities with the
  *  same identity pair by nearest centroid; whatever is left over on either side

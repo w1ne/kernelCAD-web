@@ -4,8 +4,8 @@
 //
 // v0.6 Task 6: tree-FK over the mate graph for all 7 mate types.
 // v0.6 T-pose: pose-driven articulation. `solveMates(arm, poses?)` honors the
-// numeric `poses` override first, then the capture-time `mate.pose`
-// (resolved through the session's ParamTable), defaulting to 0 / [0,0,0].
+// explicit `poses` override first (resolving ParamRefs through the session's
+// ParamTable), then capture-time `mate.pose`, defaulting to 0 / [0,0,0].
 //
 // `solveMates(arm, poses?)` walks the parts-by-mate graph and produces
 // per-part world transforms in the assembly's root frame. Pose-driven joint
@@ -41,7 +41,7 @@ import {
   type ConnectorOrigin,
 } from './connector';
 import { expandCoupledPoses } from './coupledPoses';
-import { atPlacement, resolvedPartAt } from './partFrame';
+import { atPlacement, matedPartNames, resolvedPartAt, sceneMotion } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
@@ -214,7 +214,8 @@ export async function solveMates(
 ): Promise<SolveResult> {
   const parts = arm.__parts();
   const mates = arm.__mates();
-  const expandedPoses = expandCoupledPoses(mates, arm.__mateCouplings(), poses ?? {}, {
+  const callerPoses = resolveCallerPoses(arm, mates, poses);
+  const expandedPoses = expandCoupledPoses(mates, arm.__mateCouplings(), callerPoses ?? {}, {
     resolveSourcePose: (mate, currentPoses) => resolveMatePose(mate, arm, currentPoses),
   });
 
@@ -246,7 +247,7 @@ export async function solveMates(
   );
 
   if (loopMates.length === 0) {
-    return { status: 'solved', poses: worldT };
+    return inheritConnectedPartPlacements(arm, { status: 'solved', poses: worldT });
   }
 
   // 3. Closed loops present. A loop through an articulated mate is solved
@@ -254,10 +255,59 @@ export async function solveMates(
   //    loop mates solved); a fastened-only loop has nothing to move and
   //    keeps the residual classification.
   const connector = await resolvedConnectorLookup(mates, partByName);
-  if (hasArticulatedLoop(walk, connector)) {
-    return solveArticulatedLoops(arm, walk, connector, worldT, poses, expandedPoses, opts);
+  const result = hasArticulatedLoop(walk, connector)
+    ? await solveArticulatedLoops(arm, walk, connector, worldT, callerPoses, expandedPoses, opts)
+    : await loopSolve(partByName, loopMates, worldT);
+  return inheritConnectedPartPlacements(arm, result);
+}
+
+/** Give connect-placed descendants the same scene motion as a moved parent.
+ *  Their capture-time `at` already puts their connectors together; inheriting
+ *  the parent's motion preserves that relationship as the mate pose changes. */
+function inheritConnectedPartPlacements(arm: Assembly, result: SolveResult): SolveResult {
+  if (result.status !== 'solved' && result.status !== 'redundant-ok') return result;
+
+  const parts = arm.__parts();
+  const moved = matedPartNames(arm.__mates());
+  const partById = new Map(parts.map((part) => [part.id, part]));
+  const table = arm.__session().paramTable;
+  for (const part of parts) {
+    if (part.connectParentId === undefined || moved.has(part.name)) continue;
+    const parent = partById.get(part.connectParentId);
+    if (parent === undefined || !moved.has(parent.name)) continue;
+    const parentPlacement = result.poses.get(parent.name);
+    if (parentPlacement === undefined) continue;
+
+    const parentMotion = sceneMotion(parentPlacement, resolvedPartAt(parent.at, table));
+    const childAt = resolvedPartAt(part.at, table);
+    result.poses.set(part.name, parentMotion.compose(atPlacement(childAt)));
+    moved.add(part.name);
   }
-  return loopSolve(partByName, loopMates, worldT);
+  return result;
+}
+
+/** Resolve explicit pose overrides before the pure loop solver sees them.
+ *  `Assembly.solvedModel` accepts ParamRefs so the stored record can remain
+ *  reactive; the capture-time solve still needs concrete coordinates for the
+ *  driven targets. */
+function resolveCallerPoses(
+  arm: Assembly,
+  mates: readonly MateRecord[],
+  poses: NumericPoses | undefined,
+): NumericPoses | undefined {
+  if (poses === undefined) return undefined;
+  const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
+  const resolved: NumericPoses = {};
+  for (const [name, value] of Object.entries(poses)) {
+    const mate = mateByName.get(name);
+    if (mate === undefined) {
+      resolved[name] = value;
+      continue;
+    }
+    const pose = resolveMatePose(mate, arm, { [name]: value });
+    if (pose !== undefined) resolved[name] = pose as NumericPoses[string];
+  }
+  return resolved;
 }
 
 /** Resolve every mate connector once (topology origins lower the part). */
@@ -282,13 +332,33 @@ async function resolvedConnectorLookup(
   return (partName, connectorName) => table.get(`${partName}.${connectorName}`)!;
 }
 
-/** Distance between a mate's two connector origins at the given placements. */
-function connectorGapMm(m: MateRecord, connector: ConnectorLookup, poses: ReadonlyMap<string, Transform>): number {
+/** Closure residual for a mate at the given placements, in millimetres. */
+function connectorGapMm(
+  m: MateRecord,
+  connector: ConnectorLookup,
+  poses: ReadonlyMap<string, Transform>,
+  expectedPrismaticPose?: number,
+): number {
   const a = parseConnectorRef(m.a);
   const b = parseConnectorRef(m.b);
-  const pa = poses.get(a.partName)!.point(connector(a.partName, a.connectorName).origin);
+  const ta = poses.get(a.partName)!;
+  const pa = ta.point(connector(a.partName, a.connectorName).origin);
   const pb = poses.get(b.partName)!.point(connector(b.partName, b.connectorName).origin);
-  return Math.hypot(pa[0] - pb[0], pa[1] - pb[1], pa[2] - pb[2]);
+  const d: Se3Vec3 = [pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]];
+  if (m.type !== 'prismatic') return Math.hypot(d[0], d[1], d[2]);
+
+  // Translation along a prismatic axis is the joint's allowed motion, not a
+  // closure error. At rest (or when this cut mate is explicitly driven),
+  // compare that coordinate with its declared pose; otherwise measure only
+  // the off-axis displacement while the loop is moving.
+  const localAxis = connector(a.partName, a.connectorName).axis;
+  const worldAxis = ta.axisDir(localAxis);
+  const axisLength = Math.hypot(worldAxis[0], worldAxis[1], worldAxis[2]) || 1;
+  const axis: Se3Vec3 = [worldAxis[0] / axisLength, worldAxis[1] / axisLength, worldAxis[2] / axisLength];
+  const axial = d[0] * axis[0] + d[1] * axis[1] + d[2] * axis[2];
+  const offAxis: Se3Vec3 = [d[0] - axial * axis[0], d[1] - axial * axis[1], d[2] - axial * axis[2]];
+  const poseError = expectedPrismaticPose === undefined ? 0 : axial - expectedPrismaticPose;
+  return Math.hypot(offAxis[0], offAxis[1], offAxis[2], poseError);
 }
 
 async function solveArticulatedLoops(
@@ -332,7 +402,17 @@ async function solveArticulatedLoops(
     status: loop.status === 'solved' ? 'solved' : 'did-not-converge',
     poses,
     iterations: loop.iterations,
-    loopResiduals: walk.loopMates.map((m) => ({ mate: m.name, mm: connectorGapMm(m, connector, poses) })),
+    loopResiduals: walk.loopMates.map((m) => {
+      const capturePoseIsReference = callerPoses === undefined || Object.keys(callerPoses).length === 0;
+      const expectedPrismaticPose = m.type !== 'prismatic'
+        ? undefined
+        : driven.has(m.name)
+          ? resolveMatePose(m, arm, expandedPoses) as number
+          : capturePoseIsReference
+            ? resolveMatePose(m, arm, undefined) as number
+            : undefined;
+      return { mate: m.name, mm: connectorGapMm(m, connector, poses, expectedPrismaticPose) };
+    }),
     loop,
   };
 }

@@ -47,7 +47,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
-| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
+| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
 
@@ -60,11 +60,17 @@ actuator must supply to hold the downstream mass still, using real mass
 properties (volume and center of mass from the part's declared `density`/`material`,
 same substrate as `inspect({ of: 'mass' })`). Reports the worst pose,
 required torque/force, declared capacity, and margin percent.
+Coverage is limited to actuated `arm.revolute(...)` and `arm.prismatic(...)`
+joints. Mate-only `mechanicalJoint` chains are not evaluated. When no
+actuated body-tree joint is selected, the result is `ok: false` with an
+`assembly.joint.static-hold.no-actuator` warning, naming moving mates when
+available; this result has no holding-capacity coverage.
+Demo and replay bundle: [Issue #1270 static-hold coverage](../../../../docs/demos/issue-1270-static-hold/README.md).
 `opts.minTorqueMarginPct` (default 20) is a floor, not a hard pass/fail — a
 joint that clears capacity but misses the margin still returns `ok: true`
-with a `margin-low` warn diagnostic; only an actually-exceeded joint flips
-`ok: false`. v1 assumes rigid links and a single uniform gravity vector; pair
-with `checkLoadCapacity` for applied external loads.
+with a `margin-low` warn diagnostic; an exceeded capacity or missing actuator
+coverage returns `ok: false`. v1 assumes rigid links and a single uniform
+gravity vector; pair with `checkLoadCapacity` for applied external loads.
 
 ### `sweepTolerance` — range proofs over the requirements ledger
 
@@ -111,7 +117,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
-- `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity; accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`.
+- `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity; accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`. A closed-loop mate graph returns `mechanism: 'unverified'` with warning `mechanism.physics-unsupported` (coverage.physics false). That is unsupported topology, not a dynamics failure, and it is not a verified build.
 - `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports, each at the station where it bears on the shaft: its connector on the joint axis, else the middle of its material nearest the shaft; an ambiguous station is a warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's frame). The script-level `kinematic.motionLoad` returns the same envelope; feed `partLoads` to `feaStudy({ loadsFrom: { motion, part } })` to solve a structural safety factor at that pose with no hand-typed load. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
 - `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`, `boundaryTolerance`, `boundaryBudget`
 - `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
@@ -140,6 +146,7 @@ call to confirm.
 | K9 `kinematic.mounting-hole.diameter-mismatch` | `fix-arg` | Set both connectors' hole diameter to the same value |
 | `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
 | `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
+| `assembly.joint.static-hold.no-actuator` | `rewrite-feature` | Declare `actuator: { torqueNm }` on `arm.revolute(...)` or `actuator: { forceN }` on `arm.prismatic(...)`; mate-only `mechanicalJoint` chains are not covered |
 | `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
 | `mechanism.load.torque-exceeded` / `mechanism.load.torque-margin-low` | `rewrite-feature` | Stronger actuator, lighter/shorter links, or slower motion (aim for 2x) |
 | `mechanism.load.side-load-exceeded` | `rewrite-feature` | Add a coaxial bushing/bearing and list it in the mechanicalJoint `supports` |
@@ -249,7 +256,7 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity) only for revolute mates built with `joint.clevis(...)` whose `clevis.structural` is attached as `capacity: { structure }` on the mate; its pin, plate and knuckle dimensions come from that record. Other mates are not evaluated. The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
 3. Every revolute joint passes Gate 4 (visual exposure) when it opts in with `exposure: 'exposed'` on the mate: the hinge mechanism reads as a hinge (fork daylight + pin stickout). Mates without the declaration are not checked.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
-5. (Opt-in) `kernelcad validate --include-interference --include-physics` exercises the physics-based gate (criteria 5+6). Adds two failure modes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose → singular kinematic configuration) and `mechanism.drops-on-release` (any joint drifts > 5° or any body translates > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / actuator fail this gate by construction — single-body "spring" parts fastened to one arm produce zero restoring moment around the joint they should brace. The closed-loop tendon API tracked in issue #361 is the kit-level fix.
+5. (Opt-in) `kernelcad validate --include-interference --include-physics` exercises the physics-based gate (criteria 5+6). Adds two failure modes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose → singular kinematic configuration) and `mechanism.drops-on-release` (any joint drifts > 5° or any body translates > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / actuator fail this gate by construction — single-body "spring" parts fastened to one arm produce zero restoring moment around the joint they should brace. The closed-loop tendon API tracked in issue #361 is the kit-level fix. A closed-loop mate graph is unsupported topology, not a dynamics failure: the gate emits warning `mechanism.physics-unsupported`, leaves `coverage.physics` false, and the mechanism stays unverified. Do not treat that warning as a broken build or as a verified one.
 
 If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
 

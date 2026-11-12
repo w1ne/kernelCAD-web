@@ -172,6 +172,7 @@ function buildLoftFromSketches(
   try {
     return OcctBackend.loftFromSketches(sketches, planes, {
       ruled,
+      faceted: (r.params.faceted?.evaluated ?? 0) > 0.5,
       startPoint: meta?.startPoint,
       endPoint: meta?.endPoint,
       twistCenter: meta?.twistCenter ?? [0, 0],

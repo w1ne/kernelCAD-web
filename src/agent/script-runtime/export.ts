@@ -21,6 +21,7 @@ import type { ArchitecturalPlanOptions } from '../../kernel/backends/occt/drawin
 import type {
   AutoAnnotateOptions,
   DrawingReport,
+  DrawingVisualQaOptions,
 } from '../../kernel/backends/occt/exportSvgDrawing';
 import type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 import type { DrawingSheetSize, ProjectionAngle, DrawingViewName } from '../../kernel/backends/occt/drawingLayout';
@@ -31,6 +32,8 @@ export type {
   AutoAnnotateKind,
   AutoAnnotateOptions,
   DrawingReport,
+  DrawingVisualQaOptions,
+  DrawingVisualQaReport,
   Iso2768Class,
 } from '../../kernel/backends/occt/exportSvgDrawing';
 import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
@@ -129,7 +132,7 @@ export type ExportOptions =
       /** 'lowpoly': faceted game mesh, palette in COLOR_0 on one shared material. */
       style?: 'pbr' | 'lowpoly';
       lowpoly?: { angularDeg?: number; maxTriangles?: number };
-      /** Default 'mm' for pbr, 'm' for lowpoly. */
+      /** Default 'm' to match the glTF length-unit convention. */
       units?: 'mm' | 'm';
     }
   /** `bytes` is a zip of `model.obj` (with `mtllib` / `usemtl`) and sibling `model.mtl`. */
@@ -148,6 +151,7 @@ export type ExportOptions =
   | { format: 'usd' }
   | (DrawingReviewOptions & {
       format: 'svg-drawing';
+      visualQa?: DrawingVisualQaOptions;
       /** Printable review preview with PDF sheet and title-block defaults. */
       pdfSheet?: boolean;
       draftingProfile?: DraftingProfileId | DraftingProfile;
@@ -210,12 +214,17 @@ export type ExportOptions =
  */
 export interface PdfDrawingOptions extends DrawingReviewOptions {
   format: 'pdf-drawing';
+  /** Inspect the serialized sheet and generated PDF. With autoRepair enabled,
+   *  the export may retry on up to three larger standard sheets. */
+  visualQa?: DrawingVisualQaOptions;
   views?: readonly DrawingViewName[];
   draftingProfile?: DraftingProfileId | DraftingProfile;
   annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
   /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
    *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
   sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** Enable a bounded larger-sheet repair after a crowded drawing export. */
+  layoutRepair?: boolean;
   /** View arrangement and title-block symbol; default `'third'`. */
   projection?: ProjectionAngle;
   /** Drawing title; defaults to the model name (the script file name). */

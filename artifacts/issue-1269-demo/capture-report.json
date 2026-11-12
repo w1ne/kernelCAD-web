@@ -1,0 +1,52 @@
+{
+  "issue": 1269,
+  "capturedAt": "2026-11-09",
+  "video": {
+    "path": "scissor-jack-demo.mp4",
+    "width": 1920,
+    "height": 1080,
+    "fps": 24,
+    "durationSeconds": 2,
+    "frames": 48,
+    "sizeBytes": 215953
+  },
+  "invocation": {
+    "command": "node dist/cli/index.js animate artifacts/issue-1269-demo/scissor-jack-demo.kcad.ts artifacts/issue-1269-demo/scissor-jack-demo.mp4 --fps 24 --pose 35,25 --lock-frame --backdrop white --verify-every 12 --json",
+    "environment": {
+      "PLAYWRIGHT_BROWSERS_PATH": "/Volumes/LabWired/.cache/playwright-kernelcad"
+    }
+  },
+  "capture": {
+    "ok": true,
+    "verified": true,
+    "collisions": [],
+    "diagnostics": []
+  },
+  "verifiedPoses": [
+    0,
+    510.638,
+    1000,
+    1021.277,
+    1531.915,
+    2000
+  ],
+  "sourceExampleValidation": {
+    "integrationTest": "tests/integration/examples/kinematicScissorJackClosedLoop.test.ts",
+    "mechanism": "real",
+    "ok": true,
+    "sweepSamples": 46,
+    "sweep": "15°..60° in 1° increments",
+    "forbiddenDiagnostics": []
+  },
+  "renderInspection": {
+    "command": "node dist/cli/index.js render inspect artifacts/issue-1269-demo/scissor-jack-demo.kcad.ts artifacts/issue-1269-demo/inspect --channels rgb --views iso --width 640 --height 480 --environment neutral",
+    "visuallyInspected": true,
+    "image": "inspect/channels/rgb/iso.png",
+    "timelineReview": "video-contact-sheet.png"
+  },
+  "limits": [
+    "Local kinematic replay and interference checks only; no physics or MuJoCo acceptance.",
+    "No hardware acceptance.",
+    "No deployment or public-page verification because the branch was not pushed."
+  ]
+}

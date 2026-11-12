@@ -6,8 +6,10 @@
 // kernel skips all 12 edges and reports
 // `feature.edge-feature.short-edges-skipped` (error).
 //
-// The repair loop reads the shortest adjacent edge (8 mm, the block
-// thickness) and proposes radii under the 4 mm ceiling, largest first.
+// The repair loop measures the shortest adjacent edge (8 mm, the block
+// thickness) and the radius the same-edge kernel probe builds (3.93 mm).
+// It proposes radii under that probed value, largest first. Half of 8 mm
+// is not a feasible radius.
 //
 // Run the repair walkthrough:
 //   npx tsx examples/repair/run-repair-example.ts

@@ -73,6 +73,8 @@ import { makeRequirementMethods } from './apiRequirementMethods';
 import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
+import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -230,6 +232,21 @@ export interface KernelCadApi {
    */
   spring(opts: SpringOptions): Shape;
   /**
+   * Solid circular pipe along a polyline. Corners become tangent circular
+   * bends (`opts.bendRadius` defaults to 1.5 × `radius`). Built with OCCT
+   * `BRepOffsetAPI_MakePipe` on exact line and arc edges — cylinders and
+   * torus segments, few faces, cheap to boolean. Use this for dressed
+   * cables and hose runs instead of `circle().sweep(points, { spine: 'smooth' })`
+   * (a B-spline pipe-shell that is expensive to evaluate) or a chain of
+   * overlapping cylinders.
+   *
+   * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
+   * rules, and no ports. `bendRadius` is the centreline radius and must
+   * exceed `radius`; every straight between corners must be long enough
+   * for the bends (same centreline geometry as `tube()` paths).
+   */
+  pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
+  /**
    * Build an involute spur gear as ONE manifold solid: the tooth is generated
    * by the standard basic rack (true involute above the base circle, trochoid
    * root fillet, correct undercut below ~17 teeth at 20°). Axis +Z, face from
@@ -320,6 +337,8 @@ export interface KernelCadApi {
   prismFront(points: readonly PolygonPoint[], x0: number, x1: number): Shape;
   /** Plan-view mask prism: points are (X, Y), extruded along Z from z0..z1. */
   prismPlan(points: readonly PolygonPoint[], z0: number, z1: number): Shape;
+  /** Build a constant-thickness vertical rib from an open XY centerline and fuse it to a base shape. */
+  rib(base: Shape, centerline: readonly RibPoint[], opts: RibOptions): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -853,6 +872,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
   const api: KernelCadApi = {
     ...makePrimitiveMethods(session),
     spring: makeSpringMethod(session, () => api),
+    pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),
@@ -872,6 +892,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
     ...makeRequirementMethods(session),
+    ...makeRibMethod(() => api),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
@@ -895,3 +916,4 @@ export type {
   CurveSurfaceIntersection,
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+export type { RibOptions, RibPoint } from './apiRibMethod';
