@@ -58,11 +58,12 @@ On the integrated branch, all four files and 22 tests passed.
 ## Animation bake agreement and fixture connector — 2026-11-12
 
 `coupledGearPhysics.test.ts` now checks every baked `animationView` frame of
-both gears. The motor-rotor angle equals the sampled `motorDeg` track value,
-and the rear-live-axle angle equals −0.25 × that value, within 1e-6°. At the
-frames nearest −720°, 0°, 300° and 720°, the baked matrices equal an
-independent `buildModel` evaluation at that `motorDeg`. The bake must report
-no advisory collisions.
+both gears. The motor-rotor Z angle matches the sampled `motorDeg` track
+value, and the rear-live-axle Z angle matches −0.25 × that value, modulo
+360° and within 1e-6°. At the frames nearest −720°, 0°, 300° and 720°,
+the Z angles extracted from the baked matrices match an independent
+`buildModel` evaluation at that `motorDeg`. The bake must report no advisory
+collisions.
 
 This check found a fixture defect. The 48T shape is already translated to the
 30 mm pitch centre, but its `axis` connector was at the local origin. The mate
