@@ -42,15 +42,18 @@ export function matedPartNames(mates: readonly Pick<MateRecord, 'a' | 'b'>[]): S
 }
 
 /** Look up, by part name, the `at` to convert by: the resolved `at` of a
- *  mated part, or `undefined` for a part in no mate, which keeps the
- *  transform it has. Use it wherever a placement and a scene motion meet, so
- *  the mated-only rule lives here. */
+ *  mated part or a named legacy-joint participant, or `undefined` for a part
+ *  with no solver placement, which keeps the transform it has. Use it
+ *  wherever a placement and a scene motion meet, so the conversion rule lives
+ *  here. */
 export function partAtFor(
   mates: readonly Pick<MateRecord, 'a' | 'b'>[],
   parts: readonly { readonly name: string; readonly at?: Vec3Param }[],
   table: ParamTable | undefined,
+  jointPartNames: readonly string[] = [],
 ): (partName: string) => Vec3 | undefined {
   const mated = matedPartNames(mates);
+  for (const name of jointPartNames) mated.add(name);
   const atByName = new Map(parts.map((p) => [p.name, p.at]));
   return (partName) => (mated.has(partName) ? resolvedPartAt(atByName.get(partName), table) : undefined);
 }

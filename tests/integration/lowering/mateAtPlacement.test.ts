@@ -395,8 +395,32 @@ function tendonEnds(vertices: ArrayLike<number>): { from: V3; to: V3 } {
   return { from: ring(0), to: ring(16) };
 }
 
-describe('tendon anchors and fastened-drift boxes of mated parts with `at`', () => {
+describe('tendon anchors and fastened-drift boxes of posed parts with `at`', () => {
   beforeAll(async () => { await initOcct(); });
+
+  it('a tendon on a part joined by a legacy joint includes the part at placement', async () => {
+    const code = `
+      const arm = assembly('rig');
+      const base = arm.part('base', box(20, 20, 10, true), { at: [100, 0, 0] });
+      base.connector('hook', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      const link = arm.part('link', box(20, 20, 10, true));
+      link.connector('eye', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] });
+      arm.revolute('hinge', base, link, { axis: [0, 0, 1], origin: [0, 0, 0] });
+      arm.tendon('spring', { from: 'base.hook', to: 'link.eye', restLengthMm: 120, stiffnessNmm: 0.5 });
+      return arm.solvedModel({ hinge: 0 }, { validate: 'off' });
+    `;
+    const { records, paramTable, session } = await runScript({ code, fileName: 'joint-at-tendon.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(records, paramTable, session);
+    const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');
+    expect(tendon).toBeDefined();
+    const { from, to } = tendonEnds(tendon!.faces[0].vertices);
+    expect(from[0]).toBeCloseTo(110, 3);
+    expect(from[1]).toBeCloseTo(0, 3);
+    expect(from[2]).toBeCloseTo(0, 3);
+    expect(to[0]).toBeCloseTo(-10, 3);
+    expect(to[1]).toBeCloseTo(0, 3);
+    expect(to[2]).toBeCloseTo(0, 3);
+  });
 
   it('a tendon between mated parts with at is anchored on their connectors', async () => {
     // The mount (first part) keeps its `at` [100, 0, 0]: hook [-10, 0, 0]
