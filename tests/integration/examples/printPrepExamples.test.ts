@@ -22,7 +22,8 @@ describe('examples/print-prep — wall hook', () => {
     expect(r.diagnostics.map(d => d.code)).toEqual(['dfm.fdm.overhang-unsupported', 'dfm.fdm.tip-risk']);
     const overhang = r.diagnostics[0];
     expect(overhang.message).toContain('938.2 mm² of unsupported overhang in 1 region(s)');
-    expect(overhang.message).toContain('@kc[fillet_1/face/bottom]');
+    // This legacy reference does not resolve on the final shape, so it must not be emitted.
+    expect(overhang.message).not.toContain('@kc[fillet_1/face/bottom]');
     expect(overhang.hint).toContain(
       "Rotate -90° about Y (.rotateY(-90), or dfmSpec buildDirection: '+x'): unsupported area drops from 938.2 to 0.0 mm².",
     );

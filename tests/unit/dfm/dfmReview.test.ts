@@ -30,12 +30,26 @@ describe('dfm_review', () => {
     ]);
     expect(r.checks.filter(c => c.status !== 'pass')).toEqual([]);
     expect(r.verdict).toBe('pass');
+    expect(r.ok).toBe(true); // Successful review execution; it is not itself the manufacturing verdict.
+    expect(r.checks.every(c => c.source === c.process)).toBe(true);
   }, 60000);
 
   it('fails a T cantilever on FDM overhangs and on CNC undercuts from +z, and passes with a flipped second setup', async () => {
     const r = await dfmReviewTool({ code: TEE });
     expect(status(r, 'fdm.overhangs')).toBe('fail');
     expect(status(r, 'cnc.undercuts')).toBe('fail');
+    expect(r.ok).toBe(true); // A checked manufacturing failure still has a successful tool result.
+    const overhang = r.checks.find(c => c.id === 'fdm.overhangs')!;
+    expect(overhang.unit).toBe('mm2');
+    expect(overhang.limit).toBeUndefined(); // Unsupported area is not comparable to the angular setting.
+    expect(overhang.op).toBeUndefined();
+    expect(new Set(overhang.refs)).toEqual(new Set(r.fdm![0].result.orientation.overhangs
+      .filter(region => region.status === 'unsupported' && !(region.horizontal && region.spanMm !== undefined))
+      .flatMap(region => region.faceRef === undefined ? [] : [region.faceRef])));
+    const cncUndercuts = r.checks.find(c => c.id === 'cnc.undercuts')!;
+    expect(cncUndercuts).toMatchObject({ unit: 'mm2', op: '<=', source: 'cnc' });
+    expect(cncUndercuts.tolerance).toBeUndefined();
+    expect(cncUndercuts.value).toBeCloseTo(r.cnc![0].result.undercut.areaMm2, 2);
     expect(r.cnc![0].result.undercut.areaMm2).toBeCloseTo(600, 0); // arm undersides 2 × 100 + the stem walls they shadow 2 × 200
     expect(r.verdict).toBe('fail');
     const two = await dfmReviewTool({ code: TEE, processes: ['cnc'], approach_axes: ['+z', '-z'] });
@@ -68,6 +82,7 @@ describe('dfm_review', () => {
     const r = await dfmReviewTool({ code: POCKET, processes: ['cnc'] });
     expect(status(r, 'cnc.undercuts')).toBe('pass');
     expect(status(r, 'cnc.internal-corner-radius')).toBe('fail');
+    expect(r.checks.find(c => c.id === 'cnc.internal-corner-radius')?.tolerance).toBeUndefined();
     expect(r.cnc![0].result.sharpInternalCorners).toHaveLength(4);
     for (const c of r.cnc![0].result.sharpInternalCorners) expect(c.lengthMm).toBeCloseTo(5, 3);
   }, 60000);
@@ -78,6 +93,7 @@ describe('dfm_review', () => {
     expect(big.cnc![0].result.tightFillets.length).toBeGreaterThanOrEqual(4);
     expect(big.cnc![0].result.tightFillets[0].radiusMm).toBeCloseTo(1, 6);
     expect(status(big, 'cnc.internal-corner-radius')).toBe('fail');
+    expect(big.checks.find(c => c.id === 'cnc.internal-corner-radius')?.tolerance).toBe(1e-6);
     const small = await dfmReviewTool({ code: ROUND_POCKET, processes: ['cnc'], tool_diameter_mm: 1.5 });
     expect(status(small, 'cnc.internal-corner-radius')).toBe('pass');
   }, 60000);
@@ -86,9 +102,33 @@ describe('dfm_review', () => {
     const code = 'return box(20, 20, 5).subtract(cylinder(5, 0.75).translate(10, 10, 0));';
     const r = await dfmReviewTool({ code, processes: ['fdm'] });
     expect(status(r, 'fdm.min-hole')).toBe('fail');
-    expect(r.checks.find(c => c.id === 'fdm.min-hole')?.value).toBeCloseTo(1.5, 6);
+    expect(r.checks.find(c => c.id === 'fdm.min-hole')).toMatchObject({ value: expect.closeTo(1.5, 6), tolerance: 1e-9, unit: 'mm', op: '>=' });
     const fine = await dfmReviewTool({ code, processes: ['fdm'], nozzle_mm: 0.25 });
     expect(status(fine, 'fdm.min-hole')).toBe('pass');
+  }, 60000);
+
+  it('reports the engine tolerance on failing FDM minimum-hole and minimum-pin rows', async () => {
+    const code = `
+      const plate = box(30, 30, 4).subtract(cylinder(6, 0.75).translate(8, 8, -1));
+      return plate.union(cylinder(6, 1).translate(20, 20, 4));
+    `;
+    const r = await dfmReviewTool({ code, processes: ['fdm'] });
+    expect(r.checks.find(c => c.id === 'fdm.min-hole')).toMatchObject({ tolerance: 1e-9, unit: 'mm', op: '>=' });
+    expect(r.checks.find(c => c.id === 'fdm.min-pin')).toMatchObject({ tolerance: 1e-9, unit: 'mm', op: '>=' });
+  }, 60000);
+
+  it('reports the bridge span tolerance on an over-limit comparison', async () => {
+    const code = `
+      const leftPost = box(5, 10, 10);
+      const rightPost = box(5, 10, 10).translate(17, 0, 0);
+      const beam = box(22, 10, 5).translate(0, 0, 10);
+      return leftPost.union(rightPost).union(beam);
+    `;
+    const r = await dfmReviewTool({ code, processes: ['fdm'] });
+    const bridge = r.checks.find(c => c.id === 'fdm.bridging')!;
+    expect(bridge.status).toBe('fail');
+    expect(bridge).toMatchObject({ unit: 'mm', op: '<=', tolerance: 1e-9 });
+    expect(bridge.value! - bridge.tolerance!).toBeGreaterThan(bridge.limit!);
   }, 60000);
 
   it('fails bed fit on a part larger than the printer bed', async () => {
@@ -135,6 +175,7 @@ describe('dfm_review', () => {
     ]) {
       const r = await dfmReviewTool({ code: 'return box(1, 1, 1);', ...(bad as object) });
       expect(r.ok).toBe(false);
+      expect(r.verdict).toBeUndefined(); // Invalid calls have no manufacturing verdict.
       expect(r.diagnostics[0].code).toBe('cli.invalid-args');
     }
   });
