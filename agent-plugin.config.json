@@ -5,8 +5,8 @@
   "displayName": "kernelCAD",
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
-  "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Design mounting plates, brackets, enclosures, gears and fixtures for 3D printing or CNC; inspect interactive models; run supported geometry and manufacturability checks; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
-  "shortDescription": "Manufacturing CAD & Schematics",
+  "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Run revision-bound manufacturing-readiness reviews and evidence-backed design trade studies; inspect interactive models; check supported geometry, tolerances, structures, and manufacturability; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
+  "shortDescription": "Manufacturing CAD & Evidence",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -44,15 +44,20 @@
     "m4",
     "dxf",
     "pdf",
-    "mcp"
+    "mcp",
+    "dfm",
+    "manufacturing-readiness",
+    "trade-study",
+    "design-review",
+    "evidence"
   ],
   "category": "Productivity",
   "codexCategory": "Creativity",
   "brandColor": "#2563EB",
   "defaultPrompts": [
     "Create an editable 60 × 40 × 5 mm mounting plate with four M4 clearance holes, and show it in 3D.",
-    "Check this bracket for supported FDM and CNC manufacturability, then export STEP and a dimensioned PDF drawing.",
-    "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong."
+    "Review this exact bracket revision for FDM and CNC readiness. Separate PASS, FAIL, WARN, NOT_RUN and UNSUPPORTED evidence before exporting anything.",
+    "Compare three wall-thickness variants for mass, FDM readiness and structural margin. Show the scoring inputs and ±20% weight sensitivity before recommending one."
   ],
   "mcp": {
     "serverName": "kernelcad",
@@ -68,7 +73,7 @@
     "dashboardPackageName": "app-6a2fcd20e8008191b0c688ca1bc7abb5",
     "dashboardMcpUrl": "https://mcp.kernelcad.com/chatgpt/mcp",
     "commerce": false,
-    "releaseNotes": "Updates manufacturing-CAD discovery copy, the M4 mounting-plate starter prompt, drawing exports, and schematic netlist/ERC support.",
+    "releaseNotes": "Adds revision-bound manufacturing-readiness and design-trade-study skills. Reports preserve failed, warning, not-run, unsupported and assumed evidence; compare variants on one basis; and require explicit approval before external manufacturing actions.",
     "testCases": {
       "positive": [
         {
@@ -115,8 +120,34 @@
         {
           "description": "Netlist and ERC on a schematic",
           "prompt": "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong.",
-          "tools_triggered": ["netlist_export", "erc_run"],
+          "tools_triggered": [
+            "netlist_export",
+            "erc_run"
+          ],
           "expected_behavior": "netlist_export returns the nets and pin→net membership; erc_run returns zero or more structured diagnostics (e.g. an unconnected pin, or two outputs on one net) with the offending component and pin named."
+        },
+        {
+          "description": "Revision-bound manufacturing readiness",
+          "prompt": "Review this saved bracket revision for FDM and CNC readiness. Show blockers, assumptions, skipped checks and evidence before preparing fabrication files.",
+          "tools_triggered": [
+            "get_project_revision",
+            "evaluate_script",
+            "inspect",
+            "dfm_review"
+          ],
+          "expected_behavior": "Binds every result to one exact revision, reports PASS, FAIL, WARN, NOT_RUN, UNSUPPORTED and ASSUMPTION states without treating missing checks as clean, and asks for approval before any external manufacturing action."
+        },
+        {
+          "description": "Evidence-backed design trade study",
+          "prompt": "Compare three thickness variants for mass, FDM manufacturability and structural margin. Show the scoring inputs and sensitivity before recommending one.",
+          "tools_triggered": [
+            "get_project_revision",
+            "set_param",
+            "evaluate_script",
+            "diff_geometry",
+            "dfm_review"
+          ],
+          "expected_behavior": "Keeps the baseline unchanged, applies the same requirements to every variant, rejects candidates with unmet mandatory evidence, computes scores from returned values, reports ±20% weight sensitivity, and does not silently commit the recommendation."
         }
       ],
       "negative": [
@@ -150,6 +181,8 @@
     "kernelcad-design-loop",
     "kernelcad-cookbooks",
     "kernelcad-studio-paint",
-    "kernelcad-export"
+    "kernelcad-export",
+    "manufacturing-readiness",
+    "design-trade-study"
   ]
 }
