@@ -1,0 +1,98 @@
+{
+  "schema": "kernelcad.manufacturing-evidence-invocations.v1",
+  "surface": "authenticated connected kernelCAD MCP tool",
+  "sourceFiles": [
+    "mounting-plate-4mm.kcad.ts",
+    "mounting-plate.kcad.ts",
+    "mounting-plate-12mm.kcad.ts"
+  ],
+  "callsPerVariant": [
+    {
+      "tool": "evaluate_script",
+      "args": {
+        "code": "<exact source file>",
+        "intent": "Compare this mounting plate variant on the same manufacturing evidence basis."
+      }
+    },
+    {
+      "tool": "inspect",
+      "args": {
+        "of": "mass",
+        "code": "<exact source file>",
+        "density": 2700
+      }
+    },
+    {
+      "tool": "dfm_review",
+      "args": {
+        "code": "<exact source file>",
+        "processes": [
+          "fdm",
+          "cnc"
+        ],
+        "printer": "bambu-a1-mini",
+        "nozzle_mm": 0.4,
+        "tool_diameter_mm": 6,
+        "approach_axes": [
+          "+z",
+          "-z"
+        ]
+      }
+    },
+    {
+      "tool": "run_fea",
+      "args": {
+        "code": "<exact source file>",
+        "material": "aluminum-6061",
+        "fixed": {
+          "atX": 0
+        },
+        "loads": [
+          {
+            "faces": {
+              "atX": 100
+            },
+            "force": [
+              0,
+              0,
+              -100
+            ]
+          }
+        ],
+        "min_safety_factor": 2,
+        "solver": "in-process",
+        "mesh_size": 6,
+        "heatmaps": false,
+        "refine": false
+      }
+    }
+  ],
+  "renderCall": {
+    "tool": "render_preview",
+    "variant": "t8",
+    "args": {
+      "code": "<mounting-plate.kcad.ts>",
+      "views": [
+        "iso",
+        "top"
+      ],
+      "sheet": true,
+      "width": 1000,
+      "height": 700,
+      "preset": "publish",
+      "background": "white",
+      "shadow": true
+    }
+  },
+  "negativeControl": {
+    "source": "mounting-plate-stale-example.kcad.ts",
+    "result": "evaluate-stale-example.json",
+    "expectedFailure": "query.empty on fillet selector"
+  },
+  "anonymousBaselineArtifacts": [
+    "evaluate.json",
+    "dfm-baseline.json",
+    "mass-baseline.json"
+  ],
+  "note": "The first baseline calls used the public MCP endpoint. The daily anonymous compute allowance was then exhausted, so the complete 3-variant matrix was repeated through the connected authenticated kernelCAD tool. Values match for the shared baseline."
+}

@@ -1,0 +1,328 @@
+{
+  "schema": "kernelcad.manufacturing-evidence-demo.v1",
+  "recordedAt": "2026-11-12",
+  "surface": "authenticated connected kernelCAD MCP tool",
+  "engine": {
+    "kernel": "occt",
+    "version": "0.17.4",
+    "revision": "a89797728c594b2f8e65bcb6c38fa482b3f1cea7"
+  },
+  "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z",
+  "states": [
+    "PASS",
+    "FAIL",
+    "WARN",
+    "NOT_RUN",
+    "UNSUPPORTED",
+    "ASSUMPTION"
+  ],
+  "acceptanceBasis": {
+    "hardConstraints": [
+      "full geometry build",
+      "FDM DFM pass",
+      "CNC DFM pass"
+    ],
+    "weightedCriteria": {
+      "massKg": {
+        "direction": "cost",
+        "weight": 0.35,
+        "state": "ASSUMPTION"
+      },
+      "minSafetyFactorEstimate": {
+        "direction": "benefit",
+        "weight": 0.4,
+        "state": "ASSUMPTION"
+      },
+      "maxDisplacementMm": {
+        "direction": "cost",
+        "weight": 0.25,
+        "state": "ASSUMPTION"
+      }
+    },
+    "structuralEvidence": "WARN for every candidate because meshTrusted=false"
+  },
+  "variants": {
+    "t4": {
+      "file": "mounting-plate-4mm.kcad.ts",
+      "thicknessMm": 4,
+      "sourceSha256": "ce6c1b33dc7da258c60ba920089731cfbfe7c889b1f16c4d670c521f3436b821",
+      "sourceBytes": 1021,
+      "parameterSha256": "cd966738882eb76e24628d65d90e68b38c68e51b8089c74d02fb4ba08186a5a2",
+      "identitySha256": "f2b9d014a114ccbdd5140a92a93caea3d9c1abb4ae5c60c48679079103384f08",
+      "build": {
+        "state": "PASS",
+        "ok": true,
+        "featureCount": 3,
+        "faceCount": 11,
+        "sizeMm": [
+          100,
+          70,
+          4
+        ],
+        "volumeMm3": 25935.9736265915,
+        "diagnostics": []
+      },
+      "mass": {
+        "state": "PASS",
+        "densityKgM3": 2700,
+        "massKg": 0.07002712879179707
+      },
+      "dfm": {
+        "state": "PASS",
+        "verdict": "pass",
+        "processes": [
+          "fdm",
+          "cnc"
+        ],
+        "printer": "bambu-a1-mini",
+        "nozzleMm": 0.4,
+        "toolDiameterMm": 6,
+        "approachAxes": [
+          "+z",
+          "-z"
+        ],
+        "minWallMm": 4.0,
+        "minWallLimitMm": 0.8,
+        "unsupportedAreaMm2": 0,
+        "cncUndercutAreaMm2": 0
+      },
+      "fea": {
+        "state": "WARN",
+        "solver": "in-process-voxel",
+        "material": "aluminum-6061",
+        "loadN": [
+          0,
+          0,
+          -100
+        ],
+        "fixed": {
+          "atX": 0
+        },
+        "loadedFaces": {
+          "atX": 100
+        },
+        "maxVonMisesMPa": 53.77169298437743,
+        "maxDisplacementMm": 1.3831037263222714,
+        "minSafetyFactorEstimate": 5.021229293978981,
+        "requiredSafetyFactor": 2,
+        "nodeCount": 684,
+        "elementCount": 376,
+        "meshSizeMm": 5.882352941176471,
+        "meshTrusted": false,
+        "brickSizeMm": [
+          5.88,
+          5.83,
+          2.0
+        ],
+        "limitation": "The in-process voxel mesh is a staircase at curved faces, fillets and notches. Peak stress there is approximate; meshTrusted=false. Install CalculiX + gmsh or tighten the mesh before a structural release claim."
+      }
+    },
+    "t8": {
+      "file": "mounting-plate.kcad.ts",
+      "thicknessMm": 8,
+      "sourceSha256": "f32440a37c965325ceecc39623658484f82bc09972dea152f2637196b9e96652",
+      "sourceBytes": 1021,
+      "parameterSha256": "e346d982ba91d49fb14b32faa05475ebe2d2db6d757d17a5274f62a95cd6d487",
+      "identitySha256": "3f354e53abb80fecfb03f8e2e913b4280892b96d87ebed6ea7702c54a4badbb7",
+      "build": {
+        "state": "PASS",
+        "ok": true,
+        "featureCount": 3,
+        "faceCount": 11,
+        "sizeMm": [
+          100,
+          70,
+          8
+        ],
+        "volumeMm3": 51871.947253183,
+        "diagnostics": []
+      },
+      "mass": {
+        "state": "PASS",
+        "densityKgM3": 2700,
+        "massKg": 0.14005425758359413
+      },
+      "dfm": {
+        "state": "PASS",
+        "verdict": "pass",
+        "processes": [
+          "fdm",
+          "cnc"
+        ],
+        "printer": "bambu-a1-mini",
+        "nozzleMm": 0.4,
+        "toolDiameterMm": 6,
+        "approachAxes": [
+          "+z",
+          "-z"
+        ],
+        "minWallMm": 7.750735411689592,
+        "minWallLimitMm": 0.8,
+        "unsupportedAreaMm2": 0,
+        "cncUndercutAreaMm2": 0
+      },
+      "fea": {
+        "state": "WARN",
+        "solver": "in-process-voxel",
+        "material": "aluminum-6061",
+        "loadN": [
+          0,
+          0,
+          -100
+        ],
+        "fixed": {
+          "atX": 0
+        },
+        "loadedFaces": {
+          "atX": 100
+        },
+        "maxVonMisesMPa": 13.446300712320273,
+        "maxDisplacementMm": 0.175996943034247,
+        "minSafetyFactorEstimate": 20.079872209953663,
+        "requiredSafetyFactor": 2,
+        "nodeCount": 684,
+        "elementCount": 376,
+        "meshSizeMm": 5.882352941176471,
+        "meshTrusted": false,
+        "brickSizeMm": [
+          5.88,
+          5.83,
+          4.0
+        ],
+        "limitation": "The in-process voxel mesh is a staircase at curved faces, fillets and notches. Peak stress there is approximate; meshTrusted=false. Install CalculiX + gmsh or tighten the mesh before a structural release claim."
+      }
+    },
+    "t12": {
+      "file": "mounting-plate-12mm.kcad.ts",
+      "thicknessMm": 12,
+      "sourceSha256": "fbae00a5f2b6fa4a8166aceaed5e6b43160815294dce5a5115556836e8ab7cdb",
+      "sourceBytes": 1022,
+      "parameterSha256": "1979ab4fa87fd8e6d91f3d9b318c7529368031a305c095ac3f37d8298029ed98",
+      "identitySha256": "7b6878cbe0876e6025382f9a21744c8289834dc1cc7187ec83c975e350a756ac",
+      "build": {
+        "state": "PASS",
+        "ok": true,
+        "featureCount": 3,
+        "faceCount": 11,
+        "sizeMm": [
+          100,
+          70,
+          12
+        ],
+        "volumeMm3": 77807.92087977454,
+        "diagnostics": []
+      },
+      "mass": {
+        "state": "PASS",
+        "densityKgM3": 2700,
+        "massKg": 0.21008138637539128
+      },
+      "dfm": {
+        "state": "PASS",
+        "verdict": "pass",
+        "processes": [
+          "fdm",
+          "cnc"
+        ],
+        "printer": "bambu-a1-mini",
+        "nozzleMm": 0.4,
+        "toolDiameterMm": 6,
+        "approachAxes": [
+          "+z",
+          "-z"
+        ],
+        "minWallMm": 7.750735411689592,
+        "minWallLimitMm": 0.8,
+        "unsupportedAreaMm2": 0,
+        "cncUndercutAreaMm2": 0
+      },
+      "fea": {
+        "state": "WARN",
+        "solver": "in-process-voxel",
+        "material": "aluminum-6061",
+        "loadN": [
+          0,
+          0,
+          -100
+        ],
+        "fixed": {
+          "atX": 0
+        },
+        "loadedFaces": {
+          "atX": 100
+        },
+        "maxVonMisesMPa": 6.067258459603728,
+        "maxDisplacementMm": 0.05311957103627468,
+        "minSafetyFactorEstimate": 44.50115349423149,
+        "requiredSafetyFactor": 2,
+        "nodeCount": 684,
+        "elementCount": 376,
+        "meshSizeMm": 6.0,
+        "meshTrusted": false,
+        "brickSizeMm": [
+          5.88,
+          5.83,
+          6.0
+        ],
+        "limitation": "The in-process voxel mesh is a staircase at curved faces, fillets and notches. Peak stress there is approximate; meshTrusted=false. Install CalculiX + gmsh or tighten the mesh before a structural release claim."
+      }
+    }
+  },
+  "render": {
+    "variant": "t8",
+    "boundsMm": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        100,
+        70,
+        8
+      ]
+    },
+    "images": {
+      "sheet": {
+        "file": "render-sheet.png",
+        "sha256": "a21e61c931b4eacf2d0ed87d0916e90c6b7ee263083a8f0764a0dd10d5a5a184"
+      },
+      "iso": {
+        "file": "render-iso.png",
+        "sha256": "556d2e23577c0c834bcbdbb5e868efdc9795c3ed85605d81bb65710de74f1506"
+      },
+      "top": {
+        "file": "render-top.png",
+        "sha256": "f6d7b38556140f77a92cdafe3e866bb2b7551fb954f3302db8cfc223bf650ba6"
+      }
+    },
+    "mechanism": "unverified (single part; no mechanism claim)",
+    "diagnostics": []
+  },
+  "approvalGate": "No project overwrite, export, supplier quote, print, order, or external transfer occurred.",
+  "video": {
+    "file": "manufacturing-evidence-demo.mp4",
+    "sha256": "96d9c60c7e0942028cd15e5681f21ce1048e210d5cef96bee5af78110db29ab4",
+    "durationSeconds": 19.033333,
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": 30,
+    "source": "compose_demo.py",
+    "probe": "ffprobe.json"
+  },
+  "visualReview": {
+    "file": "qa/visual-review.md",
+    "contactSheet": "qa/contact-sheet.png",
+    "contactSheetSha256": "845191c4cd486da422f2c4c6c4e1dfd2f9ca0439d2b836636a6dea59863c710e",
+    "sampledSeconds": [
+      0.5,
+      3.5,
+      6.5,
+      9.5,
+      12.5,
+      16.5
+    ]
+  }
+}

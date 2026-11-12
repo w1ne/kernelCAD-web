@@ -1,0 +1,150 @@
+{
+  "result": {
+    "_meta": {
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"ok\":false,\"buildOk\":false,\"step\":{\"validity\":{\"status\":\"invalid\",\"checks\":[\"build\",\"feature-health\"]},\"snapshots\":{\"status\":\"unavailable\",\"error\":\"No exportable finite geometry for the step pair.\"}},\"sceneSummary\":{\"valid\":null,\"volume\":null,\"faceCount\":null,\"size\":null},\"featureCount\":9,\"diagnostics\":[{\"target\":\"export-occt\",\"code\":\"query.empty\",\"featureId\":\"fillet_1\",\"severity\":\"error\",\"message\":\"Query DSL edge ref resolved to zero edges on the input shape.\",\"hint\":\"Inspect available edges with inspect({ of: 'edges' }) / evaluate_query, or relax the Query.\",\"nextAction\":{\"kind\":\"rewrite-feature\",\"guidance\":\"narrow the query or mark it .asLenient()\"}},{\"target\":\"export-occt\",\"code\":\"recompute.input.missing\",\"featureId\":\"chamfer_1\",\"severity\":\"error\",\"message\":\"Input 'base' references missing/failed feature 'fillet_1'\",\"hint\":\"Walk the upstream chain with why_did_this_fail to find the root cause.\",\"nextAction\":{\"kind\":\"call-introspection-tool\",\"tool\":\"why_did_this_fail\"}},{\"target\":\"export-occt\",\"code\":\"recompute.input.missing\",\"featureId\":\"holes_1\",\"severity\":\"error\",\"message\":\"Input 'target' references missing/failed feature 'chamfer_1'\",\"hint\":\"Walk the upstream chain with why_did_this_fail to find the root cause.\",\"nextAction\":{\"kind\":\"call-introspection-tool\",\"tool\":\"why_did_this_fail\"}},{\"target\":\"export-occt\",\"code\":\"recompute.input.missing\",\"featureId\":\"hole_1\",\"severity\":\"error\",\"message\":\"Input 'target' references missing/failed feature 'holes_1'\",\"hint\":\"Walk the upstream chain with why_did_this_fail to find the root cause.\",\"nextAction\":{\"kind\":\"call-introspection-tool\",\"tool\":\"why_did_this_fail\"}}],\"featureHealth\":[{\"featureId\":\"fillet_1\",\"status\":\"error\"},{\"featureId\":\"chamfer_1\",\"status\":\"error\"},{\"featureId\":\"holes_1\",\"status\":\"error\"},{\"featureId\":\"hole_1\",\"status\":\"error\"}],\"evaluationEvidence\":{\"schema\":\"kernelcad.evaluation-evidence.v1\",\"mode\":\"build\",\"source\":{\"sha256\":\"e7057e2f84ea283f599083c8bf5477e1d495a40bde486384ea93d38ef7313158\",\"byteLength\":1461},\"parameters\":{\"values\":{\"width\":100,\"depth\":70,\"thickness\":12,\"boltDiameter\":9,\"boreDiameter\":30},\"sha256\":\"19b790a9ea455560616e9b008b290e68935ab357f4fe05a5d015329c562a216f\"},\"engine\":{\"kernel\":\"occt\",\"version\":\"0.17.4\",\"revision\":\"a89797728c594b2f8e65bcb6c38fa482b3f1cea7\"},\"dependencies\":{\"status\":\"untracked\"},\"reuse\":{\"eligible\":false,\"reason\":\"dependencies-untracked\"},\"optionsSha256\":\"f42cd6277239ae00a502050ef22f6a020b97da37a4690dba293be9c9fd81ec02\",\"identitySha256\":\"02875d120c81203bd6668a25acab5d5af07f7179c14a6a368d4b4626bb8559ef\"},\"requirements\":{\"ok\":true,\"status\":\"not-declared\",\"entries\":[],\"summary\":{\"pass\":0,\"fail\":0,\"notEvaluated\":0}},\"serverBuild\":\"0.1.0+a89797728c59@2026-11-12T19:50:09.169Z\"}"
+      }
+    ],
+    "structuredContent": {
+      "ok": false,
+      "buildOk": false,
+      "step": {
+        "validity": {
+          "status": "invalid",
+          "checks": [
+            "build",
+            "feature-health"
+          ]
+        },
+        "snapshots": {
+          "status": "unavailable",
+          "error": "No exportable finite geometry for the step pair."
+        }
+      },
+      "sceneSummary": {
+        "valid": null,
+        "volume": null,
+        "faceCount": null,
+        "size": null
+      },
+      "featureCount": 9,
+      "diagnostics": [
+        {
+          "target": "export-occt",
+          "code": "query.empty",
+          "featureId": "fillet_1",
+          "severity": "error",
+          "message": "Query DSL edge ref resolved to zero edges on the input shape.",
+          "hint": "Inspect available edges with inspect({ of: 'edges' }) / evaluate_query, or relax the Query.",
+          "nextAction": {
+            "kind": "rewrite-feature",
+            "guidance": "narrow the query or mark it .asLenient()"
+          }
+        },
+        {
+          "target": "export-occt",
+          "code": "recompute.input.missing",
+          "featureId": "chamfer_1",
+          "severity": "error",
+          "message": "Input 'base' references missing/failed feature 'fillet_1'",
+          "hint": "Walk the upstream chain with why_did_this_fail to find the root cause.",
+          "nextAction": {
+            "kind": "call-introspection-tool",
+            "tool": "why_did_this_fail"
+          }
+        },
+        {
+          "target": "export-occt",
+          "code": "recompute.input.missing",
+          "featureId": "holes_1",
+          "severity": "error",
+          "message": "Input 'target' references missing/failed feature 'chamfer_1'",
+          "hint": "Walk the upstream chain with why_did_this_fail to find the root cause.",
+          "nextAction": {
+            "kind": "call-introspection-tool",
+            "tool": "why_did_this_fail"
+          }
+        },
+        {
+          "target": "export-occt",
+          "code": "recompute.input.missing",
+          "featureId": "hole_1",
+          "severity": "error",
+          "message": "Input 'target' references missing/failed feature 'holes_1'",
+          "hint": "Walk the upstream chain with why_did_this_fail to find the root cause.",
+          "nextAction": {
+            "kind": "call-introspection-tool",
+            "tool": "why_did_this_fail"
+          }
+        }
+      ],
+      "featureHealth": [
+        {
+          "featureId": "fillet_1",
+          "status": "error"
+        },
+        {
+          "featureId": "chamfer_1",
+          "status": "error"
+        },
+        {
+          "featureId": "holes_1",
+          "status": "error"
+        },
+        {
+          "featureId": "hole_1",
+          "status": "error"
+        }
+      ],
+      "evaluationEvidence": {
+        "schema": "kernelcad.evaluation-evidence.v1",
+        "mode": "build",
+        "source": {
+          "sha256": "e7057e2f84ea283f599083c8bf5477e1d495a40bde486384ea93d38ef7313158",
+          "byteLength": 1461
+        },
+        "parameters": {
+          "values": {
+            "width": 100,
+            "depth": 70,
+            "thickness": 12,
+            "boltDiameter": 9,
+            "boreDiameter": 30
+          },
+          "sha256": "19b790a9ea455560616e9b008b290e68935ab357f4fe05a5d015329c562a216f"
+        },
+        "engine": {
+          "kernel": "occt",
+          "version": "0.17.4",
+          "revision": "a89797728c594b2f8e65bcb6c38fa482b3f1cea7"
+        },
+        "dependencies": {
+          "status": "untracked"
+        },
+        "reuse": {
+          "eligible": false,
+          "reason": "dependencies-untracked"
+        },
+        "optionsSha256": "f42cd6277239ae00a502050ef22f6a020b97da37a4690dba293be9c9fd81ec02",
+        "identitySha256": "02875d120c81203bd6668a25acab5d5af07f7179c14a6a368d4b4626bb8559ef"
+      },
+      "requirements": {
+        "ok": true,
+        "status": "not-declared",
+        "entries": [],
+        "summary": {
+          "pass": 0,
+          "fail": 0,
+          "notEvaluated": 0
+        }
+      },
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    }
+  },
+  "jsonrpc": "2.0",
+  "id": 2
+}
