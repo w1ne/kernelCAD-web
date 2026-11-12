@@ -1,0 +1,9 @@
+{
+  "artifact": "grid-substation-cvt-insulation-material-review.mp4",
+  "durationSeconds": 11.2,
+  "resolution": "1280x720",
+  "fps": 20,
+  "sampledFramesSeconds": [1, 4, 7, 10],
+  "inspection": "Extracted MP4 frames were opened and visually checked. The five-preview contact sheet, before/after CVT comparison, material map, and verification slide are readable and uncropped. The material distinction is visible in the result render.",
+  "claimBoundary": "Local source/render/export evidence only; not deployed behavior, electrical performance, or physical acceptance."
+}

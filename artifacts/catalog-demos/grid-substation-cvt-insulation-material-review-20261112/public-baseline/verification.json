@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-11-12",
+  "site": "https://kernelcad.com",
+  "samples": [
+    {
+      "asset": "grid-substation/substation-dead-tank-breaker",
+      "detailUrl": "https://kernelcad.com/catalog/grid-substation/substation-dead-tank-breaker/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-dead-tank-breaker/preview.png",
+      "detailStatus": 200,
+      "previewStatus": 200,
+      "localPreviewSha256": "1abd218a9b36cc01a368948848ecf9a5822cb4b04467d9e908cdbb53a5fe2b7c",
+      "livePreviewSha256": "1abd218a9b36cc01a368948848ecf9a5822cb4b04467d9e908cdbb53a5fe2b7c",
+      "liveMatchesLocalBaseline": true,
+      "detailPageContainsTitle": true
+    },
+    {
+      "asset": "grid-substation/substation-capacitive-voltage-transformer",
+      "detailUrl": "https://kernelcad.com/catalog/grid-substation/substation-capacitive-voltage-transformer/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-capacitive-voltage-transformer/preview.png",
+      "detailStatus": 200,
+      "previewStatus": 200,
+      "localPreviewSha256": "4836fd3b796d206f4019edbad3af72bd51389e572402ccf3787d210ff14b5417",
+      "livePreviewSha256": "4836fd3b796d206f4019edbad3af72bd51389e572402ccf3787d210ff14b5417",
+      "liveMatchesLocalBaseline": true,
+      "detailPageContainsTitle": true
+    },
+    {
+      "asset": "grid-substation/substation-transformer-cooling-fan",
+      "detailUrl": "https://kernelcad.com/catalog/grid-substation/substation-transformer-cooling-fan/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-transformer-cooling-fan/preview.png",
+      "detailStatus": 200,
+      "previewStatus": 200,
+      "localPreviewSha256": "d585ca65df22be23ffb33af2ef146f38d9ce5f8c6f108df8413c12b8c00cff3a",
+      "livePreviewSha256": "d585ca65df22be23ffb33af2ef146f38d9ce5f8c6f108df8413c12b8c00cff3a",
+      "liveMatchesLocalBaseline": true,
+      "detailPageContainsTitle": true
+    },
+    {
+      "asset": "grid-substation/substation-station-battery-rack",
+      "detailUrl": "https://kernelcad.com/catalog/grid-substation/substation-station-battery-rack/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-station-battery-rack/preview.png",
+      "detailStatus": 200,
+      "previewStatus": 200,
+      "localPreviewSha256": "c98068b9c0f29e40fff237d9f5586bf0ae8004e2f38122fb16c0ac9f81a22307",
+      "livePreviewSha256": "c98068b9c0f29e40fff237d9f5586bf0ae8004e2f38122fb16c0ac9f81a22307",
+      "liveMatchesLocalBaseline": true,
+      "detailPageContainsTitle": true
+    },
+    {
+      "asset": "grid-substation/substation-bus-post-insulator",
+      "detailUrl": "https://kernelcad.com/catalog/grid-substation/substation-bus-post-insulator/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-bus-post-insulator/preview.png",
+      "detailStatus": 200,
+      "previewStatus": 200,
+      "localPreviewSha256": "bb49257d4f1ffdab32ddec61fe721330f4dea319b437e021ff33e643e0ecf7c1",
+      "livePreviewSha256": "bb49257d4f1ffdab32ddec61fe721330f4dea319b437e021ff33e643e0ecf7c1",
+      "liveMatchesLocalBaseline": true,
+      "detailPageContainsTitle": true
+    }
+  ],
+  "targetBaselineControls": {
+    "present": [
+      "stainlessSteel",
+      "powderCoat"
+    ],
+    "absent": [
+      "porcelain"
+    ]
+  },
+  "deploymentStatus": "branch not deployed; these are the pre-change public pages and previews"
+}

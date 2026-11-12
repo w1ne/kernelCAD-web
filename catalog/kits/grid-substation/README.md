@@ -59,6 +59,14 @@ MP4.
 
 ## Preview and verification
 
+The 2026-11-12 CVT material review assigns the four external divider sections
+to a named porcelain control while keeping the stainless base and painted
+secondary box independently editable. The [five-preview audit and local
+verification bundle](../../../artifacts/catalog-demos/grid-substation-cvt-insulation-material-review-20261112/README.md)
+retains the before/after renders, regression, index evidence, and inspected
+MP4. The correction is not deployed and does not establish electrical ratings
+or field acceptance.
+
 The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough. The [silhouette-refinement handoff](../../../artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/README.md) records three in-place placement and shape corrections, refreshed kit previews, checks, and an inspected MP4.
 
 These are generic visualization props. They do not specify voltage or current ratings, clearances, fault performance, switching procedures, electrical safety, grid compliance, or operational acceptance. Catalog checks do not establish electrical or field safety.

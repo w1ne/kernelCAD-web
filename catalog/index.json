@@ -116998,7 +116998,7 @@
       "id": "substation-capacitive-voltage-transformer",
       "kit": "grid-substation",
       "title": "Capacitive voltage transformer",
-      "description": "Capacitive voltage transformer with stacked divider sections and an upper terminal. Material controls: stainless steel, powder-coated steel; finish presets: weathered and maintenance.",
+      "description": "Capacitive voltage transformer with a porcelain-insulated divider stack, stainless-steel base, and powder-coated secondary box. Material controls: porcelain, stainless steel, powder-coated steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -117017,7 +117017,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-capacitive-voltage-transformer.kcad.ts",
       "preview": "/assets/grid-substation-substation-capacitive-voltage-transformer.png",
-      "sourceSha256": "d33831797dcb40717a33d98ea15728deaef4538947c86674ea5d456e72c9b499",
+      "sourceSha256": "109268ee135c1a909592388f4ae6d92c6c9401979adc95a460a84e187a144e91",
       "triangleBudget": 1800,
       "params": [
         {
@@ -117040,15 +117040,23 @@
           "type": "color",
           "default": "#526f68",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "porcelain",
+          "type": "color",
+          "default": "#7b4632",
+          "label": "Porcelain insulation"
         }
       ],
       "presets": {
         "weathered": {
           "stainlessSteel": "#9da4a0",
-          "powderCoat": "#586b63"
+          "powderCoat": "#586b63",
+          "porcelain": "#684537"
         },
         "maintenance": {
-          "powderCoat": "#cf7736"
+          "powderCoat": "#cf7736",
+          "porcelain": "#7b4632"
         }
       },
       "stats": {
@@ -117072,13 +117080,20 @@
           "param": "stainlessSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#526f68",
+          "name": "porcelain",
+          "color": "#7b4632",
           "parts": [
             "divider-section-1",
             "divider-section-2",
             "divider-section-3",
-            "divider-section-4",
+            "divider-section-4"
+          ],
+          "param": "porcelain"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#526f68",
+          "parts": [
             "secondary-box"
           ],
           "param": "powderCoat"
