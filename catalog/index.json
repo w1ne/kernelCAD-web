@@ -253368,7 +253368,7 @@
       "id": "handwheel",
       "kit": "standard-components",
       "title": "Handwheel",
-      "description": "Three-spoke handwheel with a raised center hub and a clear circular rim Knobs: model size, steel, cast iron, brass.",
+      "description": "Illustrative CC0 three-spoke handwheel with a raised solid hub envelope and an open circular rim. Not manufacturer-grade CAD: no shaft bore, keyway, tolerances or torque rating. Knobs change model size and colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253386,7 +253386,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handwheel.kcad.ts",
       "preview": "/assets/standard-components-handwheel.png",
-      "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
+      "sourceSha256": "002a53e844a7dd7362acf4ff0ba8d92f793a0bf1f768e7357e06af3bc9b1f8f3",
       "triangleBudget": 340,
       "params": [
         {
@@ -253468,8 +253468,8 @@
           "color": "#85929a",
           "parts": [
             "spoke-0",
-            "spoke-60",
-            "spoke-120"
+            "spoke-120",
+            "spoke-240"
           ],
           "param": "steel"
         }
