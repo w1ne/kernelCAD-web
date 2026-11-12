@@ -253929,7 +253929,7 @@
       "id": "linear-guide-carriage",
       "kit": "standard-components",
       "title": "Linear guide carriage",
-      "description": "Steel guide carriage with a U-shaped underside channel, polymer end wipers, four top fastener wells, and a brass grease fitting. Knobs: model size, steel, polymer, brass.",
+      "description": "Illustrative CC0 guide-carriage prop with an open end-to-end underside rail channel, separate polymer end wipers, four top fastener wells, and a brass grease fitting. Not manufacturer-grade CAD: no recirculating balls, vendor raceways, tolerances or load rating. Knobs change model size and colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253947,7 +253947,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-carriage.png",
-      "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+      "sourceSha256": "7a6d58b0677bb8cd86e7068279bbc462b32ff0a5d823be0923c99ba2364cac2a",
       "triangleBudget": 460,
       "params": [
         {
