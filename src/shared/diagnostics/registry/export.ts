@@ -28,6 +28,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
   },
+  'export.mesh.tolerance-invalid': {
+    hintTemplate:
+      'Set options.tolerance to a finite number of at least 0.001 mm. options.angularToleranceDeg, when supplied, must be greater than 0 and at most 180 degrees.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'An STL, 3MF, or OBJ export received an invalid mesh-tolerance option; refusal happens before the output file is written.',
+  },
   'export.dxf.non-planar': {
     hintTemplate:
       'This is a 3D part, not a flat plate or panel. Use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for the solid.',
@@ -75,6 +83,22 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
+  },
+  'export.mesh.tolerance-not-met': {
+    hintTemplate:
+      'The sampled B-rep-to-triangle measurement exceeded the requested tolerance threshold. The file was kept for inspection. Try a finer options.tolerance and inspect the exported mesh; sampled measurements are not a certified global bound.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The sampled maximum distance from exact B-rep surface samples to the exported triangles exceeded 1.05 times the requested mesh tolerance; the file remains available for inspection.',
+  },
+  'export.mesh.tolerance-unavailable': {
+    hintTemplate:
+      'Mesh tolerance needs an exact B-rep surface to compare with the exported triangles. This mesh solid has no B-rep source, so its existing triangles cannot be remeshed or measured against the requested tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A mesh-solid STL/3MF/OBJ export requested a B-rep-based mesh tolerance, but only an input triangle mesh is available.',
   },
   'export.brep.invalid': {
     hintTemplate:

@@ -22,6 +22,9 @@ import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 import type { ExportGeometryQualitySummary, QualityGateMode } from '../../script-runtime/export';
+import type { ExportMeshToleranceOptions, MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
+import { validateExportMeshToleranceOptions } from '../../../kernel/backends/occt/backendMesh';
+import { meshToleranceInvalidDiagnostic, meshToleranceNotMetDiagnostic } from '../../script-runtime/exportDiagnostics';
 import { qualityGateInput } from './exportModel';
 
 export interface ExportPartInput {
@@ -39,13 +42,17 @@ export interface ExportPartInput {
   qualityGate?: QualityGateMode;
   tiny_face_area_mm2?: number;
   short_edge_length_mm?: number;
+  /** STL mesh controls applied independently to each selected part. */
+  options?: ExportMeshToleranceOptions;
 }
 
 export interface WrittenPartFile {
   part: string;
   output_path: string;
   byte_count: number;
+  triangle_count: number;
   watertight: boolean;
+  mesh_deviation?: MeshDeviationReport;
 }
 
 export interface ExportPartOutput {
@@ -97,8 +104,14 @@ async function writeExportedParts(
       part: p.name,
       output_path: finalPath,
       byte_count: p.bytes.byteLength,
+      triangle_count: p.triangleCount,
       watertight: p.report.ok,
+      ...(p.mesh_deviation === undefined ? {} : { mesh_deviation: p.mesh_deviation }),
     });
+    if (p.mesh_deviation !== undefined &&
+        p.mesh_deviation.measured_max_mm > p.mesh_deviation.requested_mm * 1.05) {
+      diagnostics.push(meshToleranceNotMetDiagnostic(p.mesh_deviation, undefined, p.name));
+    }
     if (!input.no_verify && !p.report.ok) {
       diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
     }
@@ -122,6 +135,11 @@ async function writeExportedParts(
 export async function exportPartTool(input: ExportPartInput): Promise<ExportPartOutput> {
   const allParts = input.part === undefined || input.part === 'all';
 
+  const toleranceError = validateExportMeshToleranceOptions(input.options);
+  if (toleranceError !== undefined) {
+    return { ok: false, diagnostics: withNextActions([meshToleranceInvalidDiagnostic(toleranceError)]) };
+  }
+
   const destinationError = validateExportDestinations(input, allParts);
   if (destinationError !== undefined) {
     return { ok: false, error: destinationError };
@@ -142,6 +160,7 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
       ...(allParts ? {} : { parts: [input.part!] }),
       qualityGate: qualityGateInput(input),
+      options: input.options,
     });
   } catch (e) {
     return {
@@ -164,8 +183,9 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
   }
 
   const gateFailed = !input.no_verify && written.some(w => !w.watertight);
+  const toleranceFailed = diagnostics.some(d => d.code === 'export.mesh.tolerance-not-met');
   return {
-    ok: !gateFailed,
+    ok: !gateFailed && !toleranceFailed,
     sceneSummary,
     written,
     ...geometryQuality,
