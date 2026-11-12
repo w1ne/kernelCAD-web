@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: CC0-1.0
-// Storage array chassis: Rack storage chassis with drive carriers, controller bays, and paired handles.
+// Storage array chassis: illustrative 4U, 24-bay rack storage system. Unlike
+// a compute server, the front is mostly removable drive carriers and the back
+// has two separate controller modules. Low-poly scene geometry, millimetres,
+// Z up, not a vendor chassis or a fabrication-ready model.
 
 meta({
-  name: "storage-array-chassis",
+  name: 'storage-array-chassis',
   license: 'CC0-1.0',
-  title: "Storage array chassis",
-  description: "Rack storage chassis with drive carriers, controller bays, and paired handles. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
-  tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
+  title: 'Storage array chassis',
+  description: 'Illustrative CC0 low-poly 4U storage array with 24 distinct front drive carriers in a 6×4 grid, paired pull handles, two rear controller bays, two rear power modules, rack ears and slide rails. Not a vendor manufacturing model. Material controls: painted steel and engineering polymer; facilityStandard and highVisibility presets.',
+  tags: ['data center', 'storage array', 'rack enclosure', 'server storage', 'drive bay', 'IT equipment', 'low poly', 'scene prop', 'CC0'],
   kit: 'data-center-infrastructure',
   category: 'prop',
   origin: 'base',
@@ -17,38 +20,43 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const steel = param('steel', '#4f7485', { label: 'Painted steel' });
 const polymer = param('polymer', '#c99b35', { label: 'Engineering polymer' });
-
 presets({
-  facilityStandard: {
-    steel: '#4f7485',
-    polymer: '#c99b35',
-  },
-  highVisibility: {
-    steel: '#d99b22',
-    polymer: '#263e48',
-  },
+  facilityStandard: { steel: '#4f7485', polymer: '#c99b35' },
+  highVisibility: { steel: '#d99b22', polymer: '#263e48' },
 });
 
-const baseZ = 0;
-const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z-baseZ+h/2).scale(scale);
-const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z-baseZ).scale(scale);
-const hx=(x:number,y:number,z:number,l:number,r:number,n=10)=>cylinder(l,r,n).alongAxis([1,0,0]).translate(x-l/2,y,z-baseZ).scale(scale);
+const p = assembly('storage-array-chassis');
+// Boxes are specified by their bottom Z coordinate; keep Z=0 as the base.
+const body = (x: number, y: number, z: number, w: number, d: number, h: number) =>
+  box(w, d, h, true).translate(x, y, z + h / 2).scale(scale);
 
-const p=assembly("storage-array-chassis");
-p.part("chassis-shell", b(0, 0, 0, 440, 760, 135).color(steel));
-p.part("front-face", b(0, -392.0, 10, 412, 24, 115).color(steel));
-p.part("left-mounting-ear", b(-244.0, 0, 0, 32, 760, 135).color(steel));
-p.part("right-mounting-ear", b(244.0, 0, 0, 32, 760, 135).color(steel));
-p.part("slide-rail-left", hx(0, -258.40000000000003, 35, 560, 12, 8).color(steel));
-p.part("slide-rail-right", hx(0, 258.40000000000003, 35, 560, 12, 8).color(steel));
-p.part("drive-carrier-0", b(-184.79999999999998, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-1", b(-132.0, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-2", b(-79.19999999999999, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-3", b(-26.400000000000006, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-4", b(26.400000000000006, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-5", b(79.20000000000002, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-6", b(131.99999999999997, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("drive-carrier-7", b(184.79999999999998, -398.0, 18, 33.0, 28, 99).color(polymer));
-p.part("status-control", c(167.2, -398.0, 64.8, 24, 12, 8).color(polymer));
+// 4U approximate 19-inch rack envelope (176 mm high); front is negative Y.
+p.part('chassis-shell', body(0, 0, 0, 440, 680, 176).color(steel));
+p.part('front-panel', body(0, -352, 8, 430, 24, 160).color(steel));
+for (const [name, x] of [['left', -230], ['right', 230]] as const) {
+  p.part(`rack-ear-${name}`, body(x, -340, 0, 24, 56, 176).color(steel));
+  p.part(`slide-rail-${name}`, body(x, 0, 29, 16, 620, 32).color(steel));
+  // Exposed grip bar and its two attachments form a usable front pull handle.
+  p.part(`handle-${name}`, body(x, -391, 37, 14, 16, 102).color(polymer));
+  p.part(`handle-${name}-lower-mount`, body(x, -375, 33, 14, 40, 16).color(steel));
+  p.part(`handle-${name}-upper-mount`, body(x, -375, 133, 14, 40, 16).color(steel));
+}
+
+// 24 individually removable front carriers: six columns, four rows.
+for (let row = 0; row < 4; row++) {
+  for (let col = 0; col < 6; col++) {
+    const x = -170 + 68 * col;
+    const z = 18 + 38 * row;
+    p.part(`drive-carrier-${row}-${col}`, body(x, -373, z, 58, 22, 31).color(polymer));
+    p.part(`drive-grip-${row}-${col}`, body(x, -387, z + 10, 38, 6, 9).color(steel));
+  }
+}
+
+// Rear redundant controllers and two separately serviceable power modules.
+for (const [name, x] of [['left', -106], ['right', 106]] as const) {
+  p.part(`rear-controller-${name}`, body(x, 353, 60, 172, 26, 80).color(polymer));
+  p.part(`rear-controller-pull-${name}`, body(x, 369, 88, 110, 8, 14).color(steel));
+  p.part(`rear-power-module-${name}`, body(x, 352, 12, 172, 24, 36).color(steel));
+}
 
 return p.model();

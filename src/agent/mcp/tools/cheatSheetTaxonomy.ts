@@ -85,7 +85,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
@@ -99,7 +99,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Add material',
     blurb: 'Turn a profile into a solid, or grow one along a path.',
-    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix'],
+    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix', 'rib'],
   },
   {
     task: 'Remove material',

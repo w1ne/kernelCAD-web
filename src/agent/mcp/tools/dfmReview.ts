@@ -4,7 +4,7 @@
 //
 // MCP `dfm_review` tool: one manufacturability report for FDM 3D printing,
 // 3-axis CNC milling, sheet metal and/or injection molding, as a flat
-// pass/fail checklist. Unlike
+// pass/fail/warn/not-checked checklist. Unlike
 // verify({ check: 'dfm' }) it needs NO dfmSpec(...) in the script: it runs
 // with sensible defaults (any FDM settings the script's dfmSpec declares are
 // used as the base, then the call's own options win).
@@ -28,11 +28,17 @@ import type { ResolvedPart } from '../../../modeling/runtime/dfm/runDfmChecks';
 import type { CncSettings } from '../../../modeling/runtime/dfm/cncCheck';
 import { FDM_DEFAULTS, type DfmFdmMetadata } from '../../../shared/intent/dfmSpecRecord';
 import { findDfmSpec, resolveParts } from '../../../modeling/runtime/dfm/runDfmChecks';
-import { checkFdmPrintability, type FdmPartReport } from '../../../modeling/runtime/dfm/fdmCheck';
-import { axisVector, checkCncMachinability, type CncPartReport, type Vec3 } from '../../../modeling/runtime/dfm/cncCheck';
+import {
+  checkFdmPrintability, FDM_FEATURE_DIAMETER_TOLERANCE_MM, type FdmPartReport,
+} from '../../../modeling/runtime/dfm/fdmCheck';
+import {
+  axisVector, checkCncMachinability, CNC_CORNER_RADIUS_TOLERANCE_MM,
+  type CncPartReport, type Vec3,
+} from '../../../modeling/runtime/dfm/cncCheck';
 import { TriangleBvh } from '../../../modeling/runtime/dfm/meshBvh';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
+import { FDM_BRIDGE_LENGTH_TOLERANCE_MM } from '../../../modeling/runtime/dfm/fdmOrientation';
 import {
   checkSheetMetal, SHEET_METAL_DEFAULTS, type SheetMetalPartReport, type SheetMetalSettings,
 } from '../../../modeling/runtime/dfm/sheetMetalCheck';
@@ -40,7 +46,7 @@ import { checkMouldability, type MouldingPartReport } from '../../../modeling/ru
 import { MOULDING_DEFAULTS, type DfmMouldingMetadata } from '../../../shared/intent/dfmSpecRecord';
 import {
   moldChecks, notSheetMetalCheck, sheetMetalChecks,
-  type DfmCheckStatus, type DfmProcess, type DfmReviewCheck,
+  type DfmCheckStatus, type DfmComparisonOp, type DfmMeasurementUnit, type DfmProcess, type DfmReviewCheck,
 } from './dfmReviewChecks';
 
 export type { DfmCheckStatus, DfmProcess, DfmReviewCheck } from './dfmReviewChecks';
@@ -91,9 +97,10 @@ export interface DfmReviewInput {
 }
 
 export interface DfmReviewOutput {
+  /** Invocation and analysis execution succeeded; this is not a manufacturing pass indicator. */
   ok: boolean;
-  /** 'fail' when any check fails; warnings do not fail the review. */
-  verdict: 'pass' | 'fail';
+  /** Manufacturing outcome. Omitted when input or model evaluation fails before a review exists. */
+  verdict?: 'pass' | 'fail' | 'not-checked';
   processes: DfmProcess[];
   checks: DfmReviewCheck[];
   /** Raw per-part engine reports (part-local coordinates). */
@@ -101,7 +108,7 @@ export interface DfmReviewOutput {
   cnc?: { part: string; result: CncPartReport }[];
   /** Sheet-metal reports; locations are FLAT-PATTERN [x, y] mm. */
   sheetMetal?: { part: string; result: SheetMetalPartReport }[];
-  /** Injection-molding reports (the dfmSpec moulding engine's report; part-local coordinates, `@kc` face refs). */
+  /** Injection-molding reports (the dfmSpec moulding engine's report; part-local coordinates, with optional `@kc` face refs). */
   injectionMolding?: { part: string; result: MouldingPartReport }[];
   diagnostics: CompilerDiagnostic[];
   error?: string;
@@ -116,7 +123,7 @@ const EXAMPLE = "dfm_review({ code, processes: ['fdm', 'cnc', 'sheet-metal', 'in
 function invalid(path: string, got: unknown, requires: string): DfmReviewOutput {
   const { message, hint } = invalidArgsText({ api: API, path, got, requires, example: EXAMPLE });
   return {
-    ok: false, verdict: 'fail', processes: [], checks: [],
+    ok: false, processes: [], checks: [],
     diagnostics: [{ target: 'export-occt', code: 'cli.invalid-args', severity: 'error', message, hint }],
   };
 }
@@ -191,7 +198,7 @@ function parseApproachAxes(input: DfmReviewInput): Vec3[] | DfmReviewOutput {
 }
 
 const isRejection = (v: unknown): v is DfmReviewOutput =>
-  typeof v === 'object' && v !== null && !Array.isArray(v) && 'verdict' in v;
+  typeof v === 'object' && v !== null && !Array.isArray(v) && 'ok' in v && (v as { ok?: unknown }).ok === false;
 
 /** Validate the call options; a DfmReviewOutput is a rejection. */
 function parseOptions(input: DfmReviewInput): ReviewOptions | DfmReviewOutput {
@@ -282,7 +289,7 @@ function recordFailure(out: PartReview, part: string, process: DfmProcess, e: un
     hint: 'The OCCT kernel could not analyse this part; check it for degenerate geometry with evaluate_script.',
   });
   out.checks.push({
-    id: `${process}.analysis`, process, part, status: 'fail',
+    id: `${process}.analysis`, process, source: process, part, status: 'not-checked',
     summary: `The ${process} analysis could not run on this part, so it is not reviewed.`,
   });
 }
@@ -374,11 +381,11 @@ export async function dfmReviewTool(input: DfmReviewInput): Promise<DfmReviewOut
     // gate must not veto or pollute it: build without that gate.
     built = await evaluateAndBuildScript({ file: input.file, code: input.code }, { skipDfmGate: true });
   } catch (e) {
-    return { ok: false, verdict: 'fail', processes, checks: [], diagnostics: [kernelErrorToDiagnostic(e)] };
+    return { ok: false, processes, checks: [], diagnostics: [kernelErrorToDiagnostic(e)] };
   }
   const { evaluation, model } = built;
   if (model === undefined || evaluation.exitCode !== 0) {
-    return { ok: false, verdict: 'fail', processes, checks: [], diagnostics: evaluation.diagnostics };
+    return { ok: false, processes, checks: [], diagnostics: evaluation.diagnostics };
   }
   const { parts } = resolveParts(model);
   if (parts.length === 0) return invalid('code', '(no solid)', 'a script that returns a solid or an assembly');
@@ -392,12 +399,14 @@ export async function dfmReviewTool(input: DfmReviewInput): Promise<DfmReviewOut
   const cnc = perPart(reviews, r => r.cnc);
   const sheetMetal = perPart(reviews, r => r.sheetMetal);
   const injectionMolding = perPart(reviews, r => r.injectionMolding);
-  const incomplete = reviews.some(r => r.review.failed.length > 0);
+  const analysisFailed = reviews.some(r => r.review.failed.length > 0);
+  const incomplete = checks.some(c => c.status === 'not-checked') || analysisFailed;
+  const hasFailure = checks.some(c => c.status === 'fail');
   return {
-    // An analysis that could not run is not a review: never ok, never pass.
-    ok: !incomplete,
-    verdict: incomplete || checks.some(c => c.status === 'fail') ? 'fail' : 'pass',
-    ...(incomplete ? { error: 'Part of the analysis failed; see the *.analysis checks and diagnostics.' } : {}),
+    // `ok` is tool/execution success, not the manufacturing verdict.
+    ok: !analysisFailed,
+    verdict: hasFailure ? 'fail' : incomplete ? 'not-checked' : 'pass',
+    ...(analysisFailed ? { error: 'Part of the analysis failed; see the *.analysis checks and diagnostics.' } : {}),
     processes,
     checks,
     ...(fdm.length > 0 ? { fdm } : {}),
@@ -415,13 +424,18 @@ function perPart<T>(reviews: { part: string; review: PartReview }[], pick: (r: P
   });
 }
 
-type CheckFn = (id: string, status: DfmCheckStatus, summary: string, value?: number, limit?: number) => DfmReviewCheck;
+type CheckEvidence = { unit?: DfmMeasurementUnit; op?: DfmComparisonOp; tolerance?: number; refs?: string[] };
+type CheckFn = (id: string, status: DfmCheckStatus, summary: string, value?: number, limit?: number, evidence?: CheckEvidence) => DfmReviewCheck;
 
 function checkMaker(part: string): CheckFn {
-  return (id, status, summary, value, limit) => ({
-    id, process: 'fdm', part, status, summary,
-    ...(value !== undefined && Number.isFinite(value) ? { value: r2(value) } : {}),
-    ...(limit !== undefined ? { limit: r2(limit) } : {}),
+  return (id, status, summary, value, limit, evidence) => ({
+    id, process: 'fdm', source: 'fdm', part, status, summary,
+    ...(value !== undefined && Number.isFinite(value) ? { value } : {}),
+    ...(limit !== undefined ? { limit } : {}),
+    ...(evidence?.unit !== undefined ? { unit: evidence.unit } : {}),
+    ...(evidence?.op !== undefined ? { op: evidence.op } : {}),
+    ...(evidence?.tolerance !== undefined ? { tolerance: evidence.tolerance } : {}),
+    ...(evidence?.refs !== undefined && evidence.refs.length > 0 ? { refs: [...new Set(evidence.refs)] } : {}),
   });
 }
 
@@ -432,13 +446,15 @@ function overhangChecks(c: CheckFn, rep: FdmPartReport): DfmReviewCheck[] {
   const overhangs = unsupported.filter(r => !(r.horizontal && r.spanMm !== undefined));
   const area = overhangs.reduce((a, r) => a + r.areaMm2, 0);
   const longest = longBridges.reduce((m, r) => Math.max(m, r.spanMm ?? 0), 0);
+  const overhangRefs = overhangs.flatMap(region => region.faceRef === undefined ? [] : [region.faceRef]);
+  const bridgeRefs = longBridges.flatMap(region => region.faceRef === undefined ? [] : [region.faceRef]);
   return [
     overhangs.length > 0
-      ? c('fdm.overhangs', 'fail', `${r1(area)} mm² of unsupported overhang steeper than ${s.maxOverhangDeg}° in ${overhangs.length} region(s); add supports, reorient or chamfer.`, area, s.maxOverhangDeg)
-      : c('fdm.overhangs', 'pass', `No unsupported overhang steeper than ${s.maxOverhangDeg}°.`, 0, s.maxOverhangDeg),
+      ? c('fdm.overhangs', 'fail', `${r1(area)} mm² of unsupported overhang steeper than ${s.maxOverhangDeg}° in ${overhangs.length} region(s); add supports, reorient or chamfer.`, area, undefined, { unit: 'mm2', refs: overhangRefs })
+      : c('fdm.overhangs', 'pass', `No unsupported overhang steeper than ${s.maxOverhangDeg}°.`, 0, undefined, { unit: 'mm2' }),
     longBridges.length > 0
-      ? c('fdm.bridging', 'fail', `${longBridges.length} bridge(s) longer than ${s.maxBridgeMm} mm (longest ${r1(longest)} mm).`, longest, s.maxBridgeMm)
-      : c('fdm.bridging', 'pass', `All bridges within ${s.maxBridgeMm} mm.`, undefined, s.maxBridgeMm),
+      ? c('fdm.bridging', 'fail', `${longBridges.length} bridge(s) longer than ${s.maxBridgeMm} mm (longest ${r1(longest)} mm).`, longest, s.maxBridgeMm, { unit: 'mm', op: '<=', tolerance: FDM_BRIDGE_LENGTH_TOLERANCE_MM, refs: bridgeRefs })
+      : c('fdm.bridging', 'pass', `All bridges within ${s.maxBridgeMm} mm.`),
   ];
 }
 
@@ -447,15 +463,19 @@ function featureChecks(c: CheckFn, rep: FdmPartReport): DfmReviewCheck[] {
   const holes = rep.smallFeatures.filter(f => f.kind === 'hole');
   const pins = rep.smallFeatures.filter(f => f.kind === 'pin');
   const smallest = Math.min(...holes.map(h => h.diameterMm));
+  const smallestPin = Math.min(...pins.map(pin => pin.diameterMm));
+  const wallCheck = rep.walls.violations.length > 0
+    ? c('fdm.min-wall', 'fail', `Walls as thin as ${r2(rep.walls.thinnestMm)} mm, below 2 × nozzle (${r2(minWall)} mm).`, rep.walls.thinnestMm, minWall, { unit: 'mm', op: '>=' })
+    : Number.isFinite(rep.walls.thinnestMm)
+      ? c('fdm.min-wall', 'pass', `Walls are at least 2 × nozzle (${r2(minWall)} mm).`, rep.walls.thinnestMm, minWall, { unit: 'mm', op: '>=' })
+      : c('fdm.min-wall', 'not-checked', 'Wall thickness was not measured (no inward wall ray hit the far side).');
   return [
-    rep.walls.violations.length > 0
-      ? c('fdm.min-wall', 'fail', `Walls as thin as ${r2(rep.walls.thinnestMm)} mm, below 2 × nozzle (${r2(minWall)} mm).`, rep.walls.thinnestMm, minWall)
-      : c('fdm.min-wall', 'pass', `Walls are at least 2 × nozzle (${r2(minWall)} mm).`, rep.walls.thinnestMm, minWall),
+    wallCheck,
     holes.length > 0
-      ? c('fdm.min-hole', 'fail', `${holes.length} hole(s) below the ${r2(holes[0].minDiameterMm)} mm minimum (smallest Ø${r2(smallest)} mm); they print undersized or close up.`, smallest, holes[0].minDiameterMm)
+      ? c('fdm.min-hole', 'fail', `${holes.length} hole(s) below the ${r2(holes[0].minDiameterMm)} mm minimum (smallest Ø${r2(smallest)} mm); they print undersized or close up.`, smallest, holes[0].minDiameterMm, { unit: 'mm', op: '>=', tolerance: FDM_FEATURE_DIAMETER_TOLERANCE_MM })
       : c('fdm.min-hole', 'pass', 'No holes below the printable minimum diameter.'),
     pins.length > 0
-      ? c('fdm.min-pin', 'warn', `${pins.length} pin(s)/boss(es) below the ${r2(pins[0].minDiameterMm)} mm minimum; fragile.`)
+      ? c('fdm.min-pin', 'warn', `${pins.length} pin(s)/boss(es) below the ${r2(pins[0].minDiameterMm)} mm minimum; fragile.`, smallestPin, pins[0].minDiameterMm, { unit: 'mm', op: '>=', tolerance: FDM_FEATURE_DIAMETER_TOLERANCE_MM })
       : c('fdm.min-pin', 'pass', 'No pins below the robust minimum diameter.'),
   ];
 }
@@ -496,21 +516,25 @@ export function cncChecks(part: string, rep: CncPartReport): DfmReviewCheck[] {
   const cornerValue = sharp.length > 0 ? 0 : minFillet;
   return [
     {
-      id: 'cnc.undercuts', process: 'cnc', part,
+      id: 'cnc.undercuts', process: 'cnc', source: 'cnc', part,
       status: undercutFail ? 'fail' : 'pass',
       summary: undercutFail
         ? `${r1(u.areaMm2)} mm² of surface is unreachable from the allowed tool approach axes; needs another setup, a 4/5-axis machine or a redesign.`
         : 'No undercuts: every surface is reachable from the allowed approach axes.',
-      value: r2(u.areaMm2), limit: r2(rep.settings.maxUndercutAreaMm2),
+      value: u.areaMm2, limit: rep.settings.maxUndercutAreaMm2, unit: 'mm2', op: '<=',
     },
     {
-      id: 'cnc.internal-corner-radius', process: 'cnc', part,
+      id: 'cnc.internal-corner-radius', process: 'cnc', source: 'cnc', part,
       status: cornerFail ? 'fail' : 'pass',
       summary: cornerFail
         ? `${found.join(' and ')} below the R${r2(toolR)} mm tool radius (Ø${r2(rep.settings.toolDiameterMm)} mm end mill); add fillets ≥ R${r2(toolR)} mm or use a smaller tool.`
         : `All internal corners along the approach axes are ≥ R${r2(toolR)} mm.`,
-      ...(cornerValue !== undefined ? { value: r2(cornerValue) } : {}),
-      limit: r2(toolR),
+      ...(cornerValue !== undefined ? { value: cornerValue } : {}),
+      limit: toolR,
+      ...(cornerValue !== undefined ? {
+        unit: 'mm', op: '>=',
+        ...(sharp.length === 0 && tight.length > 0 ? { tolerance: CNC_CORNER_RADIUS_TOLERANCE_MM } : {}),
+      } : {}),
     },
   ];
 }

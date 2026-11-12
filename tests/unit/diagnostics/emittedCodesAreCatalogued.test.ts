@@ -263,10 +263,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 4 trace-guided repair: tool.repair.exhausted,
     //       tool.repair.no-candidate, tool.repair.out-of-region,
     //       tool.repair.source-drift = 268.
-    //  + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    //  + 5 mechanism checks: assembly.joint.static-hold.exceeded,
     //       assembly.joint.static-hold.margin-low,
+    //       assembly.joint.static-hold.no-actuator,
     //       kinematic.static-hold.no-actuator-declared,
-    //       kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    //       kinematic.sweep-tolerance.combo-cap-exceeded = 273.
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //       export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //       276.

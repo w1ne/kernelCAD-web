@@ -7,11 +7,13 @@
 // Spec:  docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 // Plan:  docs/plans/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
+import * as brepDistance from './brepDistance';
 import { checkMechanismTruth } from './mechanismTruth';
+import * as restAnalysisMesh from './restAnalysisMesh';
 
 function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi>; session: CaptureSession } {
   const session = new CaptureSession();
@@ -137,6 +139,51 @@ describe('joint-mesh-continuity helper (P8)', () => {
     const result = await checkMechanismTruth(arm);
     const gaps = result.failures.filter((f) => f.code === 'mechanism.joint-mesh-gap');
     expect(gaps).toEqual([]);
+  }, 90000);
+
+  it('does not claim rest-pose continuity when a joint distance cannot be measured', async () => {
+    const { arm, kcad } = makeArm('unmeasured-annular-bearing');
+
+    const ringBody = kcad.cylinder(10, 30).subtract(kcad.cylinder(12, 20).translate(0, 0, -1));
+    const parent = arm.part('parent', ringBody);
+    parent.connector('hinge', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 10.2] },
+      axis: [0, 0, 1],
+    });
+    const child = arm.part('child', kcad.cylinder(3, 28));
+    child.connector('hinge', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('select', 'parent.hinge', 'child.hinge', 'revolute', { limitsDeg: [0, 300] });
+
+    // Simulate both available joint-pivot measurement paths failing. The
+    // unrelated rest-contact path remains live, so only joint continuity is
+    // unknown; this must not be reported as a verified mechanism.
+    const meshSpy = vi.spyOn(restAnalysisMesh, 'restMeshBvh').mockReturnValue(undefined);
+    const distanceSpy = vi.spyOn(brepDistance, 'brepExtremaDistance').mockReturnValue(undefined);
+    try {
+      const result = await checkMechanismTruth(arm, { sweepBudget: Infinity });
+      expect(meshSpy).toHaveBeenCalled();
+      expect(distanceSpy).toHaveBeenCalled();
+      expect(result.mechanism).toBe('unverified');
+      const unknown = result.failures.find((failure) => failure.code === 'mechanism.joint-mesh-unverified');
+      expect(unknown?.severity).toBe('warn');
+      expect(unknown?.message).toMatch(/joint 'select'.*parent.*could not be measured/i);
+      expect(unknown?.details).toEqual({ mateName: 'select', partName: 'parent', side: 'parent' });
+      expect(result.coverage?.sweep).toBe(true);
+
+      const overBudget = await checkMechanismTruth(arm, { sweepBudget: 0 });
+      expect(overBudget.mechanism).toBe('unverified');
+      expect(overBudget.coverage?.sweep).toBe(false);
+      expect(overBudget.failures.map((failure) => failure.code)).toContain('mechanism.joint-mesh-unverified');
+      expect(overBudget.failures.map((failure) => failure.code)).toContain('mechanism.unverified-budget-exceeded');
+    } finally {
+      meshSpy.mockRestore();
+      distanceSpy.mockRestore();
+    }
   }, 90000);
 
   it('floating part: pivot outside both bodies AND no bearing contact anywhere → joint-mesh-gap still fires', async () => {

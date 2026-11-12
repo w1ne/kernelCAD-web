@@ -48,6 +48,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
+| `pipe(points: Vec3[], radius: number, opts?: { bendRadius?: number }) => Shape` | Solid circular pipe along a polyline: straight legs joined by constant-radius bends. |
 | `threadedRod({ spec: string, length: number, chamfer?: boolean \| number, cosmetic?: boolean, clearance?: number }) => Shape` | A real ISO metric EXTERNAL thread (60° basic profile, right-hand) along +Z from z = 0 to `length`; the ridge centre crosses +X at every z = k·pitch, so a modelled `threadedHole` whose entry face is on a whole pitch mates in phase. |
 | `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
 | `metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' \| 'tap_drill' \| 'auto', toleranceMm?: number }) => IsoThreadInfo` | Resolve the ISO 261 coarse metric thread for a diameter in millimetres. |
@@ -106,6 +107,7 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[], continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
+| `rib(base: Shape, centerline: [number, number][], opts: { thickness: number, height: number, startZ?: number }) => Shape` | Create a vertical, constant-thickness rib from an open XY centerline and fuse it to the base. |
 
 ## Remove material
 
@@ -260,7 +262,7 @@ Ask the kernel what you actually built, and check it before shipping. After dfm_
 | `Scene.bbox : { min: [number, number, number]; max: [number, number, number] }` | Lazy axis-aligned bounding box over all transformed parts. |
 | `Curve3D.length() => number` | Total arc length in mm. |
 | `Shape.lower() => Promise<OcctBackend>` | Eagerly lower this Shape for inspection. |
-| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.motionLoad(arm, opts?)` (per-joint wrench along the animation tracks, a joint-limit range, or explicit `poses`; also returns `partLoads`, the worst wrench per part in that part's frame, for `feaStudy({ loadsFrom })`), `kinematic.sweepTolerance({ code\|file, params, gates?, boundaryTolerance?, boundaryBudget? |
+| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs actuator capacities declared on `arm.revolute` / `arm.prismatic`; no actuator coverage returns `ok: false` with `assembly.joint.static-hold.no-actuator`, and mate-only mechanicalJoint chains are not evaluated), `kinematic.motionLoad(arm, opts?)` (per-joint wrench along the animation tracks, a joint-limit range, or explicit `poses`; also returns `partLoads`, the worst wrench per part in that part's frame, for `feaStudy({ loadsFrom })`), `kinematic.sweepTolerance({ code\|file, params, gates?, boundaryTolerance?, boundaryBudget? |
 | `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm' \| 'moulding'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string; pullDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; minDraftDeg?: number; minWallMm?: number; maxWallMm?: number; minRadiusMm?: number }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
 | `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads?: Array<{ faces: FaceQuery \| string; force: [number, number, number]; pointMm?: [number, number, number]; momentNmm?: [number, number, number]; name?: string }>; loadsFrom?: { motion: { partLoads: MotionPartLoadSample[] }; part: string; joint?: string; pose?: Record<string, number>; faces?: FaceQuery \| string }; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces, or `loadsFrom` to take the worst sampled wrench from `kinematic.motionLoad`), and what it is made of. |
 | `Shape.cfdStudy(spec: { flow: 'internal' \| 'external'; fluid?: 'water' \| 'air' \| { rho: number; nu: number }; fluidVolume?: 'interior' \| 'solid'; inlet?: FaceQuery \| string; outlet?: FaceQuery \| string \| Array<FaceQuery \| string>; velocity?: number; flowRateLpm?: number; outletPressurePa?: number; direction?: '+X' \| '-X' \| '+Y' \| '-Y' \| '+Z' \| '-Z'; meshSize?: number \| 'coarse' \| 'medium' \| 'fine'; iterations?: number; residualTarget?: number; turbulence?: 'auto' \| 'laminar' \| 'kOmegaSST'; referenceAreaMm2?: number; name?: string }) => CfdStudyHandle` | Declare a steady incompressible CFD study on this shape, run by the `run_cfd` MCP tool / `kernelcad cfd run` with OpenFOAM (snappyHexMesh + simpleFoam). |
@@ -310,6 +312,13 @@ Bring in vendor geometry, and write models back out.
 
 ### GLB assembly rigs
 
+GLB linear distances are metres by default, matching the glTF specification.
+The writer scales kernelCAD millimetre geometry at the scene root, including
+rig transforms, so a standard glTF viewer displays the authored physical size.
+Set `units: 'mm'` only when the receiving tool reads
+`asset.extras.kernelcad.units`; ordinary glTF viewers treat those raw values
+as metres. `units: 'm'` is also available explicitly.
+
 When a returned assembly scene has mates, GLB export defaults to a strict node
 hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
 nodes at the resolved connector frame; moving part meshes are offset beneath
@@ -334,7 +343,8 @@ minUpM, materials, drawCalls, parts, hasRig, hasIk) matching GLB
 knob JSON remains unchanged).
 
 Set the GLB export option `hierarchy: 'flat'` to keep the historical flat
-node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
+node list. See the [metre-scale handoff example](../examples/exports/glb-meter-handoff.kcad.ts)
+and the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
 
 ## Annotate & present
 

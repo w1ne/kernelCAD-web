@@ -6,7 +6,7 @@ import { exportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviati
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
-import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import type { MeshedPart } from '../../kernel/backends/occt/export3mf';
 import { measureBrepSurfaceDeviation, measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
 import { meshToleranceNotMetDiagnostic } from './exportDiagnostics';
 
@@ -15,7 +15,7 @@ export interface StlMeshToleranceOptions extends ExportMeshToleranceOptions {
 }
 
 export function measureWorldFramePartsDeviation(
-  parts: readonly WorldFramePart[],
+  parts: readonly MeshedPart[],
   requestedMm: number,
 ): MeshDeviationReport {
   return measureBrepSurfaceDeviation(

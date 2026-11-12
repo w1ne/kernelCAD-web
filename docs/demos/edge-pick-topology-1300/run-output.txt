@@ -1,0 +1,27 @@
+
+ RUN  v4.0.18 /data/worktrees/hermes-kernelcad-web-qa-20261110
+
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > EdgeLineage parity slots — Q1 > accepts featureId / featureName / featureKind on construction 1ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > EdgeLineage parity slots — Q1 > parity slots are optional — minimal lineage still compiles 0ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > propagateEdgeTransformHistory — Q1 > throws when input and output edge counts disagree (caller bug guard) 4ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > propagateEdgeTransformHistory — Q1 > default path (no outputFeatureId): preserves input lineage by reference 0ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > propagateEdgeTransformHistory — Q1 > feature-stamp path: clones lineage and writes featureId on every output edge 1ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > propagateEdgeTransformHistory — Q1 > feature-stamp path: featureKind and featureName remain optional 3ms
+ ✓ src/kernel/naming/queryEdgeLineage.test.ts > propagateEdgeTransformHistory — Q1 > missing-input-lineage entries skip output emission (sparse-map tolerant) 0ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > names old entity, new entity, consumer and selector for a re-bound selector 4ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > reports a resized face as moved, with the delta 1ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > is silent within tolerance and for selections without a counterpart 1ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > matches repeated selections of one selector by occurrence 1ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > returns a typed error when a selected edge is replaced by another lineage 0ms
+ ✓ src/kernel/naming/selectionDrift.test.ts > selectionDriftDiagnostics > returns a typed error when one selected edge has multiple lineage descendants 0ms
+ ✓ src/kernel/backends/occt/edgeIdentity.test.ts > stable BREP edge identity > assigns the same geometry IDs when the same model is evaluated twice 25ms
+ ✓ src/kernel/backends/occt/edgeIdentity.test.ts > stable BREP edge identity > keeps an edge ID when unrelated geometry is added to the model 9ms
+ ✓ src/kernel/backends/occt/edgeIdentity.test.ts > stable BREP edge identity > resolves an ID to the unique edge with the same sampled geometry 4ms
+ ✓ src/kernel/backends/occt/edgeIdentity.test.ts > stable BREP edge identity > attaches each mesh range ID to its matching BREP edge geometrically 37ms
+ ✓ tests/integration/examples/mountingPlateEdgePicks.test.ts > drafting-review mounting plate edge picks > keeps lineage corner and top-perimeter picks after the plate is resized 1004ms
+ ✓ tests/integration/examples/mountingPlateEdgePicks.test.ts > drafting-review mounting plate edge picks > reports a typed miss when an upstream edit replaces a selected corner lineage 294ms
+
+ Test Files  4 passed (4)
+      Tests  19 passed (19)
+   Start at  13:06:18
+   Duration  4.77s (transform 3.51s, setup 355ms, import 3.95s, tests 1.71s, environment 0ms)

@@ -10,8 +10,9 @@
 //   - createMujocoSession(module, mjcfXml, bodyOrder, jointOrder) → Session
 //   - Session.setPose(qpos)
 //   - Session.inverseDynamics() → { qfrc, finite }
-//   - Session.step(seconds, dt?) → { qpos, xpos }
+//   - Session.step(seconds, dt?) → { qpos, xpos, bodyPoses }
 //   - Session.xposNow() → ReadonlyMap<bodyName, Vec3>
+//   - Session.bodyPosesNow() → ReadonlyMap<bodyName, placement in mm>
 //   - Session.dispose()
 //
 // Coordinate units: MuJoCo SI throughout (radians, metres, kg, seconds).
@@ -26,6 +27,47 @@ type MujocoModule = any;
 type MjModelHandle = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MjDataHandle = any;
+
+/** Column-major rigid transform. Translation is millimetres. */
+export type MujocoBodyMatrix = readonly [
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
+];
+
+/**
+ * World placement of one named assembly part after a simulation step.
+ * The matrix maps the part-local frame (the frame the MJCF mesh was
+ * emitted in) into world, in millimetres. That is the same placement
+ * `solveMates` returns, so playback can apply it to the source shape.
+ */
+export interface MujocoBodyPose {
+    readonly matrix: MujocoBodyMatrix;
+}
+
+/** Per-integration-step position snapshot, used for physics invariants. */
+export type MujocoStepObserver = (qpos: readonly number[], step: number) => void;
+
+const METRES_TO_MM = 1000;
+
+function bodyPoseAt(xpos: ArrayLike<number>, xmat: ArrayLike<number>, bodyIdx: number): MujocoBodyPose {
+    const p = bodyIdx * 3;
+    const r = bodyIdx * 9;
+    // xmat is row-major. The matrix below is column-major, so the
+    // first column is the image of local +X.
+    return {
+        matrix: [
+            xmat[r], xmat[r + 3], xmat[r + 6], 0,
+            xmat[r + 1], xmat[r + 4], xmat[r + 7], 0,
+            xmat[r + 2], xmat[r + 5], xmat[r + 8], 0,
+            xpos[p] * METRES_TO_MM,
+            xpos[p + 1] * METRES_TO_MM,
+            xpos[p + 2] * METRES_TO_MM,
+            1,
+        ],
+    };
+}
 
 export type MujocoSessionFactory = (
     mjcfXml: string,
@@ -150,10 +192,15 @@ export class MujocoSession {
 
     /**
      * Forward simulation for `seconds` (default `dt = 0.001 s` per
-     * MJCF `<option>` default). Returns final qpos + world body
-     * positions. Used by criterion 6 (drop-on-release).
+     * MJCF `<option>` default). Returns final qpos, world body
+     * positions in metres, and per-part placements in millimetres.
+     * Criterion 6 reads `xpos`; playback applies `bodyPoses`.
      */
-    step(seconds: number, dt = 0.001): { qpos: number[]; xpos: Map<string, [number, number, number]> } {
+    step(seconds: number, dt = 0.001, observeQpos?: MujocoStepObserver): {
+        qpos: number[];
+        xpos: Map<string, [number, number, number]>;
+        bodyPoses: Map<string, MujocoBodyPose>;
+    } {
         this.assertAlive();
         // Force the integrator timestep to our explicit dt; MuJoCo's
         // default is 2 ms which is fine but we want determinism.
@@ -161,9 +208,12 @@ export class MujocoSession {
         const steps = Math.max(1, Math.round(seconds / dt));
         for (let i = 0; i < steps; i++) {
             this.mujoco.mj_step(this.model, this.data);
+            if (observeQpos !== undefined) {
+                observeQpos(Array.from(this.data.qpos as ArrayLike<number>), i + 1);
+            }
         }
         const qpos = Array.from(this.data.qpos as ArrayLike<number>);
-        return { qpos, xpos: this.xposNow() };
+        return { qpos, xpos: this.xposNow(), bodyPoses: this.bodyPosesNow() };
     }
 
     /**
@@ -181,6 +231,23 @@ export class MujocoSession {
                 xpos[bodyIdx * 3 + 1],
                 xpos[bodyIdx * 3 + 2],
             ]);
+        }
+        return out;
+    }
+
+    /**
+     * Snapshot the world placement of every named body. Skips worldbody
+     * (index 0). `xpos` is metres and `xmat` is the body-to-world
+     * rotation, row-major; the returned matrix is column-major with
+     * translation in millimetres.
+     */
+    bodyPosesNow(): Map<string, MujocoBodyPose> {
+        this.assertAlive();
+        const xpos = this.data.xpos as ArrayLike<number>;
+        const xmat = this.data.xmat as ArrayLike<number>;
+        const out = new Map<string, MujocoBodyPose>();
+        for (let i = 0; i < this.bodyOrder.length; i++) {
+            out.set(this.bodyOrder[i], bodyPoseAt(xpos, xmat, i + 1));
         }
         return out;
     }

@@ -9,11 +9,18 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Assembly } from '../capture/assembly';
 import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { collectFreePassiveMates } from '../mates/passiveJoints';
+import { expandCoupledPoses } from '../mates/coupledPoses';
+import type { MateRecord } from '../mates/mate';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { assemblyToMjcf } from './mjcfExport';
+import { UnsupportedMjcfCouplingError } from './mjcfMateConstraints';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
+import { cachedRestWorldMesh } from './restAnalysisMesh';
 import type { MujocoSession, MujocoSessionFactory } from './mujocoSessionCore';
 import { makeFailure, type SolvedSample } from './mechanismTruthShared';
+import { currentValue } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Criteria 5 + 6 — physics (MuJoCo)
@@ -42,6 +49,38 @@ const DROP_TEST_BODY_DRIFT_M = 0.05;
  */
 const DROP_TEST_DURATION_S = 0.5;
 const DROP_TEST_DT_S = 0.001;
+const MM_TO_M = 1e-3;
+const DEG_TO_RAD = Math.PI / 180;
+const COUPLED_ANGLE_RESIDUAL_RAD = 5 * DEG_TO_RAD;
+const COUPLED_LENGTH_RESIDUAL_M = 0.01 * MM_TO_M;
+
+/** Maximum cached fine-analysis triangles accepted as a conservative proxy
+ * for MJCF's coarser collision mesh workload. Custom collision pieces have
+ * separate geometry and are treated as unmeasured. */
+export const PHYSICS_MESH_TRIANGLE_BUDGET = 100_000;
+
+function physicsMeshWork(arm: Assembly, restScene: SceneBackend | undefined): number | undefined {
+  if (restScene === undefined || restScene.parts.length !== arm.__parts().length) return undefined;
+  const names = new Set(arm.__parts().map((part) => part.name));
+  let triangles = 0;
+  for (const part of restScene.parts) {
+    if (!names.delete(part.name) || !(part.shape instanceof OcctBackend)) return undefined;
+    // MJCF uses the original part shape. A distinct analysis body or missing
+    // rest-check cache cannot bound that work without another tessellation.
+    if (analysisBodyOf(part.shape) !== part.shape) return undefined;
+    const mesh = cachedRestWorldMesh(part, 'analysis')?.mesh;
+    if (mesh === undefined || mesh.indices.length === 0 || mesh.indices.length % 3 !== 0) return undefined;
+    triangles += mesh.indices.length / 3;
+    if (!Number.isSafeInteger(triangles)) return undefined;
+  }
+  return names.size === 0 ? triangles : undefined;
+}
+
+export interface PhysicsCriteriaResult {
+  readonly failures: CompilerDiagnostic[];
+  /** True when the physics criteria completed, including vacuous zero-DOF cases. */
+  readonly ran: boolean;
+}
 
 /**
  * Run criteria 5 + 6 against the assembly. Loads MuJoCo, emits the
@@ -62,27 +101,91 @@ const DROP_TEST_DT_S = 0.001;
  * will reshape). For now, criterion 5 reports a finite-torque failure
  * only.
  */
+
+/** Closed-loop rejection from `assemblyToMjcf`. Unsupported topology,
+ *  not a dynamics failure: warn, and leave the physics check unverified. */
+function unsupportedPhysicsFailure(error: unknown): CompilerDiagnostic | undefined {
+  if (error instanceof UnsupportedMjcfCouplingError) {
+    return makeFailure(
+      'mechanism.physics-unsupported',
+      `Physics was not run because the native backend could not map an authored mate coupling. ${error.message}`,
+      'warn',
+    );
+  }
+  const msg = error instanceof Error ? error.message : String(error);
+  if (!/multiple parents|mate graph has a cycle/.test(msg)) return undefined;
+  return makeFailure(
+    'mechanism.physics-unsupported',
+    `Physics was not run because the mate graph is a closed loop, which this physics gate does not support. ${msg} The check is unverified, not a dynamics failure.`,
+    'warn',
+  );
+}
+
+function invalidPhysicsBudgetReason(budget: unknown): string | undefined {
+  if (typeof budget !== 'number') return 'the physics budget has an invalid type';
+  if (budget === 0) return 'the physics budget is 0 (force skip)';
+  if (Number.isNaN(budget) || budget < 0 || budget === -Infinity) return `the physics budget ${budget} is invalid`;
+  return undefined;
+}
+
+function physicsMeshWorkSkipReason(
+  arm: Assembly,
+  restScene: SceneBackend | undefined,
+  budget: number,
+): string | undefined {
+  if (arm.__parts().some((part) => part.collisionShapes.length > 0)) {
+    return 'custom collision shapes have mesh work that cannot be measured from the lowered rest scene';
+  }
+  const work = physicsMeshWork(arm, restScene);
+  if (work === undefined) return 'the lowered rest-scene mesh work could not be measured';
+  if (work > budget) return `estimated mesh work ${work} triangles exceeds the budget ${budget}`;
+  return undefined;
+}
+
 export async function runPhysicsCriteria(
   arm: Assembly,
   solved: readonly SolvedSample[],
   restScene: SceneBackend | undefined,
   loadSession: MujocoSessionFactory,
-): Promise<CompilerDiagnostic[]> {
+  budget = PHYSICS_MESH_TRIANGLE_BUDGET,
+): Promise<PhysicsCriteriaResult> {
   const out: CompilerDiagnostic[] = [];
+
+  const skipped = (reason: string): PhysicsCriteriaResult => ({
+    failures: [makeFailure(
+      'mechanism.physics-budget-exceeded',
+      `Physics preparation was skipped: ${reason}. MuJoCo gravity criteria were not checked.`,
+      'warn',
+    )],
+    ran: false,
+  });
+
+  // The test seam must short-circuit before even reading a rest mesh.
+  const invalidBudget = invalidPhysicsBudgetReason(budget);
+  if (invalidBudget !== undefined) return skipped(invalidBudget);
+  // A rigid assembly has no generalized coordinates to hold or drop.
+  // Preserve the vacuous physics result without requiring a rest mesh.
+  if (arm.__mates().every((mate) => mate.type === 'fastened')) return { failures: out, ran: true };
+  const workSkip = physicsMeshWorkSkipReason(arm, restScene, budget);
+  if (workSkip !== undefined) return skipped(workSkip);
 
   let mjcfResult: Awaited<ReturnType<typeof assemblyToMjcf>>;
   try {
     mjcfResult = await assemblyToMjcf(arm, restScene === undefined ? {} : { scene: restScene });
   } catch (e) {
-    // Closed-loop graphs or other emitter failures. The kinematic
-    // criteria already surface their own failures; don't double-fail
-    // here. Surface a single hint that physics couldn't run.
+    const unsupported = unsupportedPhysicsFailure(e);
+    if (unsupported !== undefined) {
+      out.push(unsupported);
+      return { failures: out, ran: false };
+    }
+    // Other emitter failures. The kinematic criteria already surface
+    // their own failures; don't double-fail here.
     const msg = e instanceof Error ? e.message : String(e);
     out.push(makeFailure(
       'mechanism.unstable-under-gravity',
       `Could not run the physics gate: ${msg}. The kinematic checks (criteria 1-4) still apply.`,
     ));
-    return out;
+    return { failures: out, ran: false };
   }
 
   let session: MujocoSession;
@@ -99,16 +202,16 @@ export async function runPhysicsCriteria(
       'mechanism.unstable-under-gravity',
       `Could not load the assembly in MuJoCo: ${msg}. The MJCF emitter produced XML the engine rejected — file a follow-up issue with the MJCF dump if this surfaces on a previously-passing example.`,
     ));
-    return out;
+    return { failures: out, ran: false };
   }
 
   try {
     // Mechanisms with zero DOFs (all-fastened or single-part) skip the
     // physics check; gravity has nothing to act on dynamically.
-    if (session.nq === 0) return out;
+    if (session.nq === 0) return { failures: out, ran: true };
 
     // ── Criterion 5: static equilibrium at every sampled pose ──────────
-    out.push(...await runStaticEquilibrium(session, solved, mjcfResult.jointOrder));
+    out.push(...await runStaticEquilibrium(session, solved, mjcfResult.jointOrder, arm));
 
     // ── Criterion 6: drop-on-release from rest ─────────────────────────
     out.push(...await runDropOnRelease(session, mjcfResult.jointOrder, arm));
@@ -116,7 +219,7 @@ export async function runPhysicsCriteria(
     session.dispose();
   }
 
-  return out;
+  return { failures: out, ran: true };
 }
 
 /**
@@ -134,11 +237,13 @@ async function runStaticEquilibrium(
   session: MujocoSession,
   solved: readonly SolvedSample[],
   jointOrder: readonly { mjcfName: string; mateName: string }[],
+  arm: Assembly,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
 
   for (const s of solved) {
-    const qpos = jointOrderToQpos(jointOrder, s.sample.poses);
+    const poses = s.sample.name === 'rest' ? physicsRestPoses(arm) : s.sample.poses;
+    const qpos = jointOrderToQpos(jointOrder, poses, arm.__mates());
     if (qpos === undefined) continue; // mate-name mismatch; skip
     try {
       session.setPose(qpos);
@@ -297,6 +402,106 @@ function dropTestBodyDriftFailure(
   );
 }
 
+interface ScalarCouplingCheck {
+  readonly source: string;
+  readonly driven: string;
+  readonly sourceIndex: number;
+  readonly drivenIndex: number;
+  readonly ratioSi: number;
+  readonly offsetSi: number;
+  readonly kind: 'angle' | 'length';
+  readonly toleranceSi: number;
+}
+
+function scalarCoordinateForPhysics(mate: MateRecord): { kind: 'angle' | 'length'; toSi: number } | undefined {
+  switch (mate.type) {
+    case 'revolute':
+    case 'cylindrical':
+    case 'pin_slot':
+      return { kind: 'angle', toSi: DEG_TO_RAD };
+    case 'prismatic':
+      return { kind: 'length', toSi: MM_TO_M };
+    default:
+      return undefined;
+  }
+}
+
+function scalarCouplingChecks(
+  arm: Assembly,
+  jointOrder: readonly { mateName: string }[],
+): ScalarCouplingCheck[] {
+  const mateByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
+  const jointIndexByMate = new Map<string, number>();
+  let qposIndex = 0;
+  for (const joint of jointOrder) {
+    jointIndexByMate.set(joint.mateName, qposIndex);
+    // One ball joint occupies a quaternion in qpos, not one scalar slot.
+    qposIndex += mateByName.get(joint.mateName)?.type === 'ball' ? 4 : 1;
+  }
+  const checks: ScalarCouplingCheck[] = [];
+  for (const coupling of arm.__mateCouplings()) {
+    const source = mateByName.get(coupling.source);
+    const driven = mateByName.get(coupling.driven);
+    if (source === undefined || driven === undefined) continue; // MJCF export reports this as unsupported.
+    const sourceCoordinate = scalarCoordinateForPhysics(source);
+    const drivenCoordinate = scalarCoordinateForPhysics(driven);
+    const sourceIndex = jointIndexByMate.get(coupling.source);
+    const drivenIndex = jointIndexByMate.get(coupling.driven);
+    if (sourceCoordinate === undefined || drivenCoordinate === undefined || sourceIndex === undefined || drivenIndex === undefined) continue;
+    checks.push({
+      source: coupling.source,
+      driven: coupling.driven,
+      sourceIndex,
+      drivenIndex,
+      ratioSi: coupling.ratio * drivenCoordinate.toSi / sourceCoordinate.toSi,
+      offsetSi: (coupling.offset ?? 0) * drivenCoordinate.toSi,
+      kind: drivenCoordinate.kind,
+      toleranceSi: drivenCoordinate.kind === 'angle' ? COUPLED_ANGLE_RESIDUAL_RAD : COUPLED_LENGTH_RESIDUAL_M,
+    });
+  }
+  return checks;
+}
+
+function capturedMatePose(mate: MateRecord, arm: Assembly): number | [number, number, number] {
+  const table = arm.__session().paramTable;
+  if (mate.pose === undefined) return mate.type === 'ball' ? [0, 0, 0] : 0;
+  if (Array.isArray(mate.pose)) {
+    return mate.pose.map((value) => currentValue(value as Editable<number>, table)) as [number, number, number];
+  }
+  return currentValue(mate.pose as Editable<number>, table);
+}
+
+function physicsRestPoses(arm: Assembly): NumericPoses {
+  const mates = arm.__mates();
+  return expandCoupledPoses(mates, arm.__mateCouplings(), {}, {
+    resolveSourcePose: (source) => capturedMatePose(source, arm),
+  });
+}
+
+interface CouplingResidualWitness {
+  readonly check: ScalarCouplingCheck;
+  readonly residualSi: number;
+  readonly sample: string;
+}
+
+function couplingResidualFailure(
+  witness: CouplingResidualWitness | undefined,
+  coordinateChecks: number,
+  integrationObservations: number,
+): CompilerDiagnostic | undefined {
+  if (witness === undefined || witness.residualSi <= witness.check.toleranceSi) return undefined;
+  const residual = witness.check.kind === 'angle'
+    ? `${(witness.residualSi / DEG_TO_RAD).toFixed(4)}°`
+    : `${(witness.residualSi / MM_TO_M).toFixed(4)} mm`;
+  const tolerance = witness.check.kind === 'angle'
+    ? `${(witness.check.toleranceSi / DEG_TO_RAD).toFixed(0)}°`
+    : `${(witness.check.toleranceSi / MM_TO_M).toFixed(2)} mm`;
+  return makeFailure(
+    'mechanism.coupling-residual',
+    `Native release dynamics did not preserve scalar coupling '${witness.check.source}' → '${witness.check.driven}': maximum residual ${residual} at ${witness.sample}, across ${coordinateChecks} coordinate checks (${integrationObservations} integration observations; tolerance ${tolerance}). Check the authored ratio, limits, and physics coupling mapping.`,
+  );
+}
+
 async function runDropOnRelease(
   session: MujocoSession,
   jointOrder: readonly { mjcfName: string; mateName: string }[],
@@ -309,12 +514,31 @@ async function runDropOnRelease(
   const drivenMates = collectRegistryDrivenMates(arm);
   if (allArticulatedMatesDriven(jointOrder, drivenMates)) return [];
 
+  const couplingChecks = scalarCouplingChecks(arm, jointOrder);
+  let coordinateChecks = 0;
+  let worstCouplingResidual: CouplingResidualWitness | undefined;
+  const observeCouplings = (qpos: readonly number[], sample: string): void => {
+    for (const check of couplingChecks) {
+      const source = qpos[check.sourceIndex];
+      const driven = qpos[check.drivenIndex];
+      const residualSi = source === undefined || driven === undefined
+        ? Number.POSITIVE_INFINITY
+        : Math.abs(driven - check.ratioSi * source - check.offsetSi);
+      coordinateChecks++;
+      if (worstCouplingResidual === undefined || residualSi > worstCouplingResidual.residualSi) {
+        worstCouplingResidual = { check, residualSi, sample };
+      }
+    }
+  };
+
   // Reset to the model's qpos0 — criterion 5 left the session at its
   // last-sampled pose. The drop-test's premise is "from REST".
-  const restPose = new Array(session.nq).fill(0);
+  const restPose = jointOrderToQpos(jointOrder, physicsRestPoses(arm), arm.__mates())
+    ?? new Array(session.nq).fill(0);
   session.setPose(restPose);
   session.forward();
   const restQpos = session.getQpos().slice();
+  observeCouplings(restQpos, 'rest pose');
   const restXpos = new Map<string, [number, number, number]>();
   for (const [name, pos] of session.xposNow()) {
     restXpos.set(name, [pos[0], pos[1], pos[2]]);
@@ -324,11 +548,18 @@ async function runDropOnRelease(
     // Tendon limits are stiff constraints. The default 1 ms step can ring on
     // gram-scale links; use the same 0.2 ms step the retention tests use.
     const dt = session.ntendon > 0 ? 0.0002 : DROP_TEST_DT_S;
+    const integrationObservations = Math.max(1, Math.round(DROP_TEST_DURATION_S / dt));
     const { qpos: finalQpos, xpos: finalXpos } = session.step(
       DROP_TEST_DURATION_S,
       dt,
+      couplingChecks.length === 0
+        ? undefined
+        : (qpos, step) => observeCouplings(qpos, `integration observation ${step}/${integrationObservations}`),
     );
+    observeCouplings(finalQpos, 'final pose');
     const out: CompilerDiagnostic[] = [];
+    const couplingFailure = couplingResidualFailure(worstCouplingResidual, coordinateChecks, integrationObservations);
+    if (couplingFailure !== undefined) out.push(couplingFailure);
     const passiveMates = collectFreePassiveMates(arm);
     const allJointsPassive = jointOrder.length > 0
       && jointOrder.every((j) => passiveMates.has(j.mateName) || drivenMates.has(j.mateName));
@@ -364,22 +595,35 @@ async function runDropOnRelease(
 function jointOrderToQpos(
   jointOrder: readonly { mjcfName: string; mateName: string }[],
   poses: NumericPoses,
+  mates: readonly MateRecord[],
 ): number[] | undefined {
   const out: number[] = [];
+  const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
   for (const j of jointOrder) {
+    const type = mateByName.get(j.mateName)?.type;
+    if (type === 'ball') {
+      // Ball poses currently use identity; reserve all four quaternion slots
+      // even when the mate has no authored pose, so following scalars align.
+      out.push(1, 0, 0, 0);
+      continue;
+    }
     const v = poses[j.mateName];
     if (v === undefined) {
       out.push(0); // unposed mate → default joint angle 0
       continue;
     }
     if (typeof v === 'number') {
-      // Defer the unit conversion to a heuristic — if the value's
-      // magnitude is > 2π, it's almost certainly degrees (the v0.6
-      // kernelCAD convention) so convert. Otherwise treat as radians.
-      // This is good enough for the v0.7 corpus where mate poses are
-      // ALWAYS the user-provided degrees value; the MJCF emitter has
-      // already lowered the limits, so MuJoCo's internal qpos is in
-      // radians.
+      if (type === 'revolute' || type === 'cylindrical' || type === 'pin_slot') {
+        out.push(v * DEG_TO_RAD);
+        continue;
+      }
+      if (type === 'prismatic') {
+        out.push(v * MM_TO_M);
+        continue;
+      }
+      // Planar scalar decomposition and any future untyped joint retain
+      // the legacy fallback; supported scalar mates above use their
+      // declared kernelCAD units at every magnitude, including near zero.
       out.push(Math.abs(v) > 2 * Math.PI ? (v * Math.PI) / 180 : v);
     } else if (Array.isArray(v)) {
       // Ball joint pose triple → 4 quaternion slots in MuJoCo's qpos.

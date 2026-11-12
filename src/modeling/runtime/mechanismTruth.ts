@@ -22,8 +22,8 @@
 //                                      vec3-mount-spring drift pattern from
 //                                      PR #341 and the gutted-assembly
 //                                      missing-body pattern from PR #338)
-//   3. mechanism.interpenetration    — non-mated parts must not overlap
-//                                      under any sampled pose
+//   3. mechanism.interpenetration    — part pairs must not overlap at
+//                                      sampled poses
 //   4. mechanism.dof-mismatch        — declared mate kind must match the
 //                                      geometric free direction (pragmatic
 //                                      micro-pose check)
@@ -59,6 +59,8 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences, pairKey } from './detectInterferences';
+import { buildSweepProxies, type SweepProxy } from './sweepCollisionProxy';
+import { proxyPairsNeedingExactConfirm } from './convexHullBroadphase';
 import { describeOverlap, describeOverlapLocation, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { rememberRestScene, reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
@@ -103,13 +105,14 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
  * disconnected link must still fail when the sweep is skipped.
  *
  * The sweep lowers the assembly once and re-poses it per sample; its cost
- * is the pairwise boolean overlap probes. `estimateSweepWork`
- * (`./sweepWork`) counts the probes the sweep would run: part pairs whose
- * bounding boxes touch at a relative pose not seen before. Parts in one
+ * is the exact boolean confirms of proxy candidates. `estimateSweepWork`
+ * (`./sweepWork`) counts those confirms: part pairs whose conservative
+ * enclosing boxes touch at a relative pose not seen before. Parts in one
  * rigid cluster (fastened together) keep their relative pose, so they cost
- * one probe for the whole sweep. Each probe is weighted by the face count
- * of its two parts. The estimate reads only the rest scene, FK transforms
- * and bounding boxes, so it is deterministic and machine-independent.
+ * one confirm for the whole sweep. Each confirm is weighted by the
+ * analysis-body face count of its two parts. Proxy faces are not the cost.
+ * The estimate reads the rest scene, FK transforms and the proxy SAT, so it
+ * is deterministic and machine-independent.
  *
  * Calibration (2026-10, Apple M-series Mac under heavy load; boolean time
  * of criteria 2 + 3): 0.1–0.5 ms per work unit on every measured assembly
@@ -121,8 +124,9 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
  * 40 000 lets every measured assembly up to DRAW 01 sweep with 2× margin
  * (≤ ~20 s of booleans at the worst measured rate) and skips the Gearfinity
  * stage, whose rest criteria alone take over a minute. When the estimate
- * exceeds the budget the sweep is SKIPPED and the verdict degrades to
- * `'unverified'` with a `mechanism.unverified-budget-exceeded` diagnostic.
+ * exceeds the budget or the caller forces a skip, the sweep is SKIPPED and
+ * the verdict degrades to `'unverified'` with a
+ * `mechanism.unverified-budget-exceeded` diagnostic.
  * Not counted: criterion 8 (tendon routing), a no-op without tendons.
  */
 export const BREP_SWEEP_BUDGET = 40_000;
@@ -193,7 +197,7 @@ export interface MechanismCoverage {
   readonly fastened: number;
   /** False when the BREP pose sweep (collision / dof / tendon) was skipped. */
   readonly sweep: boolean;
-  /** True when gravity hold + drop-on-release (MuJoCo) ran. */
+  /** True when gravity criteria completed or were vacuous (zero DOF); false when skipped. */
   readonly physics: boolean;
   /** Animated joints whose animation keys were checked against their limits. */
   readonly limitsChecked: number;
@@ -201,6 +205,9 @@ export interface MechanismCoverage {
   readonly matesChecked: boolean;
   /** Moving DOFs nobody limited: "joint 'x' offset has no limits, range not checked". */
   readonly skipped: readonly string[];
+  /** `solvedModel({ ignore })` declarations, listed for transparency; they
+   *  do not suppress collision checks at sampled joint-travel poses. */
+  readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
 }
 
 /**
@@ -228,6 +235,9 @@ interface MechanismTruthCommonOptions {
    * (pass `Infinity` to always sweep). Defaults to `BREP_SWEEP_BUDGET`.
    */
   readonly sweepBudget?: number;
+  /** Maximum rest-scene triangles for physics preparation. Zero forces a
+   *  typed physics skip; defaults to the internal physics mesh budget. */
+  readonly physicsBudget?: number;
 }
 
 /** Physics is host-injected so this module stays usable in browser workers. */
@@ -319,6 +329,43 @@ async function checkRestCriteria(
   return out;
 }
 
+function coverageWithIgnoredPairs(
+  coverage: Omit<MechanismCoverage, 'ignoredPairs'>,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): MechanismCoverage {
+  return ignoredPairs.length > 0 ? { ...coverage, ignoredPairs } : coverage;
+}
+
+async function emptySolveResult(
+  arm: Assembly,
+  failures: CompilerDiagnostic[],
+  joints: number,
+  scope: { fastened: number; limitsChecked: number; matesChecked: boolean; skipped: readonly string[] },
+  opts: MechanismTruthOptions,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): Promise<MechanismTruthResult> {
+  if (opts.physicsCheck === true) {
+    const physics = await runPhysicsCriteria(arm, [], undefined, opts.physicsSessionFactory, opts.physicsBudget);
+    failures.push(...physics.failures);
+  }
+  const coverage = coverageWithIgnoredPairs({ poses: 0, joints, ...scope, sweep: false, physics: false }, ignoredPairs);
+  const mechanism = failures.some((failure) => failure.severity === 'error')
+    ? 'broken'
+    : opts.physicsCheck === true ? 'unverified' : 'real';
+  return { mechanism, failures, coverage };
+}
+
+function mechanismVerdict(
+  failures: CompilerDiagnostic[],
+  sweepSkipped: boolean,
+  physics: { ran: boolean } | undefined,
+): 'real' | 'broken' | 'unverified' {
+  if (failures.some((d) => d.severity === 'error')) return 'broken';
+  if (failures.some((d) => d.code === 'mechanism.joint-mesh-unverified')) return 'unverified';
+  if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
+  return 'real';
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -375,15 +422,15 @@ export async function checkMechanismTruth(
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
   const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
+  const ignoredPairs = arm.__ignoreInterference().map(([a, b]) => [a, b] as const);
   if (solved.length === 0) {
-    const coverage = { poses: 0, joints, ...scope, sweep: false, physics: false };
-    return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
+    return emptySolveResult(arm, failures, joints, scope, opts, ignoredPairs);
   }
 
   // BREP-sweep budget gate (issue #348). Criteria 2/3/8 re-pose the rest
-  // scene per pose sample and probe pairwise overlap. Estimate the probes
-  // from the rest scene (FK + bounding boxes, no boolean) and skip the
-  // sweep when it is intractable; the verdict then degrades to
+  // scene per pose sample and exact-confirm proxy candidates. Estimate the
+  // confirms from the rest scene (FK + enclosing boxes, no boolean) and
+  // skip the sweep when it is intractable; the verdict then degrades to
   // 'unverified' rather than timing out.
   // Criterion 7 is not part of the sweep: one rest lower is enough to
   // tell a floating end-effector from a connected chain, and skipping it
@@ -393,29 +440,35 @@ export async function checkMechanismTruth(
 
   const sweep = await runPoseSweep(arm, solved, loweredBase, effectiveSweepBudget(opts.sweepBudget));
   failures.push(...sweep.failures);
-  const sweepSkipped = sweep.skipped;
+  const sweepSkipped = sweep.skipped || sweep.unconfirmed;
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
   // and the MJCF compile only happen once per call.
-  if (opts.physicsCheck === true) {
-    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory);
-    failures.push(...physicsFailures);
-  }
+  const physics = opts.physicsCheck === true
+    ? await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory, opts.physicsBudget)
+    : undefined;
+  if (physics !== undefined) failures.push(...physics.failures);
 
   // Precedence: a definitive failure (broken) dominates; otherwise a
   // skipped sweep leaves us unable to certify (unverified); otherwise
   // every criterion held (real).
   //
-  // The budget-exceeded diagnostic is a non-fatal carrier (severity 'warn')
+  // The sweep-skipped diagnostic is a non-fatal carrier (severity 'warn')
   // that lives in `failures` so consumers surface it — but it must NOT make
   // the verdict 'broken'. Only an error-severity criterion failure means
   // 'broken'.
-  const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
-  const mechanism: 'real' | 'broken' | 'unverified' =
-    hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = { poses: solved.length, joints, ...scope, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
-  return { mechanism, failures, coverage };
+  return {
+    mechanism: mechanismVerdict(failures, sweepSkipped, physics),
+    failures,
+    coverage: coverageWithIgnoredPairs({
+      poses: solved.length,
+      joints,
+      ...scope,
+      sweep: !sweepSkipped,
+      physics: physics?.ran ?? false,
+    }, ignoredPairs),
+  };
 }
 
 /**
@@ -429,8 +482,8 @@ async function runPoseSweep(
   solved: SolvedSample[],
   loweredBase: LoweredSceneBase,
   sweepBudget: number,
-): Promise<{ failures: CompilerDiagnostic[]; skipped: boolean }> {
-  if (loweredBase.scene === undefined) return { failures: [], skipped: true };
+): Promise<{ failures: CompilerDiagnostic[]; skipped: boolean; unconfirmed: boolean }> {
+  if (loweredBase.scene === undefined) return { failures: [], skipped: true, unconfirmed: false };
   const sweepEstimate = await estimateArmSweepWork(arm, solved, loweredBase.scene);
   // A budget of 0 is the documented force-skip seam, even for zero work.
   if (sweepBudget <= 0 || sweepEstimate.work > sweepBudget) {
@@ -442,22 +495,26 @@ async function runPoseSweep(
     // 'unverified' is evidence, not silence. Severity 'warn': "couldn't
     // verify" must NOT make `ok: false` on its own (that's reserved for a
     // definitive 'broken', including a rest-pose joint-mesh gap).
-    return { failures: [makeBudgetExceeded(sweepEstimate, sweepBudget)], skipped: true };
+    return { failures: [makeBudgetExceeded(sweepEstimate, sweepBudget)], skipped: true, unconfirmed: false };
   }
   const failures: CompilerDiagnostic[] = [];
+  const unconfirmed: Array<{ a: string; b: string }> = [];
+  // Proxies are built once from the rest scene. Both overlap checks pose
+  // those same boxes; neither builds a stand-in solid.
+  const proxies = buildSweepProxies(loweredBase.scene);
   // `loweredBase` holds the rest sample's full lower; every other pose
   // re-poses it with that sample's `solveMates` transforms instead of
   // re-lowering the whole assembly.
 
   // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
-  failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
+  failures.push(...(await checkInterpenetration(arm, solved, loweredBase, proxies, unconfirmed)));
 
   // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
   // Note: this is the spec's open-question #2 ("DoF-mismatch is
   // geometric"); the pragmatic shape used here is connected-component
   // count stability under ±ε around the declared axis. Skipped when the
   // assembly has no revolute mates.
-  failures.push(...(await checkDofMismatch(arm, loweredBase)));
+  failures.push(...(await checkDofMismatch(arm, loweredBase, proxies, unconfirmed)));
 
   // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
   // routed path must not cut through a non-anchor body at any sampled
@@ -465,23 +522,38 @@ async function runPoseSweep(
   // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
   // the design-time gate. No-op for assemblies with no tendons.
   failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
-  return { failures, skipped: false };
+  if (unconfirmed.length > 0) failures.push(makeExactProbeUnconfirmed(unconfirmed));
+  return { failures, skipped: false, unconfirmed: unconfirmed.length > 0 };
 }
 
 /**
  * Estimate of the BREP-sweep cost (see `./sweepWork`) from the rest scene
  * re-posed at every solved sample and dof micro-pose: FK (`solveMates`)
- * and bounding boxes only, no boolean. Used by {@link checkMechanismTruth}
- * to decide whether the sweep fits {@link BREP_SWEEP_BUDGET}. See issue #348.
+ * and proxy SAT only, no boolean. Work counts exact confirms selected by
+ * that proxy pass. Used by {@link checkMechanismTruth} to decide whether
+ * the sweep fits {@link BREP_SWEEP_BUDGET}. See issue #348.
  */
 async function estimateArmSweepWork(
   arm: Assembly,
   solved: readonly SolvedSample[],
   restScene: SceneBackend,
 ): Promise<SweepWorkEstimate> {
-  const poses: Array<ReadonlyMap<string, Transform>> = solved
-    .filter((s) => s.sample.name !== 'rest')
-    .map((s) => s.transforms);
+  const ignored = interferenceIgnoreSet(arm);
+  const none = new Set<string>();
+  const scenes: SceneBackend[] = [restScene];
+  const ignoredByScene: Array<ReadonlySet<string>> = [ignored];
+  const push = (transforms: ReadonlyMap<string, Transform>, useIgnored: boolean): void => {
+    // A pose the re-pose helper refuses is fully re-lowered by the sweep;
+    // its pairs are not counted here (rare: an incomplete pose map).
+    const scene = reposedLoweredAssemblyScene(arm, restScene, transforms);
+    if (scene === undefined) return;
+    scenes.push(scene);
+    ignoredByScene.push(useIgnored ? ignored : none);
+  };
+  for (const sample of solved) {
+    if (sample.sample.name === 'rest') continue;
+    push(sample.transforms, false);
+  }
   const coupledDriven = new Set(arm.__mateCouplings().map((c) => c.driven));
   for (const mate of arm.__mates()) {
     if (mate.type !== 'revolute' || coupledDriven.has(mate.name)) continue;
@@ -489,20 +561,19 @@ async function estimateArmSweepWork(
       if (p === 0) continue;
       try {
         const overrides = expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: p });
-        poses.push((await solveMates(arm, overrides)).poses);
+        push((await solveMates(arm, overrides)).poses, true);
       } catch {
         // checkDofMismatch skips a micro-pose that does not solve.
       }
     }
   }
-  const scenes: SceneBackend[] = [restScene];
-  for (const transforms of poses) {
-    // A pose the re-pose helper refuses is fully re-lowered by the sweep;
-    // its pairs are not counted here (rare: an incomplete pose map).
-    const scene = reposedLoweredAssemblyScene(arm, restScene, transforms);
-    if (scene !== undefined) scenes.push(scene);
-  }
-  return estimateSweepWork(scenes);
+  return estimateSweepWork(scenes, ignoredByScene);
+}
+
+function interferenceIgnoreSet(arm: Assembly): Set<string> {
+  const ignored = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
+  return ignored;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -773,7 +844,7 @@ export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): Co
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Criterion 2 — mechanism.interpenetration (non-mated overlap)
+// Criterion 2 — mechanism.interpenetration (part overlap)
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
@@ -786,13 +857,16 @@ export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): Co
  * Adjacency does NOT excuse a real overlap. A correctly-modeled rotating
  * joint is a clearance fit (ISO 286): the clevis primitive drills the pin
  * bore through both knuckles so the pin floats in air and pin-in-tongue
- * shared volume is ~0. The only escape hatch for a genuine intended overlap
- * is the per-pair user `ignore` list on `solvedModel({ ignore: [...] })`.
+ * shared volume is ~0. `solvedModel({ ignore: [...] })` may exempt the
+ * returned rest sample from this BREP probe, but it never waives a collision
+ * at a sampled joint-travel pose.
  */
 async function checkInterpenetration(
   arm: Assembly,
   solved: SolvedSample[],
   loweredBase: LoweredSceneBase,
+  proxies: readonly SweepProxy[],
+  unconfirmed: Array<{ a: string; b: string }>,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
   const mates = arm.__mates();
@@ -805,20 +879,22 @@ async function checkInterpenetration(
     const b = parseConnectorRef(m.b).partName;
     matedPairs.set(pairKey(a, b), m.type);
   }
-
-  // The documented escape hatch for a genuine intended overlap is the
-  // per-pair user `ignore` list on `solvedModel({ ignore: [...] })`
-  // (SolidWorks "Ignore" / press-fit). Fold it into the detector's
-  // symmetric pair-key set so the mechanism-truth criterion honors the
-  // same silencing the validator diagnostic stream does.
-  const ignored = new Set<string>();
-  for (const [a, b] of arm.__ignoreInterference()) ignored.add(pairKey(a, b));
+  const ignoredAtRest = new Set<string>();
+  for (const [a, b] of arm.__ignoreInterference()) ignoredAtRest.add(pairKey(a, b));
+  const noIgnoredPairs = new Set<string>();
 
   for (const s of solved) {
     const scene = await lowerSceneForSample(arm, s, loweredBase);
     if (scene === undefined) continue;
 
-    const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, ignored);
+    // Preserve the authored-pose exception, but never carry it into the
+    // articulated sweep. An ignore at rest cannot hide a collision at a
+    // declared joint limit or intermediate sample.
+    const ignored = s.sample.name === 'rest' ? ignoredAtRest : noIgnoredPairs;
+    const result = detectInterferences(
+      scene, INTERPENETRATION_EPSILON_MM3, ignored, [], undefined, proxyPairIndexes(proxies, scene, ignored),
+    );
+    if (result.unconfirmedPairs !== undefined) unconfirmed.push(...result.unconfirmedPairs);
     if (result.pairs.length === 0) continue;
 
     for (const pair of result.pairs) {
@@ -837,8 +913,8 @@ async function checkInterpenetration(
         'mechanism.interpenetration',
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
-        `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
-        `or pass { ignore: [['${pair.a}', '${pair.b}']] } as the SECOND argument to solvedModel({}, { ignore: ... }) if this overlap is genuinely intended.`,
+        `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. ` +
+        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.`,
       ));
     }
   }
@@ -879,6 +955,8 @@ async function checkInterpenetration(
 async function checkDofMismatch(
   arm: Assembly,
   loweredBase: LoweredSceneBase,
+  proxies: readonly SweepProxy[],
+  unconfirmed: Array<{ a: string; b: string }>,
 ): Promise<CompilerDiagnostic[]> {
   // A coupled (driven) mate never moves on its own: perturbing it alone
   // turns a meshing gear into a collision. Its motion is exercised through
@@ -899,7 +977,9 @@ async function checkDofMismatch(
     // resting on its end stop must not be pushed through the stop.
     const microPoses = microPosesWithinLimits(mate);
     if (microPoses.length < 2) continue;
-    const overlapCounts = await microPoseOverlapCounts(arm, mate, microPoses, loweredBase, ignored);
+    const overlapCounts = await microPoseOverlapCounts(
+      arm, mate, microPoses, loweredBase, ignored, proxies, unconfirmed,
+    );
 
     // If any micro-pose failed to solve / lower, skip the mate (the
     // failure already surfaces via other criteria / the pose-envelope).
@@ -943,6 +1023,8 @@ async function microPoseOverlapCounts(
   microPoses: readonly number[],
   loweredBase: LoweredSceneBase,
   ignored: ReadonlySet<string>,
+  proxies: readonly SweepProxy[],
+  unconfirmed: Array<{ a: string; b: string }>,
 ): Promise<number[]> {
   const overlapCounts: number[] = [];
   for (const p of microPoses) {
@@ -961,8 +1043,14 @@ async function microPoseOverlapCounts(
         continue;
       }
       const result = detectInterferences(
-        scene, INTERPENETRATION_EPSILON_MM3, ignored,
+        scene, INTERPENETRATION_EPSILON_MM3, ignored, [], undefined,
+        proxyPairIndexes(proxies, scene, ignored),
       );
+      if (result.unconfirmedPairs !== undefined && result.unconfirmedPairs.length > 0) {
+        unconfirmed.push(...result.unconfirmedPairs);
+        overlapCounts.push(-1);
+        continue;
+      }
       overlapCounts.push(result.pairs.length);
     } catch {
       overlapCounts.push(-1);
@@ -1011,6 +1099,15 @@ async function checkJointMeshContinuityCriterion(
 
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
+    if (r.status === 'unavailable') {
+      const failure = makeFailure(
+        'mechanism.joint-mesh-unverified',
+        `Joint '${r.mateName}' ${r.side} body '${r.partName}': rest-pose continuity could not be measured because ${r.reason}. This joint cannot be certified connected.`,
+        'warn',
+      );
+      out.push({ ...failure, details: { mateName: r.mateName, partName: r.partName, side: r.side } });
+      continue;
+    }
     // Decision #3 reframe: the knuckle SOLID must be present around the
     // pivot, not the pivot POINT inside solid. A drilled clevis knuckle's
     // nearest solid is the bore wall at `clearanceRadiusMm`; accept a gap up
@@ -1108,7 +1205,13 @@ function buildPoseSamples(arm: Assembly): PoseSample[] {
   ];
   const mates = arm.__mates();
   const couplings = arm.__mateCouplings();
+  const coupledDriven = new Set(couplings.map((coupling) => coupling.driven));
   for (const mate of mates) {
+    // A driven mate is a dependent coordinate. Sampling it independently
+    // creates a pose that contradicts coupleMates and can make the physics
+    // gate test a fictitious joint configuration. Drive the source and let
+    // expandCoupledPoses derive each output instead.
+    if (coupledDriven.has(mate.name)) continue;
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
     const [min, max] = limits;
@@ -1204,8 +1307,9 @@ async function lowerAssemblySceneForPose(
 }
 
 /**
- * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP
- * pose-sweep. Severity 'warn' so it carries the 'unverified' verdict with
+ * Build the LOUD non-fatal diagnostic for a skipped BREP pose sweep. The
+ * message distinguishes a forced skip from an estimate that exceeded a
+ * positive budget. Severity 'warn' carries the 'unverified' verdict with
  * evidence without flipping the verdict to 'broken' (see precedence in
  * {@link checkMechanismTruth}).
  */
@@ -1215,20 +1319,52 @@ function makeBudgetExceeded(
 ): CompilerDiagnostic {
   const code = 'mechanism.unverified-budget-exceeded';
   const { work, candidates, parts, clusters, lowers } = estimate;
+  const skipReason = sweepBudget <= 0
+    ? `sweepBudget is ${sweepBudget} (forced skip)`
+    : `estimated work ${work} exceeds the budget ${sweepBudget}`;
   return {
     target: 'export-occt',
     code,
     severity: 'warn',
     message:
       `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
-      `estimated work ${work} exceeds the budget ${sweepBudget} ` +
+      `${skipReason} ` +
       `(${parts} part${parts === 1 ? '' : 's'} in ${clusters} rigid cluster${clusters === 1 ? '' : 's'}, ` +
       `${lowers} pose${lowers === 1 ? '' : 's'}, ${candidates} pair overlap probe${candidates === 1 ? '' : 's'}; ` +
-      `work is the summed face count of the probed pairs). The mechanism ` +
+      `work counts exact confirms selected by the proxy pass, as the summed ` +
+      `analysis-body face count of those pairs). The mechanism ` +
       `is NOT certified collision-free across its travel. Rest-pose joint-mesh ` +
-      `continuity still ran — a link that does not meet its body is 'broken', ` +
-      `not unverified. Reduce the part/pose count, verify a tractable ` +
+      `continuity still ran: measured gaps remain errors, and unavailable ` +
+      `joint measurements keep the mechanism unverified. Reduce the part/pose ` +
+      `count, verify a tractable ` +
       `sub-assembly, or pass a larger sweepBudget to force the full sweep.`,
+    hint: HINT_TEMPLATES[code].template,
+    nextAction: HINT_TEMPLATES[code].nextAction,
+  };
+}
+
+/** Indexes the proxy collector returns, in the BRep part order the detector uses. */
+function proxyPairIndexes(
+  proxies: readonly SweepProxy[],
+  scene: SceneBackend,
+  ignored: ReadonlySet<string>,
+): ReadonlyArray<readonly [number, number]> {
+  return proxyPairsNeedingExactConfirm(proxies, scene, ignored);
+}
+
+function makeExactProbeUnconfirmed(
+  pairs: readonly { a: string; b: string }[],
+): CompilerDiagnostic {
+  const code = 'mechanism.unverified-exact-probe';
+  const listed = pairs.slice(0, 3).map((pair) => `${pair.a}/${pair.b}`).join(', ');
+  return {
+    target: 'export-occt',
+    code,
+    severity: 'warn',
+    message:
+      `The articulated BREP pose-sweep could not confirm ${pairs.length} proxy ` +
+      `candidate${pairs.length === 1 ? '' : 's'} (${listed}). An exact overlap probe failed, ` +
+      `so the sweep is unverified. A failed boolean is not a clear result.`,
     hint: HINT_TEMPLATES[code].template,
     nextAction: HINT_TEMPLATES[code].nextAction,
   };

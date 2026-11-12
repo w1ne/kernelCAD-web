@@ -1,0 +1,47 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/Volumes/LabWired/kc-work/kcw-fix-1269/artifacts/issue-1269-demo/scissor-jack-demo.kcad.ts",
+  "generatedAt": "2026-11-09T21:16:28.224Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 640,
+    "height": 480
+  },
+  "views": [
+    "iso"
+  ],
+  "bounds": {
+    "min": [
+      -20,
+      -6,
+      -10
+    ],
+    "max": [
+      140,
+      6,
+      74.0999984741211
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "iso"
+    ]
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "iso": "channels/rgb/iso.png"
+    }
+  }
+}

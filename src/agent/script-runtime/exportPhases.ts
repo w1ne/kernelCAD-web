@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { exportSceneDxf } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
@@ -37,6 +37,7 @@ import {
   sliceShapeToGcode,
   threeMfBedDiagnostics,
   threeMfMeshDiagnostics,
+  stlNotWatertightDiagnostic,
   meshToleranceInvalidDiagnostic,
   brepInvalidDiagnostic,
   type GcodeOptions,

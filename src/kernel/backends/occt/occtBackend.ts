@@ -18,6 +18,8 @@ import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
+import { completeLoftFromLifted } from './polyhedralRuledLoft';
+import { cachedCollisionVertices } from './collisionVerticesCache';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
@@ -630,6 +632,7 @@ export class OcctBackend implements ShapeBackend {
     planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number }>,
     opts: {
       ruled?: boolean;
+      faceted?: boolean;
       startPoint?: [number, number, number];
       endPoint?: [number, number, number];
       twistCenter?: [number, number];
@@ -650,16 +653,12 @@ export class OcctBackend implements ShapeBackend {
       );
     }
     const lifted = sketches.map((s, i) => OcctBackend.liftLoftSection(s, planes[i], cx, cy, i));
-    // Replicad's Sketch.loftWith expects the receiver as the first section
-    // and an array (or one) of "other" sections.
-    const [first, ...rest] = lifted;
-    const loftConfig: { ruled?: boolean; startPoint?: unknown; endPoint?: unknown } = {};
-    if (opts.ruled !== undefined) loftConfig.ruled = opts.ruled;
-    if (opts.startPoint) loftConfig.startPoint = opts.startPoint;
-    if (opts.endPoint) loftConfig.endPoint = opts.endPoint;
-    const lofted = (first as { loftWith: (others: unknown[], cfg: typeof loftConfig) => ReplicadShape3D })
-      .loftWith(rest, loftConfig);
-    return new OcctBackend(lofted);
+    return completeLoftFromLifted(
+      lifted,
+      opts,
+      (vertices, indices) => OcctBackend.fromTriangleMesh(vertices, indices),
+      (shape) => new OcctBackend(shape as ReplicadShape3D),
+    );
   }
 
   /** Lift one loft section onto its target plane, applying the per-section
@@ -1084,7 +1083,7 @@ export class OcctBackend implements ShapeBackend {
         const props = new oc.GProp_GProps_1();
         oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
         const volumeMm3 = Math.abs(props.Mass());
-        props.delete();
+        props.delete(); if (!(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
         const surface = new oc.GProp_GProps_1();
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
@@ -1092,8 +1091,7 @@ export class OcctBackend implements ShapeBackend {
         const bounds = optimalBoundsOf(shape);
         return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
-        // The handle holds a reference to the common solid; without this the
-        // result of every probe stays in the WASM heap until GC.
+        // The handle holds a reference to the common solid; without this the result of every probe stays in the WASM heap until GC.
         shape.delete();
       }
     } finally {
@@ -1219,10 +1217,11 @@ export class OcctBackend implements ShapeBackend {
    * tolerance, for collision proxies. MuJoCo convexifies every mesh geom, so
    * a physics body needs only a vertex cloud whose hull matches the part;
    * an export-grade tessellation costs far more memory for the same hull.
+   * The cloud is memoized on the underlying replicad shape so a later MJCF
+   * export of the same rest-pose solid does not remesh it.
    */
   collisionVertices(tolerance = 0.5, angularTolerance = 0.6): Float32Array {
-    const meshed = this.shape.mesh({ tolerance, angularTolerance });
-    return new Float32Array(meshed.vertices);
+    return cachedCollisionVertices(this.shape, tolerance, angularTolerance);
   }
 
   getMesh(): RuntimeMesh {

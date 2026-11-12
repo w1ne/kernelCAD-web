@@ -109,6 +109,13 @@ function appendGlbRigNotes(lines: string[]): void {
   lines.push(
     '### GLB assembly rigs',
     '',
+    'GLB linear distances are metres by default, matching the glTF specification.',
+    'The writer scales kernelCAD millimetre geometry at the scene root, including',
+    'rig transforms, so a standard glTF viewer displays the authored physical size.',
+    'Set `units: \'mm\'` only when the receiving tool reads',
+    '`asset.extras.kernelcad.units`; ordinary glTF viewers treat those raw values',
+    'as metres. `units: \'m\'` is also available explicitly.',
+    '',
     'When a returned assembly scene has mates, GLB export defaults to a strict node',
     'hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`',
     'nodes at the resolved connector frame; moving part meshes are offset beneath',
@@ -133,7 +140,8 @@ function appendGlbRigNotes(lines: string[]): void {
     'knob JSON remains unchanged).',
     '',
     'Set the GLB export option `hierarchy: \'flat\'` to keep the historical flat',
-    'node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).',
+    'node list. See the [metre-scale handoff example](../examples/exports/glb-meter-handoff.kcad.ts)',
+    'and the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).',
     '',
   );
 }

@@ -202,6 +202,27 @@ describe('evaluateScriptTool', () => {
     expect(result.diagnostics.some(d => d.code?.startsWith('mechanism.'))).toBe(false);
   }, 120_000);
 
+  it('reports a rest-pose part overlap as mechanism.rest-interpenetration through solvedModel validation', async () => {
+    const result = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rest-overlap');
+        const a = arm.part('a', box(20, 20, 20));
+        const b = arm.part('b', box(20, 20, 20));
+        const connector = { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 10] } };
+        a.connector('mount', connector);
+        b.connector('mount', connector);
+        arm.mate('fixed', 'a.mount', 'b.mount', 'fastened');
+        return arm.solvedModel({});
+      `,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.mechanism).toBe('broken');
+    expect(result.diagnostics.some(
+      d => d.code === 'mechanism.rest-interpenetration' && d.severity === 'error',
+    )).toBe(true);
+  }, 60_000);
+
   it('skipMechanismCheck:true opts out — no mechanism field, broken assembly is not gated', async () => {
     const result = await evaluateScriptTool({ file: BROKEN_FIXTURE, skipMechanismCheck: true });
     expect(result.mechanism).toBeUndefined();

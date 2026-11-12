@@ -76,7 +76,7 @@ export function decodeBinaryStlMeshChunks(
  */
 export function measureBrepSurfaceDeviation(
   shapes: readonly Shape3D[],
-  outputMeshes: readonly MeshData[],
+  outputMeshes: readonly TriangleMeshChunk[],
   requestedMm: number,
   sampleCap = MESH_DEVIATION_SAMPLE_CAP,
 ): MeshDeviationReport {
@@ -150,7 +150,7 @@ function deviationReport(
  *  directly testable with small deterministic meshes. */
 export function nearestTriangleDistancesChunked(
   points: readonly DeviationPoint[],
-  meshes: readonly MeshData[],
+  meshes: readonly TriangleMeshChunk[],
   chunkSize = MESH_DEVIATION_TRIANGLE_CHUNK_SIZE,
 ): number[] {
   validateTriangleChunkSize(chunkSize);
@@ -173,7 +173,7 @@ function nearestTriangleDistancesFromChunks(
   return Array.from(nearest);
 }
 
-function* indexedTriangleChunks(meshes: readonly MeshData[], chunkSize: number): Iterable<TriangleMeshChunk> {
+function* indexedTriangleChunks(meshes: readonly TriangleMeshChunk[], chunkSize: number): Iterable<TriangleMeshChunk> {
   for (const mesh of meshes) {
     const meshTriangleCount = Math.floor(mesh.triangles.length / 3);
     for (let start = 0; start < meshTriangleCount; start += chunkSize) {
@@ -199,7 +199,7 @@ function readBinaryStl(bytes: Uint8Array): { view: DataView; triangleCount: numb
   return { view, triangleCount };
 }
 
-function indexedTriangleChunk(mesh: MeshData, start: number, count: number): TriangleMeshChunk {
+function indexedTriangleChunk(mesh: TriangleMeshChunk, start: number, count: number): TriangleMeshChunk {
   const vertices = new Float64Array(count * 9);
   const triangles = new Uint32Array(count * 3);
   for (let triangle = 0; triangle < count; triangle++) {

@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
-import { isKernelError } from '../../../src/shared/intent/kernelError';
+import { Scene } from '../../../src/modeling/validation/scene';
 
 function overlappingArm() {
   const session = new CaptureSession();
@@ -34,17 +34,15 @@ describe('solvedModel ignore argument position', () => {
 
   it('hints the second-argument form when the overlap is not ignored', async () => {
     const arm = overlappingArm();
-    let caught: unknown;
-    try {
-      await arm.solvedModel({}, { validate: 'error' });
-    } catch (e) {
-      caught = e;
-    }
-    expect(caught).toBeDefined();
-    expect(isKernelError(caught)).toBe(true);
-    if (!isKernelError(caught)) return;
-    expect(caught.hint).toContain('SECOND argument');
-    expect(caught.hint).toContain("solvedModel({}, { ignore: [['a', 'b']] })");
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+
+    expect(scene).toBeInstanceOf(Scene);
+    const overlap = scene.__deferredValidationDiagnostics().find(
+      (diagnostic) => diagnostic.code === 'assembly.interference.overlap',
+    );
+    expect(overlap).toBeDefined();
+    expect(overlap?.hint).toContain('SECOND argument');
+    expect(overlap?.hint).toContain("solvedModel({}, { ignore: [['a', 'b']] })");
   }, 60_000);
 
   it('still rejects the first-argument form, proving the hint is accurate', async () => {

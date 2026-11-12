@@ -48,6 +48,30 @@ function buildHingedBeam(opts: {
   return { arm };
 }
 
+function buildMateOnlyArm(): Assembly {
+  const session = new CaptureSession();
+  const kc = createScriptApi({ session });
+  const arm = kc.assembly('mate-only-arm');
+  const wall = arm.part('wall', kc.box(40, 40, 40, true));
+  const beam = arm.part(
+    'beam',
+    kc.box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0),
+    { density: STEEL_DENSITY },
+  );
+  wall.connector('pivot', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 1, 0],
+  });
+  beam.connector('pivot', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 1, 0],
+  });
+  arm.mate('shoulder', 'wall.pivot', 'beam.pivot', 'revolute', { limitsDeg: [-90, 90] });
+  return arm;
+}
+
 function expectedTorqueAtHorizontal(density: number): number {
   const volumeM3 = (LENGTH_MM * WIDTH_MM * HEIGHT_MM) * 1e-9;
   const massKg = density * volumeM3;
@@ -112,12 +136,25 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
     expect(diag).toBeDefined();
   });
 
-  it('empty assembly / no joints is a vacuous pass', async () => {
+  it('mate-only revolute joints report that static-hold has no actuator coverage', async () => {
+    const arm = buildMateOnlyArm();
+    const r = await checkStaticHold(arm);
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag).toMatchObject({ severity: 'warn' });
+    expect(diag?.message).toContain('shoulder');
+    expect(diag?.message).toContain('mechanicalJoint');
+  });
+
+  it('empty assembly reports that static-hold checked nothing', async () => {
     const session = new CaptureSession();
     const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await checkStaticHold(arm);
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(false);
     expect(r.joints).toHaveLength(0);
+    expect(r.diagnostics.some((d) => d.code === 'assembly.joint.static-hold.no-actuator')).toBe(true);
   });
 });

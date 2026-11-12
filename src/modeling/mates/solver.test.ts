@@ -181,6 +181,11 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     expect(couplerT.rotateDeg).toBeCloseTo(0, 6);
     expect(couplerT.translate[0]).toBeCloseTo(25 * Math.sin((30 * Math.PI) / 180), 6);
     expect(couplerT.translate[2]).toBeCloseTo(25 * Math.cos((30 * Math.PI) / 180), 6);
+
+    const crankInput = kcad.param('crankInput', 30, { min: 0, max: 360 });
+    const drivenByParam = await solveMates(arm, { crank_ground: crankInput });
+    expect(drivenByParam.poses.get('coupler')!.decomposeToTranslateAndRotate().translate[2])
+      .toBeCloseTo(25 * Math.cos((30 * Math.PI) / 180), 6);
   });
 
   it('closes an articulated loop whose default pose does not close by moving the free joints', async () => {
@@ -207,6 +212,102 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     const r = await solveMates(arm);
     expect(r.status).toBe('solved');
     expect(r.loopResiduals?.[0].mm).toBeLessThan(1e-5);
+  });
+
+  it('measures a prismatic loop residual perpendicular to its permitted travel', async () => {
+    const { arm, kcad } = makeArm();
+    const a = arm.part('a', kcad.box(10, 10, 10));
+    const b = arm.part('b', kcad.box(10, 10, 10));
+    const c = arm.part('c', kcad.box(10, 10, 10));
+    const d = arm.part('d', kcad.box(120, 10, 10));
+    const frame = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] } };
+    a.connector('to-b', frame).connector('to-c', frame);
+    b.connector('to-a', frame).connector('to-d', frame);
+    c.connector('to-a', frame);
+    c.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    d.connector('to-b', frame);
+    d.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [100, 0, 0] }, axis: [1, 0, 0] });
+    arm.mate('a-b', 'a.to-b', 'b.to-a', 'fastened');
+    arm.mate('a-c', 'a.to-c', 'c.to-a', 'fastened');
+    arm.mate('b-d', 'b.to-d', 'd.to-b', 'fastened');
+    arm.mate('slider', 'c.track', 'd.track', 'prismatic', { pose: 100, limitsMm: [0, 120] });
+
+    const result = await solveMates(arm);
+
+    expect(result.status).toBe('solved');
+    expect(result.loopResiduals?.find((r) => r.mate === 'slider')?.mm).toBeCloseTo(0, 8);
+  });
+
+  it('resolves a ParamRef drive before passing a closed loop to the solver', async () => {
+    const { arm, kcad } = makeArm();
+    const sliderPose = kcad.param('sliderPose', 100, { min: 0, max: 120 });
+    const a = arm.part('a', kcad.box(10, 10, 10));
+    const b = arm.part('b', kcad.box(10, 10, 10));
+    const c = arm.part('c', kcad.box(10, 10, 10));
+    const d = arm.part('d', kcad.box(120, 10, 10));
+    const frame = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] } };
+    a.connector('to-b', frame).connector('to-c', frame);
+    b.connector('to-a', frame).connector('to-d', frame);
+    c.connector('to-a', frame);
+    c.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    d.connector('to-b', frame);
+    d.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [100, 0, 0] }, axis: [1, 0, 0] });
+    arm.mate('a-b', 'a.to-b', 'b.to-a', 'fastened');
+    arm.mate('a-c', 'a.to-c', 'c.to-a', 'fastened');
+    arm.mate('b-d', 'b.to-d', 'd.to-b', 'fastened');
+    arm.mate('slider', 'c.track', 'd.track', 'prismatic', { pose: 100, limitsMm: [0, 120] });
+
+    const result = await solveMates(arm, { slider: sliderPose });
+
+    expect(result.loop?.reachedDriven.slider).toBe(100);
+    expect(result.loopResiduals?.find((r) => r.mate === 'slider')?.mm).toBeCloseTo(0, 8);
+  });
+
+  it('retains an off-axis millimetre residual for a prismatic loop that does not close', async () => {
+    const { arm, kcad } = makeArm();
+    const a = arm.part('a', kcad.box(10, 10, 10));
+    const b = arm.part('b', kcad.box(10, 10, 10));
+    const c = arm.part('c', kcad.box(10, 10, 10));
+    const d = arm.part('d', kcad.box(120, 10, 10));
+    const frame = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] } };
+    a.connector('to-b', frame).connector('to-c', frame);
+    b.connector('to-a', frame).connector('to-d', frame);
+    c.connector('to-a', frame);
+    c.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    d.connector('to-b', frame);
+    d.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [100, 2, 0] }, axis: [1, 0, 0] });
+    arm.mate('a-b', 'a.to-b', 'b.to-a', 'fastened');
+    arm.mate('a-c', 'a.to-c', 'c.to-a', 'fastened');
+    arm.mate('b-d', 'b.to-d', 'd.to-b', 'fastened');
+    arm.mate('slider', 'c.track', 'd.track', 'prismatic', { pose: 100, limitsMm: [0, 120] });
+
+    const result = await solveMates(arm);
+
+    expect(result.status).toBe('did-not-converge');
+    expect(result.loopResiduals?.find((r) => r.mate === 'slider')?.mm).toBeCloseTo(2, 6);
+  });
+
+  it('keeps an unposed prismatic cut at its zero-pose reference instead of hiding an axial gap', async () => {
+    const { arm, kcad } = makeArm();
+    const a = arm.part('a', kcad.box(10, 10, 10));
+    const b = arm.part('b', kcad.box(10, 10, 10));
+    const c = arm.part('c', kcad.box(10, 10, 10));
+    const d = arm.part('d', kcad.box(120, 10, 10));
+    const frame = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] } };
+    a.connector('to-b', frame).connector('to-c', frame);
+    b.connector('to-a', frame).connector('to-d', frame);
+    c.connector('to-a', frame);
+    c.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    d.connector('to-b', frame);
+    d.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [100, 0, 0] }, axis: [1, 0, 0] });
+    arm.mate('a-b', 'a.to-b', 'b.to-a', 'fastened');
+    arm.mate('a-c', 'a.to-c', 'c.to-a', 'fastened');
+    arm.mate('b-d', 'b.to-d', 'd.to-b', 'fastened');
+    arm.mate('slider', 'c.track', 'd.track', 'prismatic');
+
+    const result = await solveMates(arm);
+
+    expect(result.loopResiduals?.find((r) => r.mate === 'slider')?.mm).toBeCloseTo(100, 6);
   });
 
   it('reports lockup when the driven crank asks for a pose the loop cannot reach', async () => {

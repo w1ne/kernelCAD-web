@@ -242,10 +242,11 @@ function watertightSeamShells(
     : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
   let shells = meshPartsAsShells(worldParts, initialDeflection);
   if (!verifyWatertight(shells).ok) return undefined;
-  let bytes = Uint8Array.from(encodeBinaryStl(shells));
+  let bytes: Uint8Array = Uint8Array.from(encodeBinaryStl(shells));
   let mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   if (deviationExceedsTolerance(mesh_deviation)) {
     shells = meshPartsAsShells(worldParts, exportMeshDeflection(options));
+    if (!verifyWatertight(shells).ok) return undefined;
     bytes = Uint8Array.from(encodeBinaryStl(shells));
     mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   }
