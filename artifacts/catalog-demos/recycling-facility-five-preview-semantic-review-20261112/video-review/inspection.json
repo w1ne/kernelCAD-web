@@ -1,0 +1,12 @@
+{
+  "video": "recycling-facility-five-preview-semantic-review.mp4",
+  "durationSeconds": 16.833333,
+  "resolution": "1280x720",
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "frameRate": "30/1",
+  "sizeBytes": 247935,
+  "inspectionMethod": "ffprobe metadata plus 7 extracted frames arranged as video-review/inspection-contact-sheet.png",
+  "visualReview": "All seven slides were inspected. Preview images remain recognizable, labels and result text are readable, no text is clipped, and the final slide clearly limits the claim to a local preview review.",
+  "claimBoundaries": "No material mismatch was established. No source or index edit, test, deployment, simulation, or hardware acceptance is claimed."
+}

@@ -32,3 +32,20 @@
 The [handoff bundle](../../artifacts/catalog-demos/shipyard-blast-dust-collector-filter-media-material-review-20261112/README.md) retains the five sample sources and renders, before/after target images, exact open-target output, current public baseline, source/settings, generated-index checks, test and lint logs, local page check, and visually inspected MP4.
 
 This is a material assignment correction to a generic native kernelCAD scene asset. It is not a vendor-specific design, filtration specification, equipment performance claim, deployment verification, or physical acceptance.
+
+## Second sample — recycling-facility machinery
+
+- Rechecked [PR #1258](https://github.com/w1ne/kernelCAD-web/pull/1258) at head `47a6aefc88099de69ab30240fe42fa152796f711`. It remained open and mergeable; all 17 reported checks succeeded, and no review had been submitted.
+- Reviewed five branch-rendered recycling assets: `twin-shaft-shredder`, `optical-sorter-arch`, `overband-magnet-separator`, `glass-washer-trommel`, and `granulator`. Exact open-issue searches returned no matches. The exact source and preview paths did not occur in the public diffs of the other 20 open PRs checked; #1258 is excluded as the destination PR. The complete check record is in the [review bundle](../../artifacts/catalog-demos/recycling-facility-five-preview-semantic-review-20261112/README.md).
+- All five local source hashes match their `catalog/index.json` rows and all five checked-in previews exist. Each preview shows the defining parts for its label, with plausible material zoning. No valid material mismatch was found, so no source, preview, test, or generated index was changed.
+- Fetched all five live asset sources and previews from `kernelcad.com`; all routes returned HTTP 200. The live and branch hashes match for `twin-shaft-shredder` and `overband-magnet-separator`. For `optical-sorter-arch`, `glass-washer-trommel`, and `granulator`, the public site still serves older source/render pairs (208, 400, and 408 triangles respectively); this branch has 1,420, 3,122, and 1,478 triangles. The branch review is not a deployment claim.
+
+| Asset | Branch render | Observation | Result |
+|---|---:|---|---|
+| `recycling-facility/twin-shaft-shredder` | 6,112 triangles; 4.18 × 2.45 × 2.24 m | Twin cutter shafts, flared feed hopper, opposed drives, and discharge chute are visible; body paint, cutter steel, drive paint, and safety trim read as distinct zones. | No material mismatch found. |
+| `recycling-facility/optical-sorter-arch` | 1,420 triangles; 2.82 × 2.89 × 7.03 m | Portal frame, hooded sensor head, lamps, belt, air knife, splitter, and bunkers are visible; finishes are plausible. | No material mismatch found. |
+| `recycling-facility/overband-magnet-separator` | 3,536 triangles; 6.54 × 3.88 × 7.60 m | Suspended magnet and self-cleaning cross-belt sit above the feed conveyor, with a discharge chute and scrap skip; magnet paint, gantry, belting, and scrap remain distinct. | No material mismatch found. |
+| `recycling-facility/glass-washer-trommel` | 3,122 triangles; 8.45 × 3.00 × 2.33 m | Inclined drum, riding tyres, trunnions, spray header, sump, and feed/discharge chutes are visible; stainless, frame paint, pipework, and wet cullet look coherent. | No material mismatch found. |
+| `recycling-facility/granulator` | 1,478 triangles; 1.83 × 1.92 × 2.75 m | Open hopper exposes the rotor and knives; flywheel drive, rubber belts, and regrind bin distinguish the machine from its plastic output. | No material mismatch found. |
+
+The [review bundle](../../artifacts/catalog-demos/recycling-facility-five-preview-semantic-review-20261112/README.md) contains the five branch source/render pairs, captured live source/render baseline, exact hash and target ledgers, PR status, render comparison sheet, and an inspected MP4 audit walkthrough. Because no defect was established, there is no before/after render or asset regression test. This visual review does not certify vendor dimensions, machine performance, safety, deployment, or physical acceptance.
