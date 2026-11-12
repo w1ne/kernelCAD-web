@@ -284698,7 +284698,7 @@
       "id": "blast-dust-collector",
       "kit": "shipyard",
       "title": "Blast dust collector",
-      "description": "Compact dust extraction skid with filter canisters, inlet duct, service door, and wheeled base. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Compact dust extraction skid with filter canisters, inlet duct, service door, and wheeled base. Editable yard-finish, filter-media, and elastomer colors; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -284721,7 +284721,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/blast-dust-collector.kcad.ts",
       "preview": "/assets/shipyard-blast-dust-collector.png",
-      "sourceSha256": "8b2ef45d509fb5ac991254da263bf79da04169d55a8fff7a825f513b1c807525",
+      "sourceSha256": "c85643f747d3fe8dbdc140343e18b9f2c89d35979f87a3d7c9f9d5732aab2dae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -284740,6 +284740,12 @@
           "label": "Yard finish"
         },
         {
+          "name": "filterMedia",
+          "type": "color",
+          "default": "#d7ded8",
+          "label": "Filter media"
+        },
+        {
           "name": "elastomer",
           "type": "color",
           "default": "#30383b",
@@ -284749,10 +284755,12 @@
       "presets": {
         "fresh-coat": {
           "yardPaint": "#8b9994",
+          "filterMedia": "#e4e8e3",
           "elastomer": "#3a4245"
         },
         "weathered-yard": {
           "yardPaint": "#5e6d67",
+          "filterMedia": "#c4ccc5",
           "elastomer": "#252b2d"
         }
       },
@@ -284772,14 +284780,21 @@
           "color": "#71837c",
           "parts": [
             "skid",
-            "filter-canister-0",
-            "filter-canister-1",
-            "filter-canister-2",
             "inlet-duct",
             "fan-housing",
             "service-door"
           ],
           "param": "yardPaint"
+        },
+        {
+          "name": "filterMedia",
+          "color": "#d7ded8",
+          "parts": [
+            "filter-canister-0",
+            "filter-canister-1",
+            "filter-canister-2"
+          ],
+          "param": "filterMedia"
         },
         {
           "name": "elastomer",

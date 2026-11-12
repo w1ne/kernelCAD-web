@@ -1,0 +1,4 @@
+local page: /tmp/kernelcad-blast-dust-collector-pages-20261112/catalog/shipyard/blast-dust-collector/index.html
+controls: yardPaint, filterMedia, elastomer
+presets: fresh-coat, weathered-yard
+preview sha256: f1d3e8fecd217f1ef4b8a80feebd6fc9579727e8ab4293fb8e50de66355052a0
