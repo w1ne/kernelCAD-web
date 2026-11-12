@@ -212,6 +212,39 @@ describe('connect-placed parts inherit their parent mate motion', () => {
       }
     });
   }
+
+  it('keeps a connected descendant at its own solver-selected mate pose', async () => {
+    const code = `
+      const arm = assembly('rig');
+      const root = arm.part('root', box(2, 2, 2, true));
+      root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      root.connector('fixtureMount', { type: 'frame', origin: { kind: 'vec3', value: [140, 0, 0] } });
+
+      const parent = arm.part('parent', box(20, 4, 2, false), {
+        at: [100, 0, 0],
+        connectors: { childMount: { origin: [20, 0, 0] } },
+      });
+      parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+      const child = arm.part('child', box(10, 2, 2, false), {
+        connectors: { root: { origin: [0, 0, 0] } },
+        connect: { connector: 'root', to: parent.connector('childMount') },
+      });
+      child.connector('root', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      const fixture = arm.part('fixture', box(2, 2, 2, false));
+      fixture.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+      arm.mate('fixtureLock', 'root.fixtureMount', 'fixture.seat', 'fastened');
+      arm.mate('childLock', 'fixture.seat', 'child.root', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const boxes = await builtBoxes(code);
+
+    // The parent turns about the root, but the child is also fastened to the
+    // stationary fixture. Its own mate therefore remains authoritative.
+    expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+    expectBox(boxes.get('fixture'), { min: [140, 0, 0], max: [142, 2, 2] });
+    expectBox(boxes.get('child'), { min: [140, 0, 0], max: [150, 2, 2] });
+  });
 });
 
 // ---------------------------------------------------------------------------
