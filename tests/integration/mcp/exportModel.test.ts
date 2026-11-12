@@ -177,6 +177,23 @@ describe('export_model MCP tool', () => {
     });
   }, 60000);
 
+  it('writes the #1299 single-shape fixture as a metre-scaled GLB by default', async () => {
+    const out = join(tmpDir, 'box1299.glb');
+    const r = await exportModelTool({
+      code: 'return box(55, 10, 30);',
+      output_path: out,
+      format: 'glb',
+    });
+    expect(r.ok).toBe(true);
+
+    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(out)));
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+    expect(extras.units).toBe('m');
+    (await sortedGlbWorldExtents(out)).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([0.01, 0.03, 0.055][index]!, 6);
+    });
+  }, 60000);
+
   it('rejects URDF / SRDF / SDF-Gazebo / USD with export.no-shape when the script returns a single Shape', async () => {
     // Slice B-rest fills the URDF / SRDF / SDF format slots; a script that
     // returns a raw `box(...)` (no assembly captured) now trips export.no-shape
