@@ -107,6 +107,7 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[], continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
+| `rib(base: Shape, centerline: [number, number][], opts: { thickness: number, height: number, startZ?: number }) => Shape` | Create a vertical, constant-thickness rib from an open XY centerline and fuse it to the base. |
 
 ## Remove material
 
