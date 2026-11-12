@@ -132,7 +132,7 @@ export type ExportOptions =
       /** 'lowpoly': faceted game mesh, palette in COLOR_0 on one shared material. */
       style?: 'pbr' | 'lowpoly';
       lowpoly?: { angularDeg?: number; maxTriangles?: number };
-      /** Default 'mm' for pbr, 'm' for lowpoly. */
+      /** Default 'm' to match the glTF length-unit convention. */
       units?: 'mm' | 'm';
     }
   /** `bytes` is a zip of `model.obj` (with `mtllib` / `usemtl`) and sibling `model.mtl`. */

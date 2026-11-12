@@ -102,8 +102,9 @@ export interface ExportGlbOptions {
   style?: 'pbr' | 'lowpoly';
   /** Tessellation and triangle budget for `style: 'lowpoly'`. */
   lowpoly?: LowPolyGlbOptions;
-  /** Length unit of the written file. Default `mm` for `pbr` (historical)
-   *  and `m` for `lowpoly` (glTF's unit; game engines expect metres). */
+  /** Length unit of the written file. Defaults to `m`, as required by glTF.
+   *  `mm` preserves native kernelCAD coordinates for consumers that read the
+   *  `asset.extras.kernelcad.units` metadata. */
   units?: 'mm' | 'm';
   /** Directory relative-path texture refs resolve against. Mirrors
    *  `referenceImage()` / material texture-loading convention. Only needed
@@ -224,7 +225,7 @@ function meshPartsForGlb(
   );
   const layout: ExportSceneLayout = {
     axis: options.axis ?? 'y-up',
-    units: options.units ?? (style === 'lowpoly' ? 'm' : 'mm'),
+    units: options.units ?? 'm',
     style,
   };
   const stats = measureGlbStats(meshed.map((part) => ({
