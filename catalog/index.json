@@ -254640,7 +254640,7 @@
       "id": "pipe-elbow-90",
       "kit": "standard-components",
       "title": "90 degree pipe elbow",
-      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends Knobs: model size, steel, bronze.",
+      "description": "Illustrative elbow with two perpendicular open ports and a connected Ø18 mm passage at standard size. Bronze-colored end collars are separate visual bodies. Not pressure-rated CAD. Knobs: model size and finish colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254658,8 +254658,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
-      "triangleBudget": 380,
+      "sourceSha256": "e50f85776a7e205a214860a25ec7ce6f8de266c9cba824e7f79843f90e65a1c6",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254676,13 +254676,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254700,11 +254700,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 446,
         "sizeM": [
-          0.039,
           0.041,
-          0.026
+          0.042,
+          0.028
         ],
         "minUpM": 0,
         "materials": 1
@@ -254714,8 +254714,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "upright",
-            "branch"
+            "one-piece-open-elbow"
           ],
           "param": "steel"
         },
@@ -254723,7 +254722,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "inlet-reinforcing-collar",
+            "outlet-reinforcing-collar"
           ],
           "param": "bronze"
         }
