@@ -13,12 +13,13 @@ import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/a
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses } from '../../../capture/forwardKinematics';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../../mates/coupledPoses';
 import type { Connector } from '../../../mates/connector';
-import { parseConnectorRef, type MateRecord } from '../../../mates/mate';
+import type { MateRecord } from '../../../mates/mate';
 import type { MateType } from '../../../mates/mateTypes';
 import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
+import { propagateConnectedPartMotion, propagateConnectedSolvedPartMotion } from './connectedPartMotion';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { finished, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -409,47 +410,6 @@ function buildAssemblyModelSceneParts(
   });
 }
 
-/** Apply a moved parent's scene transform to a child placed with `connect:`.
- *  Capture resolves the two connector origins and bakes that initial world
- *  placement into the child's `at`. When the parent later moves through a
- *  mate, the connected child must receive the same rigid motion. Parts that
- *  have their own mate or legacy joint placement keep that solver result. */
-function propagateConnectedPartMotion(
-  worldT: Map<FeatureId, Transform>,
-  partIds: readonly FeatureId[],
-  records: readonly FeatureRecord[],
-  mates: readonly Pick<EncodedMate, 'a' | 'b'>[],
-  jointPartIds: ReadonlySet<FeatureId> = new Set(),
-): void {
-  const partIdByName = new Map<string, FeatureId>();
-  const recordById = new Map(records.map((record) => [record.id, record]));
-  for (const partId of partIds) {
-    const partRec = recordById.get(partId);
-    const partName = (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
-    partIdByName.set(partName, partId);
-  }
-
-  const matedPartIds = new Set<FeatureId>();
-  for (const mate of mates) {
-    const a = partIdByName.get(parseConnectorRef(mate.a).partName);
-    const b = partIdByName.get(parseConnectorRef(mate.b).partName);
-    if (a !== undefined) matedPartIds.add(a);
-    if (b !== undefined) matedPartIds.add(b);
-  }
-
-  for (const partId of partIds) {
-    if (matedPartIds.has(partId) || jointPartIds.has(partId)) continue;
-    const partRec = recordById.get(partId);
-    const placedBy = (partRec?.metadata as {
-      placedBy?: { to?: { partId?: FeatureId } };
-    } | undefined)?.placedBy;
-    const parentId = placedBy?.to?.partId;
-    if (parentId === undefined) continue;
-    const parentTransform = worldT.get(parentId);
-    if (parentTransform !== undefined) worldT.set(partId, parentTransform);
-  }
-}
-
 /** Default mate FK for a mate-bearing `model()` record; writes the resolved
  *  world transforms into `worldT`. False once a diagnostic has been pushed. */
 function applyModelMateFk(
@@ -612,12 +572,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     if (!applied) return noShape();
   }
 
-  const jointPartIds = new Set<FeatureId>();
-  for (const joint of joints) {
-    jointPartIds.add(joint.parentPartId);
-    jointPartIds.add(joint.childPartId);
-  }
-  propagateConnectedPartMotion(worldT, partIds, records, encodedMates, jointPartIds);
+  propagateConnectedSolvedPartMotion(worldT, partIds, records, encodedMates, joints);
 
   // 5. Build a SceneBackend (no boolean union — each part stays in its
   //    LOCAL frame and the FK-derived worldTransform travels with it).
