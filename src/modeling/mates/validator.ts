@@ -750,7 +750,7 @@ export async function validateAssemblyWithMates(
   //    decisions" item 6 — same-pass, no re-lower). The cache is empty
   //    when there are no gated mates, in which case Gate 4 is inert by
   //    construction.
-  diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
+  diagnostics.push(...validateJointLoadCapacity(arm, externalLoads, solveResult?.poses));
   diagnostics.push(...validateMountingHoleConsistency(arm));
   // Gate 2 first: its single scene lowering hands the mounting-hole
   // alignment check every part's local shape, so that check does not lower
