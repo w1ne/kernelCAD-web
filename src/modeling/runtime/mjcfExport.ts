@@ -71,6 +71,8 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
+import { emitContactBlock, emitMateCouplingBlock } from './mjcfMateConstraints';
+import { escapeXml, fmtNum, sanitizeJointName } from './mjcfXmlFormat';
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
@@ -124,6 +126,9 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     const parts = arm.__parts();
     const mates = arm.__mates();
     const tendons = arm.__tendons();
+    const couplings = arm.__mateCouplings();
+    const transmissions = arm.__transmissionIntents();
+    const couplingBlockLines = emitMateCouplingBlock(mates, couplings);
     if (parts.length === 0) {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
@@ -163,7 +168,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
     const actuatorBlockLines = emitActuatorBlock(resolvedTendons);
     const assetBlockLines = emitAssetBlock(parts, collisionMeshes);
-    const contactBlockLines = emitContactBlock(mates);
+    const contactBlockLines = emitContactBlock(mates, couplings, transmissions, parts);
 
     // P11: `<size nconmax>` gives MuJoCo headroom for contact storage.
     // Its default is small (~100) and runs out on tight multi-part
@@ -184,8 +189,9 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         '  <worldbody>',
         ...worldbodyBlocks,
         '  </worldbody>',
-        ...tendonBlockLines,
         ...contactBlockLines,
+        ...couplingBlockLines,
+        ...tendonBlockLines,
         ...actuatorBlockLines,
         '</mujoco>',
         '',
@@ -781,63 +787,6 @@ function emitAssetBlock(
     return assetBlockLines;
 }
 
-// P11 Slice 1: emit a `<contact><exclude>` block across every mate edge.
-// A clevis fork-and-tongue pair (and every other joint primitive that nests
-// one body inside another) is intentionally interpenetrating at the joint
-// anchor — the constraint comes from the joint, not from contact. Without
-// the exclude, MuJoCo treats the BREP overlap as a deep penetration and
-// kicks the chain apart on the first step.
-//
-// Fastened parts are one rigid body split across several MJCF bodies (a
-// sleeve or cover fastened to a link). MuJoCo's own parent/child filter
-// only sees direct pairs, so a cover fastened to the child link would
-// still collide with the parent link's convex hull across the joint and
-// jam it. Each rigid group (parts joined by fastened mates) therefore
-// excludes contact with itself and, across every moving mate, with the
-// whole rigid group on the other side. Non-adjacent groups keep contact,
-// so genuine "free body falls onto another" failures stay detectable.
-const mateEnds = (m: MateRecord) => [parseConnectorRef(m.a).partName, parseConnectorRef(m.b).partName] as const;
-
-/** Union-find over fastened mates: part name → its rigid-group members. */
-function rigidGroups(mates: readonly MateRecord[]): Map<string, string[]> {
-    const parent = new Map<string, string>();
-    const find = (x: string): string => {
-        let r = x;
-        while (parent.get(r) !== r) r = parent.get(r)!;
-        return r;
-    };
-    for (const m of mates) for (const n of mateEnds(m)) if (!parent.has(n)) parent.set(n, n);
-    for (const m of mates) {
-        if (m.type !== 'fastened') continue;
-        const [a, b] = mateEnds(m);
-        parent.set(find(a), find(b));
-    }
-    const members = new Map<string, string[]>();
-    for (const n of parent.keys()) members.set(find(n), [...(members.get(find(n)) ?? []), n]);
-    const groupOf = new Map<string, string[]>();
-    for (const g of members.values()) for (const n of g) groupOf.set(n, g);
-    return groupOf;
-}
-
-function emitContactBlock(mates: readonly MateRecord[]): string[] {
-    if (mates.length === 0) return [];
-    const groupOf = rigidGroups(mates);
-    const seen = new Set<string>();
-    const lines: string[] = [];
-    const exclude = (x: string, y: string) => {
-        const key = [x, y].sort().join('\u0000');
-        if (x === y || seen.has(key)) return;
-        seen.add(key);
-        lines.push(`    <exclude body1="${escapeXml(x)}" body2="${escapeXml(y)}"/>`);
-    };
-    for (const g of new Set(groupOf.values())) g.forEach((x, i) => g.slice(i + 1).forEach((y) => exclude(x, y)));
-    for (const m of mates) {
-        if (m.type === 'fastened') continue;
-        const [a, b] = mateEnds(m);
-        for (const x of groupOf.get(a) ?? [a]) for (const y of groupOf.get(b) ?? [b]) exclude(x, y);
-    }
-    return lines.length === 0 ? [] : ['  <contact>', ...lines, '  </contact>'];
-}
 
 interface InertiaSpec {
     readonly massKg: number;
@@ -950,17 +899,6 @@ function mateToMjcfJoint(
     }
 }
 
-function escapeXml(s: string): string {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-}
-
-function sanitizeJointName(s: string): string {
-    // MJCF identifiers tolerate most characters but the safer choice
-    // is to keep names matching the kernelCAD mate name verbatim. No
-    // sanitisation needed beyond XML escaping.
-    return s;
-}
-
 /**
  * Slugified per-part mesh asset name. MJCF mesh names must be unique
  * inside `<asset>`; we slug the kernelCAD part name into a stable
@@ -1007,15 +945,6 @@ const WRAP_GEOM_INFINITE_HALF_LEN_MM = 1000;
 function fmtInertia(n: number): string {
     if (!Number.isFinite(n) || n === 0) return '0';
     return n.toExponential(9);
-}
-
-function fmtNum(n: number): string {
-    // 6-decimal fixed for readability; scientific notation for
-    // values that lose precision in fixed form.
-    if (!Number.isFinite(n)) return '0';
-    if (Math.abs(n) < 1e-9) return '0';
-    if (Math.abs(n) >= 1e-4 && Math.abs(n) < 1e6) return n.toFixed(6);
-    return n.toExponential(6);
 }
 
 function perpendicularAxis(a: Vec3): Vec3 {
