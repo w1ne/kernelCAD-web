@@ -1,0 +1,102 @@
+{
+  "branchHead": "3e87e4e35486577ed29a32093980046560d23282",
+  "assetCount": 2402,
+  "kitCount": 50,
+  "items": [
+    {
+      "kit": "wind-energy",
+      "id": "blade-root-protector",
+      "title": "Blade root protector",
+      "source": "catalog/kits/wind-energy/blade-root-protector.kcad.ts",
+      "preview": "/assets/wind-energy-blade-root-protector.png",
+      "triangles": 136,
+      "triangleBudget": 300,
+      "sizeM": [
+        0.5,
+        0.42,
+        0.5
+      ],
+      "localSourceSha256": "34b0d44d7ebaeac28e0d50a870ec664c6db34d897a7eeae590edca3bf147cc00",
+      "indexSourceSha256": "34b0d44d7ebaeac28e0d50a870ec664c6db34d897a7eeae590edca3bf147cc00",
+      "localPreviewSha256": "2d6ab227eb2ed5b1961315e323474719bd53a79ee712239318c0a95648d0bdd2",
+      "localSourceMatchesIndex": true,
+      "observation": "Fiberglass sleeve, steel ring/tabs, and the round sleeve profile read as a blade-root cap; colors match the named composite and steel zones."
+    },
+    {
+      "kit": "wind-energy",
+      "id": "cable-entry-boot",
+      "title": "Cable entry boot",
+      "source": "catalog/kits/wind-energy/cable-entry-boot.kcad.ts",
+      "preview": "/assets/wind-energy-cable-entry-boot.png",
+      "triangles": 188,
+      "triangleBudget": 400,
+      "sizeM": [
+        0.46,
+        0.65,
+        0.38
+      ],
+      "localSourceSha256": "f2cf5d1c59bdea28058c7e692e96c779aa75c17f61907b039e4c4dd21e896142",
+      "indexSourceSha256": "f2cf5d1c59bdea28058c7e692e96c779aa75c17f61907b039e4c4dd21e896142",
+      "localPreviewSha256": "6c7d6adc76bb95af9124f186f76a052ff107c5b5fa9a1e8f07aa62d40351d677",
+      "localSourceMatchesIndex": true,
+      "observation": "Dark insulating boot separates the cable entry from the galvanized plate, collar, riser, and cap; recognizable as a sealed cable pass-through."
+    },
+    {
+      "kit": "wind-energy",
+      "id": "nacelle-transport-frame",
+      "title": "Nacelle transport frame",
+      "source": "catalog/kits/wind-energy/nacelle-transport-frame.kcad.ts",
+      "preview": "/assets/wind-energy-nacelle-transport-frame.png",
+      "triangles": 1968,
+      "triangleBudget": 2400,
+      "sizeM": [
+        1.62,
+        1.344,
+        0.92
+      ],
+      "localSourceSha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+      "indexSourceSha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+      "localPreviewSha256": "092aca3f19638d7ff200c8c54b73b32450558a4c95c02ef25cc902acab6f40c9",
+      "localSourceMatchesIndex": true,
+      "observation": "Nacelle sits on the welded transport frame; steel bed, yellow lift points, hardware, and composite shell are separated plausibly."
+    },
+    {
+      "kit": "wind-energy",
+      "id": "wind-farm-meter-pedestal",
+      "title": "Wind farm meter pedestal",
+      "source": "catalog/kits/wind-energy/wind-farm-meter-pedestal.kcad.ts",
+      "preview": "/assets/wind-energy-wind-farm-meter-pedestal.png",
+      "triangles": 136,
+      "triangleBudget": 300,
+      "sizeM": [
+        0.42,
+        1.045,
+        0.372
+      ],
+      "localSourceSha256": "2fe75eb81ba6e5d1e6a256cb719ff9a74ca1527e2adb1e2e32c1bf3f62acbd82",
+      "indexSourceSha256": "2fe75eb81ba6e5d1e6a256cb719ff9a74ca1527e2adb1e2e32c1bf3f62acbd82",
+      "localPreviewSha256": "c4c1aed2f10a5d84dca8cf4aef74030830980e30342d762f72d7941ca7d5d299",
+      "localSourceMatchesIndex": true,
+      "observation": "Cabinet, post, footplate, screen, and status light read as a metering pedestal. The status light floats 18 mm below the cabinet and is recorded for a future geometry review; no material mismatch found."
+    },
+    {
+      "kit": "wind-energy",
+      "id": "wind-farm-pad-mount-transformer",
+      "title": "Wind-farm pad-mount transformer",
+      "source": "catalog/kits/wind-energy/wind-farm-pad-mount-transformer.kcad.ts",
+      "preview": "/assets/wind-energy-wind-farm-pad-mount-transformer.png",
+      "triangles": 360,
+      "triangleBudget": 500,
+      "sizeM": [
+        0.9,
+        0.973,
+        0.7
+      ],
+      "localSourceSha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+      "indexSourceSha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+      "localPreviewSha256": "8d0e13e6885bc63f06cf2bc5e967083627c76c05489d9e2f9b9067a2598b204d",
+      "localSourceMatchesIndex": true,
+      "observation": "Tank, pad, and ceramic bushings are recognizable. The five exposed cooling fins are assigned a separate aluminium material despite the steel tank/radiator construction documented by manufacturers."
+    }
+  ]
+}

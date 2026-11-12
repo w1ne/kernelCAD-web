@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/windFarmPadMountTransformerMaterials.test.ts (1 test) 474ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  07:16:22
+   Duration  23.02s (transform 14.79s, setup 295ms, import 21.77s, tests 474ms, environment 0ms)

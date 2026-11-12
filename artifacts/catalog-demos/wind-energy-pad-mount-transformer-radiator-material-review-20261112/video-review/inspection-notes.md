@@ -1,0 +1,3 @@
+# Video inspection — 12 November 2026
+
+Reviewed the extracted frames at 2.0, 6.5, 11.0, and 16.5 seconds from the encoded MP4. The first frame identifies all five reviewed previews. The second shows the target before/after comparison; the five ribbed fins are visible and their changed finish reads with the tank in the after image. The third shows three named material zones and both presets. The last lists local checks and explicitly says the branch is not deployed, simulated, or hardware accepted. Captions are legible at 1280 × 720. `ffprobe.json` confirms H.264, 1280 × 720, 24 fps, 18 seconds, yuv420p.

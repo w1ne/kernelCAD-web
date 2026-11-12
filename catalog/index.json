@@ -359121,7 +359121,7 @@
       "id": "wind-farm-pad-mount-transformer",
       "kit": "wind-energy",
       "title": "Wind-farm pad-mount transformer",
-      "description": "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Controls: scale and powder-coated steel, concrete, electrical ceramic, aluminium; weathered and high-visibility presets.",
+      "description": "Outdoor transformer box with a side cooling bank, top bushings and concrete pad. Controls: scale and powder-coated steel for the tank and cooling fins, concrete, electrical ceramic; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -359140,7 +359140,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-pad-mount-transformer.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-pad-mount-transformer.png",
-      "sourceSha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+      "sourceSha256": "30d4213bb9ed5bc82d5f04137bb9168f93614cb8b9aeb055fc8075c9535c5656",
       "triangleBudget": 500,
       "params": [
         {
@@ -359169,12 +359169,6 @@
           "type": "color",
           "default": "#eee2ca",
           "label": "Electrical ceramic"
-        },
-        {
-          "name": "aluminium",
-          "type": "color",
-          "default": "#aab7bb",
-          "label": "Aluminium"
         }
       ],
       "presets": {
@@ -359210,21 +359204,14 @@
           "color": "#287082",
           "parts": [
             "tank",
-            "lid"
-          ],
-          "param": "powderCoatedSteel"
-        },
-        {
-          "name": "aluminium",
-          "color": "#aab7bb",
-          "parts": [
+            "lid",
             "fin-0",
             "fin-1",
             "fin-2",
             "fin-3",
             "fin-4"
           ],
-          "param": "aluminium"
+          "param": "powderCoatedSteel"
         },
         {
           "name": "ceramic",
