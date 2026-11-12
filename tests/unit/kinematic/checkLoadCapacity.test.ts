@@ -27,6 +27,7 @@ import { buildCantileverBracket } from './fixtures/cantileverBracket';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createScriptApi } from '../../../src/composition/scriptApi';
 import type { AssemblyCrossSection } from '../../../src/modeling/capture/assembly';
+import type { MateLoadLimit, MateRecord } from '../../../src/modeling/mates/mate';
 
 /** Build a cantilever anchored by a single directly-registered revolute
  *  joint (no mate) — issue #540 part B. Returns the assembly + the loaded
@@ -218,6 +219,35 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     // Empty externalLoads on the substrate → empty diagnostics envelope.
     expect(r.ok).toBe(true);
     expect(r.failures).toHaveLength(0);
+  });
+
+  it('mode: stub uses the solved frame for a rotated mated child', async () => {
+    const session = new CaptureSession();
+    const kc = createScriptApi({ session });
+    const arm = kc.assembly('stub-mated-child');
+    arm
+      .part('base', kc.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('rotor', kc.box(10, 10, 10), { at: [100, 0, 0] })
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'rotor.axis', 'revolute', { pose: 90, limitsDeg: [-180, 180] });
+    const hinge = (arm.__mates() as MateRecord[]).find((mate) => mate.name === 'hinge');
+    if (!hinge) throw new Error('fixture: hinge mate not found');
+    (hinge as { maxLoad?: MateLoadLimit }).maxLoad = { torque: 5 };
+
+    const result = await checkLoadCapacity(
+      arm,
+      { rotor: { force: [1000, 0, 0] } },
+      { mode: 'stub' },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.failures).toContainEqual({
+      element: 'hinge',
+      elementKind: 'mate',
+      reason: 'joint-load-exceeded',
+    });
   });
 
   it('honours opts.safetyFactorThreshold — failing a borderline pass', async () => {
