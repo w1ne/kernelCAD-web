@@ -107,6 +107,7 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[], continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
+| `rib(base: Shape, centerline: [number, number][], opts: { thickness: number, height: number, startZ?: number }) => Shape` | Create a vertical, constant-thickness rib from an open XY centerline and fuse it to the base. |
 
 ## Remove material
 
@@ -311,6 +312,13 @@ Bring in vendor geometry, and write models back out.
 
 ### GLB assembly rigs
 
+GLB linear distances are metres by default, matching the glTF specification.
+The writer scales kernelCAD millimetre geometry at the scene root, including
+rig transforms, so a standard glTF viewer displays the authored physical size.
+Set `units: 'mm'` only when the receiving tool reads
+`asset.extras.kernelcad.units`; ordinary glTF viewers treat those raw values
+as metres. `units: 'm'` is also available explicitly.
+
 When a returned assembly scene has mates, GLB export defaults to a strict node
 hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
 nodes at the resolved connector frame; moving part meshes are offset beneath
@@ -335,7 +343,8 @@ minUpM, materials, drawCalls, parts, hasRig, hasIk) matching GLB
 knob JSON remains unchanged).
 
 Set the GLB export option `hierarchy: 'flat'` to keep the historical flat
-node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
+node list. See the [metre-scale handoff example](../examples/exports/glb-meter-handoff.kcad.ts)
+and the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
 
 ## Annotate & present
 

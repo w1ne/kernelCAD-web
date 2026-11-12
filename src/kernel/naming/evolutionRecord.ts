@@ -59,6 +59,10 @@ export interface EdgeLineage {
   rootHash: EdgeHash;
   /** Originating primitive feature ID. */
   rootFeatureId: string;
+  /** Position in the originating feature's edge enumeration. Unlike rootHash,
+   *  this survives rebuilding a parameterized primitive whose OCCT handles
+   *  receive new hashes. Descendants keep the same ordinal through history. */
+  rootOrdinal?: number;
   /** If the edge comes from a labeled sketch segment. */
   labelName?: string;
   // --- Slice Q (Query DSL) parity additions; mirror FaceLineage slots ---

@@ -37,9 +37,11 @@ const index = CatalogIndexSchema.parse(
   JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')),
 );
 const only = flag('--only');
+const kit = flag('--kit');
 const limit = Number(flag('--limit') ?? '0');
 let rows = index.assets.map((a) => ({ kit: a.kit, id: a.id, asset: a }));
 if (only) rows = rows.filter((r) => `${r.kit}/${r.id}` === only);
+if (kit) rows = rows.filter((r) => r.kit === kit);
 if (limit > 0) rows = rows.slice(0, limit);
 
 await initOcct();

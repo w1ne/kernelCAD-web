@@ -74,6 +74,7 @@ import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
+import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -336,6 +337,8 @@ export interface KernelCadApi {
   prismFront(points: readonly PolygonPoint[], x0: number, x1: number): Shape;
   /** Plan-view mask prism: points are (X, Y), extruded along Z from z0..z1. */
   prismPlan(points: readonly PolygonPoint[], z0: number, z1: number): Shape;
+  /** Build a constant-thickness vertical rib from an open XY centerline and fuse it to a base shape. */
+  rib(base: Shape, centerline: readonly RibPoint[], opts: RibOptions): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -889,6 +892,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
     ...makeRequirementMethods(session),
+    ...makeRibMethod(() => api),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
@@ -912,3 +916,4 @@ export type {
   CurveSurfaceIntersection,
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+export type { RibOptions, RibPoint } from './apiRibMethod';

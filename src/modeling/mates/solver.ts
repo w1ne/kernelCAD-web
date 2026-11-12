@@ -41,7 +41,7 @@ import {
   type ConnectorOrigin,
 } from './connector';
 import { expandCoupledPoses } from './coupledPoses';
-import { atPlacement, resolvedPartAt } from './partFrame';
+import { atPlacement, matedPartNames, resolvedPartAt, sceneMotion } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
@@ -247,7 +247,7 @@ export async function solveMates(
   );
 
   if (loopMates.length === 0) {
-    return { status: 'solved', poses: worldT };
+    return inheritConnectedPartPlacements(arm, { status: 'solved', poses: worldT });
   }
 
   // 3. Closed loops present. A loop through an articulated mate is solved
@@ -255,10 +255,35 @@ export async function solveMates(
   //    loop mates solved); a fastened-only loop has nothing to move and
   //    keeps the residual classification.
   const connector = await resolvedConnectorLookup(mates, partByName);
-  if (hasArticulatedLoop(walk, connector)) {
-    return solveArticulatedLoops(arm, walk, connector, worldT, callerPoses, expandedPoses, opts);
+  const result = hasArticulatedLoop(walk, connector)
+    ? await solveArticulatedLoops(arm, walk, connector, worldT, callerPoses, expandedPoses, opts)
+    : await loopSolve(partByName, loopMates, worldT);
+  return inheritConnectedPartPlacements(arm, result);
+}
+
+/** Give connect-placed descendants the same scene motion as a moved parent.
+ *  Their capture-time `at` already puts their connectors together; inheriting
+ *  the parent's motion preserves that relationship as the mate pose changes. */
+function inheritConnectedPartPlacements(arm: Assembly, result: SolveResult): SolveResult {
+  if (result.status !== 'solved' && result.status !== 'redundant-ok') return result;
+
+  const parts = arm.__parts();
+  const moved = matedPartNames(arm.__mates());
+  const partById = new Map(parts.map((part) => [part.id, part]));
+  const table = arm.__session().paramTable;
+  for (const part of parts) {
+    if (part.connectParentId === undefined || moved.has(part.name)) continue;
+    const parent = partById.get(part.connectParentId);
+    if (parent === undefined || !moved.has(parent.name)) continue;
+    const parentPlacement = result.poses.get(parent.name);
+    if (parentPlacement === undefined) continue;
+
+    const parentMotion = sceneMotion(parentPlacement, resolvedPartAt(parent.at, table));
+    const childAt = resolvedPartAt(part.at, table);
+    result.poses.set(part.name, parentMotion.compose(atPlacement(childAt)));
+    moved.add(part.name);
   }
-  return loopSolve(partByName, loopMates, worldT);
+  return result;
 }
 
 /** Resolve explicit pose overrides before the pure loop solver sees them.

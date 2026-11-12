@@ -8,6 +8,10 @@ const face = (over: Partial<BindingFingerprint> = {}): BindingFingerprint => ({
   entityKind: 'face', geomType: 'PLANE', producer: 'box_1', role: 'top',
   direction: [0, 0, 1], size: 800, centroid: [15, 20, 6], ...over,
 });
+const edge = (over: Partial<BindingFingerprint> = {}): BindingFingerprint => ({
+  entityKind: 'edge', geomType: 'LINE', sourceId: 'box_1#0',
+  direction: [0, 0, 1], size: 12, centroid: [15, 20, 6], ...over,
+});
 const sel = (fp: BindingFingerprint, over: Partial<SelectionRecord> = {}): SelectionRecord => ({
   consumerFeatureId: 'fillet_1', selectorText: '{"byNormal":"Z"}', syntax: 'query',
   fingerprints: [fp], partDiagonal: 60, ...over,
@@ -40,5 +44,24 @@ describe('selectionDriftDiagnostics', () => {
     const b = sel(face({ centroid: [0, 0, 30], producer: 'box_3' }));
     const out = selectionDriftDiagnostics([a, b], [a, sel(face({ centroid: [0, 0, 30], producer: 'box_4' }))]);
     expect(out.map((d) => d.code)).toEqual(['selector.binding-changed']);
+  });
+
+  it('returns a typed error when a selected edge is replaced by another lineage', () => {
+    const [d] = selectionDriftDiagnostics(
+      [sel(edge())],
+      [sel(edge({ sourceId: 'box_1#1', centroid: [15, 20, 40] }))],
+    );
+    expect(d).toMatchObject({ code: 'feature.selection.no-match', severity: 'error' });
+    expect(d?.message).toContain('edge lineage box_1#0 -> box_1#1');
+    expect(d?.hint).toContain('Re-pick the intended edge');
+  });
+
+  it('returns a typed error when one selected edge has multiple lineage descendants', () => {
+    const [d] = selectionDriftDiagnostics(
+      [sel(edge())],
+      [sel(edge(), { fingerprints: [edge(), edge({ centroid: [15, 20, 20] })] })],
+    );
+    expect(d).toMatchObject({ code: 'feature.selection.no-match', severity: 'error' });
+    expect(d?.hint).toContain('split into ambiguous descendants');
   });
 });
