@@ -1,0 +1,18 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "changedIndexRows": [
+    "rear-door-heat-exchanger"
+  ],
+  "sourceSha256": "628243f9eb9da684de3ade599ed379687e73753ced465a5d6daa98044b49275e",
+  "previewSha256": "20424898acfbf3f7a5ab0c52f449c55d4dec19f427e36602eb49b0c80eebff1e",
+  "previewPath": "/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
+  "triangles": 532,
+  "sizeM": [
+    0.885,
+    2.1,
+    0.61
+  ],
+  "sourceIndexFresh": true,
+  "previewExists": true
+}

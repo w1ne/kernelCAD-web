@@ -76740,7 +76740,7 @@
       "id": "rear-door-heat-exchanger",
       "kit": "data-center-infrastructure",
       "title": "Rear-door heat exchanger",
-      "description": "Rack-door cooling frame with serpentine-look tube runs and inlet connections. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Rack-door cooling frame with serpentine-look copper tube runs and inlet connections. Knobs: overall scale; painted steel, engineering polymer, and copper heat-exchanger tubes. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76760,7 +76760,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/rear-door-heat-exchanger.kcad.ts",
       "preview": "/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
-      "sourceSha256": "aa4175870793589203308a173ba8787bfe73c36802d46c083c30d820e0c40867",
+      "sourceSha256": "628243f9eb9da684de3ade599ed379687e73753ced465a5d6daa98044b49275e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76783,16 +76783,24 @@
           "type": "color",
           "default": "#c99b35",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "copper",
+          "type": "color",
+          "default": "#bd7748",
+          "label": "Heat-exchanger copper"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "polymer": "#c99b35",
+          "copper": "#bd7748"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "polymer": "#263e48",
+          "copper": "#cf7950"
         }
       },
       "stats": {
@@ -76812,6 +76820,16 @@
           "parts": [
             "door-frame",
             "heat-exchanger-panel",
+            "hinge-left",
+            "hinge-right",
+            "inlet-port"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "copper",
+          "color": "#bd7748",
+          "parts": [
             "tube-run-0",
             "tube-run-1",
             "tube-run-2",
@@ -76820,12 +76838,9 @@
             "tube-run-5",
             "tube-run-6",
             "tube-run-7",
-            "tube-run-8",
-            "hinge-left",
-            "hinge-right",
-            "inlet-port"
+            "tube-run-8"
           ],
-          "param": "steel"
+          "param": "copper"
         },
         {
           "name": "polymer",
