@@ -252994,7 +252994,7 @@
       "id": "flange-bearing-housing",
       "kit": "standard-components",
       "title": "Flange bearing housing",
-      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.",
+      "description": "Illustrative CC0 flange bearing housing: one-piece cast housing with a raised circular seat, two usable through-holes, and a separate plain bronze sleeve bearing with an open shaft bore. Not a ball bearing, vendor drawing, rated part, or fit specification. Knobs: model size and display colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253012,7 +253012,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
       "preview": "/assets/standard-components-flange-bearing-housing.png",
-      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
+      "sourceSha256": "42ca6d19608acd444f0cd484a32c928848139c5a0f82b23b5e8f45a978f995a4",
       "triangleBudget": 360,
       "params": [
         {
@@ -253054,11 +253054,11 @@
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 312,
         "sizeM": [
           0.056,
           0.02,
-          0.04
+          0.036
         ],
         "minUpM": 0,
         "materials": 1
@@ -253068,7 +253068,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "plate"
+            "one-piece-cast-iron-housing"
           ],
           "param": "castIron"
         },
@@ -253076,7 +253076,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "boss"
+            "plain-bronze-sleeve-bearing"
           ],
           "param": "bronze"
         }
