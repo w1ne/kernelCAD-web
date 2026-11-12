@@ -81,6 +81,15 @@ export function assetUrl(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
     return `${ORIGIN}${assetPath(asset)}`;
 }
 
+/** Each topical kit is an indexable landing page, not a query/fragment duplicate. */
+export function kitPath(kit: Pick<CatalogKit, 'id'>): string {
+    return `catalog/${kit.id}/`;
+}
+
+export function kitUrl(kit: Pick<CatalogKit, 'id'>): string {
+    return `${ORIGIN}${kitPath(kit)}`;
+}
+
 /** Cut at a word boundary so the snippet stays <= max characters. */
 export function metaDescription(text: string, max = DESCRIPTION_MAX): string {
     const clean = text.replace(/\s+/g, ' ').trim();
@@ -229,7 +238,7 @@ function breadcrumbJsonLd(asset: CatalogAsset, kit: CatalogKit | undefined): Rec
         '@type': 'BreadcrumbList',
         itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Catalog', item: `${ORIGIN}catalog/` },
-            { '@type': 'ListItem', position: 2, name: kit?.title ?? asset.kit, item: `${ORIGIN}catalog/#kit-${asset.kit}` },
+            { '@type': 'ListItem', position: 2, name: kit?.title ?? asset.kit, item: `${ORIGIN}catalog/${asset.kit}/` },
             { '@type': 'ListItem', position: 3, name: asset.title, item: assetUrl(asset) },
         ],
     };
@@ -279,7 +288,7 @@ function factsList(asset: CatalogAsset, kit: CatalogKit | undefined): string {
     const size = asset.stats?.sizeM;
     const rigJoints = Object.keys(asset.rig ?? {});
     const facts: [string, string][] = [
-        ['Kit', `<a href="/catalog/#kit-${escapeHtml(asset.kit)}">${escapeHtml(kit?.title ?? asset.kit)}</a>`],
+        ['Kit', `<a href="/catalog/${escapeHtml(asset.kit)}/">${escapeHtml(kit?.title ?? asset.kit)}</a>`],
         ['Category', escapeHtml(asset.category)],
         ['Triangles', tri === undefined ? '—' : `${tri.toLocaleString('en-US')}${asset.triangleBudget ? ` (budget ${asset.triangleBudget.toLocaleString('en-US')})` : ''}`],
         ['Licence', license.url ? `<a href="${license.url}" rel="license">${escapeHtml(license.name)}</a>` : escapeHtml(license.name)],
@@ -342,7 +351,7 @@ ${jsonForScript(productJsonLd(asset))}
   <script type="application/ld+json">
 ${jsonForScript(breadcrumbJsonLd(asset, kit))}
   </script>`;
-    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / <a href="/catalog/#kit-${escapeHtml(asset.kit)}">${escapeHtml(kit?.title ?? asset.kit)}</a> / ${escapeHtml(asset.title)}</p>
+    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / <a href="/catalog/${escapeHtml(asset.kit)}/">${escapeHtml(kit?.title ?? asset.kit)}</a> / ${escapeHtml(asset.title)}</p>
       <h1>${escapeHtml(asset.title)}</h1>
       <div class="hero">
         <img src="preview.png" alt="${escapeHtml(alt)}" width="512" height="512" />
@@ -359,6 +368,59 @@ ${presetsSection(asset)}
 ${productNextStep(asset)}
 ${siblingList(asset, siblings)}
       <p><a href="/catalog/">← Back to the full catalog</a></p>`;
+    return document(head, body);
+}
+
+/** A small, topic-specific entry point for searchers looking for a class of parts. */
+export function renderKitPage(kit: CatalogKit, assets: readonly CatalogAsset[]): string {
+    const url = kitUrl(kit);
+    const title = `${kit.title} 3D models — editable CC0 kit | kernelCAD`;
+    const description = metaDescription(`${kit.description} Browse ${assets.length} free 3D models, open a model in kernelCAD Studio, or build parametric CAD using MCP.`);
+    const image = assets[0] ? `${assetUrl(assets[0])}preview.png` : `${ORIGIN}og-image.png`;
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: title,
+                description,
+                inLanguage: 'en',
+                mainEntity: {
+                    '@type': 'ItemList',
+                    numberOfItems: assets.length,
+                    itemListElement: assets.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.title, url: assetUrl(a) })),
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: 'Catalog', item: `${ORIGIN}catalog/` },
+                    { '@type': 'ListItem', position: 3, name: kit.title, item: url },
+                ],
+            },
+        ],
+    };
+    const head = `  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="canonical" href="${url}" />
+${socialTags(title, description, url, image, `${kit.title} CAD model previews`)}
+  <script type="application/ld+json">
+${jsonForScript(graph)}
+  </script>`;
+    const cards = assets.map((a) =>
+        `          <li><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
+    );
+    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / ${escapeHtml(kit.title)}</p>
+      <h1>${escapeHtml(kit.title)} 3D models</h1>
+      <p>${escapeHtml(kit.description)}</p>
+      <p>Explore ${assets.length} free CC0 models. Open any part in kernelCAD Studio to inspect and edit it. Build new designs with <a href="/code-cad/">code-first CAD</a> or <a href="/mcp/">CAD MCP tools</a>.</p>
+      <ul class="grid">
+${cards.join('\n')}
+      </ul>
+      <p><a href="/catalog/">← Browse all model kits</a></p>`;
     return document(head, body);
 }
 
@@ -420,7 +482,7 @@ ${jsonForScript(catalogHubJsonLd(index))}
             `          <li data-search="${escapeHtml(searchKey(a))}"><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
         );
         return `      <section id="kit-${escapeHtml(kit.id)}" data-kit>
-        <h2>${escapeHtml(kit.title)} <small>(${cards.length})</small></h2>
+        <h2><a href="/${kitPath(kit)}">${escapeHtml(kit.title)}</a> <small>(${cards.length})</small></h2>
         <p>${escapeHtml(kit.description)}</p>
         <ul class="grid">
 ${cards.join('\n')}
@@ -491,6 +553,9 @@ export function renderCatalogSite(index: CatalogIndex): PageFile[] {
     const byKit = new Map<string, CatalogAsset[]>();
     for (const a of index.assets) byKit.set(a.kit, [...(byKit.get(a.kit) ?? []), a]);
     const files: PageFile[] = [{ path: 'catalog/index.html', content: renderHub(index) }];
+    for (const kit of index.kits) {
+        files.push({ path: `${kitPath(kit)}index.html`, content: renderKitPage(kit, byKit.get(kit.id) ?? []) });
+    }
     for (const a of index.assets) {
         files.push({ path: `${assetPath(a)}index.html`, content: renderAssetPage(a, kits.get(a.kit), byKit.get(a.kit) ?? []) });
     }
@@ -500,7 +565,7 @@ export function renderCatalogSite(index: CatalogIndex): PageFile[] {
 /** Catalog URLs for the SITE's sitemap. The site owns sitemap.xml and robots.txt —
  *  the catalog only contributes its own pages, it must never write those files. */
 export function catalogUrls(index: CatalogIndex): string[] {
-    return [`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)];
+    return [`${ORIGIN}catalog/`, ...index.kits.map(kitUrl), ...index.assets.map(assetUrl)];
 }
 
 export function writeCatalogSite(repoRoot: string, outDir: string): number {
@@ -521,5 +586,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const repoRoot = resolve(import.meta.dirname, '..');
     const outDir = resolve(process.argv[2] ?? join(repoRoot, 'site-build'));
     const count = writeCatalogSite(repoRoot, outDir);
-    console.log(`wrote ${count} asset page(s) + hub, sitemap.xml and robots.txt to ${outDir}`);
+    console.log(`wrote ${count} asset page(s), kit landing pages, and hub to ${outDir}`);
 }
