@@ -19,6 +19,7 @@ import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
+import { propagateConnectedPartMotion, propagateConnectedSolvedPartMotion } from './connectedPartMotion';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { finished, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -286,6 +287,7 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
 
   const worldT = applyAssemblyModelFk(ctx, r, inputs);
   if (!worldT) return noShape();
+  propagateConnectedPartMotion(worldT, inputs.partIds, inputs.records, inputs.encodedMates);
 
   const sceneParts = buildAssemblyModelSceneParts(inputs, worldT);
   const sceneBackend: SceneBackend = {
@@ -569,6 +571,8 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     });
     if (!applied) return noShape();
   }
+
+  propagateConnectedSolvedPartMotion(worldT, partIds, records, encodedMates, joints);
 
   // 5. Build a SceneBackend (no boolean union — each part stays in its
   //    LOCAL frame and the FK-derived worldTransform travels with it).

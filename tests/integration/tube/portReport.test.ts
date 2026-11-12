@@ -362,12 +362,12 @@ const body = asm.part('body', box(40, 40, 40), { at: [0, 0, 0], connectors: { pa
 asm.part('cap', box(20, 20, 20), { connectors: { foot: { origin: [10, 10, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: body.connector('pad') } })${topPort(20)};
 asm.mate('seat-on-mount', 'body.seat', 'base.mount', 'fastened');
 return asm.solvedModel({});`);
-    expect(report.map((p) => [p.part, p.placedBy])).toEqual([['body', 'mate'], ['cap', 'connect']]);
+    expect(report.map((p) => [p.part, p.placedBy])).toEqual([['body', 'mate'], ['cap', 'mate']]);
     // Whatever the solve does with the pair, each port is on top of its own built part.
     expect(report[0].origin).toEqual(topOf(box('body')));
     expect(report[1].origin).toEqual(topOf(box('cap')));
-    // Today the solve moves the body to the mount and leaves the cap where connect put it at capture.
-    expect(report.map((p) => p.origin)).toEqual([[70, 60, 50], [20, 20, 60]]);
+    // The solve moves the body to the mount and carries the connect-placed cap with it.
+    expect(report.map((p) => p.origin)).toEqual([[70, 60, 50], [70, 60, 70]]);
   }, 120_000);
 
   it('a mate on the connect part itself reports placedBy mate, at the solved position', async () => {
