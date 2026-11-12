@@ -1,62 +1,47 @@
 // SPDX-License-Identifier: CC0-1.0
-// 90-degree pipe elbow: a short swept centerline rounds the turn between
-// perpendicular hollow legs. A bronze compression nut and dark elastomer
-// end seal make the joint details visible in the catalog preview.
+// Illustrative low-poly 90° pipe elbow with one connected, open fluid passage.
+// It is a scene prop, not a pressure-rated or dimensionally certified fitting.
 meta({
   name: 'pipe-elbow-90',
   license: 'CC0-1.0',
   title: '90 degree pipe elbow',
-  description: 'Hollow 90-degree pipe elbow with a faceted quarter-turn bend, perpendicular pipe legs, bronze compression nut and elastomer end seal. Knobs: model size, steel, bronze and elastomer; dark, brass and weathered presets.',
-  tags: ['pipe elbow', '90 degree elbow', 'plumbing fitting', 'tube', 'hollow bend'],
+  description: 'Illustrative elbow with two perpendicular open ports and a connected Ø18 mm passage at standard size. Bronze-colored end collars are separate visual bodies. Not pressure-rated CAD. Knobs: model size and finish colors.',
+  tags: ['pipe elbow', '90 degree elbow', 'plumbing fitting', 'tube'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 2000,
+  triangleBudget: 560,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
-const steel = param('steel', '#85929a', { label: 'Steel tube and bend' });
-const bronze = param('bronze', '#98714c', { label: 'Bronze compression nut' });
-const elastomer = param('elastomer', '#30383b', { label: 'Elastomer seal' });
+const steel = param('steel', '#85929a', { label: 'Body finish color (visual only)' });
+const bronze = param('bronze', '#98714c', { label: 'Collar finish color (visual only)' });
 presets({
-  dark: { steel: '#3e484e', bronze: '#684d37', elastomer: '#202629' },
-  brass: { steel: '#646f75', bronze: '#b0804d', elastomer: '#292b2c' },
-  weathered: { steel: '#665b4d', bronze: '#6e583f', elastomer: '#3b3935' },
+  dark: { steel: '#3e484e', bronze: '#684d37' },
+  brass: { steel: '#646f75', bronze: '#b0804d' },
+  weathered: { steel: '#665b4d', bronze: '#6e583f' }
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const outerR = 10 * s;
-const innerR = 6 * s;
-const bendR = 20 * s;
-const leg = 28 * s;
-const floorLift = leg + 7.295 * s;
-
-// A swept polyline follows a quarter-circle centerline, with straight socket
-// extensions at both ends. The inner sweep is subtracted once from the fused
-// outer sweep so the bore stays open through each mitered turn.
-const centerline = [
-  [0, 0, -leg + floorLift],
-  ...Array.from({ length: 5 }, (_, index) => {
-    const angle = (Math.PI / 2) * index / 4;
-    return [bendR * (1 - Math.cos(angle)), 0, bendR * Math.sin(angle) + floorLift];
-  }),
-  [bendR + leg, 0, bendR + floorLift],
-];
-const sweptTube = (radius: number) => path().circle(0, 0, radius, 12)
-  .sweep(centerline, { spine: 'smooth' });
-const pipe = sweptTube(outerR).subtract(sweptTube(innerR));
-
-// Turn the horizontal socket away from the default catalog camera, showing
-// the elbow's outside curve while keeping the bore at each end open.
-const catalogAngle = (shape) => shape.rotateZ(90).translate(0, -(bendR + leg) / 2, 0);
-const annulus = (height: number, ro: number, ri: number) => cylinder(height, ro, 8)
-  .subtract(cylinder(height + 2 * s, ri, 8).translate(0, 0, -s));
-
 const a = assembly('pipe-elbow-90');
-a.part('continuous-hollow-elbow', catalogAngle(pipe).color(steel));
-a.part('bronze-compression-nut', catalogAngle(annulus(5 * s, 14 * s, outerR + 0.4 * s)
-  .rotateY(90).translate(bendR + leg - 7 * s, 0, bendR + floorLift)).color(bronze));
-a.part('elastomer-end-seal', catalogAngle(annulus(2 * s, 12 * s, outerR - 0.4 * s)
-  .translate(0, 0, -leg + floorLift + s)).color(elastomer));
+const outerRadius = 13 * s;
+const boreRadius = 9 * s;
+const elbowHeight = 28 * s;
+const outletLength = 26 * s;
+// Fuse both crossing outer tubes *before* cutting the common bore. The old
+// separate tubes and solid bend visually concealed two blocked/disconnected ports.
+const outer = cylinder(elbowHeight, outerRadius, 16)
+  .union(cylinder(outletLength, outerRadius, 16).rotateY(90).translate(0, 0, elbowHeight))
+  .union(sphere(outerRadius).translate(0, 0, elbowHeight));
+const verticalPassage = cylinder(elbowHeight + 2 * s, boreRadius, 16).translate(0, 0, -s);
+const sidePassage = cylinder(outletLength + 2 * s, boreRadius, 16)
+  .rotateY(90).translate(-s, 0, elbowHeight);
+const shell = outer.subtract(verticalPassage.union(sidePassage));
+a.part('one-piece-open-elbow', shell.color(steel));
+const collar = cylinder(2 * s, 14 * s, 16)
+  .subtract(cylinder(4 * s, boreRadius, 16).translate(0, 0, -s));
+a.part('inlet-reinforcing-collar', collar.color(bronze));
+a.part('outlet-reinforcing-collar', collar.rotateY(90)
+  .translate(outletLength - s, 0, elbowHeight).color(bronze));
 return a.model();

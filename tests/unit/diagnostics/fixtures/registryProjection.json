@@ -1358,7 +1358,7 @@
       }
     },
     "mechanism.unverified-budget-exceeded": {
-      "template": "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "template": "The articulated collision/pose sweep was skipped, so the mechanism is 'unverified' (NOT certified collision-free). Read the diagnostic message for the skip reason. If the estimated work exceeds the configured budget, verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
       "nextAction": {
         "kind": "inspect-message"
       }

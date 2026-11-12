@@ -50,11 +50,12 @@ function boxEdgeRoleLabels(shape: OcctBackend): Map<string, string> {
 function seedEdges(shape: OcctBackend, featureId: string): EdgeHistoryMap {
   const labels = shape.kind === 'box' ? boxEdgeRoleLabels(shape) : undefined;
   const map: EdgeHistoryMap = new Map();
-  for (const hash of shape.edgeHashes()) {
+  for (const [rootOrdinal, hash] of shape.edgeHashes().entries()) {
     const label = labels?.get(hash);
     map.set(hash, {
       rootHash: hash,
       rootFeatureId: featureId,
+      rootOrdinal,
       ...(label !== undefined ? { labelName: label } : {}),
     });
   }

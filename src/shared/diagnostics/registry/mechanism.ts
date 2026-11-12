@@ -50,8 +50,9 @@ export const MECHANISM_CODES = {
     description: 'A part declared on a mechanism (an assembly with at least one mate or joint) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A multi-part assembly with no mates and no joints is independent bodies, not a mechanism: the check does not run and nothing is emitted.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
-  // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
-  // (auto-scaled) budget and criteria 2/3/8 are SKIPPED. Criterion 7
+  // `mechanismTruth.ts` when the BREP pose sweep is skipped because its work
+  // estimate exceeds the budget or a caller forces a skip. Criteria 2/3/8
+  // are SKIPPED. Criterion 7
   // (rest-pose joint-mesh continuity) still runs; a gap there is 'broken'.
   // Otherwise the verdict degrades to 'unverified'. Replaces the old silent
   // console.warn: the 'unverified' verdict now carries machine-readable
@@ -82,11 +83,11 @@ export const MECHANISM_CODES = {
   },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
-      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "The articulated collision/pose sweep was skipped, so the mechanism is 'unverified' (NOT certified collision-free). Read the diagnostic message for the skip reason. If the estimated work exceeds the configured budget, verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The deterministic BREP pose-sweep work estimate exceeded the budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
+    description: 'The deterministic BREP pose sweep was skipped because its work estimate exceeded the configured budget or the caller forced a skip with a non-positive budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
   },
   'mechanism.unverified-exact-probe': {
     hintTemplate:
@@ -109,11 +110,11 @@ export const MECHANISM_CODES = {
   // so the verdict stays 'unverified' (severity 'warn').
   'mechanism.physics-unsupported': {
     hintTemplate:
-      "The physics gate only simulates tree-shaped mate graphs. A closed loop was not checked under gravity, so the mechanism stays unverified. This is not a dynamics failure. Open the loop into a tree before reading a physics verdict.",
+      "The physics gate could not represent the mate graph or an authored coupling, so native dynamics did not run and the mechanism stays unverified. Read the diagnostic for the unsupported mapping; use a supported scalar revolute/prismatic coupling or a tree-shaped mate graph before claiming physics verification.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The physics gate rejected a closed-loop mate graph before simulation. Physics did not run, and the mechanism is unverified rather than broken.',
+    description: 'The physics gate rejected a closed-loop mate graph or a scalar coupling mapping it cannot represent before simulation. Physics did not run, and the mechanism is unverified rather than broken.',
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
@@ -154,6 +155,14 @@ export const MECHANISM_CODES = {
     defaultSeverity: 'error',
     group: 'mechanism',
     description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',
+  },
+  'mechanism.coupling-residual': {
+    hintTemplate:
+      'Native release dynamics did not preserve an authored scalar mate coupling within its published coordinate tolerance. Check the signed coupleMates ratio and offset, the source and driven joint limits, and whether both mates are represented by supported scalar physics joints.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'correct the scalar coupling ratio or limits, then rerun native physics verification and inspect the reported residual across release integration observations' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'During the native gravity release integration, a coupled scalar mate coordinate exceeded the supported angular or linear residual tolerance.',
   },
   // Physics-loop P11 Slice 2 — static tendon-routing backstop. Emitted by
   // `mechanismTruth.ts` criterion 8 when a balance tendon's routed path

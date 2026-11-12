@@ -11,13 +11,13 @@ import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 
-async function lowerScript(code: string): Promise<{
+async function lowerScript(code: string, includeParamTable = true): Promise<{
   shape: OcctBackend;
   diagnostics: ReturnType<RecomputeEngine['_diagnosticsForTest']> | unknown[];
 }> {
-  const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+  const { records, paramTable } = await runScript({ code, fileName: 'test.kcad.ts' });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
+  const r = await engine.run(records, includeParamTable ? { paramTable } : undefined);
   const lastRecord = records[records.length - 1];
   const shape = r.shapes.get(lastRecord.id) as OcctBackend;
   return { shape, diagnostics: r.diagnostics };
@@ -52,6 +52,50 @@ describe('cutoutLowerer — basic shapes', () => {
     const expected = 40 * 40 * 8 - 6 * 6 * 8;
     expect(vol).toBeGreaterThan(expected - 1);
     expect(vol).toBeLessThan(expected + 1);
+  });
+
+  it('resolves ParamRef coordinates before building a through-cut profile', async () => {
+    const code = `
+      const a = param('a', 7.25);
+      let base = box(50, 45, 5).translate(-25, 0, 0);
+      const slot = path().moveTo(a, -5.5).lineTo(a, 4.5).lineTo(12.75, 4.5).lineTo(12.75, -5.5).close();
+      return base.cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape.volume()).toBeCloseTo(10_975, 2);
+  });
+
+  it('rejects unresolved ParamRef coordinates when recompute has no parameter table', async () => {
+    const code = `
+      const a = param('a', 7.25);
+      let base = box(50, 45, 5).translate(-25, 0, 0);
+      const slot = path().moveTo(a, -5.5).lineTo(a, 4.5).lineTo(12.75, 4.5).lineTo(12.75, -5.5).close();
+      return base.cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code, false);
+    const errs = (diagnostics as { severity: string; code: string; message: string; hint: string }[])
+      .filter(d => d.severity === 'error');
+    expect(errs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'feature.invalid-args',
+        message: expect.stringContaining('unresolved parameter reference'),
+        hint: expect.stringContaining('parameter table'),
+      }),
+    ]));
+    expect(shape).toBeUndefined();
+  });
+
+  it('resolves arithmetic ParamRefs embedded in cutout sketch commands', async () => {
+    const code = `
+      const left = param('left', 7.25);
+      const right = left.add(5.5);
+      const slot = path().moveTo(left, -5.5).lineTo(left, 4.5).lineTo(right, 4.5).lineTo(right, -5.5).close();
+      return box(50, 45, 5).translate(-25, 0, 0).cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape.volume()).toBeCloseTo(10_975, 2);
   });
 
   it('cuts through the whole body when an unrelated underside pocket has a nearer floor', async () => {

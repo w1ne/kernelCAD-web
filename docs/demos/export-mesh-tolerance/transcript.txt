@@ -1,0 +1,13 @@
+$ node --import tsx docs/demos/export-mesh-tolerance/demo.ts
+Local export({ target: 'model' }) replay; no deployment, slicer or hardware acceptance
+PART   native kernelCAD plate, 30 x 20 x 4 mm, two 6 mm through-holes
+CALL   export(target=model, format=stl, options.tolerance=0.01 mm)
+WRITE  tolerance-plate.stl (101884 bytes; 2036 triangles)
+CHECK  STL header contains requested-mesh-tolerance=0.01mm
+REPORT requested=0.010 mm
+REPORT measured sample max=0.000233 mm
+REPORT measured sample p95=0.000233 mm
+REPORT 2715 deterministic samples; 2036 output triangles
+LIMIT  one-sided sampled B-rep-to-export-triangle distance
+LIMIT  global_max_certified=false; not dimensional or print-fit acceptance
+RESULT local export workflow completed; report and STL retained

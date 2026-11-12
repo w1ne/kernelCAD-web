@@ -98,6 +98,64 @@ describe('exportGlbAsync', () => {
     expect(nodes.some((n) => n.getName() === 'cube')).toBe(true);
   });
 
+  it('exports PBR parts at authored physical size in metres by default', async () => {
+    const scene = makeScene([
+      {
+        name: 'base_plate',
+        shape: OcctBackend.box(700, 300, 12),
+        material: { name: 'anodized aluminium', baseColor: '#30343b', metalness: 0.8, roughness: 0.3 },
+      },
+      {
+        name: 'mount_boss',
+        shape: OcctBackend.cylinder(40, 25).translate([80, 80, 12]),
+        material: expandFinish('brass'),
+      },
+    ]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(meshAllParts(scene), { format: 'glb' }),
+    );
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const scale = root.getScale();
+    const plate = doc.getRoot().listNodes().find((node) => node.getName() === 'base_plate')!;
+    const position = plate.getMesh()!.listPrimitives()[0]!.getAttribute('POSITION')!;
+    const min = position.getMin([]);
+    const max = position.getMax([]);
+    const sizeM = max.map((value, axis) => (value - min[axis]!) * scale[axis]!);
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+
+    expect(extras.units).toBe('m');
+    expect(scale).toEqual([0.001, 0.001, 0.001]);
+    sizeM.sort((a, b) => a - b).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([0.012, 0.3, 0.7][index]!, 9);
+    });
+    expect(doc.getRoot().listNodes().map((node) => node.getName())).toEqual(
+      expect.arrayContaining(['base_plate', 'mount_boss']),
+    );
+    expect(doc.getRoot().listMaterials().map((material) => material.getName())).toEqual(
+      expect.arrayContaining(['anodized aluminium', 'brass']),
+    );
+  });
+
+  it('keeps explicit millimetre coordinates available for metadata-aware consumers', async () => {
+    const scene = makeScene([{ name: 'plate', shape: OcctBackend.box(700, 300, 12) }]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(meshAllParts(scene), { format: 'glb', units: 'mm' }),
+    );
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const plate = doc.getRoot().listNodes().find((node) => node.getName() === 'plate')!;
+    const position = plate.getMesh()!.listPrimitives()[0]!.getAttribute('POSITION')!;
+    const min = position.getMin([]);
+    const max = position.getMax([]);
+    const sizeMm = max.map((value, axis) => value - min[axis]!);
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+
+    expect(extras.units).toBe('mm');
+    expect(root.getScale()).toEqual([1, 1, 1]);
+    sizeMm.sort((a, b) => a - b).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([12, 300, 700][index]!, 4);
+    });
+  });
+
   it('preserves PBR fields via MeshPhysicalMaterial (metalness / roughness / anisotropy)', async () => {
     const scene = makeScene([
       {
@@ -289,7 +347,11 @@ describe('exportGlbAsync', () => {
     expect(lid?.matrix).toBeDefined();
     expect(json.asset?.extras?.kernelcad).toMatchObject({
       rig: { lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' } },
+      units: 'm',
     });
+    const doc = await new NodeIO().readBinary(bytes);
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    expect(root.getScale()).toEqual([0.001, 0.001, 0.001]);
   });
 
   it('keeps flat GLB output when hierarchy is explicitly flat', async () => {
@@ -375,7 +437,7 @@ describe('exportGlbAsync style: lowpoly', () => {
     const lowTris = (low.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
     const pbrTris = (pbr.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
     expect(lowTris * 3).toBeLessThan(pbrTris);
-    expect((pbr.asset?.extras?.kernelcad as { units: string }).units).toBe('mm');
+    expect((pbr.asset?.extras?.kernelcad as { units: string }).units).toBe('m');
   });
 
   it('keeps glass on its own material', async () => {

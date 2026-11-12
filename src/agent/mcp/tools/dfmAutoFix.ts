@@ -392,7 +392,15 @@ function planFirstOpen(
   records: readonly DfmFixFeature[],
   suggestions: DfmFixSuggestion[],
 ): DfmAutoFixSelection {
-  if (suggestions.length === 0) return { suggestions, refusal: 'DFM review passed; nothing to fix.' };
+  if (suggestions.length === 0) {
+    const incomplete = checks.some(check => check.status === 'not-checked');
+    return {
+      suggestions,
+      refusal: incomplete
+        ? 'DFM review incomplete; one or more requested checks were not run.'
+        : 'DFM review passed; nothing to fix.',
+    };
+  }
   const considered: string[] = [];
   for (const check of [...orderedOpen(checks, 'fail'), ...orderedOpen(checks, 'warn')]) {
     if (checks.filter(c => c.id === check.id && c.status === check.status).length > 1) continue;

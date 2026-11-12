@@ -112,6 +112,19 @@ describe('body.lattice()', () => {
     expect(errors(step.diagnostics)).toContain('export.mesh-body.format-unsupported');
   }, 120_000);
 
+  it('refuses B-rep mesh tolerance options when exporting a mesh-solid input', async () => {
+    for (const format of ['stl', '3mf', 'obj'] as const) {
+      const result = await runAndExport({
+        code: CUBE,
+        fileName: 'c.kcad.ts',
+        format,
+        options: { format, tolerance: 0.01 } as never,
+      });
+      expect(result.bytes).toHaveLength(0);
+      expect(errors(result.diagnostics)).toContain('export.mesh.tolerance-unavailable');
+    }
+  }, 120_000);
+
   it('DFM reports lattice walls thinner than the printable minimum', async () => {
     const m = await build(`dfmSpec({ process: 'fdm', minWall: 1.0 });
       return box(20, 20, 20, true).lattice({ cell: 5, wall: 0.6, skin: 1 });`);

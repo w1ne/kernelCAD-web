@@ -18,6 +18,79 @@ export interface ExportMeshDeflection {
   angularRad: number;
 }
 
+export interface ExportMeshToleranceOptions {
+  /** Absolute sampled chord-deviation target in millimetres. */
+  tolerance?: number;
+  /** Maximum normal-angle change in degrees. */
+  angularToleranceDeg?: number;
+}
+
+export interface MeshDeviationReport {
+  requested_mm: number;
+  /** Greatest distance among the reported samples; not a certified global maximum. */
+  measured_max_mm: number;
+  /** 95th percentile of the reported sampled distances. */
+  measured_p95_mm: number;
+  samples: number;
+  triangles: number;
+  measurement: 'sampled_brep_surface_to_export_triangles';
+  global_max_certified: false;
+}
+
+export function validateExportMeshToleranceOptions(options: unknown): string | undefined {
+  if (options === undefined || options === null || typeof options !== 'object') return undefined;
+  const value = options as { tolerance?: unknown; angularToleranceDeg?: unknown };
+  if (value.tolerance !== undefined && !isValidLinearTolerance(value.tolerance)) {
+    return 'options.tolerance must be a finite number greater than or equal to 0.001 mm.';
+  }
+  if (value.angularToleranceDeg !== undefined && !isValidAngularToleranceDegrees(value.angularToleranceDeg)) {
+    return 'options.angularToleranceDeg must be a finite number greater than 0 and at most 180 degrees.';
+  }
+  if (value.angularToleranceDeg !== undefined && !convertsToPositiveRadians(value.angularToleranceDeg)) {
+    return 'options.angularToleranceDeg must convert to a finite, positive radian value.';
+  }
+  return undefined;
+}
+
+function isValidLinearTolerance(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0.001;
+}
+
+function isValidAngularToleranceDegrees(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 180;
+}
+
+function convertsToPositiveRadians(degrees: unknown): boolean {
+  if (typeof degrees !== 'number') return false;
+  const radians = degrees * Math.PI / 180;
+  return Number.isFinite(radians) && radians > 0;
+}
+
+const DEFAULT_LINEAR_DEFLECTION = 0.01;
+const DEFAULT_ANGULAR_DEFLECTION_RAD = 0.05;
+
+/**
+ * Convert agent-facing mesh controls to OCCT's mesher parameters. A requested
+ * linear tolerance uses absolute mode; an angular-only request keeps the
+ * existing relative linear mode. Requests that are already met by the
+ * current default mesh keep that mesh in the export runtime.
+ */
+export function exportMeshDeflection(
+  options?: ExportMeshToleranceOptions,
+): ExportMeshDeflection | undefined {
+  if (options?.tolerance === undefined && options?.angularToleranceDeg === undefined) return undefined;
+  const requestedAngularRad = options?.angularToleranceDeg === undefined
+    ? DEFAULT_ANGULAR_DEFLECTION_RAD
+    : options.angularToleranceDeg * Math.PI / 180;
+  return {
+    linear: options?.tolerance === undefined
+      ? DEFAULT_LINEAR_DEFLECTION
+      : Math.min(options.tolerance, DEFAULT_LINEAR_DEFLECTION),
+    relative: options?.tolerance === undefined,
+    angularRad: Math.min(DEFAULT_ANGULAR_DEFLECTION_RAD, requestedAngularRad),
+  };
+}
+
 /**
  * Export-grade mesher. Builds an OCCT `BRepMesh_IncrementalMesh_2` with
  * `isRelative=true` (linear tolerance is scaled by each edge's length), then
@@ -51,7 +124,7 @@ export function meshShapeForExport(
     meshFacesIndividually(oc, shape, deflection);
   }
   try {
-    const { rawTriangles, rawVertices } = readFaceTriangulations(oc, shape);
+    const { rawTriangles, rawVertices } = readFaceTriangulations(oc, shape, deflection);
     return weldVertices(rawVertices, rawTriangles);
   } finally {
     if (mesher) mesher.delete();
@@ -158,6 +231,7 @@ function meshFacesIndividually(
 function readFaceTriangulations(
   oc: ReturnType<typeof getOC>,
   shape: replicad.Shape3D,
+  deflection?: ExportMeshDeflection,
 ): { rawTriangles: number[]; rawVertices: number[] } {
   // Read per-face triangulation directly. This is the same loop as
   // replicad's `Shape3D.mesh()` minus the redundant _mesh() call that
@@ -184,7 +258,13 @@ function readFaceTriangulations(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).BRepTools.Clean(fw, true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+      const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(
+        fw,
+        deflection?.linear ?? 0.02,
+        deflection?.relative ?? false,
+        deflection?.angularRad ?? 0.1,
+        false,
+      );
       faceMesher.delete();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tri = (face as any).triangulation(rawVertices.length / 3) as typeof tri;

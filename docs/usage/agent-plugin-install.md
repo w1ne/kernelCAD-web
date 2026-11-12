@@ -19,8 +19,23 @@ and also offers OAuth (dynamic client registration at
 own sign-in prompt when a tool needs it. No local OpenCASCADE, Node or Python
 install is needed.
 
-The plugin bundles four skills: `kernelcad-design-loop`, `kernelcad-cookbooks`,
-`kernelcad-studio-paint` and `kernelcad-export`.
+The plugin bundles six skills: `kernelcad-design-loop`, `kernelcad-cookbooks`,
+`kernelcad-studio-paint`, `kernelcad-export`, `manufacturing-readiness` and
+`design-trade-study`.
+
+### Manufacturing evidence workflows
+
+Use `manufacturing-readiness` to review one exact source or saved revision for a
+named fabrication scope. It keeps `PASS`, `FAIL`, `WARN`, `NOT_RUN`,
+`UNSUPPORTED` and `ASSUMPTION` separate and requires approval before an external
+quote, order, print or file transfer. Use `design-trade-study` to compare a
+bounded set of variants on the same units, requirements and solver basis. Hard
+constraints run before weighted scoring, and the report includes weight
+sensitivity plus the cheapest discriminating test.
+
+The [manufacturing evidence demo](../demos/manufacturing-evidence-skills/README.md)
+contains exact `.kcad.ts` sources, MCP invocation settings, raw and summarized
+evidence, deterministic renders, and the visually inspected MP4 walkthrough.
 
 ## Already in ChatGPT and Claude: no install
 
@@ -111,7 +126,7 @@ Any MCP client that speaks streamable HTTP can use `https://mcp.kernelcad.com/mc
 npx skills add w1ne/kernelCAD-web
 ```
 
-Installs the four skills for the agents you pick (`-g -a -y` skips the
+Installs the six skills for the agents you pick (`-g -a -y` skips the
 questions). Pair it with one of the MCP lines below.
 
 ### MCP only, one command

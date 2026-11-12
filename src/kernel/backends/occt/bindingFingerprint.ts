@@ -14,6 +14,7 @@ import { hasSelectionSink, recordSelection } from '../../naming/selectionSink';
 import { makeQuery } from '../../naming/query';
 import { faceHashOf, surfaceTypeOf } from './createdRefs';
 import type { OcctBackend } from './occtBackend';
+import { occtEdgeHash } from './edgeIdentity';
 
 const unit = (x: number, y: number, z: number): Vec3 | undefined => {
   const n = Math.hypot(x, y, z);
@@ -72,7 +73,7 @@ export function faceFingerprint(base: OcctBackend, face: Face): BindingFingerpri
   };
 }
 
-export function edgeFingerprint(edge: Edge): BindingFingerprint {
+export function edgeFingerprint(edge: Edge, base?: OcctBackend): BindingFingerprint {
   const mid = edge.pointAt(0.5);
   const tangent = edge.tangentAt(0.5);
   const direction = unit(tangent.x, tangent.y, tangent.z);
@@ -89,9 +90,18 @@ export function edgeFingerprint(edge: Edge): BindingFingerprint {
       try { radius = circle.Radius(); } finally { circle.delete(); }
     } catch { /* leave undefined */ } finally { adaptor.delete(); }
   }
+  let sourceId: string | undefined;
+  try {
+    const hash = occtEdgeHash(edge)?.toString(16);
+    const lineage = hash === undefined ? undefined : base?.edgeHistoryMap?.get(hash);
+    if (lineage?.rootOrdinal !== undefined) {
+      sourceId = `${lineage.rootFeatureId}#${lineage.rootOrdinal}`;
+    }
+  } catch { /* an edge without a stable lineage still gets a geometry fingerprint */ }
   return {
     entityKind: 'edge',
     geomType: edge.geomType,
+    ...(sourceId !== undefined ? { sourceId } : {}),
     ...(direction ? { direction } : {}),
     ...(radius !== undefined ? { radius } : {}),
     size: edge.length,
@@ -158,7 +168,7 @@ export function reportBinding(
     consumerFeatureId: record.id,
     selectorText: text,
     syntax,
-    fingerprints: entities.map((e) => ('normalAt' in e ? faceFingerprint(base, e as Face) : edgeFingerprint(e as Edge))),
+    fingerprints: entities.map((e) => ('normalAt' in e ? faceFingerprint(base, e as Face) : edgeFingerprint(e as Edge, base))),
     partDiagonal: partDiagonal(base),
   };
   recordSelection(record, selection);

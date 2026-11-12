@@ -30,6 +30,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { collectParamRefs } from '../../../shared/runtime/resolveParams';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
 import { faceFrameOrigin } from './faceFrame';
@@ -216,16 +218,49 @@ function attachCreatedRefs(
   return merged;
 }
 
+/** A resolved Param retains its dependency reference; record identity tells
+ *  whether the recompute engine evaluated it against a parameter table. */
+function unresolvedProfileDiagnostic(
+  feature: FeatureRecord,
+  rawRecord: FeatureRecord | undefined,
+  resolvedRecord: FeatureRecord | undefined,
+): CompilerDiagnostic | undefined {
+  if (!rawRecord || resolvedRecord !== rawRecord) return undefined;
+  const commands = (rawRecord.metadata as { commands?: SketchCommand[] } | undefined)?.commands ?? [];
+  const unresolvedRefs = [...collectParamRefs(commands)];
+  if (unresolvedRefs.length === 0) return undefined;
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId: feature.id,
+    severity: 'error',
+    ...invalidArgsText({
+      api: 'cutout(profile, opts)',
+      path: 'profile.commands',
+      gotText: `unresolved parameter reference(s): ${unresolvedRefs.join(', ')}`,
+      requires: 'coordinates evaluated with the current script parameter table',
+      example: "base.cutout(path().moveTo(0, 0).lineTo(10, 0).lineTo(0, 10).close(), { face: 'top', depth: 'through' })",
+      hint: "Recompute with the script's current parameter table so every profile coordinate is evaluated before cutout lowering.",
+    }),
+  };
+}
+
 /** Resolve the cutout profile sketch's commands from the referenced
  *  sketch FeatureRecord's metadata. */
 function resolveProfileCommands(
   feature: FeatureRecord,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): SketchCommand[] | { error: CompilerDiagnostic } {
   // The profile sketch's commands live in the sketch FeatureRecord's metadata.
   const profileRef = feature.inputs.profile;
   const profileFeatureId = profileRef && profileRef.kind === 'feature' ? profileRef.id : undefined;
-  const profileRecord = records?.find(r => r.id === profileFeatureId);
+  const rawProfileRecord = records?.find(r => r.id === profileFeatureId);
+  const profileRecord = rawProfileRecord && resolveRecord
+    ? resolveRecord(rawProfileRecord)
+    : rawProfileRecord;
+  const unresolved = unresolvedProfileDiagnostic(feature, rawProfileRecord, profileRecord);
+  if (unresolved) return { error: unresolved };
   const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
   if (commands.length === 0) {
     return {
@@ -382,6 +417,7 @@ export function lowerCutout(
   target: OcctBackend,
   profileBackend: OcctBackend | undefined,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): CutoutLowerResult {
   const diagnostics: CompilerDiagnostic[] = [];
   const entryRes = resolveEntry(feature, target, records);
@@ -391,7 +427,7 @@ export function lowerCutout(
   }
   const entry = entryRes;
 
-  const commandsRes = resolveProfileCommands(feature, records);
+  const commandsRes = resolveProfileCommands(feature, records, resolveRecord);
   if ('error' in commandsRes) {
     diagnostics.push(commandsRes.error);
     return { backend: target, diagnostics };

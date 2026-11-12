@@ -4,7 +4,7 @@
 // solved assembly in world-frame positions. Uses a tiny inline two-box
 // assembly for speed; the carousel fixtures stay in integration tests.
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, statSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { exportPartTool } from '../../../../src/agent/mcp/tools/exportPart';
@@ -58,6 +58,40 @@ describe('export_part MCP tool', () => {
     expect(r.written![0].watertight).toBe(true);
     expect(r.written![0].byte_count).toBeGreaterThan(84);
     expect(statSync(out).size).toBe(r.written![0].byte_count);
+  }, 60000);
+
+  it('measures and stamps each STL written by the per-part exporter', async () => {
+    const out = join(tmpDir, 'toleranced-b.stl');
+    const r = await exportPartTool({
+      code: TWO_BOX_ASSEMBLY,
+      part: 'b',
+      output_path: out,
+      options: { tolerance: 0.01 },
+    });
+    expect(r.ok).toBe(true);
+    expect(r.written).toHaveLength(1);
+    expect(r.written![0]!.mesh_deviation).toMatchObject({
+      requested_mm: 0.01,
+      samples: expect.any(Number),
+      triangles: expect.any(Number),
+      global_max_certified: false,
+    });
+    expect(r.written![0]!.mesh_deviation!.triangles).toBe(r.written![0]!.triangle_count);
+    expect(new TextDecoder().decode(readFileSync(out).subarray(0, 80)))
+      .toContain('requested-mesh-tolerance=0.01mm');
+  }, 60000);
+
+  it('refuses an invalid per-part tolerance before writing', async () => {
+    const out = join(tmpDir, 'invalid.stl');
+    const r = await exportPartTool({
+      code: TWO_BOX_ASSEMBLY,
+      part: 'b',
+      output_path: out,
+      options: { tolerance: 0.0005 },
+    });
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics?.map(d => d.code)).toContain('export.mesh.tolerance-invalid');
+    expect(existsSync(out)).toBe(false);
   }, 60000);
 
   it("exports all parts to output_dir as <dir>/<part>.stl when part is 'all'", async () => {

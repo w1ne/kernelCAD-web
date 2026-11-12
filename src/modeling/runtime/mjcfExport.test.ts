@@ -99,6 +99,18 @@ describe('regularizeInertia6 / isInertia6PositiveDefinite', () => {
 });
 
 describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
+    it('preserves an explicitly placed root part in metre-valued MJCF coordinates', async () => {
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('placed-root');
+        arm.part('offset-base', kcad.box(20, 20, 20, true), { at: [125, -40, 60] });
+
+        const { mjcf } = await assemblyToMjcf(arm);
+
+        expect(mjcf).toContain('<body name="offset-base" pos="0.125000 -0.040000 0.060000">');
+    }, 60000);
+
     it('places a child whose mate connector is off its origin where the connectors meet', async () => {
         // The wrist connector sits 40 mm behind both parts' origins, so the
         // palm body belongs at the forearm origin, and a hinge on a child
