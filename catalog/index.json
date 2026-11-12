@@ -254547,7 +254547,7 @@
       "id": "pipe-elbow-45",
       "kit": "standard-components",
       "title": "45 degree pipe elbow",
-      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend Knobs: model size, steel, bronze.",
+      "description": "Illustrative 45-degree elbow with two open ports and one connected Ø16 mm passage at standard size. End collars are separate visual bodies, not specified pressure fittings. Knobs: model size and finish colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254565,8 +254565,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-45.png",
-      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
-      "triangleBudget": 360,
+      "sourceSha256": "1c6f27707ef587af113cbbcb23c3c960aff6d39ec453b2653b1efa4749f79ae8",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254583,13 +254583,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254607,11 +254607,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 458,
         "sizeM": [
-          0.042991,
-          0.040991,
-          0.028
+          0.043406,
+          0.050406,
+          0.026
         ],
         "minUpM": 0,
         "materials": 1
@@ -254621,8 +254621,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "base",
-            "angled"
+            "connected-open-elbow"
           ],
           "param": "steel"
         },
@@ -254630,7 +254629,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "lower-port-collar",
+            "angled-port-collar"
           ],
           "param": "bronze"
         }
