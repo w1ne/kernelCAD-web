@@ -68,6 +68,21 @@ prismSideY(points: [number, number][], y0: number, y1: number): Shape; // points
 prismFront(points: [number, number][], x0: number, x1: number): Shape; // points (Y, Z), spans x0..x1
 prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points (X, Y), spans z0..z1
 
+// Upright rib from an open XY centerline. The centerline is offset by half the
+// thickness on each side, extruded along +Z, then fused with the supplied base.
+// `startZ` is the rib bottom (default 0); make it overlap the base for a valid union.
+// Supports straight or non-self-intersecting open polylines. Sharp bends that
+// require a miter longer than 8 × half-thickness are rejected.
+rib(base: Shape, centerline: [number, number][], opts: {
+  thickness: number;
+  height: number;
+  startZ?: number;
+}): Shape;
+// Example: a 2 mm wall rising from a 40 × 30 × 10 plate. The 0.1 mm overlap
+// fuses the rib to the base instead of relying on tangent faces.
+const plate = box(40, 30, 10);
+return rib(plate, [[5, 15], [35, 15]], { thickness: 2, height: 20, startZ: 9.9 });
+
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
 // via path() and call .revolve() on the resulting Sketch.

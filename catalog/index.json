@@ -252994,7 +252994,7 @@
       "id": "flange-bearing-housing",
       "kit": "standard-components",
       "title": "Flange bearing housing",
-      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.",
+      "description": "Illustrative CC0 flange bearing housing: one-piece cast housing with a raised circular seat, two usable through-holes, and a separate plain bronze sleeve bearing with an open shaft bore. Not a ball bearing, vendor drawing, rated part, or fit specification. Knobs: model size and display colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253012,7 +253012,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
       "preview": "/assets/standard-components-flange-bearing-housing.png",
-      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
+      "sourceSha256": "42ca6d19608acd444f0cd484a32c928848139c5a0f82b23b5e8f45a978f995a4",
       "triangleBudget": 360,
       "params": [
         {
@@ -253054,11 +253054,11 @@
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 312,
         "sizeM": [
           0.056,
           0.02,
-          0.04
+          0.036
         ],
         "minUpM": 0,
         "materials": 1
@@ -253068,7 +253068,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "plate"
+            "one-piece-cast-iron-housing"
           ],
           "param": "castIron"
         },
@@ -253076,7 +253076,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "boss"
+            "plain-bronze-sleeve-bearing"
           ],
           "param": "bronze"
         }
@@ -254547,7 +254547,7 @@
       "id": "pipe-elbow-45",
       "kit": "standard-components",
       "title": "45 degree pipe elbow",
-      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend Knobs: model size, steel, bronze.",
+      "description": "Illustrative 45-degree elbow with two open ports and one connected Ø16 mm passage at standard size. End collars are separate visual bodies, not specified pressure fittings. Knobs: model size and finish colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254565,8 +254565,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-45.png",
-      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
-      "triangleBudget": 360,
+      "sourceSha256": "1c6f27707ef587af113cbbcb23c3c960aff6d39ec453b2653b1efa4749f79ae8",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254583,13 +254583,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254607,11 +254607,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 458,
         "sizeM": [
-          0.042991,
-          0.040991,
-          0.028
+          0.043406,
+          0.050406,
+          0.026
         ],
         "minUpM": 0,
         "materials": 1
@@ -254621,8 +254621,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "base",
-            "angled"
+            "connected-open-elbow"
           ],
           "param": "steel"
         },
@@ -254630,7 +254629,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "lower-port-collar",
+            "angled-port-collar"
           ],
           "param": "bronze"
         }
@@ -254640,7 +254640,7 @@
       "id": "pipe-elbow-90",
       "kit": "standard-components",
       "title": "90 degree pipe elbow",
-      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends Knobs: model size, steel, bronze.",
+      "description": "Illustrative elbow with two perpendicular open ports and a connected Ø18 mm passage at standard size. Bronze-colored end collars are separate visual bodies. Not pressure-rated CAD. Knobs: model size and finish colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254658,8 +254658,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
-      "triangleBudget": 380,
+      "sourceSha256": "e50f85776a7e205a214860a25ec7ce6f8de266c9cba824e7f79843f90e65a1c6",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254676,13 +254676,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254700,11 +254700,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 446,
         "sizeM": [
-          0.039,
           0.041,
-          0.026
+          0.042,
+          0.028
         ],
         "minUpM": 0,
         "materials": 1
@@ -254714,8 +254714,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "upright",
-            "branch"
+            "one-piece-open-elbow"
           ],
           "param": "steel"
         },
@@ -254723,7 +254722,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "inlet-reinforcing-collar",
+            "outlet-reinforcing-collar"
           ],
           "param": "bronze"
         }

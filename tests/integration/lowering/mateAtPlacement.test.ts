@@ -162,6 +162,92 @@ describe('a mate places a part that has `at` where the mate says', () => {
   }
 });
 
+describe('connect-placed parts inherit their parent mate motion', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  for (const entry of ['model', 'solvedModel'] as const) {
+    it(`${entry}: connected descendants inherit motion through a connect chain`, async () => {
+      const code = `
+        const arm = assembly('rig');
+        const root = arm.part('root', box(2, 2, 2, true));
+        root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+
+        const parent = arm.part('parent', box(20, 4, 2, false), {
+          at: [100, 0, 0],
+          connectors: { childMount: { origin: [20, 0, 0] } },
+        });
+        parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+        const child = arm.part('child', box(10, 2, 2, false), {
+          connectors: {
+            root: { origin: [0, 0, 0] },
+            tipMount: { origin: [10, 0, 0] },
+          },
+          connect: { connector: 'root', to: parent.connector('childMount') },
+        });
+        arm.part('grandchild', box(2, 2, 2, false), {
+          connectors: { root: { origin: [0, 0, 0] } },
+          connect: { connector: 'root', to: child.connector('tipMount') },
+        });
+        arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+        return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
+      `;
+      const boxes = await builtBoxes(code);
+
+      // The parent rotates around the origin from +X onto +Y. The child was
+      // connector-placed at the parent's far end, so its entire box
+      // must receive the same rigid motion.
+      expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+      expectBox(boxes.get('child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+      expectBox(boxes.get('grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
+
+      if (entry === 'solvedModel') {
+        const { arm, scene, lowered } = await build(code);
+        const solved = await solveMates(arm);
+        near(solved.poses.get('child')!.point([0, 0, 0]), [0, 120, 0]);
+        near(scene.part('child').worldTransform.point([120, 0, 0]), [0, 120, 0]);
+        near(solved.poses.get('grandchild')!.point([0, 0, 0]), [0, 130, 0]);
+        near(scene.part('grandchild').worldTransform.point([130, 0, 0]), [0, 130, 0]);
+        const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses)!;
+        expectBox(boxOf(reposed, 'child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+        expectBox(boxOf(reposed, 'grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
+      }
+    });
+  }
+
+  it('keeps a connected descendant at its own solver-selected mate pose', async () => {
+    const code = `
+      const arm = assembly('rig');
+      const root = arm.part('root', box(2, 2, 2, true));
+      root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      root.connector('fixtureMount', { type: 'frame', origin: { kind: 'vec3', value: [140, 0, 0] } });
+
+      const parent = arm.part('parent', box(20, 4, 2, false), {
+        at: [100, 0, 0],
+        connectors: { childMount: { origin: [20, 0, 0] } },
+      });
+      parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+      const child = arm.part('child', box(10, 2, 2, false), {
+        connectors: { root: { origin: [0, 0, 0] } },
+        connect: { connector: 'root', to: parent.connector('childMount') },
+      });
+      child.connector('root', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      const fixture = arm.part('fixture', box(2, 2, 2, false));
+      fixture.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+      arm.mate('fixtureLock', 'root.fixtureMount', 'fixture.seat', 'fastened');
+      arm.mate('childLock', 'fixture.seat', 'child.root', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const boxes = await builtBoxes(code);
+
+    // The parent turns about the root, but the child is also fastened to the
+    // stationary fixture. Its own mate therefore remains authoritative.
+    expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+    expectBox(boxes.get('fixture'), { min: [140, 0, 0], max: [142, 2, 2] });
+    expectBox(boxes.get('child'), { min: [140, 0, 0], max: [150, 2, 2] });
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Every path that poses a mated part agrees with the built scene: the
 // capture-time Scene, the `solveMates` placement (with `at` taken back out),

@@ -66,8 +66,9 @@ import { connectorDirection, resolveConnectorFrame, resolveConnectorOrigin } fro
 import type { TendonRecord, TendonViaRef } from '../mates/tendon';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { partAtFor } from '../mates/partFrame';
+import { partAtFor, resolvedPartAt } from '../mates/partFrame';
 import type { Vec3 } from '../../shared/intent/types';
+import type { ParamTable } from '../../shared/runtime/paramTable';
 import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
 
@@ -129,7 +130,8 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
 
     const { partByName, childrenByParent, roots } = buildMateTree(parts, mates);
 
-    const atOf = partAtFor(mates, parts, arm.__session().paramTable);
+    const paramTable = arm.__session().paramTable;
+    const atOf = partAtFor(mates, parts, paramTable);
     // A scene shape carries the part's `at`; only parts without one share the
     // frame of `originalShape.lower()`, so only those reuse the scene BREP.
     const sceneShapes = new Map<string, OcctBackend>();
@@ -153,6 +155,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         collisionMeshes,
         resolvedMateAxes,
         sitesByPart,
+        paramTable,
         jointOrder,
         bodyOrder,
     );
@@ -533,6 +536,7 @@ function emitWorldbodyBlocks(
     collisionMeshes: Map<string, CollisionMesh[]>,
     resolvedMateAxes: Map<string, ResolvedMateFrame>,
     sitesByPart: Map<string, ResolvedTendonEndpoint[]>,
+    paramTable: ParamTable,
     jointOrder: { mjcfName: string; mateName: string }[],
     bodyOrder: string[],
 ): string[] {
@@ -540,16 +544,8 @@ function emitWorldbodyBlocks(
         // Root bodies use the part's `at` placement (mm → m). Non-root
         // bodies live inside their parent's frame; we use the mate's
         // connector origin for the pos.
-        // Cast through `unknown` because Vec3Param admits Editable<number>
-        // entries (the runtime check below guards). At validate-time the
-        // recompute engine has already lowered everything, but TS doesn't
-        // know that.
-        const at = part.at as unknown as readonly [unknown, unknown, unknown] | undefined;
-        if (at === undefined) return [0, 0, 0];
-        const ax = typeof at[0] === 'number' ? at[0] : 0;
-        const ay = typeof at[1] === 'number' ? at[1] : 0;
-        const az = typeof at[2] === 'number' ? at[2] : 0;
-        return [ax, ay, az];
+        const at = resolvedPartAt(part.at, paramTable);
+        return [at[0], at[1], at[2]];
     }
 
     function emitBody(
