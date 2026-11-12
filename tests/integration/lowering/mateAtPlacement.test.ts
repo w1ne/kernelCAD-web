@@ -16,6 +16,7 @@
 //          connector `base` at local [1, 2, -4] (on the bottom face)
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
@@ -481,8 +482,23 @@ function tendonEnds(vertices: ArrayLike<number>): { from: V3; to: V3 } {
   return { from: ring(0), to: ring(16) };
 }
 
-describe('tendon anchors and fastened-drift boxes of mated parts with `at`', () => {
+describe('tendon anchors and fastened-drift boxes of posed parts with `at`', () => {
   beforeAll(async () => { await initOcct(); });
+
+  it('a tendon on a part joined by a legacy joint includes the part at placement', async () => {
+    const code = readFileSync('examples/kinematic/jointed-tendon-anchor-at.kcad.ts', 'utf8');
+    const { records, paramTable, session } = await runScript({ code, fileName: 'joint-at-tendon.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(records, paramTable, session);
+    const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');
+    expect(tendon).toBeDefined();
+    const { from, to } = tendonEnds(tendon!.faces[0].vertices);
+    expect(from[0]).toBeCloseTo(110, 3);
+    expect(from[1]).toBeCloseTo(0, 3);
+    expect(from[2]).toBeCloseTo(0, 3);
+    expect(to[0]).toBeCloseTo(-10, 3);
+    expect(to[1]).toBeCloseTo(0, 3);
+    expect(to[2]).toBeCloseTo(0, 3);
+  });
 
   it('a tendon between mated parts with at is anchored on their connectors', async () => {
     // The mount (first part) keeps its `at` [100, 0, 0]: hook [-10, 0, 0]

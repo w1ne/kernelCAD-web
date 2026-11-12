@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-12T07:33:50.490Z",
+  "source": "examples/kinematic/jointed-tendon-anchor-at.kcad.ts",
+  "verification": "local-kernelcad-mesh-endpoint-rings",
+  "command": "node --import tsx docs/demos/tendon-jointed-anchor-at/verify.ts",
+  "units": "mm",
+  "tendonFeature": "__tendon__spring",
+  "actual": {
+    "fromMm": [
+      110,
+      0,
+      0
+    ],
+    "toMm": [
+      -10,
+      0,
+      0
+    ]
+  },
+  "expected": {
+    "fromMm": [
+      110,
+      0,
+      0
+    ],
+    "toMm": [
+      -10,
+      0,
+      0
+    ]
+  },
+  "toleranceMm": 0.003,
+  "claims": {
+    "localScriptAndMeshVerified": true,
+    "dynamicSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

@@ -42,9 +42,9 @@ export function matedPartNames(mates: readonly Pick<MateRecord, 'a' | 'b'>[]): S
 }
 
 /** Look up, by part name, the `at` to convert by: the resolved `at` of a
- *  mated part or a connected descendant of one. Parts without either relation
- *  keep their authored transform. Use it wherever a placement and a scene
- *  motion meet, so the conversion rule lives here. */
+ *  mated part, a legacy-joint participant, or a connected descendant of one.
+ *  Parts without a solver placement keep their authored transform. Use it
+ *  wherever a placement and a scene motion meet. */
 export function partAtFor(
   mates: readonly Pick<MateRecord, 'a' | 'b'>[],
   parts: readonly {
@@ -54,9 +54,14 @@ export function partAtFor(
     readonly connectParentId?: FeatureId;
   }[],
   table: ParamTable | undefined,
+  joints: readonly { readonly parentPartId: string; readonly childPartId: string }[] = [],
 ): (partName: string) => Vec3 | undefined {
   const mated = matedPartNames(mates);
   const partById = new Map(parts.flatMap((part) => part.id === undefined ? [] : [[part.id, part] as const]));
+  for (const id of joints.flatMap(({ parentPartId, childPartId }) => [parentPartId, childPartId])) {
+    const part = partById.get(id);
+    if (part !== undefined) mated.add(part.name);
+  }
   for (const part of parts) {
     if (part.connectParentId === undefined) continue;
     const parent = partById.get(part.connectParentId);
