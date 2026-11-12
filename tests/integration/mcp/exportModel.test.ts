@@ -8,7 +8,42 @@ import { describe, it, expect, afterEach, beforeAll, beforeEach } from 'vitest';
 import { mkdtempSync, rmSync, existsSync, statSync, readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { NodeIO } from '@gltf-transform/core';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
+
+const NAMED_GLB_ASSEMBLY = `
+  const a = assembly('qa-glb-scale');
+  a.part('red-plate', box(20, 30, 5).material({ name: 'anodized aluminium', baseColor: '#ff0000', metalness: 0.8, roughness: 0.3 }));
+  a.part('blue-cube', box(10, 10, 10).translate(40, 0, 0).material({ name: 'blue polymer', baseColor: '#0000ff', metalness: 0, roughness: 0.4 }));
+  return a.model();
+`;
+
+async function sortedGlbWorldExtents(path: string): Promise<number[]> {
+  const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(path)));
+  const bounds = [[Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]];
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const matrix = node.getWorldMatrix();
+    for (const primitive of mesh.listPrimitives()) {
+      const positions = primitive.getAttribute('POSITION');
+      if (!positions) continue;
+      for (let i = 0; i < positions.getCount(); i++) {
+        const [x, y, z] = positions.getElement(i, []);
+        const world = [
+          matrix[0]! * x! + matrix[4]! * y! + matrix[8]! * z! + matrix[12]!,
+          matrix[1]! * x! + matrix[5]! * y! + matrix[9]! * z! + matrix[13]!,
+          matrix[2]! * x! + matrix[6]! * y! + matrix[10]! * z! + matrix[14]!,
+        ];
+        for (let axis = 0; axis < 3; axis++) {
+          bounds[0]![axis] = Math.min(bounds[0]![axis]!, world[axis]!);
+          bounds[1]![axis] = Math.max(bounds[1]![axis]!, world[axis]!);
+        }
+      }
+    }
+  }
+  return bounds[0]!.map((value, axis) => bounds[1]![axis]! - value).sort((a, b) => a - b);
+}
 
 beforeAll(async () => {
   const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
@@ -95,16 +130,51 @@ describe('export_model MCP tool', () => {
     expect(statSync(out).size).toBeGreaterThan(0);
   }, 60000);
 
-  it('writes GLB with format: "glb"', async () => {
-    const out = join(tmpDir, 'box.glb');
+  it('writes metre-scaled GLB through export_model and keeps the part scene tree', async () => {
+    const out = join(tmpDir, 'assembly.glb');
     const r = await exportModelTool({
-      code: 'return box(10, 10, 10);',
+      code: NAMED_GLB_ASSEMBLY,
       output_path: out,
       format: 'glb',
     });
     expect(r.ok).toBe(true);
     expect(r.format).toBe('glb');
     expect(statSync(out).size).toBeGreaterThan(0);
+
+    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(out)));
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+    expect(extras.units).toBe('m');
+    expect(root.getScale()).toEqual([0.001, 0.001, 0.001]);
+    expect(root.listChildren().map((node) => node.getName())).toEqual(
+      expect.arrayContaining(['red-plate', 'blue-cube']),
+    );
+    expect(doc.getRoot().listMaterials().map((material) => material.getName())).toEqual(
+      expect.arrayContaining(['anodized aluminium', 'blue polymer']),
+    );
+    (await sortedGlbWorldExtents(out)).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([0.01, 0.03, 0.05][index]!, 6);
+    });
+  }, 60000);
+
+  it('keeps explicit millimetre coordinates through the MCP file-writing path', async () => {
+    const out = join(tmpDir, 'assembly-mm.glb');
+    const r = await exportModelTool({
+      code: NAMED_GLB_ASSEMBLY,
+      output_path: out,
+      format: 'glb',
+      options: { format: 'glb', units: 'mm' },
+    });
+    expect(r.ok).toBe(true);
+
+    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(out)));
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+    expect(extras.units).toBe('mm');
+    expect(root.getScale()).toEqual([1, 1, 1]);
+    (await sortedGlbWorldExtents(out)).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([10, 30, 50][index]!, 4);
+    });
   }, 60000);
 
   it('rejects URDF / SRDF / SDF-Gazebo / USD with export.no-shape when the script returns a single Shape', async () => {
