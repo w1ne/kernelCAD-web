@@ -50,8 +50,9 @@ export const MECHANISM_CODES = {
     description: 'A part declared on a mechanism (an assembly with at least one mate or joint) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A multi-part assembly with no mates and no joints is independent bodies, not a mechanism: the check does not run and nothing is emitted.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
-  // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
-  // (auto-scaled) budget and criteria 2/3/8 are SKIPPED. Criterion 7
+  // `mechanismTruth.ts` when the BREP pose sweep is skipped because its work
+  // estimate exceeds the budget or a caller forces a skip. Criteria 2/3/8
+  // are SKIPPED. Criterion 7
   // (rest-pose joint-mesh continuity) still runs; a gap there is 'broken'.
   // Otherwise the verdict degrades to 'unverified'. Replaces the old silent
   // console.warn: the 'unverified' verdict now carries machine-readable
@@ -82,11 +83,11 @@ export const MECHANISM_CODES = {
   },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
-      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "The articulated collision/pose sweep was skipped, so the mechanism is 'unverified' (NOT certified collision-free). Read the diagnostic message for the skip reason. If the estimated work exceeds the configured budget, verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The deterministic BREP pose-sweep work estimate exceeded the budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
+    description: 'The deterministic BREP pose sweep was skipped because its work estimate exceeded the configured budget or the caller forced a skip with a non-positive budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
   },
   'mechanism.unverified-exact-probe': {
     hintTemplate:
