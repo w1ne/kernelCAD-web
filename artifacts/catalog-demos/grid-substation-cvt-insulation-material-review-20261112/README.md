@@ -14,6 +14,8 @@ The [sample ledger](sample-ledger.json) records dimensions, baseline source and 
 
 The [open issue and PR check](open-target-check.json) has no exact issue matches and no selected source-path matches in open PRs. PR #1258 was checked first at head `f9907bdbd76850c9bc0c460c50c19892bc8406c1`: all 17 reported checks succeeded and no review had been submitted. GitHub marked it conflicting with develop; this asset round does not resolve that branch conflict.
 
+After the source fix was pushed, the full manually dispatched CI run passed all 17 jobs on commit `39f7b04c74389e638c85364b7021c8b179965545` ([run 43257464157](https://github.com/w1ne/kernelCAD-web/actions/runs/43257464157)). GitHub still reported no PR-attached status checks, no reviews, and a conflicting merge state; see [post-push PR status](pr-status-after.json). The run was manually dispatched because no checks had appeared for the pushed commit.
+
 All five public detail routes and preview routes returned HTTP 200 before the source edit. Their public preview hashes match the saved local baseline previews byte for byte. The live CVT detail page exposed stainlessSteel and powderCoat, but no porcelain control. This branch is not deployed.
 
 ## Verification
@@ -21,6 +23,7 @@ All five public detail routes and preview routes returned HTTP 200 before the so
 - Focused exported-GLB regression: 1/1 passed. It checks all four divider colors, material group assignments, both presets, triangle budget, and unchanged envelope.
 - ESLint: clean for the full grid-substation kit and the new regression.
 - Catalog integration: 44 files and 69 tests passed, including the all-catalog source and index freshness check.
+- Full repository CI: all 17 jobs passed on the source-fix commit in [run 43257464157](ci-run-43257464157.json).
 - Grid-substation structural quality gate: 80/80 assets passed (100%).
 - Global structural scan: 2,401/2,402 assets passed (99.96%). The unchanged outlier is standard-components/beam-coupling; the grid-substation kit passes 80/80.
 - Index verification: source hash matches, preview exists, all 2,402 assets and 50 kits remain, and only the CVT row changed.
@@ -39,6 +42,12 @@ The dated product-material comparison is retained privately. Public documentatio
 - [Generated index row verification](index-verification.json)
 - [Focused regression output](verification-focused-regression.log)
 - [Catalog integration output](verification-catalog-integration.log)
+- [ESLint output](verification-eslint.log)
+- [Index build output](verification-index-build.log)
+- [Grid-substation quality output](verification-quality-kit.log)
+- [Global quality output](verification-quality-global.log)
+- [Full CI run results](ci-run-43257464157.json)
+- [Post-push PR status](pr-status-after.json)
 - [Inspected 11.2-second MP4 walkthrough](grid-substation-cvt-insulation-material-review.mp4)
 
 The public site was not deployed. This local render and GLB evidence does not establish a vendor design, electrical rating, insulation performance, deployment, or physical acceptance.
