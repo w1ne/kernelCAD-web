@@ -124,8 +124,9 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
  * 40 000 lets every measured assembly up to DRAW 01 sweep with 2× margin
  * (≤ ~20 s of booleans at the worst measured rate) and skips the Gearfinity
  * stage, whose rest criteria alone take over a minute. When the estimate
- * exceeds the budget the sweep is SKIPPED and the verdict degrades to
- * `'unverified'` with a `mechanism.unverified-budget-exceeded` diagnostic.
+ * exceeds the budget or the caller forces a skip, the sweep is SKIPPED and
+ * the verdict degrades to `'unverified'` with a
+ * `mechanism.unverified-budget-exceeded` diagnostic.
  * Not counted: criterion 8 (tendon routing), a no-op without tendons.
  */
 export const BREP_SWEEP_BUDGET = 40_000;
@@ -453,7 +454,7 @@ export async function checkMechanismTruth(
   // skipped sweep leaves us unable to certify (unverified); otherwise
   // every criterion held (real).
   //
-  // The budget-exceeded diagnostic is a non-fatal carrier (severity 'warn')
+  // The sweep-skipped diagnostic is a non-fatal carrier (severity 'warn')
   // that lives in `failures` so consumers surface it — but it must NOT make
   // the verdict 'broken'. Only an error-severity criterion failure means
   // 'broken'.
@@ -1306,8 +1307,9 @@ async function lowerAssemblySceneForPose(
 }
 
 /**
- * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP
- * pose-sweep. Severity 'warn' so it carries the 'unverified' verdict with
+ * Build the LOUD non-fatal diagnostic for a skipped BREP pose sweep. The
+ * message distinguishes a forced skip from an estimate that exceeded a
+ * positive budget. Severity 'warn' carries the 'unverified' verdict with
  * evidence without flipping the verdict to 'broken' (see precedence in
  * {@link checkMechanismTruth}).
  */

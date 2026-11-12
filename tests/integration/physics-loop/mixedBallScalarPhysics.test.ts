@@ -54,7 +54,7 @@ describe('native coupling coordinates after a quaternion ball joint', () => {
           observe?.(measured, index);
         });
         return session;
-      
+
       },
     });
 

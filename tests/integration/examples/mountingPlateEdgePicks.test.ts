@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Issue #1300. The drafting-review mounting plate still fillets its four
-// vertical corners and chamfers its top perimeter, but the picks are stored
-// identity, not a geometric re-query:
+// Issue #1300. The drafting-review mounting plate fillets its four vertical
+// corners and chamfers its top perimeter using lineage-based edge selectors:
 //
 //   q.edge(q.createdBy(stock.id)).and(q.withLabel('corner' | 'top-perimeter'))
 //
@@ -13,7 +12,7 @@
 // slot goes through resolveEdgeRef. A width/depth/thickness edit moves and
 // lengthens those edges without deleting them, so the stored query must hit
 // them again. It must not blend a neighbour (the bottom perimeter).
-// `{ parallel: [0,0,1] }` and `{ face: 'top' }` are not the selectors under test.
+// The test lowers the authored source directly, then rebuilds it after edits.
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -33,19 +32,21 @@ const DEPTH_EDIT = 100;
 const THICKNESS_EDIT = 18;
 
 function identityPlateSource(): string {
-  const src = readFileSync(resolve(PLATE), 'utf8');
-  const rewritten = src.replace(
-    'return box(width, depth, thickness)\n  .fillet(6, { parallel: [0, 0, 1] })\n  .chamfer(0.5, { face: \'top\' })',
+  return readFileSync(resolve(PLATE), 'utf8');
+}
+
+function notchedIdentityPlateSource(): string {
+  const source = identityPlateSource();
+  const rewritten = source.replace(
+    'const stock = box(width, depth, thickness);',
     [
-      'const stock = box(width, depth, thickness);',
-      'return stock',
-      '  .fillet(6, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'corner\')))',
-      '  .chamfer(0.5, q.edge(q.createdBy(stock.id)).and(q.withLabel(\'top-perimeter\')))',
+      'const raw = box(width, depth, thickness);',
+      "const notchX = param('notchX', 2, { min: 2, max: 98 });",
+      "const notchY = param('notchY', 2, { min: 2, max: 68 });",
+      'const stock = raw.subtract(box(4, 4, 100, true).translate(notchX, notchY, thickness.divide(2)));',
     ].join('\n'),
-  );
-  if (rewritten === src) {
-    throw new Error('mounting plate no longer has the geometric fillet/chamfer this test rewrites');
-  }
+  ).replaceAll('createdBy(stock.id)', 'createdBy(raw.id)');
+  if (rewritten === source) throw new Error('could not add the upstream corner notch to the plate');
   return rewritten;
 }
 
@@ -273,5 +274,26 @@ describe('drafting-review mounting plate edge picks', () => {
     expectTopPerimeterPick(identitySelection(resized.selections, 'top-perimeter').fingerprints, edited);
     expectCreatedCornerRef(resized, edited);
     expectAppliedGeometry(shapeOf(resized), edited);
+  });
+
+  it('reports a typed miss when an upstream edit replaces a selected corner lineage', async () => {
+    const fileName = resolve(PLATE);
+    const model = await buildModel({
+      code: notchedIdentityPlateSource(),
+      fileName,
+      scriptDir: dirname(fileName),
+    });
+    expectNoFalseFlag(model);
+    expect(identitySelection(model.selections, 'corner').fingerprints).toHaveLength(3);
+
+    const { model: movedNotch } = await updateModelParams(model, [
+      { name: 'notchX', value: 98 },
+      { name: 'notchY', value: 68 },
+    ]);
+    const misses = movedNotch.diagnostics.filter((diagnostic) => diagnostic.code === 'feature.selection.no-match');
+    expect(misses).toHaveLength(1);
+    expect(misses[0]).toMatchObject({ severity: 'error', featureId: 'fillet_1' });
+    expect(misses[0]?.message).toContain('same unique edge lineage');
+    expect(misses[0]?.hint).toContain('deleted, split into ambiguous descendants, or replaced');
   });
 });

@@ -39,3 +39,18 @@ authored gear geometry. The fixture omits bearing shoulders, so separate
 joint-continuity or geometry findings can remain in the evidence. It does not
 calculate tooth-contact forces or certify the rest of the mechanism, deployed
 behavior, or hardware acceptance.
+
+## Mixed ball and scalar joint regression — 2026-11-12
+
+`tests/integration/physics-loop/mixedBallScalarPhysics.test.ts` adds a native
+MuJoCo control with a ball joint before two coupled hinges. A ball consumes four
+quaternion coordinates; the following scalar coordinates are at offsets 4 and
+5. Before the repair, this fixture threw `qpos.length=3 but model.nq=6`.
+The corrected mapping reserves the identity quaternion and checks the driven
+coordinate at its actual offset. The positive control completes 500 integration
+observations without a coupling residual. A negative control adds 20 degrees
+to the observed driven coordinate and produces `mechanism.coupling-residual`.
+This is local runtime regression evidence, with no deployment or hardware claim.
+
+Run with `KCAD_SLOW=1 npx vitest run tests/integration/physics-loop/mixedBallScalarPhysics.test.ts tests/integration/physics-loop/coupledGearPhysics.test.ts src/modeling/runtime/mjcfExport.test.ts src/modeling/runtime/mechanismTruthPhysics.test.ts --maxWorkers=2 --no-file-parallelism`.
+On the integrated branch, all four files and 22 tests passed.

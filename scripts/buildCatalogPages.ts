@@ -152,6 +152,10 @@ const STYLE = `  <style>
     .catalog .finder .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); margin-left: 0.6rem; }
     .catalog [hidden] { display: none !important; }
     .catalog .empty { margin: 2rem 0; color: var(--ink-faint); }
+    .catalog .next-step { margin-top: 2rem; padding: 1.2rem 1.5rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--card-stage); }
+    .catalog .next-step h2 { margin-top: 0; }
+    .catalog .next-step-links { display: flex; gap: 0.75rem 1.25rem; flex-wrap: wrap; align-items: center; }
+    .catalog .next-step-links a { font-weight: 500; }
     @media (max-width: 720px) { .catalog .hero { grid-template-columns: 1fr; } }
   </style>`;
 
@@ -304,6 +308,23 @@ export function previewAlt(asset: CatalogAsset): string {
     return `${asset.title}: low-poly ${asset.category} 3D model preview`;
 }
 
+/** Explain the product workflow without diluting this model's unique technical content. */
+function productNextStep(asset: CatalogAsset): string {
+    const model = escapeHtml(asset.title);
+    const controls = asset.params.length;
+    const action = controls > 0
+        ? `change its ${controls} published parameter${controls === 1 ? '' : 's'}`
+        : 'inspect the model';
+    return `      <section class="next-step" aria-label="Continue with kernelCAD">
+        <h2>Build your own model with kernelCAD</h2>
+        <p>Start with ${model} in kernelCAD Studio to ${action}. For a new design, kernelCAD also supports code-based CAD and MCP tools for AI assistants.</p>
+        <div class="next-step-links">
+          <a href="/code-cad/">Design with code</a>
+          <a href="/mcp/">Use kernelCAD with an AI assistant</a>
+        </div>
+      </section>`;
+}
+
 export function renderAssetPage(asset: CatalogAsset, kit: CatalogKit | undefined, siblings: readonly CatalogAsset[]): string {
     const url = assetUrl(asset);
     const title = pageTitle(asset);
@@ -335,12 +356,49 @@ ${factsList(asset, kit)}
       <p>${asset.params.length} parameter${asset.params.length === 1 ? '' : 's'} you can change in Studio before export.</p>
 ${knobTable(asset)}
 ${presetsSection(asset)}
+${productNextStep(asset)}
 ${siblingList(asset, siblings)}
       <p><a href="/catalog/">← Back to the full catalog</a></p>`;
     return document(head, body);
 }
 
 export const HUB_TITLE = 'Free low-poly 3D model catalog (CC0) | kernelCAD';
+
+/** Describe the published collection, without asserting reviews, sales or indexing. */
+export function catalogHubJsonLd(index: CatalogIndex): Record<string, unknown> {
+    const url = `${ORIGIN}catalog/`;
+    const description = metaDescription(
+        `${index.assets.length} free CC0 low-poly 3D models in ${index.kits.length} kits: ${index.kits.map((k) => k.title).join(', ')}. Every model has editable knobs.`,
+    );
+    return {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: HUB_TITLE,
+                description,
+                inLanguage: 'en',
+                isPartOf: { '@id': `${ORIGIN}#website` },
+                mainEntity: {
+                    '@type': 'ItemList',
+                    name: 'Free CC0 3D models',
+                    numberOfItems: index.assets.length,
+                    url,
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': `${url}#breadcrumb`,
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: 'Catalog', item: url },
+                ],
+            },
+        ],
+    };
+}
 
 export function renderHub(index: CatalogIndex): string {
     const byKey = new Map(index.assets.map((a) => [`${a.kit}/${a.id}`, a]));
@@ -353,7 +411,10 @@ export function renderHub(index: CatalogIndex): string {
     const head = `  <title>${escapeHtml(HUB_TITLE)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${url}" />
-${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}`;
+${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}
+  <script type="application/ld+json">
+${jsonForScript(catalogHubJsonLd(index))}
+  </script>`;
     const kits = index.kits.map((kit) => {
         const cards = kit.assets.map((id) => byKey.get(`${kit.id}/${id}`)).filter((a): a is CatalogAsset => a !== undefined).map((a) =>
             `          <li data-search="${escapeHtml(searchKey(a))}"><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
@@ -368,6 +429,10 @@ ${cards.join('\n')}
     });
     const body = `      <h1>Low-poly 3D model catalog</h1>
       <p>${escapeHtml(description)}</p>
+      <section aria-label="Use models with kernelCAD">
+        <h2>Use these models in kernelCAD</h2>
+        <p>Select a model to open it in Studio and edit its parameters. You can also <a href="/code-cad/">design a model with code</a> or use <a href="/mcp/">kernelCAD MCP tools with an AI assistant</a>.</p>
+      </section>
 ${FINDER}
 ${kits.join('\n')}
       <p class="empty" id="catalog-empty" hidden>No model matches that. Try a kit name, or <a href="/catalog/">clear the search</a>.</p>`;
