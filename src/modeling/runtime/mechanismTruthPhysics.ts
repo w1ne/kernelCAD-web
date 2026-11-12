@@ -431,7 +431,13 @@ function scalarCouplingChecks(
   jointOrder: readonly { mateName: string }[],
 ): ScalarCouplingCheck[] {
   const mateByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
-  const jointIndexByMate = new Map(jointOrder.map((joint, index) => [joint.mateName, index]));
+  const jointIndexByMate = new Map<string, number>();
+  let qposIndex = 0;
+  for (const joint of jointOrder) {
+    jointIndexByMate.set(joint.mateName, qposIndex);
+    // One ball joint occupies a quaternion in qpos, not one scalar slot.
+    qposIndex += mateByName.get(joint.mateName)?.type === 'ball' ? 4 : 1;
+  }
   const checks: ScalarCouplingCheck[] = [];
   for (const coupling of arm.__mateCouplings()) {
     const source = mateByName.get(coupling.source);
@@ -594,13 +600,19 @@ function jointOrderToQpos(
   const out: number[] = [];
   const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
   for (const j of jointOrder) {
+    const type = mateByName.get(j.mateName)?.type;
+    if (type === 'ball') {
+      // Ball poses currently use identity; reserve all four quaternion slots
+      // even when the mate has no authored pose, so following scalars align.
+      out.push(1, 0, 0, 0);
+      continue;
+    }
     const v = poses[j.mateName];
     if (v === undefined) {
       out.push(0); // unposed mate → default joint angle 0
       continue;
     }
     if (typeof v === 'number') {
-      const type = mateByName.get(j.mateName)?.type;
       if (type === 'revolute' || type === 'cylindrical' || type === 'pin_slot') {
         out.push(v * DEG_TO_RAD);
         continue;
