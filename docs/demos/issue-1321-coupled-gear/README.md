@@ -54,3 +54,26 @@ This is local runtime regression evidence, with no deployment or hardware claim.
 
 Run with `KCAD_SLOW=1 npx vitest run tests/integration/physics-loop/mixedBallScalarPhysics.test.ts tests/integration/physics-loop/coupledGearPhysics.test.ts src/modeling/runtime/mjcfExport.test.ts src/modeling/runtime/mechanismTruthPhysics.test.ts --maxWorkers=2 --no-file-parallelism`.
 On the integrated branch, all four files and 22 tests passed.
+
+## Animation bake agreement and fixture connector — 2026-11-12
+
+`coupledGearPhysics.test.ts` now checks every baked `animationView` frame of
+both gears. The motor-rotor angle equals the sampled `motorDeg` track value,
+and the rear-live-axle angle equals −0.25 × that value, within 1e-6°. At the
+frames nearest −720°, 0°, 300° and 720°, the baked matrices equal an
+independent `buildModel` evaluation at that `motorDeg`. The bake must report
+no advisory collisions.
+
+This check found a fixture defect. The 48T shape is already translated to the
+30 mm pitch centre, but its `axis` connector was at the local origin. The mate
+put the axle gear centre at (60, 0) mm at rest, so the gears did not mesh. At
+±720° the gear centre moved onto the motor axis at (0, 0), which gave a
+561.17 mm³ `motor-rotor`/`rear-live-axle` interpenetration. The earlier
+`evidence.json` recorded this as a failure. The connector is now at
+`[centerDistance, 0, 0]`. The gear centre stays at (30, 0) mm on all poses,
+and the regenerated `evidence.json` has `failures: []`. The coupling, the
+500-observation release trace and the MP4 are unchanged. The published RC buggy
+(`nMQXpIBa` v1) uses world-coordinate connectors and does not have this defect.
+
+Negative control: changing the fixture ratio to +12/48 makes the new test fail
+with a 178.49° axle-angle error.
