@@ -252773,7 +252773,7 @@
       "id": "door-hinge",
       "kit": "standard-components",
       "title": "Door hinge",
-      "description": "Upright butt hinge with alternating barrel knuckles, a brass pivot pin and visible leaf fasteners. Knobs: model size, steel, brass and fasteners.",
+      "description": "Illustrative CC0 butt hinge with two integral bored leaves, a separate brass pivot pin and visible leaf fasteners. Three size presets scale the whole prop; steel, brass and fasteners are colors. No screw threads, motion mates, manufacturing tolerances or load rating.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -252791,8 +252791,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
       "preview": "/assets/standard-components-door-hinge.png",
-      "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
-      "triangleBudget": 1600,
+      "sourceSha256": "e87c1401e9629a5a8953090ff25ad43c97191626eebbc4d1ada6579774522f15",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "size",
@@ -252842,11 +252842,11 @@
         }
       },
       "stats": {
-        "triangles": 1440,
+        "triangles": 1772,
         "sizeM": [
           0.064,
           0.04,
-          0.01
+          0.009862
         ],
         "minUpM": 0,
         "materials": 1
@@ -252857,12 +252857,7 @@
           "color": "#52778e",
           "parts": [
             "left-leaf",
-            "right-leaf",
-            "left-knuckle-1",
-            "left-knuckle-2",
-            "left-knuckle-3",
-            "right-knuckle-1",
-            "right-knuckle-2"
+            "right-leaf"
           ],
           "param": "steel"
         },
