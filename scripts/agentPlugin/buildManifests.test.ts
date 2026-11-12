@@ -35,7 +35,7 @@ describe('agent plugin manifests', () => {
         for (const name of cfg.skills) {
             const skill = readFileSync(join(root, cfg.pluginDir, 'skills', name, 'SKILL.md'), 'utf8');
             expect(skill).toMatch(new RegExp(`^---\\nname: ${name}\\n`));
-            expect(skill).toMatch(/\ndescription: (?:[^\n]+|>-\n(?:  [^\n]+\n)+)/);
+            expect(skill).toMatch(/\ndescription: (?:[^\n]+|>-\n(?: {2}[^\n]+\n)+)/);
             expect(skill).toMatch(/^---\n[\s\S]+?\n---\n/);
         }
         expect(existsSync(join(root, 'skills', 'kernelcad-export', 'SKILL.md'))).toBe(true); // Gemini symlink
