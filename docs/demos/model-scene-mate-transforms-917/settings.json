@@ -1,0 +1,13 @@
+{
+  "invocation": "npx tsx docs/demos/model-scene-mate-transforms-917/capture-demo.mts",
+  "resolution": "1280x720",
+  "fps": 24,
+  "stages": [
+    "author mate graph",
+    "inspect returned capture Scene",
+    "compare lowered SceneBackend"
+  ],
+  "stageHoldFrames": 48,
+  "projection": "XZ projection of actual local BREP bounds transformed by Scene part worldTransform",
+  "encoder": "H.264, yuv420p, CRF 27"
+}
