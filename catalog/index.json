@@ -40759,7 +40759,7 @@
       "id": "case-checkweigher",
       "kit": "beverage-bottling-line",
       "title": "Packed-case checkweigher",
-      "description": "Short in-line weigh belt with isolated weigh section, reject output, and status tower. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and safety paint.",
+      "description": "Three-section packed-case checkweigher with a separate infeed, isolated weigh belt, outfeed, and operator signal tower. Material controls: stainless support steel, powder-coated steel, polymer conveyor belts, and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -40778,8 +40778,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-checkweigher.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-checkweigher.png",
-      "sourceSha256": "0c77581a7bc41285af055f085ad3bca7186d2f5b712e4afbecdf5eea26a59de2",
-      "triangleBudget": 2200,
+      "sourceSha256": "2b69a2afbc7a99ddf923b9a76d049dbfcb24a12d333fc94ff890c8ad59a71815",
+      "triangleBudget": 320,
       "params": [
         {
           "name": "scale",
@@ -40807,22 +40807,30 @@
           "type": "color",
           "default": "#e3a331",
           "label": "Safety paint"
+        },
+        {
+          "name": "beltPolymer",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Polymer conveyor belt"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "safetyPaint": "#f0b336"
+          "safetyPaint": "#f0b336",
+          "beltPolymer": "#edf0e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "safetyPaint": "#bd7b24"
+          "safetyPaint": "#bd7b24",
+          "beltPolymer": "#292f32"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 248,
         "sizeM": [
           1.26,
           0.78,
@@ -40846,6 +40854,16 @@
             "hmi"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "beltPolymer",
+          "color": "#30373b",
+          "parts": [
+            "infeed-belt",
+            "weigh-belt",
+            "outfeed-belt"
+          ],
+          "param": "beltPolymer"
         },
         {
           "name": "powderCoat",

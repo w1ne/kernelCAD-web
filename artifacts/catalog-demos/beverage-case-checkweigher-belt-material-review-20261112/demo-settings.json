@@ -1,0 +1,17 @@
+{
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 30,
+  "slideDurationsSeconds": [
+    4,
+    5,
+    6
+  ],
+  "codec": "H.264 / libx264",
+  "crf": 20,
+  "preset": "medium",
+  "pixelFormat": "yuv420p",
+  "captions": "Local source render and checks only; the public site remains pre-change; no process simulation or equipment acceptance is shown."
+}

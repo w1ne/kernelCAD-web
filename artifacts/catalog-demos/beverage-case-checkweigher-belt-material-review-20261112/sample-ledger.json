@@ -1,0 +1,68 @@
+{
+  "sampledAt": "2026-11-12",
+  "kit": "beverage-bottling-line",
+  "repositoryHead": "75667bcbe97312a05a521ef7fe8336cd03f4a329",
+  "samples": [
+    {
+      "id": "rotary-filler",
+      "envelopeM": [3, 1.84, 1.49668],
+      "sourceSha256": "05e6214ab84cc8e9cf18fa95ec05b9f24ca857d4064b872fe5e4e1fe72c8c1af",
+      "previewSha256": "153302383773399caf0a1553ae14e08058d1b82b6a7a084d0031c21a8b51e8d0",
+      "publicPageStatus": 200,
+      "publicPreviewStatus": 200,
+      "publicPreviewMatchesLocal": true,
+      "observation": "The central carousel, overhead bowl and valves, bottle pockets, two transfer belts, guard ring, and HMI read as a rotary filler. Stainless, coated steel, polymer, and safety colors are distinct and coherent. No mismatch established."
+    },
+    {
+      "id": "sanitary-lobe-pump",
+      "envelopeM": [1.141, 0.557, 0.588],
+      "sourceSha256": "fe361b52b2b0c13c864ffeedf47063082734b003c56cf3d5f40f3779ab7df9ba",
+      "previewSha256": "af82f4f261a0beed01d2815d791d38a2138dfec6fce374bb722b43dd65dd168d",
+      "publicPageStatus": 200,
+      "publicPreviewStatus": 200,
+      "publicPreviewMatchesLocal": true,
+      "observation": "The pump casing and ports, gearbox, guarded coupling, finned motor, and baseplate are recognizable. Stainless, painted drive, yellow guard, and seal colors map to separate material zones. No mismatch established."
+    },
+    {
+      "id": "pet-blow-molder",
+      "envelopeM": [1.515, 1.51, 0.72],
+      "sourceSha256": "b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb",
+      "previewSha256": "d6f5019c87ce4b80e9e781befbbd453866da78bea38969192d533c613d6813a8",
+      "publicPageStatus": 200,
+      "publicPreviewStatus": 200,
+      "publicPreviewMatchesLocal": true,
+      "observation": "The enclosure, service doors, heating section, mold stations, and control pedestal make a guarded stretch-blow station recognizable. Gray enclosure panels and coated base/control parts are plausible for this generic visualization. No clear material mismatch established."
+    },
+    {
+      "id": "case-checkweigher",
+      "envelopeM": [1.26, 0.78, 0.785],
+      "sourceSha256": "0c77581a7bc41285af055f085ad3bca7186d2f5b712e4afbecdf5eea26a59de2",
+      "previewSha256": "bb051ccc8e2710a8251477c5a0fd908e99b0f4e62efc7d9cb8322bd48dfe48be",
+      "publicPageStatus": 200,
+      "publicPreviewStatus": 200,
+      "publicPreviewMatchesLocal": true,
+      "observation": "The infeed, weighing, and outfeed surfaces were rendered as one continuous light-metal material with the support beds; no belt material or separate belt surfaces appeared. This is the sole material mismatch found. The short default description also claimed a reject output that was not modeled; its wording is corrected to describe the visible three-section weigh conveyor and signal tower."
+    },
+    {
+      "id": "flash-pasteurizer",
+      "envelopeM": [1.52, 0.91, 0.785],
+      "sourceSha256": "15cf30522f83d43721032deef3862e8a9197092176aa7281b39c15a66aa227d8",
+      "previewSha256": "dacea1089fd3f389a6ece5ad52c1da7905f6d7333daa936982f73fb33c60b5e5",
+      "publicPageStatus": 200,
+      "publicPreviewStatus": 200,
+      "publicPreviewMatchesLocal": true,
+      "observation": "The plate exchanger, balance tank, skid, control panel, and process piping read as a small pasteurizer skid. Stainless process surfaces and coated support/control parts are visually distinct. No mismatch established."
+    }
+  ],
+  "finding": {
+    "asset": "beverage-bottling-line/case-checkweigher",
+    "before": "The three conveying beds were colored stainless steel, with no separate belt surface or belt material control.",
+    "correction": "Add thin, separated infeed, weigh, and outfeed belt surfaces with a shared polymer material control and appearance-preset values. Keep the steel beds in the stainless control.",
+    "afterSourceSha256": "2b69a2afbc7a99ddf923b9a76d049dbfcb24a12d333fc94ff890c8ad59a71815",
+    "afterPreviewSha256": "6f406659c9db2c959ea5d615b7a5ec03b137ea12b7702cae729266f1f4edf8a5",
+    "triangles": 248,
+    "triangleBudget": 320,
+    "envelopeM": [1.26, 0.78, 0.785],
+    "sourceDescription": "Three-section packed-case checkweigher with a separate infeed, isolated weigh belt, outfeed, and operator signal tower. Material controls: stainless support steel, powder-coated steel, polymer conveyor belts, and safety paint."
+  }
+}

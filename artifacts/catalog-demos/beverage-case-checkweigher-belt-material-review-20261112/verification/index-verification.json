@@ -1,0 +1,16 @@
+{
+  "baselineHead": "75667bcbe97312a05a521ef7fe8336cd03f4a329",
+  "assetCount": 2402,
+  "kitCount": 50,
+  "changedAssetRows": [
+    "beverage-bottling-line/case-checkweigher"
+  ],
+  "changedAssetRowCount": 1,
+  "sourceHashMismatches": [],
+  "sourceHashMismatchCount": 0,
+  "missingReferencedPreviews": [],
+  "missingReferencedPreviewCount": 0,
+  "targetSourceSha256Matches": true,
+  "targetPreview": "/assets/beverage-bottling-line-case-checkweigher.png",
+  "targetPreviewIsExpected": true
+}
