@@ -12,6 +12,10 @@ The result is local CAD validation of the model's declared mates and geometry. I
 
 A part placed with `connect` stays attached to its target connector. When a parent moves through a mate, the evaluated `model()` and `solvedModel()` scenes carry that same rigid motion through connected descendants. A descendant with its own mate or legacy joint keeps that solver placement.
 
+The `Scene` returned directly from `model()` includes default-pose transforms when every referenced mate connector has a vector origin. If any referenced origin is topology-based, those capture-time transforms remain unresolved; the lowered `SceneBackend` resolves them during recompute. Use `solvedModel()` when the capture-time `Scene.parts` values need fully solved transforms before building.
+
+The [capture-time transform handoff demo and evidence bundle](../demos/model-scene-mate-transforms-917/README.md) compares returned `Scene.parts` transforms with the lowered `SceneBackend` for a fastened mate and a connected descendant.
+
 The [rest-pose continuity demo and evidence bundle](../demos/rest-joint-continuity-925/README.md) shows an annular bearing whose mesh and exact BREP joint-distance queries are unavailable while the travel sweep is skipped at budget zero.
 
 ## Scalar mate couplings in physics verification

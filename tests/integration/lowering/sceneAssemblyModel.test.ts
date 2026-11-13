@@ -28,6 +28,7 @@ import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { Transform } from '../../../src/shared/runtime/se3';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
+import type { Scene } from '../../../src/modeling/validation/scene';
 
 interface LowerResult {
   shape: unknown;
@@ -116,6 +117,84 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
 
     const origin = post!.worldTransform.point([0, 0, 0]);
     expect(origin[0]).toBeCloseTo(0);
+    expect(origin[1]).toBeCloseTo(0);
+    expect(origin[2]).toBeCloseTo(12);
+  });
+
+  it('returns capture-time mate transforms consistent with the lowered model scene', async () => {
+    const { records, paramTable, returnValue } = await runScript({
+      fileName: 'model-scene-mate-transforms.kcad.ts',
+      code: `
+        const arm = assembly('test');
+        arm.part('base', box(10, 10, 10)).connector('p', {
+          type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] },
+        });
+        const child = arm.part('child', box(10, 10, 10), {
+          connectors: { mount: { origin: [10, 0, 0] } },
+        });
+        child.connector('q', {
+          type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] },
+        });
+        arm.part('tip', box(2, 2, 2), {
+          connectors: { root: { origin: [0, 0, 0] } },
+          connect: { connector: 'root', to: child.connector('mount') },
+        });
+        arm.mate('m', 'base.p', 'child.q', 'fastened');
+        return arm.model();
+      `,
+    });
+    const modelRecord = records.at(-1)!;
+    const result = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });
+    const capturedScene = returnValue as Scene;
+    const loweredScene = result.shapes.get(modelRecord.id) as SceneBackend;
+    const capturedChild = capturedScene.part('child');
+    const loweredChild = loweredScene.parts.find((part) => part.name === 'child');
+    const capturedTip = capturedScene.part('tip');
+    const loweredTip = loweredScene.parts.find((part) => part.name === 'tip');
+
+    expect(loweredChild).toBeDefined();
+    expect(loweredTip).toBeDefined();
+    expect(capturedChild.worldTransform.point([0, 0, 0])[0]).toBeCloseTo(
+      loweredChild!.worldTransform.point([0, 0, 0])[0],
+    );
+    expect(capturedChild.worldTransform.point([0, 0, 0])[0]).toBeCloseTo(10);
+    expect(capturedTip.worldTransform.point([0, 0, 0])[0]).toBeCloseTo(10);
+    expect(capturedTip.worldTransform.point([0, 0, 0])[0]).toBeCloseTo(
+      loweredTip!.worldTransform.point([0, 0, 0])[0],
+    );
+  });
+
+  it('resolves parameter poses and removes authored at from the captured mate transform', async () => {
+    const { records, paramTable, returnValue } = await runScript({
+      fileName: 'model-scene-param-mate-transforms.kcad.ts',
+      code: `
+        const stroke = param('stroke', 12);
+        const arm = assembly('lift');
+        arm.part('sleeve', box(20, 20, 20)).connector('rail', {
+          type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1],
+        });
+        arm.part('post', box(10, 10, 30), { at: [20, 0, 0] }).connector('slide', {
+          type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1],
+        });
+        arm.mate('height-adjust', 'sleeve.rail', 'post.slide', 'prismatic', { pose: stroke });
+        return arm.model();
+      `,
+    });
+    const modelRecord = records.at(-1)!;
+    const result = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });
+    const capturedScene = returnValue as Scene;
+    const loweredScene = result.shapes.get(modelRecord.id) as SceneBackend;
+    const capturedChild = capturedScene.part('post');
+    const loweredChild = loweredScene.parts.find((part) => part.name === 'post');
+
+    expect(loweredChild).toBeDefined();
+    for (const point of [[0, 0, 0], [10, -4, 2]] as const) {
+      const captured = capturedChild.worldTransform.point(point);
+      const lowered = loweredChild!.worldTransform.point(point);
+      for (let axis = 0; axis < 3; axis++) expect(captured[axis]).toBeCloseTo(lowered[axis], 8);
+    }
+    const origin = capturedChild.worldTransform.point([0, 0, 0]);
+    expect(origin[0]).toBeCloseTo(-20);
     expect(origin[1]).toBeCloseTo(0);
     expect(origin[2]).toBeCloseTo(12);
   });
