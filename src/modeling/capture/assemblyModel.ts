@@ -44,19 +44,37 @@ export function recordModel(state: AssemblyState): Scene {
 function captureMatePlacements(state: AssemblyState): ReadonlyMap<string, Transform> | undefined {
   if (state.mates.length === 0) return undefined;
 
-  const connectorNamesByPart = new Map<string, Set<string>>();
+  const connectorNamesByPart = referencedMateConnectors(state);
+  const resolvedParts = resolveCaptureMateParts(state, connectorNamesByPart);
+  if (resolvedParts === undefined) return undefined;
+  const sceneMotionByPartId = solveCaptureMateMotions(state, connectorNamesByPart, resolvedParts);
+  // A part positioned with `connect` inherits the solved motion of its
+  // parent. Walk repeatedly so a connected chain follows the same FK as the
+  // lowerer's assemblyModel scene.
+  propagateConnectedMotions(state.parts, sceneMotionByPartId);
+  return capturePlacements(state, sceneMotionByPartId);
+}
+
+function referencedMateConnectors(state: AssemblyState): Map<string, Set<string>> {
+  const namesByPart = new Map<string, Set<string>>();
   for (const mate of state.mates) {
     for (const ref of [mate.a, mate.b]) {
       const { partName, connectorName } = parseConnectorRef(ref);
-      let names = connectorNamesByPart.get(partName);
+      let names = namesByPart.get(partName);
       if (names === undefined) {
         names = new Set<string>();
-        connectorNamesByPart.set(partName, names);
+        namesByPart.set(partName, names);
       }
       names.add(connectorName);
     }
   }
+  return namesByPart;
+}
 
+function resolveCaptureMateParts(
+  state: AssemblyState,
+  connectorNamesByPart: ReadonlyMap<string, ReadonlySet<string>>,
+): ResolvedMatePart[] | undefined {
   const resolvedParts: ResolvedMatePart[] = [];
   for (const part of state.parts) {
     const names = connectorNamesByPart.get(part.name);
@@ -73,13 +91,16 @@ function captureMatePlacements(state: AssemblyState): ReadonlyMap<string, Transf
         origin: { kind: 'vec3', value: [x + at[0], y + at[1], z + at[2]] },
       });
     }
-    resolvedParts.push({
-      id: part.id,
-      name: part.name,
-      connectors,
-    });
+    resolvedParts.push({ id: part.id, name: part.name, connectors });
   }
+  return resolvedParts;
+}
 
+function solveCaptureMateMotions(
+  state: AssemblyState,
+  connectorNamesByPart: ReadonlyMap<string, ReadonlySet<string>>,
+  resolvedParts: ResolvedMatePart[],
+): Map<string, Transform> {
   const numericPoses = captureMatePoses(state);
   const expandedPoses = expandCoupledPoses(state.mates, state.mateCouplings, numericPoses, {
     resolveSourcePose: (mate) => captureMatePose(mate, state),
@@ -91,14 +112,14 @@ function captureMatePlacements(state: AssemblyState): ReadonlyMap<string, Transf
     const motion = sceneMotions.get(part.id);
     if (motion !== undefined) sceneMotionByPartId.set(part.id, motion);
   }
+  return sceneMotionByPartId;
+}
 
-  // A part positioned with `connect` inherits the solved motion of its
-  // parent. Walk repeatedly so a connected chain follows the same FK as the
-  // lowerer's assemblyModel scene.
+function propagateConnectedMotions(parts: AssemblyState['parts'], sceneMotionByPartId: Map<string, Transform>): void {
   let propagated = true;
   while (propagated) {
     propagated = false;
-    for (const part of state.parts) {
+    for (const part of parts) {
       if (sceneMotionByPartId.has(part.id) || part.connectParentId === undefined) continue;
       const parentMotion = sceneMotionByPartId.get(part.connectParentId);
       if (parentMotion === undefined) continue;
@@ -106,7 +127,12 @@ function captureMatePlacements(state: AssemblyState): ReadonlyMap<string, Transf
       propagated = true;
     }
   }
+}
 
+function capturePlacements(
+  state: AssemblyState,
+  sceneMotionByPartId: ReadonlyMap<string, Transform>,
+): ReadonlyMap<string, Transform> {
   const placements = new Map<string, Transform>();
   for (const part of state.parts) {
     const motion = sceneMotionByPartId.get(part.id);
