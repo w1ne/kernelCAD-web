@@ -128,11 +128,11 @@ for (const [k, { s, zc }] of drums.entries()) {
     for (let i = 0; i < 4; i++) {
       const y0 = drumY0 + 60 + i * 170, th = v * 120 + i * 32 * s;
       add(`vane-${k}-${v}-${i}`, blk(-80, y0, R * 0.6, 80, y0 + 170, R - 30).rotateY(th).translate(xc, 0, zc).color(drumSteel));
-      add(`vane-pick-${k}-${v}-${i}`, lathe([[40, R - 40], [28, R + 60], [8, R + 120]], 6).rotateY(th).translate(xc, y0 + 85, zc).color(steelwork));
+      add(`vane-pick-${k}-${v}-${i}`, lathe([[40, R - 40], [28, R + 60], [8, R + 120]], 6).rotateY(th).translate(xc, y0 + 85, zc).color(drumSteel));
     }
   }
   for (let j = 0; j < 8; j++) {
-    add(`face-pick-${k}-${j}`, lathe([[40, R - 20], [28, R + 70], [8, R + 130]], 6).rotateY(j * 45 + 20).translate(xc, drumY1 - 80, zc).color(steelwork));
+    add(`face-pick-${k}-${j}`, lathe([[40, R - 20], [28, R + 70], [8, R + 130]], 6).rotateY(j * 45 + 20).translate(xc, drumY1 - 80, zc).color(drumSteel));
   }
   add(`spray-hose-${k}`, tube([s * (BX - 200), 520, 1800], [s * (BX + 900), 520, PZ + 300], 30, 6).color(hoses));
 }
