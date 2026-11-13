@@ -1,0 +1,73 @@
+{
+  "createdAt": "2026-11-13T19:55:32.643Z",
+  "type": "schematic replay from passing regression assertions; not a renderer capture",
+  "model": "tests/unit/modeling/explodedPoses.test.ts :: TABLE_FIRST",
+  "input": "table, base, mid, top; 10 mm box parts; table unmated; two fastened +Z mates",
+  "assertedOffsetsMm": {
+    "table": [
+      0,
+      0,
+      0
+    ],
+    "base": [
+      0,
+      0,
+      0
+    ],
+    "mid": [
+      0,
+      0,
+      10
+    ],
+    "top": [
+      0,
+      0,
+      20
+    ]
+  },
+  "verification": {
+    "unitTest": "npx vitest run tests/unit/modeling/explodedPoses.test.ts — 3/3 passed",
+    "exampleTypecheck": "npx tsx scripts/typecheckExamples.ts examples/exploded/clamshell-table-first.kcad.ts — OK",
+    "mechanism": "unverified; probe skipped for the attempted render",
+    "renderCapture": "not produced; CLI was interrupted after 2m53s with process state wait_on_buffer before opening a CDP tab"
+  },
+  "retainedCaptureScript": "PW_CDP_URL=http://127.0.0.1:9223 bash docs/demos/explode-mate-forest-20261113/capture.sh (factor 1; 180-second cap; not rerun after the earlier I/O wait)",
+  "attemptedRenderInvocation": "npx tsx src/agent/cli/index.ts render examples/exploded/clamshell-table-first.kcad.ts --separate --pose 35,25 --explode 0 --explode-mode mate-axis --width 1200 --height 800 --environment studio --no-watermark --no-mechanism-check --base-url http://127.0.0.1:5173 --out docs/demos/explode-mate-forest-20261113/step-0.png",
+  "encodedSlides": [
+    {
+      "svg": "slide-00.svg",
+      "png": "slide-00.png",
+      "svgSha256": "99e14f5c11f71c4fcd0755470e9f8dadc093d544a8353090e2f56fb9c076b372",
+      "pngSha256": "587d4ef5c929f8c80e5f218f78f00502cf062db2474002a6944a8eb7bfba9bc5",
+      "seconds": 2
+    },
+    {
+      "svg": "slide-01.svg",
+      "png": "slide-01.png",
+      "svgSha256": "9e21e4456fd3b78d93e12243ff691c93c1a60f0819e804c8eac2c85fb29497ab",
+      "pngSha256": "960417bd757584fdee340eb155caba829ee2aa02f3384c17bb4ad8569e760494",
+      "seconds": 2
+    },
+    {
+      "svg": "slide-02.svg",
+      "png": "slide-02.png",
+      "svgSha256": "938d6df3a6d8b85770921580d8d5005e505f0f1fc513f0e11b3d47c18309e9c5",
+      "pngSha256": "1db40db2fd1c13dcb706b8ef567e3c72209f2f1f4ad3c76a04d5af6d2d96e900",
+      "seconds": 2
+    },
+    {
+      "svg": "slide-03.svg",
+      "png": "slide-03.png",
+      "svgSha256": "fea9934d27ae9ceee595a813dcd9e4e5aa8421640f83f96033857cb4fc73e1d6",
+      "pngSha256": "b2d806ea05a3111ea0828fe2f3346b52b0a621b81fa3ba605636164f2bf3f90e",
+      "seconds": 2
+    }
+  ],
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "c284b044fe691f6373a0ec694754b941e8751453d04d1c52e8f980cd4aab7519",
+    "durationSeconds": 8,
+    "bytes": 152022,
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  }
+}
