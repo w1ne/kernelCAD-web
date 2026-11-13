@@ -67,12 +67,16 @@ function readPartEntries(ctx: LowerContext): PartEntry[] {
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
-/** The part's `at` as `lowerAssemblyPart` applied it: the captured Param
- *  resolved against the engine's param table (`records` holds it as captured,
- *  where a script-parameter reference reads `evaluated: 0`). */
+/** The part's `at` as `lowerAssemblyPart` applied it. Resolve the whole part
+ *  record through the same input path used for other upstream record values;
+ *  use the table only for direct lowerer callers without a record resolver. */
 function loweredPartAt(ctx: LowerContext, partRec: FeatureRecord | undefined): readonly [number, number, number] {
-  const meta = partRec?.metadata as { at?: Vec3Param } | undefined;
-  return resolvedPartAt(meta?.at, ctx.inputs.paramTable);
+  const resolvedPart = partRec && ctx.inputs.resolveRecord
+    ? ctx.inputs.resolveRecord(partRec)
+    : partRec;
+  const meta = resolvedPart?.metadata as { at?: Vec3Param } | undefined;
+  const table = ctx.inputs.resolveRecord === undefined ? ctx.inputs.paramTable : undefined;
+  return resolvedPartAt(meta?.at, table);
 }
 
 /** A vec3 connector declared on the source shape, moved by the part's `at`. */
