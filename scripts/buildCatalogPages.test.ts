@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { assetPath, assetUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, renderAssetPage, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
+import { assetPath, assetUrl, catalogSearchIndex, kitPath, kitUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, renderAssetPage, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
@@ -28,8 +28,8 @@ describe('catalog SEO page export', () => {
     beforeAll(() => {
         out = mkdtempSync(join(tmpdir(), 'kcad-catalog-pages-'));
         written = writeCatalogSite(repoRoot, out);
-    });
-    afterAll(() => rmSync(out, { recursive: true, force: true }));
+    }, 120_000); // A full catalog build copies thousands of reviewed image previews.
+    afterAll(() => rmSync(out, { recursive: true, force: true }), 120_000);
 
     it('writes one page and one preview for every asset in catalog/index.json', () => {
         expect(index.assets.length).toBeGreaterThan(0);
@@ -84,13 +84,47 @@ describe('catalog SEO page export', () => {
         expect(withoutKnobs).not.toContain('change its 0 published parameters');
     });
 
-    it('makes every asset crawlable from the hub and every internal catalog link resolve', () => {
+    it('makes every asset crawlable through kit pages and every internal catalog link resolve', () => {
         const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
         expect(first(hub, /<link rel="canonical" href="([^"]+)"/)).toBe(`${ORIGIN}catalog/`);
-        for (const a of index.assets) expect(hub).toContain(`href="/${assetPath(a)}"`);
-        const pages = [hub, ...index.assets.map((a) => readFileSync(join(out, assetPath(a), 'index.html'), 'utf8'))];
+        for (const kit of index.kits) {
+            const kitHtml = readFileSync(join(out, kitPath(kit), 'index.html'), 'utf8');
+            expect(hub).toContain(`href="/${kitPath(kit)}"`);
+            expect(first(kitHtml, /<link rel="canonical" href="([^"]+)"/)).toBe(kitUrl(kit));
+            expect(kitHtml).toContain('href="/code-cad/"');
+            expect(kitHtml).toContain('href="/mcp/"');
+            const graph = jsonLd(kitHtml)[0]['@graph'] as Record<string, unknown>[];
+            expect(graph.find((item) => item['@type'] === 'CollectionPage')).toMatchObject({
+                url: kitUrl(kit),
+                mainEntity: { '@type': 'ItemList', numberOfItems: kit.assets.length },
+            });
+            for (const id of kit.assets) expect(kitHtml).toContain(`href="/catalog/${kit.id}/${id}/"`);
+        }
+        const pages = [hub,
+            ...index.kits.map((kit) => readFileSync(join(out, kitPath(kit), 'index.html'), 'utf8')),
+            ...index.assets.map((a) => readFileSync(join(out, assetPath(a), 'index.html'), 'utf8'))];
         const broken = new Set(pages.flatMap(catalogLinks).filter((file) => !existsSync(join(out, file))));
         expect([...broken]).toEqual([]);
+    });
+
+    it('keeps the hub lightweight while preserving full-catalog search and crawlable kit pages', () => {
+        const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
+        const searchFile = readFileSync(join(out, 'catalog', 'search-index.json'), 'utf8');
+        const entries = JSON.parse(searchFile) as ReturnType<typeof catalogSearchIndex>;
+        expect(entries).toEqual(catalogSearchIndex(index));
+        expect(entries).toHaveLength(index.assets.length);
+        expect(new Set(entries.map((e) => e.url)).size).toBe(index.assets.length);
+        expect(hub.length).toBeLessThan(250_000);
+        expect(hub).toContain('data-total="' + index.assets.length + '"');
+        expect(hub).toContain("fetch('/catalog/search-index.json')");
+        expect(hub).toContain('id="catalog-results"');
+        for (const kit of index.kits) {
+            expect(hub).toContain(`View all ${kit.assets.length} ${escapeHtml(kit.title)} models`);
+            expect(hub).toContain(`href="/${kitPath(kit)}"`);
+        }
+        // Neither the full catalog index nor its geometry sources should be embedded in the hub.
+        expect(searchFile.length).toBeLessThan(index.assets.length * 400);
+        expect(searchFile).not.toContain('sourceUrl');
     });
 
     it('publishes a truthful CollectionPage schema and code/MCP entry points on the catalog hub', () => {
@@ -119,7 +153,7 @@ describe('catalog SEO page export', () => {
         // The site owns sitemap.xml and robots.txt. The catalog contributes its
         // URLs through catalogUrls() so build-sitemap.ts can merge them; it must
         // not emit those files itself or it clobbers the server's own.
-        expect(catalogUrls(index).sort()).toEqual([`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)].sort());
+        expect(catalogUrls(index).sort()).toEqual([`${ORIGIN}catalog/`, ...index.kits.map(kitUrl), ...index.assets.map(assetUrl)].sort());
         expect(existsSync(join(out, 'sitemap.xml'))).toBe(false);
         expect(existsSync(join(out, 'robots.txt'))).toBe(false);
     });

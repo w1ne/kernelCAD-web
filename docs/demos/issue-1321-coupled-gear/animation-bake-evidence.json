@@ -1,0 +1,83 @@
+{
+  "scenario": "baked animation for the authored 12:48 coupled gear fixture",
+  "generatedAt": "2026-11-13T00:13:25.176Z",
+  "invocation": "npx tsx docs/demos/issue-1321-coupled-gear/capture-animation-bake-demo.ts",
+  "modelSource": "coupled-gear.kcad.ts",
+  "modelSourceSha256": "c23ae5fe886f950b2145057e8ebf471f11119041ec5b4489e3aa61ccf21254a1",
+  "localReplay": true,
+  "deployedBehaviorVerified": false,
+  "renderedOriginalModelVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "authoredFps": 30,
+  "bakedFrameCount": 120,
+  "videoFrameCount": 7,
+  "videoSeconds": 7,
+  "parts": [
+    "motor-rotor",
+    "rear-live-axle"
+  ],
+  "signedRatio": -0.25,
+  "maxMotorTrackResidualDegrees": 5.684341886080802e-14,
+  "maxAxleCouplingResidualDegrees": 0,
+  "residualToleranceDegrees": 0.000001,
+  "collisionAdvisories": 0,
+  "displayedSamples": [
+    {
+      "frameIndex": 0,
+      "timeSeconds": 0,
+      "motorTrackDegrees": -720,
+      "motorBakedZDegrees": 0,
+      "axleBakedZDegrees": 180,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 20,
+      "timeSeconds": 0.666667,
+      "motorTrackDegrees": -477.983193,
+      "motorBakedZDegrees": -117.983193,
+      "axleBakedZDegrees": 119.495798,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 40,
+      "timeSeconds": 1.333333,
+      "motorTrackDegrees": -235.966387,
+      "motorBakedZDegrees": 124.033613,
+      "axleBakedZDegrees": 58.991597,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 60,
+      "timeSeconds": 2,
+      "motorTrackDegrees": 6.05042,
+      "motorBakedZDegrees": 6.05042,
+      "axleBakedZDegrees": -1.512605,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 79,
+      "timeSeconds": 2.633333,
+      "motorTrackDegrees": 235.966387,
+      "motorBakedZDegrees": -124.033613,
+      "axleBakedZDegrees": -58.991597,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 99,
+      "timeSeconds": 3.3,
+      "motorTrackDegrees": 477.983193,
+      "motorBakedZDegrees": 117.983193,
+      "axleBakedZDegrees": -119.495798,
+      "wrappedCouplingResidualDegrees": 0
+    },
+    {
+      "frameIndex": 119,
+      "timeSeconds": 3.966667,
+      "motorTrackDegrees": 720,
+      "motorBakedZDegrees": 0,
+      "axleBakedZDegrees": -180,
+      "wrappedCouplingResidualDegrees": 0
+    }
+  ],
+  "visualNote": "Pitch circles and tooth-count marks are schematic. Displayed rotations are sampled from actual bake matrices."
+}

@@ -126,6 +126,8 @@ describe('mechanism rest checks under a skipped sweep', () => {
     const budgetWarning = result.failures.find((failure) => failure.code === 'mechanism.unverified-budget-exceeded');
     expect(budgetWarning?.severity).toBe('warn');
     expect(budgetWarning?.message).toContain('sweepBudget is 0 (forced skip)');
+    expect(budgetWarning?.hint).toContain('Read the diagnostic message for the skip reason.');
+    expect(budgetWarning?.hint).not.toContain('estimated work exceeded the budget');
     expect(result.coverage?.sweep).toBe(false);
   }, 60000);
 

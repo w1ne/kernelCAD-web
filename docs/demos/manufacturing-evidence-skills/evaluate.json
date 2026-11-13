@@ -1,0 +1,162 @@
+{
+  "result": {
+    "_meta": {
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"ok\":true,\"buildOk\":true,\"viewerMode\":\"hosted\",\"viewerHint\":\"Use open_in_studio to view this model in hosted Studio.\",\"step\":{\"validity\":{\"status\":\"valid\",\"checks\":[\"build\",\"feature-health\",\"finite-geometry\"],\"volume\":51871.947253183},\"snapshots\":{\"status\":\"unavailable\",\"frame\":{\"view\":\"iso\",\"width\":512,\"height\":512,\"bounds\":{\"min\":[0,0,0],\"max\":[100,70,7.999999999999999]}},\"out_dir\":\"/tmp/kernelcad-step-Yv9tTu\",\"error\":\"Step snapshots require an existing browser attachment (PW_CDP_URL).\"}},\"sceneSummary\":{\"valid\":true,\"volume\":51871.947253183,\"faceCount\":11,\"size\":[100,70,7.999999999999999]},\"featureCount\":3,\"diagnostics\":[],\"featureHealth\":[],\"evaluationEvidence\":{\"schema\":\"kernelcad.evaluation-evidence.v1\",\"mode\":\"build\",\"source\":{\"sha256\":\"f32440a37c965325ceecc39623658484f82bc09972dea152f2637196b9e96652\",\"byteLength\":1021},\"parameters\":{\"values\":{\"width\":100,\"depth\":70,\"thickness\":8,\"mountHoleDiameter\":4.5,\"boreDiameter\":24},\"sha256\":\"e346d982ba91d49fb14b32faa05475ebe2d2db6d757d17a5274f62a95cd6d487\"},\"engine\":{\"kernel\":\"occt\",\"version\":\"0.17.4\",\"revision\":\"a89797728c594b2f8e65bcb6c38fa482b3f1cea7\"},\"dependencies\":{\"status\":\"untracked\"},\"reuse\":{\"eligible\":false,\"reason\":\"dependencies-untracked\"},\"optionsSha256\":\"f42cd6277239ae00a502050ef22f6a020b97da37a4690dba293be9c9fd81ec02\",\"identitySha256\":\"3f354e53abb80fecfb03f8e2e913b4280892b96d87ebed6ea7702c54a4badbb7\"},\"selections\":[{\"consumerFeatureId\":\"holes_1\",\"selectorText\":\"top\",\"syntax\":\"lineage\",\"fingerprints\":[{\"entityKind\":\"face\",\"geomType\":\"PLANE\",\"producer\":\"box_1\",\"role\":\"top\",\"direction\":[0,0,1],\"size\":7000,\"centroid\":[50,35,8]}],\"partDiagonal\":122.32742975800643},{\"consumerFeatureId\":\"hole_1\",\"selectorText\":\"top\",\"syntax\":\"lineage\",\"fingerprints\":[{\"entityKind\":\"face\",\"geomType\":\"PLANE\",\"producer\":\"box_1\",\"role\":\"top\",\"direction\":[0,0,1],\"size\":6936.382748764805,\"centroid\":[50.00000000000001,35,8]}],\"partDiagonal\":122.32742975800643}],\"requirements\":{\"ok\":true,\"status\":\"not-declared\",\"entries\":[],\"summary\":{\"pass\":0,\"fail\":0,\"notEvaluated\":0}},\"serverBuild\":\"0.1.0+a89797728c59@2026-11-12T19:50:09.169Z\"}"
+      }
+    ],
+    "structuredContent": {
+      "ok": true,
+      "buildOk": true,
+      "viewerMode": "hosted",
+      "viewerHint": "Use open_in_studio to view this model in hosted Studio.",
+      "step": {
+        "validity": {
+          "status": "valid",
+          "checks": [
+            "build",
+            "feature-health",
+            "finite-geometry"
+          ],
+          "volume": 51871.947253183
+        },
+        "snapshots": {
+          "status": "unavailable",
+          "frame": {
+            "view": "iso",
+            "width": 512,
+            "height": 512,
+            "bounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                100,
+                70,
+                7.999999999999999
+              ]
+            }
+          },
+          "out_dir": "/tmp/kernelcad-step-Yv9tTu",
+          "error": "Step snapshots require an existing browser attachment (PW_CDP_URL)."
+        }
+      },
+      "sceneSummary": {
+        "valid": true,
+        "volume": 51871.947253183,
+        "faceCount": 11,
+        "size": [
+          100,
+          70,
+          7.999999999999999
+        ]
+      },
+      "featureCount": 3,
+      "diagnostics": [],
+      "featureHealth": [],
+      "evaluationEvidence": {
+        "schema": "kernelcad.evaluation-evidence.v1",
+        "mode": "build",
+        "source": {
+          "sha256": "f32440a37c965325ceecc39623658484f82bc09972dea152f2637196b9e96652",
+          "byteLength": 1021
+        },
+        "parameters": {
+          "values": {
+            "width": 100,
+            "depth": 70,
+            "thickness": 8,
+            "mountHoleDiameter": 4.5,
+            "boreDiameter": 24
+          },
+          "sha256": "e346d982ba91d49fb14b32faa05475ebe2d2db6d757d17a5274f62a95cd6d487"
+        },
+        "engine": {
+          "kernel": "occt",
+          "version": "0.17.4",
+          "revision": "a89797728c594b2f8e65bcb6c38fa482b3f1cea7"
+        },
+        "dependencies": {
+          "status": "untracked"
+        },
+        "reuse": {
+          "eligible": false,
+          "reason": "dependencies-untracked"
+        },
+        "optionsSha256": "f42cd6277239ae00a502050ef22f6a020b97da37a4690dba293be9c9fd81ec02",
+        "identitySha256": "3f354e53abb80fecfb03f8e2e913b4280892b96d87ebed6ea7702c54a4badbb7"
+      },
+      "selections": [
+        {
+          "consumerFeatureId": "holes_1",
+          "selectorText": "top",
+          "syntax": "lineage",
+          "fingerprints": [
+            {
+              "entityKind": "face",
+              "geomType": "PLANE",
+              "producer": "box_1",
+              "role": "top",
+              "direction": [
+                0,
+                0,
+                1
+              ],
+              "size": 7000,
+              "centroid": [
+                50,
+                35,
+                8
+              ]
+            }
+          ],
+          "partDiagonal": 122.32742975800643
+        },
+        {
+          "consumerFeatureId": "hole_1",
+          "selectorText": "top",
+          "syntax": "lineage",
+          "fingerprints": [
+            {
+              "entityKind": "face",
+              "geomType": "PLANE",
+              "producer": "box_1",
+              "role": "top",
+              "direction": [
+                0,
+                0,
+                1
+              ],
+              "size": 6936.382748764805,
+              "centroid": [
+                50.00000000000001,
+                35,
+                8
+              ]
+            }
+          ],
+          "partDiagonal": 122.32742975800643
+        }
+      ],
+      "requirements": {
+        "ok": true,
+        "status": "not-declared",
+        "entries": [],
+        "summary": {
+          "pass": 0,
+          "fail": 0,
+          "notEvaluated": 0
+        }
+      },
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    }
+  },
+  "jsonrpc": "2.0",
+  "id": 2
+}

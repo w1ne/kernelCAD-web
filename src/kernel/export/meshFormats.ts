@@ -28,14 +28,23 @@ export interface ObjMeshExport {
   readonly mtl: Uint8Array;
 }
 
+export interface ObjMeshExportOptions {
+  /** Optional agent-requested absolute mesh tolerance to stamp as an OBJ comment. */
+  toleranceMm?: number;
+}
+
 export const OBJ_MTL_FILENAME = 'model.mtl';
 export const OBJ_ZIP_ENTRY = 'model.obj';
 
 /** Encode one or more indexed triangle meshes as Wavefront OBJ plus a sibling MTL. */
-export function exportMeshObj(parts: readonly NamedMesh[]): ObjMeshExport {
+export function exportMeshObj(parts: readonly NamedMesh[], options?: ObjMeshExportOptions): ObjMeshExport {
   if (parts.length === 0) throw new Error('OBJ export requires at least one mesh.');
   const slots = materialTable(parts);
-  const lines = ['# kernelCAD OBJ mesh export', `mtllib ${OBJ_MTL_FILENAME}`];
+  const lines = [
+    '# kernelCAD OBJ mesh export',
+    ...(options?.toleranceMm === undefined ? [] : [`# requested mesh tolerance ${String(options.toleranceMm)} mm`]),
+    `mtllib ${OBJ_MTL_FILENAME}`,
+  ];
   let vertexBase = 0;
   parts.forEach((part, index) => {
     vertexBase = writeObjObject(lines, part, slots[index]!.objToken, vertexBase);
@@ -44,8 +53,8 @@ export function exportMeshObj(parts: readonly NamedMesh[]): ObjMeshExport {
 }
 
 /** Zip `model.obj` and `model.mtl` for a caller that can return only one buffer. */
-export function exportMeshObjZip(parts: readonly NamedMesh[]): Uint8Array {
-  const { obj, mtl } = exportMeshObj(parts);
+export function exportMeshObjZip(parts: readonly NamedMesh[], options?: ObjMeshExportOptions): Uint8Array {
+  const { obj, mtl } = exportMeshObj(parts, options);
   return zipSync({ [OBJ_ZIP_ENTRY]: obj, [OBJ_MTL_FILENAME]: mtl });
 }
 

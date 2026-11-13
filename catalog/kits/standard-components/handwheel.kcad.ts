@@ -3,7 +3,7 @@ meta({
   name: 'handwheel',
   license: 'CC0-1.0',
   title: 'Handwheel',
-  description: 'Three-spoke handwheel with a raised center hub and a clear circular rim Knobs: model size, steel, cast iron, brass.',
+  description: 'Illustrative CC0 three-spoke handwheel with a raised solid hub envelope and an open circular rim. Not manufacturer-grade CAD: no shaft bore, keyway, tolerances or torque rating. Knobs change model size and colors only.',
   tags: ['handwheel', 'control wheel', 'valve wheel', 'machine control'],
   kit: 'standard-components',
   category: 'attachment',
@@ -27,5 +27,6 @@ const a = assembly('handwheel');
 const rim=cylinder(6*s,30*s,16).subtract(cylinder(8*s,24*s,16).translate(0,0,-s));
 a.part('rim',rim.rotateX(90).translate(0,3*s,30*s).color(castIron));
 a.part('hub',cylinder(18*s,10*s,12).rotateX(90).translate(0,9*s,30*s).color(brass));
-for (const angle of [0,60,120]) a.part(`spoke-${angle}`,box(52*s,5*s,5*s,true).rotateY(angle).translate(0,3*s,30*s).color(steel));
+// Each radial spoke overlaps the hub and rim; centered full-width bars make six spokes.
+for (const angle of [0,120,240]) a.part(`spoke-${angle}`,box(22*s,5*s,5*s,true).translate(16*s,0,0).rotateY(angle).translate(0,0,30*s).color(steel));
 return a.model();

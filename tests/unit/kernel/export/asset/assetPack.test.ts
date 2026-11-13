@@ -99,6 +99,12 @@ describe('buildAssetPack', () => {
     expect(readme).toContain('kernelcad export asset-pack');
   });
 
+  it('documents the bundled GLB metre scale in its handoff README', () => {
+    const readme = text(unzip(buildAssetPack(model(), { generatorVersion: '0.17.4', year: 2026 })), 'README.md');
+    expect(readme).toContain("The bundled GLB uses Y-up and glTF's metre units; kernelCAD's millimetre coordinates are scaled by 0.001 at the scene root.");
+    expect(readme).not.toContain('millimetre layout for a PBR GLB');
+  });
+
   it('writes the SPDX identifier from the asset metadata', () => {
     const license = text(unzip(buildAssetPack(model(), { generatorVersion: '0.17.4', year: 2026 })), 'LICENSE.txt');
     expect(license).toContain('SPDX-License-Identifier: MIT');

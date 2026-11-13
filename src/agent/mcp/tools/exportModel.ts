@@ -33,6 +33,7 @@ import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import type { MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
 export interface ExportModelInput {
@@ -82,6 +83,8 @@ export interface ExportModelOutput {
   gcode_stats?: GcodeStats;
   /** Export-time tiny-face / short-edge screen (gated formats, qualityGate not 'off'). */
   geometryQuality?: ExportGeometryQualitySummary;
+  /** Sampled one-sided B-rep surface distance to the triangles in the exported mesh file. */
+  mesh_deviation?: MeshDeviationReport;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -156,11 +159,12 @@ function exportMetadataFields(
   format: ExportFormat,
   result: ExportResult,
   hasErrors: boolean,
-): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats'> {
+): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats' | 'mesh_deviation'> {
   return {
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
     ...(format === 'gcode' && !hasErrors && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+    ...(result.mesh_deviation === undefined ? {} : { mesh_deviation: result.mesh_deviation }),
   };
 }
 

@@ -11,6 +11,7 @@ import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBac
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { verifyWatertight } from '../../../src/kernel/backends/occt/meshHeal';
 import { encodeBinaryStl } from '../../../src/kernel/backends/occt/exportStlBinary';
+import * as backendMesh from '../../../src/kernel/backends/occt/backendMesh';
 import { crackSeams, describeCrackSeams } from '../../../src/agent/script-runtime/sceneStlSeams';
 import { stlStats } from '../../helpers/stlStats';
 
@@ -88,6 +89,32 @@ describe('multi-part STL: fused seam crack fallback', () => {
     // The shipped bytes are watertight: two closed shells, one per part.
     expect(verifyWatertight(weldStl(r.bytes)).ok).toBe(true);
     expect(stlStats(r.bytes).components).toBe(2);
+  }, 120_000);
+});
+
+describe('tolerance-refined seam fallback', () => {
+  it('rejects refined shells that lose watertightness', async () => {
+    tearFusedMesh();
+    const meshShapeForExport = backendMesh.meshShapeForExport;
+    let refinedMeshes = 0;
+    vi.spyOn(backendMesh, 'meshShapeForExport').mockImplementation((shape, deflection) => {
+      const mesh = meshShapeForExport(shape, deflection);
+      if (deflection?.relative === false) {
+        refinedMeshes++;
+        mesh.triangles.splice(0, 3);
+      }
+      return mesh;
+    });
+    const result = await runAndExport({
+      code: SCENE.replace('cylinder(20, 8)', 'cylinder(200, 100)'),
+      fileName: 'refined-seam.kcad.ts',
+      format: 'stl',
+      options: { format: 'stl', tolerance: 0.001 },
+    });
+    expect(refinedMeshes).toBeGreaterThan(0);
+    const codes = result.diagnostics.map(diagnostic => diagnostic.code);
+    expect(codes).toContain('export.mesh.not-watertight');
+    expect(codes).not.toContain('export.mesh.fused-seam-fallback');
   }, 120_000);
 });
 

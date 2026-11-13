@@ -3,34 +3,33 @@
 import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
-import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
+import { exportSceneDxf } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportSceneAssetPack, exportSingleAssetPack } from './exportAssetPack';
-import { exportMeshObjZip, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportPly';
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
-import { flattenPatternWithHoles } from '../../modeling/sheetMetalFlatPattern';
-import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
-import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
-import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
-import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
-import { crackSeams, describeCrackSeams } from './sceneStlSeams';
+import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
+import { validateExportMeshToleranceOptions } from '../../kernel/backends/occt/backendMesh';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
-import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
+import { exportFusedSeamFallback, exportSceneStlAsShells, freeformFuseOverBudget } from './sceneStlFuse';
+import { exportSceneTextMesh, exportSingleTextMesh } from './exportMeshText';
+import { exportStlWithOptions, measureWorldFramePartsDeviation, meshToleranceFailure } from './exportMeshTolerance';
+import { exportSingleStl } from './exportSingleStl';
+import { exportShapeDxf } from './exportSheetMetalDxf';
 import {
   dracoConflictDiagnostic,
   glbLowPolyDiagnostic,
@@ -39,6 +38,7 @@ import {
   threeMfBedDiagnostics,
   threeMfMeshDiagnostics,
   stlNotWatertightDiagnostic,
+  meshToleranceInvalidDiagnostic,
   brepInvalidDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
@@ -58,6 +58,7 @@ import type {
   ExportInput,
   ExportResult,
   CompanionMeshFile,
+  ExportOptions,
 } from './export';
 
 export function optionsFormatMismatchDiagnostic(input: ExportInput): ExportResult | undefined {
@@ -79,7 +80,19 @@ export function optionsFormatMismatchDiagnostic(input: ExportInput): ExportResul
 /** Refuse an options bag before the script runs: a mismatched
  *  `options.format`, then format-specific checks (PLY). */
 export function exportOptionsRefusal(input: ExportInput): ExportResult | undefined {
-  return optionsFormatMismatchDiagnostic(input) ?? plyOptionsDiagnostic(input);
+  const mismatch = optionsFormatMismatchDiagnostic(input);
+  if (mismatch !== undefined) return mismatch;
+  if (input.format === 'stl' || input.format === '3mf' || input.format === 'obj') {
+    const toleranceError = validateExportMeshToleranceOptions(input.options);
+    if (toleranceError !== undefined) {
+      return {
+        bytes: new Uint8Array(),
+        featureCount: 0,
+        diagnostics: [meshToleranceInvalidDiagnostic(toleranceError)],
+      };
+    }
+  }
+  return plyOptionsDiagnostic(input);
 }
 
 /** Validate and resolve the connector-manifest Scene. Throws the three
@@ -439,14 +452,14 @@ export async function exportSceneBackend(
   if (format === 'obj' || format === 'usd') {
     const worldParts = sceneToWorldFrameParts(scene);
     try {
-      const parts = worldParts.map(part => ({
-        name: part.name,
-        mesh: meshShapeForExport(part.shape.getReplicadShape()),
-        ...(part.material !== undefined ? { material: part.material } : {}),
-        ...(part.color !== undefined ? { color: part.color } : {}),
-        ...(part.colorParamName !== undefined ? { colorParamName: part.colorParamName } : {}),
-      }));
-      return { bytes: format === 'obj' ? exportMeshObjZip(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+      return exportSceneTextMesh(
+        format,
+        worldParts,
+        targetId,
+        diagnostics,
+        featureCount,
+        format === 'obj' ? input.options as Extract<ExportOptions, { format: 'obj' }> | undefined : undefined,
+      );
     } finally {
       releaseWorldFrameParts(worldParts);
     }
@@ -496,10 +509,23 @@ export async function exportScene3mf(
   try {
     const worldParts = sceneToWorldFrameParts(scene);
     try {
-      const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
-        worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
+      const { bytes, bedWarnings, meshWarnings, mesh_deviation } = await export3mfWithReportAsync(
+        worldParts,
+        { assemblyName: scene.assemblyName, ...opts3mf },
+        measureWorldFramePartsDeviation,
       );
-      return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+      const toleranceFailure = meshToleranceFailure(mesh_deviation, targetId);
+      return {
+        bytes,
+        featureCount,
+        diagnostics: [
+          ...diagnostics,
+          ...(toleranceFailure ? [toleranceFailure] : []),
+          ...threeMfMeshDiagnostics(meshWarnings, targetId),
+          ...threeMfBedDiagnostics(bedWarnings, targetId),
+        ],
+        ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+      };
     } finally {
       releaseWorldFrameParts(worldParts);
     }
@@ -571,176 +597,101 @@ export async function exportSceneFusedMesh(
   const worldParts = sceneToWorldFrameParts(scene);
   const temps: OcctBackend[] = [];
   try {
-    const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
-    if (fuseOverBudget !== undefined) {
-      const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-      return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
-    }
-    let fused: OcctBackend = worldParts[0]!.shape;
-    for (let i = 1; i < worldParts.length; i++) {
-      const next = fused.union(worldParts[i]!.shape);
-      if (fused !== worldParts[0]!.shape) temps.push(fused);
-      fused = next;
-    }
-    if (fused !== worldParts[0]!.shape) temps.push(fused);
+    const stlOptions = format === 'stl'
+      ? input.options as Extract<ExportOptions, { format: 'stl' }> | undefined
+      : undefined;
+    const shellExport = exportOverBudgetSceneAsShells(
+      format, worldParts, targetId, diagnostics, featureCount, stlOptions,
+    );
+    if (shellExport !== undefined) return shellExport;
+    const fused = fuseWorldFrameParts(worldParts, temps);
     if (format === 'gcode') {
-      return await sliceShapeToGcode(
-        fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
-        findDfmSpec(run.records)?.fdm?.buildDirection,
-      );
+      return exportFusedSceneGcode(input, fused, targetId, run, diagnostics, featureCount);
     }
-    const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-    const { bytes, report } = await fused.exportSTLWithReportAsync();
-    if (verify && !report.ok) {
-      return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
-    }
-    return { bytes, featureCount, diagnostics };
+    return await exportFusedSceneStl(
+      worldParts, fused, targetId, diagnostics, featureCount, stlOptions,
+    );
   } finally {
-    for (const temp of temps) {
-      try { temp.dispose(); } catch { /* intermediate already freed */ }
-    }
+    disposeIntermediateShapes(temps);
     releaseWorldFrameParts(worldParts);
   }
 }
 
-/**
- * The fused mesh of a multi-part Scene cracked (typically along union seams
- * of parts that touch or overlap by a few hundredths of a mm: the B-rep is
- * valid, its tessellation is not closed). Mesh each part on its own; when
- * every part is watertight, ship them as separate closed shells — a valid
- * STL that slices as their union — with a warning naming the seams.
- * Otherwise keep the fused bytes and fail, naming the seams.
- */
-function fusedSeamFallback(
+function exportOverBudgetSceneAsShells(
+  format: 'stl' | 'gcode',
   worldParts: WorldFramePart[],
-  fusedBytes: Uint8Array,
-  fusedReport: WatertightReport,
   targetId: string,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
-): ExportResult {
-  const seamParts = worldParts.map((p) => ({ name: p.name, bbox: p.shape.boundingBox() }));
-  const seams = describeCrackSeams(crackSeams(fusedReport, seamParts));
-  // Same per-part shell writer as the fuse-skip path above: separate closed
-  // shells are watertight together exactly when each part is.
-  const shells = worldParts.length > 1 ? meshPartsAsShells(worldParts) : undefined;
-  if (shells !== undefined && verifyWatertight(shells).ok) {
-    return {
-      bytes: Uint8Array.from(encodeBinaryStl(shells)),
-      featureCount,
-      diagnostics: [...diagnostics, {
-        target: 'export-occt',
-        code: 'export.mesh.fused-seam-fallback',
-        featureId: targetId,
-        severity: 'warn',
-        message: `The fused union of the ${worldParts.length} parts meshed with ${fusedReport.openEdgeCount} open edge(s) (${seams}). Shipped each part as its own closed shell instead: the STL is watertight and slices as the union.`,
-        hint: HINT_TEMPLATES['export.mesh.fused-seam-fallback'].template,
-        nextAction: NEXT_ACTIONS['export.mesh.fused-seam-fallback'],
-      }],
-    };
+  options?: Extract<ExportOptions, { format: 'stl' }>,
+): ExportResult | undefined {
+  if (format !== 'stl') return undefined;
+  const cost = freeformFuseOverBudget(worldParts);
+  return cost === undefined
+    ? undefined
+    : exportSceneStlAsShells(worldParts, cost, targetId, diagnostics, featureCount, options?.verify !== false, options);
+}
+
+function fuseWorldFrameParts(parts: readonly WorldFramePart[], temps: OcctBackend[]): OcctBackend {
+  const first = parts[0]!.shape;
+  let fused = first;
+  for (let i = 1; i < parts.length; i++) {
+    const next = fused.union(parts[i]!.shape);
+    if (fused !== first) temps.push(fused);
+    fused = next;
   }
-  const base = stlNotWatertightDiagnostic(fusedReport, targetId);
-  return {
-    bytes: fusedBytes,
-    featureCount,
-    diagnostics: [...diagnostics, { ...base, message: `${base.message} Seams: ${seams}.` }],
-  };
+  if (fused !== first) temps.push(fused);
+  return fused;
 }
 
-/** Thickness of the sheet a bent part is made from, read off its root
- *  `sheetMetal` record. */
-function sheetThickness(records: readonly FeatureRecord[], targetId: string): number | undefined {
-  const target = records.find((rec) => rec.id === targetId);
-  const root = target ? findRootSheetMetalRecord(target, records) : undefined;
-  const value = (root?.params.thickness as { evaluated?: unknown } | undefined)?.evaluated;
-  return typeof value === 'number' && value > 0 ? value : undefined;
-}
-
-/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
- *  part exports its outline, `options.section` its cross-section; anything
- *  else emits the non-planar diagnostic. */
-export async function exportShapeDxf(
-  shape: OcctBackend,
+function exportFusedSceneGcode(
+  input: ExportInput,
+  fused: OcctBackend,
   targetId: string,
-  exportOptions: ExportInput['options'],
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const opts =
-    (exportOptions as DxfWriterOptions | undefined) ?? { format: 'dxf' };
-  // Sheet-metal Shape entry path: if the target Shape's lineage chain
-  // roots at a `sheetMetal` record, recover the flat-pattern Region by
-  // walking `flattenPatternWithHoles(records, targetId)` (outline, bend
-  // lines, and the blank's holes / cutouts) and ship it through the
-  // polyline writer. This is the same Region that
-  // `Shape.flattenPattern()` would produce — recomputed inside the
-  // runtime so the user script can return the bent body directly
-  // without needing `require` inside the vm sandbox.
-  const tracesToSheetMetal = (() => {
-    const byId = new Map(run.records.map(rec => [rec.id, rec]));
-    let cur = byId.get(targetId);
-    // Bound the walk by the record count — a healthy graph terminates
-    // quickly; an inputs.base cycle would otherwise spin forever.
-    for (let i = 0; cur && i <= run.records.length; i++) {
-      if (cur.kind === 'sheetMetal') return true;
-      // holes / cutouts made on the blank chain via inputs.target.
-      const baseRef = cur.inputs.base ?? cur.inputs.target;
-      if (!baseRef || baseRef.kind !== 'feature') return false;
-      cur = byId.get(baseRef.id);
-    }
-    return false;
-  })();
-  // An explicit `options.section` asks for a cross-section, not the blank.
-  const wantsSection = (opts as { section?: unknown }).section !== undefined;
-  if (tracesToSheetMetal && !wantsSection) {
-    try {
-      const region = await flattenPatternWithHoles(run.records, targetId, undefined, run.paramTable);
-      const bytes = exportDxf({ kind: 'region', region }, opts);
-      const thicknessMm = sheetThickness(run.records, targetId);
-      const sheet = thicknessMm ? { thicknessMm, bendCount: region.bendLines.length } : undefined;
-      return { bytes, featureCount, diagnostics, ...(sheet ? { sheet } : {}) };
-    } catch (e) {
-      const errCode = (e as { code?: string }).code;
-      const msg = e instanceof Error ? e.message : String(e);
-      const hint = (e as { hint?: string }).hint;
-      // Pass through structured diagnostics like
-      // `feature.flattenPattern.multi-bend-unsupported`; downgrade
-      // anything else to `export.dxf.non-planar` so callers see a
-      // catalog-known code.
-      if (errCode === 'feature.flattenPattern.multi-bend-unsupported') {
-        return {
-          bytes: new Uint8Array(),
-          featureCount,
-          diagnostics: [...diagnostics, {
-            target: 'export-occt',
-            code: 'feature.flattenPattern.multi-bend-unsupported',
-            featureId: targetId,
-            severity: 'error',
-            message: msg,
-            hint: hint ?? 'Flatten an upstream Shape with at most two bends, or wait for the multi-bend slice.',
-            nextAction: NEXT_ACTIONS['feature.flattenPattern.multi-bend-unsupported'],
-          }],
-        };
-      }
-      return {
-        bytes: new Uint8Array(),
-        featureCount,
-        diagnostics: [...diagnostics, {
-          target: 'export-occt',
-          code: 'export.dxf.non-planar',
-          featureId: targetId,
-          severity: 'error',
-          message: `DXF export could not flatten the sheet-metal chain: ${msg}`,
-          hint: hint ?? 'Inspect the sheetMetal root and bends, then retry. Return a Region directly to bypass.',
-          nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-        }],
-      };
-    }
+  return sliceShapeToGcode(
+    fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
+    findDfmSpec(run.records)?.fdm?.buildDirection,
+  );
+}
+
+async function exportFusedSceneStl(
+  worldParts: WorldFramePart[],
+  fused: OcctBackend,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  options?: Extract<ExportOptions, { format: 'stl' }>,
+): Promise<ExportResult> {
+  const exported = await exportStlWithOptions(fused, options);
+  if (options?.verify !== false && !exported.report.ok) {
+    return exportFusedSeamFallback(
+      worldParts,
+      exported.bytes,
+      exported.report,
+      targetId,
+      diagnostics,
+      featureCount,
+      options,
+      exported.mesh_deviation,
+    );
   }
-  // Flat part (plate, panel, extruded profile) or `options.section`: the
-  // cut profile with exact arcs; anything else is refused with a hint.
-  return exportShapeDxfProfile(shape, targetId, exportOptions, diagnostics, featureCount);
+  const toleranceFailure = meshToleranceFailure(exported.mesh_deviation, targetId);
+  return {
+    bytes: exported.bytes,
+    featureCount,
+    diagnostics: [...diagnostics, ...(toleranceFailure === undefined ? [] : [toleranceFailure])],
+    ...(exported.mesh_deviation === undefined ? {} : { mesh_deviation: exported.mesh_deviation }),
+  };
+}
+
+function disposeIntermediateShapes(temps: readonly OcctBackend[]): void {
+  for (const temp of temps) {
+    try { temp.dispose(); } catch { /* intermediate already freed */ }
+  }
 }
 
 /** Mesh the per-link shapes referenced by a robot-description export into
@@ -802,57 +753,23 @@ export async function exportSingleShape(
     case 'asset-pack':
       return exportSingleAssetPack(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
     case 'obj':
-      return exportSingleMeshText(shape, 'obj', targetId, run.records, diagnostics, featureCount);
+      return exportSingleTextMesh(
+        shape,
+        'obj',
+        targetId,
+        run.records,
+        diagnostics,
+        featureCount,
+        input.options as Extract<ExportOptions, { format: 'obj' }> | undefined,
+      );
     case 'usd':
-      return exportSingleMeshText(shape, 'usd', targetId, run.records, diagnostics, featureCount);
+      return exportSingleTextMesh(shape, 'usd', targetId, run.records, diagnostics, featureCount);
     case 'ply':
       return exportSinglePly(input, shape, targetId, run.records, diagnostics, featureCount);
   }
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics };
-}
-
-function exportSingleMeshText(
-  shape: OcctBackend,
-  format: 'obj' | 'usd',
-  targetId: string,
-  records: readonly FeatureRecord[],
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-): ExportResult {
-  const tail = records.find((rec) => rec.id === targetId);
-  const color = tail ? lookupColorFromLineage(tail, records) : undefined;
-  const material = tail ? lookupMaterialFromLineage(tail, records) : undefined;
-  const parts: NamedMesh[] = [{
-    name: 'part',
-    mesh: meshShapeForExport(shape.getReplicadShape()),
-    ...(color !== undefined ? { color } : {}),
-    ...(material !== undefined ? { material } : {}),
-  }];
-  return { bytes: format === 'obj' ? exportMeshObjZip(parts) : exportMeshUsd(parts), featureCount, diagnostics };
-}
-
-async function exportSingleStl(
-  input: ExportInput,
-  shape: OcctBackend,
-  targetId: string,
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-): Promise<ExportResult> {
-  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-  const { bytes, report } = await shape.exportSTLWithReportAsync();
-  if (verify && !report.ok) {
-    // Write-then-fail contract: keep the real mesh bytes next to the
-    // error diagnostic so consumers can write the broken mesh to disk
-    // for inspection before failing (same as per-part export).
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [...diagnostics, stlNotWatertightDiagnostic(report, targetId)],
-    };
-  }
-  return { bytes, featureCount, diagnostics };
 }
 
 async function exportSingleGcode(
@@ -894,8 +811,23 @@ async function exportSingle3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   const part: WorldFramePart = { name: 'part', shape };
   try {
-    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync([part], opts3mf);
-    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    const { bytes, bedWarnings, meshWarnings, mesh_deviation } = await export3mfWithReportAsync(
+      [part],
+      opts3mf,
+      measureWorldFramePartsDeviation,
+    );
+    const toleranceFailure = meshToleranceFailure(mesh_deviation, targetId);
+    return {
+      bytes,
+      featureCount,
+      diagnostics: [
+        ...diagnostics,
+        ...(toleranceFailure === undefined ? [] : [toleranceFailure]),
+        ...threeMfMeshDiagnostics(meshWarnings, targetId),
+        ...threeMfBedDiagnostics(bedWarnings, targetId),
+      ],
+      ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+    };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;

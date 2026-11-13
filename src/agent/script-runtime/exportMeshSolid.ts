@@ -17,7 +17,7 @@ import { export3mfWithReportAsync, type Export3mfOptions, type MeshedPart } from
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
 import { exportMeshObjZip } from '../../kernel/export/meshFormats';
 import type { LatticeReport } from '../../kernel/lattice/buildLattice';
-import { stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { meshToleranceUnavailableDiagnostic, stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export const MESH_SOLID_EXPORT_FORMATS = ['stl', '3mf', 'obj'] as const;
 
@@ -51,6 +51,14 @@ export async function exportMeshSolid(
   const latticeReport = shape.facts.lattice as LatticeReport | undefined;
   const base = { featureCount, ...(latticeReport ? { latticeReport } : {}) };
   const mesh = { vertices: shape.positions, triangles: shape.indices };
+  const meshOptions = options as { tolerance?: unknown; angularToleranceDeg?: unknown } | undefined;
+  if (meshOptions?.tolerance !== undefined || meshOptions?.angularToleranceDeg !== undefined) {
+    return {
+      ...base,
+      bytes: new Uint8Array(),
+      diagnostics: [...diagnostics, meshToleranceUnavailableDiagnostic(targetId)],
+    };
+  }
   if (format === 'stl') {
     const bytes = shape.exportSTL();
     const verify = (options as { verify?: boolean } | undefined)?.verify !== false;

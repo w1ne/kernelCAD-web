@@ -252773,7 +252773,7 @@
       "id": "door-hinge",
       "kit": "standard-components",
       "title": "Door hinge",
-      "description": "Upright butt hinge with alternating barrel knuckles, a brass pivot pin and visible leaf fasteners. Knobs: model size, steel, brass and fasteners.",
+      "description": "Illustrative CC0 butt hinge with two integral bored leaves, a separate brass pivot pin and visible leaf fasteners. Three size presets scale the whole prop; steel, brass and fasteners are colors. No screw threads, motion mates, manufacturing tolerances or load rating.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -252791,8 +252791,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
       "preview": "/assets/standard-components-door-hinge.png",
-      "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
-      "triangleBudget": 1600,
+      "sourceSha256": "e87c1401e9629a5a8953090ff25ad43c97191626eebbc4d1ada6579774522f15",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "size",
@@ -252842,11 +252842,11 @@
         }
       },
       "stats": {
-        "triangles": 1440,
+        "triangles": 1772,
         "sizeM": [
           0.064,
           0.04,
-          0.01
+          0.009862
         ],
         "minUpM": 0,
         "materials": 1
@@ -252857,12 +252857,7 @@
           "color": "#52778e",
           "parts": [
             "left-leaf",
-            "right-leaf",
-            "left-knuckle-1",
-            "left-knuckle-2",
-            "left-knuckle-3",
-            "right-knuckle-1",
-            "right-knuckle-2"
+            "right-leaf"
           ],
           "param": "steel"
         },
@@ -252994,7 +252989,7 @@
       "id": "flange-bearing-housing",
       "kit": "standard-components",
       "title": "Flange bearing housing",
-      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.",
+      "description": "Illustrative CC0 flange bearing housing: one-piece cast housing with a raised circular seat, two usable through-holes, and a separate plain bronze sleeve bearing with an open shaft bore. Not a ball bearing, vendor drawing, rated part, or fit specification. Knobs: model size and display colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253012,7 +253007,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
       "preview": "/assets/standard-components-flange-bearing-housing.png",
-      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
+      "sourceSha256": "42ca6d19608acd444f0cd484a32c928848139c5a0f82b23b5e8f45a978f995a4",
       "triangleBudget": 360,
       "params": [
         {
@@ -253054,11 +253049,11 @@
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 312,
         "sizeM": [
           0.056,
           0.02,
-          0.04
+          0.036
         ],
         "minUpM": 0,
         "materials": 1
@@ -253068,7 +253063,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "plate"
+            "one-piece-cast-iron-housing"
           ],
           "param": "castIron"
         },
@@ -253076,7 +253071,7 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "boss"
+            "plain-bronze-sleeve-bearing"
           ],
           "param": "bronze"
         }
@@ -253373,7 +253368,7 @@
       "id": "handwheel",
       "kit": "standard-components",
       "title": "Handwheel",
-      "description": "Three-spoke handwheel with a raised center hub and a clear circular rim Knobs: model size, steel, cast iron, brass.",
+      "description": "Illustrative CC0 three-spoke handwheel with a raised solid hub envelope and an open circular rim. Not manufacturer-grade CAD: no shaft bore, keyway, tolerances or torque rating. Knobs change model size and colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253391,7 +253386,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handwheel.kcad.ts",
       "preview": "/assets/standard-components-handwheel.png",
-      "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
+      "sourceSha256": "002a53e844a7dd7362acf4ff0ba8d92f793a0bf1f768e7357e06af3bc9b1f8f3",
       "triangleBudget": 340,
       "params": [
         {
@@ -253473,8 +253468,8 @@
           "color": "#85929a",
           "parts": [
             "spoke-0",
-            "spoke-60",
-            "spoke-120"
+            "spoke-120",
+            "spoke-240"
           ],
           "param": "steel"
         }
@@ -253934,7 +253929,7 @@
       "id": "linear-guide-carriage",
       "kit": "standard-components",
       "title": "Linear guide carriage",
-      "description": "Steel guide carriage with a U-shaped underside channel, polymer end wipers, four top fastener wells, and a brass grease fitting. Knobs: model size, steel, polymer, brass.",
+      "description": "Illustrative CC0 guide-carriage prop with an open end-to-end underside rail channel, separate polymer end wipers, four top fastener wells, and a brass grease fitting. Not manufacturer-grade CAD: no recirculating balls, vendor raceways, tolerances or load rating. Knobs change model size and colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -253952,7 +253947,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-carriage.png",
-      "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+      "sourceSha256": "7a6d58b0677bb8cd86e7068279bbc462b32ff0a5d823be0923c99ba2364cac2a",
       "triangleBudget": 460,
       "params": [
         {
@@ -254547,7 +254542,7 @@
       "id": "pipe-elbow-45",
       "kit": "standard-components",
       "title": "45 degree pipe elbow",
-      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend Knobs: model size, steel, bronze.",
+      "description": "Illustrative 45-degree elbow with two open ports and one connected Ø16 mm passage at standard size. End collars are separate visual bodies, not specified pressure fittings. Knobs: model size and finish colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254565,8 +254560,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-45.png",
-      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
-      "triangleBudget": 360,
+      "sourceSha256": "1c6f27707ef587af113cbbcb23c3c960aff6d39ec453b2653b1efa4749f79ae8",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254583,13 +254578,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254607,11 +254602,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 458,
         "sizeM": [
-          0.042991,
-          0.040991,
-          0.028
+          0.043406,
+          0.050406,
+          0.026
         ],
         "minUpM": 0,
         "materials": 1
@@ -254621,8 +254616,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "base",
-            "angled"
+            "connected-open-elbow"
           ],
           "param": "steel"
         },
@@ -254630,7 +254624,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "lower-port-collar",
+            "angled-port-collar"
           ],
           "param": "bronze"
         }
@@ -254640,7 +254635,7 @@
       "id": "pipe-elbow-90",
       "kit": "standard-components",
       "title": "90 degree pipe elbow",
-      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends Knobs: model size, steel, bronze.",
+      "description": "Illustrative elbow with two perpendicular open ports and a connected Ø18 mm passage at standard size. Bronze-colored end collars are separate visual bodies. Not pressure-rated CAD. Knobs: model size and finish colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254658,8 +254653,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
-      "triangleBudget": 380,
+      "sourceSha256": "e50f85776a7e205a214860a25ec7ce6f8de266c9cba824e7f79843f90e65a1c6",
+      "triangleBudget": 560,
       "params": [
         {
           "name": "size",
@@ -254676,13 +254671,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Body finish color (visual only)"
         },
         {
           "name": "bronze",
           "type": "color",
           "default": "#98714c",
-          "label": "Bronze"
+          "label": "Collar finish color (visual only)"
         }
       ],
       "presets": {
@@ -254700,11 +254695,11 @@
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 446,
         "sizeM": [
-          0.039,
           0.041,
-          0.026
+          0.042,
+          0.028
         ],
         "minUpM": 0,
         "materials": 1
@@ -254714,8 +254709,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "upright",
-            "branch"
+            "one-piece-open-elbow"
           ],
           "param": "steel"
         },
@@ -254723,7 +254717,8 @@
           "name": "bronze",
           "color": "#98714c",
           "parts": [
-            "bend"
+            "inlet-reinforcing-collar",
+            "outlet-reinforcing-collar"
           ],
           "param": "bronze"
         }

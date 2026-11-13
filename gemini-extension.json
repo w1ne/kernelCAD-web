@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "version": "0.17.4",
-  "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Design mounting plates, brackets, enclosures, gears and fixtures for 3D printing or CNC; inspect interactive models; run supported geometry and manufacturability checks; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
+  "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Run revision-bound manufacturing-readiness reviews and evidence-backed design trade studies; inspect interactive models; check supported geometry, tolerances, structures, and manufacturability; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
   "contextFileName": "plugins/kernelcad/GEMINI.md",
   "mcpServers": {
     "kernelcad": {

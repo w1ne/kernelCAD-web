@@ -1,0 +1,45 @@
+{
+  "scenario": "authored 12:48 external gear pair; ratio -1/4",
+  "invocation": "npx tsx docs/demos/issue-1321-coupled-gear/capture-demo.ts",
+  "localReplay": true,
+  "deployedBehaviorVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "integrationObservations": 500,
+  "emittedNativeEquality": true,
+  "couplingResidualGatePassed": true,
+  "maxResidualDegrees": 0,
+  "nativeReleaseMaxResidualDegrees": 0,
+  "authoredSweepMaxResidualDegrees": 0,
+  "authoredSweepPoseCount": 3,
+  "residualGateDegrees": 5,
+  "coveredInputPosesDegrees": [
+    -720,
+    0,
+    720
+  ],
+  "authoredPoseSweepFile": "authored-pose-sweep.csv",
+  "sourceLimitsDegrees": [
+    -720,
+    720
+  ],
+  "drivenLimitsDegrees": [
+    -180,
+    180
+  ],
+  "capturedReleaseStartQpos": [
+    0,
+    0
+  ],
+  "failures": [],
+  "coverage": {
+    "poses": 4,
+    "joints": 2,
+    "fastened": 0,
+    "limitsChecked": 1,
+    "matesChecked": true,
+    "skipped": [],
+    "sweep": true,
+    "physics": true
+  },
+  "fixtureLimitation": "The fixture uses real involute gears but omits bearing shoulders. Joint-continuity and geometry findings are separate from the coupling-residual regression; MuJoCo does not calculate tooth-contact forces."
+}

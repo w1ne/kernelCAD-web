@@ -45,7 +45,7 @@ An overhang is a face that points down and leans out past the layer below it. Mo
 
 Fix it with a 45° chamfer, a gusset, or by rotating the part so the face points sideways. Supports work too, but cost material and time and leave a rough surface.
 
-**How kernelCAD helps.** `dfm_review` finds every downward face steeper than your limit (45° by default, configurable). Each region comes back with its area, angle, reach and a selectable face reference, plus the fix in plain words, down to the exact rotation that removes the overhang ("Rotate -90° about X"), instead of a red patch in a slicer.
+**How kernelCAD helps.** `dfm_review` finds every downward face steeper than your limit (45° by default, configurable). Each region comes back with its area, angle and reach, plus the fix in plain words, down to the exact rotation that removes the overhang ("Rotate -90° about X"), instead of a red patch in a slicer. Face references are optional: kernelCAD emits one only when the face has a unique, resolvable lineage name, and omits it otherwise.
 
 ## 2. Bridges
 
@@ -103,7 +103,7 @@ fdm.bed-fit    pass  Fits the 'bambu-a1' bed (60 x 40 x 46 mm).
 fdm.bed-contact pass Bed contact is adequate.
 ```
 
-The overhang is the lip's underside, `@kc[boolean_2/face/bottom]`, "90.0° from vertical, reaching 20.0 mm past its nearest support". The thin walls come back at four XYZ points on the two ribs. The hint gives the fix: "Rotate -90° about X (.rotateX(-90), or dfmSpec buildDirection: '-y'): unsupported area drops from 1350.0 to 0.0 mm²." The orientation ranking agrees, with `-y` first, 0 mm² unsupported and `apply: ".rotateX(-90)"`.
+The overhang is the lip's underside: 90.0° from vertical, reaching 20.0 mm past its nearest support. This boolean-derived face has no unique resolvable lineage in the current DFM result, so no `@kc` face ref is emitted. The thin walls come back at four XYZ points on the two ribs. The hint gives the fix: "Rotate -90° about X (.rotateX(-90), or dfmSpec buildDirection: '-y'): unsupported area drops from 1350.0 to 0.0 mm²." The orientation ranking agrees, with `-y` first, 0 mm² unsupported and `apply: ".rotateX(-90)"`.
 
 The fix is three edits in `examples/gallery/fdm-bracket.kcad.ts`:
 

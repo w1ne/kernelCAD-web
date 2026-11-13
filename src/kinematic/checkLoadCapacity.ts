@@ -52,6 +52,7 @@ import { sectionProperties } from './beamGeometry';
 import { resolveMaterialProps, type MaterialProps } from './beamMaterials';
 import { ACCEPTED_MATERIAL_NAMES } from '../shared/materials/engineeringMaterials';
 import { validateJointLoadCapacity } from '../modeling/mates/jointLoadCapacity';
+import { solveMates } from '../modeling/mates/solver';
 
 const DEFAULT_SF_THRESHOLD = 1.5;
 
@@ -88,14 +89,15 @@ export async function checkLoadCapacity(
 // 'stub' mode — re-exports the v0.7.4 substrate.
 // ─────────────────────────────────────────────────────────────────────────
 
-function runStubMode(
+async function runStubMode(
   arm: Assembly,
   loads: LoadDeclaration,
-): LoadCapacityResult {
+): Promise<LoadCapacityResult> {
   // The substrate consumes a `Record<partName, { force?, torque? }>` shape
   // mirroring our `LoadDeclaration`; no envelope translation needed.
   const externalLoads = Object.keys(loads).length > 0 ? loads : undefined;
-  const subDiags = validateJointLoadCapacity(arm, externalLoads);
+  const solvedPlacements = externalLoads === undefined ? undefined : (await solveMates(arm)).poses;
+  const subDiags = validateJointLoadCapacity(arm, externalLoads, solvedPlacements);
   const diagnostics: KinematicDiagnostic[] = [];
   const failures: LoadCapacityFailure[] = [];
 

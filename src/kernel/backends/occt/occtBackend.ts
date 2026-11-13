@@ -16,7 +16,7 @@ import { drawingFromCommands } from './sketchToDrawing';
 import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
-import { meshShapeForExport } from './backendMesh';
+import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
 import { completeLoftFromLifted } from './polyhedralRuledLoft';
 import { cachedCollisionVertices } from './collisionVerticesCache';
@@ -1265,12 +1265,12 @@ export class OcctBackend implements ShapeBackend {
    * then runs the O(n) edge-adjacency verify on the exact mesh that is
    * encoded, so the report describes the bytes written.
    */
-  async exportSTLWithReportAsync(): Promise<{
+  async exportSTLWithReportAsync(deflection?: ExportMeshDeflection): Promise<{
     bytes: Uint8Array;
     report: WatertightReport;
     triangleCount: number;
   }> {
-    const mesh = meshShapeForExport(this.shape);
+    const mesh = meshShapeForExport(this.shape, deflection);
     const report = verifyWatertight(mesh);
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
     return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };

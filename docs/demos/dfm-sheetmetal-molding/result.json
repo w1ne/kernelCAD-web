@@ -6,51 +6,65 @@
         "injection-molding"
       ]
     },
+    "ok": true,
     "verdict": "fail",
     "checks": [
       {
         "id": "mold.draft",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "fail",
-        "summary": "10 face(s) (5328 mm²) have less than 1° draft to the pull direction, as low as 0°: @kc[boolean_2/face/back], @kc[boolean_2/face/front], @kc[boolean_2/face/back], @kc[boolean_2/face/front] and more; the part will drag or stick on ejection. Add draft (Shape.draft).",
+        "summary": "10 face(s) (5328 mm²) have less than 1° draft to the pull direction, as low as 0°; the part will drag or stick on ejection. Add draft (Shape.draft).",
         "value": 0,
-        "limit": 1
+        "limit": 1,
+        "unit": "deg",
+        "op": ">=",
+        "tolerance": 0.001
       },
       {
         "id": "mold.wall-thickness",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "pass",
         "summary": "Walls are within 1–4 mm and uniform to 1.25×.",
-        "value": 2.51,
-        "limit": 4
+        "value": 2.5062377654688017,
+        "limit": 4,
+        "unit": "mm",
+        "op": "<=",
+        "tolerance": 1e-9
       },
       {
         "id": "mold.undercuts",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "fail",
-        "summary": "56 mm² on 4 face(s) cannot release toward either mold half (±pull direction), largest @kc[boolean_2/face/top] at (31.7, 0.7, 11); it needs a side action / lifter or a redesign.",
-        "value": 56
+        "summary": "56 mm² on 4 face(s) cannot release toward either mold half (±pull direction), largest (31.7, 0.7, 11); it needs a side action / lifter or a redesign.",
+        "value": 56,
+        "limit": 0,
+        "unit": "mm2",
+        "op": "<="
       },
       {
         "id": "mold.sharp-internal-corners",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "warn",
-        "summary": "12 internal corner(s) below R0.5 mm, e.g. between @kc[boolean_2/face/back] and @kc[boolean_2/face/bottom] at (30, 38, 2); they concentrate stress and hinder flow. Fillet them.",
+        "summary": "12 internal corner(s) below R0.5 mm, e.g. a sharp crease at (30, 38, 2); they concentrate stress and hinder flow. Fillet them.",
         "value": 0,
-        "limit": 0.5
+        "limit": 0.5,
+        "unit": "mm",
+        "op": ">="
       }
     ],
-    "undraftedFaces": [
-      "@kc[boolean_2/face/back]",
-      "@kc[boolean_2/face/front]",
-      "@kc[boolean_2/face/back]",
-      "@kc[boolean_2/face/front]",
-      "@kc[boolean_2/face/left]",
-      "@kc[boolean_2/face/right]",
-      "@kc[boolean_2/face/right]",
-      "@kc[boolean_2/face/left]",
-      "@kc[boolean_2/face/right]",
-      "@kc[boolean_2/face/left]"
-    ],
+    "topologyRefVerification": {
+      "fixture": "tray-undrafted.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    },
+    "undraftedFaces": [],
     "undercutFaces": [
       {
-        "face": "@kc[boolean_2/face/top]",
         "location": [
           31.666666666666668,
           0.6666666666666666,
@@ -58,7 +72,6 @@
         ]
       },
       {
-        "face": "@kc[boolean_2/face/bottom]",
         "location": [
           31.666666666666668,
           0.6666666666666666,
@@ -66,7 +79,6 @@
         ]
       },
       {
-        "face": "@kc[boolean_2/face/right]",
         "location": [
           35,
           1.3333333333333333,
@@ -74,7 +86,6 @@
         ]
       },
       {
-        "face": "@kc[boolean_2/face/left]",
         "location": [
           25,
           0.6666666666666666,
@@ -90,36 +101,62 @@
         "injection-molding"
       ]
     },
+    "ok": true,
     "verdict": "pass",
     "checks": [
       {
         "id": "mold.draft",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "pass",
         "summary": "All 8 face(s) off the pull axis have at least 1° draft.",
-        "value": 2,
-        "limit": 1
+        "value": 1.9999999999999931,
+        "limit": 1,
+        "unit": "deg",
+        "op": ">=",
+        "tolerance": 0.001
       },
       {
         "id": "mold.wall-thickness",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "pass",
         "summary": "Walls are within 1–4 mm and uniform to 1.61×.",
-        "value": 2.93,
-        "limit": 4
+        "value": 2.931684774190229,
+        "limit": 4,
+        "unit": "mm",
+        "op": "<=",
+        "tolerance": 1e-9
       },
       {
         "id": "mold.undercuts",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "pass",
         "summary": "No undercuts: every face releases into the mold half it faces.",
-        "value": 0
+        "value": 0,
+        "limit": 0,
+        "unit": "mm2",
+        "op": "<="
       },
       {
         "id": "mold.sharp-internal-corners",
+        "process": "injection-molding",
+        "source": "injection-molding",
         "status": "warn",
-        "summary": "8 internal corner(s) below R0.5 mm, e.g. between @kc[boolean_1/face/f8] and @kc[boolean_1/face/bottom] at (30, 2.5, 2); they concentrate stress and hinder flow. Fillet them.",
+        "summary": "8 internal corner(s) below R0.5 mm, e.g. a sharp crease at (30, 2.5, 2); they concentrate stress and hinder flow. Fillet them.",
         "value": 0,
-        "limit": 0.5
+        "limit": 0.5,
+        "unit": "mm",
+        "op": ">="
       }
     ],
+    "topologyRefVerification": {
+      "fixture": "tray-drafted.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    },
     "undraftedFaces": [],
     "undercutFaces": []
   },
@@ -130,37 +167,64 @@
         "sheet-metal"
       ]
     },
+    "ok": true,
     "verdict": "fail",
     "checks": [
       {
         "id": "sheet.min-bend-radius",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "fail",
         "summary": "1 bend(s) tighter than R2 mm (1 × 2 mm thickness): sheetMetalBend_1, as tight as R1 mm; the outside of the bend can crack. Increase the bend radius.",
         "value": 1,
-        "limit": 2
+        "limit": 2,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.hole-to-bend",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "fail",
         "summary": "1 hole(s) closer to a bend than 2.5 × t + R: the closest edge is 2 mm from bend #0 (needs 6 mm) at flat (58, 20); it will distort when bent. Move it away or add bend relief.",
         "value": 2,
-        "limit": 6
+        "limit": 6,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.hole-to-edge",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "Every hole is at least 4 mm (2 × t) from the blank edge.",
         "value": 13,
-        "limit": 4
+        "limit": 4,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.min-flange",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "Every flange is at least 8 mm (4 × t) from the outside of its bend.",
-        "value": 21.59,
-        "limit": 8
+        "value": 21.586283305884592,
+        "limit": 8,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       }
     ],
+    "topologyRefVerification": {
+      "fixture": "bracket-tight.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    },
     "holeToBend": [
       {
         "hole": 0,
@@ -207,37 +271,64 @@
         "sheet-metal"
       ]
     },
+    "ok": true,
     "verdict": "pass",
     "checks": [
       {
         "id": "sheet.min-bend-radius",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "All 1 bend(s) have an inner radius ≥ R2 mm (1 × 2 mm thickness).",
         "value": 2,
-        "limit": 2
+        "limit": 2,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.hole-to-bend",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "Every hole is at least 2.5 × t + R from the nearest bend line.",
         "value": 12,
-        "limit": 7
+        "limit": 7,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.hole-to-edge",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "Every hole is at least 4 mm (2 × t) from the blank edge.",
         "value": 13,
-        "limit": 4
+        "limit": 4,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       },
       {
         "id": "sheet.min-flange",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
         "status": "pass",
         "summary": "Every flange is at least 8 mm (4 × t) from the outside of its bend.",
-        "value": 21.8,
-        "limit": 8
+        "value": 21.800885142487147,
+        "limit": 8,
+        "unit": "mm",
+        "op": ">=",
+        "tolerance": 1e-9
       }
     ],
+    "topologyRefVerification": {
+      "fixture": "bracket-fixed.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    },
     "holeToBend": [
       {
         "hole": 0,
@@ -276,5 +367,103 @@
         ]
       }
     ]
+  },
+  "tray-not-sheet-metal": {
+    "call": {
+      "file": "tray-undrafted.kcad.ts",
+      "processes": [
+        "sheet-metal"
+      ]
+    },
+    "ok": true,
+    "verdict": "not-checked",
+    "checks": [
+      {
+        "id": "sheet.not-sheet-metal",
+        "process": "sheet-metal",
+        "source": "sheet-metal",
+        "status": "not-checked",
+        "summary": "Not a sheet-metal part (its shape is not a sheetMetal(...) chain of bends, holes and cutouts), so the sheet-metal checks were not run. Build it with sheetMetal(profile, { thickness, kFactor }).bend(...) to review it."
+      }
+    ],
+    "topologyRefVerification": {
+      "fixture": "tray-undrafted.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    }
+  },
+  "tray-fdm": {
+    "call": {
+      "file": "tray-undrafted.kcad.ts",
+      "processes": [
+        "fdm"
+      ]
+    },
+    "ok": true,
+    "verdict": "pass",
+    "checks": [
+      {
+        "id": "fdm.overhangs",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "No unsupported overhang steeper than 45°.",
+        "value": 0,
+        "unit": "mm2"
+      },
+      {
+        "id": "fdm.bridging",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "All bridges within 10 mm."
+      },
+      {
+        "id": "fdm.min-wall",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "Walls are at least 2 × nozzle (0.8 mm).",
+        "value": 1.999899999999997,
+        "limit": 0.8,
+        "unit": "mm",
+        "op": ">="
+      },
+      {
+        "id": "fdm.min-hole",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "No holes below the printable minimum diameter."
+      },
+      {
+        "id": "fdm.min-pin",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "No pins below the robust minimum diameter."
+      },
+      {
+        "id": "fdm.bed-fit",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "Fits the 'generic-fdm' bed (60 x 40 x 15 mm)."
+      },
+      {
+        "id": "fdm.bed-contact",
+        "process": "fdm",
+        "source": "fdm",
+        "status": "pass",
+        "summary": "Bed contact is adequate."
+      }
+    ],
+    "topologyRefVerification": {
+      "fixture": "tray-undrafted.kcad.ts",
+      "status": "no-refs-emitted",
+      "emitted": [],
+      "resolved": []
+    }
   }
 }

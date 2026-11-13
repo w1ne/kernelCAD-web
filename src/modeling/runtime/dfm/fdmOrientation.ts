@@ -49,8 +49,8 @@ export interface FaceTaggedMesh {
   triangles: ArrayLike<number>;
   /** Per triangle: index into `faceRefs`. */
   faceOfTri: ArrayLike<number>;
-  /** Per BREP face: an `@kc[...]` ref (or other stable label). */
-  faceRefs: readonly string[];
+  /** Per BREP face: a uniquely resolvable `@kc[...]` ref, or undefined without a unique current owner/name match. */
+  faceRefs: readonly (string | undefined)[];
 }
 
 export type FdmAxisLabel = '+z' | '-z' | '+x' | '-x' | '+y' | '-y';
@@ -151,6 +151,8 @@ const BED_NORMAL_COS = Math.cos((0.5 * Math.PI) / 180);
 const HORIZONTAL_COS = Math.cos((1 * Math.PI) / 180);
 const AREA_EPS = 1e-12;
 const ANGLE_EPS = 1e-9;
+/** Inclusive span allowance used by the maximum bridge length comparison. */
+export const FDM_BRIDGE_LENGTH_TOLERANCE_MM = 1e-9;
 const MAX_SAMPLES = 256;
 const UNIFORM_DIRECTIONS = 36;
 const ANCHOR_DIRECTIONS = 8;
@@ -507,7 +509,7 @@ function analyzeRegion(ctx: RegionAnalysisContext, tris: number[], id: number): 
   const span = bridgeSpan(samples, segs, anchored);
   if (Number.isFinite(span)) {
     region.spanMm = span;
-    region.status = span <= settings.maxBridgeMm + ANGLE_EPS ? 'bridged' : 'unsupported';
+    region.status = span <= settings.maxBridgeMm + FDM_BRIDGE_LENGTH_TOLERANCE_MM ? 'bridged' : 'unsupported';
     return region;
   }
   const reachPts = samples.slice();

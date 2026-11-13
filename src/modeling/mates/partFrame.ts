@@ -13,10 +13,10 @@
 //                 motion = placement · T(-at).
 //
 // A point fixed to a part is `motion.point(at + local)` = `placement.point(local)`.
-// Parts in no mate keep the transform they have; only mated parts go through
-// these conversions.
+// Parts in no mate and no connect chain keep their transform. Connected
+// descendants of a mated part inherit its scene motion.
 
-import type { Vec3Param } from '../../shared/intent/types';
+import type { FeatureId, Vec3Param } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { Transform, type Vec3 } from '../../shared/runtime/se3';
@@ -42,15 +42,31 @@ export function matedPartNames(mates: readonly Pick<MateRecord, 'a' | 'b'>[]): S
 }
 
 /** Look up, by part name, the `at` to convert by: the resolved `at` of a
- *  mated part, or `undefined` for a part in no mate, which keeps the
- *  transform it has. Use it wherever a placement and a scene motion meet, so
- *  the mated-only rule lives here. */
+ *  mated part, a legacy-joint participant, or a connected descendant of one.
+ *  Parts without a solver placement keep their authored transform. Use it
+ *  wherever a placement and a scene motion meet. */
 export function partAtFor(
   mates: readonly Pick<MateRecord, 'a' | 'b'>[],
-  parts: readonly { readonly name: string; readonly at?: Vec3Param }[],
+  parts: readonly {
+    readonly id?: FeatureId;
+    readonly name: string;
+    readonly at?: Vec3Param;
+    readonly connectParentId?: FeatureId;
+  }[],
   table: ParamTable | undefined,
+  joints: readonly { readonly parentPartId: string; readonly childPartId: string }[] = [],
 ): (partName: string) => Vec3 | undefined {
   const mated = matedPartNames(mates);
+  const partById = new Map(parts.flatMap((part) => part.id === undefined ? [] : [[part.id, part] as const]));
+  for (const id of joints.flatMap(({ parentPartId, childPartId }) => [parentPartId, childPartId])) {
+    const part = partById.get(id);
+    if (part !== undefined) mated.add(part.name);
+  }
+  for (const part of parts) {
+    if (part.connectParentId === undefined) continue;
+    const parent = partById.get(part.connectParentId);
+    if (parent !== undefined && mated.has(parent.name)) mated.add(part.name);
+  }
   const atByName = new Map(parts.map((p) => [p.name, p.at]));
   return (partName) => (mated.has(partName) ? resolvedPartAt(atByName.get(partName), table) : undefined);
 }
