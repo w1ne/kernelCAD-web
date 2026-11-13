@@ -142935,7 +142935,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electric-chain-hoist.kcad.ts",
       "preview": "/assets/industrial-plant-electric-chain-hoist.png",
-      "sourceSha256": "c4d523b3bcf4019f0aef16e565b0d45776f77e277812b08d3e4e66e80996457f",
+      "sourceSha256": "4ae8b76625bb8e948b72e30b79dc0b6c24f1f83b5fbba83727b482462f923c78",
       "triangleBudget": 1400,
       "params": [
         {
@@ -142987,6 +142987,7 @@
             "hoist-case",
             "trolley-wheel--1",
             "trolley-wheel-1",
+            "chain",
             "hook-block",
             "suspension-eye"
           ],
@@ -142997,7 +142998,6 @@
           "color": "#e8a93e",
           "parts": [
             "trolley-plate",
-            "chain",
             "hook-tip"
           ],
           "param": "safetyPaint"

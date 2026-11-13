@@ -1,0 +1,17 @@
+{
+  "file": "../industrial-chain-hoist-material-review.mp4",
+  "codec": "h264",
+  "durationSeconds": 18,
+  "resolution": "720x640",
+  "fps": 24,
+  "pixelFormat": "yuv420p",
+  "audio": false,
+  "sampledFrames": [
+    { "timeSeconds": 1, "file": "frame-01.png", "review": "five preview sample sheet; labels and footer readable" },
+    { "timeSeconds": 5, "file": "frame-02.png", "review": "source assignment card; code and explanatory text readable" },
+    { "timeSeconds": 8, "file": "frame-03.png", "review": "before preview and caption readable without overlap" },
+    { "timeSeconds": 11, "file": "frame-04.png", "review": "after preview shows gray load-chain segment; caption readable" },
+    { "timeSeconds": 16, "file": "frame-05.png", "review": "verification summary and evidence boundary readable" }
+  ],
+  "visualLimit": "The model still reads as a box below a plate; the review changes material color only."
+}

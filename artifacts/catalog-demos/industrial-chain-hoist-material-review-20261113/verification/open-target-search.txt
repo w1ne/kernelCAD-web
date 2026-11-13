@@ -1,0 +1,6 @@
+Open issue search: electric chain hoist
+[]
+Open pull request search: electric chain hoist
+[{"number":1258,"title":"catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)","url":"https://github.com/w1ne/kernelCAD-web/pull/1258"}]
+Open pull request search: electric-chain-hoist
+[{"number":1258,"title":"catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)","url":"https://github.com/w1ne/kernelCAD-web/pull/1258"}]

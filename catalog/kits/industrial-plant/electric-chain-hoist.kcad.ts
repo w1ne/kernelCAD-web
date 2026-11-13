@@ -25,7 +25,7 @@ p.part('hoist-case', box(280, 250, 176.4, true).translate(0, 0, 268.8).translate
 p.part('trolley-plate', box(448, 145, 32, true).translate(0, 0, 382.2).translate(0, 0, -2).scale(scale).color(safetyPaint));
 p.part('trolley-wheel--1', cylinder(28, 44, 8).rotate([1, 0, 0], 90).translate(-162.4, 14, 399).translate(0, 0, -2).scale(scale).color(steel));
 p.part('trolley-wheel-1', cylinder(28, 44, 8).rotate([1, 0, 0], 90).translate(162.4, 14, 399).translate(0, 0, -2).scale(scale).color(steel));
-p.part('chain', cylinder(180.6, 12, 8).translate(0, 0, 84).translate(0, 0, -2).scale(scale).color(safetyPaint));
+p.part('chain', cylinder(180.6, 12, 8).translate(0, 0, 84).translate(0, 0, -2).scale(scale).color(steel));
 p.part('hook-block', box(58, 56, 64, true).translate(0, 0, 60).translate(0, 0, -2).scale(scale).color(steel));
 p.part('hook-tip', box(42, 28, 42, true).translate(28, 0, 23).translate(0, 0, -2).scale(scale).color(safetyPaint));
 p.part('suspension-eye', box(65, 30, 65, true).translate(0, 0, 390.6).translate(0, 0, -2).scale(scale).color(steel));
