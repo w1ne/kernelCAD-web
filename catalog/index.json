@@ -352064,7 +352064,7 @@
       "id": "sludge-thickener-tank",
       "kit": "water-treatment",
       "title": "Sludge thickener tank",
-      "description": "Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Parameters: overall scale and concrete, structural steel; weathered and highVisibility presets.",
+      "description": "Circular concrete thickener basin with a center feed well, structural-steel bridge and scraper arm, and a cast-iron center drive. Parameters: overall scale, concrete, structural steel, and cast iron; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -352083,7 +352083,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/sludge-thickener-tank.kcad.ts",
       "preview": "/assets/water-treatment-sludge-thickener-tank.png",
-      "sourceSha256": "679874876750c2f040868f2ca26e689df11cc0139518d62d23de27488be7d0ff",
+      "sourceSha256": "5077d14f1d5d5ba5498ecc7a46c8554d7730c30b098b46f2d88f13019b1ac5c7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -352106,23 +352106,31 @@
           "type": "color",
           "default": "#68777b",
           "label": "Structural steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#343a3d",
+          "label": "Center drive cast iron"
         }
       ],
       "presets": {
         "weathered": {
           "concrete": "#9b9587",
-          "structuralSteel": "#6e6b63"
+          "structuralSteel": "#6e6b63",
+          "castIron": "#292d2f"
         },
         "highVisibility": {
           "concrete": "#c6bdac",
-          "structuralSteel": "#505b60"
+          "structuralSteel": "#505b60",
+          "castIron": "#3a4145"
         }
       },
       "stats": {
         "triangles": 500,
         "sizeM": [
           1.07,
-          0.74,
+          0.85,
           1.07
         ],
         "minUpM": 0,
@@ -352136,8 +352144,6 @@
             "tank",
             "rim",
             "feed-well",
-            "drive",
-            "scraper-arm",
             "skirt"
           ],
           "param": "concrete"
@@ -352146,9 +352152,18 @@
           "name": "structuralSteel",
           "color": "#68777b",
           "parts": [
-            "bridge"
+            "bridge",
+            "scraper-arm"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "castIron",
+          "color": "#343a3d",
+          "parts": [
+            "drive"
+          ],
+          "param": "castIron"
         }
       ]
     },
