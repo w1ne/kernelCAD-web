@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-11-13T11:33:13.740Z",
+  "checkedAt": "2026-11-13T12:20:43.757Z",
   "invocation": "npx tsx docs/demos/rest-contact-ignore-1271/capture-demo.mts",
   "source": "docs/demos/rest-contact-ignore-1271/capture-demo.mts",
-  "sourceSha256": "b1c27df572b01017ec1a289641b8a4dba7a3ff15b4b6ee58547c40fb9f4adecc",
+  "sourceSha256": "7a0828e45d3faa230000e40473be0aebe3bd5b1273445d0f185f0e48053d82fd",
   "scenario": {
     "parts": [
       "a",

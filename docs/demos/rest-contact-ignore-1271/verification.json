@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-13T11:33:19.092Z",
+  "checkedAt": "2026-11-13T12:20:45.973Z",
   "source": "docs/demos/rest-contact-ignore-1271/capture-demo.mts",
   "invocation": "npx tsx docs/demos/rest-contact-ignore-1271/capture-demo.mts",
   "results": "docs/demos/rest-contact-ignore-1271/results.json",

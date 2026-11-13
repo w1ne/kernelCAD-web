@@ -84,8 +84,10 @@ function makeSlides(before: CaseResult, after: CaseResult, beforeRest: Diagnosti
   const beforeLines = wrapText(beforeRest.message, 78).slice(0, 5);
   const beforeText = textLines(beforeLines, 100, 335, 'small', 34);
   const afterText = textLines([
-    `Rest-pose penetration diagnostic: ${afterCodes.includes('mechanism.rest-interpenetration') ? 'present' : 'none'}`,
-    `Rest-pose BREP overlap diagnostic: ${afterCodes.includes('mechanism.interpenetration') ? 'present' : 'none'}`,
+    `Rest-pose mesh penetration: ${afterCodes.includes('mechanism.rest-interpenetration') ? 'present' : 'none'}`,
+    `Sampled BREP travel collision: ${after.sweepChecked
+      ? (afterCodes.includes('mechanism.interpenetration') ? 'found' : 'none found')
+      : 'not checked'}`,
     `Mechanism verdict: ${after.mechanism}`,
     `Travel sweep checked: ${String(after.sweepChecked)}`,
   ], 108, 318, 'body', 48);
