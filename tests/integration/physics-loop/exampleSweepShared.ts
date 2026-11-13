@@ -160,10 +160,6 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
     'examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts',
     { issue: 353, testFile: 'tests/integration/examples/skillBuiltSupportedArmColliding.test.ts' },
   ],
-  [
-    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
-    { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
-  ],
   // P9 (2026-06-02) closed the P8 joint-mesh-continuity gap on the
   // Luxo lamp (extended column + pulled-back head-neck + arm spring
   // posts), so the lamp again passes the mechanism-truth loop with
@@ -209,6 +205,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     {
       testFile: 'tests/integration/examples/thermalIoLinkMachineHealth.test.ts',
       coverage: 'catalog-fixture',
+    },
+  ],
+  [
+    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts',
+      coverage: 'run-validate-cli',
     },
   ],
 ]);
