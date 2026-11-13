@@ -3,13 +3,13 @@ meta({
   name: 'linear-guide-rail',
   license: 'CC0-1.0',
   title: 'Linear guide rail',
-  description: 'Compact linear motion rail with a broad mounting foot and raised central raceway Knobs: model size, steel, aluminum.',
+  description: 'Illustrative CC0 linear guide rail with four accessible top-through mounting passages, a broad base and a raised central raceway. Not manufacturer-grade CAD: no vendor groove profile, fasteners, fit tolerances or load rating. Knobs select model size and appearance colors, not steel or aluminum material grades.',
   tags: ['linear guide', 'guide rail', 'motion rail', 'machine'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 300,
+  triangleBudget: 460,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -27,5 +27,12 @@ const a = assembly('linear-guide-rail');
 let base=block(-60*s,-16*s,0,120*s,32*s,7*s);
 for (const x of [-45,-15,15,45]) base=base.subtract(cylinder(9*s,3*s,10).translate(x*s,0,-s));
 a.part('base',base.color(aluminum));
-a.part('raceway',block(-60*s,-7*s,7*s,120*s,14*s,8*s).color(steel));
+// All four foot mounting holes must remain open through the upper raceway.
+// The original solid top rail covered every hole, preventing bolt insertion.
+let raceway=block(-60*s,-7*s,7*s,120*s,14*s,8*s);
+raceway=raceway.holes('top',{
+  positions: [-45,-15,15,45].map(x=>({u:x*s,v:0})),
+  diameter: 6*s, depth: 'through',
+});
+a.part('raceway',raceway.color(steel));
 return a.model();
