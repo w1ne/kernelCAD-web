@@ -59,7 +59,7 @@ Results on 13 November 2026: the focused test passes 1/1 and fails on the
 baseline source (120 triangles instead of 152). ESLint is clean. The
 lab-infrastructure quality gate passes 60/60. The full catalog integration
 suite passes 51/51 files and 84/84 tests in 11 min 37 s
-([log](verification/catalog-integration.log)). The regenerated index changes
+([summary](verification/catalog-integration.md)). The regenerated index changes
 only the `cleanroom-fan-filter-unit` row, and its `sourceSha256` matches the
 source file.
 
