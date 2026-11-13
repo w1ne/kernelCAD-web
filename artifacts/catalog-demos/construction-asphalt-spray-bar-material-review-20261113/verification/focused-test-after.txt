@@ -1,0 +1,8 @@
+ ✓ tests/integration/catalog/asphaltDistributorSprayBarMaterial.test.ts (1 test) 718ms
+     ✓ keeps the rear spray bar and nozzles in bare steel, separate from the enamel tank and cab  352ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  18:42:31
+   Duration  13.60s (transform 8.39s, setup 199ms, import 12.16s, tests 718ms, environment 0ms)
+

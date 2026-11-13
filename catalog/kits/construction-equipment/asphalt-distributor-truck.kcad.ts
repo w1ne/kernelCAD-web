@@ -43,16 +43,16 @@ add('site-truck-roof', box(453.6, 335.4, 45, true).translate(470.4, 0, 816.5), e
 add('tank', cylinder(722.4, 210.6, 12).rotateY(90).translate(-630, 0, 500), equipmentPaintColor);
 add('tank-saddle-a', box(70, 483.6, 70, true).translate(-341.04, 0, 325), equipmentPaintColor);
 add('tank-saddle-b', box(70, 483.6, 70, true).translate(-196.56, 0, 325), equipmentPaintColor);
-add('spray-bar', box(60, 1131, 45, true).translate(-806.4, 0, 132.5), equipmentPaintColor);
-add('spray-nozzle-0', cylinder(28, 12, 6).translate(-806.4, -507, 72), equipmentPaintColor);
-add('spray-nozzle-1', cylinder(28, 12, 6).translate(-806.4, -380.25, 72), equipmentPaintColor);
-add('spray-nozzle-2', cylinder(28, 12, 6).translate(-806.4, -253.5, 72), equipmentPaintColor);
-add('spray-nozzle-3', cylinder(28, 12, 6).translate(-806.4, -126.75, 72), equipmentPaintColor);
-add('spray-nozzle-4', cylinder(28, 12, 6).translate(-806.4, 0, 72), equipmentPaintColor);
-add('spray-nozzle-5', cylinder(28, 12, 6).translate(-806.4, 126.75, 72), equipmentPaintColor);
-add('spray-nozzle-6', cylinder(28, 12, 6).translate(-806.4, 253.5, 72), equipmentPaintColor);
-add('spray-nozzle-7', cylinder(28, 12, 6).translate(-806.4, 380.25, 72), equipmentPaintColor);
-add('spray-nozzle-8', cylinder(28, 12, 6).translate(-806.4, 507, 72), equipmentPaintColor);
+add('spray-bar', box(60, 1131, 45, true).translate(-806.4, 0, 132.5), structuralSteelColor);
+add('spray-nozzle-0', cylinder(28, 12, 6).translate(-806.4, -507, 72), structuralSteelColor);
+add('spray-nozzle-1', cylinder(28, 12, 6).translate(-806.4, -380.25, 72), structuralSteelColor);
+add('spray-nozzle-2', cylinder(28, 12, 6).translate(-806.4, -253.5, 72), structuralSteelColor);
+add('spray-nozzle-3', cylinder(28, 12, 6).translate(-806.4, -126.75, 72), structuralSteelColor);
+add('spray-nozzle-4', cylinder(28, 12, 6).translate(-806.4, 0, 72), structuralSteelColor);
+add('spray-nozzle-5', cylinder(28, 12, 6).translate(-806.4, 126.75, 72), structuralSteelColor);
+add('spray-nozzle-6', cylinder(28, 12, 6).translate(-806.4, 253.5, 72), structuralSteelColor);
+add('spray-nozzle-7', cylinder(28, 12, 6).translate(-806.4, 380.25, 72), structuralSteelColor);
+add('spray-nozzle-8', cylinder(28, 12, 6).translate(-806.4, 507, 72), structuralSteelColor);
 add('hose-reel', box(170, 150, 180, true).translate(-84, 241.8, 600), tireRubberColor);
 
 add('front-grille', path().moveTo(-95.76, -93.60).lineTo(95.76, -93.60).lineTo(80.64, 93.60).lineTo(-80.64, 93.60).close().extrude(16).rotateY(90).translate(685.40, 0.00, 441.20), structuralSteelColor);

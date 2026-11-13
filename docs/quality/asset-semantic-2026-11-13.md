@@ -66,3 +66,12 @@ The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-
 - The baseline-focused GLB regression fails on the old palette assignment; the corrected model passes. Recycling-facility's structural gate is 153/153 (100%). The generated index retains 2,402 rows, with one changed row, a matching source SHA-256, and an existing preview.
 - Verification: recycling-facility ESLint clean; `tests/integration/catalog/` passed 69 files / 114 tests, including the exhaustive source/export/index freshness check.
 - The [review bundle](../../artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/README.md) contains the five-preview ledger, before/after source and renders, demo, and verification evidence.
+
+## Construction asphalt-distributor spray-bar material
+
+- Baseline PR #1258 head `21ba047b6`, all reported checks passing. No open PR touches the construction-equipment kit; none of the five sampled IDs appear in earlier ledgers or review bundles.
+- Reviewed `cold-planer-milling-machine`, `concrete-pump-truck`, `portable-air-compressor`, `rough-terrain-forklift`, `asphalt-distributor-truck`. Four read as their named machine; the cold planer reads only as a generic crawler machine.
+- `asphalt-distributor-truck` coloured the rear spray bar and its nine nozzles with `equipmentPaintColor`, the yellow enamel of the tank and cab. A distributor spray bar is a bare-steel pipe manifold. The ten parts now use the existing `structuralSteelColor` control. Geometry unchanged at 1,196 triangles.
+- Recorded, not fixed: the cold planer has no loading conveyor, and its hidden cutter teeth use enamel; the concrete pump's rear outrigger pads use enamel and the front pad steel; the compressor tyres intersect the enclosure; the spray bar floats behind the chassis with no mounting arms. The kit's sampled vehicles are 1.0–1.8 m long, about 1:5 to 1:8 of real size.
+- Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; construction-equipment gate 60/60; `tests/integration/catalog/` 70 files / 115 tests passed; index rebuilt with 2,402 rows and only the asphalt-distributor-truck row changed (`sourceSha256`, `palette`).
+- Evidence: [review bundle](../../artifacts/catalog-demos/construction-asphalt-spray-bar-material-review-20261113/README.md).
