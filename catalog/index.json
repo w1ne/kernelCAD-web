@@ -354331,7 +354331,7 @@
       "id": "converter-cabinet",
       "kit": "wind-energy",
       "title": "Power converter cabinet",
-      "description": "Tall converter cabinet with top lip, twin front panels and side cooling louvres. Controls: scale and powder-coated steel, safety paint; weathered and high-visibility presets.",
+      "description": "Tall converter cabinet with top lip, twin service doors and side cooling louvres. Controls: scale, powder-coated steel and yellow electrical warning labels; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -354350,7 +354350,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/converter-cabinet.kcad.ts",
       "preview": "/assets/wind-energy-converter-cabinet.png",
-      "sourceSha256": "353df22af8287331d448ffe102eae4c56d57daeed79af1f00f211883cf69022f",
+      "sourceSha256": "36b5d323dade3c4b864b60c9c68b200d7279e6afea2820fca8ae90cc924b83b6",
       "triangleBudget": 300,
       "params": [
         {
@@ -354386,7 +354386,7 @@
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 132,
         "sizeM": [
           0.98,
           1.51,
@@ -354402,6 +354402,8 @@
           "parts": [
             "body",
             "top",
+            "panel-left",
+            "panel-right",
             "louver-0",
             "louver-1",
             "louver-2",
@@ -354414,8 +354416,8 @@
           "name": "safetyPaint",
           "color": "#efb532",
           "parts": [
-            "panel-left",
-            "panel-right"
+            "warning-label-left",
+            "warning-label-right"
           ],
           "param": "safetyPaint"
         }

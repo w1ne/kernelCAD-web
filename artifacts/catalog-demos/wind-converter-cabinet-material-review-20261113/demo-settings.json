@@ -1,0 +1,17 @@
+{
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "codec": "H.264 / libx264",
+  "pixelFormat": "yuv420p",
+  "quality": "CRF 19",
+  "slideDurationsSeconds": [3, 3, 3, 4, 3],
+  "slides": [
+    "five local default previews",
+    "converter-cabinet baseline preview",
+    "source material assignments",
+    "converter-cabinet corrected preview",
+    "local verification and evidence boundary"
+  ],
+  "source": "make_demo.py",
+  "invocation": "python3 artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/make_demo.py"
+}

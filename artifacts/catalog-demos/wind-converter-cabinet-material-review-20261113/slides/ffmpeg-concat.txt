@@ -1,0 +1,11 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/01-five-preview-audit.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/02-before.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/03-source-material.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/04-after.png'
+duration 4
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/05-verification.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/wind-converter-cabinet-material-review-20261113/slides/05-verification.png'
