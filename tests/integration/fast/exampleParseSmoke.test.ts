@@ -81,7 +81,6 @@ const EVALUATION_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts', 'uses removed legacy arm.fixed API'],
   ['examples/print-prep/wall-hook.kcad.ts', 'declared FDM gate reports unsupported overhang'],
   ['examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts', 'intentionally colliding repair fixture'],
-  ['examples/robot-arm/skill-built-supported-arm.kcad.ts', 'dedicated authoring test covers this existing hinge visibility failure'],
 ]);
 
 function sourceDiagnostics(file: string, source: string): readonly ts.Diagnostic[] {
