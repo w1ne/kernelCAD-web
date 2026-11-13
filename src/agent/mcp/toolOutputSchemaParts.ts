@@ -86,7 +86,7 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
         minItems: 2,
         maxItems: 2,
       },
-      description: '`solvedModel({ ignore })` pair declarations. They do not suppress mechanism collision checks during joint travel; an unverified sweep does not certify them clear.',
+      description: '`solvedModel({ ignore })` pair declarations. They exempt overlap and rest-penetration diagnostics at rest, but not sampled collision checks during joint travel; a skipped sweep does not certify them clear.',
     },
     failures: {
       type: 'array',

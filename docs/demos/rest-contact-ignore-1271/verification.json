@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-11-13T12:42:08.391Z",
+  "source": "docs/demos/rest-contact-ignore-1271/capture-demo.mts",
+  "invocation": "npx tsx docs/demos/rest-contact-ignore-1271/capture-demo.mts",
+  "results": "docs/demos/rest-contact-ignore-1271/results.json",
+  "video": {
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "<temporary-slides.txt>",
+      "-t",
+      "8",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ],
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "20/1",
+    "durationSeconds": 8
+  }
+}
