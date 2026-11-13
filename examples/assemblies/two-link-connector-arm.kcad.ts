@@ -15,8 +15,8 @@ const base = arm.part('base', box(30, 30, 8), {
 
 const link = arm.part('link', box(80, 10, 6), {
   connectors: {
-    root: { origin: [0, 5, 3], axis: [0, 0, 1] },
-    wrist: { origin: [80, 5, 3], axis: [0, 0, 1] },
+    root: { origin: [0, 5, 0], axis: [0, 0, 1] },
+    wrist: { origin: [80, 5, 6], axis: [0, 0, 1] },
   },
   connect: {
     connector: 'root',

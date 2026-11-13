@@ -11,6 +11,12 @@ current parameter table before checking for a conflict. For example, an
 125 mm value. The first assembly part keeps its authored placement, and an
 `at:` synthesized by `connect()` is not reported as a conflict.
 
+For a parameter-driven `at:`, the scene uses the current value consistently
+for both part geometry and mate connector frames. Editing the parameter does
+not separate the part from the point used by its mate. The
+[resolver parity bundle](../demos/assembly-at-resolver-parity-917/README.md)
+compares the measured scene before and after a parameter edit.
+
 The [reproduction bundle](../demos/param-placement-note-at-917/README.md)
 contains the model, capture source, emitted diagnostic, verification record,
 and a short MP4. This evidence covers a local model build and compiler

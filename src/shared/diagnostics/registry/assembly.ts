@@ -400,7 +400,7 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.joint.static-hold.no-actuator': {
     hintTemplate:
-      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold.',
+      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold. For a mechanicalJoint torqueNm rating, run verify with check motion-load and quasi_static: true.',
     nextAction: {
       kind: 'rewrite-feature',
       guidance: 'declare an actuator capacity on an arm.revolute/arm.prismatic joint; mate-only mechanicalJoint chains are not covered by checkStaticHold yet',
@@ -408,6 +408,17 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'warn',
     group: 'assembly',
     description: 'checkStaticHold evaluated no arm.revolute/arm.prismatic joint with a declared actuator capacity, so the result has no holding-capacity coverage.',
+  },
+  'assembly.joint.static-hold.mass-unavailable': {
+    hintTemplate:
+      'Repair the assembly geometry or resolve the lowering failure, then run checkStaticHold again. A holding-capacity result cannot be calculated until the assembly scene and its part mass properties are available.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'repair the assembly geometry or lowering failure so static-hold can measure part mass properties',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'checkStaticHold could not lower the assembly scene and therefore did not measure part mass or evaluate actuator holding capacity.',
   },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
