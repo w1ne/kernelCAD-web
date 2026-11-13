@@ -21,3 +21,12 @@ The other four previews read as their named mining equipment, with no valid mate
 - Target preview was regenerated and catalog/index.json rebuilt from sources. The verifier found only the longwall-shearer row changed, with a fresh source SHA and existing preview path.
 
 The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-material-review-20261113/README.md) retains before/after source and previews, the five-preview sample, local verification logs and an inspected MP4. The public route currently serves the older 224-triangle render; this branch is not deployed. Local previews and GLB tests show authored catalog behavior only, not mine-process simulation or equipment acceptance.
+
+## Telecom grounding busbar conductor material
+
+- Baseline PR #1258 head `c325a1958`, 17/17 checks passed. No open PR touches the telecom-infrastructure kit; no open issue or PR matches "grounding". The kit had no earlier semantic review.
+- Reviewed `grounding-bar`, `grounding-rod-kit`, `lightning-air-terminal`, `waveguide-bridge`, `microwave-dish-antenna`. All five read as their named objects.
+- `grounding-bar` coloured the conductor bar with `galvanizedSteel`; only the stub studs were copper. A telecom grounding busbar is a solid copper bar on standoff insulators. The bar now uses `copper`; the studs use a new `stainlessSteel` control; the unused `galvanizedSteel` control was removed. Geometry unchanged at 300 triangles.
+- Recorded, not fixed: powder-coated base plate on `lightning-air-terminal`.
+- Evidence: [review bundle](../../artifacts/catalog-demos/telecom-grounding-busbar-copper-material-review-20261113/README.md).
+- Verification: focused exported-GLB test 1/1 passed and fails on the old source; ESLint clean; telecom-infrastructure structural gate 56/56; `tests/integration/catalog/` 54 files / 87 tests passed in 621 s; rebuilt index has 2,402 assets / 50 kits, no source-hash mismatches, and only the grounding-bar row changed. No MP4 was produced for this colour-only correction.

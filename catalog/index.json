@@ -317141,7 +317141,7 @@
       "id": "grounding-bar",
       "kit": "telecom-infrastructure",
       "title": "Grounding busbar",
-      "description": "Wall-mounted bonding bar with a thick base rail and six rounded-looking terminal posts. Knobs: overall scale; copper conductor, galvanized steel, engineering polymer and cable jacket.",
+      "description": "Wall-mounted telecom grounding busbar: a solid copper bar on two polymer standoff insulators with six stainless terminal studs. Knobs: overall scale; copper busbar, stainless steel studs, polymer insulators.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -317160,7 +317160,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/grounding-bar.kcad.ts",
       "preview": "/assets/telecom-infrastructure-grounding-bar.png",
-      "sourceSha256": "2268f1563ea9cbe79752d894800bb73d2a3f7125291eb05440f864c863d9f862",
+      "sourceSha256": "0139c9e523908893d70fe94c64cc7438a9255f001bceb590053cd6e1a8ba5787",
       "triangleBudget": 900,
       "params": [
         {
@@ -317176,30 +317176,30 @@
           "name": "copper",
           "type": "color",
           "default": "#c27836",
-          "label": "Copper conductor"
+          "label": "Copper busbar"
         },
         {
-          "name": "galvanizedSteel",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
+          "default": "#d2dbdc",
+          "label": "Stainless steel terminal studs"
         },
         {
           "name": "polymer",
           "type": "color",
           "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
+          "label": "Polymer standoff insulators"
         }
       ],
       "presets": {
         "fieldSite": {
           "copper": "#a96d37",
-          "galvanizedSteel": "#8f9b9b",
+          "stainlessSteel": "#b4bcbc",
           "polymer": "#263a37"
         },
         "highVisibility": {
           "copper": "#c4823c",
-          "galvanizedSteel": "#3a4b51",
+          "stainlessSteel": "#e2e8e9",
           "polymer": "#27363c"
         }
       },
@@ -317215,12 +317215,12 @@
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
+          "name": "copper",
+          "color": "#c27836",
           "parts": [
             "rail"
           ],
-          "param": "galvanizedSteel"
+          "param": "copper"
         },
         {
           "name": "polymer",
@@ -317232,8 +317232,8 @@
           "param": "polymer"
         },
         {
-          "name": "copper",
-          "color": "#c27836",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
             "terminal-0",
             "terminal-1",
@@ -317242,7 +317242,7 @@
             "terminal-4",
             "terminal-5"
           ],
-          "param": "copper"
+          "param": "stainlessSteel"
         }
       ]
     },
