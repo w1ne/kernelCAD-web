@@ -16,7 +16,7 @@ meta({
   name: "two-ram-baler",
   license: 'CC0-1.0',
   title: "Two-ram baler",
-  description: "Two-ram MRF baler at about real size: ribbed baling chamber, tall feed hopper fed by an inclined belt conveyor, long main cylinder housing at the rear, cross-mounted ejection cylinder pushing a finished bale out of a side door, automatic wire tier gantry with spool over the exit, roller discharge table with a wire-tied bale, power pack on the cylinder housing and control cabinet. Material controls: machine paint, hydraulics, tie wire and rollers, bale material. plant, weathered, plasticBales and highVisibility presets.",
+  description: "Two-ram MRF baler at about real size: ribbed baling chamber, tall feed hopper fed by an inclined belt conveyor, long main cylinder housing at the rear, cross-mounted ejection cylinder pushing a finished bale out of a side door, automatic wire tier gantry with spool over the exit, roller discharge table with a wire-tied bale, power pack on the cylinder housing and control cabinet. Material controls: machine paint, hydraulics, power-pack motor paint, tie wire and rollers, bale material. plant, weathered, plasticBales and highVisibility presets.",
   tags: ["recycling", "two-ram baler", "baler", "bale", "wire tier", "hydraulic press", "cardboard bale", "materials recovery", "MRF", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
@@ -28,14 +28,15 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const machinePaint = param('machinePaint', '#2c8a57', { label: 'Machine body (paint)' });
 const hydraulics = param('hydraulics', '#c9ced1', { label: 'Hydraulic cylinders (steel)' });
+const motorPaint = param('motorPaint', '#44515a', { label: 'Power-pack electric motors (paint)' });
 const tieWire = param('tieWire', '#8d969b', { label: 'Tie wire, rollers and gantry' });
 const bale = param('bale', '#b08550', { label: 'Bale material' });
 
 presets({
-  plant: { machinePaint: '#2c8a57', hydraulics: '#c9ced1', tieWire: '#8d969b', bale: '#b08550' },
-  weathered: { machinePaint: '#56664f', hydraulics: '#8f928d', tieWire: '#6f716b', bale: '#8f7754' },
-  plasticBales: { machinePaint: '#2b67ad', hydraulics: '#c9ced1', tieWire: '#9aa2a7', bale: '#6aa0c8' },
-  highVisibility: { machinePaint: '#e3742b', hydraulics: '#d0d5d3', tieWire: '#2f3438', bale: '#c49b5b' },
+  plant: { machinePaint: '#2c8a57', hydraulics: '#c9ced1', motorPaint: '#44515a', tieWire: '#8d969b', bale: '#b08550' },
+  weathered: { machinePaint: '#56664f', hydraulics: '#8f928d', motorPaint: '#4c514e', tieWire: '#6f716b', bale: '#8f7754' },
+  plasticBales: { machinePaint: '#2b67ad', hydraulics: '#c9ced1', motorPaint: '#44515a', tieWire: '#9aa2a7', bale: '#6aa0c8' },
+  highVisibility: { machinePaint: '#e3742b', hydraulics: '#d0d5d3', motorPaint: '#3a4248', tieWire: '#2f3438', bale: '#c49b5b' },
 });
 
 const p = assembly("two-ram-baler");
@@ -90,10 +91,11 @@ add("main-cylinder-cap", cylinder(120, 320, 16).rotateY(90).translate(X1 + 2850,
 add("housing-end", blk(X1 + 3050, 0, 150, 120, 1300, 1400).color(machinePaint));
 
 // Power pack on the cylinder housing: tank, two motor-pump sets, filter.
+// The electric motors are painted cast frames, not bright cylinder steel.
 const PZ = 1050;
 add("oil-tank", blk(4300, 150, PZ, 1100, 800, 550).color(machinePaint));
 for (const [i, y] of [[0, -100], [1, 400]] as [number, number][]) {
-  add(`motor-${i}`, cylinder(600, 180, 14).rotateY(90).translate(3300, y, PZ + 330).color(hydraulics));
+  add(`motor-${i}`, cylinder(600, 180, 14).rotateY(90).translate(3300, y, PZ + 330).color(motorPaint));
   add(`motor-cowl-${i}`, cylinder(50, 190, 14).rotateY(90).translate(3250, y, PZ + 330).color(dark));
 }
 add("return-filter", cylinder(300, 80, 10).translate(4600, -150, PZ + 550).color('#c23a2f'));

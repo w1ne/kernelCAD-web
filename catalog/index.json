@@ -268668,7 +268668,7 @@
       "id": "two-ram-baler",
       "kit": "recycling-facility",
       "title": "Two-ram baler",
-      "description": "Two-ram MRF baler at about real size: ribbed baling chamber, tall feed hopper fed by an inclined belt conveyor, long main cylinder housing at the rear, cross-mounted ejection cylinder pushing a finished bale out of a side door, automatic wire tier gantry with spool over the exit, roller discharge table with a wire-tied bale, power pack on the cylinder housing and control cabinet. Material controls: machine paint, hydraulics, tie wire and rollers, bale material. plant, weathered, plasticBales and highVisibility presets.",
+      "description": "Two-ram MRF baler at about real size: ribbed baling chamber, tall feed hopper fed by an inclined belt conveyor, long main cylinder housing at the rear, cross-mounted ejection cylinder pushing a finished bale out of a side door, automatic wire tier gantry with spool over the exit, roller discharge table with a wire-tied bale, power pack on the cylinder housing and control cabinet. Material controls: machine paint, hydraulics, power-pack motor paint, tie wire and rollers, bale material. plant, weathered, plasticBales and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -268693,7 +268693,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/two-ram-baler.kcad.ts",
       "preview": "/assets/recycling-facility-two-ram-baler.png",
-      "sourceSha256": "cde7f82430b697f7b541c20673bd329739ec1f4d197704cef2080646c479bbfb",
+      "sourceSha256": "75d6e353db899a69bf7f849be98ebb5c3ab9fe3205881a9841339e3cb123809f",
       "triangleBudget": 2600,
       "params": [
         {
@@ -268718,6 +268718,12 @@
           "label": "Hydraulic cylinders (steel)"
         },
         {
+          "name": "motorPaint",
+          "type": "color",
+          "default": "#44515a",
+          "label": "Power-pack electric motors (paint)"
+        },
+        {
           "name": "tieWire",
           "type": "color",
           "default": "#8d969b",
@@ -268734,24 +268740,28 @@
         "plant": {
           "machinePaint": "#2c8a57",
           "hydraulics": "#c9ced1",
+          "motorPaint": "#44515a",
           "tieWire": "#8d969b",
           "bale": "#b08550"
         },
         "weathered": {
           "machinePaint": "#56664f",
           "hydraulics": "#8f928d",
+          "motorPaint": "#4c514e",
           "tieWire": "#6f716b",
           "bale": "#8f7754"
         },
         "plasticBales": {
           "machinePaint": "#2b67ad",
           "hydraulics": "#c9ced1",
+          "motorPaint": "#44515a",
           "tieWire": "#9aa2a7",
           "bale": "#6aa0c8"
         },
         "highVisibility": {
           "machinePaint": "#e3742b",
           "hydraulics": "#d0d5d3",
+          "motorPaint": "#3a4248",
           "tieWire": "#2f3438",
           "bale": "#c49b5b"
         }
@@ -268825,8 +268835,6 @@
           "parts": [
             "eject-cylinder",
             "main-cylinder",
-            "motor-0",
-            "motor-1",
             "tier-needle-0",
             "tier-needle-1",
             "tier-needle-2",
@@ -268881,6 +268889,15 @@
             "bale-strip-1",
             "bale-strip-3"
           ]
+        },
+        {
+          "name": "motorPaint",
+          "color": "#44515a",
+          "parts": [
+            "motor-0",
+            "motor-1"
+          ],
+          "param": "motorPaint"
         },
         {
           "name": "return-filter",

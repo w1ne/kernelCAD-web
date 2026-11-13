@@ -30,3 +30,12 @@ The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-
 - Recorded, not fixed: powder-coated base plate on `lightning-air-terminal`.
 - Evidence: [review bundle](../../artifacts/catalog-demos/telecom-grounding-busbar-copper-material-review-20261113/README.md).
 - Verification: focused exported-GLB test 1/1 passed and fails on the old source; ESLint clean; telecom-infrastructure structural gate 56/56; `tests/integration/catalog/` 54 files / 87 tests passed in 621 s; rebuilt index has 2,402 assets / 50 kits, no source-hash mismatches, and only the grounding-bar row changed. No MP4 was produced for this colour-only correction.
+
+## Recycling two-ram baler power-pack motor material
+
+- Baseline PR #1258 head `c92775273`, all reported checks passed. No open PR or issue targets the recycling-facility kit; none of the sampled IDs appear in earlier ledgers.
+- Reviewed `magnetic-drum-separator`, `granulator`, `horizontal-baler`, `baghouse-collector`, `compost-trommel-screen`. All five read as their named machines, with no valid material mismatch. A colour-zone scan of five more unreviewed machines found the defect in `two-ram-baler`.
+- `two-ram-baler` coloured the power-pack electric motors with the `hydraulics` control ("Hydraulic cylinders (steel)"), so they rendered as bright rams. They now use a new `motorPaint` control in all four presets. Geometry unchanged at 1,866 triangles.
+- Recorded, not fixed: the trommel mesh core is a fixed dark tone outside the drum control; the `tieWire` label names rollers that use `hydraulics` (both steel, render correct).
+- Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; recycling-facility gate 153/153; `tests/integration/catalog/` 62 files / 107 tests passed; index rebuilt with only the two-ram-baler row changed.
+- Evidence: [review bundle](../../artifacts/catalog-demos/recycling-two-ram-baler-motor-material-review-20261113/README.md).
