@@ -30,20 +30,7 @@
     0,
     0
   ],
-  "failures": [
-    {
-      "code": "mechanism.joint-mesh-gap",
-      "message": "Joint 'rear-drive-output' child body 'rear-live-axle': nearest solid is 7.2mm from the pivot origin (allowed 1.0mm = clearance bore 0.0mm + 1.0mm margin). The link mesh does not reach the joint it pivots on — extend the body geometry so its OCCT knuckle solid surrounds the joint origin at rest pose. The closest surface contact sits 47.9mm off the joint axis, outside the 32mm knuckle radius, so it does not connect the link to the body. Do not fix this by moving the connector alone: the mate re-aligns the mated part 'chassis' onto the moved connector, which can silently reopen a collision elsewhere — re-run the collision check after any connector move."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 561.17 mm³ (1.0 mm thick) near (0.0, 0.0, 10.0) at pose sample 'motor-input:-720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    },
-    {
-      "code": "mechanism.interpenetration",
-      "message": "Parts 'motor-rotor' and 'rear-live-axle' interpenetrate by 561.17 mm³ (1.0 mm thick) near (0.0, 0.0, 10.0) at pose sample 'motor-input:720' — they are NOT joined by a mate that would explain the contact. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended."
-    }
-  ],
+  "failures": [],
   "coverage": {
     "poses": 4,
     "joints": 2,

@@ -29,7 +29,8 @@ const axis = (origin: [number, number, number]) => ({
 chassis.connector('motor-axis', axis([0, 0, 0]));
 chassis.connector('rear-axis', axis([centerDistance, 0, 0]));
 motor.connector('axis', axis([0, 0, 0]));
-axle.connector('axis', axis([0, 0, 0]));
+// The 48T shape is already at the pitch centre, so its axis connector is too.
+axle.connector('axis', axis([centerDistance, 0, 0]));
 
 car.mate('motor-input', 'chassis.motor-axis', 'motor-rotor.axis', 'revolute', {
   pose: motorDeg,
