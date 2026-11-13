@@ -39,3 +39,12 @@ The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-
 - Recorded, not fixed: the trommel mesh core is a fixed dark tone outside the drum control; the `tieWire` label names rollers that use `hydraulics` (both steel, render correct).
 - Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; recycling-facility gate 153/153; `tests/integration/catalog/` 62 files / 107 tests passed; index rebuilt with only the two-ram-baler row changed.
 - Evidence: [review bundle](../../artifacts/catalog-demos/recycling-two-ram-baler-motor-material-review-20261113/README.md).
+
+## Cartridge filter housing nozzle material
+
+- Baseline PR #1258 head `35a66c640`; at capture 1 check passed and 15 were pending. No open PR or issue targets the five sampled IDs; none appear in earlier review bundles.
+- Reviewed `industrial-plant/cartridge-filter-housing`, `industrial-plant/gantry-crane`, `water-treatment/belt-filter-press`, `shipyard/abrasive-blast-pot`, `grid-substation/substation-busbar-expansion-joint`. All five read as their named objects.
+- `cartridge-filter-housing` coloured the lid outlet and side inlet nozzles with `safetyPaint`, while the inlet flange on the same neck used `steel`. Both nozzles now use `steel`. Geometry unchanged at 476 triangles.
+- Recorded, not fixed (geometry, not material): gantry-crane legs do not meet the bridge beam and casters sit mid-rail; abrasive-blast-pot vessel floats between the wheels with no axle or frame; busbar-expansion-joint insulators are buried in the supports; the cartridge filter description names a drain that the model does not have.
+- Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; industrial-plant gate 60/60; `tests/integration/catalog/` 63 files / 108 tests passed; index rebuilt with only the cartridge-filter-housing row changed.
+- Evidence: [review bundle](../../artifacts/catalog-demos/industrial-cartridge-filter-nozzle-material-review-20261113/README.md).

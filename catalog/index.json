@@ -141583,7 +141583,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cartridge-filter-housing.kcad.ts",
       "preview": "/assets/industrial-plant-cartridge-filter-housing.png",
-      "sourceSha256": "d510f65f44dc5d66bbad70e32ff3878709a51b6efbbde5952cfc2f5822750050",
+      "sourceSha256": "1c0544de2963eb26593cafdc1f6cf545c811369bdad3da3878aed92dc55c6bde",
       "triangleBudget": 1400,
       "params": [
         {
@@ -141634,9 +141634,11 @@
           "parts": [
             "shell",
             "roof-cap",
+            "top-nozzle",
             "foot-0",
             "foot-1",
             "foot-2",
+            "side-nozzle",
             "side-flange",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -141652,12 +141654,10 @@
           "color": "#e6b24f",
           "parts": [
             "roof-lip",
-            "top-nozzle",
             "stiffener-0",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
-            "side-nozzle",
             "ladder-left-rail",
             "ladder-right-rail"
           ],
