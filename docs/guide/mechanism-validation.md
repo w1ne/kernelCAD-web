@@ -8,6 +8,12 @@
 
 The result is local CAD validation of the model's declared mates and geometry. It does not claim a physical simulation, a deployed result, or hardware acceptance.
 
+## Pair exclusions at rest
+
+At the returned pose, `solvedModel({}, { ignore: [['a', 'b']] })` exempts that symmetric named pair from overlap and rest-pose penetration diagnostics. Mate-gap and joint-continuity checks still run, and the motion sweep still checks the pair at sampled poses. Use it for a known acceptable rest-pose overlap while keeping the other mechanism checks active.
+
+The [pair-exclusion replay bundle](../demos/rest-contact-ignore-1271/README.md) captures the same overlapping assembly before and after the pair is listed.
+
 ## Connector-placed descendants
 
 A part placed with `connect` stays attached to its target connector. When a parent moves through a mate, the evaluated `model()` and `solvedModel()` scenes carry that same rigid motion through connected descendants. A descendant with its own mate or legacy joint keeps that solver placement.

@@ -618,15 +618,16 @@ export interface SolvedModelOptions {
    * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
    * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
    * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
-   * detection output still surfaces them on the status bar), but FILTERED
-   * out of the validator's `assembly.interference.overlap` diagnostic
-   * stream — they don't throw under `validate: 'error'` and don't appear
-   * in `scene.warnings` under `validate: 'warn'`.
+   * detection output still surfaces them on the status bar), and filtered
+   * out of `assembly.interference.overlap` and rest-pose
+   * `mechanism.rest-interpenetration` diagnostics for that pair. Rest-pose
+   * mate-gap and joint-continuity checks remain active, as do collision
+   * checks at sampled motion poses.
    *
    * This is the granular alternative to `validate: 'off'`. Use it when a
    * specific known-acceptable contact (e.g. a knuckle joint where two arm
-   * parts must touch by design) should not block the validator while
-   * still letting the rest of the validation gate run.
+   * parts must touch by design) should not block rest-pose overlap checks
+   * while mate continuity and sampled motion checks still run.
    */
   ignore?: ReadonlyArray<readonly [string, string]>;
 }

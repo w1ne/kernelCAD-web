@@ -29,10 +29,9 @@
 //      point sampling and by an exact manifold boolean). The mesh integral
 //      is the same for analytic BREP and for imported meshes.
 //
-//      `solvedModel({ ignore })` is NOT honoured here. That list silences
-//      the per-pose BREP sweep and the validator; at rest the drawing must
-//      be physically consistent, and a blanket ignore of every parent and
-//      child pair is exactly how a colliding arm used to pass.
+//      A pair declared in `solvedModel({ ignore })` is exempt from this
+//      penetration diagnostic. Mate-gap and joint-continuity checks remain
+//      active, and the motion sweep still checks ignored pairs at moved poses.
 //
 //   2. Contact. The two parts of every mate must meet: their minimum
 //      distance at rest must be within `REST_MATE_CONTACT_TOLERANCE_MM`.

@@ -339,10 +339,11 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     expect(interps[0].message).toMatch(/overlap/);
   }, 90000);
 
-  it('5b. an overlapping pair declared in solvedModel({ ignore }) is listed as a rest-pose exception', async () => {
+  it('5b. an overlapping pair declared in solvedModel({ ignore }) skips both rest-pose overlap gates', async () => {
     // Same geometry as test 5, but the model declares the overlap in
-    // `solvedModel({ ignore })`. The authored-pose exception is retained;
-    // the mechanism verdict reports it, and joint-travel samples do not use it.
+    // `solvedModel({ ignore })`. Both the BREP and mesh-based rest-pose
+    // overlap gates honor this authored-pose exception; joint-travel samples
+    // still check the pair (covered separately in ignoredCollisionAtJointLimit).
     const { arm, kcad } = makeArm('overlap-ignored');
     const boxA = kcad.box(20, 20, 20, true);
     const boxB = kcad.box(20, 20, 20, true).translate(15, 0, 0);
@@ -364,6 +365,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded
     const result = await checkMechanismTruth(arm);
     const interps = result.failures.filter((f) => f.code === 'mechanism.interpenetration');
     expect(interps).toEqual([]);
+    expect(result.failures.map((f) => f.code)).not.toContain('mechanism.rest-interpenetration');
     expect(result.coverage?.ignoredPairs).toEqual([['b', 'a']]);
   }, 90000);
 

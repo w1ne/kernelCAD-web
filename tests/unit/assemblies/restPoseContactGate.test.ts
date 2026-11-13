@@ -67,18 +67,32 @@ describe('rest-pose contact gate', () => {
     expect(vol).toBeLessThan(4400);
   });
 
-  it('ignores solvedModel({ ignore }) at rest', async () => {
+  it('honors solvedModel({ ignore }) for rest penetration', async () => {
     const kcad = kcadApi();
     const arm = kcad.assembly('ignored-overlap');
     arm.part('a', kcad.box(30, 30, 10))
-      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
     arm.part('b', kcad.box(30, 30, 10).translate(10, 10, 5))
-      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
     arm.mate('fix', 'a.m', 'b.m', 'fastened');
     await arm.solvedModel({}, { ignore: [['a', 'b']], validate: 'off' });
     expect(arm.__ignoreInterference()).toHaveLength(1);
     const r = await checkMechanismTruth(arm, { sweepBudget: 0 });
-    expect(codes(r)).toContain('mechanism.rest-interpenetration');
+    expect(codes(r)).not.toContain('mechanism.rest-interpenetration');
+  });
+
+  it('keeps the mate-gap check active for an ignored pair', async () => {
+    const kcad = kcadApi();
+    const arm = kcad.assembly('ignored-gap');
+    arm.part('plate', kcad.box(40, 40, 5))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.part('bracket', kcad.box(20, 20, 5).translate(10, 10, 12))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('bolt', 'plate.m', 'bracket.m', 'fastened');
+    await arm.solvedModel({}, { ignore: [['plate', 'bracket']], validate: 'off' });
+
+    const r = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    expect(codes(r)).toContain('mechanism.mate-gap');
   });
 
   it('fails a mate whose parts do not touch, naming the pair and gap', async () => {

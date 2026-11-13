@@ -315,11 +315,10 @@ async function checkRestCriteria(
   // cannot see.
   out.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
 
-  // Criterion 9 (rest-pose contact) — the drawing as it paints must be
-  // physically consistent: no two solids share volume, and the two parts
-  // of every mate touch. Mesh-based and independent of the sweep budget,
-  // so a heavy assembly cannot pass as 'unverified' with links passing
-  // through each other. See `./restPoseContact`.
+  // Criterion 9 (rest-pose contact) — unignored solids must not share
+  // volume, and the two parts of every mate must touch. Mesh-based and
+  // independent of the sweep budget, so a heavy assembly cannot pass as
+  // 'unverified' with links passing through each other. See `./restPoseContact`.
   // Only mechanisms: a mate-less multi-part scene is independent bodies
   // (a display layout, a car body with its glass), not a mechanism.
   if (loweredBase.scene !== undefined && arm.__mates().length > 0) {
@@ -810,7 +809,9 @@ async function getOrComputeBboxCorners(
 
 function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
+  const ignoredPairKeys = new Set(arm.__ignoreInterference().map(([a, b]) => pairKey(a, b)));
   for (const p of restPosePenetrations(scene)) {
+    if (ignoredPairKeys.has(pairKey(p.a, p.b))) continue;
     const at = p.at.map((v) => v.toFixed(1)).join(', ');
     out.push(makeFailure(
       'mechanism.rest-interpenetration',
