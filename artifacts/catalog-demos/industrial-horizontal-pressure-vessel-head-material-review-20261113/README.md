@@ -6,6 +6,10 @@
 - Local demonstration: [18-second review MP4](horizontal-pressure-vessel-material-review.mp4), built by `build-demo.sh` from source and rendered-preview evidence.
 - Verification logs: `verification/`.
 
+## Base sync
+
+After the asset-fix commit, `develop` advanced with the retaining-ring fix in [PR #1373](https://github.com/w1ne/kernelCAD-web/pull/1373). The branch sync keeps that upstream source and preview unchanged and regenerates the catalog index. The index audit therefore records two changed rows against the pre-round baseline: the pressure-vessel correction and the inherited retaining-ring fix.
+
 ## Change
 
 The rendered pressure-vessel heads and top nozzle necks used the safety-paint color,
@@ -18,9 +22,9 @@ palette assignment and exported color. The mesh remains 468 triangles under the
 
 - Focused GLB regression: **1/1 passed**; [test source](../../../tests/integration/catalog/horizontalPressureVesselMaterials.test.ts) and [log](verification/focused-test.log).
 - Industrial-plant ESLint: **passed**; [log](verification/eslint.log).
-- Catalog integration tests: **60 files / 102 tests passed**, including the exhaustive source-build, triangle-budget, and index-freshness check; see [run log](verification/catalog-integration.log).
-- Catalog index regenerated: 2,402 assets / 50 kits, zero source SHA mismatches, and zero missing preview files; the target row's source hash matches and its preview path resolves. See [audit JSON](verification/index-audit.json) and [recheck script](verification/verify-index.mjs).
-- Structural quality: industrial-plant is **60/60 (100%)**; catalog-wide remains **2,401/2,402 (99.96%)**, with the unchanged outlier `standard-components/beam-coupling`.
+- Catalog integration tests: **60 files / 102 tests passed** on commit `54848148a`, including the exhaustive source-build, triangle-budget, and index-freshness check; see [run log](verification/catalog-integration.log). The exact-head CI status is tracked on PR #1258.
+- Catalog index regenerated: 2,402 assets / 50 kits, zero source SHA mismatches, and zero missing preview files; the pressure-vessel source hash matches and its preview path resolves. The only other changed row is the inherited retaining-ring update from PR #1373. See [audit JSON](verification/index-audit.json) and [recheck script](verification/verify-index.mjs).
+- Structural quality: industrial-plant is **60/60 (100%)**; after syncing current `develop`, catalog-wide is **2,400/2,402 (99.92%)**. The two outliers are `standard-components/beam-coupling` and the inherited `standard-components/retaining-ring` from PR #1373; logs before and after the sync are retained in `verification/`.
 - The generated before/after previews and the five selected samples are retained in this bundle.
 
 ## Reproduce

@@ -38,8 +38,12 @@ const result = {
 writeFileSync(join(repoRoot, bundle, 'verification/index-audit.json'), `${JSON.stringify(result, null, 2)}\n`);
 console.log(JSON.stringify(result, null, 2));
 
+const expectedChangedRows = [
+  'industrial-plant/horizontal-pressure-vessel',
+  'standard-components/retaining-ring',
+].sort();
 if (current.assets.length !== 2402 || current.kits.length !== 50
-    || changedRows.join() !== 'industrial-plant/horizontal-pressure-vessel'
+    || [...changedRows].sort().join() !== expectedChangedRows.join()
     || sourceShaMismatches.length !== 0 || missingPreviewFiles.length !== 0) {
   process.exit(1);
 }

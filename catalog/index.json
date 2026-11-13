@@ -313093,13 +313093,12 @@
       "id": "retaining-ring",
       "kit": "standard-components",
       "title": "Retaining ring",
-      "description": "Open external retaining ring with two pierced plier ears. Model size scales the ring, while the installation-gap choice moves the ears and changes the opening; spring steel and ear finish have separate color controls.",
+      "description": "Illustrative CC0 C-type external retaining ring: one connected spring body, open slit and two integral plier ears with real through-holes. Not manufacturer-grade CAD: nominal groove fit, edge radii, spring properties, tolerances and DIN 471 compliance are not verified. Controls change only model size and whole-piece appearance color.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "retaining ring",
         "circlip",
-        "snap ring",
         "shaft retainer",
         "hardware"
       ],
@@ -313112,8 +313111,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
       "preview": "/assets/standard-components-retaining-ring.png",
-      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15",
-      "triangleBudget": 420,
+      "sourceSha256": "4e89a844178dffeae337dd987e98ca6f090ec3f3c3a913939114d76f9faf3c94",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "size",
@@ -313127,53 +313126,29 @@
           ]
         },
         {
-          "name": "gap",
-          "type": "choice",
-          "default": "standard",
-          "label": "Installation gap",
-          "choices": [
-            "compact",
-            "standard",
-            "wide"
-          ]
-        },
-        {
           "name": "springSteel",
           "type": "color",
-          "default": "#4f6874",
-          "label": "Spring steel band"
-        },
-        {
-          "name": "stainless",
-          "type": "color",
-          "default": "#cbd3d7",
-          "label": "Stainless ear finish"
+          "default": "#78868e",
+          "label": "Metal appearance color"
         }
       ],
       "presets": {
         "dark": {
-          "springSteel": "#4c585e",
-          "stainless": "#7d8a91"
+          "springSteel": "#4c585e"
         },
         "brass": {
-          "springSteel": "#75838a",
-          "stainless": "#b38b52"
+          "springSteel": "#75838a"
         },
         "weathered": {
-          "springSteel": "#5b5550",
-          "stainless": "#8b8275"
-        },
-        "bluePhosphate": {
-          "springSteel": "#3f5965",
-          "stainless": "#a8b5ba"
+          "springSteel": "#5b5550"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 260,
         "sizeM": [
-          0.039899,
+          0.039743,
           0.003,
-          0.043475
+          0.043758
         ],
         "minUpM": 0,
         "materials": 1
@@ -313181,20 +313156,11 @@
       "palette": [
         {
           "name": "springSteel",
-          "color": "#4f6874",
+          "color": "#78868e",
           "parts": [
-            "spring-band"
+            "retaining-ring-body"
           ],
           "param": "springSteel"
-        },
-        {
-          "name": "stainless",
-          "color": "#cbd3d7",
-          "parts": [
-            "left-plier-ear",
-            "right-plier-ear"
-          ],
-          "param": "stainless"
         }
       ]
     },
