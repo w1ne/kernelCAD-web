@@ -397,9 +397,16 @@ describe('exportGlbAsync', () => {
       },
     };
     const parts = meshAllParts(scene);
-    const rig = await worldBoundsByNode(await exportGlbAsync(parts, { format: 'glb', units }, solved));
-    const flat = await worldBoundsByNode(await exportGlbAsync(parts, { format: 'glb', units, hierarchy: 'flat' }, solved));
+    const rigBytes = await exportGlbAsync(parts, { format: 'glb', units }, solved);
+    const flatBytes = await exportGlbAsync(parts, { format: 'glb', units, hierarchy: 'flat' }, solved);
+    const rig = await worldBoundsByNode(rigBytes);
+    const flat = await worldBoundsByNode(flatBytes);
     const unitPerMm = units === 'm' ? 0.001 : 1;
+
+    for (const bytes of [rigBytes, flatBytes]) {
+      const kernelcad = parseGlbJson(bytes).asset?.extras?.kernelcad as { units?: string } | undefined;
+      expect(kernelcad?.units).toBe(units);
+    }
 
     for (const name of ['base', 'lid']) {
       rig[name]!.min.forEach((value, axis) => expect(value).toBeCloseTo(flat[name]!.min[axis]!, 9));
