@@ -43389,7 +43389,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-filter-skid.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-filter-skid.png",
-      "sourceSha256": "cae0b2070f1be6c1d2578773bc95a58bda779bb2a193bf703bf7e599a5c5dad7",
+      "sourceSha256": "fcaef048ba5b535f82d73468557e73db056aea0424510e2b49f79493f282b263",
       "triangleBudget": 2200,
       "params": [
         {
@@ -43440,8 +43440,6 @@
           "color": "#397e91",
           "parts": [
             "skid",
-            "filter-housing-0",
-            "filter-housing-1",
             "skid-foot-0",
             "skid-foot-1",
             "skid-foot-2",
@@ -43453,6 +43451,8 @@
           "name": "stainlessSteel",
           "color": "#aebdc1",
           "parts": [
+            "filter-housing-0",
+            "filter-housing-1",
             "filter-lid-0",
             "filter-lid-1",
             "inlet-header",

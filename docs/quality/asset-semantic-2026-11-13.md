@@ -48,3 +48,12 @@ The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-
 - Recorded, not fixed (geometry, not material): gantry-crane legs do not meet the bridge beam and casters sit mid-rail; abrasive-blast-pot vessel floats between the wheels with no axle or frame; busbar-expansion-joint insulators are buried in the supports; the cartridge filter description names a drain that the model does not have.
 - Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; industrial-plant gate 60/60; `tests/integration/catalog/` 63 files / 108 tests passed; index rebuilt with only the cartridge-filter-housing row changed.
 - Evidence: [review bundle](../../artifacts/catalog-demos/industrial-cartridge-filter-nozzle-material-review-20261113/README.md).
+
+## Sanitary filter skid housing material
+
+- Baseline PR #1258 head `d4b1913aa`; at capture the completed checks passed and the `test` job was pending. No open PR or issue targets the five sampled IDs; none appear in earlier ledgers or review bundles.
+- Reviewed `beverage-bottling-line/sanitary-filter-skid`, `rotary-capper`, `cip-supply-return-skid`, `shrink-bundle-wrapper`, `case-erector`. All five read as their named machine type.
+- `sanitary-filter-skid` painted both cartridge housings with `powderCoat`, because the shared paint regex matched `housing`. The asset's own text says stainless housings. The token is removed from this file's regex; the housings now use `stainlessSteel`. Geometry unchanged at 360 triangles.
+- Recorded, not fixed (geometry): the skid's inlet and outlet headers are vertical poles, not horizontal pipes, and its description names a drain that the model does not have; the CIP skid headers are also vertical poles; the shrink wrapper has no film web or bundle; the case erector magazine holds no blanks.
+- Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; beverage-bottling-line gate 50/50; `tests/integration/catalog/` 64 files / 109 tests passed; index rebuilt with only the sanitary-filter-skid row changed.
+- Evidence: [review bundle](../../artifacts/catalog-demos/beverage-sanitary-filter-housing-material-review-20261113/README.md).
