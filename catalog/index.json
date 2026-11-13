@@ -158751,7 +158751,7 @@
       "id": "cleanroom-fan-filter-unit",
       "kit": "lab-infrastructure",
       "title": "Cleanroom fan-filter ceiling module",
-      "description": "Recessed ceiling filter module with a faceted grille, perimeter frame and indicator block. Editable material controls: enamel coating, polymer controls, stainless steel, structural steel; presets: cleanroom and high visibility.",
+      "description": "Recessed ceiling fan-filter module with an enamel housing, steel perimeter flange, white HEPA filter-media face, stainless diffuser bars and a status indicator. Editable material controls: enamel coating, polymer controls, stainless steel, structural steel, HEPA filter media; presets: cleanroom and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -158770,7 +158770,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cleanroom-fan-filter-unit.kcad.ts",
       "preview": "/assets/lab-infrastructure-cleanroom-fan-filter-unit.png",
-      "sourceSha256": "0b76c88a9a9b9cb0e32f6f16729d463bbd5408ac723174f4618cff1e52126392",
+      "sourceSha256": "34045f558df38932ed969a2fa90f82884ff77d3e6cf52db7a91a81cae15ea9be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -158805,6 +158805,12 @@
           "type": "color",
           "default": "#53666e",
           "label": "Structural steel"
+        },
+        {
+          "name": "filterMedia",
+          "type": "color",
+          "default": "#eef0ea",
+          "label": "HEPA filter media"
         }
       ],
       "presets": {
@@ -158812,17 +158818,19 @@
           "enamel": "#e7f0ed",
           "polymer": "#23a5a2",
           "stainless": "#d0d9d8",
-          "steel": "#75888d"
+          "steel": "#75888d",
+          "filterMedia": "#f6f8f4"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
           "polymer": "#ffe000",
           "stainless": "#6f8488",
-          "steel": "#33464d"
+          "steel": "#33464d",
+          "filterMedia": "#e4e6dc"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 152,
         "sizeM": [
           0.972,
           0.32,
@@ -158847,6 +158855,14 @@
             "perimeter-frame"
           ],
           "param": "steel"
+        },
+        {
+          "name": "filterMedia",
+          "color": "#eef0ea",
+          "parts": [
+            "filter-media"
+          ],
+          "param": "filterMedia"
         },
         {
           "name": "stainless",
