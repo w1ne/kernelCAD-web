@@ -83,7 +83,7 @@ for (const sd of [-1, 1]) {
   const y = sd * (W / 2 + 30);
   add(`motor-bracket-${sd < 0 ? 'f' : 'b'}`, profileXZ([[-500, ZP + 100], [300, ZP + 100], [300, ZTOP + 350], [-100, ZTOP + 350]], 50).translate(0, y + sd * 25, 0).color(frame));
   add(`motor-${sd < 0 ? 'f' : 'b'}`, cylinder(620, 190, 14).rotateY(-45).translate(-150, y + sd * 260, ZTOP + 120).color(dark));
-  add(`motor-cap-${sd < 0 ? 'f' : 'b'}`, cylinder(90, 230, 14).rotateY(-45).translate(-150 - 440, y + sd * 260, ZTOP + 120 + 440).color(panels));
+  add(`motor-cap-${sd < 0 ? 'f' : 'b'}`, cylinder(90, 230, 14).rotateY(-45).translate(-150 - 440, y + sd * 260, ZTOP + 120 + 440).color(dark));
   add(`motor-plate-${sd < 0 ? 'f' : 'b'}`, blk(-100, y + sd * 160, ZTOP + 40, 400, 280, 60).color(frame));
 }
 

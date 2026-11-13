@@ -1,0 +1,24 @@
+Baseline PR #1258 head: a8588e6d8
+Baseline CI: all reported checks passed; no submitted review.
+
+Focused exported-GLB regression:
+- Baseline source failed because motor-cap-f and motor-cap-b belonged to the panels palette.
+- Corrected source passed: 1 file / 1 test.
+
+ESLint:
+- npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/glassScreeningDeckMotorCapMaterial.test.ts
+- Exit 0; no diagnostics.
+
+Structural quality gate:
+- recycling-facility: 153/153 assets pass (100.00%).
+
+Catalog integration:
+- 69 files passed / 114 tests passed.
+- catalogIndex.test.ts passed both tests; all 2,402 source exports stayed within budget and the generated catalog index was fresh.
+
+Generated evidence:
+- Target software preview rendered at 2,016 triangles.
+- Index audit found 2,402 assets before/after, one changed row, matching source SHA-256, and an existing preview path.
+- MP4: 1280 x 720, 24 fps, 16.041667 seconds; source frames and inspected contact sheet are in video-review/.
+
+Evidence boundary: local source, GLB, preview and index only. The branch is not deployed; no process simulation or hardware acceptance was performed.

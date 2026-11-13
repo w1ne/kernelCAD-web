@@ -1,0 +1,2 @@
+ae610a8fa46993a62474ea5494e0305cd6226b86e69d762bf161780a928c3cb9  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/after/glass-screening-deck.kcad.ts
+8e885f5c205426a601411dd369a2ae25651e9469c286c8b7b0d4c6cb3b61dc21  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/after/glass-screening-deck.png

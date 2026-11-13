@@ -57,3 +57,12 @@ The [handoff bundle](../../artifacts/catalog-demos/mining-longwall-shearer-pick-
 - Recorded, not fixed (geometry): the skid's inlet and outlet headers are vertical poles, not horizontal pipes, and its description names a drain that the model does not have; the CIP skid headers are also vertical poles; the shrink wrapper has no film web or bundle; the case erector magazine holds no blanks.
 - Verification: focused GLB test fails on the old source and passes on the new; ESLint clean; beverage-bottling-line gate 50/50; `tests/integration/catalog/` 64 files / 109 tests passed; index rebuilt with only the sanitary-filter-skid row changed.
 - Evidence: [review bundle](../../artifacts/catalog-demos/beverage-sanitary-filter-housing-material-review-20261113/README.md).
+
+## Recycling glass-screening motor-cap material
+
+- Baseline PR #1258 head `a8588e6d8` had all reported CI checks passing; no submitted review was listed. Exact open issue/PR title/body searches and changed-path checks found no competing target for the five sample IDs; #1258 is the destination.
+- Reviewed `bag-opener`, `cross-belt-sorter`, `disc-screen`, `glass-screening-deck`, and `bottle-cleaning-line`. Four showed no valid material mismatch. In `glass-screening-deck`, both motor end caps used the orange polyurethane screen-panel material while the motor bodies were dark.
+- Both end caps now use the existing dark motor finish. Geometry, dimensions, controls, presets, triangle budget and catalog identity are unchanged. The orange screen panels remain on their existing control.
+- The baseline-focused GLB regression fails on the old palette assignment; the corrected model passes. Recycling-facility's structural gate is 153/153 (100%). The generated index retains 2,402 rows, with one changed row, a matching source SHA-256, and an existing preview.
+- Verification: recycling-facility ESLint clean; `tests/integration/catalog/` passed 69 files / 114 tests, including the exhaustive source/export/index freshness check.
+- The [review bundle](../../artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/README.md) contains the five-preview ledger, before/after source and renders, demo, and verification evidence.

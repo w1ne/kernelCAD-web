@@ -249073,7 +249073,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-screening-deck.kcad.ts",
       "preview": "/assets/recycling-facility-glass-screening-deck.png",
-      "sourceSha256": "66c292a12720f62572d674b547b2954c6135769c2f7b8e2b31b70fe65bf1c1b8",
+      "sourceSha256": "ae610a8fa46993a62474ea5494e0305cd6226b86e69d762bf161780a928c3cb9",
       "triangleBudget": 2800,
       "params": [
         {
@@ -249218,9 +249218,7 @@
             "lower-panel-4",
             "upper-panel-5-f",
             "upper-panel-5-b",
-            "lower-panel-5",
-            "motor-cap-f",
-            "motor-cap-b"
+            "lower-panel-5"
           ],
           "param": "panels"
         },
@@ -249247,7 +249245,9 @@
             "upper-slot-5-1",
             "upper-slot-5-2",
             "motor-f",
+            "motor-cap-f",
             "motor-b",
+            "motor-cap-b",
             "buffer-f--1300",
             "buffer-f-1600",
             "buffer-b--1300",

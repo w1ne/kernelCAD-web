@@ -1,0 +1,16 @@
+9252d0db51b9a56d63ea0ffeb629229a988d2f2559975010d9bcf60160e7d6c9  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/before/bag-opener.kcad.ts
+60a220919969b881e84a0808813d91697e49ed1dd55ca42dee336ae322154646  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/before/bottle-cleaning-line.kcad.ts
+0711c6b00dcc92eda334121e5de4d197461688ac596e46d4230cbc2d90c63406  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/before/cross-belt-sorter.kcad.ts
+3c8ffd2a5816c33280e5b1615d91fd236ebd4679f5f48618818fa6b71c3192c5  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/before/disc-screen.kcad.ts
+66c292a12720f62572d674b547b2954c6135769c2f7b8e2b31b70fe65bf1c1b8  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/before/glass-screening-deck.kcad.ts
+ae610a8fa46993a62474ea5494e0305cd6226b86e69d762bf161780a928c3cb9  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/source/after/glass-screening-deck.kcad.ts
+045d473c8dbb2fa6b87bd8dd6e964483fbb81787402673699a1eb2e828f4c177  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/before/bag-opener.png
+7d6332b66efcfcf01b43ef107d64d9c8fa396090ac1930cf867a3355a6db74ad  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/before/bottle-cleaning-line.png
+bd3224eda23f152309a037267a44c8096e35e6b9880149964dfaaee86fda31df  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/before/cross-belt-sorter.png
+7b74e404d2384c66e92b6cfb2c4bcc0aed1d03ddf03f4f10f7afa07ce95da3a3  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/before/disc-screen.png
+9d699c7a6e966b8fc6917cdd6a516f08a530aa7ce6df7fd757be18eac317c216  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/before/glass-screening-deck.png
+8e885f5c205426a601411dd369a2ae25651e9469c286c8b7b0d4c6cb3b61dc21  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/previews/after/glass-screening-deck.png
+dc7a06b30bfd33aaa93540567ef14490c5a89b52114408d5479959e8955e1ad5  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/recycling-glass-screening-motor-cap-material-review.mp4
+79cf63b10be57e3b13b1afdde80c8cd553eb460ea5edaccb487beea99db45bfd  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/demo-settings.json
+dff7f4043448cdd98bea2c80574eeaebbe79de5fd282b6fd1c190979435c508f  artifacts/catalog-demos/recycling-glass-screening-motor-cap-material-review-20261113/make_demo.py
+4c0936c52c749487e81cea8a5c96760ec2a6dbecd6382cb59c0fde629adc5502  tests/integration/catalog/glassScreeningDeckMotorCapMaterial.test.ts
