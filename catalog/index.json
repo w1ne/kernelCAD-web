@@ -256485,7 +256485,7 @@
       "id": "v-belt-pulley",
       "kit": "standard-components",
       "title": "V-belt pulley",
-      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore Knobs: model size, steel, cast iron.",
+      "description": "Illustrative CC0 double-V belt pulley with two tapered annular grooves, a continuous 14 mm shaft bore and a distinct steel bushing envelope. The two illustrative V sections have approximately 41-degree included angles. Not manufacturer-grade CAD: belt section, bushing fit, keyway, tolerances, torque and load ratings are not specified. Knobs change model size and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -256503,7 +256503,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-v-belt-pulley.png",
-      "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
+      "sourceSha256": "f2a15772bc395f3e207f20097957196f79a634d0ef68c2c5e3a338da3e88745e",
       "triangleBudget": 420,
       "params": [
         {
@@ -256521,13 +256521,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Bushing appearance color"
         },
         {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
-          "label": "Cast iron"
+          "label": "Sheave appearance color"
         }
       ],
       "presets": {
@@ -256545,11 +256545,11 @@
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 336,
         "sizeM": [
-          0.048,
-          0.026,
-          0.048
+          0.072,
+          0.04,
+          0.072
         ],
         "minUpM": 0,
         "materials": 1
@@ -256559,7 +256559,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "hub"
+            "double-v-sheave"
           ],
           "param": "castIron"
         },
@@ -256567,9 +256567,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "rim-lower",
-            "rim-mid",
-            "rim-upper"
+            "steel-bushing-envelope"
           ],
           "param": "steel"
         }
