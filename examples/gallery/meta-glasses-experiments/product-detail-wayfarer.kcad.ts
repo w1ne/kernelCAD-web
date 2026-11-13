@@ -164,11 +164,16 @@ const upperBrowRelief = xzSketchToFrontBody(
     .sagittaArc(-WING_TIP_X + 7, FRAME_Z_TOP - 3.0, 0.5)
     .close(),
   1.2,
-  0.2,
+  -0.3,
 );
 
-const lowerLensGrooveL = xzSketchToFrontBody(lensSketch(-1, 2.2), 0.9, 0.15);
-const lowerLensGrooveR = xzSketchToFrontBody(lensSketch(1, 2.2), 0.9, 0.15);
+// Front rebate around each lens opening: a negative inset grows the opening
+// outline, and the cutter starts in front of the face (y < 0) so the step
+// breaks the visible surface. The lens insert seats on the rebate floor.
+const LENS_REBATE = 1.2;
+const LENS_REBATE_FLOOR_Y = 0.9;
+const lowerLensGrooveL = xzSketchToFrontBody(lensSketch(-1, -LENS_REBATE), LENS_REBATE_FLOOR_Y + 0.3, -0.3);
+const lowerLensGrooveR = xzSketchToFrontBody(lensSketch(1, -LENS_REBATE), LENS_REBATE_FLOOR_Y + 0.3, -0.3);
 
 const acetateBody = frameBlank
   .subtract(leftLensCut)
@@ -184,7 +189,7 @@ const acetateBody = frameBlank
   .translate(0, BODY_Y_CENTERING, 0);
 
 function lensInsert(sign: 1 | -1) {
-  return xzSketchToFrontBody(lensSketch(sign, 1.4), 0.9, 1.15)
+  return xzSketchToFrontBody(lensSketch(sign, -(LENS_REBATE - 0.1)), LENS_REBATE_FLOOR_Y, 0)
     .material(LENS_MAT)
     .color('#7a8983')
     .translate(0, BODY_Y_CENTERING, 0);

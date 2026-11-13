@@ -70,8 +70,6 @@ const EVALUATION_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['examples/community/thermal-iolink-machine-health.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fastener-installation/l-bracket-mount.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fea/shelf-bracket-fea.kcad.ts', 'requires external CalculiX and gmsh tools'],
-  ['examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts', 'existing boolean recompute errors'],
-  ['examples/gallery/meta-glasses-experiments/product-detail-wayfarer.kcad.ts', 'existing boolean recompute errors'],
   ['examples/gallery/scissor-lift.kcad.ts', 'existing invalid part name'],
   ['examples/kinematic/end-to-end-smoke.kcad.ts', 'intentional diagnostic-path script exits with unknown-joint error'],
   ['examples/kinematic/luxo-lamp.kcad.ts', 'dedicated validate test covers it; capture validation currently rejects hinge visibility'],

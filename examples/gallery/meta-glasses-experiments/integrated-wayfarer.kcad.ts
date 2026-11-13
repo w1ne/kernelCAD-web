@@ -149,8 +149,12 @@ const acetateBlank = frontBody(acetateOutline);
 // rebate so the separate smoked lens inserts read as seated parts.
 const leftLensCut = frontBody(lensOpening(-1), FRAME_DEPTH + 6, -3);
 const rightLensCut = frontBody(lensOpening(1), FRAME_DEPTH + 6, -3);
-const leftLensSeat = frontBody(lensOpening(-1, 1.55), 1.0, 0.05);
-const rightLensSeat = frontBody(lensOpening(1, 1.55), 1.0, 0.05);
+// A negative inset grows the opening outline; the cutter starts in front of
+// the face (y < 0) so the rebate breaks the visible surface.
+const LENS_REBATE = 1.55;
+const LENS_SEAT_FLOOR_Y = 1.05;
+const leftLensSeat = frontBody(lensOpening(-1, -LENS_REBATE), LENS_SEAT_FLOOR_Y + 0.3, -0.3);
+const rightLensSeat = frontBody(lensOpening(1, -LENS_REBATE), LENS_SEAT_FLOOR_Y + 0.3, -0.3);
 
 // "small bridge" + "nose notch"
 const noseNotch = path()
@@ -193,7 +197,7 @@ const frame = acetateBlank
   .color('#202224');
 
 function lensInsert(sign: 1 | -1) {
-  return frontBody(lensOpening(sign, 2.05), 0.82, 1.22)
+  return frontBody(lensOpening(sign, -(LENS_REBATE - 0.1)), 0.82, LENS_SEAT_FLOOR_Y - 0.82)
     .translate(0, CENTER_Y, 0)
     .material(SMOKED_LENS)
     .color('#253631');
