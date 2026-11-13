@@ -375,7 +375,71 @@ describe('exportGlbAsync', () => {
     expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(false);
     expect(json.asset?.extras?.kernelcad).not.toHaveProperty('rig');
   });
+
+  // #1299: the root scale alone does not prove physical size. A pivot or
+  // part matrix written in the wrong unit under the 0.001 root would move
+  // the child while every root-scale assertion still passed.
+  it.each(['m', 'mm'] as const)('places rig parts at the flat world bounds in %s', async (units) => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 110] }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const parts = meshAllParts(scene);
+    const rig = await worldBoundsByNode(await exportGlbAsync(parts, { format: 'glb', units }, solved));
+    const flat = await worldBoundsByNode(await exportGlbAsync(parts, { format: 'glb', units, hierarchy: 'flat' }, solved));
+    const unitPerMm = units === 'm' ? 0.001 : 1;
+
+    for (const name of ['base', 'lid']) {
+      rig[name]!.min.forEach((value, axis) => expect(value).toBeCloseTo(flat[name]!.min[axis]!, 9));
+      rig[name]!.max.forEach((value, axis) => expect(value).toBeCloseTo(flat[name]!.max[axis]!, 9));
+    }
+    const lidSize = rig.lid!.max.map((value, axis) => value - rig.lid!.min[axis]!).sort((a, b) => a - b);
+    [5, 20, 30].forEach((mm, index) => expect(lidSize[index]).toBeCloseTo(mm * unitPerMm, 9));
+    const offset = rig.lid!.min.map((value, axis) => Math.abs(value - rig.base!.min[axis]!)).sort((a, b) => a - b);
+    // Y-up: authored +X 10, +Z 5, and the 10 mm longer lid span on -Z.
+    [5, 10, 10].forEach((mm, index) => expect(offset[index]).toBeCloseTo(mm * unitPerMm, 9));
+  });
 });
+
+/** World-space POSITION bounds of each named mesh node, composed through every
+ *  ancestor matrix including the root unit scale. */
+async function worldBoundsByNode(bytes: Uint8Array): Promise<Record<string, { min: number[]; max: number[] }>> {
+  const doc = await new NodeIO().readBinary(bytes);
+  const out: Record<string, { min: number[]; max: number[] }> = {};
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const m = node.getWorldMatrix();
+    const min = [Infinity, Infinity, Infinity];
+    const max = [-Infinity, -Infinity, -Infinity];
+    const v = [0, 0, 0];
+    for (const primitive of mesh.listPrimitives()) {
+      const position = primitive.getAttribute('POSITION')!;
+      for (let i = 0; i < position.getCount(); i++) {
+        position.getElement(i, v);
+        for (let r = 0; r < 3; r++) {
+          const w = m[r]! * v[0]! + m[4 + r]! * v[1]! + m[8 + r]! * v[2]! + m[12 + r]!;
+          min[r] = Math.min(min[r]!, w);
+          max[r] = Math.max(max[r]!, w);
+        }
+      }
+    }
+    out[node.getName()] = { min, max };
+  }
+  return out;
+}
 
 describe('exportGlbAsync style: lowpoly', () => {
   beforeAll(async () => {
