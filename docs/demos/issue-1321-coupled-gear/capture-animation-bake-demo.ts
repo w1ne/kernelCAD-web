@@ -196,9 +196,14 @@ async function main(): Promise<void> {
       axleResidualDeg,
     };
   });
-  if (maxMotorResidualDeg > 1e-6 || maxAxleResidualDeg > 1e-6) {
+  if (
+    !Number.isFinite(maxMotorResidualDeg) ||
+    !Number.isFinite(maxAxleResidualDeg) ||
+    maxMotorResidualDeg > 1e-6 ||
+    maxAxleResidualDeg > 1e-6
+  ) {
     throw new Error(
-      'Baked angles exceeded the 1e-6° authored-track or signed-coupling tolerance.',
+      'Baked angles must be finite and within the 1e-6° authored-track and signed-coupling tolerance.',
     );
   }
 
