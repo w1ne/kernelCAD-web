@@ -72,13 +72,17 @@ const MM_TO_M = 1e-3;
  *   - `assembly.joint.static-hold.no-actuator` (warn) when the request
  *     selects no evaluable arm.revolute/arm.prismatic joint, including
  *     mate-only mechanisms that this checker does not cover.
+ *   - `assembly.joint.static-hold.mass-unavailable` (error) when the
+ *     assembly cannot be lowered for mass-property measurement.
  *   - `assembly.joint.static-hold.margin-low` (warn) when the worst-pose
  *     margin falls below `opts.minTorqueMarginPct` (default 20%) but the
  *     actuator is not exceeded.
  *   - `assembly.joint.static-hold.exceeded` (error) when the worst-pose
  *     required torque/force exceeds the declared actuator capacity.
  *
- * Every diagnostic carries `source: 'local'`. Local in-process compute —
+ * A missing lowered scene fails closed; no capacity result is a pass when
+ * the load-bearing mass could not be measured. Every diagnostic carries
+ * `source: 'local'`. Local in-process compute —
  * one OCCT lowering pass total (mass properties are geometry-only, so they
  * don't vary per sampled pose; only the FK transform does).
  *
@@ -99,7 +103,14 @@ export async function checkStaticHold(
 
   const masses = await lowerPartMasses(arm, parts, allJoints);
   if (masses === undefined) {
-    return { ok: true, joints: [], posesSampled: 0, diagnostics, source: 'local' };
+    diagnostics.push(
+      buildDiag(
+        'assembly.joint.static-hold.mass-unavailable',
+        'error',
+        'The assembly scene could not be lowered, so static-hold could not measure part mass or evaluate any joints.',
+      ),
+    );
+    return { ok: false, joints: [], posesSampled: 0, diagnostics, source: 'local' };
   }
   const { zeroPoses, massByPartId } = masses;
 
