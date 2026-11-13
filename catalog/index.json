@@ -254045,7 +254045,7 @@
       "id": "linear-guide-rail",
       "kit": "standard-components",
       "title": "Linear guide rail",
-      "description": "Compact linear motion rail with a broad mounting foot and raised central raceway Knobs: model size, steel, aluminum.",
+      "description": "Illustrative CC0 linear guide rail with four accessible top-through mounting passages, a broad base and a raised central raceway. Not manufacturer-grade CAD: no vendor groove profile, fasteners, fit tolerances or load rating. Knobs select model size and appearance colors, not steel or aluminum material grades.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254063,8 +254063,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-rail.png",
-      "sourceSha256": "556238ab9b74cd8a4596103f0e14952e201c46f04e75ab6e55fa148a2bc6139b",
-      "triangleBudget": 300,
+      "sourceSha256": "6e59a2f3ce7967a261f95487ccfabe6d25f4e905b73616310b74dfd3fd219528",
+      "triangleBudget": 460,
       "params": [
         {
           "name": "size",
@@ -254105,7 +254105,7 @@
         }
       },
       "stats": {
-        "triangles": 232,
+        "triangles": 440,
         "sizeM": [
           0.12,
           0.015,
