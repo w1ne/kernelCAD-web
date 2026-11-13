@@ -6070,7 +6070,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/pushback-tug.kcad.ts",
       "preview": "/assets/airfield-pushback-tug.png",
-      "sourceSha256": "1fadc34277eb164a24e1c32923b35cc17b8cbacce3c6ce87935a2a19be49fa61",
+      "sourceSha256": "3767290acfb4b77a7580eba86fbdc8f58cc236ac22496419279197e03b0d4c10",
       "triangleBudget": 1800,
       "params": [
         {
@@ -6137,7 +6137,8 @@
           "color": "#a9b4b6",
           "parts": [
             "chassis",
-            "tow-bar"
+            "tow-bar",
+            "nose-wheel-cradle"
           ],
           "param": "stainlessSteel"
         },
@@ -6164,7 +6165,6 @@
           "name": "rubber",
           "color": "#282e31",
           "parts": [
-            "nose-wheel-cradle",
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",

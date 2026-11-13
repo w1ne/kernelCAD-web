@@ -1,0 +1,6 @@
+Focused exported-GLB material regression passed (1/1); it fails on the old source.
+Airfield ESLint passed with no findings.
+Catalog integration suite passed: 68 files / 113 tests, including 2,402-asset source/export/index freshness.
+Airfield structural quality gate: 40/40 assets pass (100%); this is not a realism score.
+Catalog index audit: 2,402 rows; only pushback-tug changed; source hash and preview path verified.
+Local source and software-rendered previews only; no deployment or equipment acceptance.
