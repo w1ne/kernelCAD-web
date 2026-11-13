@@ -143932,7 +143932,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/horizontal-pressure-vessel.kcad.ts",
       "preview": "/assets/industrial-plant-horizontal-pressure-vessel.png",
-      "sourceSha256": "4850358c10fdf9c94effdf224b88bbf67416984ae61500502e08a83ccecc8748",
+      "sourceSha256": "8768e86ed5abd8c79f9d3e37f1ac588bf59c55c206358c41e61ad58b91ea0fe1",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143989,9 +143989,13 @@
           "color": "#607986",
           "parts": [
             "pressure-shell",
+            "left-head",
+            "right-head",
             "saddle-foot-0",
             "saddle-foot-1",
+            "top-port-0",
             "port-flange-0",
+            "top-port-1",
             "port-flange-1"
           ],
           "param": "steel"
@@ -144000,14 +144004,10 @@
           "name": "safetyPaint",
           "color": "#e2a849",
           "parts": [
-            "left-head",
-            "right-head",
             "skid-rail-left",
             "skid-rail-right",
             "saddle-0",
             "saddle-1",
-            "top-port-0",
-            "top-port-1",
             "drain"
           ],
           "param": "safetyPaint"

@@ -1,0 +1,6 @@
+Focused GLB regression: 1/1 passed
+Catalog integration: 60 files / 102 tests passed
+Industrial-plant ESLint: clean
+Catalog index: 2,402 assets across 50 kits
+Index audit: target row only; 0 stale source hashes; 0 missing previews
+Geometry: 468 triangles under a 1,400-triangle budget
