@@ -13,7 +13,7 @@ meta({
   name: "high-pressure-grinding-rolls",
   license: 'CC0-1.0',
   title: "High-pressure grinding rolls",
-  description: "HPGR roller press at about real size: two studded rolls with cheek plates in a heavy rectangular machine frame on concrete plinths, fixed and floating bearing blocks, horizontal hydraulic pressing cylinders with nitrogen accumulators and a hydraulic power unit, choke feed chute and bin loaded with ore over the nip, twin drive trains of cardan shafts, planetary gearboxes and motors on a drive plinth, and a product belt under the rolls carrying pressed cake. Material controls: frame coating, drive and bin steel, studded roll tyres, belts and rubber, plus a roll size choice (1.7, 2.0 or 2.4 m diameter) that resizes the whole machine. weathered, highVisibility and bluePlant presets.",
+  description: "HPGR roller press at about real size: two studded rolls with cheek plates in a heavy rectangular machine frame on concrete plinths, fixed and floating bearing blocks, horizontal hydraulic pressing cylinders with nitrogen accumulators and a hydraulic power unit, choke feed chute and bin loaded with ore over the nip, twin drive trains of cardan shafts, planetary gearboxes and motors on a drive plinth, and a product belt under the rolls carrying pressed cake. Material controls: frame coating, drive, cylinder barrel and bin steel, studded roll tyres, belts and rubber, plus a roll size choice (1.7, 2.0 or 2.4 m diameter) that resizes the whole machine. weathered, highVisibility and bluePlant presets.",
   tags: ['mining', 'mineral processing', 'comminution', 'HPGR', 'high pressure grinding rolls', 'roller press', 'planetary gearbox', 'crushing plant'],
   kit: 'mining',
   category: 'prop',
@@ -24,7 +24,7 @@ meta({
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const coatedSteel = param('coatedSteel', '#3f8a68', { label: 'Frame coating' });
-const structuralSteel = param('structuralSteel', '#4b5459', { label: 'Drive and bin steel' });
+const structuralSteel = param('structuralSteel', '#4b5459', { label: 'Drive, cylinder barrel and bin steel' });
 const rollSurface = param('rollSurface', '#7b8083', { label: 'Studded roll tyres' });
 const rubber = param('rubber', '#25292b', { label: 'Belts and rubber' });
 const rollDiameter = param('rollDiameter', '2.0 m', { choices: ['1.7 m', '2.0 m', '2.4 m'], label: 'Roll diameter' });
@@ -99,11 +99,12 @@ for (const [k, s] of [-1, 1].entries()) {
   }
 }
 // The +X roll floats: two cylinders per side push its bearing blocks towards the nip.
+// Barrels are painted steel tube; only the piston rods are hard-chrome.
 const cx0 = C + 0.68 * R, cx1 = Wx1;
 for (const [j, t] of [-1, 1].entries()) {
   const y = t * (Yi + Yo) / 2;
   for (const [i, dz] of [-0.38 * R, 0.38 * R].entries()) {
-    add(`press-cylinder-${j}-${i}`, tube([cx1, y, Zr + dz], [cx0 + 0.45 * (cx1 - cx0), y, Zr + dz], 0.2 * R, 10).color(chrome));
+    add(`press-cylinder-${j}-${i}`, tube([cx1, y, Zr + dz], [cx0 + 0.45 * (cx1 - cx0), y, Zr + dz], 0.2 * R, 10).color(structuralSteel));
     add(`press-cylinder-rod-${j}-${i}`, tube([cx0 + 0.45 * (cx1 - cx0), y, Zr + dz], [cx0, y, Zr + dz], 0.1 * R, 8).color(chrome));
   }
 }

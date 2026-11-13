@@ -180697,7 +180697,7 @@
       "id": "high-pressure-grinding-rolls",
       "kit": "mining",
       "title": "High-pressure grinding rolls",
-      "description": "HPGR roller press at about real size: two studded rolls with cheek plates in a heavy rectangular machine frame on concrete plinths, fixed and floating bearing blocks, horizontal hydraulic pressing cylinders with nitrogen accumulators and a hydraulic power unit, choke feed chute and bin loaded with ore over the nip, twin drive trains of cardan shafts, planetary gearboxes and motors on a drive plinth, and a product belt under the rolls carrying pressed cake. Material controls: frame coating, drive and bin steel, studded roll tyres, belts and rubber, plus a roll size choice (1.7, 2.0 or 2.4 m diameter) that resizes the whole machine. weathered, highVisibility and bluePlant presets.",
+      "description": "HPGR roller press at about real size: two studded rolls with cheek plates in a heavy rectangular machine frame on concrete plinths, fixed and floating bearing blocks, horizontal hydraulic pressing cylinders with nitrogen accumulators and a hydraulic power unit, choke feed chute and bin loaded with ore over the nip, twin drive trains of cardan shafts, planetary gearboxes and motors on a drive plinth, and a product belt under the rolls carrying pressed cake. Material controls: frame coating, drive, cylinder barrel and bin steel, studded roll tyres, belts and rubber, plus a roll size choice (1.7, 2.0 or 2.4 m diameter) that resizes the whole machine. weathered, highVisibility and bluePlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -180719,7 +180719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/high-pressure-grinding-rolls.kcad.ts",
       "preview": "/assets/mining-high-pressure-grinding-rolls.png",
-      "sourceSha256": "519e8922063b73ec208e1ea0ef20ecbca56c69df2ef90c065647512a72f5f5fd",
+      "sourceSha256": "9cdca2c2e9ced86230c1a8af8f76f45ff959ccf21ec3012af4871c7bc3757756",
       "triangleBudget": 5800,
       "params": [
         {
@@ -180741,7 +180741,7 @@
           "name": "structuralSteel",
           "type": "color",
           "default": "#4b5459",
-          "label": "Drive and bin steel"
+          "label": "Drive, cylinder barrel and bin steel"
         },
         {
           "name": "rollSurface",
@@ -180837,13 +180837,9 @@
             "frame-tie-bolt-1-1",
             "roll-shaft-0",
             "roll-shaft-1",
-            "press-cylinder-0-0",
             "press-cylinder-rod-0-0",
-            "press-cylinder-0-1",
             "press-cylinder-rod-0-1",
-            "press-cylinder-1-0",
             "press-cylinder-rod-1-0",
-            "press-cylinder-1-1",
             "press-cylinder-rod-1-1",
             "cardan-shaft-0",
             "cardan-shaft-1"
@@ -180872,6 +180868,10 @@
             "cheek-plate-1-1",
             "bearing-block-1-0",
             "bearing-block-1-1",
+            "press-cylinder-0-0",
+            "press-cylinder-0-1",
+            "press-cylinder-1-0",
+            "press-cylinder-1-1",
             "hydraulic-unit",
             "feed-chute",
             "feed-bin",
