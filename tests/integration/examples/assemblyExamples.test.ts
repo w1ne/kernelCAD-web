@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
+import { PER_EXAMPLE_TIMEOUT_MS } from '../physics-loop/exampleSweepShared';
 
 describe('assembly examples', () => {
   it('evaluates the two-link connector arm example', async () => {
@@ -26,17 +28,25 @@ describe('assembly examples', () => {
     expect(result.featureCount).toBeGreaterThanOrEqual(3);
   });
 
-  // P3 physics-loop sweep (2026-06-01): the two-link connector arm uses
-  // the v0.6 connect-shorthand on arm.part(...) rather than arm.mate(...).
-  // The physics loop iterates arm.__mates() and treats the link and tool
-  // as orphans, then flags their incidental contact volumes as
-  // mechanism.interpenetration. Tracked migration to the proper mate API
-  // in the issue below.
-  //
-  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 4
-  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
-  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/349
-  it.skip('passes the physics-grounded loop — see issues/349', () => {
-    // no body — the citation in the title is what the sweep test reads
-  });
+  // Issue #349: the link's `root` and `wrist` connectors sat at the
+  // link's mid-height, so `connect` sank the link 3 mm into the base and
+  // the tool 3 mm into the link. Both connectors now sit on the mating
+  // faces, so the loop must report a clean, real mechanism.
+  it(
+    'examples/assemblies/two-link-connector-arm.kcad.ts passes the physics-grounded loop',
+    async () => {
+      const result = await runValidateCli({
+        file: 'examples/assemblies/two-link-connector-arm.kcad.ts',
+        json: true,
+        includeInterference: true,
+        epsilon: 0.01,
+        physical: false,
+        includePhysics: false,
+      });
+
+      expect(result.mechanismFailures ?? []).toEqual([]);
+      expect(result.mechanism).toBe('real');
+    },
+    PER_EXAMPLE_TIMEOUT_MS,
+  );
 });
