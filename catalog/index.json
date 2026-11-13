@@ -84647,7 +84647,7 @@
       "id": "overhead-pantograph-head",
       "kit": "ev-charging-infrastructure",
       "title": "Overhead pantograph head",
-      "description": "Compact overhead charging head with contact bar, hinge blocks, and a mounting yoke. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
+      "description": "Compact overhead charging head with a bare copper contact bar, hinge blocks, and a mounting yoke. Knobs: overall scale and powder-coated metal, stainless steel and contact copper color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -84668,7 +84668,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-pantograph-head.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-pantograph-head.png",
-      "sourceSha256": "22ac97dd4534cc502f38c028d007f8b6e9a33da3af870acc758ceaacbd9baf55",
+      "sourceSha256": "bd75e5cf2f65cf77ec332ff893ae45cd7685d4a731c4399ea021629a99be2588",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84687,28 +84687,28 @@
           "label": "Powder-coated metal"
         },
         {
-          "name": "engineeringPolymer",
-          "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
-        },
-        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c2",
           "label": "Stainless steel"
+        },
+        {
+          "name": "contactCopper",
+          "type": "color",
+          "default": "#b87545",
+          "label": "Copper contact rail"
         }
       ],
       "presets": {
         "fleetReady": {
           "powderCoat": "#28765f",
-          "engineeringPolymer": "#263a36",
-          "stainlessSteel": "#c2c9c8"
+          "stainlessSteel": "#c2c9c8",
+          "contactCopper": "#c27c48"
         },
         "nightService": {
           "powderCoat": "#3f5059",
-          "engineeringPolymer": "#222d32",
-          "stainlessSteel": "#c8cecd"
+          "stainlessSteel": "#c8cecd",
+          "contactCopper": "#9a6440"
         }
       },
       "stats": {
@@ -84743,12 +84743,12 @@
           "param": "powderCoat"
         },
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "contactCopper",
+          "color": "#b87545",
           "parts": [
             "contact-rail"
           ],
-          "param": "engineeringPolymer"
+          "param": "contactCopper"
         }
       ]
     },
