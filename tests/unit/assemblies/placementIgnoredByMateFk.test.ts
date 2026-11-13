@@ -130,10 +130,10 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
     }
   });
 
-  // The first declared part is in no mate, so the `a`-`b` pair is its own
-  // mate component. Its first part `a` keeps its `at`, like the grounded
-  // part; the mate places `b`, so only `b`'s `at` is ignored.
-  it('emits only for the mated child of a component the first part does not reach', async () => {
+  // The walk starts at the first declared part. When that part is in no
+  // mate, the mate between `a` and `b` is not solved and both stay at their
+  // `at`, so neither `at` is ignored.
+  it('does NOT emit for mated parts the walk from the first part does not reach', async () => {
     const model = await buildModel({
       fileName: 'unreached-at.kcad.ts',
       code: `
@@ -147,12 +147,9 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
         return arm.solvedModel({}, { validate: 'off' });
       `,
     });
-    const placementIgnored = model.diagnostics.filter(
-      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
-    );
-    expect(placementIgnored).toHaveLength(1);
-    expect(placementIgnored[0].message).toContain("'b'");
-    expect(placementIgnored[0].message).not.toContain("'a'");
+    expect(
+      model.diagnostics.filter((d) => d.code === 'assembly.placement-ignored-by-mate-fk'),
+    ).toEqual([]);
   });
 
   it('does NOT emit when a part has `at:` but is NOT mated', async () => {

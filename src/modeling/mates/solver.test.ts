@@ -57,7 +57,7 @@ describe('solveMates — tree topology', () => {
     expect(cT.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(15);
   });
 
-  it('solves every disconnected mate component unless the caller opts out', async () => {
+  it('solves every disconnected mate component only when the forest option is enabled', async () => {
     const { arm, kcad } = makeArm();
     arm
       .part('unrelated', kcad.box(1, 1, 1))
@@ -79,11 +79,11 @@ describe('solveMates — tree topology', () => {
       });
     arm.mate('mount', 'support.out', 'mounted.in', 'fastened');
 
-    const forest = await solveMates(arm);
-    const groundedOnly = await solveMates(arm, undefined, { solveDisconnectedComponents: false });
+    const legacy = await solveMates(arm);
+    const forest = await solveMates(arm, undefined, { solveDisconnectedComponents: true });
 
+    expect(legacy.poses.get('mounted')!.point([0, 0, 0])[0]).toBeCloseTo(0);
     expect(forest.poses.get('mounted')!.point([0, 0, 0])[0]).toBeCloseTo(100);
-    expect(groundedOnly.poses.get('mounted')!.point([0, 0, 0])[0]).toBeCloseTo(0);
   });
 
 });
