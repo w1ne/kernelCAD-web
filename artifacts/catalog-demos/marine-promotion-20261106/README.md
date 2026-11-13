@@ -57,3 +57,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/marine-promotion-20261
 The source promotion and its invocation settings are retained in
 `promote_marine.py` and `settings.json`. `catalog/index.json` is generated; do
 not edit it by hand.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/marine-promotion-20261106/capture_marine_demo.py`
+- video review: `python3 artifacts/catalog-demos/marine-promotion-20261106/inspect_marine_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

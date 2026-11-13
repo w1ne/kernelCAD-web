@@ -46,3 +46,12 @@ The first integration attempt caught a base-height defect in several generated p
 ## Current live site and limits
 
 The public homepage and `/assets.json` were checked on 2026-11-03. The live endpoint returned 1,291 assets and 1,291 preview paths. This branch has 1,591 indexed assets after the new kit, but it has not been deployed; the live count does not include this wave. Verify the deployed homepage after merge. Local renders, generated pages, package contents, and the catalog suite do not establish deployed behavior, field performance, equipment safety, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/alpine-expedition-wave-20261103/capture_alpine_demo.py`
+- video review: `python3 artifacts/catalog-demos/alpine-expedition-wave-20261103/inspect_alpine_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

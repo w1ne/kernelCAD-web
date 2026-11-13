@@ -29,3 +29,12 @@ The integration test checks every indexed asset's mesh export, triangle budget, 
 The local page builder produced 48 retail-store asset pages and matching previews. On 2026-11-02, the live `https://kernelcad.com/catalog/` route returned HTTP 404 and the already-open kernelCAD homepage had no catalog navigation link. This branch was not deployed; live behavior after deployment remains unverified.
 
 All assets are original CC0 1.0 kernelCAD geometry. They are stylized scene props; this demo makes no claims about store layout compliance, accessibility, retail operations or physical equipment acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/retail-store-wave-20261102/capture_retail_store_demo.py`
+- video review: `python3 artifacts/catalog-demos/retail-store-wave-20261102/inspect_retail_store_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

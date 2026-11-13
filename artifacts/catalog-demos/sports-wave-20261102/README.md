@@ -12,10 +12,19 @@ From the repository root, run the commands in [settings.json](settings.json). Th
 - [catalog-eslint.json](catalog-eslint.json): `npx eslint catalog/` passed with no diagnostics.
 - [catalog-integration-test.log](catalog-integration-test.log): 4 catalog integration files and 15 tests passed. This includes the Studio link contract for all assets and the exact knobs in each index row.
 - [catalog-pages-check.json](catalog-pages-check.json): the local static build contains all 583 catalog pages and previews, including 40 Sports pages. Each Sports page lists both knobs. The pages were generated locally from the committed index; this does not establish deployed behavior.
-- [video-inspection.json](video-review/video-inspection.json) records the MP4 probe, eight decoded frames and manual visual review. [decoded-contact-sheet.png](video-review/decoded-contact-sheet.png) shows every frame.
+- video-inspection.json (`video-review/video-inspection.json`, not tracked) records the MP4 probe, eight decoded frames and manual visual review. decoded-contact-sheet.png (`video-review/decoded-contact-sheet.png`, not tracked) shows every frame.
 
 ## Deployment status and limits
 
 The branch is not deployed. On 2026-11-02, the live `/catalog/` route returned HTTP 404 and the homepage's `/assets.json` contained 373 assets in 11 kits; the live homepage does not yet show this Sports kit. Its display must be verified after the website is rebuilt and deployed.
 
 The demo records local source generation, mesh export, index and static-page generation. It does not claim simulation, sporting specification or certification, hardware acceptance, or deployed behavior. All assets are original kernelCAD geometry dedicated to the public domain under CC0 1.0.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/sports-wave-20261102/capture_sports_demo.py`
+- video review: `python3 artifacts/catalog-demos/sports-wave-20261102/inspect_sports_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
