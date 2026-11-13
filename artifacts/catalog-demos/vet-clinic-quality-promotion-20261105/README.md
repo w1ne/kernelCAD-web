@@ -43,7 +43,7 @@ surfaces.
   [integration status](catalog-test-status.json), and [generated-page check](catalog-pages-check.json)
 - [Built npm package boundary audit](package-boundary-audit.json) and [audit script](audit_npm_package.py): the generated tarball contains all 50 sources/previews and the index, retains the existing exports, and has no product-specific implementation paths.
 - [Rendered previews](../../../catalog/kits/vet-clinic/previews/)
-- [MP4 inspection](video-inspection.json), [decoded contact sheet](video-review/contact-sheet.png),
+- [MP4 inspection](video-inspection.json), decoded contact sheet (`video-review/contact-sheet.png`, not tracked),
   and [poster](poster.png)
 - [Live website baseline](live-website-check.json): the current deployed site
   has 2,116 previewed rows and includes the pre-promotion versions of these 50
@@ -79,3 +79,12 @@ site still serves its prior catalog until this branch is merged and the
 marketing surface is deployed. Clinical suitability, device ratings, patient
 safety, hygiene, calibration, regulatory compliance, physical simulation, and
 hardware acceptance were not evaluated.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/capture_vet_clinic_quality.py`
+- video review: `python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/inspect_vet_clinic_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

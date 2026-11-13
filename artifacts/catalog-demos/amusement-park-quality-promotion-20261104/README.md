@@ -50,3 +50,12 @@ preview changes. The local page check is evidence for generated branch pages;
 only a later deployment and public URL check can establish published behavior.
 These assets remain generic amusement-park visualization props and carry no
 ride design or operational claims.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/capture_amusement_park_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/inspect_amusement_park_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

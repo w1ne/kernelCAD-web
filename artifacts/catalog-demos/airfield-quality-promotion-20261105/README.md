@@ -67,7 +67,7 @@ The [preview review](preview-review.md) records full-size visual checks.
   [invocations](invocations.txt), [capture output](demo-capture-output.txt),
   [video inspection source](inspect_airfield_quality_video.py),
   [inspection output](video-inspection-output.txt), and decoded
-  [contact sheet](video-review/contact-sheet.png)
+  contact sheet (`video-review/contact-sheet.png`, not tracked)
 
 ## Reproduction
 
@@ -98,3 +98,12 @@ These are generic CC0 visualization props. Source quality checks, previews,
 preset replays, generated pages and package audits describe this branch. They
 do not establish deployed behavior, airport operations, aviation performance,
 airworthiness, vehicle ratings, regulatory compliance, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/capture_airfield_quality.py`
+- video review: `python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/inspect_airfield_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

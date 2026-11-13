@@ -41,3 +41,12 @@ The bundle retains the reproducible source transformation, the exact preview ID 
 The live-site check records the current public baseline: 50 mining rows with previews and no presets; `/catalog/` currently returns HTTP 404. This feature branch is not deployed, so no updated public-page behavior is claimed.
 
 These are stylized visualization props. They do not specify equipment dimensions, throughput, safety, structural capacity, mine-site suitability, installation requirements, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/mining-quality-promotion-20261105/capture_mining_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/mining-quality-promotion-20261105/inspect_mining_quality_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
