@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-13T08:36:15.476Z",
+  "checkedAt": "2026-11-13T09:05:45.666Z",
   "invocation": "npx tsx docs/demos/assembly-at-resolver-parity-917/capture-demo.mts",
   "fixture": "docs/demos/assembly-at-resolver-parity-917/model.kcad.ts",
   "fixtureSha256": "5087b7436250208c782230115395aa508093151e8e2f5320e6597c3899a13f35",
