@@ -158,7 +158,8 @@ async function main(): Promise<void> {
   const legacyMomentNm = norm(cross(oldLever, LOAD.rotor.force)) / 1000;
   const observedMatch = diagnostic.message.match(/torque=([0-9.]+)N·m/);
   const observedMomentNm = observedMatch?.[1] === undefined ? Number.NaN : Number(observedMatch[1]);
-  if (Math.abs(solvedMomentNm - 10) > 1e-8 || Math.abs(observedMomentNm - solvedMomentNm) > 0.01) {
+  if (!Number.isFinite(solvedMomentNm) || !Number.isFinite(observedMomentNm)
+    || Math.abs(solvedMomentNm - 10) > 1e-8 || Math.abs(observedMomentNm - solvedMomentNm) > 0.01) {
     throw new Error(`Expected a 10 N·m solved-frame moment; calculated ${solvedMomentNm}, diagnostic ${observedMomentNm}.`);
   }
 
@@ -195,7 +196,7 @@ async function main(): Promise<void> {
     {
       title: 'Authored frame misses the moment',
       subtitle: 'legacy calculation uses at + unrotated connector origin',
-      lines: ['Old joint origin: [110, 0, 0] mm', 'Old part origin: [100, 0, 0] mm', `Old lever arm: ${fmt(legacyMomentNm)} N·m estimate`, 'Parallel lever and load → false pass'],
+      lines: ['Old joint origin: [110, 0, 0] mm', 'Old part origin: [100, 0, 0] mm', `Old torque: ${fmt(legacyMomentNm)} N·m estimate`, 'Parallel lever and load → false pass'],
     },
     {
       title: 'Solved mate frame restores the lever arm',
