@@ -1,0 +1,6 @@
+Focused exported-GLB material regression passed (1/1).
+Shipyard ESLint passed with no findings.
+Catalog integration suite passed: 67 files / 112 tests, including 2,402-asset source/export/index freshness.
+Shipyard structural quality gate: 70/70 assets pass (100%); this is not a realism score.
+Catalog index audit: 2,402 rows; only abrasive-blast-pot changed; source hash and preview path verified.
+Local source and software-rendered previews only; no deployment or equipment acceptance.

@@ -284345,7 +284345,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/abrasive-blast-pot.kcad.ts",
       "preview": "/assets/shipyard-abrasive-blast-pot.png",
-      "sourceSha256": "92147d2fe44dcd28ef12ffa35746f393d9205cc17bd079baf9bb78c041fe8d87",
+      "sourceSha256": "c2be525a842b958820ba24f16be75553ae947d6bd242ca44804ac01c53e98f8a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -284415,8 +284415,7 @@
           "color": "#30383b",
           "parts": [
             "wheel-0",
-            "wheel-1",
-            "hose-outlet"
+            "wheel-1"
           ],
           "param": "elastomer"
         },
@@ -284424,6 +284423,7 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "hose-outlet",
             "handle"
           ],
           "param": "structuralSteel"
