@@ -1,0 +1,20 @@
+{
+  "invocation": "npx tsx docs/demos/assembly-at-resolver-parity-917/capture-demo.mts",
+  "fixture": "docs/demos/assembly-at-resolver-parity-917/model.kcad.ts",
+  "video": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "fps": 20,
+    "durationSeconds": 10,
+    "pixelFormat": "yuv420p",
+    "diagramUnits": "mm",
+    "diagramSource": "measured OCCT scene bounding boxes"
+  },
+  "claims": {
+    "localModelBuild": true,
+    "physicsSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

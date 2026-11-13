@@ -1,0 +1,162 @@
+{
+  "checkedAt": "2026-11-13T08:36:15.476Z",
+  "invocation": "npx tsx docs/demos/assembly-at-resolver-parity-917/capture-demo.mts",
+  "fixture": "docs/demos/assembly-at-resolver-parity-917/model.kcad.ts",
+  "fixtureSha256": "5087b7436250208c782230115395aa508093151e8e2f5320e6597c3899a13f35",
+  "comparison": "standard parameter table vs assembly lowerer with resolveRecord and no paramTable",
+  "initial": {
+    "parameters": {
+      "mountX": 100,
+      "valveLift": 27
+    },
+    "standard": {
+      "mount": {
+        "min": [
+          90,
+          -10,
+          -5
+        ],
+        "max": [
+          110,
+          10,
+          5
+        ]
+      },
+      "valve": {
+        "min": [
+          97,
+          -7.999999999999999,
+          5
+        ],
+        "max": [
+          109,
+          -2,
+          13
+        ]
+      }
+    },
+    "resolverOnly": {
+      "mount": {
+        "min": [
+          90,
+          -10,
+          -5
+        ],
+        "max": [
+          110,
+          10,
+          5
+        ]
+      },
+      "valve": {
+        "min": [
+          97,
+          -7.999999999999999,
+          5
+        ],
+        "max": [
+          109,
+          -2,
+          13
+        ]
+      }
+    }
+  },
+  "edited": {
+    "parameters": {
+      "mountX": 60,
+      "valveLift": 40
+    },
+    "standard": {
+      "mount": {
+        "min": [
+          50,
+          -10,
+          -5
+        ],
+        "max": [
+          70,
+          10,
+          5
+        ]
+      },
+      "valve": {
+        "min": [
+          57,
+          -7.999999999999999,
+          5
+        ],
+        "max": [
+          69,
+          -2,
+          13
+        ]
+      }
+    },
+    "resolverOnly": {
+      "mount": {
+        "min": [
+          50,
+          -10,
+          -5
+        ],
+        "max": [
+          70,
+          10,
+          5
+        ]
+      },
+      "valve": {
+        "min": [
+          57,
+          -7.999999999999999,
+          5
+        ],
+        "max": [
+          69,
+          -2,
+          13
+        ]
+      }
+    }
+  },
+  "checks": {
+    "localModelBuild": true,
+    "measuredBrepBoundsMatch": true,
+    "defaultAndEditedParameters": true,
+    "physicsSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  },
+  "video": {
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "<temporary-slides.txt>",
+      "-t",
+      "10",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ],
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "20/1",
+    "durationSeconds": 10
+  }
+}

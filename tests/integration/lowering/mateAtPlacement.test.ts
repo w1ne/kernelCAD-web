@@ -18,6 +18,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import type { FeatureLowerer } from '../../../src/kernel/backends/backend';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
@@ -65,8 +66,8 @@ function script(opts: {
 
 /** World bounding box of every part of the built scene, by part name. */
 async function builtBoxes(code: string): Promise<Map<string, Box>> {
-  const { records } = await runScript({ code, fileName: 'mate-at.kcad.ts' });
-  const r = await new RecomputeEngine(new OcctLowerer()).run(records);
+  const { records, paramTable } = await runScript({ code, fileName: 'mate-at.kcad.ts' });
+  const r = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });
   expect(r.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   const scene = r.shapes.get(records[records.length - 1].id);
   if (!isSceneBackend(scene)) throw new Error('the model did not build to an assembly scene');
@@ -74,6 +75,32 @@ async function builtBoxes(code: string): Promise<Map<string, Box>> {
   for (const p of scene.parts) {
     const bb = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform).boundingBox();
     out.set(p.name, { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] });
+  }
+  return out;
+}
+
+/** Exercise a lowerer caller that has resolved records but no direct table. */
+async function builtBoxesWithResolverOnly(code: string): Promise<Map<string, Box>> {
+  const { records, paramTable } = await runScript({ code, fileName: 'mate-at-resolver-only.kcad.ts' });
+  const occt = new OcctLowerer();
+  const resolverOnly: FeatureLowerer = {
+    target: occt.target,
+    supports: occt.supports,
+    lower: (record, inputs) => occt.lower(
+      record,
+      record.kind === 'assemblyModel' || record.kind === 'solvedAssembly'
+        ? { ...inputs, paramTable: undefined }
+        : inputs,
+    ),
+  };
+  const r = await new RecomputeEngine(resolverOnly).run(records, { paramTable });
+  expect(r.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+  const scene = r.shapes.get(records[records.length - 1].id);
+  if (!isSceneBackend(scene)) throw new Error('the model did not build to an assembly scene');
+  const out = new Map<string, Box>();
+  for (const part of scene.parts) {
+    const bb = (part.shape as OcctBackend).clone().applyTransform(part.worldTransform).boundingBox();
+    out.set(part.name, { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] });
   }
   return out;
 }
@@ -426,6 +453,26 @@ describe('every path agrees with the built scene for a part with `at`', () => {
     expectBox(boxOf(after, 'mount'), { min: [50, -10, -5], max: [70, 10, 5] });
     expectBox(boxOf(after, 'valve'), { min: [57, -8, 5], max: [69, -2, 13] });
   });
+
+  for (const entry of ['model', 'solvedModel'] as const) {
+    it(`${entry}: assembly placement reads param-driven at through the record resolver`, async () => {
+      const code = `
+        const dx = param('dx', 100);
+        const lift = param('lift', 27);
+        const arm = assembly('rig');
+        arm.part('mount', box(20, 20, 10, true), { at: [dx, 0, 0] })
+           .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [4, -3, 5] } });
+        arm.part('valve', box(12, 6, 8, true), { at: [0, 0, lift] })
+           .connector('base', { type: 'frame', origin: { kind: 'vec3', value: [1, 2, -4] } });
+        arm.mate('m', 'mount.seat', 'valve.base', 'fastened');
+        return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
+      `;
+      const expected = await builtBoxes(code);
+      const actual = await builtBoxesWithResolverOnly(code);
+      expectBox(actual.get('mount'), expected.get('mount')!);
+      expectBox(actual.get('valve'), expected.get('valve')!);
+    });
+  }
 
   it('topology connectors on a part with at keep landing where they did', async () => {
     // Same shape as the mounting-hole eval task: plate b authored at z=5 so
