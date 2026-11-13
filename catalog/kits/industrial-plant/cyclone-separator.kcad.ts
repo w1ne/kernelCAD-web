@@ -20,15 +20,17 @@ presets({
   weathered: { steel: '#575851', safetyPaint: '#9e722f' },
   highVisibility: { safetyPaint: '#f5c640' },
 });
+// The cone, vortex-finder stack and inlet duct form one welded steel process
+// shell; only the roof flange ring carries safety paint.
 const p = assembly('cyclone-separator');
 p.part('barrel', cylinder(410, 250, 10).translate(0, 0, 352.6).scale(scale).color(steel));
 p.part('upper-rim', cylinder(20, 270, 10).translate(0, 0, 705.2).scale(scale).color(safetyPaint));
-p.part('cone-step-0', cylinder(69.7, 205, 10).translate(0, 0, 278.8).scale(scale).color(safetyPaint));
+p.part('cone-step-0', cylinder(69.7, 205, 10).translate(0, 0, 278.8).scale(scale).color(steel));
 p.part('cone-step-1', cylinder(69.7, 165, 10).translate(0, 0, 213.2).scale(scale).color(steel));
-p.part('cone-step-2', cylinder(69.7, 125, 10).translate(0, 0, 147.6).scale(scale).color(safetyPaint));
+p.part('cone-step-2', cylinder(69.7, 125, 10).translate(0, 0, 147.6).scale(scale).color(steel));
 p.part('cone-step-3', cylinder(69.7, 85, 10).translate(0, 0, 82).scale(scale).color(steel));
-p.part('outlet-stack', cylinder(369, 60, 10).translate(0, 0, 697).scale(scale).color(safetyPaint));
-p.part('tangential-inlet', cylinder(312.5, 45, 10).rotate([0, 1, 0], 90).translate(61.2, 0, 549.4).scale(scale).color(safetyPaint));
+p.part('outlet-stack', cylinder(369, 60, 10).translate(0, 0, 697).scale(scale).color(steel));
+p.part('tangential-inlet', cylinder(312.5, 45, 10).rotate([0, 1, 0], 90).translate(61.2, 0, 549.4).scale(scale).color(steel));
 p.part('leg-0', box(28, 28, 80, true).translate(200, 0, 40).scale(scale).color(steel));
 p.part('leg-1', box(28, 28, 80, true).translate(-100, 173.2, 40).scale(scale).color(steel));
 p.part('leg-2', box(28, 28, 80, true).translate(-100, -173.2, 40).scale(scale).color(steel));

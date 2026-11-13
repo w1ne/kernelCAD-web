@@ -142368,7 +142368,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cyclone-separator.kcad.ts",
       "preview": "/assets/industrial-plant-cyclone-separator.png",
-      "sourceSha256": "d65afa20cafb1ef02a1abdb75690b916aeac3182b6559ccf1130725eeb1bc03e",
+      "sourceSha256": "ef556d1c259b55dc3d0bbd2c8ccdcadf617a87efac1df0273cbd6be67603db68",
       "triangleBudget": 1400,
       "params": [
         {
@@ -142418,8 +142418,12 @@
           "color": "#707e83",
           "parts": [
             "barrel",
+            "cone-step-0",
             "cone-step-1",
+            "cone-step-2",
             "cone-step-3",
+            "outlet-stack",
+            "tangential-inlet",
             "leg-0",
             "leg-1",
             "leg-2"
@@ -142430,11 +142434,7 @@
           "name": "safetyPaint",
           "color": "#e0a648",
           "parts": [
-            "upper-rim",
-            "cone-step-0",
-            "cone-step-2",
-            "outlet-stack",
-            "tangential-inlet"
+            "upper-rim"
           ],
           "param": "safetyPaint"
         }
