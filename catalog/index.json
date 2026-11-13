@@ -255211,7 +255211,7 @@
       "id": "retaining-ring",
       "kit": "standard-components",
       "title": "Retaining ring",
-      "description": "Open retaining ring profile with two small installation ears Knobs: model size, stainless steel, spring steel.",
+      "description": "Illustrative CC0 C-type external retaining ring: one connected spring body, open slit and two integral plier ears with real through-holes. Not manufacturer-grade CAD: nominal groove fit, edge radii, spring properties, tolerances and DIN 471 compliance are not verified. Controls change only model size and whole-piece appearance color.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -255229,7 +255229,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
       "preview": "/assets/standard-components-retaining-ring.png",
-      "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
+      "sourceSha256": "4e89a844178dffeae337dd987e98ca6f090ec3f3c3a913939114d76f9faf3c94",
       "triangleBudget": 300,
       "params": [
         {
@@ -255244,38 +255244,29 @@
           ]
         },
         {
-          "name": "stainless",
-          "type": "color",
-          "default": "#b8c1c6",
-          "label": "Stainless steel"
-        },
-        {
           "name": "springSteel",
           "type": "color",
           "default": "#78868e",
-          "label": "Spring steel"
+          "label": "Metal appearance color"
         }
       ],
       "presets": {
         "dark": {
-          "stainless": "#7d8a91",
           "springSteel": "#4c585e"
         },
         "brass": {
-          "stainless": "#b38b52",
           "springSteel": "#75838a"
         },
         "weathered": {
-          "stainless": "#8b8275",
           "springSteel": "#5b5550"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 260,
         "sizeM": [
-          0.039899,
+          0.039743,
           0.003,
-          0.043975
+          0.043758
         ],
         "minUpM": 0,
         "materials": 1
@@ -255285,18 +255276,9 @@
           "name": "springSteel",
           "color": "#78868e",
           "parts": [
-            "ring"
+            "retaining-ring-body"
           ],
           "param": "springSteel"
-        },
-        {
-          "name": "stainless",
-          "color": "#b8c1c6",
-          "parts": [
-            "ear-left",
-            "ear-right"
-          ],
-          "param": "stainless"
         }
       ]
     },
