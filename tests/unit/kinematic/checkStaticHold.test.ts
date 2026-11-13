@@ -15,6 +15,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkStaticHold } from '../../../src/kinematic/checkStaticHold';
+import { checkMotionLoad } from '../../../src/kinematic/motionLoad';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createScriptApi } from '../../../src/composition/scriptApi';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
@@ -48,7 +49,7 @@ function buildHingedBeam(opts: {
   return { arm };
 }
 
-function buildMateOnlyArm(): Assembly {
+function buildMateOnlyArm(opts: { ratedTorqueNm?: number } = {}): Assembly {
   const session = new CaptureSession();
   const kc = createScriptApi({ session });
   const arm = kc.assembly('mate-only-arm');
@@ -69,6 +70,16 @@ function buildMateOnlyArm(): Assembly {
     axis: [0, 1, 0],
   });
   arm.mate('shoulder', 'wall.pivot', 'beam.pivot', 'revolute', { limitsDeg: [-90, 90] });
+  if (opts.ratedTorqueNm !== undefined) {
+    arm.mechanicalJoint('drive', {
+      mate: 'shoulder',
+      actuator: 'wall',
+      shaft: 'wall',
+      supports: ['wall'],
+      output: 'beam',
+      torqueNm: opts.ratedTorqueNm,
+    });
+  }
   return arm;
 }
 
@@ -146,6 +157,40 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
     expect(diag).toMatchObject({ severity: 'warn' });
     expect(diag?.message).toContain('shoulder');
     expect(diag?.message).toContain('mechanicalJoint');
+  });
+
+  it('a named mate with a rated mechanicalJoint is not a pass and points to motion-load', async () => {
+    // #1270 replay: an undersized mechanicalJoint rating on a mate-only hinge
+    // returned ok=true with no joints. motion-load evaluates this rating.
+    const arm = buildMateOnlyArm({ ratedTorqueNm: 1e-6 });
+    const r = await checkStaticHold(arm, { joint: 'shoulder', pose: { shoulder: 0 } });
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    expect(r.posesSampled).toBe(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag?.message).toContain("Requested joint 'shoulder'");
+    expect(diag?.message).toContain("check:'motion-load'");
+
+    const load = await checkMotionLoad(arm, {
+      mode: 'poses',
+      poses: [{ shoulder: 0 }],
+      quasiStatic: true,
+      gravity: [0, 0, -9.81],
+    });
+    expect(load.ok).toBe(false);
+    expect(load.diagnostics.map((d) => d.code)).toContain('mechanism.load.torque-exceeded');
+  });
+
+  it('an unknown requested joint is not a pass even when another joint is actuated', async () => {
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const { arm } = buildHingedBeam({ torqueNm: expected * 10 });
+    const r = await checkStaticHold(arm, { joint: 'elbow', pose: { shoulder: 0 } });
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag?.message).toContain("Requested joint 'elbow' did not resolve");
   });
 
   it('empty assembly reports that static-hold checked nothing', async () => {

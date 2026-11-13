@@ -400,7 +400,7 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.joint.static-hold.no-actuator': {
     hintTemplate:
-      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold.',
+      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold. For a mechanicalJoint torqueNm rating, run verify with check motion-load and quasi_static: true.',
     nextAction: {
       kind: 'rewrite-feature',
       guidance: 'declare an actuator capacity on an arm.revolute/arm.prismatic joint; mate-only mechanicalJoint chains are not covered by checkStaticHold yet',

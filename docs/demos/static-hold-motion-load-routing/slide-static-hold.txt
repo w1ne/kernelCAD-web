@@ -1,0 +1,6 @@
+verify static-hold, joint 'shoulder', pose 0 deg
+ok: false   joints: 0   posesSampled: 0
+code: assembly.joint.static-hold.no-actuator
+
+New: names rated mechanicalJoint 'drive' and routes
+to verify({ check:'motion-load', quasi_static:true })

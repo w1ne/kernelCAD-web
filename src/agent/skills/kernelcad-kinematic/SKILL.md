@@ -153,7 +153,7 @@ call to confirm.
 | K9 `kinematic.mounting-hole.diameter-mismatch` | `fix-arg` | Set both connectors' hole diameter to the same value |
 | `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
 | `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
-| `assembly.joint.static-hold.no-actuator` | `rewrite-feature` | Declare `actuator: { torqueNm }` on `arm.revolute(...)` or `actuator: { forceN }` on `arm.prismatic(...)`; mate-only `mechanicalJoint` chains are not covered |
+| `assembly.joint.static-hold.no-actuator` | `rewrite-feature` | Declare `actuator: { torqueNm }` on `arm.revolute(...)` or `actuator: { forceN }` on `arm.prismatic(...)`; mate-only `mechanicalJoint` chains are not covered; check their `torqueNm` ratings with `verify({ check: 'motion-load', quasi_static: true })` |
 | `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
 | `mechanism.load.torque-exceeded` / `mechanism.load.torque-margin-low` | `rewrite-feature` | Stronger actuator, lighter/shorter links, or slower motion (aim for 2x) |
 | `mechanism.load.side-load-exceeded` | `rewrite-feature` | Add a coaxial bushing/bearing and list it in the mechanicalJoint `supports` |
