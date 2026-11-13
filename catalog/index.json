@@ -314542,15 +314542,14 @@
       "id": "v-belt-pulley",
       "kit": "standard-components",
       "title": "V-belt pulley",
-      "description": "Two-groove V-belt sheave with paired retaining flanges, a keyed through-bore, steel key and radial zinc-plated locking screw. Knobs: model size, cast iron sheave, steel key and zinc-plated hardware; dark, brass and weathered presets.",
+      "description": "Illustrative CC0 double-V belt pulley with two tapered annular grooves, a continuous 14 mm shaft bore and a distinct steel bushing envelope. The two illustrative V sections have approximately 41-degree included angles. Not manufacturer-grade CAD: belt section, bushing fit, keyway, tolerances, torque and load ratings are not specified. Knobs change model size and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "v-belt pulley",
         "sheave",
         "belt drive",
-        "shaft",
-        "grooved pulley"
+        "shaft"
       ],
       "compat": [
         "mechanical",
@@ -314561,8 +314560,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-v-belt-pulley.png",
-      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141",
-      "triangleBudget": 700,
+      "sourceSha256": "f2a15772bc395f3e207f20097957196f79a634d0ef68c2c5e3a338da3e88745e",
+      "triangleBudget": 420,
       "params": [
         {
           "name": "size",
@@ -314576,47 +314575,38 @@
           ]
         },
         {
+          "name": "steel",
+          "type": "color",
+          "default": "#85929a",
+          "label": "Bushing appearance color"
+        },
+        {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
-          "label": "Cast iron sheave"
-        },
-        {
-          "name": "steel",
-          "type": "color",
-          "default": "#9aa5aa",
-          "label": "Steel shaft key"
-        },
-        {
-          "name": "hardware",
-          "type": "color",
-          "default": "#d1aa54",
-          "label": "Zinc-plated set screw"
+          "label": "Sheave appearance color"
         }
       ],
       "presets": {
         "dark": {
-          "castIron": "#3b4246",
-          "steel": "#59656b",
-          "hardware": "#a3adb2"
+          "steel": "#3e484e",
+          "castIron": "#3b4246"
         },
         "brass": {
-          "castIron": "#69645b",
           "steel": "#646f75",
-          "hardware": "#c29a5c"
+          "castIron": "#69645b"
         },
         "weathered": {
-          "castIron": "#4d4b46",
           "steel": "#665b4d",
-          "hardware": "#a19682"
+          "castIron": "#4d4b46"
         }
       },
       "stats": {
-        "triangles": 518,
+        "triangles": 336,
         "sizeM": [
-          0.052,
-          0.03,
-          0.052
+          0.072,
+          0.04,
+          0.072
         ],
         "minUpM": 0,
         "materials": 1
@@ -314626,25 +314616,17 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "cast-iron-two-groove-sheave"
+            "double-v-sheave"
           ],
           "param": "castIron"
         },
         {
           "name": "steel",
-          "color": "#9aa5aa",
+          "color": "#85929a",
           "parts": [
-            "shaft-key"
+            "steel-bushing-envelope"
           ],
           "param": "steel"
-        },
-        {
-          "name": "hardware",
-          "color": "#d1aa54",
-          "parts": [
-            "radial-set-screw"
-          ],
-          "param": "hardware"
         }
       ]
     },
