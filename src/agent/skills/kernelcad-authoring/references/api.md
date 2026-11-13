@@ -94,6 +94,9 @@ union(...shapes: Shape[]): Shape;
 // Inspectable mechanical assembly intent. Captures parts and joints as records.
 // Call .model() to return one fused/exportable Shape of all placed parts.
 assembly(name?: string): Assembly;
+// `arm.solvedModel(poses, { ignore: [['a', 'b']] })` exempts that symmetric
+// pair from overlap and rest-interpenetration diagnostics at the returned pose.
+// Mate-gap, joint-continuity and sampled joint-travel checks remain active.
 
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param

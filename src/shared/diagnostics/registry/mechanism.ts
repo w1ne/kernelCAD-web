@@ -182,9 +182,16 @@ export const MECHANISM_CODES = {
   // Runs on every mechanism even when the pose sweep is over budget, so
   // an assembly whose solids pass through each other as drawn, or whose
   // mated parts never touch, is 'broken' rather than 'unverified'.
+  'mechanism.ignored-rest-overlap': {
+    hintTemplate: 'An ignored pair shares solid volume at rest. Inspect the geometry or remove the overlap before claiming physical validity; an exclusion does not establish that the parts can occupy the same space.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A rest-pose overlap was explicitly ignored; the mechanism remains unverified rather than being certified physically valid.',
+  },
   'mechanism.rest-interpenetration': {
     hintTemplate:
-      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. solvedModel({}, { ignore }) does not silence this check (and ignore belongs in the SECOND argument; the first is the pose map).",
+      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt by default: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. For an intentional rest-pose overlap, pass `ignore: [['partA', 'partB']]` as the SECOND argument to solvedModel; mate-gap, joint-continuity and sampled motion checks still run.",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
