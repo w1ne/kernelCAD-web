@@ -254913,7 +254913,7 @@
       "id": "pipe-saddle-clamp",
       "kit": "standard-components",
       "title": "Pipe saddle clamp",
-      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot Knobs: model size, steel, rubber.",
+      "description": "Illustrative CC0 two-piece pipe saddle clamp with a lower curved cradle, a separate bolted top cap, two rubber half-liners, an open horizontal pipe passage, and four mounting-foot holes. Not manufacturer-grade CAD: no pipe standard, bolt specification, clearance tolerance or load rating. Knobs change scale and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254931,14 +254931,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
       "preview": "/assets/standard-components-pipe-saddle-clamp.png",
-      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
-      "triangleBudget": 360,
+      "sourceSha256": "387d2bc0875d05518d71961c8d6dcb990defe5dd8bf4f1a791760ac60b8c9778",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model size",
           "choices": [
             "compact",
             "standard",
@@ -254949,13 +254949,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel appearance color"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#353a3d",
-          "label": "Rubber"
+          "label": "Rubber appearance color"
         }
       ],
       "presets": {
@@ -254973,11 +254973,11 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 1024,
         "sizeM": [
-          0.056,
-          0.021,
-          0.036
+          0.064,
+          0.033599,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -254987,9 +254987,10 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "foot",
-            "left-lug",
-            "right-lug"
+            "lower-saddle-and-foot",
+            "removable-upper-cap",
+            "left-clamp-bolt",
+            "right-clamp-bolt"
           ],
           "param": "steel"
         },
@@ -254997,7 +254998,8 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "seat"
+            "lower-rubber-liner",
+            "upper-rubber-liner"
           ],
           "param": "rubber"
         }
