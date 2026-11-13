@@ -54,3 +54,74 @@ This is local runtime regression evidence, with no deployment or hardware claim.
 
 Run with `KCAD_SLOW=1 npx vitest run tests/integration/physics-loop/mixedBallScalarPhysics.test.ts tests/integration/physics-loop/coupledGearPhysics.test.ts src/modeling/runtime/mjcfExport.test.ts src/modeling/runtime/mechanismTruthPhysics.test.ts --maxWorkers=2 --no-file-parallelism`.
 On the integrated branch, all four files and 22 tests passed.
+
+## Animation bake agreement and fixture connector — 2026-11-12
+
+`coupledGearPhysics.test.ts` now checks every baked `animationView` frame of
+both gears. The motor-rotor Z angle matches the sampled `motorDeg` track
+value, and the rear-live-axle Z angle matches −0.25 × that value, modulo
+360° and within 1e-6°. At the frames nearest −720°, 0°, 300° and 720°,
+the Z angles extracted from the baked matrices match an independent
+`buildModel` evaluation at that `motorDeg`. The bake must report no advisory
+collisions.
+
+This check found a fixture defect. The 48T shape is already translated to the
+30 mm pitch centre, but its `axis` connector was at the local origin. The mate
+put the axle gear centre at (60, 0) mm at rest, so the gears did not mesh. At
+±720° the gear centre moved onto the motor axis at (0, 0), which gave a
+561.17 mm³ `motor-rotor`/`rear-live-axle` interpenetration. The earlier
+`evidence.json` recorded this as a failure. The connector is now at
+`[centerDistance, 0, 0]`. The gear centre stays at (30, 0) mm on all poses,
+and the regenerated `evidence.json` has `failures: []`. The coupling, the
+500-observation release trace and the MP4 are unchanged. The published RC buggy
+(`nMQXpIBa` v1) uses world-coordinate connectors and does not have this defect.
+
+Negative control: changing the fixture ratio to +12/48 makes the new test fail
+with a 178.49° axle-angle error.
+
+## Animation-bake replay — 2026-11-13
+
+- [7-second baked-frame MP4](animation-bake.mp4)
+- [Capture source](capture-animation-bake-demo.ts)
+- [Machine-readable bake evidence](animation-bake-evidence.json)
+
+Recreate it from the repository root with:
+
+    npx tsx docs/demos/issue-1321-coupled-gear/capture-animation-bake-demo.ts
+
+The script runs buildModel, samples the authored track, and bakes the full
+timeline. The video shows seven evenly spaced baked frames; its schematic
+pitch circles rotate from the motor-rotor and rear-live-axle world matrices. The
+capture asserts the motor track and signed −1/4 axle coupling agree at every
+baked frame within 1e-6° and that the bake has no collision advisories.
+
+This is a local deterministic replay and a schematic rendering of the baked
+rotations. It does not replay the published RC buggy in the hosted viewer, and
+does not claim deployed behavior or hardware acceptance.
+
+## Immutable published RC buggy render samples — 2026-11-13
+
+- [8-second original-model MP4](original-rc-buggy-animation.mp4)
+- [Pinned revision 1 source](original-rc-buggy-v1.kcad.ts)
+- [Packaging source](capture-original-rc-animation.ts)
+- [Render and verification evidence](original-render-evidence.json)
+- Hosted pose PNGs: original-frame-0000.png through original-frame-0720.png
+
+The source was fetched with get_project_revision for public-unlisted project
+nMQXpIBa, version 1. Its 6,088 bytes match SHA-256
+7f020f2826d82ed4e35e2193f8644705772997d9800179cdda9fe86e2072b9a3.
+The current project still matches that immutable revision. Hosted
+capture_animation ran with verify_every=1 and returned verified=true with no
+collisions on build 0.1.0+a450870ad106. The host could not encode MP4 because
+ffmpeg is absent, so the bundle retains eight static render_preview poses,
+each made with autosave=false, then packages those images locally:
+
+    npx tsx docs/demos/issue-1321-coupled-gear/capture-original-rc-animation.ts
+
+The images show the actual original 12T and 48T gear geometry at selected
+motorDeg inputs from 0° through 720°. The video labels the axle value as the
+authored −0.25 ratio contract. This is a local MP4 made from hosted static
+render samples, not the hosted viewer's own animation playback. Hosted physics
+verification on the same build returned mechanism=real with no failures; only
+the two authored unbounded front-wheel spins were skipped. The issue remains
+open until the viewer playback itself is accepted.

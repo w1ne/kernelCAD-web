@@ -27,14 +27,12 @@
 //   3. **No friction, no gravity.** Only the declared `externalLoads` vector
 //      contributes.
 //   4. **Static only.** No impulse / inertia / dynamic load.
-//   5. **CoM approximation = `part.at`.** Computing real CoM would require
-//      lowering BREP (mass-properties via OCCT's `BRepGProp::VolumeProperties`
-//      / `Mass`), which violates this module's "pure / sync" contract. The
-//      part's authored placement is used as the CoM proxy — this is fine for
-//      a sanity gate (the dominant signal in `r = CoM - jointOrigin` is the
-//      authored offset between joint and part, not the in-part mass
-//      distribution), and is documented in the v0.7.4 CHANGELOG. v0.7.x can
-//      upgrade by adding a sync `Shape.boundingBoxAt(at)` if needed.
+//   5. **CoM approximation = part-frame origin.** Computing real CoM would
+//      require lowering BREP (mass-properties via OCCT's
+//      `BRepGProp::VolumeProperties` / `Mass`), which violates this module's
+//      "pure / sync" contract. The solved part-frame origin is used when the
+//      caller has it; otherwise the authored `part.at` is the proxy. This is
+//      a sanity gate, not an in-part mass-distribution estimate.
 //   6. **Mass = 1 kg uniform.** Per spec §Gate 3; the agent passes force
 //      vectors directly, not (mass, acceleration) pairs.
 //
@@ -49,6 +47,7 @@
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
+import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';
@@ -95,6 +94,7 @@ const MM_PER_M = 1000;
 export function validateJointLoadCapacity(
   arm: Assembly,
   externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>,
+  solvedPlacements?: ReadonlyMap<string, Transform>,
 ): ValidatorDiagnostic[] {
   // Step 1 of plan §Phase 5: undefined externalLoads → no work to do.
   // The mate's `maxLoad` declaration is the agent's stated capacity, but a
@@ -111,8 +111,8 @@ export function validateJointLoadCapacity(
     if (mate.maxLoad === undefined) continue;
     if (!GATED_MATE_TYPES.has(mate.type)) continue;
 
-    const aSide = resolveSide(mate.a, partsByName);
-    const bSide = resolveSide(mate.b, partsByName);
+    const aSide = resolveSide(mate.a, partsByName, solvedPlacements);
+    const bSide = resolveSide(mate.b, partsByName, solvedPlacements);
 
     // Topology-origin or missing sides cannot be compared synchronously.
     // Skip silently rather than emitting a false load-exceeded diagnostic.
@@ -152,7 +152,7 @@ interface ResolvedSide {
   readonly connectorName: string;
   /** World-space origin of this side's connector (mm). */
   readonly jointOriginWorld: Vec3;
-  /** World-space CoM proxy = part's authored `at` (see §STUB CAVEATS #5). */
+  /** World-space CoM proxy = the part-frame origin (see §STUB CAVEATS #5). */
   readonly partCoMWorld: Vec3;
 }
 
@@ -185,6 +185,7 @@ type SideResolution = ResolvedSide | DeferredSide | MissingSide;
 function resolveSide(
   ref: string,
   partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  solvedPlacements?: ReadonlyMap<string, Transform>,
 ): SideResolution {
   const { partName, connectorName } = parseConnectorRef(ref);
   const part = partsByName.get(partName);
@@ -196,21 +197,21 @@ function resolveSide(
   }
   const partAt = readPartAt(part);
   const localOrigin = connector.origin.value;
-  // World origin = part's authored placement + connector's part-local origin.
-  // Mirrors the resolvePartPlacement helper in assembly.ts: part.at is the
-  // part's translation in the assembly frame; connector.origin.value is
-  // the connector's offset in the part's local frame; sum is the
-  // connector's frame origin in world coordinates.
-  const jointOriginWorld: Vec3 = [
-    partAt[0] + localOrigin[0],
-    partAt[1] + localOrigin[1],
-    partAt[2] + localOrigin[2],
-  ];
-  // CoM proxy = part's authored placement. STUB per §STUB CAVEATS #5; the
-  // real CoM would require BREP mass-properties (async, OCCT call). Good
-  // enough for the sanity gate: the dominant signal in `r = CoM - joint`
-  // is the authored offset, not the in-part distribution.
-  const partCoMWorld: Vec3 = [partAt[0], partAt[1], partAt[2]];
+  const placement = solvedPlacements?.get(partName);
+  const solvedJointOrigin = placement?.point(localOrigin);
+  // `solveMates` returns each part's world placement (not its scene motion),
+  // so transform the connector's part-local origin through the solved frame.
+  // The authored `at` fallback preserves the standalone legacy checker path.
+  const jointOriginWorld: Vec3 = solvedJointOrigin === undefined
+    ? [partAt[0] + localOrigin[0], partAt[1] + localOrigin[1], partAt[2] + localOrigin[2]]
+    : [solvedJointOrigin[0], solvedJointOrigin[1], solvedJointOrigin[2]];
+  const solvedPartOrigin = placement?.point([0, 0, 0]);
+  // CoM proxy = the part frame's world origin: solved placement when
+  // available, otherwise the authored `at`. The real CoM would require BREP
+  // mass-properties (async, OCCT call), outside this gate's sync contract.
+  const partCoMWorld: Vec3 = solvedPartOrigin === undefined
+    ? partAt
+    : [solvedPartOrigin[0], solvedPartOrigin[1], solvedPartOrigin[2]];
   return {
     kind: 'resolved',
     partName,
@@ -220,7 +221,7 @@ function resolveSide(
   };
 }
 
-/** Read `part.at` (`Vec3Param`) as a plain numeric Vec3 via `.evaluated`. */
+/** Read the authored `part.at` fallback (`Vec3Param`) via `.evaluated`. */
 function readPartAt(part: AssemblyPartStored): Vec3 {
   return [part.at.x.evaluated, part.at.y.evaluated, part.at.z.evaluated];
 }

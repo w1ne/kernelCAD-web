@@ -1,0 +1,22 @@
+{
+  "title": "Gate 3 solved-frame torque check",
+  "invocation": "npx tsx docs/demos/issue-917-gate3-solved-frame/capture-demo.ts",
+  "width": 1280,
+  "height": 720,
+  "framesPerSecond": 24,
+  "durationSeconds": 8,
+  "slides": 4,
+  "secondsPerSlide": 2,
+  "load": {
+    "part": "rotor",
+    "forceN": [1000, 0, 0]
+  },
+  "mateLimitNm": 5,
+  "fixture": "gate3-solved-frame.kcad.ts",
+  "claims": {
+    "localValidatorReplay": true,
+    "physicsSimulation": false,
+    "deployedBehaviorVerified": false,
+    "hardwareAcceptance": false
+  }
+}

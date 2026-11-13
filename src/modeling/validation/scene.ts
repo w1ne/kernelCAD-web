@@ -46,12 +46,15 @@ export interface ScenePart {
    *  applied to it. */
   readonly shape: Shape;
   /** SE(3) motion applied after the part's `at` (world = worldTransform ·
-   *  T(at) · shape). Identity for kinematic-zero `model()` and for a part no
-   *  mate places (the first declared part keeps its `at`). For a part a mate
-   *  places in `solvedModel(poses)` it is the mate's placement with `at`
-   *  taken back out, so the part's own `at` does not move it; the built
-   *  scene part carries the same transform. Joints from `arm.revolute` /
-   *  `.prismatic` / `.ball` move the part in the built scene only. */
+   *  T(at) · shape). `model()` resolves the default mate pose when all
+   *  referenced connector origins are numeric vectors. If a connector
+   *  origin is topology-based, this capture-time transform remains
+   *  unresolved; the lowered SceneBackend resolves it during recompute. Use
+   *  `solvedModel(poses)` when capture-time transforms must be fully solved.
+   *  For a part a mate places in `solvedModel(poses)`, this is the mate
+   *  placement with `at` taken back out, so the part's own `at` does not move
+   *  it. Joints from `arm.revolute` / `.prismatic` / `.ball` move the part in
+   *  the built scene only. */
   readonly worldTransform: Transform;
   /** Role token or hex; resolved from the source shape's metadata. */
   readonly color?: string;

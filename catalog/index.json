@@ -311860,7 +311860,7 @@
       "id": "linear-guide-rail",
       "kit": "standard-components",
       "title": "Linear guide rail",
-      "description": "Linear guide with a drilled aluminum rail, raised steel raceway and a position-selectable carriage with top mounting wells and polymer wipers. Knobs: rail size, carriage position, aluminum, steel and engineering polymer.",
+      "description": "Illustrative CC0 linear guide rail with four accessible top-through mounting passages, a broad base and a raised central raceway. Not manufacturer-grade CAD: no vendor groove profile, fasteners, fit tolerances or load rating. Knobs select model size and appearance colors, not steel or aluminum material grades.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -311878,8 +311878,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-rail.png",
-      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5",
-      "triangleBudget": 760,
+      "sourceSha256": "6e59a2f3ce7967a261f95487ccfabe6d25f4e905b73616310b74dfd3fd219528",
+      "triangleBudget": 460,
       "params": [
         {
           "name": "size",
@@ -311893,17 +311893,6 @@
           ]
         },
         {
-          "name": "carriagePosition",
-          "type": "choice",
-          "default": "center",
-          "label": "Carriage position",
-          "choices": [
-            "left",
-            "center",
-            "right"
-          ]
-        },
-        {
           "name": "steel",
           "type": "color",
           "default": "#85929a",
@@ -311914,36 +311903,27 @@
           "type": "color",
           "default": "#aebac0",
           "label": "Aluminum"
-        },
-        {
-          "name": "polymer",
-          "type": "color",
-          "default": "#e46b3c",
-          "label": "Polymer end wipers"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "aluminum": "#586970",
-          "polymer": "#244956"
+          "aluminum": "#586970"
         },
-        "highVisibility": {
-          "steel": "#434b50",
-          "aluminum": "#bbc5c8",
-          "polymer": "#e97832"
+        "brass": {
+          "steel": "#646f75",
+          "aluminum": "#aab8bc"
         },
         "weathered": {
           "steel": "#665b4d",
-          "aluminum": "#788177",
-          "polymer": "#4b4942"
+          "aluminum": "#788177"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 440,
         "sizeM": [
           0.12,
-          0.028,
+          0.015,
           0.032
         ],
         "minUpM": 0,
@@ -311962,21 +311942,9 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "raceway",
-            "carriage",
-            "left-race-contact",
-            "right-race-contact"
+            "raceway"
           ],
           "param": "steel"
-        },
-        {
-          "name": "polymer",
-          "color": "#e46b3c",
-          "parts": [
-            "left-end-wiper",
-            "right-end-wiper"
-          ],
-          "param": "polymer"
         }
       ]
     },
@@ -312827,7 +312795,7 @@
       "id": "pipe-saddle-clamp",
       "kit": "standard-components",
       "title": "Pipe saddle clamp",
-      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot Knobs: model size, steel, rubber.",
+      "description": "Illustrative CC0 two-piece pipe saddle clamp with a lower curved cradle, a separate bolted top cap, two rubber half-liners, an open horizontal pipe passage, and four mounting-foot holes. Not manufacturer-grade CAD: no pipe standard, bolt specification, clearance tolerance or load rating. Knobs change scale and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -312845,14 +312813,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
       "preview": "/assets/standard-components-pipe-saddle-clamp.png",
-      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
-      "triangleBudget": 360,
+      "sourceSha256": "387d2bc0875d05518d71961c8d6dcb990defe5dd8bf4f1a791760ac60b8c9778",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model size",
           "choices": [
             "compact",
             "standard",
@@ -312863,13 +312831,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel appearance color"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#353a3d",
-          "label": "Rubber"
+          "label": "Rubber appearance color"
         }
       ],
       "presets": {
@@ -312887,11 +312855,11 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 1024,
         "sizeM": [
-          0.056,
-          0.021,
-          0.036
+          0.064,
+          0.033599,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -312901,9 +312869,10 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "foot",
-            "left-lug",
-            "right-lug"
+            "lower-saddle-and-foot",
+            "removable-upper-cap",
+            "left-clamp-bolt",
+            "right-clamp-bolt"
           ],
           "param": "steel"
         },
@@ -312911,7 +312880,8 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "seat"
+            "lower-rubber-liner",
+            "upper-rubber-liner"
           ],
           "param": "rubber"
         }

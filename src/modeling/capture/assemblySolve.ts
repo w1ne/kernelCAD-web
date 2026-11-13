@@ -374,11 +374,12 @@ function scenePartMotion(
  *
  * Per-part data is the assembly's authoring-time view: `name` from
  * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
- * and `worldTransform` from the v0.6 mate solver when mates are declared
- * (Pattern A FK over `solveMates(arm, poses)`) or identity otherwise.
- * Identity is a no-op fall-back for v0.5 callers and for kinematic-zero
- * `model()` calls — the lowerer-side body-tree FK on `solvedAssembly`
- * still applies for v0.5 `arm.revolute/.fixed/.prismatic/.ball` joints.
+ * and `worldTransform` from the v0.6 mate solver when resolved transforms
+ * are supplied. `solvedModel()` supplies full capture-time FK; `model()`
+ * supplies synchronous FK when every referenced connector origin is a
+ * numeric vector. Identity is the fallback for mate-free and topology-based
+ * `model()` calls, and for parts the mate graph does not place. The lowerer
+ * still resolves topology connectors and v0.5 body-tree joints at recompute.
  *
  * Precedence: when a part has BOTH an authoring `.translate(...)` chain
  * AND lives in a mate graph, the solver-assigned `worldTransform` wins on

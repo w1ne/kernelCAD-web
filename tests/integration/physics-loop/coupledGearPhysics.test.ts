@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { bakeAnimationTimeline, selectAnimationMetadata } from '../../../src/modeling/animation/bakeAnimationTimeline';
+import { sampleTracks } from '../../../src/modeling/animation/animationSampler';
+import { isSceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { runScript } from '../../../src/composition/runScript';
 import { checkMechanismTruth } from '../../../src/modeling/runtime/mechanismTruth';
 import { loadMujocoSession } from '../../../src/modeling/runtime/mujocoSession';
@@ -16,6 +18,20 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const MODEL_FILE = resolve(ROOT, 'docs/demos/issue-1321-coupled-gear/coupled-gear.kcad.ts');
 const RATIO = -12 / 48;
 const DEG_TO_RAD = Math.PI / 180;
+
+/** Z rotation of a column-major world matrix, in degrees. */
+function zDeg(matrix: ArrayLike<number>): number {
+  return Math.atan2(matrix[1]!, matrix[0]!) / DEG_TO_RAD;
+}
+
+/** Angle in degrees folded into [-180, 180). */
+function wrapDeg(degrees: number): number {
+  return ((degrees + 180) % 360 + 360) % 360 - 180;
+}
+
+async function buildFixture(code = readFileSync(MODEL_FILE, 'utf8')) {
+  return buildModel({ code, fileName: MODEL_FILE, scriptDir: dirname(MODEL_FILE) });
+}
 
 async function authoredGearPair(code = readFileSync(MODEL_FILE, 'utf8')): Promise<Assembly> {
   const run = await runScript({
@@ -151,4 +167,51 @@ describe('native physics for coupled 12:48 gear motion', () => {
     expect(Math.abs(beforeCrossing - 90)).toBeLessThan(3);
     expect(Math.abs(afterCrossing + 90)).toBeLessThan(3);
   }, 60_000);
+
+  it('puts every baked frame of both gears on the authored track and agrees with evaluate', async () => {
+    const model = await buildFixture();
+    const animation = selectAnimationMetadata(model)!;
+    const schedule = sampleTracks(animation.tracks, animation.fps).frames;
+    const baked = await bakeAnimationTimeline(model);
+    expect(baked.frames).toBe(schedule.length);
+    expect(baked.collisions).toEqual([]);
+    const motor = baked.parts.find((part) => part.name === 'motor-rotor')!;
+    const axle = baked.parts.find((part) => part.name === 'rear-live-axle')!;
+    expect(motor.matrices).toHaveLength(schedule.length);
+    expect(axle.matrices).toHaveLength(schedule.length);
+
+    // Every displayed frame: motor = track value, axle = -1/4 of it.
+    let maxMotorErr = 0;
+    let maxAxleErr = 0;
+    schedule.forEach((frame, index) => {
+      const input = frame.values.motorDeg!;
+      maxMotorErr = Math.max(maxMotorErr, Math.abs(wrapDeg(zDeg(motor.matrices[index]!) - input)));
+      maxAxleErr = Math.max(maxAxleErr, Math.abs(wrapDeg(zDeg(axle.matrices[index]!) - RATIO * input)));
+    });
+    expect(maxMotorErr).toBeLessThan(1e-6);
+    expect(maxAxleErr).toBeLessThan(1e-6);
+
+    // Limits, zero crossing and an off-key pose match an independent evaluate.
+    const evaluatedAngles = async (input: number) => {
+      const evaluated = await buildFixture(
+        readFileSync(MODEL_FILE, 'utf8').replace("param('motorDeg', 0,", `param('motorDeg', ${input},`),
+      );
+      const scene = evaluated.tailShape;
+      expect(isSceneBackend(scene)).toBe(true);
+      const parts = isSceneBackend(scene) ? scene.parts : [];
+      const angle = (name: string) =>
+        zDeg(parts.find((part) => part.name === name)!.worldTransform.toMat4());
+      return { motor: angle('motor-rotor'), axle: angle('rear-live-axle') };
+    };
+    for (const target of [-720, 0, 300, 720]) {
+      const index = schedule.reduce((best, frame, candidate) =>
+        Math.abs(frame.values.motorDeg! - target) < Math.abs(schedule[best]!.values.motorDeg! - target)
+          ? candidate : best, 0);
+      const input = schedule[index]!.values.motorDeg!;
+      const evaluated = await evaluatedAngles(input);
+      expect(Math.abs(wrapDeg(evaluated.axle - RATIO * input))).toBeLessThan(1e-6);
+      expect(Math.abs(wrapDeg(zDeg(motor.matrices[index]!) - evaluated.motor))).toBeLessThan(1e-6);
+      expect(Math.abs(wrapDeg(zDeg(axle.matrices[index]!) - evaluated.axle))).toBeLessThan(1e-6);
+    }
+  }, 120_000);
 });
