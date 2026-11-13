@@ -254913,7 +254913,7 @@
       "id": "pipe-saddle-clamp",
       "kit": "standard-components",
       "title": "Pipe saddle clamp",
-      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot Knobs: model size, steel, rubber.",
+      "description": "Illustrative CC0 two-piece pipe saddle clamp with a lower curved cradle, a separate bolted top cap, two rubber half-liners, an open horizontal pipe passage, and four mounting-foot holes. Not manufacturer-grade CAD: no pipe standard, bolt specification, clearance tolerance or load rating. Knobs change scale and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254931,14 +254931,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
       "preview": "/assets/standard-components-pipe-saddle-clamp.png",
-      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
-      "triangleBudget": 360,
+      "sourceSha256": "387d2bc0875d05518d71961c8d6dcb990defe5dd8bf4f1a791760ac60b8c9778",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model size",
           "choices": [
             "compact",
             "standard",
@@ -254949,13 +254949,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Steel appearance color"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#353a3d",
-          "label": "Rubber"
+          "label": "Rubber appearance color"
         }
       ],
       "presets": {
@@ -254973,11 +254973,11 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 1024,
         "sizeM": [
-          0.056,
-          0.021,
-          0.036
+          0.064,
+          0.033599,
+          0.044
         ],
         "minUpM": 0,
         "materials": 1
@@ -254987,9 +254987,10 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "foot",
-            "left-lug",
-            "right-lug"
+            "lower-saddle-and-foot",
+            "removable-upper-cap",
+            "left-clamp-bolt",
+            "right-clamp-bolt"
           ],
           "param": "steel"
         },
@@ -254997,7 +254998,8 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "seat"
+            "lower-rubber-liner",
+            "upper-rubber-liner"
           ],
           "param": "rubber"
         }
@@ -255209,7 +255211,7 @@
       "id": "retaining-ring",
       "kit": "standard-components",
       "title": "Retaining ring",
-      "description": "Open retaining ring profile with two small installation ears Knobs: model size, stainless steel, spring steel.",
+      "description": "Illustrative CC0 C-type external retaining ring: one connected spring body, open slit and two integral plier ears with real through-holes. Not manufacturer-grade CAD: nominal groove fit, edge radii, spring properties, tolerances and DIN 471 compliance are not verified. Controls change only model size and whole-piece appearance color.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -255227,7 +255229,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
       "preview": "/assets/standard-components-retaining-ring.png",
-      "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
+      "sourceSha256": "4e89a844178dffeae337dd987e98ca6f090ec3f3c3a913939114d76f9faf3c94",
       "triangleBudget": 300,
       "params": [
         {
@@ -255242,38 +255244,29 @@
           ]
         },
         {
-          "name": "stainless",
-          "type": "color",
-          "default": "#b8c1c6",
-          "label": "Stainless steel"
-        },
-        {
           "name": "springSteel",
           "type": "color",
           "default": "#78868e",
-          "label": "Spring steel"
+          "label": "Metal appearance color"
         }
       ],
       "presets": {
         "dark": {
-          "stainless": "#7d8a91",
           "springSteel": "#4c585e"
         },
         "brass": {
-          "stainless": "#b38b52",
           "springSteel": "#75838a"
         },
         "weathered": {
-          "stainless": "#8b8275",
           "springSteel": "#5b5550"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 260,
         "sizeM": [
-          0.039899,
+          0.039743,
           0.003,
-          0.043975
+          0.043758
         ],
         "minUpM": 0,
         "materials": 1
@@ -255283,18 +255276,9 @@
           "name": "springSteel",
           "color": "#78868e",
           "parts": [
-            "ring"
+            "retaining-ring-body"
           ],
           "param": "springSteel"
-        },
-        {
-          "name": "stainless",
-          "color": "#b8c1c6",
-          "parts": [
-            "ear-left",
-            "ear-right"
-          ],
-          "param": "stainless"
         }
       ]
     },
@@ -256483,7 +256467,7 @@
       "id": "v-belt-pulley",
       "kit": "standard-components",
       "title": "V-belt pulley",
-      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore Knobs: model size, steel, cast iron.",
+      "description": "Illustrative CC0 double-V belt pulley with two tapered annular grooves, a continuous 14 mm shaft bore and a distinct steel bushing envelope. The two illustrative V sections have approximately 41-degree included angles. Not manufacturer-grade CAD: belt section, bushing fit, keyway, tolerances, torque and load ratings are not specified. Knobs change model size and appearance colors only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -256501,7 +256485,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-v-belt-pulley.png",
-      "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
+      "sourceSha256": "f2a15772bc395f3e207f20097957196f79a634d0ef68c2c5e3a338da3e88745e",
       "triangleBudget": 420,
       "params": [
         {
@@ -256519,13 +256503,13 @@
           "name": "steel",
           "type": "color",
           "default": "#85929a",
-          "label": "Steel"
+          "label": "Bushing appearance color"
         },
         {
           "name": "castIron",
           "type": "color",
           "default": "#68747a",
-          "label": "Cast iron"
+          "label": "Sheave appearance color"
         }
       ],
       "presets": {
@@ -256543,11 +256527,11 @@
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 336,
         "sizeM": [
-          0.048,
-          0.026,
-          0.048
+          0.072,
+          0.04,
+          0.072
         ],
         "minUpM": 0,
         "materials": 1
@@ -256557,7 +256541,7 @@
           "name": "castIron",
           "color": "#68747a",
           "parts": [
-            "hub"
+            "double-v-sheave"
           ],
           "param": "castIron"
         },
@@ -256565,9 +256549,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "rim-lower",
-            "rim-mid",
-            "rim-upper"
+            "steel-bushing-envelope"
           ],
           "param": "steel"
         }

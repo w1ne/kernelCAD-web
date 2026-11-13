@@ -409,6 +409,17 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'checkStaticHold evaluated no arm.revolute/arm.prismatic joint with a declared actuator capacity, so the result has no holding-capacity coverage.',
   },
+  'assembly.joint.static-hold.mass-unavailable': {
+    hintTemplate:
+      'Repair the assembly geometry or resolve the lowering failure, then run checkStaticHold again. A holding-capacity result cannot be calculated until the assembly scene and its part mass properties are available.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'repair the assembly geometry or lowering failure so static-hold can measure part mass properties',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'checkStaticHold could not lower the assembly scene and therefore did not measure part mass or evaluate actuator holding capacity.',
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:
