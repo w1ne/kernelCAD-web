@@ -199,6 +199,54 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
     expect(origin[2]).toBeCloseTo(12);
   });
 
+  it.each([
+    { label: 'parameter source with signed ratio and offset', sourcePose: 30, drivenPose: undefined, expectedDriven: -55 },
+    { label: 'explicit driven override', sourcePose: 30, drivenPose: 17, expectedDriven: 17 },
+    { label: 'absent source pose', sourcePose: undefined, drivenPose: undefined, expectedDriven: 0 },
+    { label: 'explicit zero source with offset', sourcePose: 0, drivenPose: undefined, expectedDriven: 5 },
+  ])('keeps capture and lowerer coupling poses aligned: $label', async ({ sourcePose, drivenPose, expectedDriven }) => {
+    const { records, paramTable, returnValue } = await runScript({
+      fileName: 'model-scene-coupled-mate-transforms.kcad.ts',
+      code: `
+        const drive = param('drive', ${sourcePose ?? 0});
+        const arm = assembly('coupled-capture');
+        arm.part('base', box(4, 4, 4))
+          .connector('input', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+          .connector('output', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('driver', box(10, 2, 2))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('driven', box(12, 3, 3))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('input', 'base.input', 'driver.axis', 'revolute'${sourcePose === undefined ? '' : ', { pose: drive }'});
+        arm.mate('output', 'base.output', 'driven.axis', 'revolute'${drivenPose === undefined ? '' : `, { pose: ${drivenPose} }`});
+        arm.coupleMates('output', { source: 'input', ratio: -2, offset: 5 });
+        return arm.model();
+      `,
+    });
+    const result = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
+    const capturedScene = returnValue as Scene;
+    const loweredScene = result.shapes.get(records.at(-1)!.id);
+    expect(isSceneBackend(loweredScene)).toBe(true);
+    if (!isSceneBackend(loweredScene)) throw new Error('Expected the coupled model scene');
+    expect(capturedScene.parts).toHaveLength(3);
+    expect(loweredScene.parts).toHaveLength(3);
+
+    for (const [name, expectedAngle] of [['driver', sourcePose ?? 0], ['driven', expectedDriven]] as const) {
+      const captured = capturedScene.part(name).worldTransform;
+      const lowered = loweredScene.parts.find((part) => part.name === name)!.worldTransform;
+      const lowerMatrix = lowered.toMat4();
+      for (const [index, value] of captured.toMat4().entries()) expect(value).toBeCloseTo(lowerMatrix[index], 8);
+      const radians = expectedAngle * Math.PI / 180;
+      for (const transform of [captured, lowered]) {
+        const direction = transform.axisDir([1, 0, 0]);
+        expect(direction[0]).toBeCloseTo(Math.cos(radians), 8);
+        expect(direction[1]).toBeCloseTo(Math.sin(radians), 8);
+        expect(direction[2]).toBeCloseTo(0, 8);
+      }
+    }
+  });
+
   it('preserves per-part colors via lookupSourceColor', async () => {
     const { shape, diagnostics } = await lowerScript(`
       const arm = assembly('test');

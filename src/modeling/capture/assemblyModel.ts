@@ -154,7 +154,7 @@ function captureMatePoses(state: AssemblyState): NumericPoses {
 
 function captureMatePose(mate: MateRecord, state: AssemblyState): number | [number, number, number] | undefined {
   if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
-  if (mate.pose === undefined) return mate.type === 'ball' ? [0, 0, 0] : 0;
+  if (mate.pose === undefined) return undefined;
   if (Array.isArray(mate.pose)) {
     return mate.pose.map((value) => currentValue(value as Editable<number>, state.session.paramTable)) as [number, number, number];
   }
