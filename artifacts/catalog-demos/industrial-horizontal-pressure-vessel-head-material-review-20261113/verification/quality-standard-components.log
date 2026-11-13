@@ -1,0 +1,9 @@
+Commands:
+python3 scripts/checkCatalogQuality.py --kit standard-components --fix-list
+python3 scripts/checkCatalogQuality.py --kit standard-components --top 5
+
+Failing paths:
+catalog/kits/standard-components/beam-coupling.kcad.ts
+catalog/kits/standard-components/retaining-ring.kcad.ts
+
+Result: 48/50 standard-components assets pass (96.00%); 2 thin assets. Retaining-ring is inherited unchanged from current develop PR #1373. Exit code 1 reflects the two material-control gate findings.

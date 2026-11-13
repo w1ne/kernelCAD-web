@@ -22,7 +22,7 @@ palette assignment and exported color. The mesh remains 468 triangles under the
 
 - Focused GLB regression: **1/1 passed**; [test source](../../../tests/integration/catalog/horizontalPressureVesselMaterials.test.ts) and [log](verification/focused-test.log).
 - Industrial-plant ESLint: **passed**; [log](verification/eslint.log).
-- Catalog integration tests: **60 files / 102 tests passed** on commit `54848148a`, including the exhaustive source-build, triangle-budget, and index-freshness check; see [run log](verification/catalog-integration.log). The exact-head CI status is tracked on PR #1258.
+- Catalog integration tests: **61 files / 106 tests passed** on the synced tree committed as `8dd710d10`, including the exhaustive source-build, triangle-budget, and index-freshness check; see [run log](verification/catalog-integration.log). The exact-head CI status is tracked on PR #1258.
 - Catalog index regenerated: 2,402 assets / 50 kits, zero source SHA mismatches, and zero missing preview files; the pressure-vessel source hash matches and its preview path resolves. The only other changed row is the inherited retaining-ring update from PR #1373. See [audit JSON](verification/index-audit.json) and [recheck script](verification/verify-index.mjs).
 - Structural quality: industrial-plant is **60/60 (100%)**; after syncing current `develop`, catalog-wide is **2,400/2,402 (99.92%)**. The two outliers are `standard-components/beam-coupling` and the inherited `standard-components/retaining-ring` from PR #1373; logs before and after the sync are retained in `verification/`.
 - The generated before/after previews and the five selected samples are retained in this bundle.
