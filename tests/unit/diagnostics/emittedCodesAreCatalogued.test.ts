@@ -266,6 +266,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 5 mechanism checks: assembly.joint.static-hold.exceeded,
     //       assembly.joint.static-hold.margin-low,
     //       assembly.joint.static-hold.no-actuator,
+    //       assembly.joint.static-hold.mass-unavailable,
     //       kinematic.static-hold.no-actuator-declared,
     //       kinematic.sweep-tolerance.combo-cap-exceeded = 273.
     //  + 4 USD physics export and geometry diff: export.usd.joint-unsupported,

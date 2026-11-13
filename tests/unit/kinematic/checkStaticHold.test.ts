@@ -12,11 +12,12 @@
 // (box() is centered then translated so it spans x in [0, L]).
 // tau = m * g * L/2 = 0.4710 * 9.81 * 0.15 = 0.6931 N*m.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkStaticHold } from '../../../src/kinematic/checkStaticHold';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createScriptApi } from '../../../src/composition/scriptApi';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const LENGTH_MM = 300;
@@ -81,6 +82,32 @@ function expectedTorqueAtHorizontal(density: number): number {
 describe('checkStaticHold — gravitational torque vs actuator capacity', () => {
   beforeAll(async () => {
     await initOcct();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('does not pass when the assembly scene cannot be lowered for mass properties', async () => {
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const { arm } = buildHingedBeam({ torqueNm: expected * 10 });
+    const lower = vi.spyOn(RecomputeEngine.prototype, 'run').mockResolvedValue({
+      shapes: new Map(),
+      diagnostics: [],
+      health: new Map(),
+      selections: [],
+    });
+
+    const r = await checkStaticHold(arm, { pose: { shoulder: 0 } });
+
+    expect(lower).toHaveBeenCalledOnce();
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    expect(r.posesSampled).toBe(0);
+    expect(r.diagnostics).toContainEqual(expect.objectContaining({
+      code: 'assembly.joint.static-hold.mass-unavailable',
+      severity: 'error',
+    }));
   });
 
   it('analytic torque on a horizontal beam: tau = m*g*L/2', async () => {

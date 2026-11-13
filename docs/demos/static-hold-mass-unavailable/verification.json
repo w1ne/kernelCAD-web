@@ -1,0 +1,51 @@
+{
+  "issue": 1270,
+  "created": "2026-11-13",
+  "kind": "local regression replay",
+  "invocation": "node --import tsx docs/demos/static-hold-mass-unavailable/capture-demo.mjs",
+  "fixture": {
+    "assembly": "static-hold-mass-unavailable",
+    "joint": "shoulder",
+    "kind": "revolute",
+    "beamSizeMm": [
+      300,
+      20,
+      10
+    ],
+    "actuatorTorqueNm": 10,
+    "requestedPose": {
+      "shoulder": 0
+    }
+  },
+  "faultInjection": "RecomputeEngine.run returns no lowered scene shape for the captured assembly feature.",
+  "expectation": {
+    "ok": false,
+    "posesSampled": 0,
+    "diagnostic": "assembly.joint.static-hold.mass-unavailable",
+    "severity": "error"
+  },
+  "actual": {
+    "ok": false,
+    "joints": [],
+    "posesSampled": 0,
+    "diagnostics": [
+      {
+        "code": "assembly.joint.static-hold.mass-unavailable",
+        "severity": "error",
+        "message": "The assembly scene could not be lowered, so static-hold could not measure part mass or evaluate any joints.",
+        "hint": "Repair the assembly geometry or resolve the lowering failure, then run checkStaticHold again. A holding-capacity result cannot be calculated until the assembly scene and its part mass properties are available.",
+        "nextAction": {
+          "kind": "rewrite-feature",
+          "guidance": "repair the assembly geometry or lowering failure so static-hold can measure part mass properties"
+        },
+        "source": "local"
+      }
+    ],
+    "source": "local"
+  },
+  "limits": [
+    "The lowerer result is deliberately injected to exercise the unavailable-scene branch.",
+    "No torque estimate or physics simulation is performed in this replay.",
+    "This local result does not establish deployed behavior or hardware acceptance."
+  ]
+}
