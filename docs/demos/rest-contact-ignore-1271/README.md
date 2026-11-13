@@ -3,8 +3,8 @@
 This bundle runs the same two-part overlap through the local mechanism checker
 before and after `solvedModel({}, { ignore: [['a', 'b']] })`. The unignored run
 must report `mechanism.rest-interpenetration`; the ignored run must not. Both
-runs force the articulated sweep off with a zero budget, so this replay makes
-no claim that joint travel is collision-free.
+runs use a zero sweep budget. A third run completes the available sweep and
+checks that the ignored overlap still leaves the verdict unverified.
 
 ## Reproduce
 
@@ -17,7 +17,7 @@ KCAD_SLOW=1 npx vitest run src/modeling/runtime/mechanismTruth.test.ts -t '5b' -
 ```
 
 The capture script runs two actual `checkMechanismTruth` validations, asserts
-the before/after diagnostic behavior, writes the raw results to
+the before/after diagnostic behavior and the full-sweep verdict, writes the raw results to
 [`results.json`](results.json), and renders them into [`demo.mp4`](demo.mp4).
 [`verification.json`](verification.json) records invocation and video settings.
 The joint-limit test independently checks that an ignored pair still collides

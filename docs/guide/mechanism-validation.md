@@ -10,7 +10,7 @@ The result is local CAD validation of the model's declared mates and geometry. I
 
 ## Pair exclusions at rest
 
-At the returned pose, `solvedModel({}, { ignore: [['a', 'b']] })` exempts that symmetric named pair from overlap and rest-pose penetration diagnostics. Mate-gap and joint-continuity checks still run, and the motion sweep still checks the pair at sampled poses. Use it for a known acceptable rest-pose overlap while keeping the other mechanism checks active.
+At the returned pose, `solvedModel({}, { ignore: [['a', 'b']] })` exempts that symmetric named pair from overlap and rest-pose penetration diagnostics. Mate-gap and joint-continuity checks still run, and the motion sweep still checks the pair at sampled poses. If the excluded pair actually overlaps, `mechanism.ignored-rest-overlap` warns and the mechanism remains `unverified`, even if the sweep completes. The exception alone does not establish physical compatibility.
 
 The [pair-exclusion replay bundle](../demos/rest-contact-ignore-1271/README.md) captures the same overlapping assembly before and after the pair is listed.
 

@@ -360,7 +360,7 @@ function mechanismVerdict(
   physics: { ran: boolean } | undefined,
 ): 'real' | 'broken' | 'unverified' {
   if (failures.some((d) => d.severity === 'error')) return 'broken';
-  if (failures.some((d) => d.code === 'mechanism.joint-mesh-unverified')) return 'unverified';
+  if (failures.some((d) => d.code === 'mechanism.joint-mesh-unverified' || d.code === 'mechanism.ignored-rest-overlap')) return 'unverified';
   if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
   return 'real';
 }
@@ -811,7 +811,14 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
   const out: CompilerDiagnostic[] = [];
   const ignoredPairKeys = new Set(arm.__ignoreInterference().map(([a, b]) => pairKey(a, b)));
   for (const p of restPosePenetrations(scene)) {
-    if (ignoredPairKeys.has(pairKey(p.a, p.b))) continue;
+    if (ignoredPairKeys.has(pairKey(p.a, p.b))) {
+      out.push(makeFailure(
+        'mechanism.ignored-rest-overlap',
+        `Parts '${p.a}' and '${p.b}' have an ignored rest-pose overlap of ${formatOverlapMm3(p.volumeMm3)} mm³. Their physical compatibility remains unverified.`,
+        'warn',
+      ));
+      continue;
+    }
     const at = p.at.map((v) => v.toFixed(1)).join(', ');
     out.push(makeFailure(
       'mechanism.rest-interpenetration',

@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-11-13T12:20:43.757Z",
+  "checkedAt": "2026-11-13T12:42:07.294Z",
   "invocation": "npx tsx docs/demos/rest-contact-ignore-1271/capture-demo.mts",
   "source": "docs/demos/rest-contact-ignore-1271/capture-demo.mts",
-  "sourceSha256": "7a0828e45d3faa230000e40473be0aebe3bd5b1273445d0f185f0e48053d82fd",
+  "sourceSha256": "abe372e3a1aa92981ea2339e45355d38b1c76c60e20c4448b343c2af5dbb5871",
   "scenario": {
     "parts": [
       "a",
@@ -48,8 +48,24 @@
       "sweepChecked": false,
       "failures": [
         {
+          "code": "mechanism.ignored-rest-overlap",
+          "message": "Parts 'a' and 'b' have an ignored rest-pose overlap of 2000.00 mm³. Their physical compatibility remains unverified.",
+          "severity": "warn"
+        },
+        {
           "code": "mechanism.unverified-budget-exceeded",
           "message": "The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: sweepBudget is 0 (forced skip) (2 parts in 1 rigid cluster, 1 pose, 0 pair overlap probes; work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs). The mechanism is NOT certified collision-free across its travel. Rest-pose joint-mesh continuity still ran: measured gaps remain errors, and unavailable joint measurements keep the mechanism unverified. Reduce the part/pose count, verify a tractable sub-assembly, or pass a larger sweepBudget to force the full sweep.",
+          "severity": "warn"
+        }
+      ]
+    },
+    "afterFullSweep": {
+      "mechanism": "unverified",
+      "sweepChecked": true,
+      "failures": [
+        {
+          "code": "mechanism.ignored-rest-overlap",
+          "message": "Parts 'a' and 'b' have an ignored rest-pose overlap of 2000.00 mm³. Their physical compatibility remains unverified.",
           "severity": "warn"
         }
       ]
@@ -58,7 +74,8 @@
   "assertions": {
     "baselineRestPenetrationReported": true,
     "ignoredRestPenetrationSuppressed": true,
-    "afterTravelSweepChecked": false
+    "afterTravelSweepChecked": false,
+    "completedSweepLeavesIgnoredOverlapUnverified": true
   },
   "scope": {
     "validation": "Direct local checkMechanismTruth calls on the authored CAD assembly.",

@@ -84,7 +84,7 @@ function makeSlides(before: CaseResult, after: CaseResult, beforeRest: Diagnosti
   const beforeLines = wrapText(beforeRest.message, 78).slice(0, 5);
   const beforeText = textLines(beforeLines, 100, 335, 'small', 34);
   const afterText = textLines([
-    `Rest-pose mesh penetration: ${afterCodes.includes('mechanism.rest-interpenetration') ? 'present' : 'none'}`,
+    `Ignored rest overlap warning: ${afterCodes.includes('mechanism.ignored-rest-overlap') ? 'present' : 'none'}`,
     `Sampled BREP travel collision: ${after.sweepChecked
       ? (afterCodes.includes('mechanism.interpenetration') ? 'found' : 'none found')
       : 'not checked'}`,
@@ -136,7 +136,7 @@ function makeSlides(before: CaseResult, after: CaseResult, beforeRest: Diagnosti
   ];
 }
 
-async function runCase(name: string, ignored: boolean): Promise<CaseResult> {
+async function runCase(name: string, ignored: boolean, sweepBudget = SWEEP_BUDGET): Promise<CaseResult> {
   const session = new CaptureSession();
   const kcad = createModelingApi({ session });
   const arm = kcad.assembly(name);
@@ -147,7 +147,7 @@ async function runCase(name: string, ignored: boolean): Promise<CaseResult> {
   arm.mate('fix', 'a.m', 'b.m', 'fastened');
   if (ignored) await arm.solvedModel({}, { ignore: [['a', 'b']], validate: 'off' });
 
-  const result = await checkMechanismTruth(arm, { sweepBudget: SWEEP_BUDGET });
+  const result = await checkMechanismTruth(arm, { sweepBudget });
   return {
     mechanism: result.mechanism,
     sweepChecked: result.coverage?.sweep ?? false,
@@ -160,11 +160,16 @@ async function main(): Promise<void> {
   await initOcct();
   const before = await runCase('overlap-unignored', false);
   const after = await runCase('overlap-ignored', true);
+  const afterFullSweep = await runCase('overlap-ignored-full-sweep', true, 1_000_000);
   const beforeRest = before.failures.find((item) => item.code === 'mechanism.rest-interpenetration');
   const afterCodes = after.failures.map((item) => item.code);
   if (beforeRest === undefined) throw new Error('Expected an unignored rest-pose penetration diagnostic.');
   if (afterCodes.includes('mechanism.rest-interpenetration')) throw new Error('Ignored pair still has a rest-pose penetration diagnostic.');
   if (after.sweepChecked) throw new Error('A zero sweep budget unexpectedly reports checked travel coverage.');
+  if (!afterCodes.includes('mechanism.ignored-rest-overlap')) throw new Error('Ignored overlap warning is missing.');
+  if (!afterFullSweep.sweepChecked || afterFullSweep.mechanism !== 'unverified' || !afterFullSweep.failures.some((item) => item.code === 'mechanism.ignored-rest-overlap')) {
+    throw new Error('A completed sweep must not certify an ignored physical overlap.');
+  }
 
   const sourcePath = fileURLToPath(import.meta.url);
   const sourceText = await readFile(sourcePath, 'utf8');
@@ -181,11 +186,12 @@ async function main(): Promise<void> {
       ignoredPairsAfter: [['a', 'b']],
     },
     settings: { sweepBudget: SWEEP_BUDGET, simulationSteps: 0 },
-    results: { before, after },
+    results: { before, after, afterFullSweep },
     assertions: {
       baselineRestPenetrationReported: true,
       ignoredRestPenetrationSuppressed: true,
       afterTravelSweepChecked: false,
+      completedSweepLeavesIgnoredOverlapUnverified: true,
     },
     scope: {
       validation: 'Direct local checkMechanismTruth calls on the authored CAD assembly.',

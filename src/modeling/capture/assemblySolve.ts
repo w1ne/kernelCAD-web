@@ -622,7 +622,8 @@ export interface SolvedModelOptions {
    * out of `assembly.interference.overlap` and rest-pose
    * `mechanism.rest-interpenetration` diagnostics for that pair. Rest-pose
    * mate-gap and joint-continuity checks remain active, as do collision
-   * checks at sampled motion poses.
+   * checks at sampled motion poses. A measured ignored rest overlap emits a
+   * warning and leaves the physical mechanism verdict unverified.
    *
    * This is the granular alternative to `validate: 'off'`. Use it when a
    * specific known-acceptable contact (e.g. a knuckle joint where two arm
