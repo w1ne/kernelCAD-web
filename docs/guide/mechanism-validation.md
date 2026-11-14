@@ -31,3 +31,7 @@ When mates are coupled with `arm.coupleMates(driven, { source, ratio, offset })`
 For a `gear-pair` transmission that has a matching scalar coupling, the native release model uses the ideal equality for tooth transfer and excludes contact between adjacent bodies on that declared gear path. Other body contacts remain active. This avoids resolving gear teeth twice through both an ideal ratio and a contact solver. If the physics backend cannot map a declared coupling, `verify({ check: 'physics' })` reports `mechanism.physics-unsupported` and leaves physics coverage false. A passing ratio check validates the authored coordinate relation in the native physics model; it does not calculate tooth-contact forces or certify a physical gear mesh.
 
 The [12:48 coupled-gear release demo and evidence bundle](../demos/issue-1321-coupled-gear/README.md) records the signed input sweep and native release residual from the regression fixture.
+
+## Notes in the broken-mechanism banner
+
+The `MECHANISM BROKEN` banner of `kernelcad validate` and strict `kernelcad render` counts only error-severity entries as failures and prints them as `[ERROR]`. Non-fatal entries follow the errors with their own label: `[NOTE]` for an informational entry, such as the drop of a free passive joint, and `[WARN]` for a warning, such as a skipped pose sweep. A note does not make a mechanism broken. The render watermark and the `mechanism_failure_codes` field of `render_preview` list error codes only; `diagnostics` keeps each entry with its severity.
