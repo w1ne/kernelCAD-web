@@ -116,8 +116,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/portfolio/pocket-watch/build.kcad.ts',
   'examples/portfolio/pocket-watch-v2/build.kcad.ts',
   'examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts',
-  // Invalid part-name (spaces) — pre-existing topology-ref-grammar bug.
-  // Not P3's scope.
+  // Decorative pose-only hero: every part is fastened to the base frame at a
+  // representative open pose. It evaluates cleanly, but the crossed arms,
+  // through pins and far fastened mates are not a mechanism, so
+  // `validate --include-interference` reports mechanism: broken.
   'examples/gallery/scissor-lift.kcad.ts',
 ]);
 

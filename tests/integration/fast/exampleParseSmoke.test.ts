@@ -73,7 +73,6 @@ const EVALUATION_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['examples/community/thermal-iolink-machine-health.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fastener-installation/l-bracket-mount.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fea/shelf-bracket-fea.kcad.ts', 'requires external CalculiX and gmsh tools'],
-  ['examples/gallery/scissor-lift.kcad.ts', 'existing invalid part name'],
 ]);
 
 function sourceDiagnostics(file: string, source: string): readonly ts.Diagnostic[] {
