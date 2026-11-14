@@ -50,13 +50,13 @@ function pinAt(name: string, x: number, z: number) {
     .union(
       cylinder(2.6, washerR, 40)
         .alongAxis([0, 1, 0])
-        .translate(x, -railY - 10, z)
+        .translate(x, -railY - 9.6, z)
         .color('#d7dde2'),
     )
     .union(
       cylinder(2.6, washerR, 40)
         .alongAxis([0, 1, 0])
-        .translate(x, railY + 7.5, z)
+        .translate(x, railY + 7, z)
         .color('#d7dde2'),
     );
 }
@@ -70,8 +70,21 @@ function rollerAt(x: number, y: number, z: number) {
 
 const lift = assembly('animated two-stage scissor lift hero');
 
+// Every part is modelled in world coordinates, so each one is fastened to the
+// base through a pair of coincident frame connectors at the given origin.
+function fastenToBase(
+  part: ReturnType<typeof lift.part>,
+  name: string,
+  origin: [number, number, number],
+) {
+  const frame = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin } };
+  base.connector(`${name}-seat`, frame);
+  part.connector('base-seat', frame);
+  lift.mate(`${name}-fastened`, `${name}.base-seat`, `base-frame.${name}-seat`, 'fastened');
+}
+
 const base = lift.part(
-  'welded base frame with twin guide tracks',
+  'base-frame',
   box(halfSpan * 2 + 44, 8, 8, true)
     .translate(0, -railY, 2)
     .color('#2b3036')
@@ -81,7 +94,7 @@ const base = lift.part(
 );
 
 const deck = lift.part(
-  'ribbed upper platform carried by scissor linkage',
+  'platform',
   box(halfSpan * 2 + 52, railY * 2 + 22, 8, true)
     .fillet(2)
     .translate(0, 0, deckZ + 8)
@@ -89,7 +102,7 @@ const deck = lift.part(
     .union(box(halfSpan * 2 + 32, 5, 8, true).translate(0, -railY, deckZ).color('#aeb7bf'))
     .union(box(halfSpan * 2 + 32, 5, 8, true).translate(0, railY, deckZ).color('#aeb7bf')),
 );
-lift.fixed('platform sits above the top guide rails', base, deck, { origin: [0, 0, deckZ] });
+fastenToBase(deck, 'platform', [0, 0, deckZ]);
 
 const pinCoords: Array<[string, number, number]> = [];
 for (const [stageName, z0] of [['lower', baseZ], ['upper', baseZ + stageH]] as const) {
@@ -105,14 +118,14 @@ for (const [stageName, z0] of [['lower', baseZ], ['upper', baseZ + stageH]] as c
   for (const y of [-sideY, sideY]) {
     const side = y < 0 ? 'front' : 'rear';
     const rising = linkBar(
-      `${stageName} ${side} rising scissor arm`,
+      `${stageName}-${side}-rising-arm`,
       points.leftLow[0], points.leftLow[1],
       points.rightHigh[0], points.rightHigh[1],
       y,
       '#f6b23b',
     );
     const falling = linkBar(
-      `${stageName} ${side} falling scissor arm`,
+      `${stageName}-${side}-falling-arm`,
       points.rightLow[0], points.rightLow[1],
       points.leftHigh[0], points.leftHigh[1],
       y,
@@ -120,35 +133,34 @@ for (const [stageName, z0] of [['lower', baseZ], ['upper', baseZ + stageH]] as c
     );
     const risingPart = lift.part(rising.name, rising.shape);
     const fallingPart = lift.part(falling.name, falling.shape);
-    lift.fixed('pinned scissor arm in open hero pose', base, risingPart, { origin: [0, y, z0] });
-    lift.fixed('opposing pinned scissor arm in open hero pose', base, fallingPart, { origin: [0, y, z0] });
+    fastenToBase(risingPart, rising.name, [0, y, z0]);
+    fastenToBase(fallingPart, falling.name, [0, y, z0]);
   }
 
   pinCoords.push(
-    [`${stageName} left lower fixed pivot pin`, points.leftLow[0], points.leftLow[1]],
-    [`${stageName} right lower sliding roller pin`, points.rightLow[0], points.rightLow[1]],
-    [`${stageName} center cross pivot pin`, points.center[0], points.center[1]],
-    [`${stageName} left upper sliding roller pin`, points.leftHigh[0], points.leftHigh[1]],
-    [`${stageName} right upper fixed pivot pin`, points.rightHigh[0], points.rightHigh[1]],
+    [`${stageName}-left-lower-pivot-pin`, points.leftLow[0], points.leftLow[1]],
+    [`${stageName}-right-lower-roller-pin`, points.rightLow[0], points.rightLow[1]],
+    [`${stageName}-center-pivot-pin`, points.center[0], points.center[1]],
+    [`${stageName}-left-upper-roller-pin`, points.leftHigh[0], points.leftHigh[1]],
+    [`${stageName}-right-upper-pivot-pin`, points.rightHigh[0], points.rightHigh[1]],
   );
 
-  const lowerRollers = lift.part(
-    `${stageName} guide rollers on sliding pivots`,
-    rollerAt(points.rightLow[0], -railY, points.rightLow[1])
-      .union(rollerAt(points.rightLow[0], railY, points.rightLow[1]))
-      .union(rollerAt(points.leftHigh[0], -railY, points.leftHigh[1]))
-      .union(rollerAt(points.leftHigh[0], railY, points.leftHigh[1])),
-  );
-  lift.fixed('rollers ride in guide tracks instead of floating pivots', base, lowerRollers, { origin: [0, 0, z0] });
+  // One part per roller: each rides its own track, so they are not one body.
+  for (const [corner, [x, z]] of [['low', points.rightLow], ['high', points.leftHigh]] as const) {
+    for (const y of [-railY, railY]) {
+      const name = `${stageName}-${corner}-${y < 0 ? 'front' : 'rear'}-roller`;
+      fastenToBase(lift.part(name, rollerAt(x, y, z)), name, [x, y, z]);
+    }
+  }
 }
 
 for (const [name, x, z] of pinCoords) {
   const pin = lift.part(name, pinAt(name, x, z));
-  lift.fixed('through pin with outer washers captures both scissor side plates', base, pin, { origin: [x, 0, z] });
+  fastenToBase(pin, name, [x, 0, z]);
 }
 
 const actuator = lift.part(
-  'short hydraulic actuator hint between base and lower cross pivot',
+  'actuator',
   cylinder(stageH * 0.68, 5, 32)
     .alongAxis([0.52, 0, 0.85])
     .translate(-halfSpan + 28, 0, baseZ + 8)
@@ -160,6 +172,6 @@ const actuator = lift.part(
         .color('#d9dee2'),
     ),
 );
-lift.fixed('actuator pushes the lower scissor pair open', base, actuator, { origin: [-halfSpan + 34, 0, baseZ + 14] });
+fastenToBase(actuator, 'actuator', [-halfSpan + 34, 0, baseZ + 14]);
 
 return lift.model();
