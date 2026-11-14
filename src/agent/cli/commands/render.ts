@@ -43,6 +43,7 @@ import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 import { resolveRenderLook, type RenderLook } from './renderLook';
+import { mechanismBannerLines, mechanismErrors } from '../lib/mechanismBanner';
 
 export interface RenderInput {
   file: string;
@@ -228,16 +229,8 @@ export function isRenderStrictMode(): boolean {
  * when render-inspect refuses.
  */
 function reportBrokenMechanismToStderr(failures: readonly CompilerDiagnostic[]): void {
-  const isTty = Boolean(process.stderr.isTTY);
-  const RED = isTty ? '\x1b[31m' : '';
-  const BOLD = isTty ? '\x1b[1m' : '';
-  const RESET = isTty ? '\x1b[0m' : '';
-  console.error(`${BOLD}${RED}MECHANISM BROKEN${RESET} — render refused (${failures.length} failure${failures.length === 1 ? '' : 's'})`);
-  for (const d of failures) {
-    console.error(`  ${RED}[ERROR]${RESET} ${d.code}`);
-    console.error(`         ${d.message}`);
-    console.error(`         hint: ${d.hint}`);
-  }
+  const lines = mechanismBannerLines(failures, 'render refused', Boolean(process.stderr.isTTY));
+  for (const line of lines) console.error(line);
 }
 
 /**
@@ -254,7 +247,7 @@ export async function watermarkBrokenMechanism(
   buf: Buffer,
   failures: readonly CompilerDiagnostic[],
 ): Promise<Buffer> {
-  const codes = Array.from(new Set(failures.map((f) => f.code))).slice(0, 3);
+  const codes = Array.from(new Set(mechanismErrors(failures).map((f) => f.code))).slice(0, 3);
   const lines = ['MECHANISM BROKEN', ...codes.map((c) => `· ${c}`)];
   // Each line ~16px tall, ~10px padding around the box.
   const lineHeight = 16;
