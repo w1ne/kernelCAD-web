@@ -215,8 +215,48 @@ export function filletWithHistory(
 }
 
 /**
+ * Second leg of an asymmetric chamfer. `distance` is measured on `face`
+ * (the TopoDS_Face of the body that borders every chamfered edge); the other
+ * leg is `distance2` on the opposite face, or follows from `angleDeg`, the
+ * angle between the bevel and `face`.
+ */
+export interface ChamferLegs {
+  face: unknown;
+  distance2?: number;
+  angleDeg?: number;
+}
+
+/** Hashes of the `edges` that do not border `face`. */
+export function edgesNotOnFace(face: unknown, edges: readonly EdgeRefForFilleting[]): EdgeHash[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const onFace = new Set<EdgeHash>();
+  const explorer = new oc.TopExp_Explorer_2(face, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    for (; explorer.More(); explorer.Next()) {
+      onFace.add(explorer.Current().HashCode(HASH_UPPER).toString(16));
+    }
+  } finally {
+    explorer.delete();
+  }
+  return edges.map((e) => e.hash).filter((hash) => !onFace.has(hash));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addChamferEdge(oc: any, builder: any, distance: number, edgeShape: unknown, legs?: ChamferLegs): void {
+  if (!legs) {
+    builder.Add_2(distance, edgeShape);
+    return;
+  }
+  const face = oc.TopoDS.Face_1(legs.face);
+  if (legs.angleDeg !== undefined) builder.AddDA(distance, (legs.angleDeg * Math.PI) / 180, edgeShape, face);
+  else builder.Add_3(distance, legs.distance2, edgeShape, face);
+}
+
+/**
  * Apply a chamfer of `distance` to the specified edges of `body`, capturing
- * face/edge evolution history from BRepFilletAPI_MakeChamfer.
+ * face/edge evolution history from BRepFilletAPI_MakeChamfer. `legs` makes
+ * the bevel asymmetric (two distances, or distance and angle).
  *
  * @throws {Error} If any edge hash is not found on the body.
  * @throws {Error} If the chamfer builder fails (IsDone() === false).
@@ -225,6 +265,7 @@ export function chamferWithHistory(
   body: OcctBackend,
   edges: readonly EdgeRefForFilleting[],
   distance: number,
+  legs?: ChamferLegs,
 ): EdgeFeatureHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -242,7 +283,7 @@ export function chamferWithHistory(
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(distance, edgeShape);
+      addChamferEdge(oc, builder, distance, edgeShape, legs);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
