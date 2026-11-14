@@ -41,6 +41,7 @@ export interface CliOptions {
   apiKeyEnv: string;
   noLlm: boolean;
   visualReview: boolean;
+  visualReviewRounds: number;
   scriptsFrom?: string;
   maxAttempts: number;
   maxTokens: number;
@@ -82,6 +83,14 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     return n;
   };
 
+  if (has('--visual-review-rounds') && value('--visual-review-rounds') === undefined) {
+    throw new Error('--visual-review-rounds requires a number from 1 to 3');
+  }
+  const visualReviewRounds = has('--visual-review-rounds')
+    ? int('--visual-review-rounds', 1)
+    : has('--visual-review') ? 1 : 0;
+  if (visualReviewRounds > 3) throw new Error('--visual-review-rounds must be between 1 and 3');
+
   const ids = (value('--tasks') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
   const selection: TaskSelection = ids.length > 0 ? { ids } : {};
   if (ids.length === 0 && (has('--generation') || has('--editing'))) {
@@ -121,7 +130,8 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     chatgptPlanDir: value('--chatgpt-plan-dir') ? resolve(value('--chatgpt-plan-dir')!) : undefined,
     apiKeyEnv: value('--api-key-env') ?? (value('--base-url') ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'),
     noLlm: has('--no-llm'),
-    visualReview: has('--visual-review'),
+    visualReview: visualReviewRounds > 0,
+    visualReviewRounds,
     scriptsFrom: value('--scripts-from') ? resolve(value('--scripts-from')!) : undefined,
     maxAttempts: int('--max-attempts', 3),
     maxTokens: int('--max-tokens', 16000),
@@ -278,7 +288,7 @@ async function main(): Promise<void> {
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null, seed: opts.seed ?? null, editFallback: opts.editFallback,
     editPromotion: opts.editPromotion, officialCheck: opts.officialCheck,
-    keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
+    keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, visualReviewRounds: opts.visualReviewRounds, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
   });
   const runFile = join(opts.runDir, 'run.json');
   if (existsSync(runFile)) {
@@ -304,6 +314,7 @@ async function main(): Promise<void> {
     editPromotion: opts.editPromotion,
     officialCheck: opts.officialCheck,
     visualReview: opts.visualReview,
+    visualReviewRounds: opts.visualReviewRounds,
     editFallback: opts.editFallback,
     workers: opts.workers,
     tasks: tasks.map((t) => t.id),
@@ -319,6 +330,7 @@ async function main(): Promise<void> {
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
     visualReview: opts.visualReview,
+    visualReviewRounds: opts.visualReviewRounds,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(opts.scriptsFrom ? { scriptsFrom: opts.scriptsFrom } : {}),
     editFallback: opts.editFallback,

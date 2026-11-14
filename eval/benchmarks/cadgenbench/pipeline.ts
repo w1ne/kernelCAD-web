@@ -81,8 +81,10 @@ export interface PipelineConfig {
   skillMd: string;
   maxAttempts: number;
   maxTokens: number;
-  /** Opt-in one visual review after the first valid generation candidate. */
+  /** Opt-in visual review after the first valid generation candidate. */
   visualReview?: boolean;
+  /** Maximum number of candidate correction rounds (0–3). */
+  visualReviewRounds?: number;
   /** Optional preview seam; default renders the candidate STEP without a browser. */
   visualRender?: (stepPath: string) => Promise<AgentImage[]>;
   /** Optional paired preview seam, expected to use a shared frame. */
@@ -516,6 +518,10 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
   const started = Date.now();
   const log = cfg.log ?? (() => {});
   const state = baseState(task, cfg);
+  const visualRounds = cfg.visualReviewRounds ?? (cfg.visualReview ? 1 : 0);
+  if (!Number.isInteger(visualRounds) || visualRounds < 0 || visualRounds > 3) {
+    throw new Error('visualReviewRounds must be an integer from 0 to 3');
+  }
   const workDir = taskWorkDir(cfg.runDir, task.id);
   mkdirSync(workDir, { recursive: true });
   // The submission folder exists for every attempted task, so the zip keeps
@@ -593,48 +599,54 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       }
       produced = loop.scriptPath !== undefined;
       passed = loop.passed;
-      if (passed && cfg.visualReview && task.type === 'generation') {
-        const original = readFileSync(scriptPath, 'utf8');
-        const reviewPath = join(workDir, 'visual-review.kcad.ts');
-        const refinement = await refineVisualCandidate({
-          prompt, referencePrompt: task.description, original, drawing: loadImages(task.images),
-          render: async code => {
-            const revised = code !== original;
-            const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(revised ? reviewPath : scriptPath));
-            for (let i = 0; i < views.length; i++) {
-              if (views[i].mediaType !== 'image/png') throw new Error('visual preview must be PNG');
-              writeFileSync(join(workDir, `visual-${revised ? 'revised-' : ''}view-${i + 1}.png`), Buffer.from(views[i].data, 'base64'));
-            }
-            return views;
-          },
-          compare: async () => {
-            const paths = [gate.stepPathFor(scriptPath), gate.stepPathFor(reviewPath)] as const;
-            const pair = await (cfg.visualComparison ?? renderCandidateComparison)(...paths);
-            for (let candidate = 0; candidate < pair.length; candidate++) {
-              for (let i = 0; i < pair[candidate].length; i++) {
-                const image = pair[candidate][i];
-                if (image.mediaType !== 'image/png') throw new Error('visual preview must be PNG');
-                writeFileSync(join(workDir, `visual-${candidate ? 'revised-' : 'comparison-'}view-${i + 1}.png`), Buffer.from(image.data, 'base64'));
+      if (passed && visualRounds > 0 && task.type === 'generation') {
+        // Compare each correction against the last valid, accepted candidate;
+        // stop as soon as a round is invalid, unchanged or not clearly better.
+        for (let round = 1; round <= visualRounds; round++) {
+          const suffix = round === 1 ? '' : '-' + round;
+          const original = readFileSync(scriptPath, 'utf8');
+          const reviewPath = join(workDir, 'visual-review' + suffix + '.kcad.ts');
+          const refinement = await refineVisualCandidate({
+            prompt, referencePrompt: task.description, original, drawing: loadImages(task.images),
+            render: async code => {
+              const revised = code !== original;
+              const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(revised ? reviewPath : scriptPath));
+              for (let i = 0; i < views.length; i++) {
+                if (views[i].mediaType !== 'image/png') throw new Error('visual preview must be PNG');
+                writeFileSync(join(workDir, 'visual' + suffix + '-' + (revised ? 'revised-' : '') + 'view-' + (i + 1) + '.png'), Buffer.from(views[i].data, 'base64'));
               }
-            }
-            return pair;
-          },
-          revise: messages => cfg.agent!.generate({system: cfg.skillMd, messages, model: cfg.model, max_tokens: cfg.maxTokens, ...(cfg.temperature !== undefined ? {temperature: cfg.temperature} : {})}),
-          check: async code => { writeFileSync(reviewPath, code); return (await gate.run(reviewPath)).ok; },
-        });
-        state.tokensIn += refinement.tokensIn;
-        state.tokensOut += refinement.tokensOut;
-        if (refinement.outcome !== 'render_failed') state.attempts++;
-        const reviewFailure = refinement.outcome === 'rejected' ? gate.lastFailure(reviewPath) : undefined;
-        writeFileSync(join(workDir, 'visual-review.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut, ...(refinement.error ? {error: refinement.error} : {}), ...(reviewFailure ? {gateFailure: reviewFailure} : {})}, null, 2)+'\n');
-        if (refinement.responseText !== undefined) writeFileSync(join(workDir, 'visual-response.md'), refinement.responseText+'\n');
-        if (refinement.comparisonText !== undefined) writeFileSync(join(workDir, 'visual-comparison.md'), refinement.comparisonText+'\n');
-        if (refinement.outcome === 'accepted') {
-          copyFileSync(scriptPath, join(workDir, 'visual-checkpoint.kcad.ts'));
-          copyFileSync(gate.stepPathFor(scriptPath), join(workDir, 'visual-checkpoint.step'));
-          copyFileSync(reviewPath, scriptPath);
-          copyFileSync(gate.stepPathFor(reviewPath), gate.stepPathFor(scriptPath));
-          checkedScript = reviewPath;
+              return views;
+            },
+            compare: async () => {
+              const paths = [gate.stepPathFor(scriptPath), gate.stepPathFor(reviewPath)] as const;
+              const pair = await (cfg.visualComparison ?? renderCandidateComparison)(...paths);
+              for (let candidate = 0; candidate < pair.length; candidate++) {
+                for (let i = 0; i < pair[candidate].length; i++) {
+                  const image = pair[candidate][i];
+                  if (image.mediaType !== 'image/png') throw new Error('visual preview must be PNG');
+                  writeFileSync(join(workDir, 'visual' + suffix + '-' + (candidate ? 'revised-' : 'comparison-') + 'view-' + (i + 1) + '.png'), Buffer.from(image.data, 'base64'));
+                }
+              }
+              return pair;
+            },
+            revise: messages => cfg.agent!.generate({system: cfg.skillMd, messages, model: cfg.model, max_tokens: cfg.maxTokens, ...(cfg.temperature !== undefined ? {temperature: cfg.temperature} : {})}),
+            check: async code => { writeFileSync(reviewPath, code); return (await gate.run(reviewPath)).ok; },
+          });
+          state.tokensIn += refinement.tokensIn;
+          state.tokensOut += refinement.tokensOut;
+          if (refinement.outcome !== 'render_failed') state.attempts++;
+          const reviewFailure = refinement.outcome === 'rejected' ? gate.lastFailure(reviewPath) : undefined;
+          writeFileSync(join(workDir, 'visual-review' + suffix + '.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut, ...(refinement.error ? {error: refinement.error} : {}), ...(reviewFailure ? {gateFailure: reviewFailure} : {})}, null, 2)+'\n');
+          if (refinement.responseText !== undefined) writeFileSync(join(workDir, 'visual-response' + suffix + '.md'), refinement.responseText+'\n');
+          if (refinement.comparisonText !== undefined) writeFileSync(join(workDir, 'visual-comparison' + suffix + '.md'), refinement.comparisonText+'\n');
+          if (refinement.outcome === 'accepted') {
+            copyFileSync(scriptPath, join(workDir, 'visual-checkpoint' + suffix + '.kcad.ts'));
+            copyFileSync(gate.stepPathFor(scriptPath), join(workDir, 'visual-checkpoint' + suffix + '.step'));
+            copyFileSync(reviewPath, scriptPath);
+            copyFileSync(gate.stepPathFor(reviewPath), gate.stepPathFor(scriptPath));
+            checkedScript = reviewPath;
+          }
+          if (refinement.outcome !== 'accepted') break;
         }
       }
     } else if (task.type === 'generation') {
