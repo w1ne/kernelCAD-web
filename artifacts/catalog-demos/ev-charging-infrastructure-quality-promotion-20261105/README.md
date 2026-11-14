@@ -43,3 +43,12 @@ python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-202
 - Global quality audit: **1,754/2,390 assets pass (73.39%)**; **636 thin assets remain (26.61%)** across the rest of the catalog.
 
 The [public homepage](https://kernelcad.com/) currently presents the model editor, checks, exports, and gallery, while the [script API](https://kernelcad.com/docs/) documents native geometry, material, and parameter calls. The catalog-page output was verified locally; this branch has not been deployed, so live page behavior remains unverified.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/make_demo_video.py`
+- video review: `python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/inspect_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

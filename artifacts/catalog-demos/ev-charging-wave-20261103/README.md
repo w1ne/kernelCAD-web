@@ -42,3 +42,12 @@ python3 artifacts/catalog-demos/ev-charging-wave-20261103/inspect_ev_charging_vi
 ## Scope
 
 All models are original generic geometry dedicated to the public domain under CC0 1.0. They are scene props, not vendor product replicas or evidence for electrical compatibility, charger performance, code compliance, installation design, safety certification, site suitability, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/ev-charging-wave-20261103/capture_ev_charging_demo.py`
+- video review: `python3 artifacts/catalog-demos/ev-charging-wave-20261103/inspect_ev_charging_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -25,3 +25,12 @@ The bundle retains the generator, settings, full-catalog build/test/lint output,
 ## License and scope
 
 All assets are original kernelCAD geometry dedicated under CC0 1.0. They are visualization props. Catalog checks do not establish load capacity, overhead rigging safety, electrical ratings, fire-code compliance, venue suitability, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/theatre-production-wave-20261103/capture_theatre_demo.py`
+- video review: `python3 artifacts/catalog-demos/theatre-production-wave-20261103/inspect_theatre_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

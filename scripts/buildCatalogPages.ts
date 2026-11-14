@@ -118,7 +118,10 @@ const HEAD_COMMON = `  <meta charset="UTF-8" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css" />`;
+  <link rel="stylesheet" href="/style.css" />
+  <!-- Same anonymous Cloudflare Web Analytics site token as kernelcad.com marketing pages.
+       Catalog detail and kit pages previously had no page-view measurement. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"e5f5f4c6464f456d8f5376411e77f545"}'></script>`;
 
 const NAV = `    <nav class="nav">
       <a class="nav-mark" href="/">

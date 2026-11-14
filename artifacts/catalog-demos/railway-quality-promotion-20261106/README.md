@@ -53,3 +53,12 @@ and verification records for this round. Its source promoter expects the
 original, unpromoted railway sources and refuses already-promoted input. The
 full-catalog quality command exits 1 until the four other thin kits are
 promoted.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/railway-quality-promotion-20261106/capture_railway_demo.py`
+- video review: `python3 artifacts/catalog-demos/railway-quality-promotion-20261106/inspect_railway_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
