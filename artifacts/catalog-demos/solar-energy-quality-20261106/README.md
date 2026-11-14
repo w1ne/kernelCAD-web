@@ -96,7 +96,7 @@ inspection.
   [`catalogpages-output.txt`](catalogpages-output.txt): local static-page build
   and checks for all solar assets. This is not deployed behavior.
 - [`before-previews/`](before-previews/), [`preset-variants/`](preset-variants/),
-  [`frames/`](frames/), [`video-inspection.json`](video-inspection.json), and
+  `frames/`, [`video-inspection.json`](video-inspection.json), and
   [`video-review/`](video-review/): comparison images, actual preset renders,
   video source frames, decoded MP4 metadata, and visual inspection.
 
@@ -107,3 +107,12 @@ page generation do not establish actual PV output, voltage or current ratings,
 electrical clearances, structural performance, installation suitability,
 certification, deployed behavior, or hardware acceptance. The feature branch
 remains undeployed.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/solar-energy-quality-20261106/capture_solar_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/solar-energy-quality-20261106/inspect_solar_quality_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

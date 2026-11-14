@@ -37,3 +37,12 @@ The prepack build creates the CLI and generic headless player before the npm art
 ## Scope and deployment
 
 All models are original CC0 1.0 kernelCAD geometry. Local source, index, mesh, preview, page, integration, and package checks do not prove deployed behavior. The current public site snapshot is not this branch; deployed asset-rail behavior remains to be checked after deployment.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/data-center-wave-20261103/capture_data_center_demo.py`
+- video review: `python3 artifacts/catalog-demos/data-center-wave-20261103/inspect_data_center_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

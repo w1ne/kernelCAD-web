@@ -28,3 +28,12 @@ python3 artifacts/catalog-demos/photo-video-studio-wave-20261102/inspect_photo_v
 ## Claims and limits
 
 The evidence covers local source generation, deterministic catalog build, lint, integration tests, static-page generation and rendered previews. It does not verify the deployed website; deployment is pending merge and release review. The models are stylized scene props and make no claims about optical correctness, light output, functional camera operation or hardware acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/photo-video-studio-wave-20261102/capture_photo_video_demo.py`
+- video review: `python3 artifacts/catalog-demos/photo-video-studio-wave-20261102/inspect_photo_video_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

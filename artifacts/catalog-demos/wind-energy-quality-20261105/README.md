@@ -34,3 +34,11 @@ python3 artifacts/catalog-demos/wind-energy-quality-20261105/capture_wind_qualit
 - [`video-inspection.json`](video-inspection.json) and [`video-review/`](video-review/): decoded frame review evidence.
 
 The checks cover local source, generated-index consistency, preview rendering, lint, integration tests, and local static pages. Deployed site behavior, hardware behavior, and engineering or manufacturing acceptance were not tested.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/wind-energy-quality-20261105/capture_wind_quality_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
