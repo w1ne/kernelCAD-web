@@ -7,7 +7,7 @@ This handoff records a local catalog-source and preview promotion of the 60 exis
 - [Before and after rendered previews](after/)
 - [Indexed high-visibility preset renders](high-visibility-variants/)
 - [Video demo](construction-equipment-quality-promotion.mp4)
-- [Video frame inspection](video-review/)
+- Video frame inspection (`video-review/`, not tracked)
 - [Promotion audit](promotion-audit.json)
 - [Local catalog page check](catalog-pages-check.json)
 
@@ -35,3 +35,12 @@ python3 artifacts/catalog-demos/construction-equipment-quality-promotion-2026110
 ```
 
 The exact 60-ID preview invocation and command output are retained in `catalog-preview-render-output.txt`. See `settings.json` for the versions and completed checks. No deployed page check or hardware acceptance is claimed; the website check is a pre-promotion baseline only.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/capture_construction_equipment_demo.py`
+- video review: `python3 artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/inspect_construction_equipment_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

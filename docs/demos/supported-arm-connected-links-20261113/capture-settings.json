@@ -1,0 +1,59 @@
+{
+  "recordedDate": "2026-11-13",
+  "source": {
+    "path": "examples/robot-arm/skill-built-supported-arm.kcad.ts",
+    "commit": "e78f12121565b35ca729c8b67f451cec187657cd",
+    "sha256": "808d9a2fb7208f8f8f44a3e31e3b608a38aa756c1b0e87abd5d00233b41ed9a3"
+  },
+  "preview": {
+    "tool": "kernelCAD.render_preview",
+    "views": ["iso"],
+    "width": 1280,
+    "height": 720,
+    "preset": "default",
+    "intent": "Verify the repaired supported-arm upper link and gripper palm geometry visually",
+    "serverBuild": "0.1.0+fbc2487285d0@2026-11-13T15:18:30.667Z",
+    "savedProject": "OsdlASSu",
+    "scene": {
+      "valid": true,
+      "boundsMm": [309.15292477188007, 139.95631487791104, 138],
+      "volumeMm3": 227195.95441381825,
+      "mechanism": "broken",
+      "failureCodes": ["mechanism.joint-mesh-gap", "mechanism.mate-gap"]
+    }
+  },
+  "animation": {
+    "tool": "kernelCAD.capture_animation",
+    "file": "project:OsdlASSu",
+    "durationMs": 6000,
+    "fps": 24,
+    "width": 960,
+    "height": 540,
+    "elevationDeg": 24,
+    "preset": "default",
+    "turntable": true,
+    "noVerify": true,
+    "verified": false,
+    "verifySkipped": true,
+    "rawFile": "capture-raw.mp4",
+    "rawSha256": "9aa841d2b9e9661868b6ca8b6b117d1950418943fbab78b52ce67d3178fdea02"
+  },
+  "captionRender": {
+    "script": "render-demo.sh",
+    "captions": ["title.txt", "status.txt"],
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "crf": 22,
+    "preset": "veryfast",
+    "finalFile": "demo.mp4",
+    "finalSha256": "19fcf5e19d09195e69c5d0cfe8a3ee226e4f69a598a7bda5dbda9c01bac126ad"
+  },
+  "verification": {
+    "testCommand": "npx vitest run tests/integration/fast/exampleParseSmoke.test.ts -t 'supported-arm|classifies'",
+    "passed": 5,
+    "skipped": 252,
+    "includedAssertion": "examples/robot-arm/skill-built-supported-arm.kcad.ts evaluates cleanly",
+    "pr": 1380,
+    "visualInspection": "inspection-frame.png extracted at 3 seconds; full arm and captions are visible"
+  }
+}

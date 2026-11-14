@@ -36,3 +36,11 @@ From the repository root:
     npx vitest run tests/integration/catalog/
 
 Dated comparable product-form research is kept private. The branch is not deployed. These are stylized scene props: no seaworthiness, stability, hull form accuracy or cargo capacity is claimed.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/marine-hull-silhouette-20261106/capture_marine_hull_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

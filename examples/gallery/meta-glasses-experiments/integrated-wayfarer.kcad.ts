@@ -149,8 +149,12 @@ const acetateBlank = frontBody(acetateOutline);
 // rebate so the separate smoked lens inserts read as seated parts.
 const leftLensCut = frontBody(lensOpening(-1), FRAME_DEPTH + 6, -3);
 const rightLensCut = frontBody(lensOpening(1), FRAME_DEPTH + 6, -3);
-const leftLensSeat = frontBody(lensOpening(-1, 1.55), 1.0, 0.05);
-const rightLensSeat = frontBody(lensOpening(1, 1.55), 1.0, 0.05);
+// A negative inset grows the opening outline; the cutter starts in front of
+// the face (y < 0) so the rebate breaks the visible surface.
+const LENS_REBATE = 1.55;
+const LENS_SEAT_FLOOR_Y = 1.05;
+const leftLensSeat = frontBody(lensOpening(-1, -LENS_REBATE), LENS_SEAT_FLOOR_Y + 0.3, -0.3);
+const rightLensSeat = frontBody(lensOpening(1, -LENS_REBATE), LENS_SEAT_FLOOR_Y + 0.3, -0.3);
 
 // "small bridge" + "nose notch"
 const noseNotch = path()
@@ -193,7 +197,7 @@ const frame = acetateBlank
   .color('#202224');
 
 function lensInsert(sign: 1 | -1) {
-  return frontBody(lensOpening(sign, 2.05), 0.82, 1.22)
+  return frontBody(lensOpening(sign, -(LENS_REBATE - 0.1)), 0.82, LENS_SEAT_FLOOR_Y - 0.82)
     .translate(0, CENTER_Y, 0)
     .material(SMOKED_LENS)
     .color('#253631');
@@ -261,13 +265,14 @@ const noseShadow = frontBody(
   })
   .color('#101010');
 
-return [
-  { name: 'words to geometry chunky black acetate frame', shape: frame },
-  { name: 'left smoked seated lens insert', shape: lensInsert(-1) },
-  { name: 'right smoked seated lens insert', shape: lensInsert(1) },
-  { name: 'left recessed Meta camera bezel', shape: cameraBezel },
-  { name: 'left recessed Meta camera glass', shape: cameraGlass },
-  { name: 'camera highlight seated inside glass', shape: cameraHighlight },
-  { name: 'small amber privacy LED toward bridge', shape: ledDiffuser },
-  { name: 'dark inverted V bridge nose notch shadow', shape: noseShadow },
-];
+// Preserve every separately authored part in the exported and rendered scene.
+const scene = assembly('wayfarer');
+scene.part('words-to-geometry-chunky-black-acetate-frame', frame);
+scene.part('left-smoked-seated-lens-insert', lensInsert(-1));
+scene.part('right-smoked-seated-lens-insert', lensInsert(1));
+scene.part('left-recessed-meta-camera-bezel', cameraBezel);
+scene.part('left-recessed-meta-camera-glass', cameraGlass);
+scene.part('camera-highlight-seated-inside-glass', cameraHighlight);
+scene.part('small-amber-privacy-led-toward-bridge', ledDiffuser);
+scene.part('dark-inverted-v-bridge-nose-notch-shadow', noseShadow);
+return scene.model();
