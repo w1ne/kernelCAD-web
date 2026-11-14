@@ -88394,7 +88394,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/grain-cart.kcad.ts",
       "preview": "/assets/farm-machinery-grain-cart.png",
-      "sourceSha256": "9ca2f5a9c84e5fdc388d876467553cd5b103bcc989c0788dbe062554343bf662",
+      "sourceSha256": "7d6c9734c232f94c665c8203990d0933138edf647072300a30316c480ddb4ffa",
       "triangleBudget": 2200,
       "params": [
         {
@@ -88459,7 +88459,9 @@
             "wagon-front",
             "wagon-rear",
             "drawbar",
-            "grain-cover"
+            "grain-cover",
+            "auger-base",
+            "auger-tube"
           ],
           "param": "paintedSteelColor"
         },
@@ -88477,9 +88479,7 @@
           "color": "#929b9b",
           "parts": [
             "wagon-wheel--1-hub",
-            "wagon-wheel-1-hub",
-            "auger-base",
-            "auger-tube"
+            "wagon-wheel-1-hub"
           ],
           "param": "steelColor"
         }
