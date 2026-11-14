@@ -282,6 +282,27 @@ describe('render_preview — mechanism truth protocol', () => {
     hint: 'Separate the parts.',
   };
 
+  it('keeps a non-fatal note out of mechanism_failure_codes', async () => {
+    const passiveNote: CompilerDiagnostic = {
+      target: 'export-occt',
+      code: 'mechanism.drops-on-release' as CompilerDiagnostic['code'],
+      severity: 'info',
+      message: 'A free passive joint swung; informational, not a defect.',
+      hint: 'No action.',
+    };
+    const r = await renderPreviewTool(
+      { code: 'return box(1,1,1);', views: ['iso'] },
+      makeDeps({
+        mechanismProbe: async () => ({ mechanism: 'broken' as const, failures: [brokenFailure, passiveNote] }),
+      }),
+    );
+    trackOutDir(r);
+    expect(r.mechanism).toBe('broken');
+    expect(r.mechanism_failure_codes).toEqual(['mechanism.interpenetration']);
+    // The note is still reported, with its own severity.
+    expect(r.diagnostics.map((d) => d.severity)).toEqual(['error', 'info']);
+  });
+
   it('still renders a broken mechanism, watermarked, with verdict + codes', async () => {
     const r = await renderPreviewTool(
       { code: 'return box(1,1,1);', views: ['iso'] },

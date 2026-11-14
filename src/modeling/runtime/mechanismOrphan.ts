@@ -113,7 +113,7 @@ function collectReachablePartNames(
   adj: Map<string, Set<string>>,
   root: string,
 ): Set<string> {
-  // BFS from parts[0]. Anything unreached is an orphan.
+  // BFS from the root. Anything unreached is an orphan.
   const visited = new Set<string>();
   const queue: string[] = [root];
   visited.add(root);
@@ -129,6 +129,25 @@ function collectReachablePartNames(
   return visited;
 }
 
+/** The main mechanism is the largest connected component; equally large
+ *  components keep declaration order. Rooting at `parts[0]` instead made an
+ *  unlinked first part the "mechanism" and reported every mated part after
+ *  it as an orphan. Same rule as `validateAssembly`'s orphan pass. */
+function collectMainComponent(
+  adj: Map<string, Set<string>>,
+  partNames: readonly string[],
+): { root: string; visited: Set<string> } {
+  let main = { root: partNames[0], visited: collectReachablePartNames(adj, partNames[0]) };
+  const seen = new Set(main.visited);
+  for (const name of partNames) {
+    if (seen.has(name)) continue;
+    const visited = collectReachablePartNames(adj, name);
+    for (const n of visited) seen.add(n);
+    if (visited.size > main.visited.size) main = { root: name, visited };
+  }
+  return main;
+}
+
 function declaresMechanism(arm: Assembly): boolean {
   return arm.__mates().length > 0
     || arm.__joints().length > 0
@@ -142,9 +161,9 @@ export function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   if (parts.length <= 1) return [];
   const adj = buildPartAdjacency(parts, arm.__mates(), arm.__joints());
 
-  const root = parts[0].name;
-  const visited = collectReachablePartNames(adj, root);
-  const disconnected = parts.map((p) => p.name).filter((name) => !visited.has(name));
+  const partNames = parts.map((p) => p.name);
+  const { root, visited } = collectMainComponent(adj, partNames);
+  const disconnected = partNames.filter((name) => !visited.has(name));
   if (disconnected.length === 0) return [];
 
   // Nothing claims the bodies are linked — no mate, joint, transmission,

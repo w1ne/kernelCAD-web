@@ -9,7 +9,6 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Assembly } from '../capture/assembly';
 import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { collectFreePassiveMates } from '../mates/passiveJoints';
-import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { MateRecord } from '../mates/mate';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { assemblyToMjcf } from './mjcfExport';
@@ -19,8 +18,6 @@ import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBack
 import { cachedRestWorldMesh } from './restAnalysisMesh';
 import type { MujocoSession, MujocoSessionFactory } from './mujocoSessionCore';
 import { makeFailure, type SolvedSample } from './mechanismTruthShared';
-import { currentValue } from '../../shared/runtime/editableHelpers';
-import type { Editable } from '../../shared/runtime/paramRef';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Criteria 5 + 6 — physics (MuJoCo)
@@ -242,8 +239,7 @@ async function runStaticEquilibrium(
   const out: CompilerDiagnostic[] = [];
 
   for (const s of solved) {
-    const poses = s.sample.name === 'rest' ? physicsRestPoses(arm) : s.sample.poses;
-    const qpos = jointOrderToQpos(jointOrder, poses, arm.__mates());
+    const qpos = jointOrderToQpos(jointOrder, physicsPoses(arm, s.sample.poses), arm.__mates());
     if (qpos === undefined) continue; // mate-name mismatch; skip
     try {
       session.setPose(qpos);
@@ -462,20 +458,24 @@ function scalarCouplingChecks(
   return checks;
 }
 
-function capturedMatePose(mate: MateRecord, arm: Assembly): number | [number, number, number] {
-  const table = arm.__session().paramTable;
-  if (mate.pose === undefined) return mate.type === 'ball' ? [0, 0, 0] : 0;
-  if (Array.isArray(mate.pose)) {
-    return mate.pose.map((value) => currentValue(value as Editable<number>, table)) as [number, number, number];
-  }
-  return currentValue(mate.pose as Editable<number>, table);
-}
-
-function physicsRestPoses(arm: Assembly): NumericPoses {
-  const mates = arm.__mates();
-  return expandCoupledPoses(mates, arm.__mateCouplings(), {}, {
-    resolveSourcePose: (source) => capturedMatePose(source, arm),
-  });
+// A physics pose is a qpos vector: every mate a sample does not name sits at
+// coordinate 0 (`jointOrderToQpos`), whatever pose the script authored. A
+// driven mate must follow its source from that same coordinate. Deriving it
+// from the source's authored pose instead would hand the solver a pose that
+// already violates the coupling.
+function physicsPoses(arm: Assembly, poses: NumericPoses = {}): NumericPoses {
+  const couplingByDriven = new Map(arm.__mateCouplings().map((coupling) => [coupling.driven, coupling]));
+  const coordinate = (mateName: string, visiting: ReadonlySet<string>): number => {
+    const coupling = couplingByDriven.get(mateName);
+    if (coupling === undefined || visiting.has(mateName)) {
+      const pose = poses[mateName];
+      return typeof pose === 'number' ? pose : 0;
+    }
+    return coordinate(coupling.source, new Set(visiting).add(mateName)) * coupling.ratio + (coupling.offset ?? 0);
+  };
+  const out: NumericPoses = { ...poses };
+  for (const driven of couplingByDriven.keys()) out[driven] = coordinate(driven, new Set());
+  return out;
 }
 
 interface CouplingResidualWitness {
@@ -533,7 +533,7 @@ async function runDropOnRelease(
 
   // Reset to the model's qpos0 — criterion 5 left the session at its
   // last-sampled pose. The drop-test's premise is "from REST".
-  const restPose = jointOrderToQpos(jointOrder, physicsRestPoses(arm), arm.__mates())
+  const restPose = jointOrderToQpos(jointOrder, physicsPoses(arm), arm.__mates())
     ?? new Array(session.nq).fill(0);
   session.setPose(restPose);
   session.forward();
