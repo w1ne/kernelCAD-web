@@ -14,6 +14,7 @@ import {
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { FaceRef } from '../../../../shared/intent/types';
+import type { FaceHash } from '../../../../kernel/naming/evolutionRecord';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings } from './helpers';
 
@@ -57,17 +58,9 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     });
     throw new Error('shell: no thickness');
   }
-  const faceResult = pickFace(r, base, ctx.allRecords);
-  if ('error' in faceResult) {
-    ctx.diagnostics.push(faceResult.error);
-    return finished(base);
-  }
+  const faces = shellFaceHashes(ctx, r, base);
+  if (faces === undefined) return finished(base);
   drainResolvedWarnings(r, ctx.diagnostics);
-  // Convert replicad Face → { hash: FaceHash } by hashing the
-  // underlying TopoDS_Face handle.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
-  const faces = [{ hash: faceHash }];
   try {
     const shellResult = shellWithHistory(base, faces, thickness);
     const newMap = mergeEdgeFeatureHistory(base.historyMap, shellResult);
@@ -87,6 +80,30 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     return finished(base);
   }
   return built(shape);
+}
+
+/**
+ * Hashes of the faces shell() opens: `face`, then `face_2`, `face_3`, … Each
+ * key resolves to one face, as the single-face form always has.
+ */
+function shellFaceHashes(ctx: LowerContext, r: FeatureRecord, base: OcctBackend): { hash: FaceHash }[] | undefined {
+  const keys = Object.keys(r.inputs)
+    .filter((key) => key === 'face' || /^face_\d+$/.test(key))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const hashes: { hash: FaceHash }[] = [];
+  for (const key of keys) {
+    const one: FeatureRecord = key === 'face' ? r : { ...r, inputs: { ...r.inputs, face: r.inputs[key] } };
+    const faceResult = pickFace(one, base, ctx.allRecords);
+    if ('error' in faceResult) {
+      ctx.diagnostics.push(faceResult.error);
+      return undefined;
+    }
+    // Hash the underlying TopoDS_Face handle.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
+    if (!hashes.some((h) => h.hash === hash)) hashes.push({ hash });
+  }
+  return hashes;
 }
 
 function topoOf(backend: OcctBackend): unknown {
