@@ -4,22 +4,234 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
-## Catalog quality snapshot (2026-11-06)
+## Semantic correction (2026-11-10)
 
-The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
-across 49 rich kits, with no failing assets. The latest visual follow-up
-refined three existing construction-equipment assets whose previews still read
-as stacked primitives. The towable tower now has a wheeled generator trailer,
-four screw jacks, a telescoping mast and a selectable lamp bank; the ride-on
-trowel separates its two open blade guards, engine, seat and paired controls;
-the batch plant shows its aggregate hoppers, feed conveyor, mixer and framed
-silo. Each asset retains two named palettes, adds four material controls and
-has two real shape choices beyond scale. The [construction-equipment
-silhouette handoff](../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md)
+The existing `water-treatment/pressure-sand-filter-vessel` now has lower and
+upper horizontal inlet/outlet stubs that enter the shell through visible
+stainless flange lips. A geometry regression checks the exported GLB bounds,
+separate port elevations, and shell overlap. The asset ID, kit membership,
+material controls, presets and 2,200-triangle budget are unchanged. The
+[semantic-review handoff](../artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/README.md)
+records the five-preview ledger, before/after renders, local checks and inspected
+MP4. This is generic scene geometry, not a pressure-rated or vendor-accurate
+design; the branch remains undeployed.
+
+## Catalog quality snapshot (2026-11-10)
+
+The current catalog quality gate requires two material-named color controls and
+at least one preset; a generic `color` control does not count as a material.
+It reports **2,402/2,402 assets passing (100.00%; 50 rich kits)**. The final
+gap, `interior/table-lamp`, now separates its glazed ceramic base, textile shade,
+and brass hardware. Its jar/column base choice and three appearance presets
+remain editable; the stem, neck ferrule, and side switch make the material
+changes visible in the preview. The 72 interior previews were regenerated and
+the index source hash updated. The
+[table-lamp handoff](../artifacts/catalog-demos/interior-table-lamp-materials-20261110/README.md)
+contains source-driven variants, check evidence, a three-preview visual review,
+and an inspected MP4. Earlier round notes below retain their at-the-time results
+under the previous gate definition. This is a local branch snapshot, not a
+deployment or hardware-acceptance claim.
+
+Another Nov 10 quality pass refines the existing
+`standard-components/cable-gland` and `square-mounting-flange`. The gland's
+4/6/8 mm cable choice changes the cable and seal opening while keeping the
+nominal cable diameter fixed across housing sizes; the square flange's
+10/14/18 mm choice changes its through-bore while also staying fixed across
+housing sizes. The models now show the gland's
+polymer barrel, stainless cap, rubber seal and cable, and the flange's cast
+base, stainless neck, rubber seal and four zinc-plated fasteners. Each has
+four material-named controls and three named palettes. No IDs or kits were
+added. Their default meshes are 812/900 and 764/860 triangles. The
+[cable-gland and flange handoff](../artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/README.md)
+records bore variants, refreshed kit previews and index, local checks, and the
+inspected MP4. The branch is not deployed; these are generic visualizations,
+not vendor dimensions, fit verification or physical acceptance.
+
+The Nov 10 office writing-tool follow-up refines two existing assets in place:
+the highlighter now has a rounded barrel and cap, visible side clip and sloped
+felt nib; the mechanical pencil has a turned barrel, separately colored rubber
+grip, tapered nose, click button, clip and exposed graphite lead. The highlighter
+gained a cap-polymer control; the pencil gained a rubber-grip control, separating
+it from graphite lead. Each now exposes four material controls, one more than
+before. Both retain their compact / standard option and professional / classroom
+palettes. Their meshes are 232 / 320 and 802 / 900
+triangles. All 40 office previews were regenerated and the
+index rebuilt. The office kit remains 40/40 passing and the global catalog
+quality result remains 2,402/2,402 (100.00%). The
+[writing-tool handoff](../artifacts/catalog-demos/office-tools-silhouette-20261110/README.md)
+contains before/after source and previews, source-driven palette renders,
+source-hash and local-page checks, lint and integration results, and the
+inspected MP4. This branch is not deployed; the assets are generic low-poly
+visualizations, not product replicas or manufacturing specifications.
+
+The Nov 10 standard-components detail pass improves three existing assets in
+place: the pipe reducer has a tapered hollow body, end collars, a separate
+elastomer band, and a selectable outlet ratio; the retaining ring has pierced
+plier ears and a variable installation gap; and the tubular spacer has a longer
+hollow sleeve, polymer liner, chamfered ends, plated rims, and three length
+choices. The reducer and spacer each gained a third material control, and all
+three gained a coordinated palette. Their defaults are 474, 228, and 432
+triangles within budgets of 620, 420, and 520. No IDs changed; the kit remains
+50/50 passing and the global gate remains **2,402/2,402 (100.00%)**. The
+[pipe geometry handoff](../artifacts/catalog-demos/standard-components-pipe-geometry-20261110/README.md)
+contains before/after previews, source-driven variants, regenerated kit
+previews and index evidence, local checks, and the inspected MP4. The branch is
+not deployed; no vendor dimensions or physical acceptance are claimed.
+
+The Nov 10 electronics pass refines the existing `keyboard`: long key rows are
+separated into keycaps, selected caps receive printed legend marks, and the
+navigation and number-pad groups have distinct key positions. `layout` selects
+compact, tenkeyless or full geometry. The shell, PBT keycaps, accent keycaps
+and printed ink each have a material-named color control; `retro`, `white` and
+`gamer` presets change those materials together. The default mesh is 1,360
+triangles under its 2,000-triangle budget. No IDs or kits were added; the
+electronics kit is 12/12 passing and the stricter catalog result remains
+**2,401/2,402 (99.96%)**. The
+[keyboard handoff](../artifacts/catalog-demos/electronics-keyboard-materials-20261110/README.md)
+contains the source-driven palette/layout renders, preview and index refresh,
+quality-gate evidence, lint and integration results, and inspected MP4. This
+branch is not deployed; the model is a low-poly visualization, not a production
+keyboard design or physical acceptance result.
+
+The Nov 10 water-treatment visual follow-up refines the existing
+`vertical-turbine-pump` head in place. Its four-way `outletOrientation` choice
+rotates the flanged discharge; the column, motor pedestal, cooling ribs, fan
+cowl and terminal box distinguish the pump head in the default preview. Four
+material-named controls and the `weathered` / `highVisibility` presets remain
+editable. The default mesh is 2,276 triangles under its 2,800-triangle budget.
+No IDs or kits were added; the kit remains **50/50 passing** and the catalog
+quality gate remains **2,402/2,402 passing (100.00%)**. The
+[vertical turbine pump handoff](../artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/README.md)
+contains the source-driven variants, regenerated previews and index, local
+catalog page checks, lint and integration results, and inspected MP4. This
+branch is not deployed; the model is generic visualization geometry and does
+not establish pump performance or physical acceptance.
+
+The Nov 10 standard-components follow-up refines three existing assets in place:
+the flange-bearing housing now exposes a steel race and rubber lip seal; the jaw
+coupling shows offset drive jaws around its elastomer spider with visible set
+screws; and the pipe union uses a six-flat nut with an exposed joint seal. Each
+has three independently adjustable material controls and named appearance
+presets. The existing `size` choice changes the model envelope. No IDs or kits
+were added; default meshes are 456, 574 and 360 triangles, within budgets of
+500, 640 and 440. The standard-components kit remains 50/50 passing and the
+global gate remains **2,402/2,402 passing (100.00%)**. The
+[source-to-preview handoff](../artifacts/catalog-demos/standard-components-coupling-details-20261110/README.md)
+contains source-driven variant renders, the regenerated 50 previews and index,
+local page and check evidence, and the inspected MP4. This branch is not
+deployed; these are generic visualization models, not vendor geometry or
+physical acceptance evidence.
+
+A third Nov 10 standard-components pass refines the existing
+`flat-joining-plate`: users can choose a three-, four-, or five-hole in-line
+layout, and the strap length, through-bores and installed zinc-plated fasteners
+update together. The default painted-steel body is blue against silver hardware;
+the existing `dark`, `brass` and `weathered` palettes remain. The largest
+variant measures 712 triangles under its updated 800-triangle budget. No IDs or
+kits were added; the global audit remains **2,402/2,402 passing (100.00%)**.
+The [hole-pattern handoff](../artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/README.md)
+contains variant renders, regenerated preview and index, check evidence, and
+the inspected MP4. This branch is not deployed and the generic visualization
+does not define a manufacturing-ready plate.
+
+A second Nov 10 standard-components pass refines the existing `bulkhead-adapter`,
+`linear-guide-rail`, and `shaft-coupling` without adding IDs or kits. The adapter
+has a longer hollow brass barrel, a six-flat stainless locknut, and a sealing
+rubber washer; the guide now has a position-selectable carriage with four
+mounting wells and orange polymer wipers; and the coupling has either raised
+set screws or a split-clamp cut with crossing bolts. Each now has three
+material-named controls and three named palettes. Their default meshes are
+456, 540, and 536 triangles within budgets of 620, 760, and 620. All 50
+standard-components previews were regenerated and the index rebuilt. The kit
+remains **50/50 passing** and the global gate remains **2,402/2,402 passing
+(100.00%)**. The
+[guide and retention handoff](../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md)
+contains source variants, local page checks, lint and integration evidence, and
+the inspected MP4. This branch is not deployed; the assets remain low-poly
+visualizations without vendor dimensions or physical acceptance claims.
+
+The Nov 10 water-treatment follow-up refines the existing `backwash-pump-skid`
+in place. Its preview now shows end-suction pump casings, finned motors,
+separate suction and discharge headers, isolation valves, gauges, coupling
+guards, and a local control panel. The `pumpArrangement` choice changes between
+single and duplex layouts; coated pump steel, structural steel, stainless
+pipework, and rubber details have separate controls with `weathered` and
+`highVisibility` palettes. The default export is 2,648 triangles under its
+3,600-triangle budget. No IDs or kits were added: water-treatment remains
+50/50 passing and the catalog remains 2,402/2,402 passing (100%). The
+[backwash pump skid handoff](../artifacts/catalog-demos/water-treatment-backwash-pump-skid-20261110/README.md)
+contains the single/duplex renders, regenerated index evidence, local page
+review, lint and integration output, and inspected MP4. This branch is not
+deployed; these are generic visualization models and make no treatment or
+physical-acceptance claim.
+
+The Nov 9 space-exploration refinement keeps all 52 existing IDs and deepens
+the component materials on 36 assets. Every asset retains two to four
+material-specific controls and the `lunarDust` / `highVisibility` presets; the
+wheel assembly stays at two controls because its aluminum hub and rubber tire
+are its distinct materials. The instrument arm now connects its rotating base,
+links, pivots and gripper, and the oxygen rack has separate brass valve
+fittings. The global quality gate remains **2,402/2,402 passing (100.00%)**.
+This branch is not deployed; the [local space-exploration handoff](../artifacts/catalog-demos/space-exploration-materials-20261109/README.md)
+records generated previews, source hashes, checks and the inspected MP4.
+
+The Nov 9 standard-components follow-up refined five existing models: the base
+mounting plate, blind flange, pipe coupling, pipe flange and rubber bumper. It
+added five material-named color controls and five named palette variants, plus
+real choices for mounting-hole count, installed hardware, bore seals and bumper
+mounting interface. The kit remains **50/50 passing**; its average material
+controls rose from 2.28 to 2.38 per asset. The global quality result remains
+**2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. No IDs or kits
+were added. The [local source, preview, index and demo handoff](../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md)
+records the regenerated previews, variants, checks and inspected MP4. This
+branch has not been deployed; no manufacturing or physical acceptance is
+claimed.
+
+The Nov 9 construction-equipment silhouette follow-up rebuilt four existing
+machine assets in place: walk-behind power trowel, vibrating concrete screed,
+rebar bending machine, and portable material hoist. Their material controls and
+named presets now describe the component finishes, and selectable sizes or
+layouts change the actual geometry. The kit still has 60 assets; the global
+quality gate remains **2,402/2,402 (100.00%; 50 rich kits, 0 thin kits)**. The
+[construction-equipment handoff](../artifacts/catalog-demos/construction-equipment-machines-20261109/README.md)
+records the source variants, rebuilt previews and index, checks and inspected
+MP4. This remains local branch evidence and is not a deployment or physical
+acceptance claim.
+
+The Nov 9 garden follow-up refined the existing `compost-bin` in place. Its
+`frontAccess` choice now builds open, lower-access, and closed removable-slat
+fronts; the exposed compost is a rounded, independently colored mound, with
+treated-timber and compost controls plus three named palettes. The default
+preview is 296 triangles under its unchanged 420-triangle budget. The garden
+kit remains **40/40 passing**, and the global gate remains **2,402/2,402
+(100.00%) across 50 rich kits**. The [compost-bin handoff](../artifacts/catalog-demos/garden-compost-bin-quality-20261109/README.md)
+records source-driven variants, preview/index hashes, local checks and an
+inspected MP4. This is local branch evidence; the change is not deployed and
+does not establish product fit or physical acceptance.
+
+The Nov 9 industrial-plant follow-up refines three existing machine assets:
+the generator now has a louver-count choice and visible radiator/service
+details; the conveyor has separate rubber belt and roller materials, connected
+support legs, a drive motor and a support-station choice; and the transformer
+has adjustable fin banks with ribbed porcelain bushings and copper terminals.
+The kit remains **60/60 passing** and the global gate remains
+**2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. The
+[machine-detail handoff](../artifacts/catalog-demos/industrial-plant-machine-quality-20261109/README.md)
+contains before/after previews, source-driven variants, local checks and the
+inspected MP4. The branch is not deployed; this visual work does not verify
+equipment ratings, safety, process performance or physical acceptance.
+
+The Nov 6 construction-equipment visual follow-up refined three existing
+assets whose previews still read as stacked primitives. The towable tower now
+has a wheeled generator trailer, four screw jacks, a telescoping mast and a
+selectable lamp bank; the ride-on trowel separates its two open blade guards,
+engine, seat and paired controls; the batch plant shows its aggregate hoppers,
+feed conveyor, mixer and framed silo. Each asset retains two named palettes,
+adds four material controls and has two real shape choices beyond scale. The
+[construction-equipment silhouette handoff](../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md)
 records source-driven variants, regenerated previews and index, local checks
-and the inspected MP4. It adds no asset IDs; the pass rate remains
-2,390/2,390 (100.00%). This branch is not deployed, so no live-site or
-equipment-acceptance claim is made.
+and the inspected MP4. It added no asset IDs. This branch is not deployed, so
+no live-site or equipment-acceptance claim is made.
 repaired the existing `office/scissors` default view by adding two polymer
 handle tangs between the finger loops and brass pivot. Its stainless-steel,
 polymer, and brass controls and `professional` / `classroom` presets remain;
@@ -253,6 +465,15 @@ records the actual source-to-preview workflow, inspected MP4 and local checks.
 The models are visualization props and do not assert equipment performance,
 food-contact suitability, pressure ratings or physical acceptance.
 
+The [cap elevator semantic-review handoff](../artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/README.md)
+records a follow-up to the existing kit: its opaque enclosure was replaced with
+an open hopper, visible cleated lift, drive, support frame and discharge trough.
+The asset keeps its ID and 2,200-triangle budget; its refreshed preview is 516
+triangles. All 50 kit previews were rendered again and the catalog index rebuilt.
+The kit remains 50/50 (100%) and the whole catalog remains 2,402/2,402 (100%)
+on the structural quality gate. Local rendering and checks do not establish
+deployed behavior or physical acceptance.
+
 ## EV charging infrastructure assets
 
 The [EV charging infrastructure kit](../catalog/kits/ev-charging-infrastructure/README.md)
@@ -354,6 +575,14 @@ records the source-to-preview workflow, full-catalog integration checks, local
 pages, package boundary audit, and inspected MP4. The kit is for visualization;
 catalog checks do not establish crop performance, equipment ratings, chemical
 compatibility, sensor calibration, or physical acceptance.
+
+The 2026-11-09 detail refinement updates two existing models in place: the
+greenhouse tunnel now exposes hoop steel, film, timber and crop colors plus
+rolled/closed side curtains; the wall CO2 transmitter exposes housing, trim,
+display and cable colors plus LCD/blind variants. The [detail-refinement
+handoff](../artifacts/catalog-demos/hydroponics-detail-refinement-20261109/README.md)
+records the refreshed kit previews, rebuilt index, preset/choice renders, local
+checks and inspected MP4. No new catalog IDs were added.
 
 ## Space exploration assets
 
@@ -465,6 +694,19 @@ retains the source-to-preview workflow. These are visualization props; checks
 do not establish equipment ratings, electrical safety, grid compliance,
 operating procedures, or field acceptance.
 
+The follow-up refined the existing ground-grid test well, whose preview still
+read as a plain block despite its material controls and presets. Its selectable
+360/480/620 mm chamber depth now changes the hollow chamber geometry; a raised
+collar, bolted access lid, side conduit entries, and copper test terminal make
+the object readable at preview scale. The three material controls and both
+named palettes remain. Its 1,128-triangle default stays under the 1,800 budget.
+The kit remains **80/80 passing**, and the catalog remains **2,402/2,402 passing
+(100.00%; 50 rich kits, 0 thin kits)**. The
+[ground test well handoff](../artifacts/catalog-demos/grid-substation-ground-test-well-20261110/README.md)
+records the refreshed kit previews and index, depth/palette variants, local
+page check, lint, integration test, and inspected demo. This branch is not
+deployed; no electrical rating, safety, or field-acceptance claim is made.
+
 ## Telecom infrastructure assets
 
 The [telecom infrastructure kit](../catalog/kits/telecom-infrastructure/README.md)
@@ -494,3 +736,14 @@ contains source snapshots, before/after and parameter-variant renders, local
 page checks, lint/integration output and the inspected MP4. These remain
 stylized visualization props; they do not establish process performance,
 pressure ratings, installation suitability, deployment or physical acceptance.
+
+## Industrial exchanger materials
+
+The existing `industrial-plant/shell-and-tube-exchanger` keeps separate
+`steel` and `hardware` material controls. Tube sheets, process connections,
+saddles and the shell band now use a neutral metal palette rather than the
+previous ochre safety-paint color; the `weathered` and `stainless` presets keep
+those exposed parts metallic. The [material review handoff](../artifacts/catalog-demos/shell-tube-exchanger-material-review-20261110/README.md)
+contains before/after previews, the five-item audit ledger, the exported-GLB
+regression and the inspected local demo. The branch is not deployed. The asset
+is a generic scene prop, not a pressure-rated design or physical acceptance.

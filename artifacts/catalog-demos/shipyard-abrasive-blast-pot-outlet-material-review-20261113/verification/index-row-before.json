@@ -1,0 +1,112 @@
+{
+  "id": "abrasive-blast-pot",
+  "kit": "shipyard",
+  "title": "Abrasive blast pot",
+  "description": "Portable pressure pot with a rounded vessel, top hopper, control manifold, twin wheels, and hose outlet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "abrasive",
+    "blast",
+    "pot"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/abrasive-blast-pot.kcad.ts",
+  "preview": "/assets/shipyard-abrasive-blast-pot.png",
+  "sourceSha256": "92147d2fe44dcd28ef12ffa35746f393d9205cc17bd079baf9bb78c041fe8d87",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#a46c4e",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    },
+    {
+      "name": "elastomer",
+      "type": "color",
+      "default": "#30383b",
+      "label": "Elastomer"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#b4866e",
+      "structuralSteel": "#d0d7d8",
+      "elastomer": "#3a4245"
+    },
+    "weathered-yard": {
+      "yardPaint": "#885a41",
+      "structuralSteel": "#828d91",
+      "elastomer": "#252b2d"
+    }
+  },
+  "stats": {
+    "triangles": 296,
+    "sizeM": [
+      1.24,
+      1.68,
+      0.795222
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#a46c4e",
+      "parts": [
+        "pressure-vessel",
+        "hopper",
+        "top-lid",
+        "manifold"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "elastomer",
+      "color": "#30383b",
+      "parts": [
+        "wheel-0",
+        "wheel-1",
+        "hose-outlet"
+      ],
+      "param": "elastomer"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "handle"
+      ],
+      "param": "structuralSteel"
+    }
+  ]
+}

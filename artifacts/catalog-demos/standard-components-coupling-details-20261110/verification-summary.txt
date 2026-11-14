@@ -1,0 +1,4 @@
+Global quality: 2402/2402 assets pass (50 rich kits, 0 thin kits)
+Standard-components: 50/50 assets pass (1 rich kits, 0 thin kits)
+Catalog integration: Test Files  4 passed (4); Tests  15 passed (15)
+Three edited source hashes match regenerated index rows and rendered preview files.

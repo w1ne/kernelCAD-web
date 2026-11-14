@@ -1,0 +1,9 @@
+{
+  "beforeSourceSha256": "8b2ef45d509fb5ac991254da263bf79da04169d55a8fff7a825f513b1c807525",
+  "afterSourceSha256": "c85643f747d3fe8dbdc140343e18b9f2c89d35979f87a3d7c9f9d5732aab2dae",
+  "beforePreviewSha256": "1ce0a40f846846992db67b5382c8dc5d2e187a31bd7bcd7c8db611f3a655c88b",
+  "afterPreviewSha256": "f1d3e8fecd217f1ef4b8a80feebd6fc9579727e8ab4293fb8e50de66355052a0",
+  "liveSourceMatchesBefore": true,
+  "livePreviewMatchesBefore": true,
+  "livePreviewMatchesAfter": false
+}

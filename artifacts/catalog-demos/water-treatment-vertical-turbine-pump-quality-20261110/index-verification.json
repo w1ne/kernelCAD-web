@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-10T05:40:51+00:00",
+  "scope": "Generated local catalog index and kit preview; public deployment not checked.",
+  "asset": "water-treatment/vertical-turbine-pump",
+  "sourceSha256MatchesIndex": true,
+  "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c",
+  "preview": "catalog/kits/water-treatment/previews/vertical-turbine-pump.png",
+  "previewBytes": 39118,
+  "triangleCount": 2276,
+  "triangleBudget": 2800,
+  "parameters": [
+    "scale",
+    "outletOrientation",
+    "coatedSteel",
+    "structuralSteel",
+    "stainlessSteel",
+    "motorFinish"
+  ],
+  "presets": [
+    "highVisibility",
+    "weathered"
+  ],
+  "kitAssets": 50,
+  "catalogAssets": 2402
+}

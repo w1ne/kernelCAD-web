@@ -1,0 +1,9 @@
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/frames/01-before-after.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/frames/02-layout-choices.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/frames/03-material-preset.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/frames/04-local-verification.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/frames/04-local-verification.png'

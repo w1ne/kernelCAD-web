@@ -1,0 +1,13 @@
+Command:
+  npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-cooling-tower-pages-20261111
+Output:
+  wrote 2402 asset page(s) + hub, sitemap.xml and robots.txt
+
+The generated detail page at
+`/tmp/kernelcad-cooling-tower-pages-20261111/catalog/industrial-plant/evaporative-cooling-tower/index.html`
+shows the new description, 648 triangles under the 1,400 budget, `fanBlades`
+control, and both `weathered` and `highVisibility` preset values. The copied
+`preview.png` hash matches the source preview:
+`f5afe48a5a8b81b2aa5a8bebed9d0760ad928371c58046eab91e2008b0e38dce`.
+
+This is a local generated-page check, not a deployment or public-page check.

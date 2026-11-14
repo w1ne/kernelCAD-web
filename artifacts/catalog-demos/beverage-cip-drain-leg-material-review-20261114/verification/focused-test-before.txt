@@ -1,0 +1,27 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts (1 test | 1 failed) 781ms
+     × keeps the wetted drain leg stainless and the mounting feet powder-coated 337ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts > beverage-bottling-line/cip-valve-manifold materials > keeps the wetted drain leg stainless and the mounting feet powder-coated
+AssertionError: expected [ Array(5) ] to not include 'drain-leg'
+ ❯ tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts:29:29
+     27|     const feet = Array.from({ length: 4 }, (_, index) => `mount-foot-$…
+     28|     const coat = asset.palette.find((zone) => zone.name === 'powderCoa…
+     29|     expect(coat?.parts).not.toContain('drain-leg');
+       |                             ^
+     30|     expect(coat?.parts).toEqual(expect.arrayContaining(feet));
+     31|     const steel = asset.palette.find((zone) => zone.name === 'stainles…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:36:46
+   Duration  12.35s (transform 9.21s, setup 277ms, import 11.06s, tests 781ms, environment 0ms)
+
+exit 1

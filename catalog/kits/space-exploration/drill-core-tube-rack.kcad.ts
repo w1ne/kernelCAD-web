@@ -5,7 +5,7 @@ meta({
   name: "drill-core-tube-rack",
   license: 'CC0-1.0',
   title: "Core tube rack",
-  description: "Portable core-tube rack with four parallel channels and broad end plates. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Portable core-tube rack with four parallel channels and broad end plates. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#8f8a7a", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer sample tubes" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -42,11 +44,11 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("drill-core-tube-rack");
 p.part("base",b(0,0,0,820,620,80).color(paint));
-p.part("tube-0",c(-270,0,80,570,48,8).color(aluminum));
-p.part("tube-1",c(-90,0,80,570,48,8).color(aluminum));
-p.part("tube-2",c(90,0,80,570,48,8).color(aluminum));
-p.part("tube-3",c(270,0,80,570,48,8).color(aluminum));
-p.part("end-left",b(-380,0,170,60,650,300).color(paint));
-p.part("end-right",b(380,0,170,60,650,300).color(paint));
+p.part("tube-0",c(-270,0,80,570,48,8).color(polymer));
+p.part("tube-1",c(-90,0,80,570,48,8).color(polymer));
+p.part("tube-2",c(90,0,80,570,48,8).color(polymer));
+p.part("tube-3",c(270,0,80,570,48,8).color(polymer));
+p.part("end-left",b(-380,0,170,60,650,300).color(aluminum));
+p.part("end-right",b(380,0,170,60,650,300).color(aluminum));
 
 return p.model();

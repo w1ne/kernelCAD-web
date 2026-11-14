@@ -1,0 +1,5 @@
+standard-components: 50/50 assets pass; 2.38 material controls per asset
+catalog quality: 2402/2402 assets pass (100.00%; 50 rich kits, 0 thin kits)
+previews/index: 50/50 kit previews rendered; 50 source hashes and preview routes verified
+local catalog pages: 2402 generated; 5/5 changed pages and copied previews pass
+checks: ESLint clean; catalog integration 4 files / 15 tests passed

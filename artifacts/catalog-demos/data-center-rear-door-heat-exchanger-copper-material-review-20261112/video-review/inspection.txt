@@ -1,0 +1,1 @@
+Inspected the encoded MP4 through four frames extracted at 0.0, 4.5, 9.0, and 13.5 seconds. The five preview cards, source labels, before/after coil contrast, palette labels, presets, verification labels, and local-only caveat are legible. No cropping or text overlap remains. The MP4 metadata is recorded in ffprobe.json (1280x720, 24 fps, H.264, 18 seconds).

@@ -1,65 +1,82 @@
 // SPDX-License-Identifier: CC0-1.0
-// Stable two-by-two stack of four ventilated produce crates with open rail sides and corner clips
+// Produce crate stack: the floor stack of fruit crates at the end of the
+// produce aisle. What makes it a crate stack rather than a box pile: four
+// tapered 600 x 400 plastic crates, two wide and two high, each with rows
+// of vent slots, a thick top rim and a hand-hold cut through each end; the
+// top crates are heaped with fruit just over the rim, the lower ones show
+// fruit through their vents, and a price ticket on a stake sits in the
+// front crate. Generic visualization geometry at about real size (1.2 m
+// wide, 0.55 m tall), millimetres, Z up, front on -Y.
 
 meta({
   name: "produce-crate-stack",
   license: 'CC0-1.0',
   title: "Produce crate stack",
-  description: "Stable two-by-two stack of four ventilated produce crates with open rail sides and corner clips. Knobs: overall scale and polypropylene, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
-  tags: ['retail', 'grocery', 'shop', 'low poly', 'scene prop'],
+  description: "Two-by-two stack of tapered 600 x 400 plastic produce crates at about real size: vent slot rows, thick top rims, end hand-holds, fruit heaped over the rim of the top crates and visible through the lower vents, crate stickers and a price ticket on a stake. Material controls: crate plastic, fruit, fruit blush and ticket card. redApples, navelOranges and limes presets.",
+  tags: ['produce crate', 'fruit crate', 'vegetable crate', 'crate stack', 'retail', 'grocery', 'shop', 'low poly', 'scene prop'],
   kit: 'retail-store',
   category: 'prop',
   origin: 'base',
   compat: ['retail', 'shop', 'grocery', 'interior', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 7000,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const polypropylene = param('polypropylene', '#6d9453', { label: 'Polypropylene color' });
-const stainless = param('stainless', '#919da0', { label: 'Stainless steel color' });
-const paper = param('paper', '#eee3c7', { label: 'Paper color' });
+const crate = param('crate', '#3e8a4a', { label: 'Crate plastic' });
+const fruit = param('fruit', '#c5302b', { label: 'Fruit' });
+const blush = param('blush', '#e2a23a', { label: 'Fruit blush (second tone)' });
+const ticket = param('ticket', '#f6f1e2', { label: 'Ticket card' });
 
 presets({
-  cleanStore: {
-    polypropylene: '#d6e0d5',
-    stainless: '#bfc8cb',
-    paper: '#f0e5c9',
-  },
-  nightRestock: {
-    polypropylene: '#45614e',
-    stainless: '#66747a',
-    paper: '#c9b27e',
-  },
+  redApples: { crate: '#3e8a4a', fruit: '#c5302b', blush: '#e2a23a', ticket: '#f6f1e2' },
+  navelOranges: { crate: '#26292c', fruit: '#f08a1c', blush: '#f6ad3c', ticket: '#fff3c4' },
+  limes: { crate: '#2f6fb0', fruit: '#6fae34', blush: '#a8cc48', ticket: '#f6f1e2' },
 });
-const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z).scale(scale);
-const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("produce-crate-stack");
-const cratePositions = [
-  { id: "lower-left", x: -310, z: 170 },
-  { id: "lower-right", x: 310, z: 170 },
-  { id: "upper-left", x: -310, z: 510 },
-  { id: "upper-right", x: 310, z: 510 },
-];
-for (const crate of cratePositions) {
-  p.part(`crate-${crate.id}-floor`, b(crate.x, 0, crate.z - 156, 600, 500, 28).color(polypropylene));
-  for (const xSide of [-1, 1]) {
-    for (const ySide of [-1, 1]) {
-      p.part(`crate-${crate.id}-corner-${xSide}-${ySide}`, b(crate.x + xSide * 282, ySide * 232, crate.z, 32, 32, 320).color(polypropylene));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+const rectPath = (hw: number, hd: number) => path().moveTo(-hw, -hd).lineTo(hw, -hd).lineTo(hw, hd).lineTo(-hw, hd).close();
+
+const H = 240;
+
+// One tapered crate at the origin: open tub, rim, vent slots and end hand-holds.
+let shell = rectPath(290, 190).loft(rectPath(300, 200), { spacing: H, ruled: true })
+  .subtract(rectPath(281, 181).loft(rectPath(291, 191), { spacing: H, ruled: true }).translate(0, 0, 10));
+for (let r = 0; r < 3; r++) {
+  for (let c = 0; c < 5; c++) shell = shell.subtract(blk(-224 + c * 112, 0, 40 + r * 52, 78, 460, 22));
+}
+for (const z of [70, 120]) {
+  for (const y of [-110, 0, 110]) shell = shell.subtract(blk(0, y, z, 660, 70, 22));
+}
+shell = shell.subtract(blk(0, 0, 178, 660, 130, 34));
+const rim = blk(0, 0, H - 14, 610, 410, 14).subtract(blk(0, 0, H - 20, 576, 376, 30));
+
+const fruitBall = sphere(50);
+for (const [id, x] of [['l', -305], ['r', 305]]) {
+  for (const [lvl, z] of [['lo', 0], ['up', H]]) {
+    const k = `${id}-${lvl}`;
+    add(`crate-${k}`, shell.translate(x, 0, z).color(crate));
+    add(`rim-${k}`, rim.translate(x, 0, z).color(crate));
+    add(`sticker-${k}`, blk(x + 170, -197, z + 182, 110, 4, 40).color(ticket));
+    // Fruit volume inside: seen through the vents of the lower crates.
+    add(`fill-${k}`, blk(x, 0, z + 10, 560, 360, lvl === 'up' ? 180 : 190).color(fruit));
+    if (lvl === 'up') {
+      // Heaped top layer, alternating fruit tones.
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 3; j++) {
+          const tone = (i + j + (id === 'l' ? 0 : 1)) % 3 === 0 ? blush : fruit;
+          add(`fruit-${k}-${i}-${j}`, fruitBall.translate(x - 224 + i * 112, -118 + j * 118, z + 205 + ((i + j) % 2) * 12).color(tone));
+        }
+      }
     }
   }
-  for (let row = 0; row < 3; row++) {
-    const z = crate.z - 75 + row * 75;
-    p.part(`crate-${crate.id}-front-rail-${row}`, b(crate.x, -242, z, 580, 22, 22).color(polypropylene));
-    p.part(`crate-${crate.id}-back-rail-${row}`, b(crate.x, 242, z, 580, 22, 22).color(polypropylene));
-    p.part(`crate-${crate.id}-left-rail-${row}`, b(crate.x - 292, 0, z, 22, 460, 22).color(polypropylene));
-    p.part(`crate-${crate.id}-right-rail-${row}`, b(crate.x + 292, 0, z, 22, 460, 22).color(polypropylene));
-  }
-  p.part(`crate-${crate.id}-label`, b(crate.x - 180, -256, crate.z + 96, 180, 10, 48).color(paper));
 }
-p.part("stack-clip-left-front", c(-592, -232, 670, 22, 18, 8).color(stainless));
-p.part("stack-clip-left-back", c(-592, 232, 670, 22, 18, 8).color(stainless));
-p.part("stack-clip-right-front", c(592, -232, 670, 22, 18, 8).color(stainless));
-p.part("stack-clip-right-back", c(592, 232, 670, 22, 18, 8).color(stainless));
+
+// Price ticket on a stake in the front of the upper-left crate.
+add("ticket-stake", blk(-460, -150, H + 190, 8, 8, 170).color('#8a6440'));
+add("ticket-card", blk(-460, -156, H + 330, 170, 4, 110).color(ticket));
+add("ticket-band", blk(-460, -159, H + 410, 170, 4, 26).color('#c8232c'));
+add("ticket-price", blk(-430, -159, H + 345, 80, 4, 40).color('#26292c'));
 
 return p.model();

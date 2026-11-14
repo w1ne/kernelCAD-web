@@ -34,7 +34,8 @@ const cylinderPart = (x:number,y:number,z:number,h:number,r:number,n=10) => cyli
 const p = assembly("sanitary-filter-skid");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
-  if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
+  // Cartridge housings are sanitary stainless pressure parts; only the skid frame is powder coated.
+  if (/base|leg|foot|frame|support|stand|control|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);
 };
 p.part("skid", finishPart("skid", boxPart(0, 0, 20, 1050, 650, 50)));

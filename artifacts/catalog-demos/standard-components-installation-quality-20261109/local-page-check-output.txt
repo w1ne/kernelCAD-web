@@ -1,0 +1,72 @@
+{
+  "outputDirectory": "/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/site-build",
+  "assets": {
+    "base-mounting-plate": {
+      "sourceShaMatchesIndex": true,
+      "previewRouteMatches": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "parameterLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "blind-flange": {
+      "sourceShaMatchesIndex": true,
+      "previewRouteMatches": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "parameterLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "pipe-coupling": {
+      "sourceShaMatchesIndex": true,
+      "previewRouteMatches": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "parameterLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "pipe-flange": {
+      "sourceShaMatchesIndex": true,
+      "previewRouteMatches": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "parameterLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "rubber-bumper": {
+      "sourceShaMatchesIndex": true,
+      "previewRouteMatches": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "parameterLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    }
+  },
+  "allPassed": true,
+  "deploymentVerified": false
+}

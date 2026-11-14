@@ -23,19 +23,20 @@ presets({
 });
 const p = assembly('compressed-air-receiver');
 p.part('pressure-shell', cylinder(840, 185, 10).rotate([0, 1, 0], 90).translate(-420, 0, 315).translate(0, 0, -0.5).scale(scale).color(steel));
-p.part('left-head', cylinder(28, 196.1, 10).rotate([0, 1, 0], 90).translate(-442, 0, 315).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
-p.part('right-head', cylinder(28, 196.1, 10).rotate([0, 1, 0], 90).translate(414, 0, 315).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
+// The welded heads and nozzle necks share the vessel's steel finish; safety paint stays on the skid and supports.
+p.part('left-head', cylinder(28, 196.1, 10).rotate([0, 1, 0], 90).translate(-442, 0, 315).translate(0, 0, -0.5).scale(scale).color(steel));
+p.part('right-head', cylinder(28, 196.1, 10).rotate([0, 1, 0], 90).translate(414, 0, 315).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('skid-rail-left', box(756, 30, 35, true).translate(0, -111, 18).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
 p.part('skid-rail-right', box(756, 30, 35, true).translate(0, 111, 18).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
 p.part('saddle-0', box(95, 434.8, 90, true).translate(-235.2, 0, 99.9).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
 p.part('saddle-foot-0', box(130, 471.7, 18, true).translate(-235.2, 0, 10).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('saddle-1', box(95, 434.8, 90, true).translate(235.2, 0, 99.9).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
 p.part('saddle-foot-1', box(130, 471.7, 18, true).translate(235.2, 0, 10).translate(0, 0, -0.5).scale(scale).color(steel));
-p.part('top-port-0', cylinder(78, 25.9, 10).translate(-235.2, 0, 496).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
+p.part('top-port-0', cylinder(78, 25.9, 10).translate(-235.2, 0, 496).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('port-flange-0', cylinder(16, 38.9, 10).translate(-235.2, 0, 553).translate(0, 0, -0.5).scale(scale).color(steel));
-p.part('top-port-1', cylinder(78, 25.9, 10).translate(0, 0, 496).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
+p.part('top-port-1', cylinder(78, 25.9, 10).translate(0, 0, 496).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('port-flange-1', cylinder(16, 38.9, 10).translate(0, 0, 553).translate(0, 0, -0.5).scale(scale).color(steel));
-p.part('top-port-2', cylinder(78, 25.9, 10).translate(235.2, 0, 496).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
+p.part('top-port-2', cylinder(78, 25.9, 10).translate(235.2, 0, 496).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('port-flange-2', cylinder(16, 38.9, 10).translate(235.2, 0, 553).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('pressure-gauge', cylinder(26, 42, 10).rotate([1, 0, 0], 90).translate(117.6, -138.7, 381.6).translate(0, 0, -0.5).scale(scale).color(gaugeGlass));
 p.part('drain', cylinder(62, 16.6, 10).translate(0, 0, 18).translate(0, 0, -0.5).scale(scale).color(safetyPaint));

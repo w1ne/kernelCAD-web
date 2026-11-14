@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-09",
+  "branch": "feat/catalog-2000",
+  "startingHead": "c41b5f6e5",
+  "kit": "hydroponics",
+  "existingAssets": 52,
+  "assetsRefined": [
+    "greenhouse-tunnel-bay",
+    "wall-mounted-co2-sensor"
+  ],
+  "newAssetIds": 0,
+  "materialControls": {
+    "greenhouse-tunnel-bay": ["hoopSteel", "polyFilm", "timber", "crop"],
+    "wall-mounted-co2-sensor": ["housing", "trim", "lcdBacklight", "cable"]
+  },
+  "presets": {
+    "greenhouse-tunnel-bay": ["galvanised", "weathered", "whiteFilm", "highVisibility"],
+    "wall-mounted-co2-sensor": ["standard", "darkHousing", "weathered", "highVisibility"]
+  },
+  "choices": {
+    "greenhouse-tunnel-bay": {"sideCurtains": ["rolled up", "closed"]},
+    "wall-mounted-co2-sensor": {"display": ["LCD", "blind"]}
+  },
+  "previewRender": "xargs -a artifacts/catalog-demos/hydroponics-detail-refinement-20261109/preview-asset-ids.txt npx tsx scripts/renderCatalogPreviews.ts",
+  "indexBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit hydroponics",
+  "overallQuality": "python3 scripts/checkCatalogQuality.py",
+  "eslint": "npx eslint catalog/kits/hydroponics/",
+  "catalogIntegration": "npx vitest run tests/integration/catalog/",
+  "catalogIndexTestTimeout": "Raised catalogIndex.test.ts from 600s to 900s after the 2,402-asset rebuild exceeded the previous timeout locally; no assertions or coverage were changed.",
+  "variantRender": "npx tsx artifacts/catalog-demos/hydroponics-detail-refinement-20261109/render_hydroponics_variants.ts",
+  "demoCapture": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-detail-refinement-20261109/capture_hydroponics_demo.py",
+  "demoInspection": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-detail-refinement-20261109/inspect_hydroponics_demo.py",
+  "claimBoundary": "Branch-local source, catalog, preview, preset-render and software checks only. The branch is not deployed; no sensor function, greenhouse performance, fabrication or hardware acceptance is claimed."
+}

@@ -1,0 +1,17 @@
+{
+ "rowsBefore": 2402,
+ "rowsAfter": 2402,
+ "kits": 50,
+ "changed": [
+  "construction-equipment/asphalt-distributor-truck"
+ ],
+ "sourceSha256Matches": true,
+ "preview": "/assets/construction-equipment-asphalt-distributor-truck.png",
+ "previewUrlUnchanged": true,
+ "previewFile": "catalog/kits/construction-equipment/previews/asphalt-distributor-truck.png",
+ "previewFileExists": true,
+ "changedFields": [
+  "sourceSha256",
+  "palette"
+ ]
+}

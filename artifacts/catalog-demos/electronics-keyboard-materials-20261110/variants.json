@@ -1,0 +1,60 @@
+{
+  "source": "catalog/kits/electronics/keyboard.kcad.ts",
+  "sourceSha256": "7566d8845890ddb95baccc8f5302b56d106c05c76484dc6b0bf492bdb42cafa1",
+  "renderer": "kernelCAD low-poly GLB export + scripts/lib/glbSoftwareRender.ts",
+  "variants": [
+    {
+      "id": "default-tenkeyless",
+      "title": "Default · tenkeyless",
+      "caption": "Default graphite keycaps · ABS shell · coral accent",
+      "params": {},
+      "triangles": 1360,
+      "render": "renders/default-tenkeyless.png",
+      "renderSha256": "012e5a39cc1d5222bb61880d6aa5e8440673a52c35a6df5bc5ecc66c3fd7605d"
+    },
+    {
+      "id": "retro-tenkeyless",
+      "title": "Preset · retro",
+      "caption": "retro preset · cream PBT keycaps and warm ABS shell",
+      "params": {
+        "caseABS": "#9e8766",
+        "keycapPBT": "#f1e4c5",
+        "accentPBT": "#c66b3c",
+        "legendInk": "#514536"
+      },
+      "triangles": 1360,
+      "render": "renders/retro-tenkeyless.png",
+      "renderSha256": "0fea4530a8aeaffefc655e4a10e1178aa092b884a6adc7daa0d18d6e0426c3c5"
+    },
+    {
+      "id": "white-compact",
+      "title": "Layout · compact | preset · white",
+      "caption": "compact layout · white preset · the navigation block is removed",
+      "params": {
+        "layout": "compact",
+        "caseABS": "#bfc5c7",
+        "keycapPBT": "#eff1ef",
+        "accentPBT": "#6d94bf",
+        "legendInk": "#535e67"
+      },
+      "triangles": 1036,
+      "render": "renders/white-compact.png",
+      "renderSha256": "b04d05fa45057e8704d8634ab0c37076f4621bae2b2d8c8638aa19c3f2f1f7b3"
+    },
+    {
+      "id": "full-gamer",
+      "title": "Layout · full | preset · gamer",
+      "caption": "full layout · gamer preset · navigation block and number pad are visible",
+      "params": {
+        "layout": "full",
+        "caseABS": "#141416",
+        "keycapPBT": "#26272b",
+        "accentPBT": "#38e07b",
+        "legendInk": "#b7ffc9"
+      },
+      "triangles": 1540,
+      "render": "renders/full-gamer.png",
+      "renderSha256": "addc1093c2a8abb21256915d46b3fec511ad66e68caad2fe24de6e3e56b25ad2"
+    }
+  ]
+}

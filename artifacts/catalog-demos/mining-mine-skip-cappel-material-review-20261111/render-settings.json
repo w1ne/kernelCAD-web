@@ -1,0 +1,9 @@
+{
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts mine-skip",
+  "renderer": "scripts/lib/glbSoftwareRender.ts / renderTrianglesPng",
+  "camera": "fixed catalog 3/4 view",
+  "preset": "default values",
+  "assetId": "mining/mine-skip",
+  "triangleCount": 1490,
+  "detailCrop": { "sourcePixels": "160x170+176+78", "outputPixels": "480x510", "purpose": "show the cappel at the rope-to-conveyance connection" }
+}

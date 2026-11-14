@@ -1,0 +1,9 @@
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/frames/01-before-after.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/frames/02-outlet-choices.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/frames/03-material-presets.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/frames/04-local-verification.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/frames/04-local-verification.png'

@@ -1,0 +1,5 @@
+catalog/index.json is up to date
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/buildAssetCatalog.ts --check
+(node:414612) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

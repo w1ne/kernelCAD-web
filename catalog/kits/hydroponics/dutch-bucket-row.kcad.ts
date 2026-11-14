@@ -1,59 +1,114 @@
 // SPDX-License-Identifier: CC0-1.0
-// Dutch bucket row: Four media buckets on a shared stand with paired feed header and drain return rail. Low-poly visualization geometry in millimetres, Z up.
+// Dutch bucket row: the vine-crop system used for tomatoes, peppers and
+// cucumbers, where each plant grows in its own perlite-filled bucket and the
+// surplus nutrient drains back through a shared return pipe.
+// What makes it a Dutch bucket row: tapered square Bato buckets sitting
+// directly on a 50 mm drain pipe that runs the length of the row (each
+// bucket's siphon elbow drops into it), a drip line above with a dripper
+// stake in every bucket, and a tall vine climbing a support string from each
+// bucket to an overhead trellis wire carried on two end posts, with fruit
+// trusses hanging off the stems.
+// Generic visualization geometry at about real size (2.7 m long, 0.6 m deep,
+// 2.1 m high), millimetres, Z up, drip line and fruit facing -Y.
 
 meta({
   name: "dutch-bucket-row",
   license: 'CC0-1.0',
   title: "Dutch bucket row",
-  description: "Four media buckets on a shared stand with paired feed header and drain return rail. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
-  tags: ['hydroponics', 'greenhouse', 'controlled environment agriculture', 'low poly', 'scene prop'],
+  description: "Dutch (Bato) bucket row at about real size: six tapered perlite-filled buckets on a shared 50 mm drain pipe with siphon elbows, drip line with a dripper stake per bucket, and a vine per bucket climbing a support string to an overhead trellis wire on two end posts, with fruit trusses. Material controls: buckets, plumbing, trellis frame and foliage, plus a crop choice (tomato, pepper, cucumber). tomato, sweetPepper, cucumber and weathered presets.",
+  tags: ['dutch bucket', 'bato bucket', 'vine crop', 'tomato', 'pepper', 'cucumber', 'perlite', 'trellis', 'hydroponics', 'greenhouse', 'controlled environment agriculture', 'low poly', 'scene prop'],
   kit: 'hydroponics',
   category: 'prop',
   origin: 'base',
   compat: ['hydroponics', 'greenhouse', 'controlled-environment-agriculture', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 5600,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const powderCoatedSteel=param('powderCoatedSteel','#557b70',{label:'Powder-coated steel'});
-const pvc=param('pvc','#c7d4ca',{label:'PVC'});
-const polymer=param('polymer','#ddd8c7',{label:'Polymer'});
+const bucket = param('bucket', '#2a2c2e', { label: 'Buckets (polypropylene)' });
+const plumbing = param('plumbing', '#e6e7e1', { label: 'Drain and drip plumbing (PVC)' });
+const trellis = param('trellis', '#8f989c', { label: 'Trellis posts and wire (galvanised steel)' });
+const foliage = param('foliage', '#3f8436', { label: 'Vine foliage' });
+const crop = param('crop', 'tomato', { choices: ['tomato', 'pepper', 'cucumber'], label: 'Crop' });
+
 presets({
-  weathered: {powderCoatedSteel:'#69766e', pvc:'#b2bcae', polymer:'#b4b5aa'},
-  highVisibility: {powderCoatedSteel:'#e87832', pvc:'#ead789', polymer:'#f2c84b'},
+  tomato: { bucket: '#2a2c2e', plumbing: '#e6e7e1', trellis: '#8f989c', foliage: '#3f8436' },
+  sweetPepper: { bucket: '#d9cfb4', plumbing: '#e6e7e1', trellis: '#8f989c', foliage: '#2f7a30' },
+  cucumber: { bucket: '#2a2c2e', plumbing: '#4a5a66', trellis: '#c9a640', foliage: '#56993d' },
+  weathered: { bucket: '#4a4a46', plumbing: '#c8c6b8', trellis: '#7d7b72', foliage: '#6d8a46' },
 });
-const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const section=(radius:number,sides:number)=>{
-  let outline=path().moveTo(radius*Math.cos(Math.PI/2),radius*Math.sin(Math.PI/2));
-  for(let k=1;k<sides;k++){
-    const angle=Math.PI/2+(2*Math.PI*k)/sides;
-    outline=outline.lineTo(radius*Math.cos(angle),radius*Math.sin(angle));
-  }
-  return outline.close();
-};
-const loftCylinder=(height:number,radius:number,sides:number)=>{
-  const levels=[0,height*0.08,height*0.92,height];
-  const radii=[radius*0.9,radius,radius,radius*0.9];
-  const profiles=levels.map((_,index)=>section(radii[index],sides));
-  return profiles[0].loft(profiles.slice(1),{
-    planes:levels.map((z)=>({plane:'XY' as const,origin:[0,0,z] as [number,number,number]})),
-    ruled:true,
-  });
-};
-const c=(x:number,y:number,z:number,h:number,r:number,s:number)=>loftCylinder(h,r,s).translate(x,y,z).scale(scale);
 
 const p = assembly("dutch-bucket-row");
-p.part("support-frame-left", b(-790,0,0,65,250,680).color(powderCoatedSteel));
-p.part("support-frame-right", b(790,0,0,65,250,680).color(powderCoatedSteel));
-p.part("longitudinal-rail-front", b(0,-120,610,1640,55,55).color(powderCoatedSteel));
-p.part("longitudinal-rail-back", b(0,120,610,1640,55,55).color(powderCoatedSteel));
-p.part("bucket-1", b(-570,0,0,340,300,520).color(polymer));
-p.part("bucket-2", b(-190,0,0,340,300,520).color(polymer));
-p.part("bucket-3", b(190,0,0,340,300,520).color(polymer));
-p.part("bucket-4", b(570,0,0,340,300,520).color(polymer));
-p.part("feed-header", b(0,-230,620,50,500,45).color(pvc));
-p.part("return-header", b(0,230,90,50,500,45).color(pvc));
-p.part("feed-riser", c(-820,-230,0,700,24,10).color(pvc));
-p.part("return-drop", c(820,230,0,190,28,10).color(pvc));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
+const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 10) => cylinder(len, r, seg).translate(x, y, z);
+const rectPath = (hw: number, hd: number) => path().moveTo(-hw, -hd).lineTo(hw, -hd).lineTo(hw, hd).lineTo(-hw, hd).close();
+const rod = (a: [number, number, number], b: [number, number, number], r: number, seg = 6) => {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const l = Math.hypot(d[0], d[1], d[2]);
+  const tilt = (Math.acos(d[2] / l) * 180) / Math.PI;
+  const yaw = (Math.atan2(d[1], d[0]) * 180) / Math.PI;
+  return cylinder(l, r, seg).rotateY(tilt).rotateZ(yaw).translate(a[0], a[1], a[2]);
+};
+
+const N = 6, PITCH = 420, L = (N - 1) * PITCH;
+const ZP = 70; // drain pipe axis
+const ZB = ZP + 45; // bucket bottom
+const BH = 300; // bucket height
+const ZW = 2050; // trellis wire
+const fruit = crop.value === 'pepper' ? '#d8402b' : crop.value === 'cucumber' ? '#2d6a2a' : '#c9302c';
+const fruitShape = crop.value === 'cucumber' ? [0.35, 0.35, 1.6] : crop.value === 'pepper' ? [0.9, 0.9, 1.2] : [1, 1, 0.9];
+
+// Shared drain pipe on saddle blocks, sloping to an outlet on the +X end.
+add("drain-pipe", cylX(-L / 2 - 250, 0, ZP, L + 600, 30).color(plumbing));
+for (let i = 0; i <= N; i++) add(`pipe-saddle-${i}`, blk(-L / 2 - 210 + i * PITCH, 0, 0, 60, 120, ZP - 20).color('#5d6366'));
+add("drain-cap", cylX(-L / 2 - 270, 0, ZP, 20, 36).color(plumbing));
+add("drain-elbow", cylZ(L / 2 + 350, 0, 0, ZP + 30, 30).color(plumbing));
+
+// Drip line along the front with a stake into every bucket.
+const DY = -230, DZ = ZB + BH + 60;
+add("drip-line", cylX(-L / 2 - 280, DY, DZ, L + 560, 10, 8).color('#1d2023'));
+add("drip-riser", cylZ(-L / 2 - 280, DY, 0, DZ, 14).color('#1d2023'));
+add("drip-filter", cylZ(-L / 2 - 280, DY, 280, 160, 34).color('#2f6fa8'));
+
+// Trellis posts and wire.
+for (const x of [-L / 2 - 350, L / 2 + 350]) {
+  add(`post-${x > 0 ? 'r' : 'l'}`, blk(x, 0, 0, 60, 60, ZW + 100).color(trellis));
+  add(`post-foot-${x > 0 ? 'r' : 'l'}`, blk(x, 0, 0, 200, 200, 10).color(trellis));
+  add(`post-arm-${x > 0 ? 'r' : 'l'}`, blk(x, 0, ZW - 30, 80, 300, 40).color(trellis));
+}
+add("trellis-wire", cylX(-L / 2 - 350, 0, ZW, L + 700, 5, 6).color(trellis));
+
+for (let i = 0; i < N; i++) {
+  const x = -L / 2 + i * PITCH;
+  // Tapered bucket, perlite fill and the siphon elbow into the drain pipe.
+  const outer = rectPath(140, 125).loft(rectPath(160, 145), { spacing: BH, ruled: true });
+  const inner = rectPath(130, 115).loft(rectPath(150, 135), { spacing: BH, ruled: true }).translate(0, 0, 12);
+  add(`bucket-${i}`, outer.subtract(inner).translate(x, 0, ZB).color(bucket));
+  add(`bucket-rim-${i}`, blk(x, 0, ZB + BH - 20, 334, 300, 20).subtract(blk(x, 0, ZB + BH - 30, 300, 270, 40)).color(bucket));
+  add(`perlite-${i}`, blk(x, 0, ZB + 130, 270, 242, BH - 170).color('#e3e1d8'));
+  add(`siphon-${i}`, cylZ(x + 90, 60, ZP, ZB - ZP + 30, 14).color(plumbing));
+  // Dripper stake.
+  add(`dripper-${i}`, rod([x - 40, DY, DZ], [x - 40, -80, ZB + BH - 40], 4).color('#1d2023'));
+  add(`dripper-head-${i}`, blk(x - 40, DY, DZ - 20, 30, 30, 40).color('#c0392b'));
+  // Vine: main stem leaning to the support string, leaf clusters and fruit.
+  const top: [number, number, number] = [x + 30, 0, ZW - 40];
+  add(`string-${i}`, rod([x + 30, 0, ZB + BH - 50], [x + 30, 0, ZW], 2, 4).color('#e8dcb8'));
+  add(`stem-${i}`, rod([x, -10, ZB + BH - 50], top, 12).color('#5c7a2e'));
+  for (let k = 0; k < 6; k++) {
+    const t = 0.1 + k * 0.15;
+    const lz = ZB + BH + t * (ZW - ZB - BH - 100);
+    const side = k % 2 === 0 ? -1 : 1;
+    add(`leaf-${i}-${k}`, sphere(130).scale([1.3, 0.8, 0.4]).rotateZ(side * 25).translate(x + side * 90 + t * 30, -30, lz).color(foliage));
+  }
+  add(`crown-${i}`, sphere(90).scale([1.2, 0.8, 0.7]).translate(top[0], -20, ZW - 120).color(foliage));
+  for (let tr = 0; tr < 2; tr++) {
+    const tz = ZB + BH + 300 + tr * 520 + (i % 2) * 80;
+    for (let f = 0; f < 3; f++) {
+      add(`fruit-${i}-${tr}-${f}`, sphere(42).scale(fruitShape).translate(x + 10 + (f - 1) * 55, -110 - (f % 2) * 30, tz - f * 40).color(f === 2 && crop.value === 'tomato' ? '#e8862a' : fruit));
+    }
+  }
+}
 
 return p.model();

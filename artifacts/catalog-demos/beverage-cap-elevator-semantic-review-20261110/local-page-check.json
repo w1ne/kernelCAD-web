@@ -1,0 +1,15 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/verify_local_pages.py",
+  "scope": "generated local static page only; not deployed behavior",
+  "page": "site-build/catalog/beverage-bottling-line/cap-elevator/index.html",
+  "copiedPreviewSha256": "9f0b76c91f910f4cc8226cb2bc5c9449607cf3af960d6e905b37d048e90eab5b",
+  "controlsAndPresets": [
+    "stainlessSteel",
+    "powderCoat",
+    "foodPolymer",
+    "beltRubber",
+    "sanitaryLine",
+    "legacyPlant"
+  ],
+  "studioLinkPresent": true
+}

@@ -1,0 +1,224 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/industrial-plant-machine-quality-20261109/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": "louver count, support station count, and radiator fin count each change tessellation",
+  "paletteChecks": "highVisibility / utilityGreen presets each change the rendered preview pixels",
+  "sources": [
+    {
+      "source": "catalog/kits/industrial-plant/diesel-generator-set.kcad.ts",
+      "sourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "triangleBudget": 1800
+    },
+    {
+      "source": "catalog/kits/industrial-plant/belt-conveyor.kcad.ts",
+      "sourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "triangleBudget": 2600
+    },
+    {
+      "source": "catalog/kits/industrial-plant/industrial-transformer.kcad.ts",
+      "sourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "triangleBudget": 3200
+    }
+  ],
+  "variants": [
+    {
+      "id": "generator-default",
+      "asset": "diesel-generator-set",
+      "choices": {},
+      "stats": {
+        "triangles": 564,
+        "sizeM": [
+          0.88,
+          0.619,
+          0.434
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/generator-default.png",
+      "pngSha256": "41b99bf5eca51544aafb9c6fe810dfb244287af0233df20530a0ca1cbcbebb7a"
+    },
+    {
+      "id": "generator-high-visibility",
+      "asset": "diesel-generator-set",
+      "choices": {},
+      "preset": "highVisibility",
+      "stats": {
+        "triangles": 564,
+        "sizeM": [
+          0.88,
+          0.619,
+          0.434
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/generator-high-visibility.png",
+      "pngSha256": "7eb73ee767e6b0a22243a993d3f168c666bd4fcaa90a924e41fd518676698267"
+    },
+    {
+      "id": "generator-ten-louvers",
+      "asset": "diesel-generator-set",
+      "choices": {
+        "louverCount": "10"
+      },
+      "stats": {
+        "triangles": 588,
+        "sizeM": [
+          0.88,
+          0.619,
+          0.434
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 33,
+        "parts": 33,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/generator-ten-louvers.png",
+      "pngSha256": "0888ee0a7ca16ced5b69d97e26747a3858f2a765d36d0a123ce6b04ba59d6cf8"
+    },
+    {
+      "id": "conveyor-default",
+      "asset": "belt-conveyor",
+      "choices": {},
+      "stats": {
+        "triangles": 992,
+        "sizeM": [
+          1.084,
+          0.462,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 40,
+        "parts": 40,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/conveyor-default.png",
+      "pngSha256": "9eb16f2957d7d12d0812496dc6029afde3bfa0ba3e194fa693117d9558fc32cd"
+    },
+    {
+      "id": "conveyor-high-visibility",
+      "asset": "belt-conveyor",
+      "choices": {},
+      "preset": "highVisibility",
+      "stats": {
+        "triangles": 992,
+        "sizeM": [
+          1.084,
+          0.462,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 40,
+        "parts": 40,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/conveyor-high-visibility.png",
+      "pngSha256": "b84177f456b01c14d13e4b0e0b7ca48495bc67dcf652bd43c80cddb74c9c29f6"
+    },
+    {
+      "id": "conveyor-four-stations",
+      "asset": "belt-conveyor",
+      "choices": {
+        "supportStations": "4"
+      },
+      "stats": {
+        "triangles": 1052,
+        "sizeM": [
+          1.084,
+          0.462,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 45,
+        "parts": 45,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/conveyor-four-stations.png",
+      "pngSha256": "bfea5c9bf68fc9bf7f60b387596b135ea44dd068793f058aa8feffb2be1b940c"
+    },
+    {
+      "id": "transformer-default",
+      "asset": "industrial-transformer",
+      "choices": {},
+      "stats": {
+        "triangles": 2528,
+        "sizeM": [
+          0.604,
+          0.641,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 80,
+        "parts": 80,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/transformer-default.png",
+      "pngSha256": "00c187c81f07c168b70f4f99f263fddbd4a28a87d184cf7409b2c43b3ac16a94"
+    },
+    {
+      "id": "transformer-utility-green",
+      "asset": "industrial-transformer",
+      "choices": {},
+      "preset": "utilityGreen",
+      "stats": {
+        "triangles": 2528,
+        "sizeM": [
+          0.604,
+          0.641,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 80,
+        "parts": 80,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/transformer-utility-green.png",
+      "pngSha256": "cb88a9dd67849ae0a80965f4a881c2e6ef7e54301ffcf7c67c7d0d8fbade4352"
+    },
+    {
+      "id": "transformer-ten-fins",
+      "asset": "industrial-transformer",
+      "choices": {
+        "radiatorFins": "10"
+      },
+      "stats": {
+        "triangles": 2576,
+        "sizeM": [
+          0.604,
+          0.641,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 84,
+        "parts": 84,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "png": "variants/transformer-ten-fins.png",
+      "pngSha256": "8ea75432afb49715fb548c79cf16364d6d4e0b38e296ae83ff1e2979519be526"
+    }
+  ]
+}

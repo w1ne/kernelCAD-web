@@ -80,7 +80,7 @@ p.part("top-lid", b("top-lid", [610, 610, 120], [0, 0, 1570]).color(yardPaint));
 p.part("manifold", b("manifold", [620, 150, 180], [0, -340, 790]).color(yardPaint));
 p.part("wheel-0", c("wheel-0", 100, 220, 12, [-520, 0, 220], [0, 90, 0], 90).color(elastomer));
 p.part("wheel-1", c("wheel-1", 100, 220, 12, [520, 0, 220], [0, 90, 0], 90).color(elastomer));
-p.part("hose-outlet", b("hose-outlet", [190, 190, 350], [430, -180, 390]).color(elastomer));
+p.part("hose-outlet", b("hose-outlet", [190, 190, 350], [430, -180, 390]).color(structuralSteel));
 p.part("handle", b("handle", [100, 700, 100], [-570, 0, 1120]).color(structuralSteel));
 
 return p.model();

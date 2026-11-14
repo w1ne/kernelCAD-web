@@ -1,30 +1,32 @@
-// Original kernelCAD low-poly desktop keyboard: a shallow wedge case with
-// key rows as raised strips, accent Esc, Enter and space keys, and optional
-// navigation cluster and number pad. Millimetres, Z up, base on z = 0
-// centred on x = y = 0. The typing edge (space bar) faces -Y.
+// Low-poly desktop keyboard with a sloped ABS shell, individually separated
+// PBT keycaps, printed legends, accent keys, and optional navigation cluster
+// and number pad. The key pitch and shallow rear riser make it read as a
+// desktop keyboard rather than a row of colored strips. Millimetres, Z up,
+// base on z = 0 centred on x = y = 0. The typing edge faces -Y.
 
 meta({
   name: 'keyboard',
   license: 'CC0-1.0',
   title: 'Keyboard',
-  description: 'Desktop computer keyboard with a wedge case, raised key rows, accent Esc, Enter and space keys, and an optional arrow cluster and number pad. Knobs: layout, case, keys and accent key colours.',
+  description: 'Desktop computer keyboard with a sloped ABS shell, separated PBT keycaps, printed legends, accent keys, and optional navigation cluster and number pad. Knobs: layout, caseABS, keycapPBT, accentPBT and legendInk; retro, white and gamer presets.',
   tags: ['keyboard', 'computer keyboard', 'keys', 'typing', 'computer', 'pc', 'peripheral', 'desk'],
   kit: 'electronics',
   category: 'item',
   origin: 'base',
   compat: ['indoor', 'office', 'desk', 'bedroom', 'study'],
-  triangleBudget: 320,
+  triangleBudget: 2000,
 });
 
 const layout = param('layout', 'tenkeyless', { choices: ['compact', 'tenkeyless', 'full'], label: 'Layout' });
-const caseC = param('case', '#1f2023', { label: 'Case' });
-const keys = param('keys', '#5d616a', { label: 'Keys' });
-const accent = param('accent', '#d0533e', { label: 'Accent keys' });
+const caseABS = param('caseABS', '#1f2023', { label: 'ABS case' });
+const keycapPBT = param('keycapPBT', '#5d616a', { label: 'PBT keycaps' });
+const accentPBT = param('accentPBT', '#d0533e', { label: 'Accent PBT keycaps' });
+const legendInk = param('legendInk', '#d9d7ce', { label: 'Printed legend ink' });
 
 presets({
-  retro: { case: '#d8cfb8', keys: '#ece6d6', accent: '#8a8478' },
-  white: { case: '#e9e9e6', keys: '#f7f7f5', accent: '#9fb8d8' },
-  gamer: { case: '#141416', keys: '#26272b', accent: '#38e07b' },
+  retro: { caseABS: '#9e8766', keycapPBT: '#f1e4c5', accentPBT: '#c66b3c', legendInk: '#514536' },
+  white: { caseABS: '#bfc5c7', keycapPBT: '#eff1ef', accentPBT: '#6d94bf', legendInk: '#535e67' },
+  gamer: { caseABS: '#141416', keycapPBT: '#26272b', accentPBT: '#38e07b', legendInk: '#b7ffc9' },
 });
 
 const u = 19.05; // key pitch
@@ -46,40 +48,56 @@ const topAt = (y: number) => zf + ((y + D / 2) * (zb - zf)) / D;
 
 const k = assembly('keyboard');
 k.part('case', extrudePolygon([[-D / 2, 0], [D / 2, 0], [D / 2, zb], [-D / 2 + 6, zf], [-D / 2, zf - 5]], W)
-  .rotateX(90).rotateZ(90).translate(-W / 2, 0, 0).color(caseC));
+  .rotateX(90).rotateZ(90).translate(-W / 2, 0, 0).color(caseABS));
 
-// One raised key strip spanning `n` key units from column `c` on row `r` (row 0 = space row).
-const strip = (c: number, r: number, n: number, depth = 1) => {
+// Key span starts at column `c` and row `r` (row 0 faces the typist).
+// Long spans become separate keycaps; `merged` is reserved for the space bar.
+type KeyMaterial = 'keycap' | 'accent';
+const KEYCAP: KeyMaterial = 'keycap';
+const ACCENT: KeyMaterial = 'accent';
+const put = (c: number, r: number, n: number, material: KeyMaterial, depth = 1, merged = false) => {
   const ya = y0 + (r >= 5 ? r + 0.5 : r) * u + g / 2;
   const yb = ya + depth * u - g;
   const z = topAt(yb);
-  return box(n * u - g, yb - ya, 9).translate(x0 + c * u + g / 2, ya, z - 3);
+  const count = merged ? 1 : Math.max(1, Math.round(n));
+  const pitch = (n * u) / count;
+  const capW = pitch - g;
+  for (let j = 0; j < count; j++) {
+    const x = x0 + c * u + j * pitch + (pitch - capW) / 2;
+    const keyIndex = i++;
+    const cap = box(capW, yb - ya, 9).translate(x, ya, z - 3);
+    k.part(`keycap-${keyIndex}`, material === 'accent' ? cap.color(accentPBT) : cap.color(keycapPBT));
+
+    // Small printed dashes keep selected key tops readable in the low-poly preview.
+    if (!merged && keyIndex % 5 === 1) {
+      const markW = Math.min(5, capW * 0.38);
+      k.part(`legend-${keyIndex}`, box(markW, 1.25, 0.8)
+        .translate(x + (capW - markW) / 2, ya + (yb - ya) * 0.62, z + 6.1)
+        .color(legendInk));
+    }
+  }
 };
 let i = 0;
-const put = (c: number, r: number, n: number, color: typeof keys, depth = 1) => {
-  k.part(`key-${i++}`, strip(c, r, n, depth).color(color));
-};
 // Main block, 15 units wide.
-put(0, 0, 3.75, keys); put(3.75, 0, 6.25, accent); put(10, 0, 5, keys);
-put(0, 1, 2.25, keys); put(2.25, 1, 10, keys); put(12.25, 1, 2.75, keys);
-put(0, 2, 1.75, keys); put(1.75, 2, 11, keys); put(12.75, 2, 2.25, accent);
-put(0, 3, 1.5, keys); put(1.5, 3, 13.5, keys);
-put(0, 4, 13, keys); put(13, 4, 2, keys);
+put(0, 0, 3.75, KEYCAP); put(3.75, 0, 6.25, ACCENT, 1, true); put(10, 0, 5, KEYCAP);
+put(0, 1, 2.25, KEYCAP); put(2.25, 1, 10, KEYCAP); put(12.25, 1, 2.75, KEYCAP);
+put(0, 2, 1.75, KEYCAP); put(1.75, 2, 11, KEYCAP); put(12.75, 2, 2.25, ACCENT);
+put(0, 3, 1.5, KEYCAP); put(1.5, 3, 13.5, KEYCAP);
+put(0, 4, 13, KEYCAP); put(13, 4, 2, KEYCAP);
 if (hasFn) {
-  put(0, 5, 1, accent); put(2, 5, 4, keys); put(6.5, 5, 4, keys); put(11, 5, 4, keys);
+  put(0, 5, 1, ACCENT); put(2, 5, 4, KEYCAP); put(6.5, 5, 4, KEYCAP); put(11, 5, 4, KEYCAP);
 }
 if (hasNav) {
   const c = 15.25;
-  put(c, 5, 3, keys);
-  put(c, 3, 3, keys, 2);
-  put(c + 1, 1, 1, keys);
-  put(c, 0, 3, keys);
+  put(c, 5, 1, KEYCAP); put(c + 1, 5, 1, KEYCAP); put(c + 2, 5, 1, KEYCAP);
+  put(c, 3, 1, KEYCAP); put(c + 1, 4, 1, ACCENT); put(c + 1, 3, 1, ACCENT); put(c + 2, 3, 1, KEYCAP);
+  put(c, 1, 1, KEYCAP); put(c, 0, 1, KEYCAP);
 }
 if (hasPad) {
   const c = 18.5;
-  put(c, 4, 4, keys);
-  put(c, 0, 3, keys, 4);
-  put(c + 3, 0, 1, accent, 4);
+  for (const r of [2, 3, 4]) for (let col = 0; col < 3; col++) put(c + col, r, 1, KEYCAP);
+  put(c, 1, 2, KEYCAP, 1, true); put(c + 2, 1, 1, KEYCAP);
+  put(c + 3, 2, 1, ACCENT, 2); put(c + 3, 0, 1, ACCENT, 2);
 }
 
 return k.model();

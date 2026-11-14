@@ -1,0 +1,25 @@
+
+[2m  [[22m
+[2m    "powderCoat",[22m
+[2m    "displayGlass",[22m
+[2m    "safetyPolymer",[22m
+[2m    "engineeringPolymer",[22m
+[32m-   "cableElastomer",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/dualPortAcPedestalCableMaterial.test.ts:[2m22:95[22m[39m
+    [90m 20| [39m
+    [90m 21| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 22| [39m    expect(asset.params.filter((param) => param.type === 'color').map(…
+    [90m   | [39m                                                                                              [31m^[39m
+    [90m 23| [39m      'powderCoat', 'displayGlass', 'safetyPolymer', 'engineeringPolym…
+    [90m 24| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 14:29:33
+[2m   Duration [22m 10.91s[2m (transform 7.43s, setup 617ms, import 8.48s, tests 770ms, environment 0ms)[22m
+

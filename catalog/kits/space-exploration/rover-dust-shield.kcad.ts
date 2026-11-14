@@ -5,7 +5,7 @@ meta({
   name: "rover-dust-shield",
   license: 'CC0-1.0',
   title: "Rover dust shield",
-  description: "Pair of broad rover wheel shields with short mounting struts and protective edge lips. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Pair of broad rover wheel shields with short mounting struts and protective edge lips. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#a69c83", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const rubber = param('rubber', "#34383a", { label: "Rubber dust lips" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "rubber": "#514d44"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "rubber": "#252a2c"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -40,7 +42,7 @@ p.part("strut--380--80",b(-380,-80,0,55,55,440).color(aluminum));
 p.part("strut--380-80",b(-380,80,0,55,55,440).color(aluminum));
 p.part("strut-380--80",b(380,-80,0,55,55,440).color(aluminum));
 p.part("strut-380-80",b(380,80,0,55,55,440).color(aluminum));
-p.part("lip-left",b(-380,-40,590,440,35,55).color(paint));
-p.part("lip-right",b(380,-40,590,440,35,55).color(paint));
+p.part("lip-left",b(-380,-40,590,440,35,55).color(rubber));
+p.part("lip-right",b(380,-40,590,440,35,55).color(rubber));
 
 return p.model();

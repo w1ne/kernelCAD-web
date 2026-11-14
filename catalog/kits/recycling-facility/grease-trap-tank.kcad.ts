@@ -1,60 +1,88 @@
 // SPDX-License-Identifier: CC0-1.0
-// Grease-trap tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization geometry in millimetres, Z up.
+// Grease-trap tank: the horizontal interceptor that holds kitchen and
+// food-waste wash water long enough for fats, oils and grease to float off
+// before the water goes to sewer. What makes it a grease trap rather than
+// a fuel tank: a ribbed polyethylene barrel with domed ends lying on
+// concrete saddles, two tall manway risers with heavy lids for pump-out,
+// an inlet tee high on one end and an outlet tee lower on the other, each
+// with a capped cleanout, a vent stack and a sampling chamber downstream.
+// Generic visualization geometry at about real size (4.6 m long, 1.8 m
+// diameter), millimetres, Z up, length along X for the -X/-Y camera.
 
 meta({
   name: "grease-trap-tank",
   license: 'CC0-1.0',
   title: "Grease-trap tank",
-  description: "Grease-trap tank: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
-  tags: ["recycling", "materials recovery", "waste management", "containers", "low poly", "scene prop"],
+  description: "Horizontal grease interceptor at about real size: ribbed polyethylene barrel with domed ends on concrete saddles and slab, two manway risers with cast lids, inlet and outlet tees with capped cleanouts, vent stack with cowl and a downstream sampling chamber. Material controls: tank body, manway lids, pipework and concrete. plant, weathered, coatedSteel and highVisibility presets.",
+  tags: ["recycling", "grease trap", "grease interceptor", "FOG", "food waste", "wastewater", "tank", "materials recovery", "waste management", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
   origin: 'base',
   compat: ['recycling-facility', 'materials-recovery', 'waste-management', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 2600,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const stainlessSteel = param('stainlessSteel', '#a8b4b6', { label: 'Stainless steel' });
-const paintedSteel = param('paintedSteel', '#806d5d', { label: 'Painted steel' });
+const tank = param('tank', '#4e7d55', { label: 'Tank body (polyethylene)' });
+const lids = param('lids', '#3b3f42', { label: 'Manway lids (cast iron)' });
+const pipework = param('pipework', '#d8742f', { label: 'Pipework (PVC)' });
+const concrete = param('concrete', '#a7a39b', { label: 'Saddles and slab (concrete)' });
+
 presets({
-  weathered: { stainlessSteel: '#9ea7a5', paintedSteel: '#7b6c5c' },
-  highVisibility: { paintedSteel: '#d77632' },
+  plant: { tank: '#4e7d55', lids: '#3b3f42', pipework: '#d8742f', concrete: '#a7a39b' },
+  weathered: { tank: '#5b6a55', lids: '#4a4540', pipework: '#a8704a', concrete: '#8f8b82' },
+  coatedSteel: { tank: '#2f5d9a', lids: '#c9ced1', pipework: '#8f989c', concrete: '#b5b1a8' },
+  highVisibility: { tank: '#e5e3dc', lids: '#d4402a', pipework: '#f0b429', concrete: '#c4c0b6' },
 });
-const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const ngon = (r:number,s:number) => {
-  let p = path().moveTo(r * Math.cos(Math.PI / 2), r * Math.sin(Math.PI / 2));
-  for (let k = 1; k < s; k++) {
-    const a = Math.PI / 2 + (2 * Math.PI * k) / s;
-    p = p.lineTo(r * Math.cos(a), r * Math.sin(a));
-  }
-  return p.close();
-};
-const loftCylinder = (h:number,r:number,s:number) => {
-  const levels = [0, h * 0.06, h * 0.94, h];
-  const radii = [r * 0.9, r, r, r * 0.9];
-  const profiles = levels.map((_, i) => ngon(radii[i], s));
-  return profiles[0].loft(profiles.slice(1), {
-    planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
-    ruled: true,
-  });
-};
-const c = (x:number,y:number,z:number,h:number,r:number,s:number) => loftCylinder(h,r,s).translate(x,y,z).scale(scale);
-const cy = (x:number,y:number,z:number,h:number,r:number,s:number) => loftCylinder(h,r,s).rotateX(90).translate(x,y,z).scale(scale);
 
 const p = assembly("grease-trap-tank");
-p.part("tank-foot-left-front", b(-336.0,-243.20000000000002,0,100,100,250).color(stainlessSteel));
-p.part("tank-foot-right-front", b(336.0,-243.20000000000002,0,100,100,250).color(stainlessSteel));
-p.part("tank-foot-left-back", b(-336.0,243.20000000000002,0,100,100,250).color(stainlessSteel));
-p.part("tank-foot-right-back", b(336.0,243.20000000000002,0,100,100,250).color(stainlessSteel));
-p.part("vessel-shell", c(0,0,220,1610,420.0,12).color(paintedSteel));
-p.part("top-flange", c(0,0,1830,70,451.5,12).color(paintedSteel));
-p.part("roof-cap", c(0,0,1900,160,388.5,12).color(paintedSteel));
-p.part("manway", c(0,0,2060,110,125,10).color(paintedSteel));
-p.part("vent-stack", c(273.0,0,2030,260,42,10).color(paintedSteel));
-p.part("access-ladder", b(451.5,0,220,65,70,1320.1999999999998).color(stainlessSteel));
-p.part("outlet-pipe", b(357.0,-258.40000000000003,240,180,100,130).color(stainlessSteel));
-p.part("drain-valve", c(378.0,-273.59999999999997,180,120,42,10).color(stainlessSteel));
-p.part("side-nozzle", cy(409.5,228.0,756.6999999999999,180,58,10).color(stainlessSteel));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+// Turned profile [[radius, z], ...] about Z.
+const turned = (pts: number[][]) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
+};
+// Horizontal pipe along X starting at x0.
+const alongX = (x0: number, len: number, r: number, y: number, z: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x0, y, z);
+
+const R = 900, L = 4000, ZS = 200, ZA = ZS + 120 + R;
+
+// Slab and three saddles with a curved cradle cut to the barrel.
+add("slab", blk(0, 0, 0, L + 1400, 2400, ZS).color(concrete));
+for (const x of [-1400, 0, 1400]) add(`saddle-${x}`, blk(x, 0, ZS, 300, 1900, 900).subtract(alongX(x - 200, 400, R + 10, 0, ZA, 24)).color(concrete));
+
+// Barrel: turned along Z, laid along X; hoop ribs.
+add("barrel", turned([[0, -L / 2 - 320], [R * 0.55, -L / 2 - 260], [R * 0.9, -L / 2 - 120], [R, -L / 2], [R, L / 2], [R * 0.9, L / 2 + 120], [R * 0.55, L / 2 + 260], [0, L / 2 + 320]]).rotateY(90).translate(0, 0, ZA).color(tank));
+for (const x of [-1750, -700, 700, 1750]) add(`rib-${x}`, alongX(x - 60, 120, R + 45, 0, ZA, 24).color(tank));
+
+// Two manway risers with cast lids and lifting keys.
+const ZR = ZA + R + 500;
+for (const x of [-1050, 1050]) {
+  add(`riser-${x}`, cylinder(ZR - ZA, 380, 18).translate(x, 0, ZA).color(tank));
+  add(`riser-collar-${x}`, cylinder(80, 430, 18).translate(x, 0, ZR - 80).color(tank));
+  add(`lid-${x}`, cylinder(60, 420, 18).translate(x, 0, ZR).color(lids));
+  add(`lid-boss-${x}`, cylinder(30, 150, 12).translate(x, 0, ZR + 60).color(lids));
+  for (const s of [-1, 1]) add(`lift-key-${x}-${s}`, blk(x + s * 260, 0, ZR + 60, 80, 30, 40).color(lids));
+}
+
+// Inlet tee high on -X end, outlet tee lower on +X end, each with a cleanout riser.
+const ZI = ZA + 450, ZO = ZA + 300, XE = L / 2 + 250;
+add("inlet-pipe", alongX(-XE - 1000, 1050, 80, 0, ZI).color(pipework));
+add("inlet-tee", cylinder(900, 90, 12).translate(-XE - 700, 0, ZI - 300).color(pipework));
+add("inlet-cap", cylinder(60, 110, 12).translate(-XE - 700, 0, ZI + 600).color(lids));
+add("outlet-pipe", alongX(XE - 50, 1050, 80, 0, ZO).color(pipework));
+add("outlet-tee", cylinder(900, 90, 12).translate(XE + 700, 0, ZO - 300).color(pipework));
+add("outlet-cap", cylinder(60, 110, 12).translate(XE + 700, 0, ZO + 600).color(lids));
+for (const x of [-XE - 700, XE + 700]) add(`pipe-support-${x}`, blk(x, 0, ZS, 220, 220, (x < 0 ? ZI : ZO) - ZS - 300).color(concrete));
+
+// Vent stack with a mushroom cowl, and a sampling chamber off the outlet.
+add("vent-stack", cylinder(1700, 55, 10).translate(0, 450, ZA + R - 100).color(pipework));
+add("vent-cowl", turned([[170, ZA + R + 1600], [0, ZA + R + 1760], [0, ZA + R + 1600]]).translate(0, 450, 0).color(lids));
+add("sample-chamber", blk(XE + 700, -900, ZS, 600, 600, 700).color(concrete));
+add("sample-cover", blk(XE + 700, -900, ZS + 700, 560, 560, 40).color(lids));
+add("sample-branch", cylinder(560, 60, 10).rotateX(90).translate(XE + 700, 0, ZS + 450).color(pipework));
+add("level-plate", blk(-300, -R - 10, ZA + 200, 600, 20, 280).color('#e8e6dc'));
 
 return p.model();

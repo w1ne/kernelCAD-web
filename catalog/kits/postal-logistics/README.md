@@ -2,7 +2,11 @@
 
 [Watch the local quality-promotion workflow demo](../../../artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/postal-logistics-quality-promotion.mp4)
 
-The 52 existing source models cover parcel induction, scanning, sortation, mail handling, route preparation, and dispatch. Each keeps its existing ID and editable scale control, adds two to four material-named color controls, and offers `weathered` and `highVisibility` finish presets. Lofted chamfer profiles, round conveyor rollers and handling wheels, and the satchel's tapered body, sloped flap, front straps, and metal buckles improve the silhouettes while retaining the existing asset IDs and scale.
+The 52 existing source models cover parcel induction, scanning, sortation, mail handling, route preparation, and dispatch. Each keeps its existing ID and editable scale control, uses material-named color controls, and offers `weathered` and `highVisibility` finish presets. Lofted chamfer profiles, round conveyor rollers and handling wheels, and the satchel's tapered body, sloped flap, front straps, and metal buckles improve the silhouettes while retaining the existing asset IDs and scale.
+
+### Crossbelt carrier material update
+
+`crossbelt-sorter-section` separates each molded-polymer carrier from its thin rubber crossbelt surface. The new `beltRubber` control is included in both existing presets; the track layout and overall envelope stay the same. The [five-preview semantic review, before/after renders, GLB regression, regenerated index, and inspected walkthrough](../../../artifacts/catalog-demos/postal-crossbelt-sorter-belt-material-review-20261111/README.md) document this local correction. This is native kernelCAD scene geometry, not a vendor-specific sorter design or operating specification.
 
 The [promotion bundle](../../../artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/README.md) retains the source transformation, exact commands/settings, before/after previews, preset render, generated preview/index and page evidence, lint and integration results, and inspected MP4. These are local rendered visualization assets; no parcel throughput, machinery safety, postal compliance, production engineering suitability, or physical acceptance is claimed.
 
@@ -21,7 +25,7 @@ The [promotion bundle](../../../artifacts/catalog-demos/postal-logistics-quality
 | `conveyor-guard-section` | Conveyor guard section | `paintedSteel`, `structuralSteel` | `weathered`, `highVisibility` | 660 |
 | `conveyor-merge-module` | Conveyor merge module | `paintedSteel`, `stainlessSteel`, `structuralSteel` | `weathered`, `highVisibility` | 768 |
 | `conveyor-transfer-bridge` | Conveyor transfer bridge | `paintedSteel`, `structuralSteel`, `stainlessSteel`, `safetyAmber` | `weathered`, `highVisibility` | 724 |
-| `crossbelt-sorter-section` | Crossbelt sorter section | `paintedSteel`, `structuralSteel`, `polymer`, `stainlessSteel` | `weathered`, `highVisibility` | 720 |
+| `crossbelt-sorter-section` | Crossbelt sorter section | `paintedSteel`, `structuralSteel`, `polymer`, `beltRubber`, `stainlessSteel` | `weathered`, `highVisibility` | 960 |
 | `delivery-sequence-case` | Delivery sequence case | `paintedSteel`, `polymer` | `weathered`, `highVisibility` | 660 |
 | `gravity-roller-conveyor` | Gravity roller conveyor | `paintedSteel`, `stainlessSteel`, `structuralSteel` | `weathered`, `highVisibility` | 816 |
 | `handheld-postal-scanner` | Handheld postal scanner | `paintedSteel`, `safetyAmber`, `stainlessSteel`, `instrumentGlass` | `weathered`, `highVisibility` | 540 |

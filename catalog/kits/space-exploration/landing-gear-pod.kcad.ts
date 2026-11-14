@@ -5,7 +5,7 @@ meta({
   name: "landing-gear-pod",
   license: 'CC0-1.0',
   title: "Landing gear pod",
-  description: "Landing leg pod with a tapered-looking strut, broad footplate and two brace arms. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Landing leg pod with a tapered-looking strut, broad footplate and two brace arms. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#777b78", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const rubber = param('rubber', "#34383a", { label: "Rubber landing pad" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "rubber": "#514d44"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "rubber": "#252a2c"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -42,7 +44,7 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("landing-gear-pod");
 p.part("strut",c(0,0,55,700,90,8).color(paint));
-p.part("foot",b(0,0,0,440,440,50).color(aluminum));
+p.part("foot",b(0,0,0,440,440,50).color(rubber));
 p.part("brace-left",b(-110,0,275,40,90,520).color(aluminum));
 p.part("brace-right",b(110,0,275,40,90,520).color(aluminum));
 p.part("collar",c(0,0,605,65,135,8).color(aluminum));

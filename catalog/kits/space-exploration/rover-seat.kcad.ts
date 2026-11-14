@@ -5,7 +5,7 @@ meta({
   name: "rover-seat",
   license: 'CC0-1.0',
   title: "Rover operator seat",
-  description: "Simple rover seat with bucket base, raised back, arm rests and central pedestal. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Simple rover seat with bucket base, raised back, arm rests and central pedestal. Material controls: paint, aluminum, fabric; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#6c716e", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const fabric = param('fabric', "#687b78", { label: "Seat upholstery" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "fabric": "#b9ad94"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "fabric": "#dc9858"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -41,10 +43,10 @@ const cylShape = (h: number,r: number,n=8) => {
 const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(x,y,z).scale(scale);
 
 const p = assembly("rover-seat");
-p.part("cushion",b(0,0,440,420,420,130).color(paint));
-p.part("back",b(0,190,730,420,110,560).color(paint));
-p.part("arm-left",b(-245,20,580,70,390,70).color(aluminum));
-p.part("arm-right",b(245,20,580,70,390,70).color(aluminum));
+p.part("cushion",b(0,0,440,420,420,130).color(fabric));
+p.part("back",b(0,190,730,420,110,560).color(fabric));
+p.part("arm-left",b(-245,20,580,70,390,70).color(paint));
+p.part("arm-right",b(245,20,580,70,390,70).color(paint));
 p.part("pedestal",c(0,0,60,310,95,8).color(aluminum));
 p.part("foot",b(0,0,0,360,320,60).color(aluminum));
 

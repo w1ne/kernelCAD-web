@@ -1,0 +1,28 @@
+{
+  "video": "farm-machinery-orchard-tank-material-review.mp4",
+  "durationSeconds": 20.0,
+  "sizeBytes": 177079,
+  "codec": "h264",
+  "resolution": [
+    1280,
+    720
+  ],
+  "frameRate": "30/1",
+  "sampleTimesSeconds": [
+    2,
+    6,
+    10,
+    14,
+    18
+  ],
+  "decodedFrames": [
+    "video-review/frame-01.png",
+    "video-review/frame-02.png",
+    "video-review/frame-03.png",
+    "video-review/frame-04.png",
+    "video-review/frame-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "inspection": "All five samples decode. The sequence shows the preview sample, before and after tank colors, source control, and deterministic local verification. Text is readable at 1280x720.",
+  "claimBoundary": "Local catalog source render only; no simulation, deployment, or equipment acceptance."
+}

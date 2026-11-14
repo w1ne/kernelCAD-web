@@ -1,0 +1,44 @@
+{
+  "pass": true,
+  "asset": {
+    "id": "industrial-plant/baghouse-dust-collector",
+    "triangles": 552,
+    "triangleBudget": 1400,
+    "sizeM": [
+      0.9301,
+      0.8632,
+      0.439
+    ],
+    "params": [
+      "scale",
+      "steel",
+      "safetyPaint"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ],
+    "sourceSha256": "a54575dda8981eb2aeb208056a1618a5150d81df5f2edd79f1c926f66f65d02d",
+    "previewSha256": "956d0c484d17243faebba04d8590a9e14b75cad46fb7406c755e8f1c5367689f"
+  },
+  "assetIdsAndCountsUnchanged": true,
+  "catalogQuality": {
+    "passing": 2402,
+    "total": 2402,
+    "rate": "100.00%"
+  },
+  "industrialPlantQuality": {
+    "passing": 60,
+    "total": 60,
+    "rate": "100.00%"
+  },
+  "checks": {
+    "eslint": "passed",
+    "focusedRegression": "1 test passed",
+    "integration": "8 files / 19 tests passed",
+    "index": "2,402 source hashes and preview references passed",
+    "localPage": "2,402 generated pages; changed detail page and preview verified"
+  },
+  "publicBeforeMatchedLocalBefore": true,
+  "scope": "Local software render and validation only; no deployment or hardware acceptance."
+}

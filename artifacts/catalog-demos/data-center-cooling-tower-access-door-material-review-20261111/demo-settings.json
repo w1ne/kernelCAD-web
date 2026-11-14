@@ -1,0 +1,21 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "secondsPerSlide": 2.6,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts cooling-tower-cell",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "verificationLines": [
+    "Focused exported-GLB regression: 1/1 passed",
+    "Catalog integration suite: 39 files, 64 tests passed",
+    "Data-center kit quality: 50/50 (100%); ESLint clean",
+    "Fresh index row verified; catalog remains 2,402 assets / 50 kits",
+    "Global mechanical scan: 2,401/2,402 (99.96%; beam-coupling outlier)"
+  ],
+  "caveat": "Native kernelCAD source and GLB evidence. Not a vendor specification, equipment-performance claim, deployed update, or physical acceptance."
+}

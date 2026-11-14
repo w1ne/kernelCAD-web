@@ -52,6 +52,7 @@ p.part("mount-foot-0", finishPart("mount-foot-0", boxPart(-360, -90, 0, 70, 70, 
 p.part("mount-foot-1", finishPart("mount-foot-1", boxPart(360, -90, 0, 70, 70, 30)));
 p.part("mount-foot-2", finishPart("mount-foot-2", boxPart(-360, 350, 0, 70, 70, 30)));
 p.part("mount-foot-3", finishPart("mount-foot-3", boxPart(360, 350, 0, 70, 70, 30)));
-p.part("drain-leg", finishPart("drain-leg", cylinderPart(0, 130, 0, 90, 42, 8)));
+// The drain leg is a wetted CIP return pipe, so it stays stainless even though its name matches /leg/.
+p.part("drain-leg", cylinderPart(0, 130, 0, 90, 42, 8).color(stainlessSteel));
 
 return p.model();

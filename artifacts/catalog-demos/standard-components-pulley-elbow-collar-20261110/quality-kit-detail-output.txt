@@ -1,0 +1,6 @@
+  RICH   standard-components          50/50   material-controls/asset=2.58
+
+  50/50 assets pass (100.00%; 1 rich kits, 0 thin kits)
+
+  worst 1:
+    2c 1p 0g  catalog/kits/standard-components/flat-joining-plate.kcad.ts

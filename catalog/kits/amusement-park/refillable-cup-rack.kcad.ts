@@ -1,69 +1,83 @@
-// Refillable cup rack: Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves.
+// SPDX-License-Identifier: CC0-1.0
+// Refillable cup rack: the spinning carousel tower beside a drinks stand that
+// holds the park's souvenir refill cups for sale.
+// What makes it a cup carousel rather than a shelf: a weighted round base on a
+// turntable bearing, a central stainless mast, four round tiers that shrink
+// toward the top, each ringed with tapered souvenir cups hung upside-down on
+// pegs with their lids stacked beside them, a drip lip on every tier, and a
+// round "refill" topper sign.
+// Generic visualization geometry at about real size (about 0.9 m across,
+// 1.6 m tall), millimetres, Z up, standing on z = 0.
 meta({
   name: "refillable-cup-rack",
   license: "CC0-1.0",
   title: "Refillable cup rack",
-  description: "Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves. Controls: overall scale, stainlessSteel, polymer, enamel; festival and twilight material presets.",
-  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
+  description: "Souvenir refill-cup carousel at about real size: weighted round base on a turntable bearing, stainless mast, four shrinking round tiers each ringed with tapered souvenir cups hung upside-down on pegs, drip lips, and a round refill topper sign. Material controls: stainless steel, cup polymer, tier enamel, lids and sign face. Classic, festival and twilight presets.",
+  tags: ["cup rack", "souvenir cup", "refill", "carousel display", "merchandise", "drinks", "amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
   origin: "base",
   compat: ["amusement-park", "theme-park", "midway", "visitor-attraction"],
-  triangleBudget: 1800,
+  triangleBudget: 9000,
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
-const polymer = param("polymer", "#586f7a", { label: "Molded polymer" });
-const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const stainlessSteel = param("stainlessSteel", "#c3c9c7", { label: "Stainless mast and pegs" });
+const polymer = param("polymer", "#2a8fc4", { label: "Souvenir cup polymer" });
+const enamel = param("enamel", "#d4473a", { label: "Tier and base enamel" });
+const lid = param("lid", "#f6f1e3", { label: "Lids and sign face" });
 
 presets({
-  festival: {
-    "stainlessSteel": "#d1d1c6",
-    "polymer": "#7d9b93",
-    "enamel": "#edb34d"
-},
-  twilight: {
-    "stainlessSteel": "#788b91",
-    "polymer": "#455e83",
-    "enamel": "#385b81"
-},
+  classic: { stainlessSteel: "#c3c9c7", polymer: "#2a8fc4", enamel: "#d4473a", lid: "#f6f1e3" },
+  festival: { stainlessSteel: "#d6d6cc", polymer: "#7a3fa0", enamel: "#efb03f", lid: "#fff8e6" },
+  twilight: { stainlessSteel: "#87979c", polymer: "#2e9c8a", enamel: "#2d4b7a", lid: "#e6dcc4" },
 });
-const originOffsetMm = -48;
+
 const p = assembly("refillable-cup-rack");
-
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
-  if (["base", "cup-holder-0", "cup-holder-1", "cup-holder-2", "cup-holder-3"].includes(name)) p.part(name, positioned.color(stainlessSteel));
-  else if (["top-cap"].includes(name)) p.part(name, positioned.color(enamel));
-  else if (["cup-shelf-0", "cup-shelf-1", "cup-shelf-2", "cup-shelf-3", "mast"].includes(name)) p.part(name, positioned.color(polymer));
-  else p.part(name, positioned.color(stainlessSteel));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
-const C = (name: string, height: number, radius: number, at: [number, number, number], rotation: [number, number, number] = [0, 0, 0], segments = 10) => {
-  let shape = cylinder(height, radius, segments);
-  if (rotation[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const turned = (pts: [number, number][]) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
 };
 
-C("base", 95, 540, [0, 0, 48], [0, 0, 0], 12);
-C("mast", 1150, 65, [0, 0, 95]);
-B("cup-shelf-0", [1100, 800, 80], [0, 0, 280]);
-B("cup-shelf-1", [1100, 800, 80], [0, 0, 520]);
-B("cup-shelf-2", [1100, 800, 80], [0, 0, 760]);
-B("cup-shelf-3", [1100, 800, 80], [0, 0, 1000]);
-C("cup-holder-0", 170, 140, [320, 210, 420], [0, 0, 0], 8);
-C("cup-holder-1", 170, 140, [-320, 210, 660], [0, 0, 0], 8);
-C("cup-holder-2", 170, 140, [320, -210, 900], [0, 0, 0], 8);
-C("cup-holder-3", 170, 140, [-320, -210, 1140], [0, 0, 0], 8);
-B("top-cap", [460, 460, 90], [0, 0, 1270]);
+// Weighted base and turntable.
+add("base", turned([[0, 0], [450, 0], [450, 30], [400, 80], [0, 80]]).color(enamel));
+add("turntable", cylinder(40, 180, 20).translate(0, 0, 80).color(stainlessSteel));
+add("mast", cylinder(1380, 35, 12).translate(0, 0, 120).color(stainlessSteel));
+
+// Four shrinking tiers with cups hung upside-down on pegs around the rim.
+const tiers = [
+  { z: 300, r: 400, n: 10 },
+  { z: 640, r: 340, n: 9 },
+  { z: 960, r: 280, n: 7 },
+  { z: 1260, r: 220, n: 6 },
+];
+// Cup hung upside-down: wide rim at the bottom, narrower base on top.
+const cup = turned([[0, 0], [58, 0], [62, 10], [44, 170], [0, 170]]);
+tiers.forEach((t, i) => {
+  add(`tier-${i}`, turned([[0, 0], [t.r, 0], [t.r + 10, 30], [t.r - 10, 40], [0, 40]]).translate(0, 0, t.z).color(enamel));
+  add(`tier-hub-${i}`, cylinder(60, 70, 12).translate(0, 0, t.z - 60).color(stainlessSteel));
+  for (let k = 0; k < t.n; k++) {
+    const a = (2 * Math.PI * (k + i * 0.5)) / t.n;
+    const cr = t.r - 70;
+    const x = cr * Math.cos(a);
+    const y = cr * Math.sin(a);
+    add(`peg-${i}-${k}`, cylinder(30, 10, 6).translate(x, y, t.z + 40).color(stainlessSteel));
+    add(`cup-${i}-${k}`, cup.translate(x, y, t.z + 42).color(k % 3 === 2 ? enamel : polymer));
+    add(`cup-band-${i}-${k}`, cylinder(30, 54, 12).translate(x, y, t.z + 82).color(lid));
+  }
+  // Stacked spare lids on the hub.
+  add(`lid-stack-${i}`, cylinder(50, 60, 14).translate(0, 0, t.z + 40).color(lid));
+});
+
+// Round refill topper sign on the mast top.
+const SZ = 1500;
+add("sign-collar", cylinder(60, 50, 12).translate(0, 0, SZ - 60).color(stainlessSteel));
+add("sign-disc", cylinder(30, 200, 28).rotateX(90).translate(0, 15, SZ + 190).color(enamel));
+add("sign-face-front", cylinder(6, 170, 28).rotateX(90).translate(0, -15, SZ + 190).color(lid));
+add("sign-face-back", cylinder(6, 170, 28).rotateX(-90).translate(0, 15, SZ + 190).color(lid));
+add("sign-cup", turned([[0, 0], [50, 0], [70, 150], [0, 150]]).rotateX(-20).translate(0, -40, SZ + 110).color(polymer));
+add("sign-straw", box(14, 14, 120, true).rotateY(20).translate(20, -40, SZ + 290).color(enamel));
 
 return p.model();

@@ -5,7 +5,7 @@ meta({
   name: "surface-sensor-post",
   license: 'CC0-1.0',
   title: "Surface sensor post",
-  description: "Short instrument post with twin sensor boxes, a crossbar and three support feet. Material controls: aluminum, glass; named lunarDust and highVisibility presets.",
+  description: "Short instrument post with twin sensor boxes, a crossbar and three support feet. Material controls: aluminum, glass, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 const glass = param('glass', "#548b9a", { label: "Optical glass" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer foot insulators" });
+
 presets({
-  lunarDust: {"aluminum": "#c3c5c3", "glass": "#7b9ba0"},
-  highVisibility: {"aluminum": "#d8b255", "glass": "#63a9b8"},
+  lunarDust: {"aluminum": "#c3c5c3", "glass": "#7b9ba0", "polymer": "#7a8279"},
+  highVisibility: {"aluminum": "#d8b255", "glass": "#63a9b8", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -45,8 +47,8 @@ p.part("mast",c(0,0,0,1000,36,8).color(aluminum));
 p.part("sensor-a",b(0,0,740,270,220,180).color(glass));
 p.part("sensor-b",b(0,0,450,190,180,140).color(glass));
 p.part("crossbar",b(0,0,600,500,40,40).color(aluminum));
-p.part("foot-0",b(0,-130,0,200,70,40).color(aluminum));
-p.part("foot-1",b(-112,65,0,200,70,40).color(aluminum));
-p.part("foot-2",b(112,65,0,200,70,40).color(aluminum));
+p.part("foot-0",b(0,-130,0,200,70,40).color(polymer));
+p.part("foot-1",b(-112,65,0,200,70,40).color(polymer));
+p.part("foot-2",b(112,65,0,200,70,40).color(polymer));
 
 return p.model();

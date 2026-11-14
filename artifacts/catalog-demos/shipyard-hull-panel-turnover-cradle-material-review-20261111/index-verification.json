@@ -1,0 +1,16 @@
+{
+  "kit": "shipyard",
+  "id": "hull-panel-turnover-cradle",
+  "assetCount": 2402,
+  "sourceSha256": "330ceb2e5badccfc2fcaa40bb3a597d0016de44c1f7057e4a3ee7a5979ba6457",
+  "previewSha256": "6f4c8664a9668676724a0a99892f1eb907dfe028ba9f605d17ca4422a8713648",
+  "preview": "/assets/shipyard-hull-panel-turnover-cradle.png",
+  "sizeM": [
+    2.18,
+    1.76,
+    1.76
+  ],
+  "triangles": 420,
+  "triangleBudget": 1800,
+  "matchingFramesUseYardPaint": true
+}

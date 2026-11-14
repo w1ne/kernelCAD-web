@@ -1,0 +1,3 @@
+(node:1138799) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+wrote /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/catalog/index.json

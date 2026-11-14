@@ -1,0 +1,55 @@
+{
+  "outputDirectory": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110",
+  "hub": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110/catalog/index.html",
+  "pagesChecked": 3,
+  "results": [
+    {
+      "id": "v-belt-pulley",
+      "page": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110/catalog/standard-components/v-belt-pulley/index.html",
+      "previewExists": true,
+      "controlsAndPresetsFound": [
+        "castIron",
+        "steel",
+        "hardware",
+        "dark",
+        "brass",
+        "weathered"
+      ],
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141",
+      "previewSha256": "d28a4344272e5b8bed27710ce71bf1d35c435b3f950a5b7ab2e0b8a905e0d48e",
+      "passed": true
+    },
+    {
+      "id": "pipe-elbow-90",
+      "page": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110/catalog/standard-components/pipe-elbow-90/index.html",
+      "previewExists": true,
+      "controlsAndPresetsFound": [
+        "steel",
+        "bronze",
+        "elastomer",
+        "dark",
+        "brass",
+        "weathered"
+      ],
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282",
+      "previewSha256": "20af96806763a6a48fbacd95131d4dc48568d72d193025327b5c87964885f523",
+      "passed": true
+    },
+    {
+      "id": "shaft-collar",
+      "page": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110/catalog/standard-components/shaft-collar/index.html",
+      "previewExists": true,
+      "controlsAndPresetsFound": [
+        "retention",
+        "steel",
+        "zinc",
+        "dark",
+        "brass",
+        "weathered"
+      ],
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6",
+      "previewSha256": "5fa389a03cefda69033822f3076a29f85672bd32b07646d6f7ed4af954360c29",
+      "passed": true
+    }
+  ]
+}

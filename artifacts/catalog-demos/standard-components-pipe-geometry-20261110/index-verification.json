@@ -1,0 +1,69 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/standard-components-pipe-geometry-20261110/verify_asset_index.py",
+  "catalogAssetCount": 2402,
+  "catalogKitCount": 50,
+  "allSourceHashesMatch": true,
+  "allPreviewsPresent": true,
+  "kitAssetCount": 50,
+  "checked": {
+    "pipe-reducer": {
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1",
+      "preview": "catalog/kits/standard-components/previews/pipe-reducer.png",
+      "previewSha256": "3671e281fec7466e8a8914c7e3d8dc99dee14bcf8d786c0a1e2b7c47dbcc55d8",
+      "indexedPreview": "/assets/standard-components-pipe-reducer.png",
+      "triangles": 474,
+      "params": [
+        "size",
+        "reduction",
+        "barrel",
+        "collars",
+        "gasket"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "stainless",
+        "weathered"
+      ]
+    },
+    "retaining-ring": {
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15",
+      "preview": "catalog/kits/standard-components/previews/retaining-ring.png",
+      "previewSha256": "476ba8f59bfd5513006aa2140bc1e9ef16257d8e2a48711fb907a905a07bcdbb",
+      "indexedPreview": "/assets/standard-components-retaining-ring.png",
+      "triangles": 228,
+      "params": [
+        "size",
+        "gap",
+        "springSteel",
+        "stainless"
+      ],
+      "presets": [
+        "bluePhosphate",
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    "tubular-spacer": {
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491",
+      "preview": "catalog/kits/standard-components/previews/tubular-spacer.png",
+      "previewSha256": "35aa559c2261af787d4f902074fccb6428b48e66bf913d531a4868c13b4c06a4",
+      "indexedPreview": "/assets/standard-components-tubular-spacer.png",
+      "triangles": 432,
+      "params": [
+        "size",
+        "length",
+        "steel",
+        "polymer",
+        "endRims"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "insulated",
+        "weathered"
+      ]
+    }
+  }
+}

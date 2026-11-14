@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-09",
+  "kit": "industrial-plant",
+  "assets": [
+    "diesel-generator-set",
+    "belt-conveyor",
+    "industrial-transformer"
+  ],
+  "baseline": {
+    "catalogAssets": 2402,
+    "qualityPassing": 2402,
+    "qualityPassRate": "100.00%",
+    "richKits": 50,
+    "thinKits": 0
+  },
+  "variants": [
+    { "id": "generator-default", "asset": "diesel-generator-set", "choices": {} },
+    { "id": "generator-high-visibility", "asset": "diesel-generator-set", "choices": {}, "preset": "highVisibility" },
+    { "id": "generator-ten-louvers", "asset": "diesel-generator-set", "choices": { "louverCount": "10" } },
+    { "id": "conveyor-default", "asset": "belt-conveyor", "choices": {} },
+    { "id": "conveyor-high-visibility", "asset": "belt-conveyor", "choices": {}, "preset": "highVisibility" },
+    { "id": "conveyor-four-stations", "asset": "belt-conveyor", "choices": { "supportStations": "4" } },
+    { "id": "transformer-default", "asset": "industrial-transformer", "choices": {} },
+    { "id": "transformer-utility-green", "asset": "industrial-transformer", "choices": {}, "preset": "utilityGreen" },
+    { "id": "transformer-ten-fins", "asset": "industrial-transformer", "choices": { "radiatorFins": "10" } }
+  ],
+  "video": {
+    "resolution": "1280x720",
+    "fps": 30,
+    "durationSeconds": 18,
+    "codec": "H.264",
+    "audio": false
+  },
+  "commands": [
+    "npx tsx artifacts/catalog-demos/industrial-plant-machine-quality-20261109/render_variants.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts <all industrial-plant IDs>",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python3 scripts/checkCatalogQuality.py --kit industrial-plant",
+    "python3 scripts/checkCatalogQuality.py",
+    "npx eslint catalog/kits/industrial-plant/",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-machine-pages-20261109",
+    "python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/capture_demo.py",
+    "python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/inspect_video.py"
+  ],
+  "claimLimits": [
+    "local source and software-rendered preview checks only",
+    "not deployed behavior",
+    "not equipment ratings, safety, process performance, or physical acceptance"
+  ]
+}

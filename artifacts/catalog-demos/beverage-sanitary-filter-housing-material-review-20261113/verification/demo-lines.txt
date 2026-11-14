@@ -1,0 +1,8 @@
+Focused GLB test: FAILS on old source, PASSES on new source
+  (filter-housing-0: expected [...] to include 'filter-housing-0')
+ESLint beverage-bottling-line + new test: clean
+Structural gate beverage-bottling-line: 50/50 (not proof of realism)
+tests/integration/catalog/: 64 files / 109 tests passed, 729 s
+catalog/index.json rebuilt: only sanitary-filter-skid row changed
+Geometry, 360 triangles, controls, presets: unchanged
+Local render and tests only; branch not deployed.

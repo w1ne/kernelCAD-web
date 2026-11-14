@@ -1,0 +1,66 @@
+{
+  "checkedAt": "2026-11-12",
+  "repository": "w1ne/kernelCAD-web",
+  "destinationPr": 1258,
+  "results": {
+    "abrasive-blast-pot": {
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "blast-dust-collector": {
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "destinationPrTextMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "electrode-storage-oven": {
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "hull-block-paint-booth": {
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "destinationPrTextMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "airless-coating-pump-cart": {
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    }
+  }
+}

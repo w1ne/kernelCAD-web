@@ -1,0 +1,57 @@
+[
+  {
+    "asset": "mining/ball-mill",
+    "triangles": 4440,
+    "envelopeM": [
+      15.054532,
+      6.828922,
+      9
+    ],
+    "sourceSha256": "a7533658535acef38bbd93e1c73c77c7fbef0cc6c69714e7236d674bd5e290af",
+    "previewSha256": "6a13f3209c9bb34299230b6d524aca0e454e0b0fbc134312279bac438bf5e253"
+  },
+  {
+    "asset": "mining/mine-locomotive",
+    "triangles": 2556,
+    "envelopeM": [
+      8.4,
+      3.7,
+      2.48
+    ],
+    "sourceSha256": "469d9bf10f652afde393cb82d1fd31cdaf5b2dccb66763cd5082ef19324a2c90",
+    "previewSha256": "ec79f939270e520e5728e219e5521c8c6d298abf96fb0ccb023759e3881fc76f"
+  },
+  {
+    "asset": "mining/mine-skip",
+    "triangles": 1490,
+    "envelopeM": [
+      5.2,
+      16,
+      5.4
+    ],
+    "sourceSha256": "82bed1f18f1d4948687ac7e418e499f8f51b77954a5e204394616897138d028d",
+    "previewSha256": "c2e17680a2c7a4de726c2632613eec0b474f143160feeef13f2170b76e35da95"
+  },
+  {
+    "asset": "mining/sag-mill",
+    "triangles": 4180,
+    "envelopeM": [
+      17.055211,
+      10.09,
+      12.023301
+    ],
+    "sourceSha256": "efd8df99e197a36aae39c4b543cefc8165ed7f9ac9d7151bf78b482b4279b259",
+    "previewSha256": "9e7711fb9f0c165fe576f12a05858576396532879bbc8a3452eab1d7d8dff236"
+  },
+  {
+    "asset": "mining/tailings-filter-press",
+    "triangles": 3180,
+    "envelopeM": [
+      18.02,
+      7.46,
+      10.6
+    ],
+    "sourceSha256": "fda14597914dbee8c78cca72b0ba23766b0cb11d80a034a00097304144f625c5",
+    "previewSha256": "669e00a7de6edab1d27b23b85f242cdaed5f746fb1def2a1107c921d8714ad50"
+  }
+]

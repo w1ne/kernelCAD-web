@@ -1,0 +1,52 @@
+{
+  "checkedAtUtc": "2026-11-12T01:06:33Z",
+  "sampleAssets": [
+    "twin-shaft-shredder",
+    "optical-sorter-arch",
+    "overband-magnet-separator",
+    "glass-washer-trommel",
+    "granulator"
+  ],
+  "openIssues": {
+    "exactSearches": [
+      "twin-shaft-shredder",
+      "optical-sorter-arch",
+      "overband-magnet-separator",
+      "glass-washer-trommel",
+      "granulator"
+    ],
+    "matches": []
+  },
+  "otherOpenPullRequests": {
+    "numbersChecked": [
+      1339,
+      1338,
+      1337,
+      1336,
+      1334,
+      1329,
+      1328,
+      1327,
+      1326,
+      1325,
+      1324,
+      1309,
+      1276,
+      1260,
+      1253,
+      1215,
+      1211,
+      1195,
+      1187,
+      1094
+    ],
+    "method": "Fetched each public .diff; searched for exact sample .kcad.ts and preview paths.",
+    "httpStatus": 200,
+    "samplePathMatches": []
+  },
+  "destinationPullRequest": {
+    "number": 1258,
+    "excludedFromCompetingTargetCheck": true,
+    "reason": "Current catalog feature PR under review."
+  }
+}

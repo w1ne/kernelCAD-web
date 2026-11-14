@@ -1,0 +1,60 @@
+{
+  "outputDirectory": "/tmp/kernelcad-industrial-plant-machine-pages-20261109-final",
+  "assets": [
+    {
+      "asset": "diesel-generator-set",
+      "page": "/tmp/kernelcad-industrial-plant-machine-pages-20261109-final/catalog/industrial-plant/diesel-generator-set/index.html",
+      "sourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "indexSourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "previewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "copiedPreviewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "checks": {
+        "sourceSha256MatchesIndex": true,
+        "pageHasCurrentTitle": true,
+        "pageShowsMaterialAndGeometryControls": true,
+        "pageShowsPresets": true,
+        "pageShowsGeometryChoices": true,
+        "previewCopiedFromCurrentRender": true,
+        "pageLinksToStudio": true
+      },
+      "allPassed": true
+    },
+    {
+      "asset": "belt-conveyor",
+      "page": "/tmp/kernelcad-industrial-plant-machine-pages-20261109-final/catalog/industrial-plant/belt-conveyor/index.html",
+      "sourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "indexSourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "previewSha256": "8354c91d9032bbe31e6cc3b42f7da45d3b7668f97d897f83caa5d0a4a6fb9074",
+      "copiedPreviewSha256": "8354c91d9032bbe31e6cc3b42f7da45d3b7668f97d897f83caa5d0a4a6fb9074",
+      "checks": {
+        "sourceSha256MatchesIndex": true,
+        "pageHasCurrentTitle": true,
+        "pageShowsMaterialAndGeometryControls": true,
+        "pageShowsPresets": true,
+        "pageShowsGeometryChoices": true,
+        "previewCopiedFromCurrentRender": true,
+        "pageLinksToStudio": true
+      },
+      "allPassed": true
+    },
+    {
+      "asset": "industrial-transformer",
+      "page": "/tmp/kernelcad-industrial-plant-machine-pages-20261109-final/catalog/industrial-plant/industrial-transformer/index.html",
+      "sourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "indexSourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "previewSha256": "df4a685004c355d6d08514564cc7c5b9d15e281fdc617e42e14dfaad6d0459bd",
+      "copiedPreviewSha256": "df4a685004c355d6d08514564cc7c5b9d15e281fdc617e42e14dfaad6d0459bd",
+      "checks": {
+        "sourceSha256MatchesIndex": true,
+        "pageHasCurrentTitle": true,
+        "pageShowsMaterialAndGeometryControls": true,
+        "pageShowsPresets": true,
+        "pageShowsGeometryChoices": true,
+        "previewCopiedFromCurrentRender": true,
+        "pageLinksToStudio": true
+      },
+      "allPassed": true
+    }
+  ],
+  "allPassed": true
+}

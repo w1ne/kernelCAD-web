@@ -1,0 +1,2 @@
+catalog/kits/hydroponics/greenhouse-tunnel-bay.kcad.ts
+catalog/kits/hydroponics/wall-mounted-co2-sensor.kcad.ts

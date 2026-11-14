@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/substationCvtInsulationMaterials.test.ts (1 test) 600ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  16:02:11
+   Duration  17.69s (transform 14.88s, setup 247ms, import 16.06s, tests 600ms, environment 0ms)

@@ -1,0 +1,105 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2745ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1087ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  1063ms
+ ✓ tests/integration/catalog/jawCouplingFidelity.test.ts (3 tests) 3285ms
+     ✓ retains 6 metal jaws and 6 spider lobes without any material overlap  1092ms
+     ✓ detects all 6 collisions when the former co-rotated spider layout is restored  409ms
+     ✓ keeps the cleared interfaces in both scaled variants  1215ms
+ ✓ tests/integration/catalog/glassCrusherMotorMaterial.test.ts (1 test) 3699ms
+     ✓ keeps the motor on the painted-steel finish, separate from the mill enamel  2778ms
+ ✓ tests/integration/catalog/pipeUnionFidelity.test.ts (2 tests) 3633ms
+     ✓ has four actual separate bodies, open bore and a six-sided coupling nut  1241ms
+     ✓ retains distinct interfaces for both size limits  1568ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 3831ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  2876ms
+ ✓ tests/integration/catalog/floorGrinderFidelity.test.ts (2 tests) 3760ms
+     ✓ exports a circular open-bottom shroud, floor-contact disc and two rear wheels  1084ms
+     ✓ retains floor contact, cavity, handle and wheel clearance at both scale limits  1803ms
+ ✓ tests/integration/catalog/mineSkipCappelMaterials.test.ts (1 test) 4430ms
+     ✓ assigns the steel rope termination to the structural-steel control  3500ms
+ ✓ tests/integration/catalog/transitMixerWheelMaterial.test.ts (1 test) 5601ms
+     ✓ keeps the six steel wheel rims on the structural-steel control  4606ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 5674ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  4662ms
+ ✓ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts (1 test) 6125ms
+     ✓ seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap  5108ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 6175ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  2677ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  2380ms
+ ✓ tests/integration/catalog/gritClassifierFidelity.test.ts (1 test) 1817ms
+     ✓ renders the inclined extraction screw between the trough and raised outlet  863ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2274ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1595ms
+ ✓ tests/integration/catalog/pipeTeeFidelity.test.ts (2 tests) 2713ms
+     ✓ has two run ports, one side port and a closed back wall in actual exported geometry  1075ms
+     ✓ preserves all three openings and closed fourth side at both size limits  846ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 2800ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  1232ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 3624ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  3052ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 2116ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1341ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 2247ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  1417ms
+ ✓ tests/integration/catalog/standardComponentInterfaces.test.ts (4 tests) 10978ms
+     ✓ caster-wheel: connected supports and open interfaces at default and both size limits  2840ms
+     ✓ pillow-block-housing: connected supports and open interfaces at default and both size limits  1101ms
+     ✓ piano-hinge: connected supports and open interfaces at default and both size limits  5601ms
+     ✓ t-slot-angle-bracket: connected supports and open interfaces at default and both size limits  654ms
+ ✓ tests/integration/catalog/splitShaftCollarFidelity.test.ts (2 tests) 3805ms
+     ✓ has an open bore, split radial notch, two clamp lugs and a separate screw body  1694ms
+     ✓ retains the bore, split and screw over all size presets  1263ms
+ ✓ tests/integration/catalog/chlorineDosingSkidTankMaterials.test.ts (1 test) 1358ms
+     ✓ assigns the chemical day tank to polyethylene without changing geometry  714ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 2416ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1593ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 12203ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  7587ms
+     ✓ has a material-removing helix and two real radial hub bores  3570ms
+ ✓ tests/integration/catalog/coolingTowerAccessDoorMaterial.test.ts (1 test) 3376ms
+     ✓ keeps the molded FRP door with the casing finish, separate from the fan stack  2300ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1882ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  1022ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1630ms
+ ✓ tests/integration/catalog/gussetBracketFidelity.test.ts (2 tests) 2372ms
+     ✓ exports a connected-looking right-angle assembly with 4 real bores at the default size  694ms
+     ✓ preserves bores and touching plate envelope at both declared size extremes  776ms
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 1806ms
+     ✓ keeps the matching end frames on the same yard-finish control  834ms
+ ✓ tests/integration/catalog/blastDustCollectorFilterMediaMaterial.test.ts (1 test) 1568ms
+     ✓ keeps exposed filter media separate from the painted steel collector  836ms
+ ✓ tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts (1 test) 2211ms
+     ✓ keeps rubber belt surfaces separate from the molded-polymer carriers  1384ms
+ ✓ tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts (1 test) 1606ms
+     ✓ uses a pallet-timber control for the pallet deck and preserves the model envelope  761ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1987ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  1087ms
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 1385ms
+     ✓ gives the polyethylene tank its own material control without changing geometry  688ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 1515ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  659ms
+ ✓ tests/integration/catalog/substationConservatorNozzleMaterials.test.ts (1 test) 1385ms
+     ✓ uses the vessel finish and meets the shell roof  579ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 1223ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  595ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 921ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  386ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 768ms
+ ✓ tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts (1 test) 708ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 540ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  383ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 30307ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  803ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index  707ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  26433ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  694ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 741182ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  740126ms
+
+ Test Files  42 passed (42)
+      Tests  67 passed (67)
+   Start at  01:54:31
+   Duration  757.27s (transform 125.40s, setup 5.96s, import 300.26s, tests 895.68s, environment 19ms)

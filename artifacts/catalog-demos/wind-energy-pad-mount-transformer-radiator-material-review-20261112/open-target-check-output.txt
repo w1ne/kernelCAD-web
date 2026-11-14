@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-11-12T06:58:35.902841+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "destinationPr": 1258,
+  "openPrCount": 22,
+  "openPrFilesFetchedPaginated": true,
+  "results": {
+    "blade-root-protector": {
+      "kit": "wind-energy",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "cable-entry-boot": {
+      "kit": "wind-energy",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "nacelle-transport-frame": {
+      "kit": "wind-energy",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "wind-farm-meter-pedestal": {
+      "kit": "wind-energy",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "destinationPrTextMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "wind-farm-pad-mount-transformer": {
+      "kit": "wind-energy",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "destinationPrTextMatches": [
+        {
+          "number": 1258,
+          "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+          "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+        }
+      ],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    }
+  }
+}

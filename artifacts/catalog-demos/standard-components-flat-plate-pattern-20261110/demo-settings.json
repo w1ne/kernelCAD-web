@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-10",
+  "scope": "Refine the existing flat-joining-plate asset with a three/four/five-hole layout choice and a more distinct material default; no IDs or kits added.",
+  "asset": "flat-joining-plate",
+  "variants": [
+    { "id": "hole-three", "choices": { "holeCount": "three" } },
+    { "id": "hole-four", "choices": { "holeCount": "four" } },
+    { "id": "hole-five", "choices": { "holeCount": "five" } },
+    { "id": "hole-five-brass", "choices": { "holeCount": "five" }, "preset": "brass" }
+  ],
+  "previewInvocation": "python3 -c 'import json,subprocess; ids=json.load(open(\"catalog/kits/standard-components/demo/settings.json\"))[\"previewAssetIDs\"]; subprocess.run([\"npx\",\"tsx\",\"scripts/renderCatalogPreviews.ts\",*ids],check=True)'",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/render_variants.ts",
+  "catalogBuildInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "indexHashVerificationInvocation": "python3 artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/verify_asset_index.py",
+  "qualityInvocation": "python3 scripts/checkCatalogQuality.py --kit standard-components && python3 scripts/checkCatalogQuality.py",
+  "lintInvocation": "npx eslint catalog/kits/standard-components/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "catalogPagesInvocation": "npm run catalog:pages",
+  "localPageVerificationInvocation": "python3 artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/verify_local_page.py",
+  "geometryChecks": {
+    "standardLengthMm": { "three": 64, "four": 84, "five": 104 },
+    "holePitchMm": 20,
+    "endMarginMm": 12,
+    "plateWidthMm": 24,
+    "plateThicknessMm": 5,
+    "holeDiameterMm": 6,
+    "fastenerShankDiameterMm": 4.6,
+    "maximumMeasuredTriangles": 712,
+    "triangleBudget": 800
+  },
+  "canvas": { "width": 1280, "height": 720, "frameRate": 24, "durationSeconds": 12 },
+  "captureInvocation": "python3 artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/capture_hole_count_demo.py",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/inspect_video.py",
+  "caption": "Local kernelCAD source variants, software-rendered previews, regenerated catalog index and local checks. Not deployed; no manufacturing suitability or physical acceptance is claimed.",
+  "provenance": "Frames use the checked-in flat-joining-plate.kcad.ts source, its named color preset and measured source-rendered hole-count variants."
+}

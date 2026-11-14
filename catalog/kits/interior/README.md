@@ -24,7 +24,7 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `desk` | Desk with modesty panel, panel legs or drawer pedestal | width (1.2/1.4/1.6 m), style, top, frame, handles | 156 |
 | `office-chair` | Swivel chair on a five-star caster base | back height, armrests, upholstery, frame, column | 388 |
 | `floor-lamp` | Standing lamp with faceted drum or cone shade | shade style, height, shade, metal | 84 |
-| `table-lamp` | Table lamp with jar or column base | base style, base, shade | 96 |
+| `table-lamp` | Table lamp with faceted ceramic jar or column base, brass stem and switch, and tapered textile shade | base style, ceramic, shade textile, brass hardware | 144 |
 | `rug` | Flat two-tone area rug | size (1.6x2.3/2x3/2.5x3.5 m), pattern, border, field | 60 |
 | `potted-plant` | Houseplant in a tapered pot with faceted leaves | size, leaf count, pot, leaves, soil | 224 |
 | `tv-stand-with-tv` | Media cabinet with a flat-screen TV | screen (43/55/65 in), cabinet, doors, TV frame, screen | 180 |

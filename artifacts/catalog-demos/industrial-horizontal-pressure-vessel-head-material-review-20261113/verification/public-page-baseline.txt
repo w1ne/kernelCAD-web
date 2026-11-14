@@ -1,0 +1,4 @@
+Checked 2026-11-13 before editing:
+URL: https://kernelcad.com/catalog/industrial-plant/horizontal-pressure-vessel/
+Request: direct HTTPS GET from this environment; response was HTTP 403.
+No current public preview could be compared, and no post-deploy check is possible because this branch is not deployed.
