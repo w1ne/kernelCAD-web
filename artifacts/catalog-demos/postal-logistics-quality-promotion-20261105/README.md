@@ -28,6 +28,15 @@ The [live website check](live-website-check.json), taken at 2026-11-05 08:33 UTC
 
 - [Before/after previews](before/) retain the automated label applicator, carrier satchel, and sorting console samples.
 - [High-visibility preset render](high-visibility-variants/powered-roller-conveyor.highVisibility.png) comes from the indexed preset values.
-- [Video review contact sheet](video-review/contact-sheet.png) contains six decoded frames from the MP4. The capture and inspection sources are [capture_postal_demo.py](capture_postal_demo.py) and [inspect_postal_video.py](inspect_postal_video.py).
+- Video review contact sheet (`video-review/contact-sheet.png`, not tracked) contains six decoded frames from the MP4. The capture and inspection sources are [capture_postal_demo.py](capture_postal_demo.py) and [inspect_postal_video.py](inspect_postal_video.py).
 
 The demo shows local source edits, renders, preview/index generation, local page checks, and tests. It does not claim operational simulation, deployed behavior, machinery safety, manufacturing suitability, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/capture_postal_demo.py`
+- video review: `python3 artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/inspect_postal_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

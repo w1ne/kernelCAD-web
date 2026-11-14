@@ -85,10 +85,19 @@ catalog/kits/medical/previews/.
   hashes, budgets, quality counts and command results.
 - [integration-output-initial-stale-index.txt](integration-output-initial-stale-index.txt)
   preserves the first run, which caught the stale source hash before rebuild.
-- [frames/](frames/), [video-inspection.json](video-inspection.json), and
+- frames/ (`frames/`, not tracked), [video-inspection.json](video-inspection.json), and
   [video-review/](video-review/) retain the demo source frames, decoded frames,
   contact sheet and [visual review](video-review/visual-review.md).
 
 The dated comparison of medical asset and device-design workflows is recorded
 privately in kernelCAD-private; public catalog docs describe native kernelCAD
 source behavior only.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/medical-materials-quality-20261106/capture_medical_materials_demo.py`
+- video review: `python3 artifacts/catalog-demos/medical-materials-quality-20261106/inspect_medical_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
