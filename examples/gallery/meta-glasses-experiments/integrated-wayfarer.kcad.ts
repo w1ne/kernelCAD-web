@@ -265,13 +265,14 @@ const noseShadow = frontBody(
   })
   .color('#101010');
 
-return [
-  { name: 'words to geometry chunky black acetate frame', shape: frame },
-  { name: 'left smoked seated lens insert', shape: lensInsert(-1) },
-  { name: 'right smoked seated lens insert', shape: lensInsert(1) },
-  { name: 'left recessed Meta camera bezel', shape: cameraBezel },
-  { name: 'left recessed Meta camera glass', shape: cameraGlass },
-  { name: 'camera highlight seated inside glass', shape: cameraHighlight },
-  { name: 'small amber privacy LED toward bridge', shape: ledDiffuser },
-  { name: 'dark inverted V bridge nose notch shadow', shape: noseShadow },
-];
+// Preserve every separately authored part in the exported and rendered scene.
+const scene = assembly('wayfarer');
+scene.part('words-to-geometry-chunky-black-acetate-frame', frame);
+scene.part('left-smoked-seated-lens-insert', lensInsert(-1));
+scene.part('right-smoked-seated-lens-insert', lensInsert(1));
+scene.part('left-recessed-meta-camera-bezel', cameraBezel);
+scene.part('left-recessed-meta-camera-glass', cameraGlass);
+scene.part('camera-highlight-seated-inside-glass', cameraHighlight);
+scene.part('small-amber-privacy-led-toward-bridge', ledDiffuser);
+scene.part('dark-inverted-v-bridge-nose-notch-shadow', noseShadow);
+return scene.model();

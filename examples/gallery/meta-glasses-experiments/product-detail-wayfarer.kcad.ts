@@ -257,13 +257,14 @@ const nosePadShadow = xzSketchToFrontBody(
   .color('#111111')
   .translate(0, BODY_Y_CENTERING, 0);
 
-return [
-  { name: 'glossy black acetate frame with bevels and relief grooves', shape: acetateBody },
-  { name: 'left smoked translucent lens seated in rim opening', shape: lensInsert(-1) },
-  { name: 'right smoked translucent lens seated in rim opening', shape: lensInsert(1) },
-  { name: 'left upper outer recessed camera black bezel', shape: cameraBezel },
-  { name: 'left upper outer camera glass inset', shape: cameraGlass },
-  { name: 'camera glass highlight seated inside lens', shape: cameraHighlight },
-  { name: 'small status LED between camera and bridge', shape: ledDiffuser },
-  { name: 'darkened inverted V bridge nose notch', shape: nosePadShadow },
-];
+// Preserve every separately authored part in the exported and rendered scene.
+const scene = assembly('wayfarer');
+scene.part('glossy-black-acetate-frame-with-bevels-and-relief-grooves', acetateBody);
+scene.part('left-smoked-translucent-lens-seated-in-rim-opening', lensInsert(-1));
+scene.part('right-smoked-translucent-lens-seated-in-rim-opening', lensInsert(1));
+scene.part('left-upper-outer-recessed-camera-black-bezel', cameraBezel);
+scene.part('left-upper-outer-camera-glass-inset', cameraGlass);
+scene.part('camera-glass-highlight-seated-inside-lens', cameraHighlight);
+scene.part('small-status-led-between-camera-and-bridge', ledDiffuser);
+scene.part('darkened-inverted-v-bridge-nose-notch', nosePadShadow);
+return scene.model();
