@@ -874,7 +874,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     spring: makeSpringMethod(session, () => api),
     pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
-    internalSpurGear: makeInternalSpurGearMethod(session, () => api),
+    internalSpurGear: makeInternalSpurGearMethod(session),
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
     planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(session),
