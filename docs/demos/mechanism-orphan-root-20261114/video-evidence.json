@@ -1,0 +1,67 @@
+{
+  "type": "text replay of recorded local CLI output; not a renderer capture",
+  "model": "examples/exploded/clamshell-table-first.kcad.ts",
+  "invocation": "KERNELCAD_RENDER_STRICT=1 npx tsx src/agent/cli/index.ts render examples/exploded/clamshell-table-first.kcad.ts --out <png>",
+  "before": {
+    "source": "origin/develop cd3eac756 (mechanismOrphan.ts fix reverted)",
+    "file": "before.txt",
+    "sha256": "1144ab5c6399f7f9c2db9e6e711e3b4fd301da481387583381576d8da10bf7f9",
+    "failureCount": 5,
+    "exitCode": 2,
+    "codes": [
+      "mechanism.orphan-part",
+      "mechanism.orphan-part",
+      "mechanism.interpenetration",
+      "mechanism.interpenetration",
+      "mechanism.dof-mismatch"
+    ],
+    "orphans": [
+      {
+        "part": "base",
+        "root": "table",
+        "reaches": "'table'"
+      },
+      {
+        "part": "lid",
+        "root": "table",
+        "reaches": "'table'"
+      }
+    ]
+  },
+  "after": {
+    "source": "this branch",
+    "file": "after.txt",
+    "sha256": "f76df4da94e7119df6370683be425f159b3ac532d8f50d1b796dd735c25f7a51",
+    "failureCount": 4,
+    "exitCode": 2,
+    "codes": [
+      "mechanism.orphan-part",
+      "mechanism.interpenetration",
+      "mechanism.interpenetration",
+      "mechanism.dof-mismatch"
+    ],
+    "orphans": [
+      {
+        "part": "table",
+        "root": "base",
+        "reaches": "'base', 'lid'"
+      }
+    ]
+  },
+  "verification": {
+    "unitTest": "npx vitest run src/modeling/runtime/mechanismOrphan.test.ts — 5/5 passed; 2 cases fail with the fix reverted",
+    "mechanism": "broken in both runs; the fixture also has interpenetration and dof-mismatch failures that this change does not touch"
+  },
+  "slides": {
+    "count": 4,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "6d7badf924d7c3e991da42628f8e0dcf8817d25d4c50bf3d793a1cfd5dcf6221",
+    "durationSeconds": 12,
+    "bytes": 229065,
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  }
+}
