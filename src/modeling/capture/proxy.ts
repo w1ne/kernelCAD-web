@@ -100,6 +100,7 @@ import {
   nextOrdinalForKindOnChain,
   assertScalarEdgeValue,
 } from './proxyFeatureChain';
+import { validateChamferLegOptions } from './chamferLegOptions';
 
 
 export class Shape {
@@ -847,17 +848,23 @@ export class Shape {
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
 
-  // Single-distance form (rc.6 — unchanged).
-  chamfer(distance: Editable<number>, edges?: EdgeSelector): Shape;
+  // Single-distance form (rc.6); `opts` adds an asymmetric second leg.
+  chamfer(
+    distance: Editable<number>,
+    edges?: EdgeSelector,
+    opts?: { distance2?: Editable<number>; angleDeg?: Editable<number>; face?: FaceSelector | string },
+  ): Shape;
   // Variable-distance form (rc.11).
   chamfer(groups: Array<{ edges: EdgeSelector; distance: Editable<number> }>): Shape;
   chamfer(
     distanceOrGroups: Editable<number> | Array<{ edges: EdgeSelector; distance: Editable<number> }>,
     edges?: EdgeSelector,
+    opts?: { distance2?: Editable<number>; angleDeg?: Editable<number>; face?: FaceSelector | string },
   ): Shape {
     if (typeof distanceOrGroups === 'number' || isParamRef(distanceOrGroups)) {
       assertScalarEdgeValue('chamfer', 'distance', distanceOrGroups, this.id);
-      return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
+      const chamferLegs = opts === undefined ? undefined : validateChamferLegOptions(opts, this.id);
+      return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges, { chamferLegs });
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }

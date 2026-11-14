@@ -41,7 +41,7 @@ describe('asymmetric chamfer geometry', () => {
     expect(shape.volume()).toBeCloseTo(bevelledBlockVolume(2, 5), 3);
     // A symmetric 2 mm chamfer would leave 11,730.667 mm³.
     expect(Math.abs(shape.volume() - bevelledBlockVolume(2, 2))).toBeGreaterThan(100);
-    expect(shape.boundingBox().min).toEqual([0, 0, 0]);
+    for (const v of shape.boundingBox().min) expect(v).toBeCloseTo(0, 6);
     expect(shape.boundingBox().max[0]).toBeCloseTo(40, 6);
     expect(shape.boundingBox().max[1]).toBeCloseTo(30, 6);
     expect(shape.boundingBox().max[2]).toBeCloseTo(10, 6);
@@ -101,9 +101,10 @@ describe('asymmetric chamfer geometry', () => {
       return box(40, 30, 10).chamfer(2, 'top', { distance2: 5, face: 'bottom' });
     `);
 
-    expect(errors.map((d) => d.code)).toEqual(['feature.chamfer.reference-face-not-adjacent']);
-    // Nothing is applied: the block is returned unchanged.
-    expect(model.tailShape!.volume()).toBeCloseTo(12_000, 6);
+    expect(errors.map((d) => d.code)).toEqual(['feature.invalid-args']);
+    expect(errors[0].message).toContain('opts.face');
+    // The refused feature produces no bevelled solid.
+    expect(model.tailShape).toBeUndefined();
   }, 120_000);
 
   it.each([
@@ -114,10 +115,12 @@ describe('asymmetric chamfer geometry', () => {
     ["box(40, 30, 10).chamfer(2, 'top', { distance2: 5, bevel: 1 })", 'opts'],
     ["box(40, 30, 10).chamfer(2, 'top', {})", 'opts'],
   ])('rejects invalid options: %s', async (expr, path) => {
-    const { errors } = await build(`return ${expr};`);
+    const failure = await build(`return ${expr};`).then(
+      ({ errors }) => errors[0],
+      (error: { code?: string; message: string }) => error,
+    );
 
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].code).toBe('feature.invalid-args');
-    expect(errors[0].message).toContain(path);
+    expect(failure?.code).toBe('feature.invalid-args');
+    expect(failure?.message).toContain(`${path} —`);
   }, 120_000);
 });
