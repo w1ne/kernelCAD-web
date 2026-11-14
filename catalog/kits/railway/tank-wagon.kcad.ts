@@ -78,7 +78,7 @@ const bogie = (tag, xc, r) => {
     const frame = side([[xc - 1150, r - 120], [xc - 860, r - 220], [xc - 450, 250], [xc + 450, 250], [xc + 860, r - 220], [xc + 1150, r - 120], [xc + 1150, r + 160], [xc + 700, r + 160], [xc + 350, r + 380], [xc - 350, r + 380], [xc - 700, r + 160], [xc - 1150, r + 160]], 150, s * 960)
       .subtract(side([[xc - 330, 380], [xc + 330, 380], [xc + 330, 760], [xc - 330, 760]], 400, s * 960));
     add(`side-frame-${tag}-${s}`, frame.color(railSteel));
-    for (const dx of [-180, 0, 180]) add(`spring-${tag}-${s}-${dx}`, turned([[0, 0], [80, 0], [80, 260], [0, 260]]).translate(xc + dx, s * 960, 390).color(stainlessSteel));
+    for (const dx of [-180, 0, 180]) add(`spring-${tag}-${s}-${dx}`, turned([[0, 0], [80, 0], [80, 260], [0, 260]]).translate(xc + dx, s * 960, 390).color(railSteel));
   }
   add(`bolster-${tag}`, side([[xc - 300, 650], [xc + 300, 650], [xc + 300, 900], [xc - 300, 900]], 2100).color(railSteel));
 };
