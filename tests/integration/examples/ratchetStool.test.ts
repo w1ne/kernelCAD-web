@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 
 describe('ratchet stool gallery example', () => {
   it('evaluates the exposed ratchet stool model cleanly', async () => {
@@ -10,15 +11,24 @@ describe('ratchet stool gallery example', () => {
     expect(result.featureCount).toBeGreaterThanOrEqual(40);
   });
 
-  // P3 physics-loop sweep (2026-06-01): ratchet-stool is authored as
-  // 34 decorative parts with no mate edges; the physics loop flags 86
-  // pairwise interpenetration overlaps. Tracked consolidation (fuse
-  // decorative pieces by stool sub-component) in the issue below.
-  //
-  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 2
-  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
-  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/351
-  it.skip('passes the physics-grounded loop — see issues/351', () => {
-    // no body — the citation in the title is what the sweep test reads
-  });
+  // The P3 physics-loop sweep (2026-06-01, issue #351) flagged the stool's
+  // overlaps. The model now bores and slots the sleeve and collar for the
+  // sliding post and rack, welds the teeth edge-on to the rack face, keeps
+  // the pawl group beside the rack with its nose in a tooth gap at both ends
+  // of a whole-pitch travel, and seats the legs, struts and foot ring face to
+  // face. Hosted here for the sweep gate (HOSTED_IN_DEDICATED_FILE in
+  // exampleSweepShared.ts).
+  it('examples/gallery/ratchet-stool.kcad.ts passes the physics-grounded loop', async () => {
+    const result = await runValidateCli({
+      file: 'examples/gallery/ratchet-stool.kcad.ts',
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+
+    expect(result.mechanismFailures ?? [], JSON.stringify(result.mechanismFailures ?? [])).toEqual([]);
+    expect(result.mechanism).toBe('real');
+  }, 120_000);
 });

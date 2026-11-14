@@ -18,6 +18,7 @@ const seatZ = mm(154);
 const sleeveHeight = mm(86);
 const sleeveRadius = mm(18);
 const innerPostRadius = mm(12);
+const sleeveBoreRadius = innerPostRadius + mm(0.5);
 const baseZ = 0;
 const sleeveTopZ = baseZ + sleeveHeight;
 const innerPostBaseZ = sleeveTopZ - mm(18);
@@ -28,8 +29,27 @@ const collarHeight = mm(10);
 const collarRadius = mm(24);
 const footRingZ = mm(48);
 const legTopZ = mm(25);
-const legFootZ = mm(3);
-const heightAdjustMm = param('heightAdjustMm', 0, { min: 0, max: 34 });
+const legRadius = mm(5.2);
+const footPadHeight = mm(6);
+// The leg end disc is tilted, so its lowest rim sits up to one tube radius
+// below the axis end. Ending the axis one radius above the pad top keeps the
+// leg on the pad face instead of sunk into it.
+const legFootZ = footPadHeight + legRadius;
+const footRingMinorRadius = mm(3.2);
+
+// Rack: teeth are tilted plates welded edge-on to the rack backer face.
+const rackPitchMm = 8;
+const toothLength = mm(13);
+const toothThickness = mm(2.6);
+const toothTiltDeg = 22;
+const toothTilt = (toothTiltDeg * Math.PI) / 180;
+const rackFaceX = innerPostRadius + mm(8);
+const toothCenterX =
+  rackFaceX + (toothLength / 2) * Math.cos(toothTilt) + (toothThickness / 2) * Math.sin(toothTilt);
+const firstToothZ = sleeveTopZ - mm(9);
+// Travel is a whole number of rack pitches, so the pawl nose sits in a tooth
+// gap at both ends of travel.
+const heightAdjustMm = param('heightAdjustMm', 0, { min: 0, max: 4 * rackPitchMm });
 
 setCameraTarget(mm(24), 0, mm(84));
 
@@ -70,6 +90,14 @@ function frameConnector(origin: [number, number, number]) {
 
 function axisConnector(origin: [number, number, number], axis: [number, number, number]) {
   return { type: 'axis', origin: { kind: 'vec3', value: origin }, axis };
+}
+
+// Clearance slot through the sleeve mouth and collar for the rack backer and
+// teeth, which ride down inside the sleeve at the lowest seat height.
+function rackSlot() {
+  const bottom = innerPostBaseZ + mm(2);
+  const top = sleeveTopZ + mm(1);
+  return box(mm(30), mm(10), top - bottom).translate(innerPostRadius - mm(1), mm(-5), bottom);
 }
 
 const stool = assembly('exposed ratchet height-adjust stool');
@@ -140,26 +168,29 @@ stool.mate('post-to-seat-plate', 'bright-telescoping-inner-post-ending-below-sea
 const outerSleeve = stool.part(
   'matte-black-outer-sleeve-guiding-telescoping-post',
   cylZ(sleeveHeight, sleeveRadius, baseZ, 96)
+    .subtract(cylZ(sleeveHeight + mm(2), sleeveBoreRadius, baseZ - mm(1), 96))
+    .subtract(rackSlot())
     .color('#22272b'),
 );
 outerSleeve.connector('height-rail', axisConnector([0, 0, innerPostBaseZ], [0, 0, 1]));
 stool.mate('height-adjust', 'matte-black-outer-sleeve-guiding-telescoping-post.height-rail', 'bright-telescoping-inner-post-ending-below-seat-plate.height-slide', 'prismatic', {
   pose: heightAdjustMm.multiply(previewScale),
-  limitsMm: [0, 34],
+  limitsMm: [0, 4 * rackPitchMm],
 });
 
 const upperCollar = stool.part(
   'split-clamp-collar-at-top-of-sleeve',
   cylZ(collarHeight, collarRadius, sleeveTopZ - collarHeight, 96)
     .subtract(cylZ(collarHeight + mm(1), sleeveRadius + mm(1.4), sleeveTopZ - collarHeight - mm(0.5), 96))
+    .subtract(rackSlot())
     .color('#353b40'),
 );
 fastenAt('split-collar-on-sleeve-mouth', outerSleeve, upperCollar, [0, 0, sleeveTopZ - collarHeight / 2]);
 
 const rackBacker = stool.part(
   'vertical-ratchet-rack-backer-welded-to-inner-post',
-  box(mm(8), mm(7), mm(72), true)
-    .translate(innerPostRadius + mm(4), 0, sleeveTopZ + mm(22))
+  box(rackFaceX - innerPostRadius, mm(7), mm(72), true)
+    .translate((innerPostRadius + rackFaceX) / 2, 0, sleeveTopZ + mm(22))
     .color('#c5c9cc'),
 );
 innerPost.connector('rack-weld-face', frameConnector([innerPostRadius, 0, sleeveTopZ + mm(22)]));
@@ -167,82 +198,124 @@ rackBacker.connector('post-weld-face', frameConnector([innerPostRadius, 0, sleev
 stool.mate('rack-to-post-weld', 'bright-telescoping-inner-post-ending-below-seat-plate.rack-weld-face', 'vertical-ratchet-rack-backer-welded-to-inner-post.post-weld-face', 'fastened');
 
 for (let i = 0; i < 9; i += 1) {
-  const z = sleeveTopZ - mm(9) + i * mm(8);
+  const z = firstToothZ + i * mm(rackPitchMm);
   const tooth = stool.part(
     `forward-facing-ratchet-tooth-${i + 1}`,
-    box(mm(13), mm(9), mm(2.6), true)
-      .rotate([0, 1, 0], -22)
-      .translate(innerPostRadius + mm(10.5), 0, z)
+    box(toothLength, mm(9), toothThickness, true)
+      .rotate([0, 1, 0], -toothTiltDeg)
+      .translate(toothCenterX, 0, z)
       .color('#e1e4e6'),
   );
-  rackBacker.connector(`tooth-${i + 1}-seat`, frameConnector([innerPostRadius + mm(8), 0, z]));
-  tooth.connector('rack-seat', frameConnector([innerPostRadius + mm(8), 0, z]));
+  rackBacker.connector(`tooth-${i + 1}-seat`, frameConnector([rackFaceX, 0, z]));
+  tooth.connector('rack-seat', frameConnector([rackFaceX, 0, z]));
   stool.mate(`ratchet-tooth-${i + 1}-weld`, `vertical-ratchet-rack-backer-welded-to-inner-post.tooth-${i + 1}-seat`, `forward-facing-ratchet-tooth-${i + 1}.rack-seat`, 'fastened');
 }
 
+// Pawl group, all on the -Y side of the rack so the sliding teeth clear it.
+// The pivot boss rests on the collar top, the lever rests on the boss, the
+// return spring stands on the collar under the lever, and the nose reaches
+// sideways from the lever into the gap between teeth 4 and 5.
+const pivotRadius = mm(8);
+const pivotCenter: [number, number] = [sleeveRadius + mm(3), sleeveTopZ + pivotRadius];
 const pawlPivot = stool.part(
   'round-pawl-pivot-boss-on-sleeve',
-  cylinder(mm(10), mm(8), 48)
+  cylinder(mm(5.5), pivotRadius, 48)
     .alongAxis([0, 1, 0])
-    .translate(sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8))
+    .translate(pivotCenter[0], mm(-15.5), pivotCenter[1])
     .color('#41484e'),
 );
-fastenAt('pawl-pivot-on-sleeve', outerSleeve, pawlPivot, [sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8)]);
+fastenAt('pawl-pivot-on-sleeve', outerSleeve, pawlPivot, [pivotCenter[0], mm(-12), sleeveTopZ]);
 
+const leverTiltDeg = 12;
+const leverTilt = (leverTiltDeg * Math.PI) / 180;
+const leverHalfThickness = mm(2.5);
+const leverAxis: [number, number] = [Math.cos(leverTilt), -Math.sin(leverTilt)];
+const leverNormal: [number, number] = [Math.sin(leverTilt), Math.cos(leverTilt)];
+// Lever centre line: one boss radius plus half the lever thickness above the
+// boss axis, measured along the lever normal, so the lever underside is
+// tangent to the boss.
+const leverTangent: [number, number] = [
+  pivotCenter[0] + (pivotRadius + leverHalfThickness) * leverNormal[0],
+  pivotCenter[1] + (pivotRadius + leverHalfThickness) * leverNormal[1],
+];
+function leverPoint(s: number, lift = 0): [number, number] {
+  return [
+    leverTangent[0] + s * leverAxis[0] + lift * leverNormal[0],
+    leverTangent[1] + s * leverAxis[1] + lift * leverNormal[1],
+  ];
+}
+const leverCenter = leverPoint(mm(19));
 const pawlLever = stool.part(
   'curved-release-pawl-lever-biting-into-rack-teeth',
-  box(mm(54), mm(7), mm(5), true)
-    .rotate([0, 1, 0], 12)
-    .translate(sleeveRadius + mm(24), mm(-9), sleeveTopZ + mm(21))
+  box(mm(54), mm(7), leverHalfThickness * 2, true)
+    .rotate([0, 1, 0], leverTiltDeg)
+    .translate(leverCenter[0], mm(-9), leverCenter[1])
     .color('#59616a'),
 );
-fastenAt('pawl-lever-on-pivot', pawlPivot, pawlLever, [sleeveRadius + mm(9), mm(-7), sleeveTopZ + mm(17)]);
+const leverRest = leverPoint(0, -leverHalfThickness);
+fastenAt('pawl-lever-on-pivot', pawlPivot, pawlLever, [leverRest[0], mm(-12), leverRest[1]]);
 
+// Nose: a plate parallel to the teeth, centred on the mid-plane between
+// teeth 4 and 5, thinner than the tooth gap, its side face on the lever side.
+const noseThickness = mm(4);
+const noseLength = mm(11);
+const noseReach = mm(2);
+const noseGapZ = firstToothZ + 3.5 * mm(rackPitchMm);
+const noseCenter: [number, number] = [
+  toothCenterX + noseReach * Math.cos(toothTilt),
+  noseGapZ + noseReach * Math.sin(toothTilt),
+];
 const pawlNose = stool.part(
   'hardened-pawl-nose-seated-between-ratchet-teeth',
-  box(mm(11), mm(9), mm(6), true)
-    .rotate([0, 1, 0], -20)
-    .translate(innerPostRadius + mm(15), mm(-6), sleeveTopZ + mm(18))
+  box(noseLength, mm(5), noseThickness, true)
+    .rotate([0, 1, 0], -toothTiltDeg)
+    .translate(noseCenter[0], mm(-3), noseCenter[1])
     .color('#d3d7da'),
 );
-fastenAt('pawl-nose-on-lever', pawlLever, pawlNose, [innerPostRadius + mm(15), mm(-6), sleeveTopZ + mm(18)]);
+fastenAt('pawl-nose-on-lever', pawlLever, pawlNose, [noseCenter[0], mm(-5.5), noseCenter[1]]);
 
+const knobRadius = mm(6);
+const knobCenter = leverPoint(mm(41), leverHalfThickness + knobRadius);
 const releaseKnob = stool.part(
   'small-red-thumb-tab-on-pawl-release-lever',
-  cylinder(mm(8), mm(6), 32)
+  cylinder(mm(8), knobRadius, 32)
     .alongAxis([0, 1, 0])
-    .translate(sleeveRadius + mm(51), mm(-13), sleeveTopZ + mm(27))
+    .translate(knobCenter[0], mm(-13), knobCenter[1])
     .color('#b23a2f'),
 );
-fastenAt('thumb-tab-on-lever', pawlLever, releaseKnob, [sleeveRadius + mm(50), mm(-12), sleeveTopZ + mm(27)]);
+const knobRest = leverPoint(mm(41), leverHalfThickness);
+fastenAt('thumb-tab-on-lever', pawlLever, releaseKnob, [knobRest[0], mm(-9), knobRest[1]]);
 
+// Return spring: stands on the collar top and ends on the lever underside.
+const springX = sleeveRadius + mm(2.5);
+const springTopZ =
+  leverTangent[1] - leverHalfThickness / Math.cos(leverTilt) - (springX - leverTangent[0]) * Math.tan(leverTilt) +
+  mm(-0.1);
 const spring = stool.part(
   'visible-return-spring-from-collar-lug-to-pawl-lever',
-  cylinder(mm(36), mm(1.5), 16)
-    .alongAxis([0.925, -0.185, -0.324])
-    .translate(sleeveRadius + mm(6), mm(3), sleeveTopZ + mm(2))
+  cylZ(springTopZ - sleeveTopZ, mm(1.5), sleeveTopZ, 16)
+    .translate(springX, mm(-8), 0)
     .color('#b8bdc1'),
 );
-fastenAt('return-spring-on-collar', upperCollar, spring, [sleeveRadius + mm(8), mm(2), sleeveTopZ + mm(2)]);
+fastenAt('return-spring-on-collar', upperCollar, spring, [springX, mm(-8), sleeveTopZ]);
 
 const footRing = stool.part(
   'circular-tubular-foot-ring-welded-around-lower-sleeve',
-  torus(mm(54), mm(3.2), 96)
+  torus(mm(54), footRingMinorRadius, 96)
     .translate(0, 0, footRingZ)
     .color('#4b545b'),
 );
-fastenAt('foot-ring-on-sleeve', outerSleeve, footRing, [0, 0, footRingZ]);
 
 for (const deg of [45, 135, 225, 315]) {
   const top = radialPoint(mm(24), deg, legTopZ);
   const foot = radialPoint(mm(82), deg, legFootZ);
-  const legSpec = tubeBetween(`splayed-tubular-leg-${deg}-degrees`, top, foot, mm(5.2), '#30373d');
+  const legSpec = tubeBetween(`splayed-tubular-leg-${deg}-degrees`, top, foot, legRadius, '#30373d');
   const leg = stool.part(legSpec.name, legSpec.shape);
   fastenAt(`splayed-leg-${deg}-on-sleeve`, outerSleeve, leg, top);
 
   const footPad = stool.part(
     `rubber-leveling-foot-pad-${deg}-degrees`,
-    cylinder(mm(6), mm(10), 40)
+    cylinder(footPadHeight, mm(10), 40)
       .translate(foot[0], foot[1], 0)
       .color('#1b1b1b'),
   );
@@ -250,13 +323,17 @@ for (const deg of [45, 135, 225, 315]) {
 
   const ringStrutSpec = tubeBetween(
     `short-foot-ring-support-strut-${deg}-degrees`,
-    radialPoint(mm(19), deg, footRingZ),
-    radialPoint(mm(54), deg, footRingZ),
+    radialPoint(sleeveRadius, deg, footRingZ),
+    radialPoint(mm(54) - footRingMinorRadius, deg, footRingZ),
     mm(2.5),
     '#4b545b',
   );
   const ringStrut = stool.part(ringStrutSpec.name, ringStrutSpec.shape);
   fastenAt(`ring-strut-${deg}-on-sleeve`, outerSleeve, ringStrut, radialPoint(mm(36), deg, footRingZ));
+  // The ring is welded to the struts, which carry it to the sleeve.
+  if (deg === 45) {
+    fastenAt('foot-ring-on-strut', ringStrut, footRing, radialPoint(mm(54) - footRingMinorRadius, deg, footRingZ));
+  }
 }
 
 return stool.model();
