@@ -66,3 +66,12 @@ bytes afterward. No dependency or product source is changed by this workaround.
 All 50 assets are original CC0 1.0 kernelCAD geometry. They are stylized scene
 props, not machine specifications, process guarantees, hygienic design
 certification, regulatory claims, or installation guidance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/beverage-bottling-line-wave-20261103/capture_bottling_demo.py`
+- video review: `python3 artifacts/catalog-demos/beverage-bottling-line-wave-20261103/inspect_bottling_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

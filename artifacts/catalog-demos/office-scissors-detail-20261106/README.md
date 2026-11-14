@@ -61,3 +61,11 @@ These are local source renders and validation results. The branch is not
 deployed; no live-site behavior or physical hardware acceptance is claimed.
 These are stylized visualization assets, not vendor-specific scissors geometry
 or manufacturing evidence.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/office-scissors-detail-20261106/capture_scissors_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

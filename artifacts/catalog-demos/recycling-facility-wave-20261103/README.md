@@ -42,3 +42,12 @@ The bundle retains the source generator, runtime preload, invocation settings, f
 ## License and scope
 
 All models are original kernelCAD geometry dedicated under CC0 1.0. They are visualization props. Catalog checks do not establish equipment specifications, process performance, operator safety, environmental compliance, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/recycling-facility-wave-20261103/capture_recycling_demo.py`
+- video review: `python3 artifacts/catalog-demos/recycling-facility-wave-20261103/inspect_recycling_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

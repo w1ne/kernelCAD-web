@@ -57,3 +57,12 @@ tests do not establish mission fit, flight readiness, pressure or radiation
 performance, thermal-vacuum qualification, engineering suitability, physical
 simulation, deployment, or hardware acceptance. The branch was not deployed;
 public-page verification remains pending deployment.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/space-exploration-quality-promotion-20261105/capture_space_quality_promotion.py`
+- video review: `python3 artifacts/catalog-demos/space-exploration-quality-promotion-20261105/inspect_space_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

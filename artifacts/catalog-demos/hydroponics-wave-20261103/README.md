@@ -43,3 +43,12 @@ The bundle retains the generator, command settings, full-catalog build output, i
 ## License and scope
 
 All models are original kernelCAD geometry dedicated under CC0 1.0. They are visualization props. The catalog checks do not establish crop performance, greenhouse compliance, food-contact suitability, chemical compatibility, sensor calibration, equipment ratings, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/hydroponics-wave-20261103/capture_hydroponics_demo.py`
+- video review: `python3 artifacts/catalog-demos/hydroponics-wave-20261103/inspect_hydroponics_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

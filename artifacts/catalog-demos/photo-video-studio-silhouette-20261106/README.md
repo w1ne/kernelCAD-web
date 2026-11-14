@@ -42,3 +42,11 @@ From the repository root:
     npx vitest run tests/integration/catalog/
 
 The branch is not deployed. These are stylized scene props. They do not claim optical accuracy, lighting performance, load rating or camera operation.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/photo-video-studio-silhouette-20261106/capture_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
