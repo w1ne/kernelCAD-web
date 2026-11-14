@@ -82292,7 +82292,7 @@
       "id": "dual-port-ac-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "Dual-port AC pedestal",
-      "description": "Twin-sided AC pedestal with two front panels and two hanging cable leads. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
+      "description": "Twin-sided AC pedestal with two front panels and two hanging cable leads. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer, engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -82313,7 +82313,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/dual-port-ac-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
-      "sourceSha256": "8a467dc5a46a978c0ea2f1d2e6da269e75c00169fb10b3f2dabaa079a8d2626e",
+      "sourceSha256": "00dda1396a35289a741b76572ea22d2a80c1d681804fd78f19821b120b82d91b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -82348,6 +82348,12 @@
           "type": "color",
           "default": "#657f84",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
       "presets": {
@@ -82355,13 +82361,15 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "safetyPolymer": "#f3bd2f",
-          "engineeringPolymer": "#263a36"
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "safetyPolymer": "#ffbf24",
-          "engineeringPolymer": "#222d32"
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
         }
       },
       "stats": {
@@ -82387,9 +82395,7 @@
             "vent-slot-1",
             "vent-slot-2",
             "head-cap",
-            "rear-control-panel",
-            "left-cable",
-            "right-cable"
+            "rear-control-panel"
           ],
           "param": "powderCoat"
         },
@@ -82418,6 +82424,15 @@
             "right-connector-cradle"
           ],
           "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "left-cable",
+            "right-cable"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
