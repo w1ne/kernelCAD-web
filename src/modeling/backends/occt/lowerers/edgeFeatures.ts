@@ -15,6 +15,7 @@ import {
   discardOcctShape,
   filletWithHistory,
   mergeEdgeFeatureHistory,
+  type ChamferLegs,
   type EdgeFeatureHistoryResult,
   type EdgeRefForFilleting,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
@@ -28,6 +29,7 @@ import type { FeatureId, FeatureRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
 import { probeMaxFeasible } from './feasibilityProbe';
+import { resolveChamferLegs, type ChamferLegOp } from './asymmetricChamfer';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -453,6 +455,14 @@ interface EdgeOp {
   kind: 'fillet' | 'chamfer';
   value: number;
   continuity: 'G1' | 'G2';
+  /** Asymmetric chamfer only: the reference face and the second leg. */
+  legs?: ChamferLegOp;
+}
+
+function chamferLegsOf(op: EdgeOp): ChamferLegs | undefined {
+  if (!op.legs) return undefined;
+  const { face, distance2Ratio, angleDeg } = op.legs;
+  return distance2Ratio !== undefined ? { face, distance2: distance2Ratio * op.value } : { face, angleDeg };
 }
 
 function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeAttempt {
@@ -461,7 +471,7 @@ function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeA
   try {
     result = op.kind === 'fillet'
       ? filletWithHistory(base, refs, op.value, op.continuity)
-      : chamferWithHistory(base, refs, op.value);
+      : chamferWithHistory(base, refs, op.value, chamferLegsOf(op));
   } catch (e) {
     // A raw WASM exception pointer (a bare integer) is meaningless — never echo it.
     return e instanceof Error
@@ -673,7 +683,10 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return finished(base);
   }
   drainResolvedWarnings(r, ctx.diagnostics);
-  return applyConstantEdgeFeature(ctx, r, base, edgesResult as Edge[], { kind: 'chamfer', value: distance, continuity: 'G1' });
+  const edges = edgesResult as Edge[];
+  const legs = resolveChamferLegs(ctx, r, base, toFilletEdgeRefs(edges), distance);
+  if (legs === 'refused') return finished(base);
+  return applyConstantEdgeFeature(ctx, r, base, edges, { kind: 'chamfer', value: distance, continuity: 'G1', legs });
 }
 
 // ---------------------------------------------------------------------------

@@ -145,7 +145,7 @@ Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet 
 |---|---|
 | `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2' }) => Shape` | Round edges. |
 | `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body. |
-| `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
+| `Shape.chamfer(distance, edges?: EdgeSelector, opts?: { distance2?: Editable<number>; angleDeg?: Editable<number>; face?: FaceSelector \| string }) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
 | `Shape.lattice(opts: { type?: 'gyroid' \| 'schwarzP' \| 'diamond' \| 'neovius'; variant?: 'sheet' \| 'network'; cell: Editable<number>; wall?: Editable<number>; density?: Editable<number>; skin?: Editable<number>; grade?: { from: 'surface' \| 'holes' \| 'fea'; near?: number; far?: number; over?: number; study?: string; bands?: { name, fromYield, densityPercent }[] }; frame?: 'part' \| 'world' \| 'cylindrical'; axis?: { origin, direction }; resolution?: number; tolerance?: number }) => Shape` | Fill the body with a triply periodic minimal surface lattice inside a solid skin. |

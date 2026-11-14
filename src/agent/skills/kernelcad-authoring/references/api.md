@@ -442,6 +442,9 @@ shape, not a copy.
 // Bevel edges (same selector shape as fillet):
 .chamfer(distance: number, edges?: EdgeSelector): Shape
 .chamfer([{ edges: EdgeSelector, distance: number }, ...]): Shape
+// Asymmetric bevel: `distance` on the reference face, plus distance2 OR angleDeg.
+// `face` defaults to the face that selected the edges; it must border every edge.
+.chamfer(distance, edges, { distance2?: number, angleDeg?: number, face?: FaceSelector }): Shape
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED

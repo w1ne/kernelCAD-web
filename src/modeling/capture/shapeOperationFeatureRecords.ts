@@ -8,6 +8,7 @@ import { parseTopoRef } from '../../kernel/naming/topoRef';
 import { parseQuery } from '../../kernel/naming/parseQuery';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
+import { CHAMFER_LEGS_API, type ChamferLegOptions } from './chamferLegOptions';
 
 export interface ShapeOperationFeatureSpec {
   kind: FeatureKind;
@@ -56,6 +57,8 @@ export type VariableEdgeValueKey = 'radius' | 'distance';
 
 export interface ScalarEdgeFeatureOpts {
   continuity?: FilletContinuity;
+  /** Chamfer only: validated asymmetric-leg options. */
+  chamferLegs?: ChamferLegOptions;
 }
 
 export interface DraftFeatureOpts {
@@ -272,12 +275,41 @@ export function buildScalarEdgeFeatureSpec(
       ? { continuity: opts.continuity }
       : undefined;
 
+  const params: Record<string, Param> = { [valueParamName]: toParam(value, 'mm') };
+  if (kind === 'chamfer' && opts?.chamferLegs !== undefined) {
+    applyChamferLegs(baseId, opts.chamferLegs, params, inputs);
+  }
   return {
     kind,
-    params: { [valueParamName]: toParam(value, 'mm') },
+    params,
     inputs,
     ...(metadata !== undefined ? { metadata } : {}),
   };
+}
+
+/** Record the second chamfer leg and its reference face. Without an explicit
+ *  `face`, the face that selected the edges is the reference. */
+function applyChamferLegs(
+  baseId: FeatureId,
+  legs: ChamferLegOptions,
+  params: Record<string, Param>,
+  inputs: Record<string, FeatureRef>,
+): void {
+  if (legs.distance2 !== undefined) params.distance2 = toParam(legs.distance2, 'mm');
+  if (legs.angleDeg !== undefined) params.angle = toParam(legs.angleDeg, 'deg');
+  if (legs.face !== undefined) {
+    inputs.referenceFace = buildFaceInputRef(baseId, legs.face as ShapeOperationFaceSelector);
+  } else if (inputs.face !== undefined) {
+    inputs.referenceFace = inputs.face;
+  } else {
+    invalidArgs({
+      api: CHAMFER_LEGS_API,
+      path: 'opts.face',
+      gotText: 'nothing, and the edges were not selected by a face',
+      requires: 'the reference face that `distance` is measured on, adjacent to every chamfered edge',
+      example: "box(40, 30, 10).chamfer(2, { parallel: 'Z' }, { distance2: 5, face: 'front' })",
+    });
+  }
 }
 
 export function buildBendFeatureSpec(
