@@ -56,3 +56,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-pro
 The local page audit verifies all 153 kit pages, their previews, parameter names,
 and the catalog hub entry. The full indexed preview renderer was also run, so
 the recorded render log covers all 2,390 catalog entries as well as this kit.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/recycling-facility-promotion-20261104/capture_recycling_promotion_demo.py`
+- video review: `python3 artifacts/catalog-demos/recycling-facility-promotion-20261104/inspect_promotion_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -77,3 +77,12 @@ the `/catalog/` and Alpine catalog routes responding with HTTP 404 on
 alpine equipment workflows is stored privately in
 `kernelCAD-private/catalog-alpine-expedition-quality-compare-20261105/COMPARISON.md`;
 public materials describe native kernelCAD assets only.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/capture_alpine_demo.py`
+- video review: `python3 artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/inspect_demo_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

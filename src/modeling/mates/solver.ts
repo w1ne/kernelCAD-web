@@ -192,9 +192,10 @@ export interface SolveMatesOptions {
   /** No longer needed: articulated closed loops are always solved by the
    *  loop-closure solver. Accepted (and ignored) for compatibility. */
   acceptConsistentArticulatedLoops?: boolean;
-  /** Solve each disconnected mate component from its first declared part.
-   *  The default preserves the historical behavior: only the component
-   *  containing parts[0] is traversed and all other parts are identity-filled. */
+  /** Solve each disconnected mate component from its first declared part
+   *  (default `true`), matching the lowered geometry from `mateFk`. `false`
+   *  traverses only the component containing parts[0]; every other part
+   *  rests where its `at` puts it and its mates are not applied. */
   solveDisconnectedComponents?: boolean;
   /** Continuation seed for articulated loops: the mate coordinates solved at
    *  the previous pose of a sweep (`result.loop.coordinates`). Default: the
@@ -242,7 +243,7 @@ export async function solveMates(
     partByName,
     arm,
     expandedPoses,
-    opts?.solveDisconnectedComponents === true,
+    opts?.solveDisconnectedComponents !== false,
     restingPlacementFor(arm, adjacency),
   );
 
@@ -440,8 +441,9 @@ export interface ResolvedMatePart {
 }
 
 /**
- * Pure mate-FK. Walks the mate graph (BFS spanning tree from `parts[0]`)
- * and composes per-part world transforms in the assembly root frame.
+ * Pure mate-FK. Walks the mate graph (a BFS spanning tree from `parts[0]`,
+ * then from the first declared part of each other mated component) and
+ * composes per-part world transforms in the assembly root frame.
  *
  * Pure data in / pure data out — no `Assembly` handle, no `ParamTable`, no
  * topology resolution. Mate poses are read directly from `numericPoses`
@@ -451,10 +453,10 @@ export interface ResolvedMatePart {
  *
  * Returns a `Map<FeatureId, Transform>` keyed by part FeatureId — matching
  * the return shape of `forwardKinematics`. Each transform moves the part's
- * shape in the frame its connectors are given in (the walk root stays put);
+ * shape in the frame its connectors are given in (each walk root stays put);
  * with connectors where `at` puts them, as the lowerer passes them, that is
  * the scene part's `worldTransform` and equals `sceneMotion` of the
- * `solveMates` placement. Disconnected parts default to
+ * `solveMates` placement. Unmated parts default to
  * identity. Loop-closure mates are dropped from the tree walk (the loop
  * residual lives in `solveMates`); when only tree mates are present this is
  * functionally complete for the OCCT lowerer's geometry placement.
@@ -487,9 +489,9 @@ export interface MateFkLoopOptions {
 export interface MateFkResult {
   readonly transforms: Map<FeatureId, Transform>;
   /** Parts the walk reached through a mate: every reached part except the
-   *  walk root `parts[0]`. A mate decides where these go, so their own `at`
-   *  does not move them. The root and the parts the walk does not reach
-   *  stay where their `at` puts them. */
+   *  walk roots. A mate decides where these go, so their own `at` does not
+   *  move them. The roots and unmated parts stay where their `at` puts
+   *  them. */
   readonly placedByMate: ReadonlySet<FeatureId>;
 }
 
@@ -547,9 +549,10 @@ function buildResolvedMateAdjacency(
   return adjacency;
 }
 
-/** 2. BFS spanning tree from `parts[0]`. Compose child world transform from
+/** 2. BFS spanning tree from `parts[0]` and each other mated component's
+ *  first part. Compose child world transform from
  *  parent's via the mate's local SE(3) contribution. `placedNames` holds
- *  every part a mate edge reached (the root is not one of them). */
+ *  every part a mate edge reached (the roots are not among them). */
 /** Replace the tree placements of the parts on articulated loops with the
  *  loop solve (as-built branch, continuation from the as-built pose). A
  *  loop that cannot close keeps the tree placements; `solveMates` reports
@@ -587,51 +590,55 @@ function walkResolvedMateTree(
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
 ): { worldTByName: Map<string, Transform>; placedNames: Set<string>; walk: MateWalkRecord } {
-  const root = solverGroundedPart(parts);
-  if (root === undefined) {
-    return { worldTByName: new Map(), placedNames: new Set(), walk: { roots: [], tree: [], loopMates: [] } };
-  }
+  const roots: Array<{ body: string; placement: Transform }> = [];
   const tree: MateTreeStep[] = [];
   const loopMates: MateRecord[] = [];
   const worldTByName = new Map<string, Transform>();
-  worldTByName.set(root.name, Transform.identity());
-  const queue: string[] = [root.name];
-  const visited = new Set<string>([root.name]);
+  const visited = new Set<string>();
   const placedNames = new Set<string>();
   const seenMate = new Set<string>();
 
-  while (queue.length > 0) {
-    const parentName = queue.shift()!;
-    const parentT = worldTByName.get(parentName)!;
-    for (const edge of adjacency.get(parentName) ?? []) {
-      if (seenMate.has(edge.mate.name)) continue;
-      seenMate.add(edge.mate.name);
-      if (visited.has(edge.neighbor)) {
-        loopMates.push(edge.mate); // loop-closure mate — closed by closeResolvedLoops
-        continue;
-      }
-      visited.add(edge.neighbor);
-      placedNames.add(edge.neighbor);
-      tree.push({ mate: edge.mate, partIsA: edge.partIsA });
+  // Walk the grounded part's component first, then every other mated
+  // component from its first declared part, so a mate between two parts
+  // that never reach the grounded part still places its child.
+  let root: ResolvedMatePart | undefined = solverGroundedPart(parts);
+  while (root !== undefined) {
+    worldTByName.set(root.name, Transform.identity());
+    roots.push({ body: root.name, placement: Transform.identity() });
+    visited.add(root.name);
+    const queue: string[] = [root.name];
 
-      worldTByName.set(
-        edge.neighbor,
-        composeResolvedChildTransform(parentT, edge, partByName, numericPoses),
-      );
-      queue.push(edge.neighbor);
+    while (queue.length > 0) {
+      const parentName = queue.shift()!;
+      const parentT = worldTByName.get(parentName)!;
+      for (const edge of adjacency.get(parentName) ?? []) {
+        if (seenMate.has(edge.mate.name)) continue;
+        seenMate.add(edge.mate.name);
+        if (visited.has(edge.neighbor)) {
+          loopMates.push(edge.mate); // loop-closure mate — closed by closeResolvedLoops
+          continue;
+        }
+        visited.add(edge.neighbor);
+        placedNames.add(edge.neighbor);
+        tree.push({ mate: edge.mate, partIsA: edge.partIsA });
+
+        worldTByName.set(
+          edge.neighbor,
+          composeResolvedChildTransform(parentT, edge, partByName, numericPoses),
+        );
+        queue.push(edge.neighbor);
+      }
     }
+
+    root = parts.find((part) => !visited.has(part.name) && (adjacency.get(part.name)?.length ?? 0) > 0);
   }
 
-  // Disconnected parts default to identity. (Same convention as
+  // Unmated parts default to identity. (Same convention as
   // `walkSpanningTree`'s tail fallback.)
   for (const p of parts) {
     if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
   }
-  return {
-    worldTByName,
-    placedNames,
-    walk: { roots: [{ body: root.name, placement: Transform.identity() }], tree, loopMates },
-  };
+  return { worldTByName, placedNames, walk: { roots, tree, loopMates } };
 }
 
 /** Compose one child's world transform from the parent's through the parent
@@ -751,8 +758,8 @@ function restingPlacementFor(
   };
 }
 
-/** BFS from `parts[0]`, optionally continuing from the first unvisited part
- *  in each disconnected component. Visited neighbors compose their placement
+/** BFS from `parts[0]`, then (unless the caller opts out) from the first
+ *  unvisited part of each disconnected component. Visited neighbors compose their placement
  *  from the parent through the connecting mate; every root and every part the
  *  walk does not reach gets `rest(part)`. Mates that would connect
  *  already-visited parts are deferred to `loopMates`. */

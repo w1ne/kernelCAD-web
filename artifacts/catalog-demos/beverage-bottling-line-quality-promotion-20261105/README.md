@@ -71,3 +71,11 @@ images and selected preset renders are retained in `evidence/` for review.
 
 This feature branch has not been deployed; no hosted-page or hardware-acceptance
 claim is made.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/make_demo_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

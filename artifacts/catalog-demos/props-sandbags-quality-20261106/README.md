@@ -86,7 +86,7 @@ video settings and verification evidence.
   [`integration-output.txt`](integration-output.txt), and
   [`local-pages-output.txt`](local-pages-output.txt) retain command output.
 - [`check-results.json`](check-results.json) records command exit codes.
-- [`frames/`](frames/), [`video-inspection.json`](video-inspection.json), and
+- `frames/`, [`video-inspection.json`](video-inspection.json), and
   [`video-review/`](video-review/) retain the demo source frames, decoded MP4
   frames, contact sheet and visual-review record.
 
@@ -95,3 +95,12 @@ video settings and verification evidence.
 These are stylized low-poly visualization assets. The model's layout and local
 checks do not establish flood protection, civil-engineering suitability,
 deployed behavior or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/props-sandbags-quality-20261106/capture_sandbags_demo.py`
+- video review: `python3 artifacts/catalog-demos/props-sandbags-quality-20261106/inspect_sandbags_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

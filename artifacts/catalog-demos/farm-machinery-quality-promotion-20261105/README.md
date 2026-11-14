@@ -28,3 +28,11 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality
 ```
 
 The source preview renderer targets all 60 kit IDs, and the required index build re-evaluates the full catalog. The generated page audit verifies all 60 local asset pages, source hashes, copied previews and the catalog hub. This branch has not been deployed; verify the public pages after the change is integrated and a site build is published.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/capture_farm_machinery_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -41,3 +41,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-quality-pr
 On 2026-11-05 the public homepage and `/assets.json` returned HTTP 200. `/catalog/` and `/catalog/hydroponics/` returned HTTP 404. This branch is not deployed, so updated public-page behavior remains unverified. Local static page generation is recorded separately from deployed behavior.
 
 These are stylized visualization assets. They do not establish greenhouse suitability, crop yield, nutrient or water performance, sensor calibration, equipment ratings, food-contact suitability, structural capacity, safety, regulatory compliance, fabrication, hardware acceptance or physical fit.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/capture_hydroponics_demo.py`
+- video review: `python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/inspect_hydroponics_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -79,7 +79,7 @@ source/index/preview/page checks and catalog quality rates.
 - [`local-page-check.json`](local-page-check.json): generated page count and
   checks for all 40 office asset pages.
 - [`before-previews/`](before-previews/), [`preset-variants/`](preset-variants/),
-  [`frames/`](frames/), [`video-inspection.json`](video-inspection.json), and
+  `frames/`, [`video-inspection.json`](video-inspection.json), and
   [`video-review/`](video-review/): comparison images, actual preset renders,
   video source frames, decoded MP4 metadata, and visual inspection.
 
@@ -89,3 +89,12 @@ These remain stylized low-poly visualization assets. Catalog evaluation and
 local page generation do not establish commercial-product geometry, device
 performance, safety or compliance, manufacturing suitability, deployed
 behavior, or physical acceptance. The feature branch remains undeployed.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/office-quality-20261106/capture_office_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/office-quality-20261106/inspect_office_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

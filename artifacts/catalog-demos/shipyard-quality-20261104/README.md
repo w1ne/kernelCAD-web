@@ -87,3 +87,11 @@ python3 artifacts/catalog-demos/shipyard-quality-20261104/audit_npm_package.py
 The material and geometry workflow comparison, including current website/source
 checks, is kept privately at
 `kernelCAD-private/catalog-shipyard-compare-20261103/COMPARISON.md`.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/shipyard-quality-20261104/capture_shipyard_quality.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
