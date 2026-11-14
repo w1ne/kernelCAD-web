@@ -3,6 +3,7 @@
 // Regression for shell() opening more than one face of a solid.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isTopologicallyValid } from '../../../src/kernel/backends/occt/edgeFeatureValidity';
 import { buildModel } from '../../../src/modeling/buildModel';
@@ -20,9 +21,8 @@ describe('multi-face shell geometry', () => {
   beforeAll(async () => { await initOcct(); }, 60_000);
 
   it('opens the top and bottom of a block into a 2 mm rectangular sleeve', async () => {
-    const { model, errors } = await build(`
-      return box(40, 30, 20).shell(2, { face: ['top', 'bottom'] });
-    `);
+    const code = await readFile('examples/cookbook-parity/open-ended-duct-sleeve.kcad.ts', 'utf8');
+    const { model, errors } = await build(code);
 
     expect(errors, JSON.stringify(model.diagnostics)).toEqual([]);
     const shape = model.tailShape!;
