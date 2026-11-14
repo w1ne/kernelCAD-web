@@ -1,0 +1,64 @@
+{
+  "type": "text replay of recorded local CLI output; not a renderer capture",
+  "model": "examples/robot-arm/skill-built-supported-arm.kcad.ts",
+  "invocation": "npx tsx src/agent/cli/index.ts validate examples/robot-arm/skill-built-supported-arm.kcad.ts --include-interference --epsilon 0.01",
+  "before": {
+    "source": "origin/develop cd3eac756 (mechanismTruthPhysics.ts fix reverted)",
+    "file": "before.txt",
+    "sha256": "935bb216108d609da2c3dd7943256853dd8c5b20802d3dfc05104f7c95dafc8d",
+    "failureCount": 9,
+    "exitCode": 2,
+    "codes": [
+      "mechanism.joint-mesh-gap",
+      "mechanism.joint-mesh-gap",
+      "mechanism.joint-mesh-gap",
+      "mechanism.mate-gap",
+      "mechanism.mate-gap",
+      "mechanism.mate-gap",
+      "mechanism.coupling-residual",
+      "mechanism.drops-on-release",
+      "mechanism.drops-on-release"
+    ],
+    "couplingResidual": {
+      "source": "left-curl",
+      "driven": "right-curl",
+      "residual": "10.0000°",
+      "sample": "rest pose",
+      "coordinateChecks": 502
+    }
+  },
+  "after": {
+    "source": "this branch",
+    "file": "after.txt",
+    "sha256": "b3296b4fc251b1c23da5c1c7c362b5d6c83e12af27b6adcf535ac35cc5467366",
+    "failureCount": 8,
+    "exitCode": 2,
+    "codes": [
+      "mechanism.joint-mesh-gap",
+      "mechanism.joint-mesh-gap",
+      "mechanism.joint-mesh-gap",
+      "mechanism.mate-gap",
+      "mechanism.mate-gap",
+      "mechanism.mate-gap",
+      "mechanism.drops-on-release",
+      "mechanism.drops-on-release"
+    ],
+    "couplingResidual": null
+  },
+  "verification": {
+    "regressionTest": "npx vitest run tests/integration/physics-loop/coupledRestPosePhysics.test.ts — 2/2 passed; both fail with the fix reverted",
+    "mechanism": "broken in both runs; the example also has joint-mesh-gap and mate-gap failures that this change does not touch"
+  },
+  "slides": {
+    "count": 4,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "ddb9418ac68aa4c4761e2d886f18aa5c60748f399a9f65d8b299ba099fde5baf",
+    "durationSeconds": 12,
+    "bytes": 243133,
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  }
+}
