@@ -141,10 +141,6 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
     { issue: 351, testFile: 'tests/integration/examples/ratchetStool.test.ts' },
   ],
   [
-    'examples/robot-arm/compact-supported-arm.kcad.ts',
-    { issue: 346, testFile: 'tests/integration/examples/compactSupportedArm.test.ts' },
-  ],
-  [
     'examples/robot-arm/desktop-3axis-mates.kcad.ts',
     { issue: 347, testFile: 'tests/integration/examples/desktop3axisMates.test.ts' },
   ],
