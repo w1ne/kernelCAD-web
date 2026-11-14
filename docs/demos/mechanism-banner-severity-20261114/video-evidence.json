@@ -1,0 +1,113 @@
+{
+  "type": "text replay of recorded local CLI output; not a renderer capture",
+  "model": "examples/robot-arm/skill-built-supported-arm.kcad.ts",
+  "invocation": "npx tsx src/agent/cli/index.ts validate examples/robot-arm/skill-built-supported-arm.kcad.ts --include-interference --epsilon 0.01",
+  "before": {
+    "source": "origin/develop cd3eac756 (banner change reverted)",
+    "file": "before.txt",
+    "sha256": "935bb216108d609da2c3dd7943256853dd8c5b20802d3dfc05104f7c95dafc8d",
+    "failureCount": 9,
+    "summaryMore": 6,
+    "exitCode": 2,
+    "entries": [
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.coupling-residual"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.drops-on-release"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.drops-on-release"
+      }
+    ]
+  },
+  "after": {
+    "source": "this branch",
+    "file": "after.txt",
+    "sha256": "2c800edd1a247501b067b255e7c0fc6dcecb5aebaa60caea720090fd536ddaeb",
+    "failureCount": 7,
+    "summaryMore": 6,
+    "exitCode": 2,
+    "entries": [
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.joint-mesh-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.mate-gap"
+      },
+      {
+        "label": "ERROR",
+        "code": "mechanism.coupling-residual"
+      },
+      {
+        "label": "NOTE",
+        "code": "mechanism.drops-on-release"
+      },
+      {
+        "label": "NOTE",
+        "code": "mechanism.drops-on-release"
+      }
+    ]
+  },
+  "verification": {
+    "regressionTest": "npx vitest run tests/unit/cli/renderHuman.test.ts tests/unit/mcp/renderPreviewTool.test.ts — 30/30 passed; the 2 new cases fail with the fix reverted",
+    "mechanism": "broken in both runs (exit 2); this change does not touch the verdict or the failures themselves"
+  },
+  "slides": {
+    "count": 4,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "1f244672cb3d7951f47e02936b1baf201da184aff7e69aede14903124f4b3de7",
+    "durationSeconds": 12,
+    "bytes": 259541,
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  }
+}

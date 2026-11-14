@@ -45,6 +45,7 @@ import { loadMujocoSession } from '../../../modeling/runtime/mujocoSession';
 import { captureMotionFailures } from '../../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { mechanismBannerLines } from '../lib/mechanismBanner';
 
 export interface ValidateCliInput {
   file: string;
@@ -293,16 +294,8 @@ function renderMechanismBanner(
   mechanismProbe: { mechanism: 'real' | 'broken' | 'unverified'; failures: readonly CompilerDiagnostic[] },
 ): void {
   if (mechanismProbe.mechanism === 'broken') {
-    const isTty = Boolean(process.stdout.isTTY);
-    const RED = isTty ? '\x1b[31m' : '';
-    const BOLD = isTty ? '\x1b[1m' : '';
-    const RESET = isTty ? '\x1b[0m' : '';
-    console.log(`${BOLD}${RED}MECHANISM BROKEN${RESET} — this assembly will not work as built (${mechanismProbe.failures.length} failure${mechanismProbe.failures.length === 1 ? '' : 's'})`);
-    for (const d of mechanismProbe.failures) {
-      console.log(`  ${RED}[ERROR]${RESET} ${d.code}`);
-      console.log(`         ${d.message}`);
-      console.log(`         hint: ${d.hint}`);
-    }
+    const lines = mechanismBannerLines(mechanismProbe.failures, 'this assembly will not work as built', Boolean(process.stdout.isTTY));
+    for (const line of lines) console.log(line);
     console.log('');
   }
 }
