@@ -1,0 +1,22 @@
+4,8c4,6
+< FILE_NAME('Open CASCADE Shape Model','2026-11-01T11:59:22',('Author'),(
+<     'Open CASCADE'),'Open CASCADE STEP processor 7.6','kernelCAD 0.17.2 (https://kernelcad.com)','Unknown');
+< FILE_SCHEMA((
+< 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF. {1 0 10303 442 1 1 4 
+< }'));
+---
+> FILE_NAME('Open CASCADE Shape Model','2026-11-01T11:53:21',('Author'),(
+>     'Open CASCADE'),'Open CASCADE STEP processor 7.6','kernelCAD 0.17.4 (https://kernelcad.com)','Unknown');
+> FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
+9733,9734c9731,9732
+<     #8409),#2665);
+< #8409 = STYLED_ITEM('color',(#8410),#15);
+---
+>     #8409),#5645);
+> #8409 = STYLED_ITEM('color',(#8410),#2679);
+9742,9743c9740,9741
+<     #8417),#5645);
+< #8417 = STYLED_ITEM('color',(#8418),#2679);
+---
+>     #8417),#2665);
+> #8417 = STYLED_ITEM('color',(#8418),#15);
