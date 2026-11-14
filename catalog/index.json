@@ -254137,7 +254137,7 @@
       "id": "panel-clamp",
       "kit": "standard-components",
       "title": "Panel clamp",
-      "description": "Small edge clamp with a broad base, upright jaw and adjustable pressure pad Knobs: model size, steel, zinc-plated steel, rubber.",
+      "description": "Illustrative CC0 low-poly panel clamp with a fixed base, overhead bridge, bored pressure-screw guide and a separate rubber pressure pad. Not load-rated, threaded or manufacturing CAD. Controls: model size and three material colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -254155,7 +254155,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/panel-clamp.kcad.ts",
       "preview": "/assets/standard-components-panel-clamp.png",
-      "sourceSha256": "871b45d97cafd067a9783869c007484729ec700bb3eedb391ab20cf8f1b239e1",
+      "sourceSha256": "35a8beb45006c5ed13a9ebcce3fbe182868fb1e1cb1fd9034e327f5dba978ffe",
       "triangleBudget": 320,
       "params": [
         {
@@ -254206,10 +254206,10 @@
         }
       },
       "stats": {
-        "triangles": 80,
+        "triangles": 236,
         "sizeM": [
           0.048,
-          0.033,
+          0.037,
           0.04
         ],
         "minUpM": 0,
@@ -254220,8 +254220,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "base",
-            "jaw"
+            "c-frame"
           ],
           "param": "steel"
         },
@@ -254229,7 +254228,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "screw"
+            "pressure-screw"
           ],
           "param": "zinc"
         },
@@ -254237,7 +254236,7 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "pad"
+            "rubber-pad"
           ],
           "param": "rubber"
         }
