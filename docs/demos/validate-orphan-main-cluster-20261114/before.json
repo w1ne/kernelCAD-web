@@ -1,0 +1,43 @@
+{
+  "ok": false,
+  "status": "warning",
+  "partCount": 3,
+  "jointCount": 1,
+  "diagnostics": [
+    {
+      "code": "assembly.part.floating",
+      "severity": "warning",
+      "message": "Disconnected body: part 'table' has no joint or mate connecting it to any other part.",
+      "hint": "invalid-args.assembly.floating-part — disconnected body 'table'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
+      "partName": "table"
+    },
+    {
+      "code": "assembly.part.orphan",
+      "severity": "warning",
+      "message": "Disconnected component: part 'base' is in a sub-assembly disconnected from the main mechanism.",
+      "hint": "invalid-args.assembly.orphan-cluster — disconnected component 'base'. Link it to the main mechanism (contains 'table') with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed.",
+      "partName": "base"
+    },
+    {
+      "code": "assembly.part.orphan",
+      "severity": "warning",
+      "message": "Disconnected component: part 'lid' is in a sub-assembly disconnected from the main mechanism.",
+      "hint": "invalid-args.assembly.orphan-cluster — disconnected component 'lid'. Link it to the main mechanism (contains 'table') with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed.",
+      "partName": "lid"
+    }
+  ],
+  "physicalDiagnostics": [],
+  "kernelDiagnostics": [],
+  "mechanism": "unverified",
+  "mechanismFailures": [],
+  "mechanismSummary": {
+    "verdict": "unverified",
+    "maxLevel": "warning",
+    "statement": "Motion not checked: the pose sweep did not run (pass --include-interference). Do not call this mechanism working.",
+    "checked": [],
+    "skipped": [
+      "the pose sweep did not run (pass --include-interference)"
+    ],
+    "failures": []
+  }
+}

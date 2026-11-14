@@ -1,0 +1,53 @@
+{
+  "type": "text replay of recorded local CLI output; not a renderer capture",
+  "model": "examples/exploded/clamshell-table-first.kcad.ts",
+  "invocation": "npx tsx src/agent/cli/index.ts validate examples/exploded/clamshell-table-first.kcad.ts --json",
+  "before": {
+    "source": "origin/develop cd3eac756 (validator.ts fix reverted)",
+    "file": "before.json",
+    "sha256": "776ad6a57dee1fd4090e446dd3498687e483e4e39a7580f491e318b6cfdc3577",
+    "status": "warning",
+    "diagnostics": [
+      {
+        "code": "assembly.part.floating",
+        "partName": "table"
+      },
+      {
+        "code": "assembly.part.orphan",
+        "partName": "base"
+      },
+      {
+        "code": "assembly.part.orphan",
+        "partName": "lid"
+      }
+    ]
+  },
+  "after": {
+    "source": "this branch",
+    "file": "after.json",
+    "sha256": "311767da508fb675ba199370627d46461c525234eaba20daf89ad1261cb346a5",
+    "status": "warning",
+    "diagnostics": [
+      {
+        "code": "assembly.part.floating",
+        "partName": "table"
+      }
+    ]
+  },
+  "verification": {
+    "unitTest": "npx vitest run src/modeling/mates/validator.test.ts — 28/28 passed; the 2 new cases fail with the fix reverted",
+    "mechanism": "unverified; validate ran without --include-interference"
+  },
+  "slides": {
+    "count": 4,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "a30a7a1dd33e5817d6b84fbe26ffc2b64f63a633d9c3828c0f43aec1e226828d",
+    "durationSeconds": 12,
+    "bytes": 226579,
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  }
+}
