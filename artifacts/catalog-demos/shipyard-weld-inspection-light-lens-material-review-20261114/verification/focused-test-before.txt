@@ -1,0 +1,25 @@
++ Received
+
+  [
+    "yardPaint",
+    "structuralSteel",
+    "safetyMarking",
+-   "lampLens",
+  ]
+
+ ❯ tests/integration/catalog/weldInspectionLightLensMaterial.test.ts:22:95
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     23|       'yardPaint', 'structuralSteel', 'safetyMarking', 'lampLens',
+     24|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  13:41:41
+   Duration  13.73s (transform 10.43s, setup 129ms, import 12.08s, tests 535ms, environment 0ms)
+

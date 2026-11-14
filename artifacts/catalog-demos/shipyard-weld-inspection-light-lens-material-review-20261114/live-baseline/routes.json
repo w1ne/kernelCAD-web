@@ -1,0 +1,52 @@
+[
+  {
+    "id": "weld-inspection-light-stand",
+    "kit": "shipyard",
+    "page": "https://kernelcad.com/catalog/shipyard/weld-inspection-light-stand/",
+    "preview": "https://kernelcad.com/assets/shipyard-weld-inspection-light-stand.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "97fe1a2bc91bb7d6889536096a11a6f242d9ad44ec502de3002f838cccb5a764",
+    "previewBytes": 23105
+  },
+  {
+    "id": "pressure-relief-valve",
+    "kit": "industrial-plant",
+    "page": "https://kernelcad.com/catalog/industrial-plant/pressure-relief-valve/",
+    "preview": "https://kernelcad.com/assets/industrial-plant-pressure-relief-valve.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "4edf90696c42a8a7380066dd3cb593c4d147095b16429a5fb8db0cbc9ed3234c",
+    "previewBytes": 32315
+  },
+  {
+    "id": "belt-conveyor",
+    "kit": "industrial-plant",
+    "page": "https://kernelcad.com/catalog/industrial-plant/belt-conveyor/",
+    "preview": "https://kernelcad.com/assets/industrial-plant-belt-conveyor.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "aa565e7275ecc3d7188356a3d82c292d4b5aa2e5a71a0d6ae77c05bc93544e8c",
+    "previewBytes": 34612
+  },
+  {
+    "id": "electric-pallet-jack",
+    "kit": "industrial-plant",
+    "page": "https://kernelcad.com/catalog/industrial-plant/electric-pallet-jack/",
+    "preview": "https://kernelcad.com/assets/industrial-plant-electric-pallet-jack.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "ae121d67f04cde187e5b00b8de81787ca06ceb6c7edd18376b964810fad9faa4",
+    "previewBytes": 21567
+  },
+  {
+    "id": "motor-control-center",
+    "kit": "industrial-plant",
+    "page": "https://kernelcad.com/catalog/industrial-plant/motor-control-center/",
+    "preview": "https://kernelcad.com/assets/industrial-plant-motor-control-center.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "db7f036eb2b620a2b0cdf034af15a0da49846c9eec4d019d027dfb022e497550",
+    "previewBytes": 25631
+  }
+]

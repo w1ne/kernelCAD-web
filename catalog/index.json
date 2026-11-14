@@ -292328,7 +292328,7 @@
       "id": "weld-inspection-light-stand",
       "kit": "shipyard",
       "title": "Weld inspection light stand",
-      "description": "Portable inspection light with a weighted base, height mast, twin lamp heads, and a cable hook. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Portable inspection light with a weighted base, height mast, twin lamp heads with separate lenses, and a cable hook. Editable yard-finish, steel, safety-marking and lamp-lens colors; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -292352,7 +292352,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/weld-inspection-light-stand.kcad.ts",
       "preview": "/assets/shipyard-weld-inspection-light-stand.png",
-      "sourceSha256": "c523338fd34b57ab1c6e77a1003d3d2c4df600e94c35a5fd42845e285cb59f34",
+      "sourceSha256": "5af91910ec5fea04af66680f95a868b9b66f19af74ff9502fb3037fe7f60b9fd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292381,18 +292381,26 @@
           "type": "color",
           "default": "#efb934",
           "label": "Safety marking"
+        },
+        {
+          "name": "lampLens",
+          "type": "color",
+          "default": "#f3f0d8",
+          "label": "Lamp lens"
         }
       ],
       "presets": {
         "fresh-coat": {
           "yardPaint": "#dab66c",
           "structuralSteel": "#d0d7d8",
-          "safetyMarking": "#ffd44d"
+          "safetyMarking": "#ffd44d",
+          "lampLens": "#fbf8e6"
         },
         "weathered-yard": {
           "yardPaint": "#ae8a3f",
           "structuralSteel": "#828d91",
-          "safetyMarking": "#bd8528"
+          "safetyMarking": "#bd8528",
+          "lampLens": "#cfc9ac"
         }
       },
       "stats": {
@@ -292430,11 +292438,18 @@
           "color": "#efb934",
           "parts": [
             "lamp-head-0",
-            "lamp-head-1",
+            "lamp-head-1"
+          ],
+          "param": "safetyMarking"
+        },
+        {
+          "name": "lampLens",
+          "color": "#f3f0d8",
+          "parts": [
             "lamp-lens-0",
             "lamp-lens-1"
           ],
-          "param": "safetyMarking"
+          "param": "lampLens"
         }
       ]
     },
