@@ -318,10 +318,14 @@ function collectOrphanDiagnostics(
     const components = connectedComponents(parts.map((p) => p.partName), adj);
     if (components.length > 1) {
       // The largest component is the "main mechanism". Everyone else is
-      // orphaned. Tie-break by part-declaration order (first component
-      // containing the first-declared part wins).
-      const firstPartName = parts[0].partName;
-      const mainIdx = components.findIndex((c) => c.has(firstPartName));
+      // orphaned. Tie-break by part-declaration order.
+      // components[] is in declaration order, so a strict '>' keeps the
+      // earliest of equally large components.
+      let mainIdx = 0;
+      for (let i = 1; i < components.length; i++) {
+        if (components[i].size > components[mainIdx].size) mainIdx = i;
+      }
+      const mainPartName = parts.find((p) => components[mainIdx].has(p.partName))!.partName;
       for (let i = 0; i < components.length; i++) {
         if (i === mainIdx) continue;
         for (const name of components[i]) {
@@ -333,7 +337,7 @@ function collectOrphanDiagnostics(
             code: 'assembly.part.orphan',
             severity: 'warning',
             message: `Disconnected component: part '${name}' is in a sub-assembly disconnected from the main mechanism.`,
-            hint: `invalid-args.assembly.orphan-cluster — disconnected component '${name}'. Link it to the main mechanism (contains '${firstPartName}') with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed.`,
+            hint: `invalid-args.assembly.orphan-cluster — disconnected component '${name}'. Link it to the main mechanism (contains '${mainPartName}') with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed.`,
             partName: name,
           });
         }
