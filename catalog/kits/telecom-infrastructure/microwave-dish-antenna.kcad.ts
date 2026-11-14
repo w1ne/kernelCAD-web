@@ -127,7 +127,8 @@ for (const [x, y] of [[-170, -170], [170, -170], [-170, 170], [170, 170]]) {
 }
 
 // Fine-adjust mount: two pole collars, side arms out to the back ring and a
-// threaded elevation strut between them.
+// threaded elevation strut between them. The strut nut is mount hardware, so it
+// stays galvanized with the strut; the powder coat is for the radio unit only.
 for (const [tag, z] of [['upper', H + 175], ['lower', H - 175]]) {
   add(`collar-${tag}`, turned([[34, -40], [50, -40], [50, 40], [34, 40]]).translate(0, PY, z).color(galvanizedSteel));
   add(`arm-${tag}-l`, box(14, PY + 75, 70, true).translate(-110, (PY - 75) / 2, z).color(galvanizedSteel));
@@ -135,6 +136,6 @@ for (const [tag, z] of [['upper', H + 175], ['lower', H - 175]]) {
   add(`bridge-${tag}`, box(234, 30, 70, true).translate(0, PY - 40, z).color(galvanizedSteel));
 }
 add('elevation-strut', rod([150, -100, H - 200], [116, 200, H + 150], 9, 6).color(galvanizedSteel));
-add('elevation-nut', turned([[0, -16], [18, -16], [18, 16], [0, 16]]).rotateX(-90).translate(133, 50, H - 25).color(powderCoat));
+add('elevation-nut', turned([[0, -16], [18, -16], [18, 16], [0, 16]]).rotateX(-90).translate(133, 50, H - 25).color(galvanizedSteel));
 
 return p.model();

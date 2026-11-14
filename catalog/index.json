@@ -317903,7 +317903,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/microwave-dish-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-microwave-dish-antenna.png",
-      "sourceSha256": "3008ad86e2af23c58f708e30bd8806c500cd0c383f1b37b0bda7613718299a67",
+      "sourceSha256": "b30421262ab272a5ae0919c18c8f6f76684e11a6237c52b5fab5a75e5ed893c1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -318014,7 +318014,8 @@
             "arm-lower-l",
             "arm-lower-r",
             "bridge-lower",
-            "elevation-strut"
+            "elevation-strut",
+            "elevation-nut"
           ],
           "param": "galvanizedSteel"
         },
@@ -318035,8 +318036,7 @@
             "odu-fin-1",
             "odu-fin-2",
             "odu-fin-3",
-            "odu-fin-4",
-            "elevation-nut"
+            "odu-fin-4"
           ],
           "param": "powderCoat"
         }
