@@ -1,0 +1,37 @@
+{
+  "recordedDate": "2026-11-13",
+  "source": {
+    "path": "examples/kinematic/luxo-lamp.kcad.ts",
+    "commit": "147d4c786e444fb86a503d7ce514262b10432d6a",
+    "sha256": "6f7d45438b3024f6076d227677093c14aff0502a3d7019bfd95af0c86b23268d"
+  },
+  "animation": {
+    "tool": "kernelcad animate (local CLI)",
+    "command": "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/ms-playwright npx tsx src/agent/cli/index.ts animate examples/kinematic/luxo-lamp.kcad.ts docs/demos/luxo-lamp-connected-solids-20261113/capture-raw.mp4 --turntable --preset default --width 960 --height 540 --duration-ms 6000 --elevation 20",
+    "frames": 180,
+    "fps": 30,
+    "durationMs": 6000,
+    "turntable": true,
+    "verified": false,
+    "verifySkipped": true,
+    "rawFile": "capture-raw.mp4",
+    "rawSha256": "af10e9c61810f522e30119cebec8f7325c385d7467d1755dc3bee38a95955a39"
+  },
+  "captionRender": {
+    "script": "render-demo.sh",
+    "captions": ["title.txt", "status.txt"],
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "crf": 22,
+    "preset": "veryfast",
+    "finalFile": "demo.mp4",
+    "finalSha256": "7c3415979f2f5ef10bfecd6373e5bf3a88a4167b216e301e0f2a2afc9fb29028"
+  },
+  "verification": {
+    "evaluate": { "develop": "ok:false, 5 union.disconnected + 5 union.member-overlap", "branch": "ok:true, 106 features, 0 diagnostics" },
+    "validatePhysics": { "command": "kernelcad validate examples/kinematic/luxo-lamp.kcad.ts --include-physics --include-interference --json", "result": "ok:true, mechanism real, 8 poses across 3 joints, no collisions, holds under gravity" },
+    "shoulderDropTestDriftDeg": { "develop": 3.8, "branch": 3.7, "thresholdDeg": 5, "method": "temporary local threshold override to read the value; not committed" },
+    "tests": "exampleParseSmoke (-t 'luxo-lamp|classifies') 3 passed; luxoLampClevis.test/validate/mjcf (KCAD_SLOW=1) + exampleSweepGate 11 passed",
+    "visualInspection": "inspection-frame.png at 3 s and a frame at 0.5 s: links, forks, yokes and the shade stem read as connected; shade colour matches develop"
+  }
+}
