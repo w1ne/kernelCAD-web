@@ -58,6 +58,8 @@ const EXPECTED_FAILURE: ReadonlyMap<string, { code: string; message: string }> =
   ['examples/repair/revolve-crosses-axis.kcad.ts', { code: 'feature.revolve.crosses-axis', message: 'axis' }],
   ['examples/repair/shell-too-thick.kcad.ts', { code: 'feature.kernel-failed', message: 'shell' }],
   ['examples/repair/tangency-radius-too-small.kcad.ts', { code: 'sketch.tangency.no-solution', message: 'tangent' }],
+  // Iteration 01 of the supported-arm repair loop: the parts overlap at the rest pose.
+  ['examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts', { code: 'assembly.interference.overlap', message: "Parts 'base-frame' and 'yaw-turret' overlap" }],
 ]);
 
 // Explicit source/evaluation exclusions with a reason. These files still get
@@ -70,18 +72,11 @@ const EVALUATION_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['examples/community/thermal-iolink-machine-health.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fastener-installation/l-bracket-mount.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fea/shelf-bracket-fea.kcad.ts', 'requires external CalculiX and gmsh tools'],
-  ['examples/gallery/meta-glasses-experiments/integrated-wayfarer.kcad.ts', 'existing boolean recompute errors'],
-  ['examples/gallery/meta-glasses-experiments/product-detail-wayfarer.kcad.ts', 'existing boolean recompute errors'],
   ['examples/gallery/scissor-lift.kcad.ts', 'existing invalid part name'],
-  ['examples/kinematic/end-to-end-smoke.kcad.ts', 'intentional diagnostic-path script exits with unknown-joint error'],
-  ['examples/kinematic/luxo-lamp.kcad.ts', 'dedicated validate test covers it; capture validation currently rejects hinge visibility'],
-  ['examples/kinematic/swept-collision-smoke.kcad.ts', 'intentional diagnostic-path script exits with unknown-joint error'],
   ['examples/portfolio/pocket-watch/build.kcad.ts', 'uses removed legacy arm.fixed API'],
   ['examples/portfolio/pocket-watch-v2/build.kcad.ts', 'uses removed legacy arm.fixed API'],
   ['examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts', 'uses removed legacy arm.fixed API'],
   ['examples/print-prep/wall-hook.kcad.ts', 'declared FDM gate reports unsupported overhang'],
-  ['examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts', 'intentionally colliding repair fixture'],
-  ['examples/robot-arm/skill-built-supported-arm.kcad.ts', 'dedicated authoring test covers this existing hinge visibility failure'],
 ]);
 
 function sourceDiagnostics(file: string, source: string): readonly ts.Diagnostic[] {

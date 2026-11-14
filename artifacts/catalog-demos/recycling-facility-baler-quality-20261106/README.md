@@ -1,7 +1,7 @@
 # Recycling facility · horizontal baler refinement — 2026-11-06
 
 **Demo:** [horizontal-baler-refinement.mp4](horizontal-baler-refinement.mp4) ·
-[poster](poster.png) · [video contact sheet](video-review/contact-sheet.png)
+[poster](poster.png) · video contact sheet (`video-review/contact-sheet.png`, not tracked)
 
 This is a focused visual refinement of the existing
 [`horizontal-baler` source](../../../catalog/kits/recycling-facility/horizontal-baler.kcad.ts).
@@ -80,7 +80,16 @@ preview, preset renders, and `verification.json`.
   [eslint-output.txt](eslint-output.txt), and [integration-output.txt](integration-output.txt)
   retain the command evidence.
 - [before-horizontal-baler.png](before-horizontal-baler.png),
-  [preset-variants/](preset-variants/), [frames/](frames/), and
-  [video-review/](video-review/) retain source-driven visual evidence.
+  [preset-variants/](preset-variants/), frames/ (`frames/`, not tracked), and
+  video-review/ (`video-review/`, not tracked) retain source-driven visual evidence.
 - [render-inspect-cdp-failure.txt](render-inspect-cdp-failure.txt) records the
   unsuccessful CDP attach without hiding the fallback used for visual review.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/recycling-facility-baler-quality-20261106/capture_baler_refinement_demo.py`
+- video review: `python3 artifacts/catalog-demos/recycling-facility-baler-quality-20261106/inspect_baler_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -49,6 +49,7 @@ export function makeFailure(
     | 'mechanism.joint-mesh-gap'
     | 'mechanism.joint-mesh-unverified'
     | 'mechanism.tendon-body-intersect'
+    | 'mechanism.ignored-rest-overlap'
     | 'mechanism.rest-interpenetration'
     | 'mechanism.mate-gap',
   message: string,

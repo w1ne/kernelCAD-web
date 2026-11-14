@@ -133,10 +133,6 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
 // citation).
 export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = new Map([
   [
-    'examples/assemblies/two-link-connector-arm.kcad.ts',
-    { issue: 349, testFile: 'tests/integration/examples/assemblyExamples.test.ts' },
-  ],
-  [
     'examples/gallery/meta-glasses.kcad.ts',
     { issue: 350, testFile: 'tests/integration/examples/metaGlasses.test.ts' },
   ],
@@ -183,6 +179,13 @@ export type DedicatedExampleCoverage = {
 };
 
 export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCoverage> = new Map([
+  [
+    'examples/assemblies/two-link-connector-arm.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/assemblyExamples.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
   [
     'examples/kinematic/luxo-lamp.kcad.ts',
     {

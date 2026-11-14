@@ -50,3 +50,12 @@ The source generator is retained beside `settings.json`, which records its invoc
 On 2026-11-03, `https://kernelcad.com/` and `/assets.json` returned the current live catalog with 1,291 assets, all 1,291 carrying preview paths. This branch has 1,641 indexed assets and 1,641 previews, but it has not been deployed; the live site does not include this wave. Verify the deployed homepage and asset feed after merge. Local renders, generated pages, package contents, and the catalog suite do not establish archaeological method approval, instrument calibration, historical fidelity, or field acceptance.
 
 Private dated comparator notes are stored outside this repository in `kernelCAD-private/catalog-archaeology-fieldwork-compare-20261103/`. The public kit and handoff describe only the native kernelCAD assets and checks.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/archaeology-fieldwork-wave-20261103/capture_archaeology_demo.py`
+- video review: `python3 artifacts/catalog-demos/archaeology-fieldwork-wave-20261103/inspect_archaeology_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

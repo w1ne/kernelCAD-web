@@ -68,6 +68,16 @@ describe('catalog SEO page export', () => {
         expect(titles.size).toBe(index.assets.length);
     });
 
+    it('uses the same privacy-preserving marketing page-view beacon on hub, kit and asset pages', () => {
+        const urls = ['catalog/index.html', kitPath(index.kits[0]) + 'index.html', assetPath(index.assets[0]) + 'index.html'];
+        for (const url of urls) {
+            const html = readFileSync(join(out, url), 'utf8');
+            expect(html, url).toContain('https://static.cloudflareinsights.com/beacon.min.js');
+            expect(html, url).toContain('e5f5f4c6464f456d8f5376411e77f545');
+            expect(html.match(/data-cf-beacon=/g)).toHaveLength(1);
+        }
+    });
+
     it('turns asset pages into truthful kernelCAD product entry points', () => {
         for (const a of index.assets.slice(0, 20)) {
             const html = readFileSync(join(out, assetPath(a), 'index.html'), 'utf8');

@@ -33,3 +33,11 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quali
 ```
 
 `catalog/index.json` is generated and must be rebuilt after source or preview edits. The local page audit checks all 60 detail pages, parameter and preset names, copied previews, and the catalog hub. Verify public catalog pages after this branch is integrated and deployed.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/capture_industrial_plant_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
