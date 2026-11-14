@@ -1,0 +1,7 @@
+Manual MP4 inspection — 12 November 2026
+
+- Reviewed the contact sheet and the extracted 1.0 s, 5.5 s and 11.5 s frames.
+- The five-preview slide labels fit and the rendered objects are distinguishable at the 1280x720 video size.
+- The before/after slide makes the canister finish change easy to compare; the collector layout and 356-triangle label remain visible in both panels.
+- The verification slide shows the three material assignments, preset note, geometry envelope and local check results without clipped text.
+- Every slide labels the evidence as a local source render/validation and states that it is not deployed or evidence of process simulation or equipment acceptance.

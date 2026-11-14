@@ -1,0 +1,3 @@
+Command: npx eslint catalog/kits/beverage-bottling-line/ tests/integration/catalog/capElevatorSemantic.test.ts artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/render_variants.ts
+Exit status: 0
+Diagnostics: none

@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 527ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  314ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  06:33:50
+   Duration  4.58s (transform 3.07s, setup 68ms, import 3.87s, tests 527ms, environment 0ms)

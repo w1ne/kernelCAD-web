@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-10",
+  "kit": "standard-components",
+  "assets": [
+    "cable-gland",
+    "square-mounting-flange"
+  ],
+  "variants": [
+    {
+      "id": "cable-4mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "standard",
+        "cableDiameter": "4"
+      }
+    },
+    {
+      "id": "cable-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "standard",
+        "cableDiameter": "8"
+      }
+    },
+    {
+      "id": "cable-compact-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "compact",
+        "cableDiameter": "8"
+      }
+    },
+    {
+      "id": "cable-large-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "large",
+        "cableDiameter": "8"
+      }
+    },
+    {
+      "id": "cable-high-visibility",
+      "asset": "cable-gland",
+      "preset": "highVisibility"
+    },
+    {
+      "id": "flange-10mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "standard",
+        "boreDiameter": "10"
+      }
+    },
+    {
+      "id": "flange-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "standard",
+        "boreDiameter": "18"
+      }
+    },
+    {
+      "id": "flange-compact-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "compact",
+        "boreDiameter": "18"
+      }
+    },
+    {
+      "id": "flange-large-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "large",
+        "boreDiameter": "18"
+      }
+    },
+    {
+      "id": "flange-brass",
+      "asset": "square-mounting-flange",
+      "preset": "brass"
+    }
+  ],
+  "commands": [
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/render_kit_previews.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/render_variants.ts",
+    "npm run catalog:pages",
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/verify_asset_index.py",
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/verify_local_pages.py",
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/make_preview_review.py",
+    "python3 scripts/checkCatalogQuality.py --kit standard-components",
+    "python3 scripts/checkCatalogQuality.py",
+    "npx eslint catalog/kits/standard-components/",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/capture_demo.py",
+    "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/inspect_video.py"
+  ],
+  "video": {
+    "canvas": "1280x720",
+    "frames": 6,
+    "secondsPerFrame": 3,
+    "codec": "H.264 / yuv420p",
+    "provenance": "Local kernelCAD source, GLB software renders, generated pages, and local validation only; no deployment or physical acceptance is shown."
+  },
+  "videoPath": "artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/standard-components-cable-gland-flange.mp4",
+  "durationSeconds": 18,
+  "ffmpegInvocation": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "captureInvocation": "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/capture_demo.py",
+  "provenance": "Local software renders from checked-in source and local verification outputs; no deployment or physical acceptance is shown."
+}

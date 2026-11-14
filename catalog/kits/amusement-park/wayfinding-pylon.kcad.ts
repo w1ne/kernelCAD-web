@@ -1,64 +1,84 @@
-// Park wayfinding pylon: Tall freestanding direction marker with three offset destination blades and a broad ground plinth.
+// SPDX-License-Identifier: CC0-1.0
+// Park wayfinding pylon: the tall fingerpost at a path junction that points
+// guests toward each land.
+// What makes it a wayfinding post rather than a pole with boards: arrow-
+// shaped finger blades, each with a pointed tip, a fishtail tail and a
+// cream lettering panel, fanned out at different heights toward different
+// destinations; a round post with turned collars on a stepped stone plinth;
+// and a star finial on a ball at the top so it is visible across the crowd.
+// Generic visualization geometry at about real size (about 3.4 m tall, blades
+// about 1.3 m long), millimetres, Z up, standing on z = 0.
 meta({
   name: "wayfinding-pylon",
   license: "CC0-1.0",
   title: "Park wayfinding pylon",
-  description: "Tall freestanding direction marker with three offset destination blades and a broad ground plinth. Controls: overall scale, powderCoat, anodizedAluminum, enamel; festival and twilight material presets.",
-  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
+  description: "Theme-park fingerpost at about real size: four arrow-shaped finger blades with pointed tips, fishtail tails and cream lettering panels fanned toward different destinations, a round post with turned collars on a stepped plinth, and a gilt star finial on a ball. Material controls: powder-coated post and plinth, blade enamel, lettering panel, gilt trim. Festival, twilight and adventure-land presets.",
+  tags: ["wayfinding", "signpost", "fingerpost", "direction sign", "arrow sign", "amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
   origin: "base",
   compat: ["amusement-park", "theme-park", "midway", "visitor-attraction"],
-  triangleBudget: 1800,
+  triangleBudget: 3000,
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
-const anodizedAluminum = param("anodizedAluminum", "#859b9e", { label: "Anodized aluminum" });
-const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const powderCoat = param("powderCoat", "#2f4f5f", { label: "Powder-coated post and plinth" });
+const enamel = param("enamel", "#c8553d", { label: "Finger blade enamel" });
+const signFace = param("signFace", "#f3e9cf", { label: "Lettering panels" });
+const gilt = param("gilt", "#d4a53c", { label: "Collars, tips and star finial" });
 
 presets({
-  festival: {
-    "powderCoat": "#d47452",
-    "anodizedAluminum": "#b7c4c3",
-    "enamel": "#edb34d"
-},
-  twilight: {
-    "powderCoat": "#35576f",
-    "anodizedAluminum": "#576f78",
-    "enamel": "#385b81"
-},
+  festival: { powderCoat: "#2e6fb3", enamel: "#e04f6a", signFace: "#fff6dc", gilt: "#f2c230" },
+  twilight: { powderCoat: "#1f2a38", enamel: "#3d5a8f", signFace: "#c9c2ad", gilt: "#9fb0b8" },
+  adventureLand: { powderCoat: "#5a4330", enamel: "#3f7a3a", signFace: "#e8d6a8", gilt: "#b8913f" },
 });
-const originOffsetMm = 0;
+
 const p = assembly("wayfinding-pylon");
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
-  if (["east-blade", "north-blade", "west-blade"].includes(name)) p.part(name, positioned.color(powderCoat));
-  else if (["emblem"].includes(name)) p.part(name, positioned.color(enamel));
-  else if (["mast", "plinth"].includes(name)) p.part(name, positioned.color(anodizedAluminum));
-  else p.part(name, positioned.color(powderCoat));
+const turned = (pts: [number, number][]) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
-const C = (name: string, height: number, radius: number, at: [number, number, number], rotation: [number, number, number] = [0, 0, 0], segments = 10) => {
-  let shape = cylinder(height, radius, segments);
-  if (rotation[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
+// Outline drawn in (x, z), extruded t thick and centred on y = 0.
+const blade = (pts: [number, number][], t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0);
 
-B("plinth", [740, 680, 180], [0, 0, 90]);
-B("mast", [190, 190, 3000], [0, 0, 1680]);
-B("north-blade", [1500, 150, 340], [150, 0, 2700], [0, 0, -7]);
-B("east-blade", [1270, 150, 330], [-90, 0, 2110], [0, 0, 6]);
-B("west-blade", [1400, 150, 330], [130, 0, 1510], [0, 0, -5]);
-C("emblem", 95, 150, [0, -120, 3210], [90, 0, 0], 12);
+// Stepped plinth and round post with turned collars.
+add("plinth-lower", extrudePolygon(filletPolygon([[-380, -380], [380, -380], [380, 380], [-380, 380]], 40, { segments: 3 }), 140).color(powderCoat));
+add("plinth-upper", turned([[0, 140], [250, 140], [250, 180], [160, 300], [0, 300]]).color(powderCoat));
+add("post", cylinder(2900, 75, 18).translate(0, 0, 300).color(powderCoat));
+for (const [k, z] of [300, 1200, 3150].entries()) add(`collar-${k}`, turned([[0, z], [100, z], [100, z + 25], [86, z + 50], [0, z + 50]]).color(gilt));
+
+// Finger blades: pointed tip, fishtail tail, a cream lettering panel each side.
+const H = 260;
+const T = 50;
+const fingers: { len: number; z: number; yaw: number }[] = [
+  { len: 1350, z: 2900, yaw: -35 },
+  { len: 1200, z: 2560, yaw: 150 },
+  { len: 1300, z: 2220, yaw: -70 },
+  { len: 1150, z: 1880, yaw: 115 },
+];
+for (const [k, f] of fingers.entries()) {
+  const L = f.len;
+  const outline: [number, number][] = [[40, -H / 2], [L - 170, -H / 2], [L, 0], [L - 170, H / 2], [40, H / 2], [110, 0]];
+  const panel: [number, number][] = [[150, -H / 2 + 40], [L - 220, -H / 2 + 40], [L - 220, H / 2 - 40], [150, H / 2 - 40]];
+  const tip: [number, number][] = [[L - 150, -H / 2 + 30], [L - 20, 0], [L - 150, H / 2 - 30]];
+  const place = (s: Shape) => s.translate(0, 0, f.z).rotateZ(f.yaw);
+  add(`blade-${k}`, place(blade(outline, T)).color(enamel));
+  add(`blade-panel-${k}`, place(blade(panel, T + 12)).color(signFace));
+  add(`blade-tip-${k}`, place(blade(tip, T + 12)).color(gilt));
+  for (let j = 0; j < 3; j++) add(`blade-text-${k}-${j}`, place(box(L - 520 - j * 140, T + 16, 22, true).translate(150 + (L - 520 - j * 140) / 2 + 40, 0, 50 - j * 50)).color(powderCoat));
+  add(`blade-bracket-${k}`, place(box(160, T + 30, H + 40, true).translate(80, 0, 0)).color(powderCoat));
+}
+
+// Star finial on a ball.
+add("finial-ball", sphere(80).translate(0, 0, 3270).color(gilt));
+const STAR = Array.from({ length: 10 }, (_, k) => {
+  const a = Math.PI / 2 + (k * Math.PI) / 5;
+  const r = k % 2 === 0 ? 170 : 70;
+  return [r * Math.cos(a), r * Math.sin(a)] as [number, number];
+});
+add("finial-star", blade(STAR, 40).translate(0, 0, 3480).rotateZ(-45).color(gilt));
 
 return p.model();

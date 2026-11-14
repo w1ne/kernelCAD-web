@@ -1,0 +1,113 @@
+{
+  "id": "grit-classifier",
+  "kit": "water-treatment",
+  "title": "Grit classifier unit",
+  "description": "Illustrative compact grit classifier with an open settling trough, an inclined exposed extraction screw, a feed hopper and a high-end discharge chute. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets. Not vendor-dimensioned process equipment.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "water treatment",
+    "water utility",
+    "infrastructure",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "water-treatment",
+    "utility",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/water-treatment/grit-classifier.kcad.ts",
+  "preview": "/assets/water-treatment-grit-classifier.png",
+  "sourceSha256": "dfbaf808ef9ff40f9d6b0a46246e43d25d756f931f2e091a2be087a8922a88b9",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#3d8589",
+      "label": "Coated equipment steel"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#68777b",
+      "label": "Structural steel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c0",
+      "label": "Stainless steel"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#687b78",
+      "structuralSteel": "#6e6b63",
+      "stainlessSteel": "#9ca7a6"
+    },
+    "highVisibility": {
+      "coatedSteel": "#e5682d",
+      "structuralSteel": "#505b60",
+      "stainlessSteel": "#e1ddd0"
+    }
+  },
+  "stats": {
+    "triangles": 1132,
+    "sizeM": [
+      0.912452,
+      0.67,
+      0.36
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "coatedSteel",
+      "color": "#3d8589",
+      "parts": [
+        "trough-floor",
+        "trough-wall-left",
+        "trough-wall-right",
+        "trough-inlet-wall",
+        "feed-hopper",
+        "drive"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c0",
+      "parts": [
+        "classifier-screw-shaft",
+        "classifier-screw-flight",
+        "discharge-chute"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#68777b",
+      "parts": [
+        "support-leg--330--105",
+        "support-leg--330-105",
+        "support-leg-330--105",
+        "support-leg-330-105"
+      ],
+      "param": "structuralSteel"
+    }
+  ]
+}

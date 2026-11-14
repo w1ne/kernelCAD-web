@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-09",
+  "captureScript": "capture_space_materials_demo.py",
+  "inspectionScript": "inspect_space_materials_video.py",
+  "invocationsFile": "invocations.txt",
+  "video": "space-exploration-materials-refinement.mp4",
+  "resolution": "1280x720",
+  "sourceFrames": 7,
+  "frameDurationSeconds": 3,
+  "durationSeconds": 21,
+  "outputFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 25,
+  "audio": false,
+  "inputSources": [
+    "catalog/kits/space-exploration/*.kcad.ts",
+    "catalog/kits/space-exploration/previews/*.png",
+    "artifacts/catalog-demos/space-exploration-materials-20261109/before/*.png",
+    "artifacts/catalog-demos/space-exploration-materials-20261109/verification.json"
+  ],
+  "claimLimits": [
+    "local source authoring and software preview rendering",
+    "generated index and local page verification only",
+    "not deployed",
+    "not mission simulation or engineering verification",
+    "not hardware or flight acceptance"
+  ]
+}

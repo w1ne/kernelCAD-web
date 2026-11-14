@@ -1,0 +1,5 @@
+Checked: 2026-11-10T11:35:20.726549+00:00
+Command: curl -L --max-time 15 -sS -o response.html -w "%{http_code} %{url_effective}" https://kernelcad.com/catalog/standard-components/pipe-reducer/
+Result: 404 https://kernelcad.com/catalog/standard-components/pipe-reducer/
+Title: Page not found — kernelCAD
+This branch is not deployed; this is a live-site check, not a post-deployment verification.

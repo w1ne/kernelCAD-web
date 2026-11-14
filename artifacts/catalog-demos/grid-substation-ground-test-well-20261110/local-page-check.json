@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-11-10T15:55:03+00:00",
+  "scope": "Generated local static catalog page; the feature branch has not deployed.",
+  "hub": "/tmp/kernelcad-grid-substation-ground-test-well-20261110/catalog/index.html",
+  "assetPage": "/tmp/kernelcad-grid-substation-ground-test-well-20261110/catalog/grid-substation/substation-ground-grid-test-well/index.html",
+  "pagePreview": "/tmp/kernelcad-grid-substation-ground-test-well-20261110/catalog/grid-substation/substation-ground-grid-test-well/preview.png",
+  "pagePreviewBytes": 34288,
+  "sourceSha256MatchesIndex": true,
+  "triangleCount": 1128,
+  "triangleBudget": 1800,
+  "params": [
+    "scale",
+    "wellDepth",
+    "concrete",
+    "stainlessSteel",
+    "copper"
+  ],
+  "presets": [
+    "maintenance",
+    "weathered"
+  ],
+  "hasStudioLink": true
+}

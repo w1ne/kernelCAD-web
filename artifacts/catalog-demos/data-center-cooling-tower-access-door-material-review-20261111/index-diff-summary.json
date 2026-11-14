@@ -1,0 +1,21 @@
+{
+  "assetCount": 2402,
+  "changedAssetIds": [
+    "cooling-tower-cell"
+  ],
+  "comparedSampleAssetIds": [
+    "air-cooled-chiller",
+    "clean-agent-cylinder-bank",
+    "cooling-tower-cell",
+    "dry-type-transformer",
+    "standby-generator-enclosure"
+  ],
+  "expectedChangedAssetIds": [
+    "cooling-tower-cell"
+  ],
+  "generatedRowsChangedVsMergeParent": 542,
+  "kitCount": 50,
+  "matchesExpected": true,
+  "schemaVersion": 1,
+  "scope": "five audited data-center-infrastructure assets"
+}

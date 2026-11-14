@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-11-10T02:52:56+00:00",
+  "scope": "Generated local static catalog pages; public deployment not checked.",
+  "hub": "site-build/catalog/index.html",
+  "hubContainsAffectedAssets": true,
+  "pages": [
+    {
+      "asset": "flange-bearing-housing",
+      "page": "site-build/catalog/standard-components/flange-bearing-housing/index.html",
+      "preview": "site-build/catalog/standard-components/flange-bearing-housing/preview.png",
+      "previewBytes": 23361,
+      "triangleCount": 456,
+      "paramCount": 4,
+      "presets": [
+        "factory",
+        "highVisibility",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    },
+    {
+      "asset": "jaw-coupling",
+      "page": "site-build/catalog/standard-components/jaw-coupling/index.html",
+      "preview": "site-build/catalog/standard-components/jaw-coupling/preview.png",
+      "previewBytes": 29911,
+      "triangleCount": 574,
+      "paramCount": 4,
+      "presets": [
+        "dark",
+        "highTorque",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    },
+    {
+      "asset": "pipe-union",
+      "page": "site-build/catalog/standard-components/pipe-union/index.html",
+      "preview": "site-build/catalog/standard-components/pipe-union/preview.png",
+      "previewBytes": 23466,
+      "triangleCount": 360,
+      "paramCount": 4,
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    }
+  ]
+}

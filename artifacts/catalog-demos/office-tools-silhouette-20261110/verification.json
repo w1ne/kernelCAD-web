@@ -1,0 +1,25 @@
+{
+  "kitQuality": {
+    "passing": 40,
+    "total": 40
+  },
+  "catalogQuality": {
+    "passing": 2402,
+    "total": 2402,
+    "passRate": "100.00%"
+  },
+  "previewsRendered": 40,
+  "localPagesChecked": 2,
+  "catalogIntegration": {
+    "files": 4,
+    "tests": 15
+  },
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts archive-box business-card-holder calculator clipboard desk-calendar desk-organizer dry-erase-board envelope-stack file-folder footrest fountain-pen hanging-file-folder highlighter hole-punch ink-pad label-maker laminator laptop-stand letter-sorter letter-tray marker mechanical-pencil memo-pad monitor-riser mousepad notebook office-pinboard paper-clip-dish paper-cutter paper-shredder paperweight pencil-cup ring-binder rubber-stamp ruler scissors stapler sticky-notes tape-dispenser wrist-rest",
+  "checks": {
+    "indexSourceSha256AndPreviewPaths": "passed for both changed assets",
+    "localCatalogPagesAndCopiedPreviews": "passed for hub and both changed pages",
+    "eslint": "passed for catalog/kits/office/",
+    "catalogIntegration": "4 files passed; 15 tests passed",
+    "visualReview": "highlighter, mechanical pencil, and fountain pen previews opened and reviewed in color"
+  }
+}

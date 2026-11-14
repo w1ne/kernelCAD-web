@@ -1,0 +1,12 @@
+{
+  "video": "space-exploration-materials-refinement.mp4",
+  "resolution": "1280x720",
+  "durationSeconds": 21.0,
+  "frameRate": "24/1",
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "decodedFrames": 7,
+  "contactSheet": "video-review/contact-sheet.png",
+  "visuallyInspected": true,
+  "inspectionNotes": "Reviewed all seven decoded frames and the contact sheet. Comparison, source, gallery, and local-check frames are legible; no unsupported deployment, mission, or hardware claim appears."
+}

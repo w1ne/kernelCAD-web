@@ -1,0 +1,78 @@
+{
+  "assetDetailHttpStatus": 404,
+  "assetDetailUrl": "https://kernelcad.com/asset-library/data-center-infrastructure/cooling-tower-cell/",
+  "assets": {
+    "air-cooled-chiller": {
+      "livePreviewHttpStatus": 200,
+      "livePreviewMatchesBaseline": true,
+      "livePreviewPath": "live-baseline/previews/air-cooled-chiller.png",
+      "livePreviewSha256": "f989aaaaa102d97000a72518701534044015190f20b6abfc1c2e06e266483643",
+      "liveSourceHttpStatus": 200,
+      "liveSourceMatchesBaseline": true,
+      "liveSourcePath": "live-baseline/source/air-cooled-chiller.kcad.ts",
+      "liveSourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+      "previewSha256": "f989aaaaa102d97000a72518701534044015190f20b6abfc1c2e06e266483643",
+      "previewUrl": "https://kernelcad.com/assets/data-center-infrastructure-air-cooled-chiller.png",
+      "sourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+      "sourceUrl": "https://kernelcad.com/assets/data-center-infrastructure-air-cooled-chiller.kcad.ts"
+    },
+    "clean-agent-cylinder-bank": {
+      "livePreviewHttpStatus": 200,
+      "livePreviewMatchesBaseline": true,
+      "livePreviewPath": "live-baseline/previews/clean-agent-cylinder-bank.png",
+      "livePreviewSha256": "3777b0d386a33fad264ba665b6221f434cee444758c22b7a780c87540c36b775",
+      "liveSourceHttpStatus": 200,
+      "liveSourceMatchesBaseline": true,
+      "liveSourcePath": "live-baseline/source/clean-agent-cylinder-bank.kcad.ts",
+      "liveSourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+      "previewSha256": "3777b0d386a33fad264ba665b6221f434cee444758c22b7a780c87540c36b775",
+      "previewUrl": "https://kernelcad.com/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
+      "sourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+      "sourceUrl": "https://kernelcad.com/assets/data-center-infrastructure-clean-agent-cylinder-bank.kcad.ts"
+    },
+    "cooling-tower-cell": {
+      "livePreviewHttpStatus": 200,
+      "livePreviewMatchesBaseline": true,
+      "livePreviewPath": "live-baseline/previews/cooling-tower-cell.png",
+      "livePreviewSha256": "2d8fe6f2a5d8108c6c94ac1d386bdf670180da81c40f2c3da56cc643197af53f",
+      "liveSourceHttpStatus": 200,
+      "liveSourceMatchesBaseline": true,
+      "liveSourcePath": "live-baseline/source/cooling-tower-cell.kcad.ts",
+      "liveSourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+      "previewSha256": "2d8fe6f2a5d8108c6c94ac1d386bdf670180da81c40f2c3da56cc643197af53f",
+      "previewUrl": "https://kernelcad.com/assets/data-center-infrastructure-cooling-tower-cell.png",
+      "sourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+      "sourceUrl": "https://kernelcad.com/assets/data-center-infrastructure-cooling-tower-cell.kcad.ts"
+    },
+    "dry-type-transformer": {
+      "livePreviewHttpStatus": 200,
+      "livePreviewMatchesBaseline": true,
+      "livePreviewPath": "live-baseline/previews/dry-type-transformer.png",
+      "livePreviewSha256": "c95bc2fbe78cbbe95ee9486c5f92ff095c35dead0c9eabaf4eda6bb4f33268be",
+      "liveSourceHttpStatus": 200,
+      "liveSourceMatchesBaseline": true,
+      "liveSourcePath": "live-baseline/source/dry-type-transformer.kcad.ts",
+      "liveSourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+      "previewSha256": "c95bc2fbe78cbbe95ee9486c5f92ff095c35dead0c9eabaf4eda6bb4f33268be",
+      "previewUrl": "https://kernelcad.com/assets/data-center-infrastructure-dry-type-transformer.png",
+      "sourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+      "sourceUrl": "https://kernelcad.com/assets/data-center-infrastructure-dry-type-transformer.kcad.ts"
+    },
+    "standby-generator-enclosure": {
+      "livePreviewHttpStatus": 200,
+      "livePreviewMatchesBaseline": true,
+      "livePreviewPath": "live-baseline/previews/standby-generator-enclosure.png",
+      "livePreviewSha256": "c63191802a836ece31fcdb6313665f9a2603dc38f5dcb525825826f25d38987c",
+      "liveSourceHttpStatus": 200,
+      "liveSourceMatchesBaseline": true,
+      "liveSourcePath": "live-baseline/source/standby-generator-enclosure.kcad.ts",
+      "liveSourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+      "previewSha256": "c63191802a836ece31fcdb6313665f9a2603dc38f5dcb525825826f25d38987c",
+      "previewUrl": "https://kernelcad.com/assets/data-center-infrastructure-standby-generator-enclosure.png",
+      "sourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+      "sourceUrl": "https://kernelcad.com/assets/data-center-infrastructure-standby-generator-enclosure.kcad.ts"
+    }
+  },
+  "assetsJsonGeneratedAt": "2026-11-11T17:45:06.972Z",
+  "checkedAt": "2026-11-11T20:50:25.807073+00:00"
+}

@@ -1,0 +1,44 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts bat-box bird-feeder-post birdbath birdhouse-post coiled-garden-hose cold-frame compost-bin compost-tumbler drip-irrigation-row garden-arbor garden-cloche garden-gnome garden-hose-reel garden-kneeling-pad garden-lattice-trellis garden-orb-sculpture garden-pergola garden-pinwheel garden-sundial garden-thermometer garden-vertical-planter greenhouse-staging-shelf grow-bag-planter insect-hotel mini-greenhouse oscillating-sprinkler plant-label-set plant-obelisk potting-bench potting-soil-sack propagation-dome rain-chain rain-gauge raised-bed-trellis rotary-sprinkler row-cover-tunnel seedling-tray tomato-cage weather-vane worm-composter
+(node:3047367) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+garden/bat-box: 84 tris
+garden/bird-feeder-post: 108 tris
+garden/birdbath: 216 tris
+garden/birdhouse-post: 148 tris
+garden/coiled-garden-hose: 200 tris
+garden/cold-frame: 108 tris
+garden/compost-bin: 296 tris
+garden/compost-tumbler: 296 tris
+garden/drip-irrigation-row: 224 tris
+garden/garden-arbor: 132 tris
+garden/garden-cloche: 222 tris
+garden/garden-gnome: 192 tris
+garden/garden-hose-reel: 328 tris
+garden/garden-kneeling-pad: 84 tris
+garden/garden-lattice-trellis: 180 tris
+garden/garden-orb-sculpture: 222 tris
+garden/garden-pergola: 204 tris
+garden/garden-pinwheel: 214 tris
+garden/garden-sundial: 288 tris
+garden/garden-thermometer: 168 tris
+garden/garden-vertical-planter: 360 tris
+garden/greenhouse-staging-shelf: 168 tris
+garden/grow-bag-planter: 156 tris
+garden/insect-hotel: 360 tris
+garden/mini-greenhouse: 204 tris
+garden/oscillating-sprinkler: 264 tris
+garden/plant-label-set: 180 tris
+garden/plant-obelisk: 332 tris
+garden/potting-bench: 144 tris
+garden/potting-soil-sack: 144 tris
+garden/propagation-dome: 266 tris
+garden/rain-chain: 336 tris
+garden/rain-gauge: 184 tris
+garden/raised-bed-trellis: 204 tris
+garden/rotary-sprinkler: 240 tris
+garden/row-cover-tunnel: 204 tris
+garden/seedling-tray: 288 tris
+garden/tomato-cage: 240 tris
+garden/weather-vane: 204 tris
+garden/worm-composter: 152 tris

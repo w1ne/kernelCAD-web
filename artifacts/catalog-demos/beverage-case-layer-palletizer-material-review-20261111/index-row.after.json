@@ -1,0 +1,126 @@
+{
+  "id": "case-layer-palletizer",
+  "kit": "beverage-bottling-line",
+  "title": "Case layer palletizer",
+  "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and pallet timber.",
+  "category": "structure",
+  "origin": "base",
+  "tags": [
+    "beverage bottling",
+    "packaging line",
+    "food manufacturing",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "beverage-bottling-line",
+    "factory",
+    "food-manufacturing",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/beverage-bottling-line/case-layer-palletizer.kcad.ts",
+  "preview": "/assets/beverage-bottling-line-case-layer-palletizer.png",
+  "sourceSha256": "f7040c36ccab96af3997f0dee2e7be6480ed6f2a44706aee3c41d99b672ffafd",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#aebdc1",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "powderCoat",
+      "type": "color",
+      "default": "#397e91",
+      "label": "Powder-coated steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#e3a331",
+      "label": "Safety paint"
+    },
+    {
+      "name": "palletTimber",
+      "type": "color",
+      "default": "#95683f",
+      "label": "Pallet timber"
+    }
+  ],
+  "presets": {
+    "sanitaryLine": {
+      "stainlessSteel": "#d2dfe1",
+      "powderCoat": "#4b95a4",
+      "safetyPaint": "#f0b336",
+      "palletTimber": "#a9794c"
+    },
+    "legacyPlant": {
+      "stainlessSteel": "#858f91",
+      "powderCoat": "#315b70",
+      "safetyPaint": "#bd7b24",
+      "palletTimber": "#704d31"
+    }
+  },
+  "stats": {
+    "triangles": 132,
+    "sizeM": [
+      2.39,
+      2.025,
+      1.1875
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "powderCoat",
+      "color": "#397e91",
+      "parts": [
+        "floor-rails",
+        "floor-rail-back",
+        "lift-carriage",
+        "control-console"
+      ],
+      "param": "powderCoat"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#aebdc1",
+      "parts": [
+        "column-left",
+        "column-right",
+        "top-bridge",
+        "layer-plate",
+        "infeed-bed"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "palletTimber",
+      "color": "#95683f",
+      "parts": [
+        "pallet-deck"
+      ],
+      "param": "palletTimber"
+    },
+    {
+      "name": "safetyPaint",
+      "color": "#e3a331",
+      "parts": [
+        "operator-gate"
+      ],
+      "param": "safetyPaint"
+    }
+  ]
+}

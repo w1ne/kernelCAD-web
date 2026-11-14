@@ -1,0 +1,15 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/standard-components-installation-quality-20261109/render_variants.ts
+(node:3518181) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+plate-four-open: 264 tris, 60.0 × 17.0 × 60.0 mm
+plate-eight-installed: 1208 tris, 60.0 × 17.0 × 60.0 mm
+blind-four-open: 296 tris, 56.0 × 10.2 × 56.0 mm
+blind-eight-installed: 1240 tris, 56.0 × 10.2 × 56.0 mm
+coupling-two-seals: 480 tris, 38.0 × 28.0 × 38.0 mm
+coupling-bare-clean-service: 288 tris, 38.0 × 28.0 × 38.0 mm
+flange-four-open: 400 tris, 56.0 × 23.8 × 56.0 mm
+flange-eight-installed: 1344 tris, 56.0 × 23.8 × 56.0 mm
+bumper-male-stud: 332 tris, 36.0 × 26.7 × 36.0 mm
+bumper-threaded-insert: 288 tris, 36.0 × 16.8 × 36.0 mm
+Rendered 10 source variants; geometry-choice checks passed.

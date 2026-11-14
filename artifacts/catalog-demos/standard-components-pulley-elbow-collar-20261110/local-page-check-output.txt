@@ -1,0 +1,1 @@
+{"pagesChecked": 3, "passed": true, "outputDirectory": "/tmp/kernelcad-standard-components-pulley-elbow-collar-20261110"}

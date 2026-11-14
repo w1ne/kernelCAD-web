@@ -1,0 +1,6 @@
+{
+  "publicBaselineCheckedAt": "2026-11-12T07:02:20.738245+00:00",
+  "allPublicRoutes200": true,
+  "allLiveSourcesMatchLocal": true,
+  "allLivePreviewsMatchLocal": true
+}

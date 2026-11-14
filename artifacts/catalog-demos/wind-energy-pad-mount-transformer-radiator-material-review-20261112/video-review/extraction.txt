@@ -1,0 +1,8 @@
+Extracted one video frame per scene:
+
+ffmpeg -y -ss 2 -i wind-energy-pad-mount-transformer-radiator-material-review.mp4 -frames:v 1 frame-01.png
+ffmpeg -y -ss 6.5 -i wind-energy-pad-mount-transformer-radiator-material-review.mp4 -frames:v 1 frame-02.png
+ffmpeg -y -ss 11 -i wind-energy-pad-mount-transformer-radiator-material-review.mp4 -frames:v 1 frame-03.png
+ffmpeg -y -ss 16.5 -i wind-energy-pad-mount-transformer-radiator-material-review.mp4 -frames:v 1 frame-04.png
+
+The contact sheet was visually reviewed and its notes are in inspection-notes.md.

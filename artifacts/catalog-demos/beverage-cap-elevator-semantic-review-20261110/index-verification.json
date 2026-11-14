@@ -1,0 +1,26 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/verify_asset_index.py",
+  "catalogAssets": 2402,
+  "catalogKits": 50,
+  "allSourceHashesMatch": true,
+  "allPreviewsPresent": true,
+  "refreshedKitPreviewCount": 50,
+  "changedAsset": {
+    "sourceSha256": "f97fb1ea21f20f6d7777ed2e5acb473cc577f4c95c412403c47ca63cc475d11e",
+    "previewSha256": "9f0b76c91f910f4cc8226cb2bc5c9449607cf3af960d6e905b37d048e90eab5b",
+    "indexedPreview": "/assets/beverage-bottling-line-cap-elevator.png",
+    "triangles": 516,
+    "triangleBudget": 2200,
+    "params": [
+      "scale",
+      "stainlessSteel",
+      "powderCoat",
+      "foodPolymer",
+      "beltRubber"
+    ],
+    "presets": [
+      "legacyPlant",
+      "sanitaryLine"
+    ]
+  }
+}

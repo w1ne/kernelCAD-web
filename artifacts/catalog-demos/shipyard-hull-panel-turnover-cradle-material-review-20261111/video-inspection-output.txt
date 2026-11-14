@@ -1,0 +1,30 @@
+{
+  "video": "shipyard-hull-panel-turnover-cradle-material-review.mp4",
+  "durationSeconds": 19.0,
+  "sizeBytes": "192770",
+  "streams": [
+    {
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "sampledFrames": [
+    {
+      "name": "before",
+      "timeSeconds": 1.0,
+      "file": "video-review/before.png"
+    },
+    {
+      "name": "comparison",
+      "timeSeconds": 6.0,
+      "file": "video-review/comparison.png"
+    },
+    {
+      "name": "checks",
+      "timeSeconds": 12.0,
+      "file": "video-review/checks.png"
+    }
+  ],
+  "visualInspection": "Contact sheet generated from decoded MP4 frames; read manually before handoff."
+}

@@ -1,0 +1,15 @@
+{
+  "assetCount": 2402,
+  "changedIds": [
+    "pushback-tug"
+  ],
+  "sourceSha256Matches": true,
+  "previewPathExists": true,
+  "indexedPreview": "/assets/airfield-pushback-tug.png",
+  "triangles": 272,
+  "sizeM": [
+    0.5784,
+    0.1798,
+    0.3072
+  ]
+}

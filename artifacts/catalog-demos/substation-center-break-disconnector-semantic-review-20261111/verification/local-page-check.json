@@ -1,0 +1,12 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-center-break-disconnector-pages",
+  "result": "wrote 2402 asset page(s) + hub",
+  "exitCode": 0,
+  "assetPage": "/tmp/kernelcad-center-break-disconnector-pages/catalog/grid-substation/substation-center-break-disconnector/index.html",
+  "pageExists": true,
+  "exposesSwitchStateOpenClosedChoice": true,
+  "exposesAluminumMaterialControl": true,
+  "exposesWeatheredAndMaintenancePresets": true,
+  "copiedPreviewMatchesRenderedCatalogPreview": true,
+  "publicPage": "not deployed; previous public /catalog/... URL returned HTTP 404"
+}

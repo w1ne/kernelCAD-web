@@ -1,0 +1,1 @@
+wind-energy/wind-farm-pad-mount-transformer: 360 tris

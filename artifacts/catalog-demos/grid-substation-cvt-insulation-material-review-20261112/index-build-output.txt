@@ -1,0 +1,2 @@
+$ npx tsx scripts/buildAssetCatalog.ts
+wrote /data/worktrees/legacy-migrated/kernelcad-catalog-2000/catalog/index.json

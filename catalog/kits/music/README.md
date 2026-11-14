@@ -13,7 +13,7 @@ The [music quality promotion handoff](../../../artifacts/catalog-demos/music-qua
 
 | id | asset | description | material knobs and variants | triangles |
 | --- | --- | --- | --- | ---: |
-| `accordion` | Accordion | Accordion with visible bellows ribs, button rows and a piano-key strip on its end. | scale · lacquer, bellows, ivory, nickel · concert / vintage | 204 |
+| `accordion` | Accordion | Piano accordion: zig-zag pleated bellows with nickel corner guards, fretted treble grille, ivory and ebony keyboard, register switches, staggered bass buttons and leather straps. | scale · lacquer, bellows, ivory, ebony, nickel, leather · concert / vintage / pearl | 2712 |
 | `acoustic-guitar` | Acoustic guitar | Low-poly acoustic guitar with a waisted body, sound hole, long neck and tuning head. | scale · spruce, mahogany, ebony, steel · concert / vintage | 180 |
 | `alto-saxophone` | Alto saxophone | Saxophone with bent neck, broad bell and raised pearl-like key buttons. | scale · brass, nickel, ebonite · concert / vintage | 214 |
 | `banjo` | Banjo | Banjo with a circular resonator, narrow neck, bridge and tuning head. | scale · maple, parchment, nickel, ebony · concert / vintage | 244 |
@@ -25,17 +25,17 @@ The [music quality promotion handoff](../../../artifacts/catalog-demos/music-qua
 | `cello` | Cello | Seated cello with a broad resonant body, long neck, bridge and extended endpin. | scale · maple, ebony, steel, nickel · concert / vintage | 238 |
 | `clarinet` | Clarinet | Straight clarinet with a flared bell, mouthpiece and regularly spaced key pads. | scale · grenadilla, silver, ivory · concert / vintage | 674 |
 | `concert-flute` | Concert flute | Concert flute with an inline head joint and visible round key cups. | scale · silver, nickel · concert / vintage | 264 |
-| `concert-harp` | Concert harp | Concert harp with a triangular frame, soundboard, slanted pillar and a fan of strings. | scale · maple, brass, steel · concert / vintage | 144 |
+| `concert-harp` | Concert harp | Pedal harp: fluted column with carved crown, S-curved neck with brass tuning discs, tapered soundbox with spruce soundboard, strings with red C and dark F markers, seven pedals. | scale · maple, spruce, brass, gut, cString, fString · concert / vintage / gilded | 2948 |
 | `conductor-podium` | Conductor podium | Small raised conductor podium with broad top, stepped riser and front access step. | scale · oak, paint, rubber · concert / vintage | 48 |
 | `conga-drums` | Conga drums | Pair of tall conga drums with tapered-looking shells, top heads and floor feet. | scale · maple, calfskin, chrome · concert / vintage | 276 |
 | `double-bass` | Double bass | Upright double bass with a large body, long neck, bridge and floor endpin. | scale · maple, ebony, steel, nickel · concert / vintage | 238 |
 | `drum-kit` | Drum kit | Compact drum kit with bass drum, supported snare and toms, cymbal stands and a stool. | scale · lacquer, calfskin, chrome, bronze · concert / vintage | 824 |
 | `electric-guitar` | Electric guitar | Solid-body electric guitar with a double-cutaway silhouette, pickup bars, bridge and headstock. | scale · polyLacquer, maple, ebony, steel · concert / vintage | 152 |
 | `french-horn` | French horn | Coiled French horn prop with a flared bell, circular tubing loop and rotary valve block. | scale · brass, nickel, ebonite · concert / vintage | 416 |
-| `harmonica` | Harmonica | Compact harmonica with a rectangular body and repeated raised reed covers. | scale · stainless, brass, polymer · concert / vintage | 120 |
+| `harmonica` | Harmonica | Ten-hole diatonic harmonica: comb with ten mouth holes, brass reed plates, pressed stainless covers with lip, crown, rear vents and closed ends, cover screws. | scale · stainless, brass, polymer · concert / vintage / pearwood | 364 |
 | `maracas` | Maracas | Pair of hand maracas with rounded shaker heads and straight handles. | scale · paint, maple · concert / vintage | 332 |
 | `marimba` | Marimba | Marimba with long graduated bars, resonator tubes and a sturdy frame. | scale · rosewood, aluminum, steel · concert / vintage | 228 |
-| `mechanical-metronome` | Mechanical metronome | Stepped tapered mechanical metronome with a face scale, pendulum and sliding weight. | scale · walnut, brass, steel · concert / vintage | 162 |
+| `mechanical-metronome` | Mechanical metronome | Maelzel-style metronome: tapered case on a moulded plinth, recessed ivory tempo scale, steel pendulum with brass sliding weight, winding key and apex finial. | scale · swing · walnut, brass, steel, ivory · concert / vintage / ebonised | 468 |
 | `microphone-stand` | Microphone stand | Stage microphone on a tripod stand with an angled boom arm and round grille head. | scale · steel, polymer, silver · concert / vintage | 266 |
 | `music-stand` | Music stand | Portable music stand with a broad score tray, adjustable stem and three floor feet. | scale · steel, aluminum, rubber · concert / vintage | 148 |
 | `oboe` | Oboe | Double-reed oboe with a narrow tapered-looking body, bell, reed and small key pads. | scale · grenadilla, silver, reed · concert / vintage | 526 |
@@ -52,7 +52,7 @@ The [music quality promotion handoff](../../../artifacts/catalog-demos/music-qua
 | `vibraphone` | Vibraphone | Vibraphone with graduated bars, resonator tubes and a compact wheeled stand. | scale · aluminum, steel, resonator · concert / vintage | 304 |
 | `viola` | Viola | Slightly larger viola prop with an hourglass body, neck, bridge and four strings. | scale · maple, ebony, steel · concert / vintage | 330 |
 | `violin` | Violin | Faceted violin with an hourglass body, raised neck, bridge and four strings. | scale · maple, ebony, steel · concert / vintage | 338 |
-| `xylophone` | Xylophone | Tabletop xylophone with graduated wooden bars and crossed support legs. | scale · rosewood, steel · concert / vintage | 152 |
+| `xylophone` | Xylophone | Concert xylophone: piano-layout rows of arched rosewood bars graduated bass to treble, a resonator under every bar, cord rails, steel A-frame on casters, two mallets. | scale · rosewood, brass, steel, rubber · concert / vintage / synthetic | 2712 |
 
 ## Rebuild and verify
 

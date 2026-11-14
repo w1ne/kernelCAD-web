@@ -1,0 +1,25 @@
+{
+  "video": "pressure-sand-filter-vessel-semantic-review.mp4",
+  "durationSeconds": 15.0,
+  "stream": {
+    "width": 1280,
+    "height": 720,
+    "nb_frames": "360"
+  },
+  "sampleSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5
+  ],
+  "samples": [
+    "sample-01.png",
+    "sample-02.png",
+    "sample-03.png",
+    "sample-04.png",
+    "sample-05.png"
+  ],
+  "contactSheet": "contact-sheet.png",
+  "reviewed": true
+}

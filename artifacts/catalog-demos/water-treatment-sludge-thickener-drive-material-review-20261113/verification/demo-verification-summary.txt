@@ -1,0 +1,6 @@
+Focused GLB regression: 1/1 passed.
+Catalog integration: 65 files / 110 tests passed.
+Water-treatment ESLint: clean.
+Quality: water 50/50; catalog 2,400/2,402 (99.92%).
+Index: 2,402 assets / 50 kits; 1 row changed; 0 hash or preview gaps.
+Mesh: 500 triangles / 2,200 budget; envelope 1.07 x 0.85 x 1.07 m.

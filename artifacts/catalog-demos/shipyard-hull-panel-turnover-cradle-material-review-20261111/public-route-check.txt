@@ -1,0 +1,13 @@
+Checked 2026-11-11 with curl.
+
+GET https://kernelcad.com/assets/shipyard-hull-panel-turnover-cradle.png
+HTTP 200; SHA-256 matched the pre-change checked-in preview:
+4b6931370c89f2f05df1f6397cbb7e142b6cf952e087b7cb0da515c9d90fddec
+
+GET https://kernelcad.com/catalog/shipyard/hull-panel-turnover-cradle/
+HTTP 404
+
+GET https://kernelcad.com/catalog/
+HTTP 404
+
+The changed preview and asset detail page are local branch artifacts; no deployment was performed.

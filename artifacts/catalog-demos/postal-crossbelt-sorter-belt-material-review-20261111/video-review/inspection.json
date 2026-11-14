@@ -1,0 +1,23 @@
+{
+  "video": "postal-crossbelt-sorter-belt-material-review.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 16.0,
+  "sampleTimesSeconds": [
+    1.2,
+    4.4,
+    7.6,
+    10.8,
+    14.0
+  ],
+  "sampleFrames": [
+    "video-review/inspected-frames/slide-01.png",
+    "video-review/inspected-frames/slide-02.png",
+    "video-review/inspected-frames/slide-03.png",
+    "video-review/inspected-frames/slide-04.png",
+    "video-review/inspected-frames/slide-05.png"
+  ],
+  "inspectionMontage": "video-review/inspection-montage.png",
+  "result": "pass; sampled frames show five-preview audit, baseline, source mapping, corrected render, and verification boundary"
+}

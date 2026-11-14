@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 646ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  387ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  04:56:58
+   Duration  5.69s (transform 3.83s, setup 106ms, import 4.82s, tests 646ms, environment 0ms)

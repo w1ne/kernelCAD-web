@@ -1,0 +1,55 @@
+{
+  "outputDirectory": "/tmp/kernelcad-construction-equipment-pages-20261109",
+  "assets": {
+    "walk-behind-power-trowel": {
+      "sourceShaMatchesIndex": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "knobLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "vibrating-concrete-screed": {
+      "sourceShaMatchesIndex": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "knobLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "rebar-bending-machine": {
+      "sourceShaMatchesIndex": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "knobLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    },
+    "portable-material-hoist": {
+      "sourceShaMatchesIndex": true,
+      "pageExists": true,
+      "previewCopied": true,
+      "previewCopiedExactly": true,
+      "titleVisible": true,
+      "previewImageVisible": true,
+      "studioLinkVisible": true,
+      "knobLabelsVisible": true,
+      "choicesVisible": true,
+      "presetsVisible": true
+    }
+  },
+  "allPassed": true,
+  "deploymentVerified": false
+}

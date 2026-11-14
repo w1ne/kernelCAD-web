@@ -1,0 +1,2 @@
+af24ac1daa24389c1973f48bbd224c8748a44ee1ae1330a0d0b62f89b2b66825  artifacts/catalog-demos/mining-mine-skip-cappel-material-review-20261111/before.png
+96e997c046559afc957db06ef57a23697c774d37d0482ea1c4e13ff257f6abc1  artifacts/catalog-demos/mining-mine-skip-cappel-material-review-20261111/live-preview-before.png

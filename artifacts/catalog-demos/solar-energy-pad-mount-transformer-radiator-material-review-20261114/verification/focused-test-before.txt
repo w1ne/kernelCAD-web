@@ -1,0 +1,53 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 849[2mms[22m[39m
+[31m     [31m×[31m paints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware[39m[33m 479[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts[2m > [22msolar-energy/pad-mount-transformer materials[2m > [22mpaints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware
+[31m[1mAssertionError[22m: expected [ 'transformer-tank' ] to deeply equal ArrayContaining{…}[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- ArrayContaining [[39m
+[32m-   "radiator-fin-front-0",[39m
+[32m-   "radiator-fin-back-0",[39m
+[32m-   "radiator-fin-front-1",[39m
+[32m-   "radiator-fin-back-1",[39m
+[32m-   "radiator-fin-front-2",[39m
+[32m-   "radiator-fin-back-2",[39m
+[32m-   "radiator-fin-front-3",[39m
+[32m-   "radiator-fin-back-3",[39m
+[32m-   "radiator-fin-front-4",[39m
+[32m-   "radiator-fin-back-4",[39m
+[32m-   "radiator-fin-front-5",[39m
+[32m-   "radiator-fin-back-5",[39m
+[32m-   "radiator-fin-front-6",[39m
+[32m-   "radiator-fin-back-6",[39m
+[32m-   "radiator-fin-front-7",[39m
+[32m-   "radiator-fin-back-7",[39m
+[32m-   "radiator-fin-front-8",[39m
+[32m-   "radiator-fin-back-8",[39m
+[31m+ [[39m
+[31m+   "transformer-tank",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts:[2m32:25[22m[39m
+    [90m 30| [39m    const coat = asset.palette.find((zone) => zone.name === 'powderCoa…
+    [90m 31| [39m    [34mexpect[39m(coat[33m?.[39mparts)[33m.[39m[34mtoContain[39m([32m'transformer-tank'[39m)[33m;[39m
+    [90m 32| [39m    [34mexpect[39m(coat[33m?.[39mparts)[33m.[39m[34mtoEqual[39m(expect[33m.[39m[34marrayContaining[39m(fins))[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m 33| [39m    const steel = asset.palette.find((zone) => zone.name === 'stainles…
+    [90m 34| [39m    expect(steel?.parts.filter((part) => part.startsWith('radiator-fin…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 15:06:38
+[2m   Duration [22m 11.06s[2m (transform 8.07s, setup 277ms, import 9.62s, tests 849ms, environment 0ms)[22m
+

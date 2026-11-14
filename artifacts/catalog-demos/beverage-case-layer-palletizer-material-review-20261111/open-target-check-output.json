@@ -1,0 +1,17 @@
+{
+  "checkedAtUtc": "2026-11-11",
+  "sample": [
+    "beverage-bottling-line/pet-blow-molder",
+    "beverage-bottling-line/rotary-filler",
+    "beverage-bottling-line/bottle-rinser-carousel",
+    "beverage-bottling-line/case-layer-palletizer",
+    "beverage-bottling-line/bottle-unscrambler"
+  ],
+  "matchingOpenIssuesByTitleOrBody": [],
+  "matchingOpenPullRequestsByTitleOrBody": [],
+  "matchingOpenPullRequestChangedPaths": [],
+  "samplePathsAlreadyChangedByBranchAtAuditStart": [
+    "catalog/kits/beverage-bottling-line/cap-elevator.kcad.ts",
+    "catalog/kits/beverage-bottling-line/previews/cap-elevator.png"
+  ]
+}

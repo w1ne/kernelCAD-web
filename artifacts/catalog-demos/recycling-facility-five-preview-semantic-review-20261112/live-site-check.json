@@ -1,0 +1,49 @@
+{
+  "checkedAtUtc": "2026-11-12T01:06:33Z",
+  "userAgent": "Chrome 156 on Linux",
+  "sourcePattern": "https://kernelcad.com/assets/recycling-facility-{id}.kcad.ts",
+  "previewPattern": "https://kernelcad.com/assets/recycling-facility-{id}.png",
+  "observations": [
+    {
+      "id": "twin-shaft-shredder",
+      "sourceStatus": 200,
+      "previewStatus": 200,
+      "sourceMatchesLocal": true,
+      "previewMatchesLocal": true,
+      "localTriangles": 6112
+    },
+    {
+      "id": "optical-sorter-arch",
+      "sourceStatus": 200,
+      "previewStatus": 200,
+      "sourceMatchesLocal": false,
+      "previewMatchesLocal": false,
+      "localTriangles": 1420
+    },
+    {
+      "id": "overband-magnet-separator",
+      "sourceStatus": 200,
+      "previewStatus": 200,
+      "sourceMatchesLocal": true,
+      "previewMatchesLocal": true,
+      "localTriangles": 3536
+    },
+    {
+      "id": "glass-washer-trommel",
+      "sourceStatus": 200,
+      "previewStatus": 200,
+      "sourceMatchesLocal": false,
+      "previewMatchesLocal": false,
+      "localTriangles": 3122
+    },
+    {
+      "id": "granulator",
+      "sourceStatus": 200,
+      "previewStatus": 200,
+      "sourceMatchesLocal": false,
+      "previewMatchesLocal": false,
+      "localTriangles": 1478
+    }
+  ],
+  "interpretation": "The local PR branch is not deployed. For items with differing live hashes, the public site still serves an older catalog render/source; this review concerns only the checked-in branch previews."
+}

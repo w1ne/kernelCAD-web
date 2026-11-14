@@ -1,0 +1,1 @@
+gh pr view 1258 -R w1ne/kernelCAD-web --json number,title,state,headRefName,headRefOid,baseRefName,url,mergeStateStatus,reviewDecision,statusCheckRollup

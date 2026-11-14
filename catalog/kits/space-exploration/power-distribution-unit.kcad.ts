@@ -5,7 +5,7 @@ meta({
   name: "power-distribution-unit",
   license: 'CC0-1.0',
   title: "Surface power distribution unit",
-  description: "Field power distribution box with two outlet panels, cable entries and raised roof. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Field power distribution box with two outlet panels, cable entries and raised roof. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#7a8179", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer cable glands" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -42,11 +44,11 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("power-distribution-unit");
 p.part("body",b(0,0,150,660,480,300).color(paint));
-p.part("roof",b(0,0,330,700,520,60).color(paint));
+p.part("roof",b(0,0,330,700,520,60).color(aluminum));
 p.part("panel-left",b(-150,-248,180,210,18,190).color(paint));
 p.part("panel-right",b(150,-248,180,210,18,190).color(paint));
-p.part("gland-0",c(-180,0,0,95,32,8).color(aluminum));
-p.part("gland-1",c(0,0,0,95,32,8).color(aluminum));
-p.part("gland-2",c(180,0,0,95,32,8).color(aluminum));
+p.part("gland-0",c(-180,0,0,95,32,8).color(polymer));
+p.part("gland-1",c(0,0,0,95,32,8).color(polymer));
+p.part("gland-2",c(180,0,0,95,32,8).color(polymer));
 
 return p.model();

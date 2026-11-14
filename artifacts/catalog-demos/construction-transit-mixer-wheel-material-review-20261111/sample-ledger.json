@@ -1,0 +1,71 @@
+{
+  "reviewedOn": "2026-11-11",
+  "reviewedFiles": 5,
+  "assets": [
+    {
+      "kit": "construction-equipment",
+      "id": "backhoe-loader",
+      "observation": "Front loader bucket, glazed cab, rear excavator boom and stabilizers read as a backhoe loader; tires, paint and exposed steel are distinct.",
+      "envelopeM": [
+        7.93,
+        3.95,
+        3.3
+      ],
+      "triangles": 3438,
+      "sourceSha256": "4ba9d14b61fdaf1e23e0142de184d7dfb461910feccceaa7a775bb756570c26d",
+      "previewSha256": "13d8b665d2ce0983b7d61658eeb0a07b48cabf4627b5590b346bf5e4c95d6599"
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "crawler-dozer",
+      "observation": "Front blade, glazed cab, engine deck and crawler tracks are visible; painted panels, track steel and exposed structure are coherent.",
+      "envelopeM": [
+        5.28,
+        3.2,
+        3.36
+      ],
+      "triangles": 4058,
+      "sourceSha256": "dd7e0d791543a35a91c86ba879fc7da117a3de535d2f694fd094b750a1311338",
+      "previewSha256": "c155a24f806d72d4b0f56836e4e85bd0a0993670c6305e96ea7e65062d05fdae"
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "motor-grader",
+      "observation": "Long articulated frame, cab, tandem rear axles, front steering axle and center moldboard read as a road grader; tires, paint and steel are distinct.",
+      "envelopeM": [
+        9.31,
+        3.52,
+        3.427105
+      ],
+      "triangles": 4038,
+      "sourceSha256": "fbace1e66c0020b7917e8e39cb203256db4b09b487be56836bdcfbac6f926a73",
+      "previewSha256": "eb4fd8b3ccabf4e39c8e017d568fc3d9c7bcb495caf94e46c3ca8a039e8217ae"
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "skid-steer-loader",
+      "observation": "Compact loader, lift arms, attachment bucket, protective cab and four tires read clearly; tire rubber, glazing, paint and cutting edge are distinct.",
+      "envelopeM": [
+        3.19,
+        2.078651,
+        1.9
+      ],
+      "triangles": 3144,
+      "sourceSha256": "d73aefdd58c00f2a89489c96d32c0d21f14b887429d23947509998deedce708c",
+      "previewSha256": "5f296abcdbb25b0e36707f035039cd8241dda9dfff8365fdc79ce20593ad2b8e"
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "transit-mixer-truck",
+      "observation": "Before: six wheel rims shared the bright yellow equipment-paint control. After: the six steel rims use the gray structural-steel control; black tires and yellow cab/drum bands remain distinct.",
+      "envelopeM": [
+        8.269668,
+        3.6,
+        2.72
+      ],
+      "triangles": 4296,
+      "sourceSha256": "49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937",
+      "previewSha256": "63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5"
+    }
+  ]
+}

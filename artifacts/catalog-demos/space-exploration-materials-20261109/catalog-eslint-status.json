@@ -1,0 +1,4 @@
+{
+  "command": "npx eslint catalog/kits/space-exploration/",
+  "passed": true
+}

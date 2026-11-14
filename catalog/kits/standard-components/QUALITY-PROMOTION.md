@@ -31,6 +31,22 @@ The first integration run overlapped the long index rebuild and caught the old
 `piano-hinge` hash. That superseded run is retained in the evidence directory;
 the full suite was rerun successfully after the new index completed.
 
+## Installation-layout follow-up — 2026-11-09
+
+The [installation-variant handoff](../../../artifacts/catalog-demos/standard-components-installation-quality-20261109/README.md)
+refines five existing assets without adding IDs: the base mounting plate,
+blind flange, pipe coupling, pipe flange and rubber bumper. Each now has three
+material-named controls and a fourth named palette. Hole count, installed
+fasteners, coupling seals and bumper mounting interface change generated
+geometry. Defaults are **264**, **296**, **480**, **400** and **332** triangles
+respectively; each stays under its source triangle budget. The kit remains
+**50/50 passing**, and the global gate remains **2,402/2,402 (100.00%; 50 rich
+kits, 0 thin kits)**. No assets were added. The handoff records all 50 refreshed
+previews, generated index and source hashes, local page checks, the required
+lint and integration results, named option renders and the inspected MP4. The
+branch is not deployed; these remain generic scene assets without vendor
+dimensions or physical acceptance claims.
+
 ## Review and demo
 
 The [15-second MP4 workflow demo](demo/workflow.mp4) shows the local source,
@@ -110,3 +126,87 @@ undetailed housing cube.
 - Local catalog pages, lint and catalog integration were verified. The branch
   was not deployed; no vendor-standard, manufacturing or physical acceptance
   is claimed.
+
+## Guide and retention detail follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-guide-retention-details-20261110/README.md)
+refines three existing models in place: `bulkhead-adapter`,
+`linear-guide-rail`, and `shaft-coupling`. No kit or asset ID was added.
+
+- Each model now exposes three independently editable material-named colors
+  and keeps its existing three named appearance presets.
+- The adapter has a through-bored brass barrel, paired stainless flanges, a
+  dark rubber washer, and a six-flat stainless locknut: **456 triangles / 620
+  budget**.
+- The guide has a drilled aluminum base, steel raceway, an underside-relieved
+  carriage with four top wells, two orange polymer wipers, and a left/center/
+  right carriage position choice: **540 / 760**.
+- The coupling has two bored steel hubs, a bronze center band, and a selectable
+  set-screw or split-clamp retention layout with zinc-plated hardware: **536 /
+  620**. The size choice continues to scale the entire model.
+- Preset count: **three retained and updated per asset; zero new preset names**.
+  Added material controls: **three total** (one each).
+- The kit remains **50/50 passing** and the global catalog remains
+  **2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)**. No IDs or count
+  were added.
+- All **50** previews were rerendered and the generated index rebuilt. The
+  verification bundle records source and preview hashes, local catalog pages,
+  quality output, lint, integration output, and inspected MP4 frames.
+
+The previews show a clear six-flat nut and gasket above the adapter flange, a
+carriage with visible top wells and orange end wipers on the guide rail, and
+contrasting set screws or clamp bolts around the coupling hubs. These are
+generic visualization assets, not supplier geometry, manufacturing evidence,
+or physical hardware acceptance. The branch is not deployed.
+
+
+## Pipe and sleeve geometry follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-pipe-geometry-20261110/README.md)
+refines three existing parts in place: `pipe-reducer`, `retaining-ring`, and
+`tubular-spacer`. The reducer's ratio changes its tapered outlet; the retaining
+ring's 4/6/8 mm installation gap changes the opening and ear spacing; and the
+spacer's 22/36/50 mm choice changes its hollow sleeve length. Each part has
+separate material zones and a new coordinated palette. The reducer and spacer
+each gained one material control; no IDs or kits were added.
+
+- Defaults: **474/620**, **228/420**, and **432/520** triangles.
+- Kit quality gate: **50/50 passing (100%)**; average material controls rose
+  from **2.50 to 2.54**. Global gate: **2,402/2,402 passing (100.00%; 50 rich
+  kits, zero thin kits)**.
+- All **50** kit previews were rerendered; `catalog/index.json` was rebuilt.
+  The verification bundle confirms every indexed source hash and preview is
+  present, and the catalog integration suite passed **4 files / 15 tests**.
+- ESLint is clean; local static pages were generated and the three edited pages
+  checked. The inspected MP4 and decoded frames are in the handoff.
+
+The branch is not deployed; no vendor dimensions, fit, manufacturing, or
+physical-acceptance claims are made.
+
+## Pulley, elbow and collar silhouette follow-up — 2026-11-10
+
+The [source-to-preview handoff](../../../artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/README.md)
+refines three existing models in place: `v-belt-pulley`, `pipe-elbow-90`, and
+`shaft-collar`. No IDs or kits were added.
+
+- The V-belt pulley has two revolved V valleys, retaining flanges, a keyed bore,
+  and a zinc-plated locking screw. It exposes cast-iron, steel-key, and hardware
+  colors: **518 triangles / 700 budget**.
+- The elbow is a hollow swept turn between perpendicular socket legs, with a
+  bronze compression nut and an elastomer end seal. It exposes steel, bronze,
+  and elastomer colors: **1,528 / 2,000**.
+- The collar's `retention` choice changes the geometry between a split clamp
+  with cross-bolt and a one-piece radial set-screw style. It exposes steel and
+  zinc-plated hardware colors: **416 / 560**.
+- The pulley and elbow each gained one material-named color control. Kit average
+  controls increased from **2.54 to 2.58** per asset. The kit remains **50/50
+  passing**; the global gate remains **2,402/2,402 (100.00%; 50 rich kits, zero
+  thin kits)**.
+- All **50** kit previews were refreshed and `catalog/index.json` regenerated.
+  The evidence bundle records source variants, preview/index hashes, lint,
+  integration results, local pages, and the inspected MP4.
+
+The refreshed views show the two pulley grooves, a hollow curved elbow with a
+distinct bronze socket, and the collar's visible front split and clamp bolt.
+These are local source renders, not vendor specifications or physical
+acceptance. The feature branch is not deployed.

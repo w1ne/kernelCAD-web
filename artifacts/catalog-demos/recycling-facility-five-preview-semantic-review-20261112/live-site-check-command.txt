@@ -1,0 +1,4 @@
+Fetch baseline assets with a browser-like User-Agent:
+https://kernelcad.com/assets/recycling-facility-{twin-shaft-shredder,optical-sorter-arch,overband-magnet-separator,glass-washer-trommel,granulator}.{png,kcad.ts}
+
+The resulting source and preview hashes, HTTP statuses, and branch comparisons are in live-site-check.json and live-baseline/.

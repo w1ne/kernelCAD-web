@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/longwallShearerPickMaterials.test.ts (1 test) 3403ms
+     ✓ assigns all cutter picks to the existing drum-and-pick steel control  1403ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:31:26
+   Duration  137.59s (transform 74.13s, setup 2.05s, import 126.98s, tests 3.40s, environment 0ms)
+

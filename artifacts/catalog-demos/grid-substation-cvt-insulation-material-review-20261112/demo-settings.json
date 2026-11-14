@@ -1,0 +1,23 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "secondsPerSlide": 2.8,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts substation-capacitive-voltage-transformer",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "testCommand": "npx vitest run tests/integration/catalog/substationCvtInsulationMaterials.test.ts",
+  "verificationLines": [
+    "Focused exported-GLB regression: 1/1 passed",
+    "ESLint source and regression: clean",
+    "Catalog integration: 44 files / 69 tests passed",
+    "Grid-substation quality gate: 80/80 passed",
+    "Global structural gate: 2,401/2,402 pass (99.96%)",
+    "Index: 2,402 assets / 50 kits; target hash fresh"
+  ],
+  "caveat": "Local KernelCAD source render and export checks only; not a vendor design, electrical rating, deployment, or physical acceptance."
+}

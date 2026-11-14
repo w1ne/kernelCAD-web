@@ -1,30 +1,54 @@
-// Distinctive geometry: Panel cable gland with a hollow body, stepped compression nut and wide sealing flange
+// Panel cable gland with a selectable cable opening, compression cap, rubber
+// seal and a short jacketed cable stub. Dimensions are generic scene geometry.
 meta({
   name: 'cable-gland',
   license: 'CC0-1.0',
   title: 'Cable gland',
-  description: 'Panel cable gland with a hollow body, stepped compression nut and wide sealing flange Knobs: model size, engineering polymer, rubber.',
+  description: 'Panel cable gland with a selectable nominal 4, 6, or 8 mm cable diameter that stays fixed across housing sizes, molded polymer body, six-flat stainless compression cap, rubber seal and jacketed cable stub. Material controls: engineering polymer, stainless steel, sealing rubber and cable PVC. Includes industrial, highVisibility and marine presets.',
   tags: ['cable gland', 'cord grip', 'panel fitting', 'electrical'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 420,
+  triangleBudget: 900,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
-const polymer = param('polymer', '#e46b3c', { label: 'Engineering polymer' });
-const rubber = param('rubber', '#353a3d', { label: 'Rubber' });
+const cableDiameter = param('cableDiameter', '6', { choices: ['4', '6', '8'], label: 'Cable diameter (mm)' });
+const polymer = param('polymer', '#e06a31', { label: 'Engineering polymer' });
+const stainless = param('stainless', '#b7c1c5', { label: 'Stainless steel' });
+const rubber = param('rubber', '#292e30', { label: 'Sealing rubber' });
+const cablePvc = param('cablePvc', '#24516b', { label: 'Cable PVC' });
 presets({
-  dark: { polymer: '#244956', rubber: '#242729' },
-  brass: { polymer: '#1d5364', rubber: '#2a2d2f' },
-  weathered: { polymer: '#96734f', rubber: '#3b3935' }
+  industrial: { polymer: '#68777b', stainless: '#b7c1c5', rubber: '#292e30', cablePvc: '#343a40' },
+  highVisibility: { polymer: '#e06a31', stainless: '#d0d6d8', rubber: '#25292b', cablePvc: '#e3a62f' },
+  marine: { polymer: '#276b77', stainless: '#aebbc0', rubber: '#23292b', cablePvc: '#343a40' },
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
+const cableRadius = Number(cableDiameter.value) / 2;
+// The selected nominal cable diameter stays fixed while the housing size
+// changes; only the clearance around it scales with the overall size choice.
+const boreRadius = cableRadius + 1.5 * s;
 const a = assembly('cable-gland');
-a.part('body',cylinder(22*s,12*s,8).subtract(cylinder(24*s,7*s,8).translate(0,0,-s)).color(polymer));
-a.part('flange',cylinder(4*s,20*s,8).subtract(cylinder(6*s,7*s,8).translate(0,0,-s)).color(polymer));
-a.part('cap',cylinder(8*s,16*s,8).subtract(cylinder(10*s,7*s,8).translate(0,0,-s)).translate(0,0,22*s).color(polymer));
-a.part('strain-relief',cylinder(7*s,10*s,8).subtract(cylinder(9*s,7*s,8).translate(0,0,-s)).translate(0,0,30*s).color(rubber));
+const bore = (height: number) => cylinder(height, boreRadius, 16).translate(0, 0, -s);
+
+let body = cylinder(22 * s, 12 * s, 16).subtract(bore(24 * s));
+// Raised molded grip ribs make the polymer barrel read as a gland body.
+for (const z of [6, 10, 14, 18]) {
+  const rib = cylinder(1.4 * s, 12.8 * s, 16)
+    .subtract(cylinder(1.8 * s, 11.5 * s, 16).translate(0, 0, -0.2 * s))
+    .translate(0, 0, z * s);
+  body = body.union(rib);
+}
+a.part('molded-barrel', body.color(polymer));
+a.part('mounting-flange', cylinder(4 * s, 20 * s, 16)
+  .subtract(bore(6 * s)).color(polymer));
+a.part('stainless-compression-cap', cylinder(7 * s, 15.5 * s, 6)
+  .subtract(bore(9 * s)).translate(0, 0, 22 * s).color(stainless));
+a.part('rubber-cable-seal', cylinder(5 * s, 10.8 * s, 16)
+  .subtract(cylinder(7 * s, cableRadius, 16).translate(0, 0, -s))
+  .translate(0, 0, 29 * s).color(rubber));
+a.part('jacketed-cable', cylinder(16 * s, cableRadius, 16)
+  .translate(0, 0, 31 * s).color(cablePvc));
 return a.model();

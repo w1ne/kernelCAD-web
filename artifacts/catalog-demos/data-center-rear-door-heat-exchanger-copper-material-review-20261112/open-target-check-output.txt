@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-11-12T01:54:20.482777+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "destinationPr": 1258,
+  "openPrCount": 21,
+  "openPrFilesFetchedPaginated": true,
+  "results": {
+    "rotary-blasthole-drill": {
+      "kit": "mining",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "shaft-headframe": {
+      "kit": "mining",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "concrete-batch-plant": {
+      "kit": "construction-equipment",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "towable-light-tower": {
+      "kit": "construction-equipment",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "rear-door-heat-exchanger": {
+      "kit": "data-center-infrastructure",
+      "openIssueTitleBodyMatches": [],
+      "openPrSearchMatches": [],
+      "destinationPrTextMatches": [],
+      "competingOpenPrSearchMatches": [],
+      "openPrChangedSourceMatches": []
+    }
+  }
+}

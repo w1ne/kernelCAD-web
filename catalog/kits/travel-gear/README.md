@@ -6,20 +6,22 @@ vintage steamer trunk; this kit does not repeat the existing hiking backpack.
 The public catalog exposes shape choices and color knobs through native
 kernelCAD asset metadata.
 
-| id | what it is | knobs | default triangles |
-| --- | --- | --- | ---: |
-| rolling-suitcase | Hard-shell cabin or check-in case with four spinner wheels and extendable trolley handle | size, handle, shell, trim | 312 |
-| duffel-bag | Soft weekender with handles or shoulder sling | length, carry, fabric, trim | 180 |
-| garment-bag | Folded garment carrier with hook or shoulder loop | length, hanger, cover, trim | 128 |
-| packing-cube | Soft cube or shoe compartment with zipper and grip | size, layout, fabric, trim | 48 |
-| toiletry-bag | Compact wash case or hanging organizer | layout, size, fabric, trim | 48 |
-| passport-wallet | Passport sleeve and card folio, closed or open | size, layout, cover, lining | 36 |
-| luggage-tag | Identification tag with address window or plain face | size, face, tag, strap | 84 |
-| luggage-scale | Handheld baggage scale with a standard or wide hook | size, hook, body, strap | 160 |
-| travel-neck-pillow | U-shaped child or adult travel pillow | size, shape, clasp, fabric | 182 |
-| foldable-umbrella | Compact umbrella shown open or folded | diameter, state, handle, canopy, fittings | 198 |
-| travel-adapter | EU, UK or US plug adapter with one or two USB sockets | plug, ports, body, pins | 136 |
-| sleep-mask | Soft eye mask with flat or contoured bridge | shape, strap, fabric, band | 112 |
+| id | what it is | knobs | presets |
+| --- | --- | --- | --- |
+| rolling-suitcase | Ribbed two-shell spinner case with zip band, TSA lock, telescoping handle and twin-wheel casters | size, handle, shell, zipBand, aluminium, rubber | midnight, coral, aluminium |
+| duffel-bag | Canvas barrel weekender with leather ends, wrap-around straps, joined handles and D-rings | size, shoulderStrap, canvas, leather, webbing, brass | waxedOlive, navySport, desertTan |
+| garment-bag | Hanging suit carrier with sloping shoulders, hanger hook, front zip, ID window and carry handle | length, fabric, trim, chrome, window | charcoalSuit, weddingIvory, travelNavy |
+| packing-cube | Soft zip cube with mesh lid, binding tape, two-way zip and grab loop | size, ripstop, mesh, binding, zipPull | tealSet, charcoalSet, citrusSet |
+| toiletry-bag | Trapezoid canvas dopp kit with ridge zip, leather gussets and loop, optional hook | layout, size, canvas, leather, hardware, baseLining | waxedGreen, charcoalLeather, sandCanvas |
+| passport-wallet | Leather folio, open with passport, boarding pass and card slots or closed with snap tab | size, layout, cover, lining, passport, cards, stitching | cognac, blackOxford, forestTravel |
+| luggage-tag | Stitched leather tag with address window or privacy flap, eyelet and buckled strap | size, face, leather, thread, card, buckle | saddleTan, navyCrossgrain, redTravel |
+| luggage-scale | Digital T-grip scale with LCD, buttons, strap and buckle hook | size, hook, housing, gripRubber, strapWebbing, hookMetal, lcd | graphite, travelOrange, silverGrey |
+| travel-neck-pillow | Tapered U pillow with piped seam, snap strap and stuff-sack loop | size, clasp, plush, piping, strap, snap | slateBlue, memoryFoamGrey, sunsetCoral |
+| foldable-umbrella | Eight-gore umbrella with ribs, stretchers and telescoping shaft, open or folded | state, canopy, accentPanel, frameSteel, gripRubber | classicBlack, rainbowCheck, clearDome |
+| travel-adapter | Two-tone universal adapter with socket, USB ports, sliders and EU, UK or US prongs | plug, ports, housing, faceplate, prongMetal, sliderAccent | arcticWhite, stealthBlack, signalBlue |
+| sleep-mask | Contoured or silk eye mask with piping, foam lining and elastic strap | style, frontFabric, piping, foam, elastic | midnightSilk, blushSatin, lavenderFoam |
+
+Triangle counts per asset are recorded in `catalog/index.json`.
 
 ## License and provenance
 

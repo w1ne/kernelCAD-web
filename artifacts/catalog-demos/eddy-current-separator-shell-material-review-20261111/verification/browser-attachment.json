@@ -1,0 +1,8 @@
+{
+  "endpoint": "http://127.0.0.1:9223",
+  "existingTargetsBefore": 61,
+  "existingTargetsAfter": 61,
+  "attempt": "PW_CDP_URL=http://127.0.0.1:9223 timeout --signal=TERM 90s node dist/cli/index.js render inspect catalog/kits/recycling-facility/eddy-current-separator.kcad.ts artifacts/catalog-demos/eddy-current-separator-shell-material-review-20261111/verification/render-inspect --width 720 --height 540 --channels rgb --views iso --screenshot-timeout 20000",
+  "result": "Playwright timed out during the CDP handshake after connecting to the existing endpoint. No second browser was launched. The CLI/helper process exited; no matching render-inspect process or temporary render-server process remained.",
+  "previewEvidence": "The before/after PNGs in this bundle were rendered by scripts/renderCatalogPreviews.ts and visually inspected."
+}

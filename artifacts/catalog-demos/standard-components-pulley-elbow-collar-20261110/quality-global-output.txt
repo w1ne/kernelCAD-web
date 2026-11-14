@@ -1,0 +1,2 @@
+
+  2402/2402 assets pass (100.00%; 50 rich kits, 0 thin kits)

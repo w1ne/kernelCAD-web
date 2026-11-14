@@ -1,0 +1,4 @@
+(node:889759) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Result: exit 0. Generated catalog/index.json; transit-mixer-truck sourceSha256 matches the edited source. The catalog integration freshness test also passed against this generated index.

@@ -1,0 +1,5 @@
+Command: npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-transit-mixer-pages
+Result: wrote 2402 asset pages plus hub, sitemap.xml and robots.txt.
+Page: /tmp/kernelcad-transit-mixer-pages/catalog/construction-equipment/transit-mixer-truck/index.html
+Verified: preview.png is linked; equipmentPaintColor, drumPaintColor, structuralSteelColor, weathered and highVisibility are present.
+The generated page is local output and is not deployed.

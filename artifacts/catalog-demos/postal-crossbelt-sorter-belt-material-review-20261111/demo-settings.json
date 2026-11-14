@@ -1,0 +1,26 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "secondsPerSlide": 3.2,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "muted": "#516273",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts crossbelt-sorter-section",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "regressionCommand": "npx vitest run tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts",
+  "lintCommand": "npx eslint catalog/kits/postal-logistics/ tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts",
+  "verificationLines": [
+    "Exported-GLB material regression: 1/1 passed",
+    "Four crossbelt meshes export with the rubber color; carrier meshes remain polymer",
+    "Rendered preview: 960 triangles / 1,800 budget; baseline envelope unchanged",
+    "Generated catalog row has a fresh source hash and preview path",
+    "Postal-logistics mechanical gate: 52/52 (100%); ESLint clean",
+    "Generated local detail page includes the control and preset values; copied preview hash matches",
+    "Only local source/render/export/page verification"
+  ],
+  "caveat": "Local CC0 source, render, GLB and index verification. Not deployed and not a vendor specification, machine performance claim, or physical acceptance."
+}

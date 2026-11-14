@@ -1,0 +1,15 @@
+{
+  "captureScript": "capture_demo.py",
+  "inspectionScript": "inspect_video.py",
+  "video": "shipyard-blast-dust-collector-filter-media-review.mp4",
+  "resolution": "1280x720",
+  "fps": 30,
+  "encoding": "H.264, yuv420p, CRF 20",
+  "slideDurationsSeconds": [4, 5, 6],
+  "inputs": [
+    "sample/*.png",
+    "before/blast-dust-collector.png",
+    "after/blast-dust-collector.png"
+  ],
+  "claims": "Local source renders and validation only; not deployment, process simulation, equipment performance, or physical acceptance."
+}

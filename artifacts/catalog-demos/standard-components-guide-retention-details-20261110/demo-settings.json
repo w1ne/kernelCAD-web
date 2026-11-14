@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-10",
+  "scope": "In-place refinement of three existing standard-components assets; no new IDs or kits.",
+  "assets": ["bulkhead-adapter", "linear-guide-rail", "shaft-coupling"],
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley",
+  "catalogBuildInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "indexCheckInvocation": "npx tsx scripts/buildAssetCatalog.ts --check",
+  "qualityInvocation": "python3 scripts/checkCatalogQuality.py --kit standard-components && python3 scripts/checkCatalogQuality.py",
+  "lintInvocation": "npx eslint catalog/kits/standard-components/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "catalogPagesInvocation": "npm run catalog:pages",
+  "localPageCheckInvocation": "python3 artifacts/catalog-demos/standard-components-guide-retention-details-20261110/verify_local_pages.py",
+  "kernelRenderInspectCommands": [
+    "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/bulkhead-adapter.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/bulkhead-adapter",
+    "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/linear-guide-rail.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/linear-guide-rail",
+    "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/shaft-coupling.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/shaft-coupling"
+  ],
+  "variants": [
+    { "id": "adapter-default", "asset": "bulkhead-adapter", "choices": { "size": "standard" } },
+    { "id": "adapter-brass", "asset": "bulkhead-adapter", "preset": "brass" },
+    { "id": "adapter-large", "asset": "bulkhead-adapter", "choices": { "size": "large" } },
+    { "id": "guide-center", "asset": "linear-guide-rail", "choices": { "size": "standard", "carriagePosition": "center" } },
+    { "id": "guide-right", "asset": "linear-guide-rail", "choices": { "carriagePosition": "right" } },
+    { "id": "guide-high-visibility", "asset": "linear-guide-rail", "preset": "highVisibility" },
+    { "id": "coupling-set-screws", "asset": "shaft-coupling", "choices": { "retention": "setScrews" } },
+    { "id": "coupling-split-clamp", "asset": "shaft-coupling", "choices": { "retention": "splitClamp" } },
+    { "id": "coupling-weathered", "asset": "shaft-coupling", "preset": "weathered" }
+  ],
+  "variantInvocation": "npx tsx artifacts/catalog-demos/standard-components-guide-retention-details-20261110/render_variants.ts",
+  "video": "artifacts/catalog-demos/standard-components-guide-retention-details-20261110/standard-components-guide-retention-details.mp4",
+  "captureInvocation": "python3 artifacts/catalog-demos/standard-components-guide-retention-details-20261110/capture_demo.py",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspect_demo_video.py",
+  "canvas": { "width": 1280, "height": 720, "frameRate": 24, "durationSeconds": 15 },
+  "caption": "Local kernelCAD source geometry, rendered previews, generated catalog index and local checks. Not deployed; not supplier geometry, manufacturing evidence or physical acceptance.",
+  "provenance": "Frames use checked-in .kcad.ts sources, their declared material presets, generated catalog previews and recorded local verification."
+}

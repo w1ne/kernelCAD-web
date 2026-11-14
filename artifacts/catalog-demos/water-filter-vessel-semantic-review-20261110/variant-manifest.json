@@ -1,0 +1,25 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + catalog software renderer",
+  "budget": 2200,
+  "variants": [
+    {
+      "id": "weathered",
+      "preset": "weathered",
+      "yawDeg": 35,
+      "pitchDeg": 22,
+      "triangles": 696,
+      "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+      "pngSha256": "8465088942e7de3e126009128147f4917447dfccb8e3e9444b9c46e9dca1580f"
+    },
+    {
+      "id": "highVisibility-side",
+      "preset": "highVisibility",
+      "yawDeg": 90,
+      "pitchDeg": 18,
+      "triangles": 696,
+      "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+      "pngSha256": "b30f7369aa6d2cda0e2012b6d466f59e4086193a941dead85092a51146b436fb"
+    }
+  ]
+}

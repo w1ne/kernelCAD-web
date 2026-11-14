@@ -1,0 +1,2 @@
+No open issue or non-destination PR body/title mentions any sampled asset ID.
+No other open PR changed any sampled .kcad.ts path; PR #1258 is the destination.

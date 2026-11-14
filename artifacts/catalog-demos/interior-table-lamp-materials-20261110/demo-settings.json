@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-10",
+  "asset": "interior/table-lamp",
+  "variants": [
+    { "id": "jar-default", "choices": { "baseStyle": "jar" } },
+    { "id": "column-default", "choices": { "baseStyle": "column" } },
+    { "id": "terracotta", "choices": { "baseStyle": "jar" }, "preset": "terracotta" },
+    { "id": "mid-century", "choices": { "baseStyle": "jar" }, "preset": "midCentury" },
+    { "id": "monochrome", "choices": { "baseStyle": "jar" }, "preset": "monochrome" }
+  ],
+  "render": {
+    "format": "glb",
+    "style": "lowpoly",
+    "maxTriangles": 2000,
+    "pngRenderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+    "frameHeightM": 0.65
+  },
+  "video": {
+    "canvas": "1280x720",
+    "frames": 4,
+    "secondsPerFrame": 3,
+    "fps": 24,
+    "codec": "libx264",
+    "crf": 20
+  },
+  "claims": "Local source-driven software renders and checks. No simulation, deployment, lighting/electrical assessment, or physical acceptance is claimed."
+}

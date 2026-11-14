@@ -1,0 +1,30 @@
+Target scan date: 2026-11-13
+Destination PR: https://github.com/w1ne/kernelCAD-web/pull/1258
+Baseline head: 20aae80dc585935cadcb701228992db1af51a184
+PR state: OPEN; all 17 reported checks SUCCESS; no submitted review; mergeStateStatus BLOCKED.
+
+Sample IDs:
+- wind-energy/converter-cabinet
+- mining/cone-crusher-module
+- recycling-facility/air-classifier
+- beverage-bottling-line/bottle-reject-pusher
+- water-treatment/high-lift-pump-skid
+
+Open issue title/body search:
+`gh issue list --state open --limit 100 --search <asset-id> --json number,title,url`
+Result for each exact asset ID: no open issue matches.
+
+Open PR source-path search:
+Fetched each open PR file list (18 PRs: #1386, #1385, #1383, #1382, #1381, #1380,
+#1379, #1378, #1377, #1375, #1309, #1258, #1253, #1215, #1211, #1195, #1187,
+#1094); searched for each exact asset ID. No source path matched any sample. #1258
+is the destination PR. No competing open PR target found.
+
+Earlier review search:
+Searched `docs/quality/` and prior review bundle ledgers for these five IDs. No
+previous semantic-review ledger entry matched the selected sample.
+
+Current kernelCAD website:
+All five detail routes and preview routes returned HTTP 200. Live route results and
+preview SHA-256 values are in `../live-baseline/routes.json`. The target's current
+public preview hash matches the checked-in baseline; this branch is not deployed.

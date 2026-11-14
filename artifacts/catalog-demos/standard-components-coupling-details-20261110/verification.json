@@ -1,0 +1,99 @@
+{
+  "checkedAt": "2026-11-10T02:53:01+00:00",
+  "scope": "Three existing standard-components models refined in place; no new IDs or kits.",
+  "assets": [
+    {
+      "id": "flange-bearing-housing",
+      "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255",
+      "preview": "catalog/kits/standard-components/previews/flange-bearing-housing.png",
+      "previewSha256": "b35df1b392c6c2d4fe0f055b5ea152b29a29ac6f911fc926941944c7d7b0f278",
+      "indexPreview": "/assets/standard-components-flange-bearing-housing.png",
+      "triangleBudget": 500,
+      "triangles": 456,
+      "materials": 1,
+      "materialControls": [
+        "bearingSteel",
+        "castIron",
+        "sealRubber"
+      ],
+      "presetNames": [
+        "factory",
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "jaw-coupling",
+      "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5",
+      "preview": "catalog/kits/standard-components/previews/jaw-coupling.png",
+      "previewSha256": "ca5025b840aef5573fc510db596935bf250948f94febac0ad621586216008b7e",
+      "indexPreview": "/assets/standard-components-jaw-coupling.png",
+      "triangleBudget": 640,
+      "triangles": 574,
+      "materials": 1,
+      "materialControls": [
+        "polymer",
+        "setScrewSteel",
+        "steel"
+      ],
+      "presetNames": [
+        "dark",
+        "highTorque",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-union",
+      "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544",
+      "preview": "catalog/kits/standard-components/previews/pipe-union.png",
+      "previewSha256": "7b88c08af9b4a592f77aaf66ea898024fd2eb7b0ce67082db9c506677460cca5",
+      "indexPreview": "/assets/standard-components-pipe-union.png",
+      "triangleBudget": 440,
+      "triangles": 360,
+      "materials": 1,
+      "materialControls": [
+        "brass",
+        "sealRubber",
+        "steel"
+      ],
+      "presetNames": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    }
+  ],
+  "quality": {
+    "kit": "50/50 assets pass (1 rich kits, 0 thin kits)",
+    "global": "2402/2402 assets pass (50 rich kits, 0 thin kits)"
+  },
+  "eslint": {
+    "command": "npx eslint catalog/kits/standard-components/",
+    "exitCode": 0,
+    "output": "npm notice run kernelcad@0.17.4 npx\nnpm notice run 'eslint' catalog/kits/standard-components/"
+  },
+  "catalogIntegration": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "exitCode": 0,
+    "summary": [
+      "Test Files  4 passed (4)",
+      "Tests  15 passed (15)"
+    ],
+    "output": "RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000\n\n \u2713 tests/integration/catalog/assetModule.test.ts (4 tests) 605ms\n \u2713 tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 337ms\n \u2713 tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 12467ms\n     \u2713 a kit-representative sample opens with exactly the knobs its index row lists  11237ms\n     \u2713 refuses refs that do not name a catalog row, and sources that no longer match the index  438ms\n \u2713 tests/integration/catalog/catalogIndex.test.ts (2 tests) 499916ms\n     \u2713 every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  499512ms\n\n Test Files  4 passed (4)\n      Tests  15 passed (15)\n   Start at  02:53:04\n   Duration  504.15s (transform 13.47s, setup 296ms, import 18.08s, tests 513.33s, environment 0ms)\n\nnpm notice run kernelcad@0.17.4 npx\nnpm notice run 'vitest' run tests/integration/catalog/"
+  },
+  "indexCheck": {
+    "command": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "exitCode": 0,
+    "output": "catalog/index.json is up to date\nnpm notice run kernelcad@0.17.4 npx\nnpm notice run 'tsx' scripts/buildAssetCatalog.ts --check\n(node:414612) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)"
+  },
+  "index": {
+    "source": "catalog/index.json",
+    "generated": true,
+    "sourceSha256Matches": true
+  },
+  "deployment": "not deployed; feature branch only",
+  "limits": "Low-poly visualization assets only; local source and software-render checks do not establish supplier dimensions, manufacturing suitability or physical acceptance."
+}

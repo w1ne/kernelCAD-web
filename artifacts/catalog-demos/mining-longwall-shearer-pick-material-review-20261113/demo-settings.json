@@ -1,0 +1,50 @@
+{
+  "createdDate": "2026-11-13",
+  "title": "Longwall shearer cutter-pick material review",
+  "video": "mining-longwall-shearer-pick-material-review.mp4",
+  "durationSeconds": 18,
+  "frameSize": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264 / yuv420p",
+  "sources": {
+    "before": [
+      "before/longwall-shearer.kcad.ts",
+      "before/longwall-shearer.png",
+      "before/pick-detail.png"
+    ],
+    "after": [
+      "after/longwall-shearer.kcad.ts",
+      "after/longwall-shearer.png",
+      "after/pick-detail.png"
+    ],
+    "samplePreviews": "samples/*.png"
+  },
+  "commandsFromRepositoryRoot": [
+    "node_modules/.bin/tsx scripts/renderCatalogPreviews.ts longwall-shearer",
+    "node_modules/.bin/tsx scripts/buildAssetCatalog.ts",
+    "node_modules/.bin/vitest run tests/integration/catalog/",
+    "node_modules/.bin/eslint catalog/kits/mining/ tests/integration/catalog/longwallShearerPickMaterials.test.ts",
+    "python3 scripts/checkCatalogQuality.py --kit mining",
+    "python3 artifacts/catalog-demos/mining-longwall-shearer-pick-material-review-20261113/capture_review.py"
+  ],
+  "videoGeneration": {
+    "script": "capture_review.py",
+    "tool": "ffmpeg",
+    "arguments": [
+      "-vf fps=30,format=yuv420p",
+      "-c:v libx264",
+      "-preset medium",
+      "-crf 20",
+      "-movflags +faststart"
+    ],
+    "slides": [
+      "Title",
+      "Five rendered mining preview checks",
+      "Before/after material assignment and local render/index invocation",
+      "Full model preview before and after",
+      "Isolated cutter drum detail before and after",
+      "Local verification scope and limitations"
+    ]
+  },
+  "acceptanceScope": "Local catalog source, exported GLB regression and software-rendered previews only; no simulation, deployed behavior or hardware acceptance claim."
+}

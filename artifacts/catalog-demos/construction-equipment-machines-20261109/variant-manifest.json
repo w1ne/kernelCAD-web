@@ -1,0 +1,188 @@
+[
+  {
+    "id": "trowel-standard",
+    "asset": "walk-behind-power-trowel",
+    "choices": {
+      "guardSize": "standard"
+    },
+    "stats": {
+      "triangles": 920,
+      "sizeM": [
+        0.912,
+        0.743712,
+        1.422
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 27,
+      "parts": 27,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "96ab67babea70e85b242de076451a2b85a59c4f0a002a6e2df44f6afc207b52e"
+  },
+  {
+    "id": "trowel-compact-hi-vis",
+    "asset": "walk-behind-power-trowel",
+    "choices": {
+      "guardSize": "compact"
+    },
+    "preset": "highVisibility",
+    "stats": {
+      "triangles": 920,
+      "sizeM": [
+        0.732,
+        0.743712,
+        1.332
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 27,
+      "parts": 27,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "a332a8cc1b7cbc485b6b2d8caacba9cfa22577a085a12920aaf253b781274b52"
+  },
+  {
+    "id": "screed-standard-working",
+    "asset": "vibrating-concrete-screed",
+    "choices": {
+      "profileSize": "standard",
+      "handlePosition": "working"
+    },
+    "stats": {
+      "triangles": 804,
+      "sizeM": [
+        0.544,
+        0.861,
+        2.2
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 23,
+      "parts": 23,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "c28cb22ecbffce798d7fdcd11a70581cb40376dda33e9f0e799cd3d61d6ed784"
+  },
+  {
+    "id": "screed-short-folded-hi-vis",
+    "asset": "vibrating-concrete-screed",
+    "choices": {
+      "profileSize": "short",
+      "handlePosition": "folded"
+    },
+    "preset": "highVisibility",
+    "stats": {
+      "triangles": 804,
+      "sizeM": [
+        0.544,
+        0.441,
+        1.2
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 23,
+      "parts": 23,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "b26de34d6517b156c87a0ccd49b6fc5c0f190b1eec46336630ac6cab69ea75b7"
+  },
+  {
+    "id": "rebar-compact-hook",
+    "asset": "rebar-bending-machine",
+    "choices": {
+      "workTable": "compact",
+      "barForm": "hook"
+    },
+    "stats": {
+      "triangles": 1376,
+      "sizeM": [
+        0.836,
+        0.571,
+        0.67
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 41,
+      "parts": 41,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "45ce280442abab195df42389121d815c1e3ac1e093d9aa0f976e6b3a06562e6c"
+  },
+  {
+    "id": "rebar-extended-stirrup-hi-vis",
+    "asset": "rebar-bending-machine",
+    "choices": {
+      "workTable": "extended",
+      "barForm": "stirrup"
+    },
+    "preset": "highVisibility",
+    "stats": {
+      "triangles": 1684,
+      "sizeM": [
+        1.24,
+        0.571,
+        0.67
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 48,
+      "parts": 48,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "178b625ed944e22d71b04711e94f4628851e2fb0b9a34d816ddd33957ff7ec35"
+  },
+  {
+    "id": "hoist-standard-guarded",
+    "asset": "portable-material-hoist",
+    "choices": {
+      "mastHeight": "standard",
+      "platformStyle": "guarded"
+    },
+    "stats": {
+      "triangles": 1384,
+      "sizeM": [
+        1.146,
+        1.96,
+        0.681
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 70,
+      "parts": 70,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "fd280af5064c7d9a470e501757edcc1a92f3c1ec577883ad6f314cc905e13528"
+  },
+  {
+    "id": "hoist-short-open-hi-vis",
+    "asset": "portable-material-hoist",
+    "choices": {
+      "mastHeight": "short",
+      "platformStyle": "open"
+    },
+    "preset": "highVisibility",
+    "stats": {
+      "triangles": 1180,
+      "sizeM": [
+        1.146,
+        1.4,
+        0.681
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "drawCalls": 53,
+      "parts": 53,
+      "hasRig": false,
+      "hasIk": false
+    },
+    "pngSha256": "cd95193d34c8d6d19108b88b72e229a95604e69ab2cb23545f3ce3349c977252"
+  }
+]

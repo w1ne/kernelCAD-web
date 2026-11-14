@@ -1,0 +1,3 @@
+(node:544818) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+recycling-facility/battery-quarantine-drum: 1800 tris

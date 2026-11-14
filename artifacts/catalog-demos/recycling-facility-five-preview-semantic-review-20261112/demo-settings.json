@@ -1,0 +1,25 @@
+{
+  "title": "Recycling facility semantic preview review",
+  "date": "2026-11-12",
+  "output": "recycling-facility-five-preview-semantic-review.mp4",
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 30,
+  "durationSecondsApprox": 16.833,
+  "encoder": "ffmpeg libx264, yuv420p, CRF 23, veryfast",
+  "generator": "capture_audit_demo.py using Pillow for text and slide layout",
+  "inputs": [
+    "sample/twin-shaft-shredder.png",
+    "sample/optical-sorter-arch.png",
+    "sample/overband-magnet-separator.png",
+    "sample/glass-washer-trommel.png",
+    "sample/granulator.png"
+  ],
+  "claims": [
+    "local rendered previews only",
+    "no confirmed material mismatch",
+    "not a deployment or manufacturing acceptance claim"
+  ]
+}

@@ -1,0 +1,7 @@
+Visual inspection of all seven MP4 slides (contact sheet):
+
+- The five branch render images are visible with asset names and concise component/material observations.
+- The three public-site baseline differences are identified as older renders and are explicitly marked as not deployed from this branch.
+- No text is clipped; type, contrast, and image scale remain readable at the encoded 1280 x 720 resolution.
+- The opening and closing slides state that no mismatch was found and no source/index change was made.
+- The video describes a local render review only; it does not imply simulation, deployment, physical verification, or hardware acceptance.

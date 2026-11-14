@@ -1,0 +1,16 @@
+{
+  "pass": true,
+  "invocation": "python3 artifacts/catalog-demos/shell-tube-exchanger-material-review-20261110/verify_local_page.py",
+  "scope": "generated local static page only; not deployed behavior",
+  "page": "site-build/catalog/industrial-plant/shell-and-tube-exchanger/index.html",
+  "copiedPreviewSha256": "762861bcbac98a492a4e8268d7afc3951ef5877d46db3e9c46187e6deef403f2",
+  "expectedPageTokens": [
+    "Shell and tube heat exchanger",
+    "Structural steel",
+    "Tube sheets, nozzles and supports metal",
+    "weathered",
+    "stainless",
+    "exposed metalwork"
+  ],
+  "studioLinkPresent": true
+}

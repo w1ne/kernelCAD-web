@@ -1,0 +1,52 @@
+[
+  {
+    "id": "converter-cabinet",
+    "kit": "wind-energy",
+    "page": "https://kernelcad.com/catalog/wind-energy/converter-cabinet/",
+    "preview": "https://kernelcad.com/assets/wind-energy-converter-cabinet.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "cf4d8d9dcf4efbce1843048ea1a1712e32d16e24793be98cdd326cf2c7f406ca",
+    "previewBytes": 18617
+  },
+  {
+    "id": "cone-crusher-module",
+    "kit": "mining",
+    "page": "https://kernelcad.com/catalog/mining/cone-crusher-module/",
+    "preview": "https://kernelcad.com/assets/mining-cone-crusher-module.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "8a78b3716fb2701a4c63c349745e676d2e54ddd1a75f52f22f3dbc6f8f35b709",
+    "previewBytes": 25873
+  },
+  {
+    "id": "air-classifier",
+    "kit": "recycling-facility",
+    "page": "https://kernelcad.com/catalog/recycling-facility/air-classifier/",
+    "preview": "https://kernelcad.com/assets/recycling-facility-air-classifier.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "6071575de77788a4bf4a63ea27846df7ceb08e73c183188922091957c6ecbeb6",
+    "previewBytes": 29946
+  },
+  {
+    "id": "bottle-reject-pusher",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/bottle-reject-pusher/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-bottle-reject-pusher.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "12eedea191d72b82eeefb1aa9e5ece8458706b7f56796e750547da7953b7c68f",
+    "previewBytes": 22741
+  },
+  {
+    "id": "high-lift-pump-skid",
+    "kit": "water-treatment",
+    "page": "https://kernelcad.com/catalog/water-treatment/high-lift-pump-skid/",
+    "preview": "https://kernelcad.com/assets/water-treatment-high-lift-pump-skid.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "a86bbfc2709a61ad0931ffd8f300b82863a357e15d5c08c88313977d9db7c2d8",
+    "previewBytes": 39820
+  }
+]

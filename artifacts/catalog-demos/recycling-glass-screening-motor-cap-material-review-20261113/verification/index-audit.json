@@ -1,0 +1,18 @@
+{
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "structuralQualityGate": {
+    "kit": "recycling-facility",
+    "passed": 153,
+    "total": 153,
+    "passRate": "100.00%"
+  },
+  "changedAssetRows": [
+    "recycling-facility/glass-screening-deck"
+  ],
+  "source": "catalog/kits/recycling-facility/glass-screening-deck.kcad.ts",
+  "sourceSha256": "ae610a8fa46993a62474ea5494e0305cd6226b86e69d762bf161780a928c3cb9",
+  "indexedSourceSha256": "ae610a8fa46993a62474ea5494e0305cd6226b86e69d762bf161780a928c3cb9",
+  "preview": "/assets/recycling-facility-glass-screening-deck.png",
+  "previewExists": true
+}

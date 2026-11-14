@@ -1,0 +1,54 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley
+(node:1894311) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+standard-components/angle-bracket: 232 tris
+standard-components/base-mounting-plate: 264 tris
+standard-components/beam-coupling: 428 tris
+standard-components/blind-flange: 296 tris
+standard-components/bulkhead-adapter: 456 tris
+standard-components/cable-clamp: 132 tris
+standard-components/cable-gland: 384 tris
+standard-components/caster-wheel: 200 tris
+standard-components/clevis-pin: 156 tris
+standard-components/din-rail-end-stop: 80 tris
+standard-components/din-rail-terminal-block: 444 tris
+standard-components/din-rail: 48 tris
+standard-components/door-hinge: 1440 tris
+standard-components/drawer-slide-channel: 60 tris
+standard-components/flange-bearing-housing: 456 tris
+standard-components/flat-joining-plate: 572 tris
+standard-components/gusset-bracket: 32 tris
+standard-components/handle-pull: 220 tris
+standard-components/handwheel: 176 tris
+standard-components/hose-barb-adapter: 448 tris
+standard-components/jaw-coupling: 574 tris
+standard-components/knurled-knob: 228 tris
+standard-components/leveling-foot: 132 tris
+standard-components/linear-guide-carriage: 408 tris
+standard-components/linear-guide-rail: 540 tris
+standard-components/panel-clamp: 80 tris
+standard-components/piano-hinge: 332 tris
+standard-components/pillow-block-housing: 132 tris
+standard-components/pipe-coupling: 480 tris
+standard-components/pipe-elbow-45: 236 tris
+standard-components/pipe-elbow-90: 236 tris
+standard-components/pipe-flange: 400 tris
+standard-components/pipe-reducer: 474 tris
+standard-components/pipe-saddle-clamp: 132 tris
+standard-components/pipe-tee: 192 tris
+standard-components/pipe-union: 360 tris
+standard-components/retaining-ring: 228 tris
+standard-components/rubber-bumper: 332 tris
+standard-components/shaft-collar: 140 tris
+standard-components/shaft-coupling: 536 tris
+standard-components/shim-pack: 60 tris
+standard-components/split-shaft-collar: 112 tris
+standard-components/square-mounting-flange: 316 tris
+standard-components/t-slot-angle-bracket: 40 tris
+standard-components/t-slot-end-cap: 156 tris
+standard-components/timing-belt-pulley: 1236 tris
+standard-components/tube-clamp: 164 tris
+standard-components/tubular-spacer: 432 tris
+standard-components/u-bracket: 80 tris
+standard-components/v-belt-pulley: 384 tris

@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-10",
+  "baselineCommit": "952f432ae",
+  "kit": "standard-components",
+  "assets": [
+    "pipe-reducer",
+    "retaining-ring",
+    "tubular-spacer"
+  ],
+  "variants": [
+    {
+      "id": "reducer-default",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.60"
+      }
+    },
+    {
+      "id": "reducer-half",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.50"
+      }
+    },
+    {
+      "id": "reducer-three-quarter",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.75"
+      }
+    },
+    {
+      "id": "reducer-stainless",
+      "asset": "pipe-reducer",
+      "preset": "stainless"
+    },
+    {
+      "id": "spacer-short",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "short"
+      }
+    },
+    {
+      "id": "spacer-long",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "long"
+      }
+    },
+    {
+      "id": "spacer-insulated",
+      "asset": "tubular-spacer",
+      "preset": "insulated"
+    },
+    {
+      "id": "spacer-default",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "standard"
+      }
+    },
+    {
+      "id": "ring-compact-gap",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "compact"
+      }
+    },
+    {
+      "id": "ring-wide-gap",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "wide"
+      }
+    },
+    {
+      "id": "ring-default",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "standard"
+      }
+    },
+    {
+      "id": "ring-blue-phosphate",
+      "asset": "retaining-ring",
+      "preset": "bluePhosphate"
+    }
+  ],
+  "commands": [
+    "python3 artifacts/catalog-demos/standard-components-pipe-geometry-20261110/render_kit_previews.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx artifacts/catalog-demos/standard-components-pipe-geometry-20261110/render_variants.ts",
+    "npm run catalog:pages",
+    "npx eslint catalog/kits/standard-components/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "caption": "Local software renders and catalog checks; branch not deployed; no manufacturing or physical acceptance claim."
+}

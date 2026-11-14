@@ -1,0 +1,5 @@
+ESLint: industrial-plant passed.
+Focused exported-GLB regression: 1/1 passed.
+Catalog integration: 55 files / 88 tests passed.
+Index: 2,402 assets / 50 kits; one row changed.
+Freshness: 0 SHA mismatches / 0 missing previews.

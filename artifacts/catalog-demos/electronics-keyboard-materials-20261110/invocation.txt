@@ -1,0 +1,24 @@
+# Full catalog refresh from the standing catalog round procedure.
+npx tsx scripts/renderCatalogPreviews.ts
+npx tsx scripts/buildAssetCatalog.ts
+
+# Final palette-only update: regenerate its default preview, then refresh index.
+npx tsx scripts/renderCatalogPreviews.ts keyboard
+npx tsx scripts/buildAssetCatalog.ts
+
+# Source-driven variant images, MP4 composition and media inspection.
+npx tsx artifacts/catalog-demos/electronics-keyboard-materials-20261110/captureVariants.ts
+python3 artifacts/catalog-demos/electronics-keyboard-materials-20261110/build_video.py
+ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4
+mkdir -p artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification
+ffmpeg -v error -ss 1 -i artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4 -frames:v 1 -y artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification/mp4-frame-01s.png
+ffmpeg -v error -ss 4 -i artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4 -frames:v 1 -y artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification/mp4-frame-04s.png
+ffmpeg -v error -ss 7 -i artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4 -frames:v 1 -y artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification/mp4-frame-07s.png
+ffmpeg -v error -ss 10 -i artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4 -frames:v 1 -y artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification/mp4-frame-10s.png
+ffmpeg -v error -ss 13 -i artifacts/catalog-demos/electronics-keyboard-materials-20261110/keyboard-material-controls.mp4 -frames:v 1 -y artifacts/catalog-demos/electronics-keyboard-materials-20261110/verification/mp4-frame-13s.png
+
+# Catalog evidence.
+python3 scripts/checkCatalogQuality.py --kit electronics
+python3 scripts/checkCatalogQuality.py --top 3
+npx eslint catalog/kits/electronics/
+npx vitest run tests/integration/catalog/

@@ -37,6 +37,25 @@ evidence, rendered preview comparisons, and inspected MP4. The
 [original wave bundle](../../../artifacts/catalog-demos/recycling-facility-wave-20261103/README.md)
 preserves the kit's initial creation record.
 
+The [battery quarantine drum material review](../../../artifacts/catalog-demos/battery-quarantine-drum-material-review-20261111/README.md)
+records a source-only color correction: its vermiculite sack now keeps a kraft
+paper finish independent of the warning-alarm paint. The GLB regression,
+before/after preview and local demo are in the bundle. The asset ID and
+triangle budget are unchanged.
+
+The [eddy-current separator shell material review](../../../artifacts/catalog-demos/eddy-current-separator-shell-material-review-20261111/README.md)
+corrects the outer head shell to a dark nonconductive-composite finish while
+preserving the existing `rotor` parameter key for saved overrides. The GLB
+regression, five-preview audit ledger, before/after previews and local demo are
+in the bundle. Geometry, presets, asset ID, triangle budget and kit count are
+unchanged.
+
+The [glass-crusher motor material review](../../../artifacts/catalog-demos/recycling-facility-glass-crusher-motor-material-review-20261111/README.md)
+moves the separate drive motor from mill enamel to the existing painted-steel
+finish. Its original parameter keys and four material controls remain intact;
+the GLB regression, five-preview audit, before/after renders and inspected local
+MP4 are in the bundle.
+
 These are visualization assets. They do not represent equipment specifications,
 process performance, operator safety, regulatory compliance, or physical
 acceptance.

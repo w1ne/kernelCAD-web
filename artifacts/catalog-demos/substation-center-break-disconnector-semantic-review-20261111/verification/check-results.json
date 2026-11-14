@@ -1,0 +1,31 @@
+{
+  "eslint": {
+    "command": "npx eslint catalog/kits/grid-substation/ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts",
+    "exitCode": 0
+  },
+  "integrationTest": {
+    "command": "npx vitest run tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts",
+    "testsPassed": 1,
+    "testsFailed": 0,
+    "file": "tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts"
+  },
+  "catalogQuality": {
+    "command": "python3 scripts/checkCatalogQuality.py --kit grid-substation",
+    "passing": 80,
+    "total": 80,
+    "passRate": "100.00%"
+  },
+  "renderInspect": {
+    "command": "PW_CDP_URL=http://127.0.0.1:9223 timeout --signal=TERM --kill-after=5s 120s node dist/cli/index.js render inspect catalog/kits/grid-substation/substation-center-break-disconnector.kcad.ts artifacts/catalog-demos/substation-center-break-disconnector-semantic-review-20261111/render-inspect --views front,right,top,iso --channels rgb --no-watermark --environment softbox --screenshot-timeout 25000",
+    "result": "existing Chrome connected but CDP attachment exceeded 30 seconds",
+    "fallbackBrowserLaunched": false
+  },
+  "video": {
+    "command": "bash artifacts/catalog-demos/substation-center-break-disconnector-semantic-review-20261111/build-demo.sh",
+    "codec": "h264",
+    "frameSize": "720x640",
+    "fps": 24,
+    "durationSeconds": 15,
+    "sampledFramesVisuallyReviewed": 3
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/interior-table-lamp-materials-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "jarAndColumnImagesDistinct": true,
+    "allThreePresetsDifferFromDefault": true,
+    "allVariantsHaveSameTriangleCount": true,
+    "sourceTriangleBudget": 240,
+    "maximumMeasuredTriangles": 144
+  },
+  "source": {
+    "file": "catalog/kits/interior/table-lamp.kcad.ts",
+    "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+  },
+  "renders": [
+    {
+      "id": "jar-default",
+      "choices": {
+        "baseStyle": "jar"
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.285145,
+          0.495,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 6,
+        "parts": 6,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "0553c635eae286a3bfd16596d765249edf2b4053a25eb4a6ff2fc658aff35074",
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+    },
+    {
+      "id": "column-default",
+      "choices": {
+        "baseStyle": "column"
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.285145,
+          0.505,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 6,
+        "parts": 6,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "bdc125d6ab4de3c4da4eca9550724d56f00cf769d2e6aa1fcb56063214a21782",
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+    },
+    {
+      "id": "terracotta",
+      "choices": {
+        "baseStyle": "jar"
+      },
+      "preset": "terracotta",
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.285145,
+          0.495,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 6,
+        "parts": 6,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "12c8e929af03cbb1522650dab8b3099b0773a464390dcf34e5f13c87b2843014",
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+    },
+    {
+      "id": "mid-century",
+      "choices": {
+        "baseStyle": "jar"
+      },
+      "preset": "midCentury",
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.285145,
+          0.495,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 6,
+        "parts": 6,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "9ce2331bcda52c583e8d4db6adebf3d63006ebdb41aa5cfc05a5edc614e7acf2",
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+    },
+    {
+      "id": "monochrome",
+      "choices": {
+        "baseStyle": "jar"
+      },
+      "preset": "monochrome",
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.285145,
+          0.495,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 6,
+        "parts": 6,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "0472a4f2b37e339fb6f65a8b99ff7bc0a64c7230366f68d62783ccd17786e513",
+      "sourceSha256": "fa9e0f2e597d310598396d27b10d21b62a8032be49c5e423ce864a5874874f9d"
+    }
+  ]
+}

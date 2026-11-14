@@ -1,0 +1,1 @@
+gh pr view 1258 --json number,title,state,url,headRefName,headRefOid,baseRefName,reviewDecision,reviews,mergeStateStatus,statusCheckRollup

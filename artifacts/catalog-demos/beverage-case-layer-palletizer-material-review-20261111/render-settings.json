@@ -1,0 +1,26 @@
+{
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts case-layer-palletizer",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "renderer": "scripts/renderCatalogPreviews.ts / catalog low-poly software renderer",
+  "camera": "fixed catalog 3/4 view",
+  "preset": "default values",
+  "assetId": "beverage-bottling-line/case-layer-palletizer",
+  "triangleCount": 132,
+  "materialChange": {
+    "part": "pallet-deck",
+    "beforeControl": "corrugatedBoard",
+    "afterControl": "palletTimber",
+    "afterDefault": "#95683f"
+  },
+  "detailCrop": {
+    "sourcePixels": "150x100+350+292",
+    "videoPixels": "450x300",
+    "purpose": "show the outfeed pallet deck color change"
+  },
+  "video": {
+    "frameSize": "1280x720",
+    "frameRate": 24,
+    "durationSeconds": 8,
+    "caption": "Local source preview only; not deployed and not hardware acceptance."
+  }
+}

@@ -1,0 +1,11 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [32m✓[39m tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 920[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware [33m 471[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 15:07:04
+[2m   Duration [22m 9.33s[2m (transform 6.47s, setup 148ms, import 7.68s, tests 920ms, environment 0ms)[22m
+

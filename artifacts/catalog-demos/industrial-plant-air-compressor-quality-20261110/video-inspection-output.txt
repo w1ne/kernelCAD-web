@@ -1,0 +1,23 @@
+{
+  "video": "air-compressor-demo.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 15.0,
+  "sampleTimesSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5
+  ],
+  "decodedFrames": [
+    "video-review/decoded-01.png",
+    "video-review/decoded-02.png",
+    "video-review/decoded-03.png",
+    "video-review/decoded-04.png",
+    "video-review/decoded-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "visualInspection": "Decoded all five sampled frames; see contact sheet. Each scene shows local geometry or a local verification summary."
+}

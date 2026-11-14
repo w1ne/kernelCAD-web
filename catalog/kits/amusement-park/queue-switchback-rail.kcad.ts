@@ -1,96 +1,85 @@
-// Queue switchback rail: Modular two-lane queue divider with paired rails, seven posts, and a rounded turning end.
+// SPDX-License-Identifier: CC0-1.0
+// Queue switchback rail: the folded line of handrails that turns one long
+// ride queue into two lanes walking back on each other.
+// What makes it a switchback rather than a fence: two parallel lanes of round
+// tube handrails on posts with bolted floor flanges, a mid-height rail and
+// infill bars, a semicircular U-turn hoop at the far end that guests walk
+// round, a "queue starts here" entry sign with a post-top wait-time board, and
+// end caps on every post.
+// Generic visualization geometry at about real size (about 3.6 m long, 1.2 m
+// across, 1 m rail height), millimetres, Z up, entry on -X, standing on z = 0.
 meta({
   name: "queue-switchback-rail",
   license: "CC0-1.0",
   title: "Queue switchback rail",
-  description: "Modular two-lane queue divider with paired rails, seven posts, and a rounded turning end. Controls: overall scale, galvanizedSteel, concrete, enamel; festival and twilight material presets.",
-  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
+  description: "Ride queue switchback at about real size: two parallel lanes of round tube handrails on flanged posts with mid rails and infill bars, a semicircular U-turn hoop at the far end, post end caps, a queue-entry sign and a wait-time board on the entry post. Material controls: galvanised steel, rail enamel, floor flanges, signage. Park green, festival and twilight presets.",
+  tags: ["queue", "switchback", "handrail", "queue line", "crowd control", "amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
   origin: "base",
   compat: ["amusement-park", "theme-park", "midway", "visitor-attraction"],
-  triangleBudget: 1800,
+  triangleBudget: 6000,
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const galvanizedSteel = param("galvanizedSteel", "#7e8d92", { label: "Galvanized steel" });
-const concrete = param("concrete", "#92938b", { label: "Concrete" });
-const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const galvanizedSteel = param("galvanizedSteel", "#8f9a9e", { label: "Galvanised posts and infill" });
+const enamel = param("enamel", "#2f6b4f", { label: "Rail enamel" });
+const concrete = param("concrete", "#6d706c", { label: "Floor flanges and caps" });
+const signage = param("signage", "#f2c14e", { label: "Sign face" });
 
 presets({
-  festival: {
-    "galvanizedSteel": "#9aa7a8",
-    "concrete": "#aaa99e",
-    "enamel": "#edb34d"
-},
-  twilight: {
-    "galvanizedSteel": "#586c73",
-    "concrete": "#6f7477",
-    "enamel": "#385b81"
-},
+  parkGreen: { galvanizedSteel: "#8f9a9e", enamel: "#2f6b4f", concrete: "#6d706c", signage: "#f2c14e" },
+  festival: { galvanizedSteel: "#a9b2b2", enamel: "#c8473a", concrete: "#7a7a72", signage: "#ffe08a" },
+  twilight: { galvanizedSteel: "#5f6d73", enamel: "#2d4f7c", concrete: "#4b5054", signage: "#e7a64a" },
 });
-const originOffsetMm = 0;
+
 const p = assembly("queue-switchback-rail");
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
-  if ([].includes(name)) p.part(name, positioned.color(galvanizedSteel));
-  else if (["lower-rail-11"].includes(name)) p.part(name, positioned.color(enamel));
-  else if (["lower-rail-0", "lower-rail-1", "lower-rail-10", "lower-rail-2", "lower-rail-3", "lower-rail-4", "lower-rail-5", "lower-rail-6", "lower-rail-7", "lower-rail-8", "lower-rail-9", "post-0", "post-1", "post-10", "post-11", "post-12", "post-13", "post-2", "post-3", "post-4", "post-5", "post-6", "post-7", "post-8", "post-9", "upper-rail-0", "upper-rail-1", "upper-rail-10", "upper-rail-11", "upper-rail-2", "upper-rail-3", "upper-rail-4", "upper-rail-5", "upper-rail-6", "upper-rail-7", "upper-rail-8", "upper-rail-9"].includes(name)) p.part(name, positioned.color(concrete));
-  else p.part(name, positioned.color(galvanizedSteel));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
-const C = (name: string, height: number, radius: number, at: [number, number, number], rotation: [number, number, number] = [0, 0, 0], segments = 10) => {
-  let shape = cylinder(height, radius, segments);
-  if (rotation[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
+const L = 3200;
+const X0 = -1600;
+const LANE = 600;
+const RAIL_H = 1000;
+const MID_H = 560;
+const xs = [0, 1, 2, 3, 4].map((k) => X0 + (k * L) / 4);
+const ys = [-LANE, 0, LANE];
+// Straight tube along X from x0 for len at (y, z).
+const railX = (x0: number, len: number, y: number, z: number, r: number) => cylinder(len, r, 10).rotateY(90).translate(x0, y, z);
 
-C("post-0", 980, 54, [-1500, -420, 0], [0, 0, 0], 8);
-C("post-1", 980, 54, [-1000, -420, 0], [0, 0, 0], 8);
-C("post-2", 980, 54, [-500, -420, 0], [0, 0, 0], 8);
-C("post-3", 980, 54, [0, -420, 0], [0, 0, 0], 8);
-C("post-4", 980, 54, [500, -420, 0], [0, 0, 0], 8);
-C("post-5", 980, 54, [1000, -420, 0], [0, 0, 0], 8);
-C("post-6", 980, 54, [1500, -420, 0], [0, 0, 0], 8);
-C("post-7", 980, 54, [-1500, 420, 0], [0, 0, 0], 8);
-C("post-8", 980, 54, [-1000, 420, 0], [0, 0, 0], 8);
-C("post-9", 980, 54, [-500, 420, 0], [0, 0, 0], 8);
-C("post-10", 980, 54, [0, 420, 0], [0, 0, 0], 8);
-C("post-11", 980, 54, [500, 420, 0], [0, 0, 0], 8);
-C("post-12", 980, 54, [1000, 420, 0], [0, 0, 0], 8);
-C("post-13", 980, 54, [1500, 420, 0], [0, 0, 0], 8);
-B("upper-rail-0", [470, 65, 65], [-1250, -420, 840]);
-B("upper-rail-1", [470, 65, 65], [-750, -420, 840]);
-B("upper-rail-2", [470, 65, 65], [-250, -420, 840]);
-B("upper-rail-3", [470, 65, 65], [250, -420, 840]);
-B("upper-rail-4", [470, 65, 65], [750, -420, 840]);
-B("upper-rail-5", [470, 65, 65], [1250, -420, 840]);
-B("upper-rail-6", [470, 65, 65], [-1250, 420, 840]);
-B("upper-rail-7", [470, 65, 65], [-750, 420, 840]);
-B("upper-rail-8", [470, 65, 65], [-250, 420, 840]);
-B("upper-rail-9", [470, 65, 65], [250, 420, 840]);
-B("upper-rail-10", [470, 65, 65], [750, 420, 840]);
-B("upper-rail-11", [470, 65, 65], [1250, 420, 840]);
-B("lower-rail-0", [470, 55, 55], [-1250, -420, 430]);
-B("lower-rail-1", [470, 55, 55], [-750, -420, 430]);
-B("lower-rail-2", [470, 55, 55], [-250, -420, 430]);
-B("lower-rail-3", [470, 55, 55], [250, -420, 430]);
-B("lower-rail-4", [470, 55, 55], [750, -420, 430]);
-B("lower-rail-5", [470, 55, 55], [1250, -420, 430]);
-B("lower-rail-6", [470, 55, 55], [-1250, 420, 430]);
-B("lower-rail-7", [470, 55, 55], [-750, 420, 430]);
-B("lower-rail-8", [470, 55, 55], [-250, 420, 430]);
-B("lower-rail-9", [470, 55, 55], [250, 420, 430]);
-B("lower-rail-10", [470, 55, 55], [750, 420, 430]);
-B("lower-rail-11", [470, 55, 55], [1250, 420, 430]);
+// Posts with floor flanges and caps on three rail lines (outer, centre, outer).
+for (const y of ys) {
+  for (const x of xs) {
+    const n = `${Math.round(x)}-${y}`;
+    add(`flange-${n}`, cylinder(12, 70, 12).translate(x, y, 0).color(concrete));
+    add(`post-${n}`, cylinder(RAIL_H - 12, 25, 10).translate(x, y, 12).color(galvanizedSteel));
+    add(`cap-${n}`, sphere(30).translate(x, y, RAIL_H).color(concrete));
+  }
+  add(`top-rail-${y}`, railX(X0, L, y, RAIL_H - 20, 22).color(enamel));
+  add(`mid-rail-${y}`, railX(X0, L, y, MID_H, 16).color(enamel));
+  for (let k = 0; k < 4; k++) {
+    const xm = xs[k] + L / 8;
+    add(`infill-${k}-${y}`, cylinder(RAIL_H - 20 - MID_H, 9, 6).translate(xm, y, MID_H).color(galvanizedSteel));
+  }
+}
+
+// U-turn hoops at the far end: the centre line ends, the outer rails sweep
+// round in a half circle so the lane turns back on itself.
+const XE = X0 + L;
+const hoop = (z: number, r: number) => torus(LANE, r, 24).subtract(box(LANE * 2 + 200, LANE * 2 + 200, 400, true).translate(-LANE - 100, 0, 0)).translate(XE, 0, z);
+add("turn-hoop-top", hoop(RAIL_H - 20, 22).color(enamel));
+add("turn-hoop-mid", hoop(MID_H, 16).color(enamel));
+add("turn-post", cylinder(RAIL_H - 12, 25, 10).translate(XE + LANE, 0, 12).color(galvanizedSteel));
+add("turn-flange", cylinder(12, 70, 12).translate(XE + LANE, 0, 0).color(concrete));
+add("turn-cap", sphere(30).translate(XE + LANE, 0, RAIL_H).color(concrete));
+
+// Entry sign on the near outer post and wait-time board on the centre post.
+add("entry-sign-post", cylinder(700, 22, 10).translate(X0, -LANE, RAIL_H).color(galvanizedSteel));
+add("entry-sign-board", box(560, 24, 320, true).translate(X0 + 280, -LANE - 30, RAIL_H + 520).color(enamel));
+add("entry-sign-face", box(500, 8, 260, true).translate(X0 + 280, -LANE - 46, RAIL_H + 520).color(signage));
+add("entry-arrow", extrudePolygon([[-150, -30], [60, -30], [60, -80], [170, 0], [60, 80], [60, 30], [-150, 30]], 8).rotateX(90).translate(X0 + 280, -LANE - 52, RAIL_H + 520).color(enamel));
+add("wait-board", box(360, 30, 220, true).translate(X0, 0, RAIL_H + 160).color(enamel));
+add("wait-face", box(300, 8, 160, true).translate(X0, -19, RAIL_H + 160).color(signage));
+for (let k = 0; k < 2; k++) add(`wait-digit-${k}`, box(60, 6, 110, true).translate(X0 - 60 + k * 90, -26, RAIL_H + 160).color(concrete));
+add("wait-board-stem", cylinder(60, 18, 8).translate(X0, 0, RAIL_H + 20).color(galvanizedSteel));
 
 return p.model();

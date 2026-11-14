@@ -1,0 +1,73 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/office-tools-silhouette-20261110/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly.maxTriangles=source triangleBudget })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "assets": [
+    {
+      "id": "highlighter",
+      "source": "catalog/kits/office/highlighter.kcad.ts",
+      "sourceSha256": "a54b129fe9cac4c69984eabd37ec0eeed8e631e6015e144d5e456ed56e284690",
+      "triangleBudget": 320
+    },
+    {
+      "id": "mechanical-pencil",
+      "source": "catalog/kits/office/mechanical-pencil.kcad.ts",
+      "sourceSha256": "75dc5d6218b868b7c49a570fd848ea16ae8f1328099468a459fe6f9c28e52ee3",
+      "triangleBudget": 900
+    }
+  ],
+  "variants": [
+    {
+      "asset": "highlighter",
+      "preset": "professional",
+      "values": {
+        "barrelPolymer": "#eac633",
+        "capPolymer": "#d39124",
+        "felt": "#bd6a36",
+        "fluorescentInk": "#eff24d"
+      },
+      "triangles": 232,
+      "budget": 320,
+      "png": "variants/highlighter-professional.png"
+    },
+    {
+      "asset": "highlighter",
+      "preset": "classroom",
+      "values": {
+        "barrelPolymer": "#4d9a7b",
+        "capPolymer": "#34765f",
+        "felt": "#405b8a",
+        "fluorescentInk": "#ff9444"
+      },
+      "triangles": 232,
+      "budget": 320,
+      "png": "variants/highlighter-classroom.png"
+    },
+    {
+      "asset": "mechanical-pencil",
+      "preset": "professional",
+      "values": {
+        "aluminum": "#9aa6aa",
+        "rubber": "#30363a",
+        "polymer": "#d85e4d",
+        "graphite": "#25292b"
+      },
+      "triangles": 802,
+      "budget": 900,
+      "png": "variants/mechanical-pencil-professional.png"
+    },
+    {
+      "asset": "mechanical-pencil",
+      "preset": "classroom",
+      "values": {
+        "aluminum": "#4a7892",
+        "rubber": "#394947",
+        "polymer": "#607e54",
+        "graphite": "#d4ae4c"
+      },
+      "triangles": 802,
+      "budget": 900,
+      "png": "variants/mechanical-pencil-classroom.png"
+    }
+  ]
+}

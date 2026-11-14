@@ -1,0 +1,98 @@
+{
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "kitCountBefore": 50,
+  "kitCountAfter": 50,
+  "changedAssetIds": [
+    "crossbelt-sorter-section"
+  ],
+  "targetSourceSha256": "168e3077a650e57b4a40218933be3f8826d4c04040d5c25d090bc69c8704e974",
+  "diskSourceSha256": "168e3077a650e57b4a40218933be3f8826d4c04040d5c25d090bc69c8704e974",
+  "targetPreview": "/assets/postal-logistics-crossbelt-sorter-section.png",
+  "triangles": 960,
+  "triangleBudget": 1800,
+  "dimensionsM": [
+    0.775,
+    0.84,
+    1.18
+  ],
+  "params": [
+    "scale",
+    "paintedSteel",
+    "structuralSteel",
+    "polymer",
+    "beltRubber",
+    "stainlessSteel"
+  ],
+  "presets": {
+    "weathered": {
+      "paintedSteel": "#68777a",
+      "structuralSteel": "#67675f",
+      "polymer": "#6c7c7c",
+      "beltRubber": "#3d3d39",
+      "stainlessSteel": "#9ea7a6"
+    },
+    "highVisibility": {
+      "paintedSteel": "#e36d32",
+      "structuralSteel": "#454f54",
+      "polymer": "#e0b245",
+      "beltRubber": "#252b2e",
+      "stainlessSteel": "#d9e0de"
+    }
+  },
+  "palette": [
+    {
+      "name": "structuralSteel",
+      "color": "#58656c",
+      "parts": [
+        "track-base",
+        "support-left-front",
+        "support-right-front",
+        "support-left-back",
+        "support-right-back"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "paintedSteel",
+      "color": "#56777d",
+      "parts": [
+        "side-left",
+        "side-right"
+      ],
+      "param": "paintedSteel"
+    },
+    {
+      "name": "polymer",
+      "color": "#477c8e",
+      "parts": [
+        "tray-1",
+        "tray-2",
+        "tray-3",
+        "tray-4"
+      ],
+      "param": "polymer"
+    },
+    {
+      "name": "beltRubber",
+      "color": "#30373b",
+      "parts": [
+        "crossbelt-1",
+        "crossbelt-2",
+        "crossbelt-3",
+        "crossbelt-4"
+      ],
+      "param": "beltRubber"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#bbc4c4",
+      "parts": [
+        "drive-panel"
+      ],
+      "param": "stainlessSteel"
+    }
+  ],
+  "sourceIndexAndPreviewIntegrity": "pass",
+  "generatedIndexSha256": "b2169da802e3b40ee260ea278354df4b66e1a0eae5dab4f4b6b7bc6c6338a6d5"
+}

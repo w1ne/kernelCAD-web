@@ -5,7 +5,7 @@ meta({
   name: "field-lamp",
   license: 'CC0-1.0',
   title: "Portable field lamp",
-  description: "Compact field lamp with a square base, upright stem and broad rectangular lamp head. Material controls: paint, glass; named lunarDust and highVisibility presets.",
+  description: "Compact field lamp with a square base, upright stem and broad rectangular lamp head. Material controls: paint, glass, aluminum; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#c0a56c", { label: "Painted shell" });
 const glass = param('glass', "#548b9a", { label: "Optical glass" });
 
+const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum stem" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "glass": "#7b9ba0"},
-  highVisibility: {"paint": "#d86e35", "glass": "#63a9b8"},
+  lunarDust: {"paint": "#c9c3b5", "glass": "#7b9ba0", "aluminum": "#c3c5c3"},
+  highVisibility: {"paint": "#d86e35", "glass": "#63a9b8", "aluminum": "#d8b255"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -42,7 +44,7 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("field-lamp");
 p.part("base",b(0,0,0,260,260,50).color(paint));
-p.part("stem",c(0,0,25,430,28,8).color(paint));
+p.part("stem",c(0,0,25,430,28,8).color(aluminum));
 p.part("neck",b(0,0,445,100,100,80).color(paint));
 p.part("head",b(0,0,615,320,180,250).color(paint));
 p.part("lens",b(0,-95,615,250,20,170).color(glass));

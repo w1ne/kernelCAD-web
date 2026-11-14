@@ -1,0 +1,3 @@
+Invocation: python3 artifacts/catalog-demos/interior-table-lamp-materials-20261110/capture_demo.py
+Video command: ffmpeg -f concat -safe 0 -i frames/concat.txt -vf fps=24,scale=1280:720,format=yuv420p -c:v libx264 -preset medium -crf 20 -movflags +faststart
+Output: artifacts/catalog-demos/interior-table-lamp-materials-20261110/interior-table-lamp-materials.mp4 (138915 bytes)

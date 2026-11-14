@@ -1,0 +1,7 @@
+Command: npx vitest run tests/integration/catalog/windConverterCabinetMaterials.test.ts
+
+ ✓ tests/integration/catalog/windConverterCabinetMaterials.test.ts (1 test) 819ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  36.32s (transform 19.20s, setup 453ms, import 33.99s, tests 819ms, environment 0ms)

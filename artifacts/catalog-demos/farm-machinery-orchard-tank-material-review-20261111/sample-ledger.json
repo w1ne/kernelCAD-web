@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-11-11",
+  "kit": "farm-machinery",
+  "pr": 1258,
+  "baselineHead": "ab53fd09d49557505f43806b031bf27b6c88790a",
+  "samples": [
+    {
+      "id": "orchard-air-blast-sprayer",
+      "sourceSha256Before": "1c11b797a30cd865dbd8a52e1c84bc59f13ac5d95bfc082597656743770b1870",
+      "previewSha256Before": "bc4e0af99290943ef67ab8f0428d33786deaafb8955abf15ce748490ee640bc3",
+      "sourceSha256After": "ed2a7144aa5381cf0593bac6b97cb587c9be832e015d338704101e95ee2a05c9",
+      "previewSha256After": "9f62cf7c5047c7c4af9ddcc778236f2be51c1f2223f172f3ead56d27e8861484",
+      "observation": "Before, the chemical tank used the same painted-steel control and green finish as the chassis. After, it has an independent pale tank-polymer finish. The preview still lacks the axial fan and nozzle bank named in the source description; this round changes material control only.",
+      "envelopeM": [0.9964, 1.68, 1.78],
+      "triangles": 400,
+      "result": "Material-control mismatch corrected; geometry unchanged."
+    },
+    {
+      "id": "potato-harvester",
+      "sourceSha256": "cc98d6399e540d0a30a76763bdce43f75de87eed2df59b936d60aa781d605b8b",
+      "previewSha256": "303e95621d74572b6d20c17d2198adb4851128e56db437f4eb5941ae15274c1b",
+      "observation": "A boxy raised bunker and flat chassis dominate; the separator web and digging assembly are not recognizable in the rendered view. Green painted steel and dark tires are coherent.",
+      "result": "No material mismatch found; a silhouette/detail concern remains separate from this material correction."
+    },
+    {
+      "id": "self-propelled-field-sprayer",
+      "sourceSha256": "62a10803478ecbb96517cab13e6582f803e3a3bc4684b29c1a45f3398106744e",
+      "previewSha256": "21c22138920ad34bd2c689bf30bff2789c3beef749e895be0243dfca500ed786",
+      "observation": "Central cab/body, four tires, and lateral booms are visible. The high-clearance stance and spray hardware are weak in this view. Paint, glass, exposed steel, and rubber are distinct.",
+      "result": "No material mismatch found."
+    },
+    {
+      "id": "grain-dryer",
+      "sourceSha256": "759ec340464ab4d53c19acbb285ce840636ae7931113fa9a08d7254e750d3a59",
+      "previewSha256": "662936b500d9d274f97b07309fa3162a93f86ddf61a11fc5fdeff577f6014cbb",
+      "observation": "The vertical vented tower, top cap, base, and ladder rails read as a grain-dryer scene asset. The painted structure and exposed steel are coherent.",
+      "result": "No material mismatch found."
+    },
+    {
+      "id": "farm-grain-auger",
+      "sourceSha256": "1bd3f76ac4d4abead538a86f440cb7dbb82ee0f7a6b3dc5ffaa934c2ba5d19df",
+      "previewSha256": "673279a468b5d1e862dd00ff878c3a2934db975e35b7bcc243baec7a32cbb567",
+      "observation": "Inclined tube, intake hopper, support rails, transport wheels, and feed material are visible. Painted steel, exposed steel, rubber, and crop material have plausible assignments.",
+      "result": "No material mismatch found."
+    }
+  ]
+}

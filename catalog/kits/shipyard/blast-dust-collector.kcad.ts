@@ -3,7 +3,7 @@ meta({
   name: "blast-dust-collector",
   license: 'CC0-1.0',
   title: "Blast dust collector",
-  description: "Compact dust extraction skid with filter canisters, inlet duct, service door, and wheeled base. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  description: "Compact dust extraction skid with filter canisters, inlet duct, service door, and wheeled base. Editable yard-finish, filter-media, and elastomer colors; includes fresh-coat and weathered-yard presets.",
   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "blast", "dust", "collector"],
   kit: 'shipyard',
   category: 'prop',
@@ -14,11 +14,12 @@ meta({
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const yardPaint = param("yardPaint", "#71837c", { label: "Yard finish" });
+const filterMedia = param("filterMedia", "#d7ded8", { label: "Filter media" });
 const elastomer = param("elastomer", "#30383b", { label: "Elastomer" });
 
 presets({
-  'fresh-coat': {"yardPaint": "#8b9994", "elastomer": "#3a4245"},
-  'weathered-yard': {"yardPaint": "#5e6d67", "elastomer": "#252b2d"},
+  'fresh-coat': {"yardPaint": "#8b9994", "filterMedia": "#e4e8e3", "elastomer": "#3a4245"},
+  'weathered-yard': {"yardPaint": "#5e6d67", "filterMedia": "#c4ccc5", "elastomer": "#252b2d"},
 });
 
 const p = assembly("blast-dust-collector");
@@ -74,9 +75,9 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
 };
 
 p.part("skid", b("skid", [1650, 980, 150], [0, 0, 75]).color(yardPaint));
-p.part("filter-canister-0", c("filter-canister-0", 1320, 240, 12, [-520, 0, 810]).color(yardPaint));
-p.part("filter-canister-1", c("filter-canister-1", 1320, 240, 12, [0, 0, 810]).color(yardPaint));
-p.part("filter-canister-2", c("filter-canister-2", 1320, 240, 12, [520, 0, 810]).color(yardPaint));
+p.part("filter-canister-0", c("filter-canister-0", 1320, 240, 12, [-520, 0, 810]).color(filterMedia));
+p.part("filter-canister-1", c("filter-canister-1", 1320, 240, 12, [0, 0, 810]).color(filterMedia));
+p.part("filter-canister-2", c("filter-canister-2", 1320, 240, 12, [520, 0, 810]).color(filterMedia));
 p.part("inlet-duct", b("inlet-duct", [1350, 190, 190], [0, -410, 1480]).color(yardPaint));
 p.part("fan-housing", b("fan-housing", [520, 520, 420], [760, 0, 430]).color(yardPaint));
 p.part("service-door", b("service-door", [420, 70, 720], [-820, 0, 780]).color(yardPaint));

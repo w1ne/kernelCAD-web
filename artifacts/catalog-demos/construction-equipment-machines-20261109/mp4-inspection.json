@@ -1,0 +1,59 @@
+{
+  "video": "construction-equipment-machines.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "30/1",
+  "durationSeconds": 15.0,
+  "decodedSamples": [
+    {
+      "timeSeconds": 1,
+      "path": "sample-01.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 3.5,
+      "path": "sample-02.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 6,
+      "path": "sample-03.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 8.5,
+      "path": "sample-04.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 11,
+      "path": "sample-05.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 13.5,
+      "path": "sample-06.png",
+      "size": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "inspected": true
+}

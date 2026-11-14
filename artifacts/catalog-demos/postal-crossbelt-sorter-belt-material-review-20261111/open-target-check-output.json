@@ -1,0 +1,61 @@
+{
+  "capturedAt": "2026-11-11",
+  "assets": [
+    "automated-label-applicator",
+    "crossbelt-sorter-section",
+    "parcel-singulator",
+    "sliding-shoe-sorter-section",
+    "telescopic-parcel-conveyor"
+  ],
+  "exactOpenIssueSearches": [
+    {
+      "query": "automated-label-applicator",
+      "matches": []
+    },
+    {
+      "query": "crossbelt-sorter-section",
+      "matches": []
+    },
+    {
+      "query": "parcel-singulator",
+      "matches": []
+    },
+    {
+      "query": "sliding-shoe-sorter-section",
+      "matches": []
+    },
+    {
+      "query": "telescopic-parcel-conveyor",
+      "matches": []
+    }
+  ],
+  "exactOpenPullRequestTitleBodySearches": [
+    {
+      "query": "automated-label-applicator",
+      "matches": []
+    },
+    {
+      "query": "crossbelt-sorter-section",
+      "matches": []
+    },
+    {
+      "query": "parcel-singulator",
+      "matches": []
+    },
+    {
+      "query": "sliding-shoe-sorter-section",
+      "matches": []
+    },
+    {
+      "query": "telescopic-parcel-conveyor",
+      "matches": []
+    }
+  ],
+  "changedSourcePathChecks": {
+    "featurePullRequest": 1258,
+    "featureBase": "233cfe9d9d6e84c0252bad4ba1d51dc4b8c1b57a",
+    "postalLogisticsPathsInFeatureDiff": [],
+    "otherOpenPullRequestPathsInPostalLogistics": [],
+    "notes": "Open-PR changed-file pages were checked; PR #1215 changes industrial-plant only. PR #1258 current branch diff contains no postal-logistics paths. No selected source path matched another open PR."
+  }
+}

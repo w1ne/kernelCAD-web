@@ -1,0 +1,3 @@
+(node:1877302) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+grid-substation/substation-transformer-conservator: 244 tris

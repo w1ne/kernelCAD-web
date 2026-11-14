@@ -1,0 +1,207 @@
+{
+  "kind": "local source/index/preview and generated detail-page verification; no deployment performed",
+  "pass": true,
+  "asset": {
+    "id": "industrial-plant/centrifugal-chiller",
+    "source": "catalog/kits/industrial-plant/centrifugal-chiller.kcad.ts",
+    "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+    "preview": "/assets/industrial-plant-centrifugal-chiller.png",
+    "triangles": 3968,
+    "triangleBudget": 4500,
+    "materialControls": [
+      "shellSteel",
+      "frameSteel",
+      "compressorPaint",
+      "pipework"
+    ],
+    "presets": [
+      "plant",
+      "weathered",
+      "highVisibility",
+      "stainless"
+    ],
+    "choices": {
+      "shellCapacity": [
+        "compact",
+        "large"
+      ]
+    }
+  },
+  "industrialPlantQuality": {
+    "passing": 60,
+    "total": 60
+  },
+  "catalogQuality": {
+    "passing": 2402,
+    "total": 2402,
+    "passRate": "100.00%"
+  },
+  "variants": [
+    {
+      "asset": "industrial-plant/centrifugal-chiller",
+      "name": "large-plant",
+      "values": {
+        "shellSteel": "#496e7a",
+        "frameSteel": "#343e43",
+        "compressorPaint": "#47765b",
+        "pipework": "#c0c6c4",
+        "shellCapacity": "large"
+      },
+      "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+      "triangles": 3968,
+      "triangleBudget": 4500,
+      "uniqueColors": 8,
+      "boundsM": {
+        "x": [
+          -0.505,
+          0.505
+        ],
+        "y": [
+          -5.417888360170764e-17,
+          0.982
+        ],
+        "z": [
+          -0.244,
+          0.39200000000000024
+        ]
+      },
+      "widthM": 1.01,
+      "png": "variants/centrifugal-chiller-large-plant.png"
+    },
+    {
+      "asset": "industrial-plant/centrifugal-chiller",
+      "name": "compact-weathered",
+      "values": {
+        "shellSteel": "#59656a",
+        "frameSteel": "#454440",
+        "compressorPaint": "#4d5847",
+        "pipework": "#878b86",
+        "shellCapacity": "compact"
+      },
+      "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+      "triangles": 3968,
+      "triangleBudget": 4500,
+      "uniqueColors": 8,
+      "boundsM": {
+        "x": [
+          -0.435,
+          0.435
+        ],
+        "y": [
+          -5.417888360170764e-17,
+          0.922
+        ],
+        "z": [
+          -0.244,
+          0.3480000000000002
+        ]
+      },
+      "widthM": 0.87,
+      "png": "variants/centrifugal-chiller-compact-weathered.png"
+    },
+    {
+      "asset": "industrial-plant/centrifugal-chiller",
+      "name": "large-high-visibility",
+      "values": {
+        "shellSteel": "#526f78",
+        "frameSteel": "#28343b",
+        "compressorPaint": "#f0b935",
+        "pipework": "#d5d7d1",
+        "shellCapacity": "large"
+      },
+      "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+      "triangles": 3968,
+      "triangleBudget": 4500,
+      "uniqueColors": 8,
+      "boundsM": {
+        "x": [
+          -0.505,
+          0.505
+        ],
+        "y": [
+          -5.417888360170764e-17,
+          0.982
+        ],
+        "z": [
+          -0.244,
+          0.39200000000000024
+        ]
+      },
+      "widthM": 1.01,
+      "png": "variants/centrifugal-chiller-large-high-visibility.png"
+    },
+    {
+      "asset": "industrial-plant/centrifugal-chiller",
+      "name": "compact-stainless",
+      "values": {
+        "shellSteel": "#c2c9c9",
+        "frameSteel": "#657177",
+        "compressorPaint": "#364653",
+        "pipework": "#e0e3e2",
+        "shellCapacity": "compact"
+      },
+      "sourceSha256": "1e82843bd7b3654da2aa09cd0e919c0a4715778d9331a1c138e584dde8f5dd50",
+      "triangles": 3968,
+      "triangleBudget": 4500,
+      "uniqueColors": 8,
+      "boundsM": {
+        "x": [
+          -0.435,
+          0.435
+        ],
+        "y": [
+          -5.417888360170764e-17,
+          0.922
+        ],
+        "z": [
+          -0.244,
+          0.3480000000000002
+        ]
+      },
+      "widthM": 0.87,
+      "png": "variants/centrifugal-chiller-compact-stainless.png"
+    }
+  ],
+  "checks": {
+    "sourceSha256MatchesIndex": true,
+    "previewExists": true,
+    "previewPathIndexed": true,
+    "qualityGate": true,
+    "fourMaterialControls": true,
+    "materialNamesAreSpecific": true,
+    "namedPresets": true,
+    "shellCapacityChoices": true,
+    "realSilhouetteGeometry": true,
+    "defaultUnderTriangleBudget": true,
+    "assetIdsUnchanged": true,
+    "industrialPlantQuality60of60": true,
+    "catalogQuality2402of2402": true,
+    "variantCount": true,
+    "compactAndLargeGeometryDiffer": true,
+    "variant1SourceHashMatches": true,
+    "variant1UnderBudget": true,
+    "variant1HasVisibleColorSeparation": true,
+    "variant1PreviewExists": true,
+    "variant2SourceHashMatches": true,
+    "variant2UnderBudget": true,
+    "variant2HasVisibleColorSeparation": true,
+    "variant2PreviewExists": true,
+    "variant3SourceHashMatches": true,
+    "variant3UnderBudget": true,
+    "variant3HasVisibleColorSeparation": true,
+    "variant3PreviewExists": true,
+    "variant4SourceHashMatches": true,
+    "variant4UnderBudget": true,
+    "variant4HasVisibleColorSeparation": true,
+    "variant4PreviewExists": true,
+    "localPageExists": true,
+    "localPagePreviewExists": true,
+    "localPageControlsAndPresetsVisible": true,
+    "eslintPassed": true,
+    "integrationPassed": true,
+    "lintIntegration": "passed",
+    "localPage": "passed"
+  },
+  "deployment": "not performed; feature branch changes are local and not deployed",
+  "physicalAcceptance": "not performed"
+}

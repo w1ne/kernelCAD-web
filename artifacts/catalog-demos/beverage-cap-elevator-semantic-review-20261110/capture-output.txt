@@ -1,0 +1,5 @@
+{
+  "video": "artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/beverage-cap-elevator-semantic-review.mp4",
+  "frames": 5,
+  "durationSeconds": 15
+}

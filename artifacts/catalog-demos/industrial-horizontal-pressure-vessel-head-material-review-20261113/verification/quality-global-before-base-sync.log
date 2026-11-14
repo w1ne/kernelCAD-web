@@ -1,0 +1,2 @@
+Command: python3 scripts/checkCatalogQuality.py
+Result: 2401/2402 assets pass (99.96%; 49 rich kits, 0 thin kits). The unchanged structural outlier is standard-components/beam-coupling. Exit code 1 reflects that pre-existing catalog-wide outlier; this color-only correction did not change the structural score.

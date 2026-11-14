@@ -1,0 +1,1 @@
+Verified local static pages, parameter/preset entries, and preview hashes for 2 assets.

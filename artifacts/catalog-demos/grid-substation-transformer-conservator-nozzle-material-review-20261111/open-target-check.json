@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-11",
+  "destinationPr": {
+    "number": 1258,
+    "headSha": "953857820198ab5529527c54f3b57eb8c57af347",
+    "ciRun": "https://github.com/w1ne/kernelCAD-web/actions/runs/43065196489",
+    "ciConclusion": "success",
+    "reviewDecision": "",
+    "submittedReviews": 0,
+    "mergeState": "DIRTY"
+  },
+  "sampledAssets": [
+    "grid-substation/substation-main-power-transformer",
+    "grid-substation/substation-surge-arrester",
+    "grid-substation/substation-transformer-radiator-bank",
+    "grid-substation/substation-live-tank-breaker",
+    "grid-substation/substation-transformer-conservator"
+  ],
+  "openIssueTitleBodyMatches": [],
+  "openPrTitleBodyMatches": [],
+  "otherOpenPrChangedSourcePathMatches": [],
+  "destinationPrChangedSourcePathsExcluded": true,
+  "destinationPrChangedGridSourcePaths": [
+    "catalog/kits/grid-substation/substation-center-break-disconnector.kcad.ts",
+    "catalog/kits/grid-substation/substation-ground-grid-test-well.kcad.ts"
+  ],
+  "sampledSourcePathsInDestinationPrBeforeThisChange": []
+}

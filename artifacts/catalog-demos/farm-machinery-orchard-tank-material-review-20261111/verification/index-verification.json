@@ -1,0 +1,18 @@
+{
+  "asset": "orchard-air-blast-sprayer",
+  "source": "catalog/kits/farm-machinery/orchard-air-blast-sprayer.kcad.ts",
+  "sourceSha256": "ed2a7144aa5381cf0593bac6b97cb587c9be832e015d338704101e95ee2a05c9",
+  "sourceHashMatchesIndex": true,
+  "preview": "/assets/farm-machinery-orchard-air-blast-sprayer.png",
+  "previewPath": "catalog/kits/farm-machinery/previews/orchard-air-blast-sprayer.png",
+  "previewSha256": "9f62cf7c5047c7c4af9ddcc778236f2be51c1f2223f172f3ead56d27e8861484",
+  "previewExists": true,
+  "triangles": 400,
+  "triangleBudget": 2200,
+  "sizeM": [
+    0.9964,
+    1.68,
+    1.78
+  ],
+  "tankPolymerColorInBothPresets": true
+}

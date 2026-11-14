@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 676546ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  675649ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  03:06:12
+   Duration  716.40s (transform 27.05s, setup 419ms, import 38.17s, tests 676.55s, environment 0ms)
+

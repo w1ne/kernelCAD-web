@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Grit classifier unit: Compact grit classifier with sloped trough, feed hopper, discharge chute and support legs. Low-poly visualization geometry in millimetres, Z up.
+// Grit classifier unit: Open decanting trough with an inclined helical grit-extraction screw, feed hopper, discharge chute and a driven upper end. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "grit-classifier",
   license: 'CC0-1.0',
   title: "Grit classifier unit",
-  description: "Compact grit classifier with sloped trough, feed hopper, discharge chute and support legs. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+  description: "Illustrative compact grit classifier with an open settling trough, an inclined exposed extraction screw, a feed hopper and a high-end discharge chute. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets. Not vendor-dimensioned process equipment.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -23,31 +23,49 @@ presets({
   highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const section = (radius:number, sides:number) => {
-  let outline = path().moveTo(radius * Math.cos(Math.PI / 2), radius * Math.sin(Math.PI / 2));
-  for (let k = 1; k < sides; k++) {
-    const angle = Math.PI / 2 + (2 * Math.PI * k) / sides;
-    outline = outline.lineTo(radius * Math.cos(angle), radius * Math.sin(angle));
-  }
-  return outline.close();
-};
-const loftCylinder = (height:number, radius:number, sides:number) => {
-  const levels = [0, height * 0.08, height * 0.92, height];
-  const radii = [radius * 0.9, radius, radius, radius * 0.9];
-  const profiles = levels.map((_, index) => section(radii[index], sides));
-  return profiles[0].loft(profiles.slice(1), {
-    planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
-    ruled: true,
-  });
-};
-const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z).scale(scale);
 
 const p=assembly("grit-classifier");
-p.part("trough",b(0,0,140,850,330,180).color(coatedSteel));
-p.part("feed-hopper",b(-260,0,370,340,360,300).color(coatedSteel));
-p.part("discharge",b(390,0,50,260,260,250).color(stainlessSteel));
-p.part("leg--330",b(-330,0,0,65,70,150).color(structuralSteel));
-p.part("leg-330",b(330,0,0,65,70,150).color(structuralSteel));
-p.part("drive",c(220,0,310,170,85,10).color(coatedSteel));
+// An open decanting trough leaves the screw and settling zone visible.
+p.part("trough-floor",b(0,0,100,850,330,40).color(coatedSteel));
+p.part("trough-wall-left",b(0,-155,140,850,20,230).color(coatedSteel));
+p.part("trough-wall-right",b(0,155,140,850,20,230).color(coatedSteel));
+p.part("trough-inlet-wall",b(-415,0,140,20,310,230).color(coatedSteel));
+p.part("feed-hopper",b(-265,0,370,340,360,300).color(coatedSteel));
+
+// The screw lifts settled grit out of the trough to the raised outlet. The
+// broad thin sweep is the flight; it is separate from the stainless shaft so
+// the two material zones remain visible in the catalog render.
+const screwAngle = 50;
+const screwStart: [number, number, number] = [-90, 0, 215];
+const screwLength = 480;
+const screwShaft = cylinder(screwLength, 14, 12)
+  .rotateY(screwAngle)
+  .translate(...screwStart)
+  .scale(scale);
+const screwFlight = path()
+  .moveTo(-48, -6)
+  .lineTo(48, -6)
+  .lineTo(48, 6)
+  .lineTo(-48, 6)
+  .close()
+  .sweep(helix({ radius: 62, pitch: 92, turns: 5, pointsPerTurn: 12 }), {
+    spine: 'helix',
+    section: 'transverse',
+  })
+  .rotateY(screwAngle)
+  .translate(...screwStart)
+  .scale(scale);
+p.part("classifier-screw-shaft",screwShaft.color(stainlessSteel));
+p.part("classifier-screw-flight",screwFlight.color(stainlessSteel));
+
+// The outlet receives the raised end of the screw. The motor is coaxial with
+// the shaft, as on compact screw classifiers.
+p.part("discharge-chute",box(150,190,90,true).rotateY(-30).translate(390,0,450).scale(scale).color(stainlessSteel));
+p.part("drive",cylinder(100,42,12).rotateY(screwAngle).translate(278,0,507).scale(scale).color(coatedSteel));
+for (const x of [-330,330]) {
+  for (const y of [-105,105]) {
+    p.part(`support-leg-${x}-${y}`,b(x,y,0,55,55,140).color(structuralSteel));
+  }
+}
 
 return p.model();

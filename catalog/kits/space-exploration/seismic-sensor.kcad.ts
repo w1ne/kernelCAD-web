@@ -5,7 +5,7 @@ meta({
   name: "seismic-sensor",
   license: 'CC0-1.0',
   title: "Surface seismic sensor",
-  description: "Low seismic sensor puck with a raised cover, three feet and cable connector. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Low seismic sensor puck with a raised cover, three feet and cable connector. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#7c8178", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer cable port" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -47,6 +49,6 @@ p.part("cap",c(0,0,245,45,150,8).color(aluminum));
 p.part("foot-0",b(110,0,0,65,65,60).color(aluminum));
 p.part("foot-1",b(-55,95,0,65,65,60).color(aluminum));
 p.part("foot-2",b(-55,-95,0,65,65,60).color(aluminum));
-p.part("port",c(0,-140,80,80,30,8).color(paint));
+p.part("port",c(0,-140,80,80,30,8).color(polymer));
 
 return p.model();

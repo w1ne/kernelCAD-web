@@ -1,0 +1,17 @@
+{
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "secondsPerSlide": 4.5,
+  "slides": 4,
+  "encoding": "H.264, yuv420p, CRF 20, faststart",
+  "inputs": [
+    "sample/*.png",
+    "before/rear-door-heat-exchanger.png",
+    "after/rear-door-heat-exchanger.png",
+    "catalog-integration-output.txt",
+    "eslint-output.txt",
+    "index-verification.json",
+    "public-route-check.json"
+  ],
+  "captions": "Local preview/source/index verification; not deployed, simulated, or hardware accepted."
+}

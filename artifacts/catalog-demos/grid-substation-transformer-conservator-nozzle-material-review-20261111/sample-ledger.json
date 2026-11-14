@@ -1,0 +1,91 @@
+{
+  "checkedAt": "2026-11-11",
+  "assets": [
+    {
+      "id": "substation-main-power-transformer",
+      "source": "catalog/kits/grid-substation/substation-main-power-transformer.kcad.ts",
+      "preview": "catalog/kits/grid-substation/previews/substation-main-power-transformer.png",
+      "baselineSourceSha256": "54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28",
+      "baselinePreviewSha256": "c1e1429a73ed7a598d74b4fecdea9e998367716dcc656667d7cf565db652bf88",
+      "triangles": 9400,
+      "sizeM": [
+        7.8,
+        7.31,
+        5
+      ],
+      "observation": "Main tank, bushings, radiator banks, base rails, and cooling fittings read as a power transformer; visible material zones are coherent.",
+      "afterSourceSha256": "54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28",
+      "afterPreviewSha256": "c1e1429a73ed7a598d74b4fecdea9e998367716dcc656667d7cf565db652bf88"
+    },
+    {
+      "id": "substation-surge-arrester",
+      "source": "catalog/kits/grid-substation/substation-surge-arrester.kcad.ts",
+      "preview": "catalog/kits/grid-substation/previews/substation-surge-arrester.png",
+      "baselineSourceSha256": "e02385be912767b599a03f3379c1323c784127b713c52ebb88af23e327fce8cf",
+      "baselinePreviewSha256": "dbaa4176248ab8ce6e1ca5038ae9b0840735b76b31d896e64d81c9d45f5aac76",
+      "triangles": 304,
+      "sizeM": [
+        0.6,
+        2.4,
+        0.6
+      ],
+      "observation": "Ribbed arrester column and pedestal are legible; the copper-colored terminal block floats above the column and remains a separate geometry concern.",
+      "afterSourceSha256": "e02385be912767b599a03f3379c1323c784127b713c52ebb88af23e327fce8cf",
+      "afterPreviewSha256": "dbaa4176248ab8ce6e1ca5038ae9b0840735b76b31d896e64d81c9d45f5aac76"
+    },
+    {
+      "id": "substation-transformer-radiator-bank",
+      "source": "catalog/kits/grid-substation/substation-transformer-radiator-bank.kcad.ts",
+      "preview": "catalog/kits/grid-substation/previews/substation-transformer-radiator-bank.png",
+      "baselineSourceSha256": "b51f82efbc8bb27b3f8096920873976bdee55c948868f1f47229effa05321e62",
+      "baselinePreviewSha256": "5b781d08c51df247fc3aee56e4a06dfc94e49cd0d9f9a11b7db0f6004bdfefdb",
+      "triangles": 200,
+      "sizeM": [
+        3.9931,
+        2.27,
+        2.801
+      ],
+      "observation": "Pressed fins and headers read as a radiator bank; brown manifolds are plausible oil piping, so no material mismatch is assigned here.",
+      "afterSourceSha256": "b51f82efbc8bb27b3f8096920873976bdee55c948868f1f47229effa05321e62",
+      "afterPreviewSha256": "5b781d08c51df247fc3aee56e4a06dfc94e49cd0d9f9a11b7db0f6004bdfefdb"
+    },
+    {
+      "id": "substation-live-tank-breaker",
+      "source": "catalog/kits/grid-substation/substation-live-tank-breaker.kcad.ts",
+      "preview": "catalog/kits/grid-substation/previews/substation-live-tank-breaker.png",
+      "baselineSourceSha256": "758a6859e8452fb1836b390744286792da9b7f6ee8ab0bee50fb5beabbbb5799",
+      "baselinePreviewSha256": "26a5e9f56c88c816024b58ac04cca773c04f70e1c2b0c829a7d8c4c653adff57",
+      "triangles": 4508,
+      "sizeM": [
+        6.72,
+        6.84,
+        1.82
+      ],
+      "observation": "Three live poles, support beam, braced legs, and mechanism cabinet read as a live-tank breaker; metal and insulator zones are coherent.",
+      "afterSourceSha256": "758a6859e8452fb1836b390744286792da9b7f6ee8ab0bee50fb5beabbbb5799",
+      "afterPreviewSha256": "26a5e9f56c88c816024b58ac04cca773c04f70e1c2b0c829a7d8c4c653adff57"
+    },
+    {
+      "id": "substation-transformer-conservator",
+      "source": "catalog/kits/grid-substation/substation-transformer-conservator.kcad.ts",
+      "preview": "catalog/kits/grid-substation/previews/substation-transformer-conservator.png",
+      "baselineSourceSha256": "b1c2d6e575816de15887e095c1aad1f5ee7d85a85e217d5e2901671ec41e5ee7",
+      "baselinePreviewSha256": "7cc3db150c12c4732cc09293884a55dc6fd200c6913af555ddcc0ae1a3f12755",
+      "triangles": 116,
+      "sizeM": [
+        1.918,
+        1.65,
+        0.792
+      ],
+      "observation": "Before: copper-colored square nozzle floated above the vessel. After: painted flange and hollow neck are seated at the shell roof.",
+      "afterSourceSha256": "adbdc1283601635fa686ba5ecf7db07dc8b6a045354b33228ee484402bf71a78",
+      "afterPreviewSha256": "99f108ccb7f370ab1f221873b2f8f6cdccecde78596e2ea45a5ce13a09f42dbc",
+      "afterTriangles": 244,
+      "afterSizeM": [
+        1.918,
+        1.395,
+        0.792
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "file": "interior-table-lamp-materials.mp4",
+  "sha256": "06cda79333151a533a47fc939b8dc0ae7704766d91b18c37ea570914b700efe9",
+  "bytes": 138915,
+  "durationSeconds": 12.041667,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "codec": "h264",
+  "samples": [
+    {
+      "timeSeconds": 1.5,
+      "file": "sample-01.png",
+      "sha256": "64dd14ae49795bb6ab8486cb84eed53fddd8d49fada6429708a230f815b28e5e"
+    },
+    {
+      "timeSeconds": 4.5,
+      "file": "sample-02.png",
+      "sha256": "28c89f0eb8ad360313e18021847b0730803474fd74b05b72f6431e97336f8df9"
+    },
+    {
+      "timeSeconds": 7.5,
+      "file": "sample-03.png",
+      "sha256": "eaaa21b47f1ec04f7c049da794117822fbd76ad6e8c2e082a2e4938c4f23fd7f"
+    },
+    {
+      "timeSeconds": 10.5,
+      "file": "sample-04.png",
+      "sha256": "496feeee7016e86f0ea8cc1ffa9bc2b0b0699920d4b59b01e60e2ffdf6c02fa2"
+    }
+  ],
+  "inspection": "Four decoded samples were assembled into video-review/decoded-samples.png for visual review."
+}

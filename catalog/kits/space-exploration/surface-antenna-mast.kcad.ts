@@ -5,7 +5,7 @@ meta({
   name: "surface-antenna-mast",
   license: 'CC0-1.0',
   title: "Surface antenna mast",
-  description: "Short surface mast with tripod feet, a crossbar and two small vertical aerials. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Short surface mast with tripod feet, a crossbar and two small vertical aerials. Material controls: paint, aluminum, ceramic; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#747c7b", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const ceramic = param('ceramic', "#e0dac6", { label: "Ceramic aerial insulators" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "ceramic": "#d0c9b6"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "ceramic": "#f0c447"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -42,9 +44,9 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("surface-antenna-mast");
 p.part("mast",c(0,0,0,1350,38,8).color(aluminum));
-p.part("crossbar",b(0,0,1040,650,45,45).color(aluminum));
-p.part("aerial-0",c(-250,0,1085,420,18,8).color(paint));
-p.part("aerial-1",c(250,0,1085,420,18,8).color(paint));
+p.part("crossbar",b(0,0,1040,650,45,45).color(paint));
+p.part("aerial-0",c(-250,0,1085,420,18,8).color(ceramic));
+p.part("aerial-1",c(250,0,1085,420,18,8).color(ceramic));
 p.part("foot-0",b(0,-190,0,240,70,45).color(aluminum));
 p.part("foot-1",b(-165,95,0,240,70,45).color(aluminum));
 p.part("foot-2",b(165,95,0,240,70,45).color(aluminum));

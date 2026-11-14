@@ -1,0 +1,13 @@
+679874876750c2f040868f2ca26e689df11cc0139518d62d23de27488be7d0ff  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/source/before/sludge-thickener-tank.kcad.ts
+5077d14f1d5d5ba5498ecc7a46c8554d7730c30b098b46f2d88f13019b1ac5c7  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/source/after/sludge-thickener-tank.kcad.ts
+b5ed2a5bfeafcc445c325a39f616d532fef9ec7ad8dda3f172418fbd13e789a3  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/previews/before/sludge-thickener-tank.png
+cec002725997609056bfb219ebb2a5b1beff7be976fbe5bd76a7b9782f9a8a41  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/previews/after/sludge-thickener-tank.png
+dc97b49bd8bd44b0cf96d523664499ca9153742f16e81d6a9228e09c80d07cb9  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/samples/activated-carbon-filter-vessel.png
+83d88ad58ca064a4f81d4b848c8ef415c440fc17966331e417fead8deb68d41a  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/samples/aeration-basin.png
+bc1895c3cd7ee8de1ccc18ebad032bbb2b409b531119f7fb9f3084e2a2225128  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/samples/dual-pump-manifold-skid.png
+e63e93f03e36e58b28bbd0f676f7adb8c51ead8a07c0f6c439f9276173f225d0  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/samples/sodium-hypochlorite-cabinet.png
+2371a23f54d870c80a79309d4d6201e5ddce4ad22de0bbf1a77d382f68e145b2  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/water-treatment-sludge-thickener-drive-material-review.mp4
+9a7d2f7bc3dde70938b89b341166dabdc00b8bc668ef96f662994de6bde75323  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/demo-settings.json
+4bd0a849935463d1706697e6e88a70e6d3271e4996a9c498a574bf5ac3fd10a3  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/build-demo.sh
+452d62e234f7e893608a6307d7ea694faebec46e83bdcff227435c91fdf49aee  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/capture_review.py
+8ef51c4ec244efbf6358e66114a4d17a899b27df864e81ef32bc06dbabd824c0  artifacts/catalog-demos/water-treatment-sludge-thickener-drive-material-review-20261113/video-review/contact-sheet.png

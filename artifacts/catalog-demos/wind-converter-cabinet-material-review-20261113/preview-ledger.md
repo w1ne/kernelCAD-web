@@ -1,0 +1,17 @@
+# Five-preview ledger — 2026-11-13
+
+PR #1258 was open at baseline head `20aae80dc585935cadcb701228992db1af51a184`. Its 17 reported CI checks completed successfully; no review had been submitted. Exact open-issue searches for these five IDs returned no matches. The source paths were checked against every open PR file list (18 open PRs); none matched. PR #1258 is the destination PR. None of these five IDs had an earlier semantic-review ledger entry.
+
+All five checked-in default previews were opened. Their local sources, render images, and measured envelopes are retained under `source/` and `samples/`. Public detail and preview routes returned HTTP 200 for all five. Live preview hashes matched the checked-in baseline for `converter-cabinet`, `bottle-reject-pusher`, and `high-lift-pump-skid`; the public `cone-crusher-module` and `air-classifier` previews were older renders and are captured separately in `live-baseline/`.
+
+| Asset | Baseline envelope (m) | Triangles | Source SHA-256 | Local preview SHA-256 | Observation |
+|---|---:|---:|---|---|---|
+| `wind-energy/converter-cabinet` | 0.98 × 1.51 × 0.70 | 108 | `353df22af8287331d448ffe102eae4c56d57daeed79af1f00f211883cf69022f` | `cf4d8d9dcf4efbce1843048ea1a1712e32d16e24793be98cdd326cf2c7f406ca` | Cabinet silhouette, lid and cooling louvers read correctly. The two full-height doors use the yellow safety-paint zone shared with warning labels; this is the single mismatch selected for correction. |
+| `mining/cone-crusher-module` | 9.56 × 5.55 × 6.181651 | 4,258 | `e9b3cace64390dd8e390b7656f116bfbcaaa4ba8bef504edff8f029124af16ca` | `38c66e08b6ca984f186b6fb6b7c8e1ebe731c3b55513914dcce2319487487364` | Round crusher, adjustment ring, loaded hopper, belt drive, service module and discharge conveyor are recognizable. Coating, frame steel, hydraulic chrome, belts and ore are distinct; no second material mismatch found. |
+| `recycling-facility/air-classifier` | 2.905 × 4.83 × 4.92 | 1,522 | `5eda5d61ceab354f3017a71b8051a79bbd75f87c51e3aab9624f5ff07c13496a` | `7871185520fc3a064b3b9866a170ef284f3635a81292a841434444c773105687` | Vertical separation column, blower/duct, feed and discharge conveyor, and access frame are visible. Color zones are coherent; no second material mismatch found. |
+| `beverage-bottling-line/bottle-reject-pusher` | 0.95 × 0.65 × 0.809 | 152 | `3a6b93179cb0ac4e8d0f6b3097531e5132aa7c5d089a083f0c7fb18ba0c0b34a` | `12eedea191d72b82eeefb1aa9e5ece8458706b7f56796e750547da7953b7c68f` | Compact conveyor, actuator and reject plate read as a bottle reject pusher. The default scene is unloaded; steel and coated parts are distinct. No second material mismatch found. |
+| `water-treatment/high-lift-pump-skid` | 1.12 × 0.517 × 0.64 | 1,628 | `3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84` | `a86bbfc2709a61ad0931ffd8f300b82863a357e15d5c08c88313977d9db7c2d8` | Pump, ribbed motor, vertical discharge and skid frame read as a packaged pump unit. Equipment coating and structural steel remain distinct; no second material mismatch found. |
+
+The correction is limited to `converter-cabinet`: the door panels now use the existing `powderCoatedSteel` control and two small door labels use `safetyPaint`. The enclosure envelope, parameter names, and preset names remain the same. The after render is 132 triangles within the existing 300-triangle budget.
+
+The asset and preview changes are local to this branch. The current public catalog is not deployed from this branch; the target page still serves the baseline preview captured in `live-baseline/`.

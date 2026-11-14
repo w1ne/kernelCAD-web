@@ -1,0 +1,43 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/shell-tube-exchanger-material-review-20261110/verify_asset_index.py",
+  "assetCount": 2402,
+  "sourceShaMismatches": [],
+  "missingPreviewRows": [],
+  "missingPreviewFiles": [],
+  "changedAsset": {
+    "id": "industrial-plant/shell-and-tube-exchanger",
+    "sourceSha256": "512d385234f24ee98b721905f5988d76f3b82b38df8c56821acd7887ad2360e1",
+    "preview": "/assets/industrial-plant-shell-and-tube-exchanger.png",
+    "triangles": 400,
+    "triangleBudget": 1400,
+    "palette": [
+      {
+        "name": "steel",
+        "color": "#687e89",
+        "parts": [
+          "shell",
+          "channel-head--1",
+          "channel-head-1",
+          "foot-0",
+          "foot-1"
+        ],
+        "param": "steel"
+      },
+      {
+        "name": "hardware",
+        "color": "#89959a",
+        "parts": [
+          "tube-sheet--1",
+          "connection--1",
+          "tube-sheet-1",
+          "connection-1",
+          "saddle-0",
+          "saddle-1",
+          "shell-band"
+        ],
+        "param": "hardware"
+      }
+    ]
+  },
+  "pass": true
+}

@@ -1,0 +1,12 @@
+4f0f385c1c3032e1f6c697f3617d94fe4cbc4cdb2aae6a9d8928d7f3ed4a240c  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/reviewed/axial-flow-fan.kcad.ts
+202720f34b14125a5a9da0b4694653a4deddad8cbb4d402177bf067abe6d5c29  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/reviewed/bridge-crane.kcad.ts
+1823419b094433df04532e33e74ab66d55351c0b206c86008bd8ccc9409fb355  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/reviewed/bucket-elevator.kcad.ts
+e23c17496117618fe7bdfc2e74c51b4d31b89addea0d5171aa81fd4b0e8189f0  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/reviewed/packed-scrubber-column.kcad.ts
+bb1de2d3c4f8e634de15b26799631064605557ccacc50b3c5928b87a52754011  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/reviewed/vertical-storage-tank.kcad.ts
+547c3bb07b3fb18b992a828db9162a6518f38e4887a89a446928686846dfe67d  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/source/after/bucket-elevator.kcad.ts
+b70521f2a12fe85f981ed58d1e6c07abfe5677091b406149d09b23e20d4e3058  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/before/axial-flow-fan.png
+f562df67d4011fd9fd334dbd30b6899afda213a22d3696612df2e724cd1ca028  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/before/bridge-crane.png
+159406197519e5160f39cdf91cdb296fec17df1deb607f55f7fce015bf2cb5b5  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/before/bucket-elevator.png
+ab448755ac6c1fb6ca642a0558c4274470c95f44e0c1b76caa08c1d711ddb995  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/before/packed-scrubber-column.png
+ce4ea8d31750d102c78754866f2cbc9c84771213a2eff43636fe09607f64971c  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/before/vertical-storage-tank.png
+7f37c1446acaac57fe27a58268fd9c4d3e2454d3027db692c4fd873b523ea27c  artifacts/catalog-demos/industrial-plant-bucket-elevator-semantic-review-20261111/previews/after.png

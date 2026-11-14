@@ -1,0 +1,15 @@
+abrasive-blast-pot
+92147d2fe44dcd28ef12ffa35746f393d9205cc17bd079baf9bb78c041fe8d87  catalog/kits/shipyard/abrasive-blast-pot.kcad.ts
+fa0dc07972c52608ef16110e53debf60b5ee0ac3344b487d4733d2e94a2c8c9c  catalog/kits/shipyard/previews/abrasive-blast-pot.png
+blast-dust-collector
+8b2ef45d509fb5ac991254da263bf79da04169d55a8fff7a825f513b1c807525  catalog/kits/shipyard/blast-dust-collector.kcad.ts
+1ce0a40f846846992db67b5382c8dc5d2e187a31bd7bcd7c8db611f3a655c88b  catalog/kits/shipyard/previews/blast-dust-collector.png
+electrode-storage-oven
+fc9a578e0728257781bf7f184fd4b18b543683296e063affdd9b71341d500a78  catalog/kits/shipyard/electrode-storage-oven.kcad.ts
+604196c2173ecbc8739553f22bab101a83101f83cedd1d51e88fbcc0e8a18891  catalog/kits/shipyard/previews/electrode-storage-oven.png
+hull-block-paint-booth
+e24b90434125443ef4f7bb044e35e735721e948fcd4d3e962f280ff25b0e91d7  catalog/kits/shipyard/hull-block-paint-booth.kcad.ts
+1e4b76bc691c44b4906d9db2815b6885f3d24833f840a389157e56b5e8760b42  catalog/kits/shipyard/previews/hull-block-paint-booth.png
+airless-coating-pump-cart
+86efcbfee495b93f365e232c470f72ca86b8a2a26e4405ba78e66bfba6efe74d  catalog/kits/shipyard/airless-coating-pump-cart.kcad.ts
+031b56a693ecba192ed6ace86bc8eb95e20d730c1fbeca640227ec56762b48d1  catalog/kits/shipyard/previews/airless-coating-pump-cart.png

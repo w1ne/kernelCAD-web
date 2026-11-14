@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-11",
+  "asset": "recycling-facility/eddy-current-separator",
+  "source": "catalog/kits/recycling-facility/eddy-current-separator.kcad.ts",
+  "sourceParameterKeyPreserved": "rotor",
+  "change": "Map the existing rotor color control to the outer nonconductive composite shell and use a charcoal default/palette.",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts eddy-current-separator",
+  "catalogIndexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "regressionCommand": "npx vitest run tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts",
+  "triangleCount": 1972,
+  "triangleBudget": 3200,
+  "quality": {
+    "recyclingFacility": "153/153 passing (100.00%)",
+    "catalog": "2401/2402 passing (99.96%); the unchanged standard-components/beam-coupling is the only structural-gate failure"
+  },
+  "video": {
+    "file": "demo.mp4",
+    "resolution": "720x640",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "codec": "H.264 / yuv420p",
+    "scenes": [
+      "Before: red outer shell under a magnetic-rotor label",
+      "After: charcoal nonconductive composite outer shell"
+    ]
+  },
+  "provenance": "Local catalog source preview and exported-GLB material regression; branch not deployed; no simulation, equipment specification, process-performance or physical-acceptance claim"
+}

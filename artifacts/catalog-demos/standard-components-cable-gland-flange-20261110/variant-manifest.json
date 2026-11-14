@@ -1,0 +1,265 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "assertions": {
+    "cableDiameterChangesRenderedGeometry": true,
+    "cableHousingSizeChangesAroundFixed8mmCable": true,
+    "cablePresetChangesVisibleMaterials": true,
+    "flangeBoreChangesRenderedGeometry": true,
+    "flangeHousingSizeChangesAroundFixed18mmBore": true,
+    "flangePresetChangesVisibleMaterials": true,
+    "everyVariantWithinTriangleBudget": true
+  },
+  "budgets": {
+    "cable-gland": 900,
+    "square-mounting-flange": 860
+  },
+  "sources": {
+    "cable-gland": {
+      "file": "catalog/kits/standard-components/cable-gland.kcad.ts",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    "square-mounting-flange": {
+      "file": "catalog/kits/standard-components/square-mounting-flange.kcad.ts",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    }
+  },
+  "renders": [
+    {
+      "id": "cable-4mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "standard",
+        "cableDiameter": "4"
+      },
+      "stats": {
+        "triangles": 812,
+        "sizeM": [
+          0.04,
+          0.047,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "4bb5f95170d489d328d240d05812dfa4739d313123ccd94a24fcc4847102b3bb",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    {
+      "id": "cable-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "standard",
+        "cableDiameter": "8"
+      },
+      "stats": {
+        "triangles": 812,
+        "sizeM": [
+          0.04,
+          0.047,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "24fd733b785114b56ef99f4e8ac688f8b2667e6d9d71089d0fc8f6c427e9f312",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    {
+      "id": "cable-compact-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "compact",
+        "cableDiameter": "8"
+      },
+      "stats": {
+        "triangles": 812,
+        "sizeM": [
+          0.03,
+          0.03525,
+          0.03
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "a01929edc9e0d9f9c41f2af480c0a6361bb977f6fba955a44da54f5caefe739c",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    {
+      "id": "cable-large-8mm",
+      "asset": "cable-gland",
+      "choices": {
+        "size": "large",
+        "cableDiameter": "8"
+      },
+      "stats": {
+        "triangles": 812,
+        "sizeM": [
+          0.05,
+          0.05875,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "31204a3b5be1d5b82a99c8916ac63492cf4880184f39c8efa63fc91427f396e2",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    {
+      "id": "cable-high-visibility",
+      "asset": "cable-gland",
+      "preset": "highVisibility",
+      "choices": {},
+      "stats": {
+        "triangles": 812,
+        "sizeM": [
+          0.04,
+          0.047,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "a88d3ca96e021cb2688445d632f3422a295ce06d28601c7a1b8450ecd1c18141",
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370"
+    },
+    {
+      "id": "flange-10mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "standard",
+        "boreDiameter": "10"
+      },
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          0.072,
+          0.016,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "d8e0048e86531607fdd1ce71cf554678fe798895dc1bb32ce3e00a87a2ee2f14",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    },
+    {
+      "id": "flange-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "standard",
+        "boreDiameter": "18"
+      },
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          0.072,
+          0.016,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "213b20beeb4b8e4ca85c24bfe30cda2fba901ec9f754d90dbd953dd54f362640",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    },
+    {
+      "id": "flange-compact-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "compact",
+        "boreDiameter": "18"
+      },
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          0.054,
+          0.012,
+          0.054
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "19747e1da3f2e205e812ec31df9755bda42094a289494c83ee3ed904b24545dc",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    },
+    {
+      "id": "flange-large-18mm",
+      "asset": "square-mounting-flange",
+      "choices": {
+        "size": "large",
+        "boreDiameter": "18"
+      },
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          0.09,
+          0.02,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "8fb9f5a64385c82a3996b25b24ef64e636ddb1bce5d4d99143e09a6d2f62ecb9",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    },
+    {
+      "id": "flange-brass",
+      "asset": "square-mounting-flange",
+      "preset": "brass",
+      "choices": {},
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          0.072,
+          0.016,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "7cfe8d368a7ad6fcb0e80c377f7e8b436460d8c91fc41639a2f6f5cd4e59473f",
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6"
+    }
+  ]
+}

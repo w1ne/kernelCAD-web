@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-11",
+  "asset": "recycling-facility/battery-quarantine-drum",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts battery-quarantine-drum",
+  "catalogIndexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewRenderer": "scripts/lib/glbSoftwareRender.ts",
+  "defaultTriangleCount": 1800,
+  "triangleBudget": 3000,
+  "video": {
+    "file": "demo.mp4",
+    "resolution": "720x640",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "codec": "H.264 / yuv420p",
+    "scenes": [
+      "Before: yellow alarm paint is also applied to the vermiculite sack",
+      "After: kraft-paper sack is beige and visually separate from the warning alarm"
+    ]
+  },
+  "provenance": "Local catalog source, preview render and GLB material regression; branch not deployed; no equipment performance, safety or physical acceptance claimed"
+}

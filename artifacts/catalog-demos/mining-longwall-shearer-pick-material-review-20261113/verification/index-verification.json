@@ -1,0 +1,15 @@
+{
+  "changedAssetRows": [
+    "longwall-shearer"
+  ],
+  "assetCount": 2402,
+  "kitCount": 50,
+  "sourceSha256": "8e24a41fb81dcd3ddb387738071e0207acd0c9774c1ba02401344ce547bbc1f5",
+  "previewSha256": "3934df720f7b1ff632c712d3c4e7174635f47bc4a762d7bff7bf1d5d45893a0e",
+  "triangles": 3504,
+  "sizeM": [
+    20,
+    3.35,
+    5.85
+  ]
+}

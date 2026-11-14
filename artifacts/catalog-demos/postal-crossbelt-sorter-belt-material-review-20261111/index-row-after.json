@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "kit": {
+    "id": "postal-logistics",
+    "title": "Postal logistics",
+    "description": "Low-poly parcel induction, scanning, sortation, mail handling, route preparation, and dispatch models with material-specific controls and weathered or high-visibility finish presets.",
+    "assets": [
+      "automated-label-applicator",
+      "barcode-tunnel-scanner",
+      "bulk-mail-hamper",
+      "bulk-mail-sack",
+      "carrier-caseload-sorter",
+      "carrier-route-sequence-rack",
+      "carrier-satchel",
+      "conveyor-drive-unit",
+      "conveyor-guard-section",
+      "conveyor-merge-module",
+      "conveyor-transfer-bridge",
+      "crossbelt-sorter-section",
+      "delivery-sequence-case",
+      "gravity-roller-conveyor",
+      "handheld-postal-scanner",
+      "high-capacity-mail-cart",
+      "in-motion-weigh-deck",
+      "mail-tray-dispatch-cart",
+      "mail-tray-stack",
+      "mailbag-closing-machine",
+      "mailpiece-thickness-gauge",
+      "mailroom-workbench",
+      "overhead-scan-gantry",
+      "package-induction-conveyor",
+      "parcel-belt-diverter",
+      "parcel-dimensioning-arch",
+      "parcel-overflow-container",
+      "parcel-singulator",
+      "parcel-staging-rack",
+      "parcel-tray-transfer-cart",
+      "parcel-weigh-station",
+      "postage-meter-workstation",
+      "postal-dispatch-cage",
+      "postal-dispatch-seal-station",
+      "postal-label-printer",
+      "postal-pallet-roller-deck",
+      "postal-route-marker-board",
+      "postal-sack-loader",
+      "postal-sack-rack",
+      "postal-sortation-tray-cabinet",
+      "powered-roller-conveyor",
+      "powered-sack-dumper",
+      "rolling-postal-container",
+      "scanner-sensor-post",
+      "sliding-shoe-sorter-section",
+      "sorter-chute-bank",
+      "sorter-emergency-stop-pedestal",
+      "sorter-maintenance-platform",
+      "sorting-operator-console",
+      "spiral-parcel-chute",
+      "telescopic-parcel-conveyor",
+      "tray-induction-loader"
+    ]
+  },
+  "asset": {
+    "id": "crossbelt-sorter-section",
+    "kit": "postal-logistics",
+    "title": "Crossbelt sorter section",
+    "description": "Elevated sortation track section with molded-polymer carriers and visible rubber crossbelts. Scale, painted steel, structural steel, moulded polymer, conveyor-belt rubber, stainless steel, and weathered or highVisibility finish presets are editable.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "postal logistics",
+      "mail",
+      "parcel",
+      "package processing",
+      "low poly",
+      "scene prop"
+    ],
+    "compat": [
+      "postal",
+      "postal-processing",
+      "mailroom",
+      "logistics",
+      "scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/postal-logistics/crossbelt-sorter-section.kcad.ts",
+    "preview": "/assets/postal-logistics-crossbelt-sorter-section.png",
+    "sourceSha256": "168e3077a650e57b4a40218933be3f8826d4c04040d5c25d090bc69c8704e974",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "paintedSteel",
+        "type": "color",
+        "default": "#56777d",
+        "label": "Painted steel"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#58656c",
+        "label": "Structural steel"
+      },
+      {
+        "name": "polymer",
+        "type": "color",
+        "default": "#477c8e",
+        "label": "Moulded polymer"
+      },
+      {
+        "name": "beltRubber",
+        "type": "color",
+        "default": "#30373b",
+        "label": "Conveyor-belt rubber"
+      },
+      {
+        "name": "stainlessSteel",
+        "type": "color",
+        "default": "#bbc4c4",
+        "label": "Stainless steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "paintedSteel": "#68777a",
+        "structuralSteel": "#67675f",
+        "polymer": "#6c7c7c",
+        "beltRubber": "#3d3d39",
+        "stainlessSteel": "#9ea7a6"
+      },
+      "highVisibility": {
+        "paintedSteel": "#e36d32",
+        "structuralSteel": "#454f54",
+        "polymer": "#e0b245",
+        "beltRubber": "#252b2e",
+        "stainlessSteel": "#d9e0de"
+      }
+    },
+    "stats": {
+      "triangles": 960,
+      "sizeM": [
+        0.775,
+        0.84,
+        1.18
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "structuralSteel",
+        "color": "#58656c",
+        "parts": [
+          "track-base",
+          "support-left-front",
+          "support-right-front",
+          "support-left-back",
+          "support-right-back"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "paintedSteel",
+        "color": "#56777d",
+        "parts": [
+          "side-left",
+          "side-right"
+        ],
+        "param": "paintedSteel"
+      },
+      {
+        "name": "polymer",
+        "color": "#477c8e",
+        "parts": [
+          "tray-1",
+          "tray-2",
+          "tray-3",
+          "tray-4"
+        ],
+        "param": "polymer"
+      },
+      {
+        "name": "beltRubber",
+        "color": "#30373b",
+        "parts": [
+          "crossbelt-1",
+          "crossbelt-2",
+          "crossbelt-3",
+          "crossbelt-4"
+        ],
+        "param": "beltRubber"
+      },
+      {
+        "name": "stainlessSteel",
+        "color": "#bbc4c4",
+        "parts": [
+          "drive-panel"
+        ],
+        "param": "stainlessSteel"
+      }
+    ]
+  }
+}

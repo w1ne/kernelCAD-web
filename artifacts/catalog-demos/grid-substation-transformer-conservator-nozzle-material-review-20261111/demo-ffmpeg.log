@@ -1,0 +1,48 @@
+ffmpeg version n9.0.1-11-ge47273f4d9-20260831 Copyright (c) 2000-2026 the FFmpeg developers
+  built with gcc 15.2.0 (crosstool-NG 1.28.0.23_185f348)
+  configuration: --prefix=/ffbuild/prefix --pkg-config-flags=--static --pkg-config=pkg-config --cross-prefix=x86_64-ffbuild-linux-gnu- --arch=x86_64 --target-os=linux --enable-gpl --enable-version3 --disable-debug --enable-iconv --enable-zlib --enable-libxml2 --enable-libsoxr --enable-openssl --enable-libvmaf --enable-fontconfig --enable-libharfbuzz --enable-libfreetype --enable-libfribidi --enable-vulkan --enable-libvorbis --enable-libxcb --enable-xlib --enable-libpulse --enable-gmp --enable-lzma --enable-liblcevc-dec --enable-opencl --enable-amf --enable-libaom --enable-libaribb24 --enable-avisynth --enable-chromaprint --enable-libdav1d --enable-libdavs2 --enable-libdvdread --enable-libdvdnav --disable-libfdk-aac --enable-ffnvcodec --enable-cuda-llvm --enable-frei0r --enable-libgme --enable-libkvazaar --enable-libaribcaption --enable-libass --enable-libbluray --enable-libjxl --enable-libmp3lame --enable-libopus --enable-libplacebo --enable-librist --enable-libssh --enable-libtheora --enable-libvpx --enable-libwebp --enable-libzmq --enable-lv2 --enable-libvpl --enable-openal --enable-liboapv --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopenmpt --enable-librav1e --enable-librubberband --disable-schannel --enable-sdl2 --enable-libsnappy --enable-libsrt --enable-libsvtav1 --enable-libtwolame --enable-libuavs3d --enable-libdrm --enable-vaapi --enable-libvidstab --enable-libvvenc --disable-whisper --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxvid --enable-libzimg --enable-libzvbi --extra-cflags=-DLIBTWOLAME_STATIC --extra-cxxflags= --extra-libs='-lgomp -ldl' --extra-ldflags=-pthread --extra-ldexeflags= --cc=x86_64-ffbuild-linux-gnu-gcc --cxx=x86_64-ffbuild-linux-gnu-g++ --ar=x86_64-ffbuild-linux-gnu-gcc-ar --ranlib=x86_64-ffbuild-linux-gnu-gcc-ranlib --nm=x86_64-ffbuild-linux-gnu-gcc-nm --extra-version=20260831
+  libavutil      61.  1.101 / 61.  1.101
+  libavcodec     63.  1.101 / 63.  1.101
+  libavformat    63.  1.101 / 63.  1.101
+  libavdevice    63.  1.101 / 63.  1.101
+  libavfilter    12.  1.101 / 12.  1.101
+  libswscale     10.  1.101 / 10.  1.101
+  libswresample   7.  1.101 /  7.  1.101
+Input #0, concat, from '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/grid-substation-transformer-conservator-nozzle-material-review-20261111/video-review/frames/slides.txt':
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: png, rgb24(pc, gbr/unknown/unknown), 1280x720, 25 fps, 25 tbr, 25 tbn
+Stream mapping:
+  Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
+Press [q] to stop, [?] for help
+[libx264 @ 0x573fded556c0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 0x573fded556c0] profile High, level 3.1, 4:2:0, 8-bit
+[libx264 @ 0x573fded556c0] 264 - core 165 - H.264/MPEG-4 AVC codec - Copyleft 2003-2025 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=22 lookahead_threads=3 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=20 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=25.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/grid-substation-transformer-conservator-nozzle-material-review-20261111/grid-substation-transformer-conservator-nozzle-material-review.mp4':
+  Metadata:
+    encoder         : Lavf63.1.101
+  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, progressive), 1280x720, q=2-31, 20 fps, 10240 tbn
+    Metadata:
+      encoder         : Lavc63.1.101 libx264
+    Side data:
+      CPB properties: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A elapsed=0:00:00.50    frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A elapsed=0:00:01.00    frame=   30 fps= 20 q=30.0 size=       0KiB time=00:00:01.40 bitrate=   0.3kbits/s speed=0.933x elapsed=0:00:01.50    [mp4 @ 0x573fded58640] Starting second pass: moving the moov atom to the beginning of the file
+[out#0/mp4 @ 0x573fded58540] video:121KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 2.391961%
+frame=  176 fps= 92 q=-1.0 Lsize=     123KiB time=00:00:08.70 bitrate= 116.3kbits/s speed=4.56x elapsed=0:00:01.90    
+[libx264 @ 0x573fded556c0] frame I:3     Avg QP:13.76  size: 28848
+[libx264 @ 0x573fded556c0] frame P:44    Avg QP:23.13  size:   631
+[libx264 @ 0x573fded556c0] frame B:129   Avg QP:33.34  size:    66
+[libx264 @ 0x573fded556c0] consecutive B-frames:  1.7%  0.0%  5.1% 93.2%
+[libx264 @ 0x573fded556c0] mb I  I16..4: 59.3% 25.6% 15.0%
+[libx264 @ 0x573fded556c0] mb P  I16..4:  0.1%  0.1%  0.2%  P16..4:  0.4%  0.1%  0.0%  0.0%  0.0%    skip:99.1%
+[libx264 @ 0x573fded556c0] mb B  I16..4:  0.0%  0.1%  0.0%  B16..8:  0.6%  0.0%  0.0%  direct: 0.0%  skip:99.2%  L0:56.2% L1:43.8% BI: 0.1%
+[libx264 @ 0x573fded556c0] 8x8 transform intra:29.3% inter:19.6%
+[libx264 @ 0x573fded556c0] coded y,uvDC,uvAC intra: 10.4% 14.2% 12.8% inter: 0.0% 0.0% 0.0%
+[libx264 @ 0x573fded556c0] i16 v,h,dc,p: 78% 22%  0%  0%
+[libx264 @ 0x573fded556c0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 56% 13% 31%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x573fded556c0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 37% 24% 16%  2%  3%  3%  5%  3%  6%
+[libx264 @ 0x573fded556c0] i8c dc,h,v,p: 68% 19% 11%  1%
+[libx264 @ 0x573fded556c0] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 0x573fded556c0] ref P L0: 77.7%  4.4% 14.0%  3.9%
+[libx264 @ 0x573fded556c0] ref B L0: 71.0% 27.9%  1.1%
+[libx264 @ 0x573fded556c0] ref B L1: 94.9%  5.1%
+[libx264 @ 0x573fded556c0] kb/s:111.66

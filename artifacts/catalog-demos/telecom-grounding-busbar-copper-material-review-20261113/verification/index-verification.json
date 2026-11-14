@@ -1,0 +1,15 @@
+{
+ "assets": 2402,
+ "kits": 50,
+ "changedRows": [
+  [
+   "telecom-infrastructure",
+   "grounding-bar"
+  ]
+ ],
+ "sourceHashMismatches": [],
+ "rowsWithPreviewUrlButNoPng": [],
+ "targetPreview": [
+  "/assets/telecom-infrastructure-grounding-bar.png"
+ ]
+}

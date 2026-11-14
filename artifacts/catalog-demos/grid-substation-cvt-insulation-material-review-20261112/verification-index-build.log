@@ -1,0 +1,4 @@
+$ npx tsx scripts/buildAssetCatalog.ts
+exit code: 0; generated catalog/index.json
+
+Index row verification: see index-verification.json

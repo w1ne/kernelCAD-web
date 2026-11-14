@@ -15,14 +15,17 @@ flat. Andrii: "I am not satisfied with assets, we lost in quality and color."
 
 WHAT "RICH" MEANS
 -----------------
-An asset passes when it has all three:
+The automated gate passes an asset when it has both:
   1. >= 2 material-named colour knobs. Material-named means the knob names the
      MATERIAL (`timber`, `bark`, `leaves`, `hardware`), not the part
-     (`color`, `color2`). A generic `color` knob counts as one, so two of them
-     still fails - that is the pattern this gate exists to stop.
+     (`color`, `color2`). Generic knobs such as `color` do not count toward
+     the minimum.
   2. >= 1 `presets(...)` block, so a reviewer can see two intended looks.
-  3. real silhouette geometry - at least one of `path(`, `loft(`, `rotate*`
-     beyond plain axis-aligned `box()` stacking.
+
+The reported geometry count is a review hint, not an automatic threshold. A
+human still checks that the preview reads as the intended object: a fence,
+crate or panel can be legitimately rectilinear, while a machine, vehicle or
+building needs its real silhouette and recognizable details.
 
 HOW TO USE
 ----------
@@ -45,8 +48,8 @@ from collections import namedtuple
 
 Asset = namedtuple("Asset", "path kit name colours presets geometry")
 
-# A knob that names the material rather than the part. `color` is deliberately
-# generic and scores 1 at most no matter how often it repeats.
+# A knob that names the material rather than the part. Generic `color` is
+# excluded by the quality threshold below, no matter how often it repeats.
 MATERIAL_RE = re.compile(r"\.color\(\s*([A-Za-z_][\w]*)")
 PARAM_RE = re.compile(r"param(?:eter)?\(\s*['\"]([^'\"]+)['\"]")
 PRESET_RE = re.compile(r"\bpresets?\s*\(")
@@ -79,9 +82,9 @@ def material_knobs(src: str) -> set[str]:
 def score(path: str) -> Asset:
     src = open(path, encoding="utf-8", errors="ignore").read()
     knobs = material_knobs(src)
-    # Generic knobs collapse to a single contribution.
+    # Only material-named knobs count; generic colour knobs are deliberately ignored.
     named = {k for k in knobs if k not in GENERIC}
-    colours = len(named) + (1 if (knobs & GENERIC) else 0)
+    colours = len(named)
     parts = len(set(PART_RE.findall(src)))
     geometry = len(GEOMETRY_RE.findall(src))
     return Asset(
@@ -95,12 +98,12 @@ def score(path: str) -> Asset:
 
 
 def passes(a: Asset, min_colours: int) -> bool:
-    """An asset passes on MATERIAL SEPARATION plus an intended look.
+    """An asset passes on two named materials plus an intended look.
 
     Deliberately NOT requiring `path()`/`loft()`: a gate, crate or fence panel
     is legitimately box-only, and demanding curved geometry would reject good
-    rectilinear assets. What the flat assets lack is a second material - that is
-    what a viewer sees as "lost quality and colour" - so that is the test.
+    rectilinear assets. Generic `color` plus one named control still describes
+    only one material choice, so generic controls do not satisfy the threshold.
     """
     return a.colours >= min_colours and a.presets >= 1
 
@@ -146,15 +149,18 @@ def main() -> int:
         if tag != "RICH" or args.top:
             avg = sum(a.colours for a in items) / len(items)
             print(f"  {tag:6} {kit:26} {len(ok):4}/{len(items):<4} "
-                  f"colours/asset={avg:.2f}")
+                  f"material-controls/asset={avg:.2f}")
 
     total = len(assets)
+    passing = len(assets) - len(bad)
+    pass_rate = 100 * passing / total
     print(
-        f"\n  {len(assets) - len(bad)}/{total} assets pass "
-        f"({rich_kits} rich kits, {thin_kits} thin kits)"
+        f"\n  {passing}/{total} assets pass ({pass_rate:.2f}%; "
+        f"{rich_kits} rich kits, {thin_kits} thin kits)"
     )
     if bad:
-        print(f"  {len(bad)} thin assets = {100 * len(bad) / total:.0f}% of the catalog")
+        thin_rate = 100 * len(bad) / total
+        print(f"  {len(bad)} thin assets = {thin_rate:.2f}% of the catalog")
 
     if args.top:
         print(f"\n  worst {args.top}:")

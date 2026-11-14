@@ -1,0 +1,18 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'vitest' run tests/integration/catalog/
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 535ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 322ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 11131ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  10067ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  386ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 467835ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  467512ms
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  01:42:57
+   Duration  471.25s (transform 11.31s, setup 249ms, import 15.12s, tests 479.82s, environment 0ms)
+

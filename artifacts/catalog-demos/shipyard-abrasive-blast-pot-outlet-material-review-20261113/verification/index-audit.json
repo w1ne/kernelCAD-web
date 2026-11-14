@@ -1,0 +1,15 @@
+{
+  "assetCount": 2402,
+  "changedIds": [
+    "abrasive-blast-pot"
+  ],
+  "sourceSha256Matches": true,
+  "previewPathExists": true,
+  "indexedPreview": "/assets/shipyard-abrasive-blast-pot.png",
+  "triangles": 296,
+  "sizeM": [
+    1.24,
+    1.68,
+    0.795222
+  ]
+}
