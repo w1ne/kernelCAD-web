@@ -41463,7 +41463,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cip-valve-manifold.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cip-valve-manifold.png",
-      "sourceSha256": "1f93b2f8ea090912f2a7854b00536cc2cc748a90bda954830ec3e43bc38d1699",
+      "sourceSha256": "ce5b415f706a957f5088d2d1c176076caa87e60a169b4e1bb5e7dd679499b2c9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41523,7 +41523,8 @@
             "valve-actuator-0",
             "valve-actuator-1",
             "valve-actuator-2",
-            "valve-actuator-3"
+            "valve-actuator-3",
+            "drain-leg"
           ],
           "param": "stainlessSteel"
         },
@@ -41534,8 +41535,7 @@
             "mount-foot-0",
             "mount-foot-1",
             "mount-foot-2",
-            "mount-foot-3",
-            "drain-leg"
+            "mount-foot-3"
           ],
           "param": "powderCoat"
         }

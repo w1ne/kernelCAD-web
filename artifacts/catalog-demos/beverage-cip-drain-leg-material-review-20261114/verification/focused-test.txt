@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts (1 test) 940ms
+     ✓ keeps the wetted drain leg stainless and the mounting feet powder-coated  311ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:37:01
+   Duration  13.35s (transform 10.04s, setup 211ms, import 11.85s, tests 940ms, environment 0ms)
+
+exit 0
