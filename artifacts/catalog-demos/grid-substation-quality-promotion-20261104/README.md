@@ -63,3 +63,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-qualit
 PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/capture_grid_substation_demo.py
 PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/inspect_grid_substation_video.py
 ```
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/capture_grid_substation_demo.py`
+- video review: `python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/inspect_grid_substation_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

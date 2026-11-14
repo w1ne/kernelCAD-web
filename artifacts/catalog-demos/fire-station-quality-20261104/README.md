@@ -92,3 +92,11 @@ The promotion settings, source generator, audit, preview renderer, variant
 renderer, video capture source, and retained logs live in this directory.
 Dated workflow comparisons and the public-site check notes are kept privately
 in `kernelCAD-private/catalog-fire-station-compare-20261104/COMPARISON.md`.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/fire-station-quality-20261104/capture_fire_station_quality.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -55,7 +55,7 @@ records five full-size image checks.
   and [package audit results](package-boundary-audit.json)
 - [Demo capture source](capture_retail_store_quality.py), [inspection source](inspect_retail_store_quality_video.py),
   [capture output](demo-capture-output.txt), [video inspection output](video-inspection-output.txt),
-  [MP4 inspection data](video-inspection.json), and decoded [contact sheet](video-review/contact-sheet.png)
+  [MP4 inspection data](video-inspection.json), and decoded contact sheet (`video-review/contact-sheet.png`, not tracked)
 - [Before quality snapshot](catalog-quality-before.txt), [kit quality before promotion](retail-store-quality-before.txt),
   [live website baseline](live-website-before.json), and [verification summary](verification.json)
 
@@ -91,3 +91,12 @@ contents describe this branch. The live `/asset-library/` route returned HTTP
 been deployed, so no post-deployment page behavior is claimed. Retail
 operations, accessibility, product performance, safety, regulatory compliance
 and physical acceptance were not evaluated.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/retail-store-quality-promotion-20261105/capture_retail_store_quality.py`
+- video review: `python3 artifacts/catalog-demos/retail-store-quality-promotion-20261105/inspect_retail_store_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.
