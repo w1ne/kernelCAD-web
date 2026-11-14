@@ -50,6 +50,7 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
 // These intentionally exercise a failing evaluate path. Pin the failure so
 // they cannot silently become malformed or stop reaching the expected gate.
 const EXPECTED_FAILURE: ReadonlyMap<string, { code: string; message: string }> = new Map([
+  ['examples/print-prep/wall-hook.kcad.ts', { code: 'dfm.fdm.overhang-unsupported', message: "938.2 mm² of unsupported overhang in 1 region(s) printing '+z' up" }],
   ['examples/repair/cutter-misses-body.kcad.ts', { code: 'feature.subtractive-noop', message: 'did not intersect the body' }],
   ['examples/repair/draft-angle-degenerate.kcad.ts', { code: 'feature.draft.failed', message: 'draft' }],
   ['examples/repair/emboss-over-hole.kcad.ts', { code: 'feature.emboss-text.boolean-noop', message: 'glyph tool did not intersect the body' }],
@@ -73,10 +74,6 @@ const EVALUATION_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['examples/fastener-installation/l-bracket-mount.kcad.ts', 'remote catalog parts are disabled in local tests'],
   ['examples/fea/shelf-bracket-fea.kcad.ts', 'requires external CalculiX and gmsh tools'],
   ['examples/gallery/scissor-lift.kcad.ts', 'existing invalid part name'],
-  ['examples/portfolio/pocket-watch/build.kcad.ts', 'uses removed legacy arm.fixed API'],
-  ['examples/portfolio/pocket-watch-v2/build.kcad.ts', 'uses removed legacy arm.fixed API'],
-  ['examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts', 'uses removed legacy arm.fixed API'],
-  ['examples/print-prep/wall-hook.kcad.ts', 'declared FDM gate reports unsupported overhang'],
 ]);
 
 function sourceDiagnostics(file: string, source: string): readonly ts.Diagnostic[] {

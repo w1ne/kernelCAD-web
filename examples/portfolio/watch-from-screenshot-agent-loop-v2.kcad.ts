@@ -126,6 +126,33 @@ function strapBodyShape(centerZ) {
 
 const watch = assembly('screenshot dress watch with lug-mounted leather strap');
 
+// G0 migration shim: the v0.5 `fixed(label, parent, child, {origin})`
+// shortcut was removed in favor of the mate vocabulary. `fixed()` packages the
+// connector-pair + 'fastened' mate equivalent (auto-numbered connector names so
+// multi-join parts stay unique) so this portfolio script still builds.
+function frameConnector(origin: [number, number, number]) {
+  return { type: 'frame', origin: { kind: 'vec3', value: origin } } as const;
+}
+let fastenSeq = 0;
+function fixed(
+  label: string,
+  parent: ReturnType<typeof watch.part>,
+  child: ReturnType<typeof watch.part>,
+  opts: { origin: [number, number, number] },
+) {
+  const slot = ++fastenSeq;
+  const parentConn = `fastener-${slot}-parent`;
+  const childConn = `fastener-${slot}-child`;
+  parent.connector(parentConn, frameConnector(opts.origin));
+  child.connector(childConn, frameConnector(opts.origin));
+  watch.mate(
+    `${label}-mate-${slot}`,
+    `${parent.name}.${parentConn}`,
+    `${child.name}.${childConn}`,
+    'fastened',
+  );
+}
+
 const caseBand = watch.part(
   'deep-polished-case-band-with-movement-cavity',
   ringY(9.2, caseRadius, 36.8, -0.2, '#cdd2d6'),
@@ -155,12 +182,12 @@ const movementPocket = watch.part(
   cylY(2.1, 30.5, 2.75, 96).color('#9098a0'),
 );
 
-watch.fixed('case back screwed into case band', caseBand, caseBack, { origin: [0, 4.2, 0] });
-watch.fixed('bezel crimped onto case band', caseBand, bezel, { origin: [0, -5.1, 0] });
-watch.fixed('rehaut seated inside bezel', bezel, rehaut, { origin: [0, -5.9, 0] });
-watch.fixed('crystal edge captured by bezel lip', bezel, crystalEdge, { origin: [0, -6.8, 0] });
-watch.fixed('dial plate supported by case shoulder', caseBand, dial, { origin: [0, frontY, 0] });
-watch.fixed('movement pocket under case back', caseBack, movementPocket, { origin: [0, 3, 0] });
+fixed('case back screwed into case band', caseBand, caseBack, { origin: [0, 4.2, 0] });
+fixed('bezel crimped onto case band', caseBand, bezel, { origin: [0, -5.1, 0] });
+fixed('rehaut seated inside bezel', bezel, rehaut, { origin: [0, -5.9, 0] });
+fixed('crystal edge captured by bezel lip', bezel, crystalEdge, { origin: [0, -6.8, 0] });
+fixed('dial plate seated inside rehaut', rehaut, dial, { origin: [0, frontY, 0] });
+fixed('movement pocket under case back', caseBack, movementPocket, { origin: [0, 3, 0] });
 
 const upperLugLeft = watch.part('upper-left-compact-lug-ear-grown-from-case-band', lugShape(-lugX, springBarZ, true, true));
 const upperLugRight = watch.part('upper-right-compact-lug-ear-grown-from-case-band', lugShape(lugX, springBarZ, true, false));
@@ -168,7 +195,7 @@ const lowerLugLeft = watch.part('lower-left-compact-lug-ear-grown-from-case-band
 const lowerLugRight = watch.part('lower-right-compact-lug-ear-grown-from-case-band', lugShape(lugX, -springBarZ, false, false));
 
 for (const lug of [upperLugLeft, upperLugRight, lowerLugLeft, lowerLugRight]) {
-  watch.fixed('lug foot brazed into main case body', caseBand, lug, { origin: [0, -1.2, 35] });
+  fixed('lug foot brazed into main case body', caseBand, lug, { origin: [0, -1.2, 35] });
 }
 
 const upperSpringBar = watch.part(
@@ -179,8 +206,8 @@ const lowerSpringBar = watch.part(
   'lower-spring-bar-core-hidden-inside-leather-sleeve',
   cylX(strapWidth + 2.4, 0.9, 0, 48).translate(0, -4.45, -springBarZ).color('shaft'),
 );
-watch.fixed('upper spring bar captured inside leather loop between lug ears', upperLugLeft, upperSpringBar, { origin: [0, -4.45, springBarZ] });
-watch.fixed('lower spring bar captured inside leather loop between lug ears', lowerLugLeft, lowerSpringBar, { origin: [0, -4.45, -springBarZ] });
+fixed('upper spring bar captured inside leather loop between lug ears', upperLugLeft, upperSpringBar, { origin: [0, -4.45, springBarZ] });
+fixed('lower spring bar captured inside leather loop between lug ears', lowerLugLeft, lowerSpringBar, { origin: [0, -4.45, -springBarZ] });
 
 for (const [name, z, x] of [
   ['upper-left-seated-spring-bar-end-cap', springBarZ, -12.6],
@@ -189,7 +216,7 @@ for (const [name, z, x] of [
   ['lower-right-seated-spring-bar-end-cap', -springBarZ, 12.6],
 ]) {
   const cap = watch.part(name, cylX(1.2, 1.15, x, 32).translate(0, -4.45, z).color('#dce1e5'));
-  watch.fixed('spring bar end cap seated inside lug ear with clearance', caseBand, cap, { origin: [x, -4.45, z] });
+  fixed('spring bar end cap seated inside lug ear with clearance', z > 0 ? upperSpringBar : lowerSpringBar, cap, { origin: [x, -4.45, z] });
 }
 
 const upperFold = watch.part(
@@ -200,8 +227,8 @@ const lowerFold = watch.part(
   'lower-folded-leather-sleeve-surrounding-spring-bar',
   strapSleeveShape(-springBarZ, false),
 );
-watch.fixed('upper leather loop bears continuously on upper spring bar', upperSpringBar, upperFold, { origin: [0, -4.8, springBarZ] });
-watch.fixed('lower leather loop bears continuously on lower spring bar', lowerSpringBar, lowerFold, { origin: [0, -4.8, -springBarZ] });
+fixed('upper leather loop bears continuously on upper spring bar', upperSpringBar, upperFold, { origin: [0, -4.8, springBarZ] });
+fixed('lower leather loop bears continuously on lower spring bar', lowerSpringBar, lowerFold, { origin: [0, -4.8, -springBarZ] });
 
 const upperStrap = watch.part(
   'upper-continuous-brown-leather-strap-half-stitched-to-folded-sleeve',
@@ -211,43 +238,43 @@ const lowerStrap = watch.part(
   'lower-continuous-brown-leather-strap-half-stitched-to-folded-sleeve',
   strapBodyShape(-110.5),
 );
-watch.fixed('upper folded loop stitched into strap body with no vertical gap', upperFold, upperStrap, { origin: [0, -6, 55] });
-watch.fixed('lower folded loop stitched into strap body with no vertical gap', lowerFold, lowerStrap, { origin: [0, -6, -55] });
+fixed('upper folded loop stitched into strap body with no vertical gap', upperFold, upperStrap, { origin: [0, -6, 55] });
+fixed('lower folded loop stitched into strap body with no vertical gap', lowerFold, lowerStrap, { origin: [0, -6, -55] });
 
 for (const z of [62, 80, 98, 116, 134, 152]) {
   const panel = watch.part(`upper-raised-crocodile-leather-panel-${z}`, leatherPanel(z, true));
-  watch.fixed('embossed upper leather panel bonded to strap', upperStrap, panel, { origin: [0, -8.5, z] });
+  fixed('embossed upper leather panel bonded to strap', upperStrap, panel, { origin: [0, -8.5, z] });
 }
 for (const z of [-62, -80, -98, -116, -134, -152]) {
   const panel = watch.part(`lower-raised-crocodile-leather-panel-${z}`, leatherPanel(z, false));
-  watch.fixed('embossed lower leather panel bonded to strap', lowerStrap, panel, { origin: [0, -8.5, z] });
+  fixed('embossed lower leather panel bonded to strap', lowerStrap, panel, { origin: [0, -8.5, z] });
 }
 for (const z of [64, 76, 88, 100, 112, 124, 136, 148, -64, -76, -88, -100, -112, -124, -136, -148]) {
   const owner = z > 0 ? upperStrap : lowerStrap;
   const left = watch.part(`left-tan-stitch-at-${z}`, stitch(-8.8, z, -7));
   const right = watch.part(`right-tan-stitch-at-${z}`, stitch(8.8, z, 7));
-  watch.fixed('tan stitching sewn into leather edge', owner, left, { origin: [-8.8, -9, z] });
-  watch.fixed('tan stitching sewn into leather edge', owner, right, { origin: [8.8, -9, z] });
+  fixed('tan stitching sewn into leather edge', owner, left, { origin: [-8.8, -9, z] });
+  fixed('tan stitching sewn into leather edge', owner, right, { origin: [8.8, -9, z] });
 }
 const upperGroove = watch.part('upper-central-leather-groove', box(1.0, 0.8, 104, true).translate(0, -9.35, 110).color('#3b1a0f'));
 const lowerGroove = watch.part('lower-central-leather-groove', box(1.0, 0.8, 104, true).translate(0, -9.35, -110).color('#3b1a0f'));
-watch.fixed('upper groove recessed into strap surface', upperStrap, upperGroove, { origin: [0, -9, 98] });
-watch.fixed('lower groove recessed into strap surface', lowerStrap, lowerGroove, { origin: [0, -9, -98] });
+fixed('upper groove recessed into strap surface', upperStrap, upperGroove, { origin: [0, -9, 98] });
+fixed('lower groove recessed into strap surface', lowerStrap, lowerGroove, { origin: [0, -9, -98] });
 
 const crownStem = watch.part('crown-stem-through-case-tube', cylX(7, 1.45, caseRadius - 1, 40).translate(0, -0.3, 0).color('shaft'));
 const crown = watch.part('ridged-pull-crown-on-right-side', cylX(7.6, 4.0, caseRadius + 5.5, 48).translate(0, -0.3, 0).color('#cdd3d8'));
-watch.fixed('crown stem passes through main case tube', caseBand, crownStem, { origin: [caseRadius, -0.3, 0] });
-watch.fixed('crown knob fixed to external stem', crownStem, crown, { origin: [caseRadius + 5, -0.3, 0] });
+fixed('crown stem passes through main case tube', caseBand, crownStem, { origin: [caseRadius, -0.3, 0] });
+fixed('crown knob fixed to external stem', crownStem, crown, { origin: [caseRadius + 5, -0.3, 0] });
 const ridgeOffsetsMm = [-2.6, -1.3, 0, 1.3, 2.6];
 for (let r = 0; r < ridgeOffsetsMm.length; r += 1) {
   const dx = ridgeOffsetsMm[r];
   const ridge = watch.part(`crown-grip-ridge-${r}`, cylX(0.32, 4.45, caseRadius + 5.5 + dx, 36).translate(0, -0.3, 0).color('#eef1f4'));
-  watch.fixed('machined crown ridge on crown body', crown, ridge, { origin: [caseRadius + 5.5 + dx, -0.3, 0] });
+  fixed('machined crown ridge on crown body', crown, ridge, { origin: [caseRadius + 5.5 + dx, -0.3, 0] });
 }
 
 for (let i = 0; i < 60; i += 1) {
   const tick = watch.part(`dial-${i % 5 === 0 ? 'hour' : 'minute'}-tick-${i}`, radialTick(i));
-  watch.fixed('printed minute tick bonded to visible dial', dial, tick, { origin: [0, frontY, 0] });
+  fixed('printed minute tick bonded to visible dial', dial, tick, { origin: [0, frontY, 0] });
 }
 
 const numeralSpecs = [
@@ -267,7 +294,7 @@ const numeralSpecs = [
 for (const [value, deg, size, radius] of numeralSpecs) {
   const [x, z] = radialPoint(radius, deg);
   const numeral = watch.part(`legible-printed-numeral-${value}`, faceText(value, size, x, z, frontY - 0.72, '#111111'));
-  watch.fixed('raised black numeral printed inside clear dial aperture', dial, numeral, { origin: [x, frontY, z] });
+  fixed('raised black numeral printed inside clear dial aperture', dial, numeral, { origin: [x, frontY, z] });
 }
 
 for (const [value, size, x, z] of [
@@ -276,7 +303,7 @@ for (const [value, size, x, z] of [
   ['MOVEMENT', 3.3, 0, -19.4],
 ]) {
   const label = watch.part(`dial-printing-${value}`, faceText(value, size, x, z, frontY - 0.76, '#333333'));
-  watch.fixed('small dial text printed below crystal and unobstructed', dial, label, { origin: [x, frontY, z] });
+  fixed('small dial text printed below crystal and unobstructed', dial, label, { origin: [x, frontY, z] });
 }
 
 for (const spec of [
@@ -285,11 +312,11 @@ for (const spec of [
   hand('red-seconds-hand-pointing-near-seven', 33.0, 1.05, 210, frontY - 1.38, '#ef382d', 8.0),
 ]) {
   const part = watch.part(spec.name, spec.shape);
-  watch.fixed('hand stack centered on cannon pinion', dial, part, { origin: [0, frontY, 0] });
+  fixed('hand stack centered on cannon pinion', dial, part, { origin: [0, frontY, 0] });
 }
 const pinion = watch.part('stacked-central-cannon-pinion-and-seconds-cap', cylY(1.1, 2.25, frontY - 1.58, 48).color('#111111'));
 const redCap = watch.part('red-seconds-hand-hub-cap', cylY(0.5, 1.2, frontY - 2.15, 40).color('#ef382d'));
-watch.fixed('pinion emerges through dial center', dial, pinion, { origin: [0, frontY, 0] });
-watch.fixed('red seconds cap fastened to pinion', pinion, redCap, { origin: [0, frontY - 2, 0] });
+fixed('pinion emerges through dial center', dial, pinion, { origin: [0, frontY, 0] });
+fixed('red seconds cap fastened to pinion', pinion, redCap, { origin: [0, frontY - 2, 0] });
 
 return watch.model();

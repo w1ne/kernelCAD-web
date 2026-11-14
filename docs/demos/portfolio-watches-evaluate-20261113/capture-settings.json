@@ -1,0 +1,34 @@
+{
+  "recordedDate": "2026-11-13",
+  "source": {
+    "path": "examples/portfolio/pocket-watch/build.kcad.ts",
+    "commit": "ea6a907b88beb1c1f1c2a5f45e5214582a3e13d2",
+    "sha256": "437d2297b5973eacedc5cdaebba44f0fc649c0a0c50e79e3209754d6c9b7add5"
+  },
+  "animation": {
+    "tool": "kernelcad animate (local CLI)",
+    "command": "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/ms-playwright npx tsx src/agent/cli/index.ts animate examples/portfolio/pocket-watch/build.kcad.ts docs/demos/portfolio-watches-evaluate-20261113/capture-raw.mp4 --turntable --preset default --width 960 --height 540 --duration-ms 6000 --elevation 20",
+    "frames": 180,
+    "fps": 30,
+    "durationMs": 6000,
+    "turntable": true,
+    "verified": false,
+    "verifySkipped": true,
+    "rawFile": "capture-raw.mp4",
+    "rawSha256": "b42c338ebea998cd8770a5d9d6b627dbb72ddefc230bc90caf0a432f4fc0181c"
+  },
+  "captionRender": {
+    "script": "render-demo.sh",
+    "captions": ["title.txt", "status.txt"],
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "crf": 22,
+    "preset": "veryfast",
+    "finalFile": "demo.mp4",
+    "finalSha256": "57aeeb23ea00c4472819d29879cd54dc03d8492dc4bd59ed2c36896394021c34"
+  },
+  "visualInspection": {
+    "frames": ["0.5 s (front)", "3.0 s (rear, saved as inspection-frame.png)"],
+    "observed": "Front: teal dial, eight hex screws, hands, subdial and a whole lanyard ring on its bail post. Rear: the yellow case back shows through the open frame pocket; this is the existing design."
+  }
+}
