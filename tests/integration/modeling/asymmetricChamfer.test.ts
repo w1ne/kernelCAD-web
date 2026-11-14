@@ -87,6 +87,22 @@ describe('asymmetric chamfer geometry', () => {
     expect(shape.volume()).toBeCloseTo(bevelledBlockVolume(2, 2 * Math.tan(Math.PI / 3)), 3);
   }, 120_000);
 
+  it('accepts a param() second leg and rejects a non-positive resolved value', async () => {
+    const ok = await build(`
+      const leg = param('leg', 5);
+      return box(40, 30, 10).chamfer(2, 'top', { distance2: leg });
+    `);
+    expect(ok.errors, JSON.stringify(ok.model.diagnostics)).toEqual([]);
+    expect(ok.model.tailShape!.volume()).toBeCloseTo(bevelledBlockVolume(2, 5), 3);
+
+    const bad = await build(`
+      const leg = param('leg', 5);
+      return box(40, 30, 10).chamfer(2, 'top', { distance2: leg.subtract(5) });
+    `);
+    expect(bad.errors.map((d) => d.code)).toEqual(['feature.invalid-args']);
+    expect(bad.errors[0].message).toContain('opts.distance2');
+  }, 120_000);
+
   it('keeps the symmetric chamfer unchanged when no options are given', async () => {
     const { model, errors } = await build(`
       return box(40, 30, 10).chamfer(2, 'top');
