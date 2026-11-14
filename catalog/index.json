@@ -294571,7 +294571,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pad-mount-transformer.kcad.ts",
       "preview": "/assets/solar-energy-pad-mount-transformer.png",
-      "sourceSha256": "fba74521d18fbb696c33e6aa57dc72995d5c107529c5ae003b571cb4fd005056",
+      "sourceSha256": "e774966c03f2ac8e207c0e89180acd0e1954cbeb9d1fa335610ea091a7f59e2d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -294645,14 +294645,7 @@
           "name": "powderCoat",
           "color": "#687c7c",
           "parts": [
-            "transformer-tank"
-          ],
-          "param": "powderCoat"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#c3caca",
-          "parts": [
+            "transformer-tank",
             "radiator-fin-front-0",
             "radiator-fin-back-0",
             "radiator-fin-front-1",
@@ -294670,7 +294663,14 @@
             "radiator-fin-front-7",
             "radiator-fin-back-7",
             "radiator-fin-front-8",
-            "radiator-fin-back-8",
+            "radiator-fin-back-8"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "bushing-base-0",
             "bushing-cap-0",
             "bushing-base-1",
