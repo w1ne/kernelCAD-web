@@ -246072,7 +246072,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/friction-washer.kcad.ts",
       "preview": "/assets/recycling-facility-friction-washer.png",
-      "sourceSha256": "91e3e073134e753471707d406f54223dfc5bd1bde2d14d5ded1cd74c16ddf711",
+      "sourceSha256": "e64bf4a5dd68ab092fd85ceea48dfc50779c0ac741c2a211eb73bd4ca13626e4",
       "triangleBudget": 3000,
       "params": [
         {
@@ -246163,6 +246163,7 @@
             "tube",
             "end-plate-feed",
             "end-plate-top",
+            "spray-header",
             "sump-rim",
             "feed-hopper",
             "discharge-chute"
@@ -246262,10 +246263,9 @@
           "param": "drive"
         },
         {
-          "name": "spray-header",
+          "name": "spray-drop-0",
           "color": "#5b8fb0",
           "parts": [
-            "spray-header",
             "spray-drop-0",
             "spray-drop-1",
             "spray-drop-2",
