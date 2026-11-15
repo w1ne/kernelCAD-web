@@ -292611,7 +292611,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/welding-gas-cylinder-trolley.kcad.ts",
       "preview": "/assets/shipyard-welding-gas-cylinder-trolley.png",
-      "sourceSha256": "c7eeaf1c1cd8e2e4cc168ef8ec8a022134acc148c87d27b04b176411ee4dc117",
+      "sourceSha256": "99ea73064b33b3c1c3ad81f4ad3552b2bb8609eb85993f6b2077c27bf7a48f37",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292679,9 +292679,7 @@
           "parts": [
             "toe-plate",
             "pull-handle",
-            "cylinder-valve-neck-0",
             "cylinder-valve-handle-0",
-            "cylinder-valve-neck-1",
             "cylinder-valve-handle-1"
           ],
           "param": "structuralSteel"
@@ -292713,6 +292711,14 @@
             "top-grip"
           ],
           "param": "elastomer"
+        },
+        {
+          "name": "cylinder-valve-neck-0",
+          "color": "#c9a43a",
+          "parts": [
+            "cylinder-valve-neck-0",
+            "cylinder-valve-neck-1"
+          ]
         }
       ]
     },
