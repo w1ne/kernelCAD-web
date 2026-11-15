@@ -124901,7 +124901,7 @@
       "id": "substation-transformer-rail-bogie",
       "kit": "grid-substation",
       "title": "Transformer rail bogie",
-      "description": "Low transport bogie with twin rail shoes, crossmembers, and wheel housings. Material controls: galvanized steel, rubber, stainless steel; finish presets: weathered and maintenance.",
+      "description": "Low transport bogie with twin rail shoes, crossmembers, and wheel housings. Material controls: galvanized steel, wheel steel, stainless steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -124920,7 +124920,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-transformer-rail-bogie.kcad.ts",
       "preview": "/assets/grid-substation-substation-transformer-rail-bogie.png",
-      "sourceSha256": "665acf5093d70e9ab24611c8e2e558d8918c27eb572a90eb533e2914853c771f",
+      "sourceSha256": "01e648dd6e13033c9432fe9805d5ee42b52054e812c2e05bc32523fa705998e6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -124939,10 +124939,10 @@
           "label": "Galvanized steel"
         },
         {
-          "name": "rubber",
+          "name": "wheelSteel",
           "type": "color",
-          "default": "#293034",
-          "label": "Rubber"
+          "default": "#4f565a",
+          "label": "Rail wheel steel"
         },
         {
           "name": "stainlessSteel",
@@ -124954,7 +124954,7 @@
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
-          "rubber": "#3b3f3e",
+          "wheelSteel": "#5d5048",
           "stainlessSteel": "#9da4a0"
         },
         "maintenance": {
@@ -124983,15 +124983,15 @@
           "param": "galvanizedSteel"
         },
         {
-          "name": "rubber",
-          "color": "#293034",
+          "name": "wheelSteel",
+          "color": "#4f565a",
           "parts": [
             "rail-wheel",
             "rail-wheel-2",
             "rail-wheel-3",
             "rail-wheel-4"
           ],
-          "param": "rubber"
+          "param": "wheelSteel"
         },
         {
           "name": "stainlessSteel",
