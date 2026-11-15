@@ -373,6 +373,24 @@ function holeSubset(small: CylindricalHole[], big: CylindricalHole[]): boolean {
 }
 
 /**
+ * Does every hole in `before` survive in `after` on the same axis line with
+ * the same diameter? Depth and kind are ignored: a pocket or a thinner plate
+ * can shorten a hole, or turn a through hole blind, without touching it.
+ */
+function existingHolesKept(before: CylindricalHole[], after: CylindricalHole[]): boolean {
+  const remaining = [...after];
+  for (const wanted of before) {
+    const index = remaining.findIndex(
+      (candidate) =>
+        sameAxisLine(wanted, candidate) && Math.abs(wanted.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+    );
+    if (index < 0) return false;
+    remaining.splice(index, 1);
+  }
+  return true;
+}
+
+/**
  * Pick the hole the request names. A central bore is the largest coaxial
  * void; a horizontal bore is the one whose axis lies in the XY plane. When
  * the request gives a source diameter, it is the tie-breaker.
@@ -607,6 +625,18 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       status: 'failed',
       classification: 'wrong-topology',
       reason: `the request does not mention holes, but the hole count changed (${before.holes.length} → ${after.holes.length})`,
+    };
+  }
+
+  if (!intent.mentionsHoles && !intent.offsetsFaces && !existingHolesKept(before.holes, after.holes)) {
+    // A chamfer, fillet or pocket request does not name a hole, so every
+    // existing hole must stay where it was at its size. A wall offset is
+    // left to the locality check below: a moved wall can meet a hole.
+    return {
+      ...base,
+      status: 'failed',
+      classification: 'wrong-topology',
+      reason: `the request did not name a hole, but an existing hole was removed, resized or moved (${before.holes.length} → ${after.holes.length} holes)`,
     };
   }
 
