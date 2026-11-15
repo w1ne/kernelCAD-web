@@ -169,9 +169,21 @@ const shoulderCheekR = box(shoulderCheekX, yokeCheekT, yokeCheekH, true)
 const shoulderCheekTopBridge = box(2, shoulderCheekCenterY.multiply(2), 2, true)
   .translate(-5.5, 0, shoulderPitchZ.add(halfYokeCheekH).subtract(1))
   .color('plate');
+// Thrust washers on each cheek's inner face, coaxial with the pitch axis.
+// They stand 0.5 mm off the beam's side faces (|y| = beamW/2), so the fork
+// bears on the upper arm across the whole pitch travel; without them the
+// nearest cheek material was 1.98 mm away (mate-gap / joint-mesh-gap). The
+// 3.5 mm bore clears the r = 3 shoulder-pitch shaft stub.
+const shoulderWasherInnerY = beamW.divide(2).add(0.5);
+const shoulderWasherLen = shoulderCheekCenterY.subtract(yokeCheekT.divide(2)).subtract(shoulderWasherInnerY).add(0.5);
+const shoulderWasher = cylinder(shoulderWasherLen, 5.5, 32)
+  .subtract(cylinder(shoulderWasherLen.add(2), 3.5, 32).translate(0, 0, -1))
+  .alongAxis([0, 1, 0]);
 const shoulderCheeks = shoulderCheekL
   .union(shoulderCheekR)
-  .union(shoulderCheekTopBridge);
+  .union(shoulderCheekTopBridge)
+  .union(shoulderWasher.translate(0, shoulderWasherInnerY, shoulderPitchZ))
+  .union(shoulderWasher.translate(0, shoulderWasherInnerY.add(shoulderWasherLen).negate(), shoulderPitchZ));
 const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
 
 // 7. Shoulder pitch servo — mounted EXTERNALLY on the front face of the
@@ -288,7 +300,9 @@ const elbowYokePart = arm.part('elbow-yoke', elbowYoke);
 // 10. Elbow pitch servo — mounted EXTERNALLY on the +Y cheek's outer face
 //     (axis along +Y), not stacked above the joint where it intersected
 //     the upper-arm beam, the yoke, and the forearm beam after FK rotation.
-const elbowServoMountY = halfYokeCheekW.add(yokeCheekT.divide(2));
+//     Its inner face sits flat on the cheek's outer face (y = halfYokeCheekW);
+//     it used to float 2.5 mm off the cheek it is fastened to.
+const elbowServoMountY = halfYokeCheekW;
 const elbowServoStack = box(servoH, servoD, servoW, true)
   .translate(upperArmLen, elbowServoMountY.add(servoD.divide(2)), halfYokeCheekH.add(8))
   .color('servo');
@@ -365,16 +379,19 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
   .union(
     // Thin upper/lower hinge straps bridge from the palm edge to each finger
     // hinge while leaving the finger's swept XY plane clear at grip:max.
-    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, 21, 5),
+    // They run 4 mm past the hinge axis and stand 0.5 mm off the finger's
+    // top/bottom faces (|z| = gripperFingerT/2), so each knuckle is captured
+    // between them; ending at the hinge they left a 1.27 mm gap.
+    box(18, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 5, 21, 4.5),
   )
   .union(
-    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, 21, -5),
+    box(18, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 5, 21, -4.5),
   )
   .union(
-    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, -21, 5),
+    box(18, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 5, -21, 4.5),
   )
   .union(
-    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, -21, -5),
+    box(18, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 5, -21, -4.5),
   )
   .union(
     // v0.7.4 — grip-axis binding post. Gate 2 requires the joint axis
