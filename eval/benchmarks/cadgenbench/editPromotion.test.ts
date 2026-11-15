@@ -445,6 +445,60 @@ describe('remote hole change (#1402)', () => {
   });
 });
 
+describe('hole enlargement keeps unrelated holes (#1402)', () => {
+  const request = 'Increase the diameter of the central bore to 310mm.';
+  const holes = [hole(188, 50, 50), hole(298, 50, 50), hole(8, 10, 10), hole(8, 90, 10)];
+  const enlarged = (rest: CylindricalHole[]) => [hole(188, 50, 50), hole(310, 50, 50), ...rest];
+
+  it('accepts a bore enlargement that keeps every other hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(8, 90, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('rejects a bore enlargement that also deleted a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 19, enlarged([hole(8, 10, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('4 → 3');
+  });
+
+  it('rejects a bore enlargement that also resized a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(12, 90, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('another hole was changed');
+  });
+
+  it('rejects a bore enlargement that also moved a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(8, 70, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('another hole was changed');
+  });
+
+  it('rejects a bore enlargement that also enlarged the coaxial 188 mm bore', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, [hole(310, 50, 50), hole(310, 50, 50), hole(8, 10, 10), hole(8, 90, 10)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+  });
+});
+
 describe('parseEditIntent', () => {
   it('reads a bore enlargement as material removal', () => {
     expect(parseEditIntent('Increase the diameter of the central bore to 310mm.').direction).toBe('decrease');
