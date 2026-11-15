@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StepInspectReport } from '../../../src/kernel/import/inspectStep';
 import type { CylindricalHole } from '../../../src/kernel/backends/occt/holeDetection';
-import { classifyEditPromotion, parseEditIntent } from './editPromotion';
+import { advisoryLocality, classifyEditPromotion, parseEditIntent } from './editPromotion';
 
 function hole(diameter: number, x = 0, y = 0, z = 0): CylindricalHole {
   return {
@@ -814,5 +814,35 @@ describe('parseEditIntent', () => {
       targetHoleDiameterMm: 10,
       targetHoleSelector: 'horizontal',
     });
+  });
+});
+
+describe('advisory locality checks (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
+  const moved = classifyEditPromotion({
+    request: 'Add a 2mm chamfer to the top outer edges.',
+    before: report(1_000_000, 20, holes),
+    after: shifted(report(999_000, 24, holes), 10),
+  });
+
+  it('marks a non-local failure as a locality check', () => {
+    expect(moved).toMatchObject({ status: 'failed', classification: 'unintended-move', localityCheck: true });
+  });
+
+  it('reports a locality failure as unknown and keeps the reason', () => {
+    const advisory = advisoryLocality(moved);
+    expect(advisory).toMatchObject({ status: 'unknown', classification: 'unintended-move', localityCheck: true });
+    expect(advisory.reason).toBe(`not enforced (locality check): ${moved.reason}`);
+  });
+
+  it('does not mark or relax a failure that existed before #1402', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 5 mm boss on the top face.',
+      before: report(1_000_000, 20),
+      after: report(998_000, 21),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.localityCheck).toBeUndefined();
+    expect(advisoryLocality(result)).toBe(result);
   });
 });

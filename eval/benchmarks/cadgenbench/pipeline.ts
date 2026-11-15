@@ -48,6 +48,7 @@ import { generationLedgerMismatch } from './generationLedger';
 import {
   classifyEditPromotion,
   unknownEditPromotion,
+  advisoryLocality,
   type EditPromotionResult,
 } from './editPromotion';
 
@@ -98,6 +99,10 @@ export interface PipelineConfig {
    *  input.step after the validity gate; `off` is for unit tests. A function
    *  injects a deterministic verdict. */
   editPromotion?: 'auto' | 'off' | EditPromotionHook;
+  /** Block on the non-local checks from #1402 (`localityCheck` failures).
+   *  Default false: they are reported as `unknown` and the candidate is kept,
+   *  until a held-out evaluation shows that enforcing them improves quality. */
+  enforceLocality?: boolean;
   /** Write a candidate that fails the pre-check instead of leaving the task missing. */
   keepInvalid: boolean;
   prices?: Prices;
@@ -388,6 +393,7 @@ function withPromotionGate(base: CandidateGate, cfg: PipelineConfig, task: CadGe
       } catch (e) {
         result = unknownEditPromotion(`promotion inspection failed: ${e instanceof Error ? e.message : String(e)}`);
       }
+      if (!cfg.enforceLocality) result = advisoryLocality(result);
       if (result.status !== 'failed') {
         promotionFailures.delete(scriptPath);
         return report;

@@ -46,6 +46,10 @@ export interface EditPromotionResult {
   holeCountBefore: number;
   holeCountAfter: number;
   holeChangeMm: number;
+  /** Set on a failure from a non-local check (#1402): hole-move position,
+   *  unintended translation, remote hole change, extension side or size, and
+   *  blend-removal bounds. The pipeline blocks on it only in `strict` mode. */
+  localityCheck?: true;
 }
 
 export interface EditPromotionInput {
@@ -732,7 +736,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
     }
     const mismatch = intent.targetMove ? holeMoveMismatch(before.holes, after.holes, intent.targetMove) : null;
     if (mismatch) {
-      return { ...base, status: 'failed', ...mismatch };
+      return { ...base, status: 'failed', ...mismatch, localityCheck: true };
     }
     return {
       ...base,
@@ -751,6 +755,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       ...base,
       status: 'failed',
       classification: 'unintended-move',
+      localityCheck: true,
       reason: `the whole solid moved by (${translation.map((v) => v.toFixed(3)).join(', ')}) mm; the request does not ask to move the part`,
     };
   }
@@ -796,6 +801,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       ...base,
       status: 'failed',
       classification: 'wrong-topology',
+      localityCheck: true,
       reason: `the request did not name a hole, but an existing hole was removed, resized or moved (${before.holes.length} → ${after.holes.length} holes)`,
     };
   }
@@ -914,6 +920,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ...base,
         status: 'failed',
         classification: 'wrong-direction',
+        localityCheck: true,
         reason: `the request extends toward ${label}, but the part grew ${grewOpposite.toFixed(3)} mm on the ${opposite} side and not on the ${label} side`,
       };
     }
@@ -923,6 +930,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ...base,
         status: 'failed',
         classification: 'wrong-magnitude',
+        localityCheck: true,
         reason: `the part grew ${grew.toFixed(3)} mm on the ${label} side, but the request extends it by ${mm} mm (±${extentTolerance.toFixed(3)} mm)`,
       };
     }
@@ -943,6 +951,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ...base,
         status: 'failed',
         classification: 'wrong-topology',
+        localityCheck: true,
         reason: `a blend removal cannot cut the part bounds, but a bbox side moved inward by ${shrink.toFixed(3)} mm; the edit removed material outside the blend`,
       };
     }
@@ -951,6 +960,7 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ...base,
         status: 'failed',
         classification: 'wrong-magnitude',
+        localityCheck: true,
         reason: `removing a ${intent.blendSizeMm} mm blend can grow the part by at most ${intent.blendSizeMm} mm, but a bbox side moved outward by ${growth.toFixed(3)} mm`,
       };
     }
@@ -988,6 +998,16 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ? 'the solid changed without a requested material direction'
         : `real ${intent.direction === 'any' ? '' : `${intent.direction} `}change: volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³, faces ${faceDelta >= 0 ? '+' : ''}${faceDelta}`,
   };
+}
+
+/**
+ * Report a non-local failure without blocking the candidate. #1402 enforces
+ * these checks by default only after a held-out evaluation shows a quality
+ * gain; until then the verdict is `unknown` and the reason is kept.
+ */
+export function advisoryLocality(result: EditPromotionResult): EditPromotionResult {
+  if (result.status !== 'failed' || !result.localityCheck) return result;
+  return { ...result, status: 'unknown', reason: `not enforced (locality check): ${result.reason}` };
 }
 
 /** Safe wrapper for callers that could not inspect one of the two shapes. */

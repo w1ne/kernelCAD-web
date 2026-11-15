@@ -344,7 +344,7 @@ describe('runTask with an LLM', () => {
     expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return forwards;');
   });
 
-  it('tells the repair loop to keep the part in place after an unintended move', async () => {
+  it('tells the repair loop to keep the part in place after an unintended move in strict mode', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
     const agent = new MockAgentClient([reply('return shifted;'), reply('return inPlace;')]);
@@ -353,9 +353,10 @@ describe('runTask with an LLM', () => {
       cfg(runDir, {
         agent,
         maxAttempts: 2,
+        enforceLocality: true,
         editPromotion: async ({ scriptPath }) =>
           readFileSync(scriptPath, 'utf8').includes('shifted')
-            ? promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm')
+            ? { ...promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm'), localityCheck: true }
             : promo('accepted', 'edited', 'real edit'),
       }),
     );
@@ -364,6 +365,42 @@ describe('runTask with an LLM', () => {
     expect(repair).toMatch(/cadgenbench\.edit\.unintended-move/);
     expect(repair).toMatch(/apply the edit in place/);
     expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return inPlace;');
+  });
+
+  it('does not block on a locality check by default (#1402)', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return shifted;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async () => ({
+          ...promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm'),
+          localityCheck: true,
+        }),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 1 });
+    expect(agent.calls).toHaveLength(1);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return shifted;');
+  });
+
+  it('still blocks a failure that is not a locality check by default', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return backwards;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 1,
+        editPromotion: async () => promo('failed', 'wrong-direction', 'volume moved the wrong way'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'failed' });
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
   });
 
   it('keeps a locality-unverified candidate without a repair attempt', async () => {
