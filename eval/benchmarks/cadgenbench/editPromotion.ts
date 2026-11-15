@@ -118,15 +118,31 @@ const VOLUME_TOL_FRACTION = 0.0002; // 0.02 %
 const LOCATING_HOLE =
   /\b(?:near|beside|around|next to|adjacent to|close to|relative to|away from|sides? of)\s+(?:the\s+|a\s+|an\s+)?(?:[a-z0-9+.-]+\s+){0,2}?(?:hole|holes|bore|bores|counterbore|counterbores)\b/g;
 
+// The face or wall must be the object of the move verb. A preposition in
+// between ("the slot on the top face") makes the face only a location.
+const FACE_MOVE =
+  /\b(?:move|moves|shift|shifts|offset|offsets|push|pushes|pull|pulls)\s+(?:the\s+|a\s+|an\s+)?(?:(?!(?:on|of|in|at|from|to|into|onto|toward|towards|by)\b)[a-z0-9+.-]+\s+){0,3}?(?:face|faces|wall|walls)\b/;
+
+/** The single "N mm" distance of a face move; none when two lengths appear. */
+function faceMoveDistance(text: string): [string, string] | null {
+  const lengths = [...text.matchAll(/(\d+(?:\.\d+)?)\s*mm\b/g)];
+  return lengths.length === 1 ? [lengths[0][0], lengths[0][1]] : null;
+}
+
 /** Infer what the request asks for without looking at the candidate. */
 export function parseEditIntent(request: string): EditIntent {
   const text = request.toLowerCase().replace(LOCATING_HOLE, ' ');
   const mentionsHoles = /\b(hole|holes|bore|bores|drill|drilled|counterbore|countersink|ream|tapped|thread)\b/.test(text);
+  // "Move the top face up by 3 mm" moves a face, not a feature: the volume
+  // changes by design. "Move the slot on the top face" still moves the slot.
+  const movesFace = FACE_MOVE.test(text);
   const moveOnly =
+    !movesFace &&
     /\b(move|moves|shift|shifts|translate|reposition|relocate|relocated|offset|offsets|space|spacing)\b/.test(text) &&
     !/\b(add|remove|delete|fill|cut|drill|bore|enlarge|increase|decrease|reduce|resize|pattern|array)\b/.test(text);
   const offsetsFaces =
-    /\b(walls?|faces?|sides?)\b/.test(text) && /\b(inward|inwards|outward|outwards)\b/.test(text);
+    movesFace ||
+    (/\b(walls?|faces?|sides?)\b/.test(text) && /\b(inward|inwards|outward|outwards)\b/.test(text));
   const mentionsTopology =
     mentionsHoles ||
     /\b(fillets?|chamfers?|slots?|pockets?|ribs?|boss|bosses|pads?|pattern|array|hole|holes)\b/.test(text);
@@ -223,7 +239,10 @@ export function parseEditIntent(request: string): EditIntent {
 
   // Only one signed axis may appear, so "extend +X, shorten -Y" is not read.
   let targetExtent: EditIntent['targetExtent'];
-  const extendBy = /\b(?:extend|extends|lengthen|elongate|extrude|thicken)\b[^.]*?\bby\s*(\d+(?:\.\d+)?)\s*mm\b/.exec(text);
+  // A face moved N mm toward +X can grow the part on that side by at most N.
+  const extendBy =
+    /\b(?:extend|extends|lengthen|elongate|extrude|thicken)\b[^.]*?\bby\s*(\d+(?:\.\d+)?)\s*mm\b/.exec(text) ??
+    (movesFace ? faceMoveDistance(text) : null);
   const axes = new Set([...text.matchAll(/(?:^|[\s(])([+-])\s?([xyz])\b/g)].map((m) => m[1] + m[2]));
   if (!moveOnly && extendBy && axes.size === 1) {
     const [signed] = axes;

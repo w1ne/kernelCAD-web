@@ -303,6 +303,74 @@ describe('extend toward a signed axis (#1402)', () => {
   });
 });
 
+describe('local face move (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(46, 50, 50)];
+  function grown(min: [number, number, number], max: [number, number, number], volume: number) {
+    const after = report(volume, 20, holes);
+    after.solids[0].bboxExact = { min, max };
+    return after;
+  }
+
+  it('accepts a moved top face that changes the volume', () => {
+    // Before this fix, "move" made the request a rigid feature move, so the
+    // volume change failed it as wrong-topology.
+    const result = classifyEditPromotion({
+      request: 'Move the top face up by 3 mm.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [100, 100, 103], 1_030_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts a face moved toward a signed axis by the requested distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [105, 100, 100], 1_050_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('rejects a face moved further than requested', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [110, 100, 100], 1_100_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('rejects a face move that grew the opposite side', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([-5, 0, 0], [100, 100, 100], 1_050_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+  });
+
+  it('rejects a face move that translated the whole part instead', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the top face up by 3 mm.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(1_000_000, 20, holes), 0, 0, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('still reads a feature located on a face as a feature move', () => {
+    expect(parseEditIntent('Move the slot on the top face 5 mm in +X.')).toMatchObject({
+      moveOnly: true,
+      offsetsFaces: false,
+    });
+    expect(parseEditIntent('Shift the slot 4 mm toward +Y.')).toMatchObject({ moveOnly: true });
+    expect(parseEditIntent('Offset the top face of the boss by 2 mm.')).toMatchObject({
+      moveOnly: false,
+      offsetsFaces: true,
+    });
+  });
+});
+
 describe('remote hole change (#1402)', () => {
   const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
 
