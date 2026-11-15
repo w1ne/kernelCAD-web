@@ -182231,7 +182231,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/magnetic-separator-drum.kcad.ts",
       "preview": "/assets/mining-magnetic-separator-drum.png",
-      "sourceSha256": "dfabd08d558c7b78eaf5838e547ce50e31d508e943e4e2017340236c05ba8f5e",
+      "sourceSha256": "a109d9f828cc2464ac4ff46f019d789b8a420165d01a0963c654209a6e2f1942",
       "triangleBudget": 2800,
       "params": [
         {
@@ -182361,6 +182361,7 @@
             "feed-pipe-0",
             "feed-pipe-elbow-0",
             "spray-pipe-0",
+            "wash-header-0",
             "pinch-valve-0-0",
             "pinch-valve-1-0",
             "leg-0-0",
@@ -182409,13 +182410,6 @@
             "launder-outlet-0",
             "tails-spigot-0-0",
             "tails-spigot-1-0"
-          ]
-        },
-        {
-          "name": "wash-header-0",
-          "color": "#7fa6b8",
-          "parts": [
-            "wash-header-0"
           ]
         }
       ]
