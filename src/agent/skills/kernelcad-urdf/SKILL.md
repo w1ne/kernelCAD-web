@@ -108,4 +108,4 @@ Fail-closed gates:
 - `export.usd.joint-unsupported` — a `planar`, `cylindrical`, `pin_slot`, or `ball` mate has no UsdPhysics joint that keeps its DOF count. Nothing is written. Restructure the mates, or export `format: 'sdf-gazebo'`, which carries the full mate vocabulary.
 - `export.usd.mass-missing` — a link's mass came back non-finite or non-positive. Nothing is written. Declare a density or material on the part and check it is a closed solid.
 - `export.usd.pose-unsolved` (warning) — the mate graph did not solve, so links were placed at the stage origin. Run `solve_mates`, fix the connector geometry, re-export.
-- `export.usd.coupling-dropped` (warning) — a `coupleMates` coupling has no UsdPhysics schema. The driven mate ships as an independent joint, one warning per coupling. Enforce the ratio in the simulator controller.
+- `export.usd.coupling-dropped` (warning) — the `usd-isaac` serializer does not author a `coupleMates` relation or backend-specific mimic API. The driven mate ships as an independent joint, one warning per coupling. Enforce the ratio in the simulator controller or use an export format that preserves mate couplings.

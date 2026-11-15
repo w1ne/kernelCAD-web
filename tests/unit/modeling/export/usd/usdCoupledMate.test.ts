@@ -45,6 +45,7 @@ describe('usdIsaacSerialize — coupleMates on the UsdPhysics target', () => {
     expect(dropped[0].message).toContain("'output'");
     expect(dropped[0].message).toContain("'input'");
     expect(dropped[0].message).toContain('-0.5');
+    expect(dropped[0].hint).toContain('does not author backend-specific mimic APIs');
     expect(dropped[0].nextAction).toBeDefined();
   });
 

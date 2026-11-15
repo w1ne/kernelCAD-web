@@ -278,11 +278,11 @@ export const EXPORT_CODES = {
   },
   'export.usd.coupling-dropped': {
     hintTemplate:
-      'UsdPhysics has no joint coupling schema; a coupleMates coupling was not carried, so the driven joint moves freely in the simulator. Enforce the ratio in the simulator controller, or export a format that carries joint couplings.',
+      'This usd-isaac export leaves the driven joint independent; the serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'export',
-    description: 'A coupleMates coupling could not be represented in a usd-isaac physics stage; the driven joint was emitted as an independent joint.',
+    description: 'The usd-isaac serializer does not author a backend-specific mimic relation for a coupleMates coupling; the driven mate was emitted as an independent physics joint.',
   },
   'export.usd.pose-unsolved': {
     hintTemplate:

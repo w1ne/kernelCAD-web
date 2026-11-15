@@ -43,9 +43,10 @@
 // its DOF count (planar / cylindrical / pin_slot / ball) raises
 // export.usd.joint-unsupported, and a link with non-finite / non-positive
 // mass raises export.usd.mass-missing. A physics stage silently missing a DOF
-// or a mass is worse than a refused export. A `coupleMates` coupling has no
-// UsdPhysics schema; it is not carried and raises export.usd.coupling-dropped
-// (warn), because the stage itself is still valid.
+// or a mass is worse than a refused export. A `coupleMates` coupling is not
+// authored by this serializer; it raises export.usd.coupling-dropped (warn),
+// because the stage itself is still valid. Backend-specific mimic APIs are
+// intentionally outside this generic usd-isaac export contract.
 
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import type { MateRecord } from '../../mates/mate';
@@ -838,8 +839,8 @@ function couplingDropped(coupling: MateCouplingRecord): CompilerDiagnostic {
     target: 'export-occt',
     code: 'export.usd.coupling-dropped',
     severity: 'warn',
-    message: `Mate '${coupling.driven}' is coupled to '${coupling.source}' (${coupling.driven} = ${coupling.ratio} * ${coupling.source}${offset}, authored units), but UsdPhysics has no joint coupling; '${coupling.driven}' was emitted as an independent joint.`,
-    hint: 'The simulator will not enforce this coupling. Drive both joints from the controller with the authored ratio, or export a format that carries joint couplings.',
+    message: `Mate '${coupling.driven}' is coupled to '${coupling.source}' (${coupling.driven} = ${coupling.ratio} * ${coupling.source}${offset}, authored units), but the usd-isaac serializer does not author a coupling API; '${coupling.driven}' was emitted as an independent joint.`,
+    hint: 'The emitted stage will not enforce this coupling. This serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
     nextAction: NEXT_ACTIONS['export.usd.coupling-dropped'],
   };
 }
