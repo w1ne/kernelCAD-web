@@ -155,7 +155,12 @@ function appendMateLimitSamples(
   samples: PoseEnvelopeSample[],
   samplesPerMate: number,
 ): void {
+  const driven = coupledDrivenMates(arm);
   for (const mate of arm.__mates()) {
+    // A driven mate follows its coupleMates source, so its own limit alone is
+    // a pose the mechanism cannot reach. The source samples move it, and
+    // validateMatePoseLimits still checks its limits at every sample.
+    if (driven.has(mate.name)) continue;
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
     const [min, max] = limits;
@@ -186,10 +191,16 @@ function appendMateLimitSamples(
   }
 }
 
-/** Enumerate the 2^N min/max corner combinations over mates with declared
- *  limits (capped at 8). */
+/** Names of the mates that coupleMates drives from another mate. */
+function coupledDrivenMates(arm: Assembly): ReadonlySet<string> {
+  return new Set(arm.__mateCouplings().map((coupling) => coupling.driven));
+}
+
+/** Enumerate the 2^N min/max corner combinations over independent mates with
+ *  declared limits (capped at 8). */
 function appendCombinatorialSamples(arm: Assembly, samples: PoseEnvelopeSample[]): void {
-  const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
+  const driven = coupledDrivenMates(arm);
+  const limited = arm.__mates().filter((m) => !driven.has(m.name) && (m.limitsDeg ?? m.limitsMm) !== undefined);
   if (limited.length > 8) {
     throw new Error(
       `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,

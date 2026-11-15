@@ -406,6 +406,36 @@ describe('pose-envelope review helpers', () => {
     expect(pitchValues).toEqual(new Set([-45, 45]));
   });
 
+  function makeGearPair(outputLimits: [number, number]) {
+    const { arm, kcad } = makeArm();
+    const axis = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: [0, 0, 1] as [number, number, number] });
+    arm.part('plate', kcad.box(60, 20, 2)).connector('in', axis(0)).connector('out', axis(24));
+    arm.part('pinion', kcad.box(5, 5, 5)).connector('axis', axis(0));
+    arm.part('gear', kcad.box(5, 5, 5)).connector('axis', axis(24));
+    arm.mate('input', 'plate.in', 'pinion.axis', 'revolute', { limitsDeg: [-100, 100] });
+    arm.mate('output', 'plate.out', 'gear.axis', 'revolute', { limitsDeg: outputLimits });
+    arm.coupleMates('output', { source: 'input', ratio: -1 / 3 });
+    return arm;
+  }
+
+  it('drives a coupled mate from its source and never samples it alone', () => {
+    const samples = buildPoseEnvelopeSamples(makeGearPair([-35, 35]), { samplesPerMate: 3, combinatorial: true });
+    expect(samples.map((s) => s.name)).toEqual([
+      'current', 'input:min', 'input:interior-1', 'input:max', 'corner:0', 'corner:1',
+    ]);
+    for (const sample of samples.slice(1)) {
+      expect(sample.poses.output).toBeCloseTo((sample.poses.input as number) * -1 / 3, 9);
+    }
+  });
+
+  it('still reports a source sample that drives a coupled mate past its limits', () => {
+    const arm = makeGearPair([-20, 20]);
+    const sample = buildPoseEnvelopeSamples(arm).find((s) => s.name === 'input:max')!;
+    expect(validateMatePoseLimits(arm, sample.poses, sample.name).map((d) => [d.code, d.mateName])).toEqual([
+      ['assembly.pose.out-of-limits', 'output'],
+    ]);
+  });
+
   it('refuses combinatorial sampling above 8 mates with declared limits', () => {
     const { arm, kcad } = makeArm();
     arm
