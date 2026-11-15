@@ -97,7 +97,7 @@ async function motionFailures(code: string, limits: [number, number] = [-90, 90]
   if (!envelope) return [...failures, 'no pose envelope'];
   const sampled = envelope.samples.map((s) => s.poses.hinge).filter((v) => v !== undefined).sort((a, b) => a - b);
   if (JSON.stringify(sampled) !== JSON.stringify(limits)) failures.push(`hinge samples: ${sampled} != ${limits}`);
-  for (const pair of envelope.interferencePairs) failures.push(`envelope clash at ${pair.sampleName}: ${pair.partA}/${pair.partB}`);
+  for (const pair of envelope.interferencePairs) failures.push(`envelope clash at ${pair.sampleName}: ${pair.a}/${pair.b}`);
   if (review.mechanismSummary?.verdict !== 'real') failures.push(`mechanism verdict: ${review.mechanismSummary?.verdict}`);
   return failures;
 }
@@ -207,7 +207,7 @@ describe('manufacturing benchmark 03: pinned clevis hinge (#1227)', () => {
     // At rest the arm is clear, so only the limit samples can find the clash.
     expect(stepFailures(await exportSolids(code), DEFAULTS)).toEqual([]);
     const failures = await motionFailures(code, [-150, 150]);
-    expect(failures.some((f) => /^envelope clash at hinge:(min|max): /.test(f))).toBe(true);
+    expect(failures.some((f) => /^envelope clash at hinge:(min|max): (clevis\/arm|arm\/clevis)$/.test(f))).toBe(true);
   }, 180_000);
 
   it('catches a clevis bore drilled off the pivot axis', async () => {
