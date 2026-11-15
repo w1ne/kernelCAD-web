@@ -344,6 +344,45 @@ describe('runTask with an LLM', () => {
     expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return forwards;');
   });
 
+  it('tells the repair loop to keep the part in place after an unintended move', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return shifted;'), reply('return inPlace;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('shifted')
+            ? promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm')
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    const repair = agent.calls[1].messages[2].content;
+    expect(repair).toMatch(/cadgenbench\.edit\.unintended-move/);
+    expect(repair).toMatch(/apply the edit in place/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return inPlace;');
+  });
+
+  it('keeps a locality-unverified candidate without a repair attempt', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return walls;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async () => promo('unknown', 'locality-unverified', 'faces were added; locality is not measurable'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 1 });
+    expect(agent.calls).toHaveLength(1);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return walls;');
+  });
+
   it('submits nothing when every attempt is a no-op', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
