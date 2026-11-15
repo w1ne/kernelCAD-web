@@ -310324,7 +310324,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail-end-stop.kcad.ts",
       "preview": "/assets/standard-components-din-rail-end-stop.png",
-      "sourceSha256": "ba50049f0866616b9487e68d21c28e785c64522f516189679669fabb92bbf67d",
+      "sourceSha256": "05b42efe4272f5f0f50b26bf93d300901b00eadeb1a6030b1496b43d12b6ef5e",
       "triangleBudget": 500,
       "params": [
         {
@@ -310372,7 +310372,7 @@
           0.0314,
           0.0416
         ],
-        "minUpM": -0.0014,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [

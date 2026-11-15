@@ -46,7 +46,7 @@ async function variant(code:string) {
 const clipName='under-lip-clip-and-stop-face';
 const screwName='separate-slotted-clamping-screw';
 // GLB coordinates map source (X,Y,Z) to (X,Z,-Y), all millimetres below.
-const point=(x:number,y:number,z:number,s=1):V=>[x*s,z*s,-y*s];
+const point=(x:number,y:number,z:number,s=1):V=>[x*s,(z+1.4)*s,-y*s];
 function checkCrossSection(t:Tri[],s:number) {
  for(const y of [-16.5,16.5])
   expect(rayHit(t,point(-30,y,-.8,s),[1,0,0]),`under-lip retaining hook Y=${y}`).toBe(true);
@@ -64,6 +64,7 @@ describe('illustrative TH35 DIN rail end stop geometry',()=>{
   expect(asset.description).toMatch(/not a verified clip design/i);
   expect(asset.stats.triangles).toBeGreaterThan(200);
   expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
+  expect(asset.stats.minUpM).toBeCloseTo(0,6);
   expect(asset.stats.sizeM.map(n=>Math.round(n*10000)/10).sort((a,b)=>a-b)).toEqual([25,31.4,41.6]);
   const parts=await triangles(glb);
   expect([...parts.keys()].sort()).toEqual([clipName,screwName].sort());

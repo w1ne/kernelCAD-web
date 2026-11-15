@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: CC0-1.0
 // Low-poly TH35 end-stop scene prop. Approximate clip and screw; no rated fit.
-// The rail runs along X; the stop face is normal to X. Z=0 is the lip plane.
+// The rail runs along X; the stop face is normal to X. Construction Z=0
+// is the lip plane. Export shifts 1.4 mm up to put clip bottom on base Z=0.
 meta({
   name: 'din-rail-end-stop',
   license: 'CC0-1.0',
@@ -45,6 +46,6 @@ housing = housing.subtract(cyl(2.25,12,7.0));
 let screw = cyl(1.9,10.2,7.4).union(cyl(3.6,2.4,17.4));
 screw = screw.subtract(block(-8.9,-0.75,18.9,7.8,1.5,1.2));
 const a = assembly('din-rail-end-stop');
-a.part('under-lip-clip-and-stop-face',housing.color(bodyFinish));
-a.part('separate-slotted-clamping-screw',screw.color(screwFinish));
+a.part('under-lip-clip-and-stop-face',housing.translate(0,0,1.4*s).color(bodyFinish));
+a.part('separate-slotted-clamping-screw',screw.translate(0,0,1.4*s).color(screwFinish));
 return a.model();
