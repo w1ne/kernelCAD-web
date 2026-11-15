@@ -187433,7 +187433,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/shaft-headframe.kcad.ts",
       "preview": "/assets/mining-shaft-headframe.png",
-      "sourceSha256": "947fbbbf8b860cba78fadb567b9c908e7d50ba712c0e5611ef90bfca63c79c69",
+      "sourceSha256": "cd95c5be55c08260432c06e779da7000ba2d0c23f00632a6fbc2c109332a2727",
       "triangleBudget": 4500,
       "params": [
         {
@@ -187629,6 +187629,7 @@
             "sheave-1-plummer-a",
             "sheave-1-plummer-b",
             "cage-crosshead",
+            "skip-body",
             "skip-bail",
             "guide-rail--2000",
             "guide-rail-2000"
@@ -187664,7 +187665,6 @@
             "deck-post-3-2",
             "deck-post-3-3",
             "cage-body",
-            "skip-body",
             "winder-house-walls",
             "ladder-stile--2250",
             "ladder-stile--1750",
