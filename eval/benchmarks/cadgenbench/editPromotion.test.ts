@@ -381,6 +381,74 @@ describe('local face move (#1402)', () => {
   });
 });
 
+describe('hole move toward a signed axis (#1402)', () => {
+  const request = 'Move the 5 mm hole by 10 mm in -X.';
+  const before = report(1_000_000, 20, [hole(5, 50, 20), hole(12, 80, 80)]);
+  const movedTo = (x: number, y = 20) => report(1_000_000, 20, [hole(5, x, y), hole(12, 80, 80)]);
+
+  it('accepts the hole moved the requested distance on the requested side', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40) });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('accepts a requested move inside the distance tolerance', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40.04, 20.03) });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('rejects a hole moved further than requested', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(20) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+    expect(result.reason).toContain('30.000');
+  });
+
+  it('rejects a hole moved to the opposite side', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(60) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.reason).toContain('-X');
+  });
+
+  it('rejects a hole that also moved off the requested axis', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40, 30) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+  });
+
+  it('accepts two holes shifted together by the requested distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Shift the two 6 mm holes 8 mm toward +Y.',
+      before: report(1_000_000, 20, [hole(6, 10, 10), hole(6, 30, 10), hole(12, 50, 50)]),
+      after: report(1_000_000, 20, [hole(6, 10, 18), hole(6, 30, 18), hole(12, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('rejects two holes when one moved a different distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Shift the two 6 mm holes 8 mm toward +Y.',
+      before: report(1_000_000, 20, [hole(6, 10, 10), hole(6, 30, 10), hole(12, 50, 50)]),
+      after: report(1_000_000, 20, [hole(6, 10, 18), hole(6, 30, 26), hole(12, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('does not check the distance when the request names no signed axis', () => {
+    // "to the left" has no fixed frame in a STEP file.
+    const result = classifyEditPromotion({
+      request: 'Move the 5 mm hole 10 mm to the left.',
+      before,
+      after: movedTo(20),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('reads the move distance, not the hole size', () => {
+    expect(parseEditIntent('Move the 5 mm hole by 10 mm in -X.').targetMove).toEqual({ axis: 0, sign: -1, mm: 10 });
+    expect(parseEditIntent('Shift the 6 mm slot 8 mm toward +Y.').targetMove).toEqual({ axis: 1, sign: 1, mm: 8 });
+    expect(parseEditIntent('Move the hole to 20 mm from the +X edge.').targetMove).toBeUndefined();
+    expect(parseEditIntent('Add a 5 mm hole 10 mm in +X.').targetMove).toBeUndefined();
+  });
+});
+
 describe('remote hole change (#1402)', () => {
   const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
 

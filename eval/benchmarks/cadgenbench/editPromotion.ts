@@ -72,6 +72,8 @@ export interface EditIntent {
   targetHoleSelector?: 'central' | 'horizontal' | 'any';
   /** "Extend the plate by 5 mm in +X": the bbox side and the maximum growth. */
   targetExtent?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
+  /** "Move the hole by 10 mm in +X": the signed axis and the distance. */
+  targetMove?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
   /** "Remove the fillet ...": only a blend goes back to a sharp edge. */
   removesBlend: boolean;
   /** The single stated blend size ("the 3mm fillet"), when there is one. */
@@ -256,6 +258,20 @@ export function parseEditIntent(request: string): EditIntent {
     }
   }
 
+  // "Move the 5 mm hole by 10 mm in +X": the distance follows "by" or comes
+  // before a direction word, so a size such as "5 mm hole" is not read.
+  let targetMove: EditIntent['targetMove'];
+  const moveLengths = moveOnly
+    ? [...text.matchAll(/(?:\bby\s*(\d+(?:\.\d+)?)\s*mm\b|\b(\d+(?:\.\d+)?)\s*mm\s+(?:to|toward|towards|in|along)\b)/g)]
+    : [];
+  if (moveLengths.length === 1 && axes.size === 1) {
+    const [signed] = axes;
+    const mm = readMm(moveLengths[0][1] ?? moveLengths[0][2]);
+    if (mm !== undefined && mm > 0) {
+      targetMove = { axis: 'xyz'.indexOf(signed[1]) as 0 | 1 | 2, sign: signed[0] === '-' ? -1 : 1, mm };
+    }
+  }
+
   // A plain blend removal, with no other feature named or added. A bore
   // chamfer removal is left to the hole checks.
   const removesBlend =
@@ -288,6 +304,7 @@ export function parseEditIntent(request: string): EditIntent {
     ...(sourceHoleDiameterMm !== undefined ? { sourceHoleDiameterMm } : {}),
     ...(targetHoleSelector !== undefined ? { targetHoleSelector } : {}),
     ...(targetExtent !== undefined ? { targetExtent } : {}),
+    ...(targetMove !== undefined ? { targetMove } : {}),
     removesBlend,
     ...(blendSizeMm !== undefined ? { blendSizeMm } : {}),
   };
@@ -533,6 +550,81 @@ function rigidTranslation(before: ShapeSummary, after: ShapeSummary): [number, n
   return shiftedMatches > matches([0, 0, 0]) || shiftedMatches === before.holes.length ? shift : null;
 }
 
+/**
+ * Check the holes that a move request moved. Each hole that left its axis
+ * line must sit at its start position shifted by the requested distance along
+ * the requested signed axis. Returns null when the holes agree, or when no
+ * hole moved perpendicular to that axis (the move is then not measurable).
+ */
+function holeMoveMismatch(
+  before: CylindricalHole[],
+  after: CylindricalHole[],
+  move: NonNullable<EditIntent['targetMove']>,
+): { classification: 'wrong-direction' | 'wrong-magnitude'; reason: string } | null {
+  const unmatchedAfter = [...after];
+  const moved: CylindricalHole[] = [];
+  for (const hole of before) {
+    const index = unmatchedAfter.findIndex(
+      (candidate) => sameAxisLine(hole, candidate) && Math.abs(hole.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+    );
+    if (index < 0) moved.push(hole);
+    else unmatchedAfter.splice(index, 1);
+  }
+  // A hole whose axis lies along the move axis keeps its axis line.
+  if (moved.length === 0 || moved.some((hole) => Math.abs(hole.axisDirection[move.axis]) > 0.02)) return null;
+  const offset: [number, number, number] = [0, 0, 0];
+  offset[move.axis] = move.sign * move.mm;
+  const label = `${move.sign > 0 ? '+' : '-'}${'XYZ'[move.axis]}`;
+  const tolerance = Math.max(0.1, move.mm * 0.002);
+  const remaining = [...unmatchedAfter];
+  for (const hole of moved) {
+    const expected: CylindricalHole = {
+      ...hole,
+      axisOrigin: [hole.axisOrigin[0] + offset[0], hole.axisOrigin[1] + offset[1], hole.axisOrigin[2] + offset[2]],
+    };
+    const index = remaining.findIndex(
+      (candidate) =>
+        Math.abs(expected.diameterMm - candidate.diameterMm) <= HOLE_TOL &&
+        Math.abs(dot(expected.axisDirection, candidate.axisDirection)) >= 0.9998 &&
+        distanceToAxis(candidate.axisOrigin, expected.axisOrigin, expected.axisDirection) <= tolerance,
+    );
+    if (index >= 0) {
+      remaining.splice(index, 1);
+      continue;
+    }
+    if (moved.length === 1 && unmatchedAfter.length === 1) {
+      // Displacement across the hole axis; a through hole may report its
+      // origin at either end of the bore.
+      const target = unmatchedAfter[0];
+      const raw: [number, number, number] = [
+        target.axisOrigin[0] - hole.axisOrigin[0],
+        target.axisOrigin[1] - hole.axisOrigin[1],
+        target.axisOrigin[2] - hole.axisOrigin[2],
+      ];
+      const axial = dot(raw, hole.axisDirection);
+      const shift = raw.map((v, i) => v - axial * hole.axisDirection[i]);
+      const along = shift[move.axis] * move.sign;
+      const across = Math.hypot(...shift.map((v, i) => (i === move.axis ? 0 : v)));
+      const measured = `(${shift.map((v) => v.toFixed(3)).join(', ')}) mm`;
+      if (along <= tolerance || across > tolerance) {
+        return {
+          classification: 'wrong-direction',
+          reason: `the request moves the hole ${move.mm} mm toward ${label}, but it moved by ${measured}`,
+        };
+      }
+      return {
+        classification: 'wrong-magnitude',
+        reason: `the hole moved ${along.toFixed(3)} mm toward ${label}, but the request moves it ${move.mm} mm (±${tolerance.toFixed(3)} mm)`,
+      };
+    }
+    return {
+      classification: 'wrong-magnitude',
+      reason: `a moved hole does not sit ${move.mm} mm toward ${label} of its start position`,
+    };
+  }
+  return null;
+}
+
 /** Diameter/depth change only; a move must not resize the feature. */
 function holeSizeChange(a: CylindricalHole[], b: CylindricalHole[]): number {
   if (a.length !== b.length) return Infinity;
@@ -637,6 +729,10 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         classification: 'wrong-topology',
         reason: 'a move must preserve volume and face count; the candidate changed the material or topology',
       };
+    }
+    const mismatch = intent.targetMove ? holeMoveMismatch(before.holes, after.holes, intent.targetMove) : null;
+    if (mismatch) {
+      return { ...base, status: 'failed', ...mismatch };
     }
     return {
       ...base,
