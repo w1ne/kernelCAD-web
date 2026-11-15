@@ -26,7 +26,8 @@ export type EditPromotionClass =
   | 'wrong-topology'
   | 'move-check'
   | 'topology-unknown'
-  | 'locality-unverified';
+  | 'locality-unverified'
+  | 'unintended-move';
 
 export type EditDirection = 'increase' | 'decrease' | 'neutral' | 'any';
 
@@ -413,6 +414,43 @@ function selectTargetHole(
   return candidates[0]?.index ?? -1;
 }
 
+/**
+ * The vector by which the whole solid moved, or null. A rigid translation
+ * shifts both bbox corners by the same vector without resizing the box, and
+ * carries the holes with it. A local edit changes material inside the box or
+ * resizes it on one side, so its corners do not move together. When the solid
+ * has holes, more of them must match the shifted position than the original
+ * one; an edit that also resizes or removes a hole is still caught.
+ */
+function rigidTranslation(before: ShapeSummary, after: ShapeSummary): [number, number, number] | null {
+  if (!before.bbox || !after.bbox) return null;
+  const shift: [number, number, number] = [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    const dMin = after.bbox.min[i] - before.bbox.min[i];
+    const dMax = after.bbox.max[i] - before.bbox.max[i];
+    if (Math.abs(dMin - dMax) > BBOX_TOL) return null;
+    shift[i] = (dMin + dMax) / 2;
+  }
+  if (Math.hypot(shift[0], shift[1], shift[2]) <= BBOX_TOL) return null;
+  if (before.holes.length === 0) return shift;
+  const matches = (offset: [number, number, number]): number =>
+    before.holes.filter((hole) => {
+      const moved: CylindricalHole = {
+        ...hole,
+        axisOrigin: [
+          hole.axisOrigin[0] + offset[0],
+          hole.axisOrigin[1] + offset[1],
+          hole.axisOrigin[2] + offset[2],
+        ],
+      };
+      return after.holes.some(
+        (candidate) =>
+          sameAxisLine(moved, candidate) && Math.abs(moved.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+      );
+    }).length;
+  return matches(shift) > matches([0, 0, 0]) ? shift : null;
+}
+
 /** Diameter/depth change only; a move must not resize the feature. */
 function holeSizeChange(a: CylindricalHole[], b: CylindricalHole[]): number {
   if (a.length !== b.length) return Infinity;
@@ -523,6 +561,19 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       status: 'accepted',
       classification: 'move-check',
       reason: `the feature moved ${Math.max(bboxDelta, holes).toFixed(3)} mm with the solid volume preserved`,
+    };
+  }
+
+  const translation = rigidTranslation(before, after);
+  if (translation) {
+    // The request edits a feature, not the part position. CADGenBench scores
+    // the answer in the input frame, so a translated part fails every check
+    // even if the requested feature is correct.
+    return {
+      ...base,
+      status: 'failed',
+      classification: 'unintended-move',
+      reason: `the whole solid moved by (${translation.map((v) => v.toFixed(3)).join(', ')}) mm; the request does not ask to move the part`,
     };
   }
 

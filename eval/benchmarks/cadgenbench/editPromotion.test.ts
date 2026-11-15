@@ -37,6 +37,19 @@ function report(volume: number, faces: number, holes: CylindricalHole[] = [], si
   };
 }
 
+/** The same report with the whole solid and its holes translated. */
+function shifted(source: StepInspectReport, dx: number, dy = 0, dz = 0): StepInspectReport {
+  const move = (p: [number, number, number]): [number, number, number] => [p[0] + dx, p[1] + dy, p[2] + dz];
+  return {
+    ...source,
+    solids: source.solids.map((solid) => ({
+      ...solid,
+      bboxExact: solid.bboxExact && { min: move(solid.bboxExact.min), max: move(solid.bboxExact.max) },
+      holes: solid.holes?.map((h) => ({ ...h, axisOrigin: move(h.axisOrigin) })),
+    })),
+  };
+}
+
 describe('classifyEditPromotion', () => {
   it('rejects an unchanged solid as a no-op', () => {
     const before = report(1_000_000, 20, [hole(188)]);
@@ -162,6 +175,66 @@ describe('classifyEditPromotion', () => {
     after.solidCount = 2;
     const result = classifyEditPromotion({ request: 'Add a rib.', before, after });
     expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+  });
+});
+
+describe('unintended translation (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
+
+  it('rejects a chamfer that also moved the whole part', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 10),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+    expect(result.reason).toContain('10.000');
+  });
+
+  it('rejects a translated part without holes', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20),
+      after: shifted(report(999_000, 24), 0, -5, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('rejects a translated part whose bore was also resized', () => {
+    const result = classifyEditPromotion({
+      request: 'Increase the diameter of the central bore to 50mm.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(998_000, 20, [hole(10, 20, 20), hole(10, 80, 20), hole(50, 50, 50)]), 10),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('still accepts a lengthen that grows the bbox on one side', () => {
+    const before = report(1_000_000, 20, holes);
+    const after = report(1_050_000, 20, holes);
+    after.solids[0].bboxExact = { min: [0, 0, 0], max: [105, 100, 100] };
+    const result = classifyEditPromotion({ request: 'Extend the plate by 5mm in +X.', before, after });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('still accepts a requested move of the whole part', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the part 10mm along X.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(1_000_000, 20, holes), 10),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('does not read one moved hole as a moved part', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the central bore 10mm along X.',
+      before: report(1_000_000, 20, holes),
+      after: report(1_000_000, 20, [hole(10, 20, 20), hole(10, 80, 20), hole(46, 60, 50)]),
+    });
+    // The bbox did not move, so this is a feature edit, not a moved part.
+    expect(result.status).toBe('accepted');
+    expect(result.classification).not.toBe('unintended-move');
   });
 });
 

@@ -348,7 +348,9 @@ function promotionVerdict(result: EditPromotionResult): GateVerdict {
             ? 'The edit is in the right direction but has not reached the dimension named in the request. Continue the same edit until that feature matches the requested size; do not stop at a partial change.'
             : result.classification === 'wrong-topology'
               ? 'The candidate added or removed a feature the request did not ask for. Preserve every unmentioned hole, boss, fillet, and solid.'
-              : 'The candidate does not satisfy the requested change. Re-read the request and rebuild only that feature.',
+              : result.classification === 'unintended-move'
+                ? 'The whole part moved away from the input position. Keep the imported solid where it is and apply the edit in place; do not translate or re-centre the part.'
+                : 'The candidate does not satisfy the requested change. Re-read the request and rebuild only that feature.',
   };
 }
 
