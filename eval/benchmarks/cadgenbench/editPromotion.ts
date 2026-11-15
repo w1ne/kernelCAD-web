@@ -509,7 +509,8 @@ function rigidTranslation(before: ShapeSummary, after: ShapeSummary): [number, n
     if (Math.abs(dMin - dMax) > BBOX_TOL) return null;
     shift[i] = (dMin + dMax) / 2;
   }
-  if (Math.hypot(shift[0], shift[1], shift[2]) <= BBOX_TOL) return null;
+  // Per axis, as in bboxChange: noise inside BBOX_TOL on every axis is not a move.
+  if (Math.max(...shift.map(Math.abs)) <= BBOX_TOL) return null;
   if (before.holes.length === 0) return shift;
   const matches = (offset: [number, number, number]): number =>
     before.holes.filter((hole) => {

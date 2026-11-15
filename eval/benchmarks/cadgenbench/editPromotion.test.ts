@@ -247,6 +247,16 @@ describe('unintended translation (#1402)', () => {
     expect(result.status).toBe('accepted');
     expect(result.classification).not.toBe('unintended-move');
   });
+
+  it('does not read bbox noise below tolerance on every axis as a moved part', () => {
+    // 0.04 mm per axis is inside BBOX_TOL on each axis, but its length is 0.069 mm.
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 0.04, 0.04, 0.04),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
 });
 
 describe('extend toward a signed axis (#1402)', () => {
