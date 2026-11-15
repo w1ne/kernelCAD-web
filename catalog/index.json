@@ -216975,7 +216975,7 @@
       "id": "package-induction-conveyor",
       "kit": "postal-logistics",
       "title": "Package induction conveyor",
-      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Scale, belt rubber, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -216996,7 +216996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/package-induction-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-package-induction-conveyor.png",
-      "sourceSha256": "2abb2df7304e2d639a2f445230f81cc6e5ea2720a81d3d32605266a9011f6eb7",
+      "sourceSha256": "793752fd50f3d663fca92148c8826f1d588c77055dfd3abc575bb70c8852b7e7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217009,10 +217009,10 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "beltRubber",
           "type": "color",
-          "default": "#52758b",
-          "label": "Painted steel"
+          "default": "#2c3134",
+          "label": "Belt rubber"
         },
         {
           "name": "structuralSteel",
@@ -217029,13 +217029,12 @@
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#68777a",
+          "beltRubber": "#3d4140",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
-          "paintedSteel": "#e36d32",
-          "structuralSteel": "#454f54",
+          "structuralSteel": "#e36d32",
           "stainlessSteel": "#d9e0de"
         }
       },
@@ -217051,12 +217050,12 @@
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#52758b",
+          "name": "beltRubber",
+          "color": "#2c3134",
           "parts": [
             "belt"
           ],
-          "param": "paintedSteel"
+          "param": "beltRubber"
         },
         {
           "name": "structuralSteel",
