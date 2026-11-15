@@ -70,6 +70,8 @@ export interface EditIntent {
   sourceHoleDiameterMm?: number;
   /** Which hole the request names, so a resize cannot be accepted on another. */
   targetHoleSelector?: 'central' | 'horizontal' | 'any';
+  /** "Extend the plate by 5 mm in +X": the bbox side and the maximum growth. */
+  targetExtent?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
 }
 
 const NUMBER_WORDS: Record<string, number> = {
@@ -219,6 +221,18 @@ export function parseEditIntent(request: string): EditIntent {
     }
   }
 
+  // Only one signed axis may appear, so "extend +X, shorten -Y" is not read.
+  let targetExtent: EditIntent['targetExtent'];
+  const extendBy = /\b(?:extend|extends|lengthen|elongate|extrude|thicken)\b[^.]*?\bby\s*(\d+(?:\.\d+)?)\s*mm\b/.exec(text);
+  const axes = new Set([...text.matchAll(/(?:^|[\s(])([+-])\s?([xyz])\b/g)].map((m) => m[1] + m[2]));
+  if (!moveOnly && extendBy && axes.size === 1) {
+    const [signed] = axes;
+    const mm = readMm(extendBy[1]);
+    if (mm !== undefined && mm > 0) {
+      targetExtent = { axis: 'xyz'.indexOf(signed[1]) as 0 | 1 | 2, sign: signed[0] === '-' ? -1 : 1, mm };
+    }
+  }
+
   return {
     direction,
     moveOnly,
@@ -230,6 +244,7 @@ export function parseEditIntent(request: string): EditIntent {
     ...(targetHoleDiameterMm !== undefined ? { targetHoleDiameterMm } : {}),
     ...(sourceHoleDiameterMm !== undefined ? { sourceHoleDiameterMm } : {}),
     ...(targetHoleSelector !== undefined ? { targetHoleSelector } : {}),
+    ...(targetExtent !== undefined ? { targetExtent } : {}),
   };
 }
 
@@ -736,6 +751,36 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       classification: 'wrong-direction',
       reason: `request asks for less material, but volume increased by ${volumeDelta.toFixed(2)} mm³`,
     };
+  }
+
+  if (intent.targetExtent && before.bbox && after.bbox) {
+    // Extending a face by N mm toward +X adds material only beyond that face,
+    // so the bbox can grow on the +X side by at most N and never on the -X
+    // side. Less than N is not checked: the extended feature may stop inside
+    // the part's bounds.
+    const { axis, sign, mm } = intent.targetExtent;
+    const side = (box: NonNullable<ShapeSummary['bbox']>, s: 1 | -1): number => (s > 0 ? box.max[axis] : -box.min[axis]);
+    const grew = side(after.bbox, sign) - side(before.bbox, sign);
+    const grewOpposite = side(after.bbox, -sign as 1 | -1) - side(before.bbox, -sign as 1 | -1);
+    const label = `${sign > 0 ? '+' : '-'}${'XYZ'[axis]}`;
+    const opposite = `${sign > 0 ? '-' : '+'}${'XYZ'[axis]}`;
+    if (grewOpposite > BBOX_TOL && grew <= BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-direction',
+        reason: `the request extends toward ${label}, but the part grew ${grewOpposite.toFixed(3)} mm on the ${opposite} side and not on the ${label} side`,
+      };
+    }
+    const extentTolerance = Math.max(0.1, mm * 0.002);
+    if (grew > mm + extentTolerance) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-magnitude',
+        reason: `the part grew ${grew.toFixed(3)} mm on the ${label} side, but the request extends it by ${mm} mm (±${extentTolerance.toFixed(3)} mm)`,
+      };
+    }
   }
 
   if (intent.offsetsFaces && (faceDelta !== 0 || after.holes.length !== before.holes.length)) {

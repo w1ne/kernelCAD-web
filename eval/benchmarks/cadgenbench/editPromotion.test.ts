@@ -238,6 +238,60 @@ describe('unintended translation (#1402)', () => {
   });
 });
 
+describe('extend toward a signed axis (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(46, 50, 50)];
+  function extended(min: [number, number, number], max: [number, number, number], volume = 1_050_000) {
+    const after = report(volume, 20, holes);
+    after.solids[0].bboxExact = { min, max };
+    return after;
+  }
+
+  it('rejects an extension that grew the part on the opposite side', () => {
+    const result = classifyEditPromotion({
+      request: 'Extend the plate by 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: extended([-5, 0, 0], [100, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.reason).toContain('-X side');
+  });
+
+  it('rejects an extension that grew the part further than requested', () => {
+    const result = classifyEditPromotion({
+      request: 'Extend the plate by 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, 0], [110, 100, 100], 1_100_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+    expect(result.reason).toContain('10.000');
+  });
+
+  it('accepts the requested extension on the requested side', () => {
+    const result = classifyEditPromotion({
+      request: 'Lengthen the base along -Z by 4 mm.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, -4], [100, 100, 100], 1_040_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts an extended boss that stays inside the part bounds', () => {
+    // The boss face sat below the top, so the bbox grows less than 5 mm.
+    const result = classifyEditPromotion({
+      request: 'Extend the boss by 5mm in +Z.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, 0], [100, 100, 102], 1_002_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('does not check the side when the request names no signed axis', () => {
+    expect(parseEditIntent('Extend the plate by 5mm.').targetExtent).toBeUndefined();
+    expect(parseEditIntent('Extend the rib by 5mm in +X and shorten the tab in -Y.').targetExtent).toBeUndefined();
+    expect(parseEditIntent('Extend the plate by 5mm in +X.').targetExtent).toEqual({ axis: 0, sign: 1, mm: 5 });
+  });
+});
+
 describe('remote hole change (#1402)', () => {
   const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
 
