@@ -263,8 +263,18 @@ export function parseEditIntent(request: string): EditIntent {
     /\b(remove|removes|delete|deletes)\b/.test(text) &&
     /\b(fillets?|rounds?|chamfers?)\b/.test(text) &&
     !/\b(add|adds|replace|change|convert|swap|cut|drill|extend|extrude|move|offset|pocket|slot|rib|pattern)\b/.test(text);
+  // "the 3 x 2 mm chamfer" names two legs; filling it back can grow the part
+  // by the longer one. "2 mm x 45°" has one length and an angle.
+  const blendLegs = removesBlend
+    ? [...text.matchAll(/(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×]\s*(\d+(?:\.\d+)?)\s*mm\b/g)]
+    : [];
   const blendLengths = removesBlend ? [...text.matchAll(/(\d+(?:\.\d+)?)\s*mm\b/g)] : [];
-  const blendSizeMm = blendLengths.length === 1 ? readMm(blendLengths[0][1]) : undefined;
+  const blendSizeMm =
+    blendLegs.length === 1
+      ? Math.max(Number(blendLegs[0][1]), Number(blendLegs[0][2]))
+      : blendLegs.length === 0 && blendLengths.length === 1
+        ? readMm(blendLengths[0][1])
+        : undefined;
 
   return {
     direction,

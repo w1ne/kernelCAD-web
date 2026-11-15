@@ -673,6 +673,17 @@ describe('parseEditIntent', () => {
     expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
   });
 
+  it('bounds a two-leg chamfer removal by its longer leg', () => {
+    // A 3 x 2 mm chamfer cut 3 mm off one face; filling it back grows that
+    // side by 3 mm, which is within the blend, not beyond a "2 mm" size.
+    const result = classifyEditPromotion({
+      request: 'Remove the 3 x 2 mm chamfer from the top +X edge.',
+      before: withBox(report(FILLETED, 7), [0, 0, 0], [97, 100, 100]),
+      after: report(1_000_000, 6),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
   it('does not accept a blend removal that added faces (annular cutter)', () => {
     // An annular cutter around the boss leaves a groove floor and two walls.
     const result = classifyEditPromotion({
@@ -689,6 +700,10 @@ describe('parseEditIntent', () => {
       blendSizeMm: 5,
     });
     expect(parseEditIntent('Remove the chamfers on the outer edges.')).toMatchObject({ removesBlend: true });
+    expect(parseEditIntent('Remove the 3 x 2 mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 2x3mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 3 mm × 2 mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 2 mm x 45° chamfer.').blendSizeMm).toBe(2);
     expect(parseEditIntent('Remove the chamfer on the central bore.').removesBlend).toBe(false);
     expect(parseEditIntent('Remove the fillet and add a 2mm chamfer.').removesBlend).toBe(false);
     expect(parseEditIntent('Change the chamfers to 3mm fillets.').removesBlend).toBe(false);
