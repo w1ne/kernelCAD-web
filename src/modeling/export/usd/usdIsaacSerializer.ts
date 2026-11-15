@@ -783,8 +783,8 @@ export async function usdIsaacSerialize(
   }
 
   const jointBlocks = buildJointBlocks(legacyJoints, mates, parts, poses, opts, rootPath, linkName, jointName);
-  // UsdPhysics has no joint coupling: a coupled joint ships as an independent
-  // joint, so say so instead of dropping the coupling silently.
+  // This serializer does not author coupled-joint relations, so warn when a
+  // coupled mate ships as an independent joint instead of dropping it silently.
   for (const coupling of arm.__mateCouplings()) {
     diagnostics.push(couplingDropped(coupling));
   }
