@@ -481,7 +481,10 @@ function rigidTranslation(before: ShapeSummary, after: ShapeSummary): [number, n
           sameAxisLine(moved, candidate) && Math.abs(moved.diameterMm - candidate.diameterMm) <= HOLE_TOL,
       );
     }).length;
-  return matches(shift) > matches([0, 0, 0]) ? shift : null;
+  // A shift along the hole axes keeps every axis line, so the in-place match
+  // ties. The bbox shift is then the evidence when every hole agrees with it.
+  const shiftedMatches = matches(shift);
+  return shiftedMatches > matches([0, 0, 0]) || shiftedMatches === before.holes.length ? shift : null;
 }
 
 /** Diameter/depth change only; a move must not resize the feature. */

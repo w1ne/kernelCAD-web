@@ -200,6 +200,17 @@ describe('unintended translation (#1402)', () => {
     expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
   });
 
+  it('rejects a part translated along the axes of all its holes', () => {
+    // Every hole axis line is unchanged by a shift along Z, so the hole match
+    // alone cannot show the move; the bbox shift does.
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 0, 0, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
   it('rejects a translated part whose bore was also resized', () => {
     const result = classifyEditPromotion({
       request: 'Increase the diameter of the central bore to 50mm.',
