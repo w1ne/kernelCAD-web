@@ -113,9 +113,6 @@ jobs:
               done <<< "$files"
             fi
           fi
-          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
-          echo "reference_parts=$reference_parts" >> "$GITHUB_OUTPUT"
-          echo "solidcraft=$solidcraft" >> "$GITHUB_OUTPUT"
           # Draft PR: lint, build-and-checks and the tests related to the
           # changed files only. The `test` gate reports under another name on
           # a draft, so a light result can never satisfy the required `test`.
@@ -125,6 +122,9 @@ jobs:
             reference_parts=false
             solidcraft=false
           fi
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+          echo "reference_parts=$reference_parts" >> "$GITHUB_OUTPUT"
+          echo "solidcraft=$solidcraft" >> "$GITHUB_OUTPUT"
           echo "push_gate=$push_gate" >> "$GITHUB_OUTPUT"
           echo "light=$light" >> "$GITHUB_OUTPUT"
 
