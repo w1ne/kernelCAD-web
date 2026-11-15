@@ -95064,8 +95064,8 @@
     {
       "id": "fire-hose-nozzle",
       "kit": "fire-rescue",
-      "title": "Fire hose nozzle",
-      "description": "Straight fire hose nozzle with barrel, selector collar, pistol grip and adjustable front tip. Material controls: nozzle metal, selector finish, rubber grip; weathered and highVisibility presets.",
+      "title": "Fire hose nozzle (illustrative)",
+      "description": "Illustrative CC0 static fire hose nozzle with one connected drilled metal flow body, an open axial bore from hose coupling to fixed front tip, an annular selector sleeve and a separate pistol grip. Not pressure-rated or manufacturer-grade CAD: no working selector valve, spray pattern, threaded hose fit, metal grade, tolerances or flow certification. Scale and colors are visual controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -95073,7 +95073,8 @@
         "fire service",
         "emergency scene",
         "low poly",
-        "CC0"
+        "CC0",
+        "scene prop"
       ],
       "compat": [
         "fire-rescue",
@@ -95084,7 +95085,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/fire-hose-nozzle.kcad.ts",
       "preview": "/assets/fire-rescue-fire-hose-nozzle.png",
-      "sourceSha256": "ab1dd936e5400b63134ccffa8d48936159f6a41309c7f4ca3b5aa51e1439b940",
+      "sourceSha256": "d6665ae032c9879a22d1d33910d664ceec3202677ed2670d1585de2c81e2af30",
       "triangleBudget": 2200,
       "params": [
         {
@@ -95100,19 +95101,19 @@
           "name": "nozzleMetalColor",
           "type": "color",
           "default": "#aeb8ba",
-          "label": "Nozzle metal"
+          "label": "Metal body appearance"
         },
         {
           "name": "selectorFinishColor",
           "type": "color",
           "default": "#d2ad3e",
-          "label": "Selector finish"
+          "label": "Selector sleeve appearance"
         },
         {
           "name": "gripRubberColor",
           "type": "color",
           "default": "#303539",
-          "label": "Rubber grip"
+          "label": "Grip appearance"
         }
       ],
       "presets": {
@@ -95128,10 +95129,10 @@
         }
       },
       "stats": {
-        "triangles": 220,
+        "triangles": 332,
         "sizeM": [
           0.2666,
-          0.109,
+          0.111,
           0.09
         ],
         "minUpM": 0,
@@ -95142,8 +95143,7 @@
           "name": "nozzleMetalColor",
           "color": "#aeb8ba",
           "parts": [
-            "hose-tail",
-            "nozzle-body"
+            "one-piece-continuous-flow-body"
           ],
           "param": "nozzleMetalColor"
         },
@@ -95151,8 +95151,7 @@
           "name": "selectorFinishColor",
           "color": "#d2ad3e",
           "parts": [
-            "tip",
-            "selector-collar"
+            "annular-static-selector-sleeve"
           ],
           "param": "selectorFinishColor"
         },
@@ -95160,7 +95159,7 @@
           "name": "gripRubberColor",
           "color": "#303539",
           "parts": [
-            "pistol-grip"
+            "separate-pistol-grip"
           ],
           "param": "gripRubberColor"
         }
