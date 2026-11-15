@@ -119512,7 +119512,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-hv-cable-termination.kcad.ts",
       "preview": "/assets/grid-substation-substation-hv-cable-termination.png",
-      "sourceSha256": "6f6e7bf3e4a72769a0b6c5f398a0f25fb1751d4c1324f1931b4617c58741e68e",
+      "sourceSha256": "b5b4f900afe7f41a1eb9d0886c4265332cadb74c53dfbaae9d985c571c4b0612",
       "triangleBudget": 1800,
       "params": [
         {
@@ -119575,7 +119575,8 @@
           "name": "galvanizedSteel",
           "color": "#7f8c92",
           "parts": [
-            "base"
+            "base",
+            "cable-clamp"
           ],
           "param": "galvanizedSteel"
         },
@@ -119583,8 +119584,7 @@
           "name": "cableJacket",
           "color": "#263d50",
           "parts": [
-            "cable-riser",
-            "cable-clamp"
+            "cable-riser"
           ],
           "param": "cableJacket"
         },

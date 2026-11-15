@@ -56,6 +56,6 @@ p.part("stress-cone-shed-4", loftedInsulator(100, 220.80, 10).translate(0, 0, 14
 p.part("stress-cone-shed-5", loftedInsulator(100, 266.80, 10).translate(0, 0, 1617).scale(scale).color(porcelain));
 p.part("stress-cone-shed-6", loftedInsulator(100, 220.80, 10).translate(0, 0, 1813).scale(scale).color(porcelain));
 p.part("terminal-pad", box(460, 441.60, 170, true).translate(0, 0, 2365).scale(scale).color(copper));
-p.part("cable-clamp", box(386.40, 386.40, 180, true).translate(0, 0, 320).scale(scale).color(cableJacket));
+p.part("cable-clamp", box(386.40, 386.40, 180, true).translate(0, 0, 320).scale(scale).color(galvanizedSteel));
 
 return p.model();
