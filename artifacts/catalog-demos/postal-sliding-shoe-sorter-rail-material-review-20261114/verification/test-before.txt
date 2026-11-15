@@ -1,0 +1,4 @@
+     × finishes the shoe guide rail as stainless steel, not the safety-amber marking 506ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'left-guide', 'right-guide' ] to include 'shoe-rail'
+      Tests  1 failed (1)

@@ -219450,7 +219450,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sliding-shoe-sorter-section.kcad.ts",
       "preview": "/assets/postal-logistics-sliding-shoe-sorter-section.png",
-      "sourceSha256": "83b2475d4aae0e8d6ea4eddf40e6dc926d88423235aa76f02bf216ae321f0f5e",
+      "sourceSha256": "dc01d46c672d5af93aae3aa6c225466e0819b835e9c21cabd2e348eb5dfd1482",
       "triangleBudget": 1800,
       "params": [
         {
@@ -219526,7 +219526,8 @@
           "color": "#bbc4c4",
           "parts": [
             "left-guide",
-            "right-guide"
+            "right-guide",
+            "shoe-rail"
           ],
           "param": "stainlessSteel"
         },
@@ -219534,7 +219535,6 @@
           "name": "safetyAmber",
           "color": "#e7aa35",
           "parts": [
-            "shoe-rail",
             "shoe-a",
             "shoe-b",
             "shoe-c",
