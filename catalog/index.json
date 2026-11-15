@@ -72719,7 +72719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/cold-aisle-roof-panel.kcad.ts",
       "preview": "/assets/data-center-infrastructure-cold-aisle-roof-panel.png",
-      "sourceSha256": "8298ac65bdac16cfa335632bca6ce5432d84f0aaf51937a3acc87302989e78a0",
+      "sourceSha256": "78dd49cf53066f62bfdff13d7ae3e4875e3b19114780c73c6cf2417eb5adca73",
       "triangleBudget": 2200,
       "params": [
         {
@@ -72773,10 +72773,6 @@
             "canopy-frame-rear",
             "canopy-left-beam",
             "canopy-right-beam",
-            "roof-panel-1",
-            "roof-panel-2",
-            "roof-panel-3",
-            "roof-panel-4",
             "support-post-front",
             "support-post-rear"
           ],
@@ -72786,7 +72782,11 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "roof-panel-0"
+            "roof-panel-0",
+            "roof-panel-1",
+            "roof-panel-2",
+            "roof-panel-3",
+            "roof-panel-4"
           ],
           "param": "polymer"
         }
