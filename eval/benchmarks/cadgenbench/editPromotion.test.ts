@@ -197,6 +197,43 @@ describe('parseEditIntent', () => {
     ).toBe('any');
   });
 
+  // Task 201 pilot, 15 Nov 2026 (#1402): a broad +X/-X offsetFaces passed
+  // validity and was accepted. Measured: volume 2,544,478.1527 → 2,597,484.5516
+  // mm³, faces 435 → 453, holes 28 → 28, same bbox.
+  const WALL_REQUEST =
+    'For each of the four non-circular pockets on the +X side of the central bore, bring their walls (faces with long axis along Y) inward by 6mm.';
+  const holes28 = Array.from({ length: 28 }, (_, i) => hole(6, i * 3));
+
+  it('does not accept a wall offset that added faces (task 201)', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_597_484.5516, 453, holes28),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified', faceDelta: 18 });
+    expect(result.reason).toContain('faces +18');
+  });
+
+  it('accepts a wall offset that keeps the face and hole topology', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_530_000, 435, holes28),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('keeps added faces acceptable when the request is not a wall offset', () => {
+    expect(parseEditIntent(WALL_REQUEST).offsetsFaces).toBe(true);
+    expect(parseEditIntent('Add a 2mm chamfer to the top edges.').offsetsFaces).toBe(false);
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top edges.',
+      before: report(1_000_000, 20),
+      after: report(999_000, 24),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
   it('leaves the direction open when a fillet is removed from a named feature', () => {
     expect(
       parseEditIntent('Remove the fillet from the outer diameter of the central boss on the +Z side of the part.')

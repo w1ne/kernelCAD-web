@@ -25,7 +25,8 @@ export type EditPromotionClass =
   | 'wrong-magnitude'
   | 'wrong-topology'
   | 'move-check'
-  | 'topology-unknown';
+  | 'topology-unknown'
+  | 'locality-unverified';
 
 export type EditDirection = 'increase' | 'decrease' | 'neutral' | 'any';
 
@@ -57,6 +58,8 @@ export interface EditIntent {
   moveOnly: boolean;
   mentionsHoles: boolean;
   mentionsTopology: boolean;
+  /** "bring the pocket walls inward": existing faces move, none are added. */
+  offsetsFaces: boolean;
   expectsHoleDelta: 'more' | 'fewer' | 'same' | 'any';
   /** Exact hole-count change requested ("remove these three holes"). */
   targetHoleCountDelta?: number;
@@ -113,6 +116,8 @@ export function parseEditIntent(request: string): EditIntent {
   const moveOnly =
     /\b(move|moves|shift|shifts|translate|reposition|relocate|relocated|offset|offsets|space|spacing)\b/.test(text) &&
     !/\b(add|remove|delete|fill|cut|drill|bore|enlarge|increase|decrease|reduce|resize|pattern|array)\b/.test(text);
+  const offsetsFaces =
+    /\b(walls?|faces?|sides?)\b/.test(text) && /\b(inward|inwards|outward|outwards)\b/.test(text);
   const mentionsTopology =
     mentionsHoles ||
     /\b(fillet|chamfer|slot|pocket|rib|ribs|boss|bosses|pad|pads|pattern|array|hole|holes)\b/.test(text);
@@ -158,10 +163,7 @@ export function parseEditIntent(request: string): EditIntent {
     direction = resizesVoid(text, growVerb) ? 'decrease' : 'increase';
   } else if (shrinkVerb.test(text)) {
     direction = resizesVoid(text, shrinkVerb) ? 'increase' : 'decrease';
-  } else if (
-    /\b(walls?|faces?|sides?)\b/.test(text) &&
-    /\b(inward|inwards|outward|outwards)\b/.test(text)
-  ) {
+  } else if (offsetsFaces) {
     // "bring the pocket walls inward" moves faces; whether that adds or
     // removes material depends on which side of the wall is solid.
     direction = 'any';
@@ -215,6 +217,7 @@ export function parseEditIntent(request: string): EditIntent {
     moveOnly,
     mentionsHoles,
     mentionsTopology,
+    offsetsFaces,
     expectsHoleDelta,
     ...(targetHoleCountDelta !== undefined ? { targetHoleCountDelta } : {}),
     ...(targetHoleDiameterMm !== undefined ? { targetHoleDiameterMm } : {}),
@@ -645,6 +648,19 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       status: 'failed',
       classification: 'wrong-direction',
       reason: `request asks for less material, but volume increased by ${volumeDelta.toFixed(2)} mm³`,
+    };
+  }
+
+  if (intent.offsetsFaces && (faceDelta !== 0 || after.holes.length !== before.holes.length)) {
+    // Moving existing walls keeps their faces. New faces mean the offset also
+    // caught or split geometry; that can be legitimate where a moved wall meets
+    // another feature, so the verdict is unknown, not a rejection. Volume and
+    // counts alone cannot show that only the named walls moved.
+    return {
+      ...base,
+      status: 'unknown',
+      classification: 'locality-unverified',
+      reason: `wall offset changed the topology (faces ${faceDelta >= 0 ? '+' : ''}${faceDelta}, holes ${before.holes.length} → ${after.holes.length}); volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³ does not show that only the requested walls moved`,
     };
   }
 
