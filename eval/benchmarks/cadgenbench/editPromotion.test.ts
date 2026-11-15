@@ -223,6 +223,64 @@ describe('parseEditIntent', () => {
     expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
   });
 
+  it('returns unknown, not failed, when a wall offset changes the hole count (task 201)', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_597_484.5516, 453, holes28.slice(1)),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified' });
+    expect(result.reason).toContain('holes 28 → 27');
+  });
+
+  // #1402: "on the +X side of the central bore" only locates the pockets; it
+  // is not a request to edit the bore.
+  it('does not read a hole that only locates the edited feature as a hole edit', () => {
+    expect(parseEditIntent(WALL_REQUEST)).toMatchObject({
+      mentionsHoles: false,
+      mentionsTopology: true,
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Add two ribs beside the central bore.')).toMatchObject({
+      direction: 'increase',
+      mentionsHoles: false,
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Add two ribs beside the central bore.').targetHoleCountDelta).toBeUndefined();
+    expect(parseEditIntent('Remove the two ribs next to the central bore.')).toMatchObject({
+      direction: 'any',
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Move the slot next to the bore 5 mm along +X.')).toMatchObject({
+      moveOnly: true,
+      direction: 'neutral',
+    });
+    expect(parseEditIntent('Increase the horizontal hole near the central bore to 12 mm.')).toMatchObject({
+      mentionsHoles: true,
+      targetHoleDiameterMm: 12,
+      targetHoleSelector: 'horizontal',
+    });
+    // The named bore is still the edited feature.
+    expect(parseEditIntent('Increase the diameter of the central bore to 310 mm.')).toMatchObject({
+      mentionsHoles: true,
+      targetHoleDiameterMm: 310,
+      targetHoleSelector: 'central',
+    });
+    expect(parseEditIntent('Drill four holes around the central bore.')).toMatchObject({
+      expectsHoleDelta: 'more',
+      targetHoleCountDelta: 4,
+    });
+  });
+
+  it('accepts two ribs added beside the bore with the holes unchanged', () => {
+    const result = classifyEditPromotion({
+      request: 'Add two ribs beside the central bore.',
+      before: report(1_000_000, 40, holes28),
+      after: report(1_004_000, 52, holes28),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
   it('keeps added faces acceptable when the request is not a wall offset', () => {
     expect(parseEditIntent(WALL_REQUEST).offsetsFaces).toBe(true);
     expect(parseEditIntent('Add a 2mm chamfer to the top edges.').offsetsFaces).toBe(false);

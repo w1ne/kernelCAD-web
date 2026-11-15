@@ -109,9 +109,15 @@ const BBOX_TOL = 0.05;
 const MIN_VOLUME_TOL = 2.0;
 const VOLUME_TOL_FRACTION = 0.0002; // 0.02 %
 
+// "the pockets on the +X side of the central bore", "two ribs beside the
+// bore": the hole only locates the edited feature. "of" alone is not
+// locative ("the diameter of the bore"), so only "side(s) of" counts.
+const LOCATING_HOLE =
+  /\b(?:near|beside|around|next to|adjacent to|close to|relative to|away from|sides? of)\s+(?:the\s+|a\s+|an\s+)?(?:[a-z0-9+.-]+\s+){0,2}?(?:hole|holes|bore|bores|counterbore|counterbores)\b/g;
+
 /** Infer what the request asks for without looking at the candidate. */
 export function parseEditIntent(request: string): EditIntent {
-  const text = request.toLowerCase();
+  const text = request.toLowerCase().replace(LOCATING_HOLE, ' ');
   const mentionsHoles = /\b(hole|holes|bore|bores|drill|drilled|counterbore|countersink|ream|tapped|thread)\b/.test(text);
   const moveOnly =
     /\b(move|moves|shift|shifts|translate|reposition|relocate|relocated|offset|offsets|space|spacing)\b/.test(text) &&
@@ -120,7 +126,7 @@ export function parseEditIntent(request: string): EditIntent {
     /\b(walls?|faces?|sides?)\b/.test(text) && /\b(inward|inwards|outward|outwards)\b/.test(text);
   const mentionsTopology =
     mentionsHoles ||
-    /\b(fillet|chamfer|slot|pocket|rib|ribs|boss|bosses|pad|pads|pattern|array|hole|holes)\b/.test(text);
+    /\b(fillets?|chamfers?|slots?|pockets?|ribs?|boss|bosses|pads?|pattern|array|hole|holes)\b/.test(text);
 
   let expectsHoleDelta: EditIntent['expectsHoleDelta'] = 'any';
   if (mentionsHoles) {
