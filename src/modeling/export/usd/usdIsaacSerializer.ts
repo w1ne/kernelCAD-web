@@ -43,10 +43,13 @@
 // its DOF count (planar / cylindrical / pin_slot / ball) raises
 // export.usd.joint-unsupported, and a link with non-finite / non-positive
 // mass raises export.usd.mass-missing. A physics stage silently missing a DOF
-// or a mass is worse than a refused export.
+// or a mass is worse than a refused export. A `coupleMates` coupling has no
+// UsdPhysics schema; it is not carried and raises export.usd.coupling-dropped
+// (warn), because the stage itself is still valid.
 
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import type { MateRecord } from '../../mates/mate';
+import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
@@ -779,6 +782,11 @@ export async function usdIsaacSerialize(
   }
 
   const jointBlocks = buildJointBlocks(legacyJoints, mates, parts, poses, opts, rootPath, linkName, jointName);
+  // UsdPhysics has no joint coupling: a coupled joint ships as an independent
+  // joint, so say so instead of dropping the coupling silently.
+  for (const coupling of arm.__mateCouplings()) {
+    diagnostics.push(couplingDropped(coupling));
+  }
 
   const usda = assembleUsda(rootName, linkBlocks, jointBlocks, materialBlocks);
 
@@ -821,6 +829,18 @@ function poseUnsolved(reason: string): CompilerDiagnostic {
     message: `Could not solve the mate graph to per-link poses (${reason}); every link was placed at the stage origin.`,
     hint: 'The simulator will spawn overlapping links and the joints will snap them apart. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
     nextAction: NEXT_ACTIONS['export.usd.pose-unsolved'],
+  };
+}
+
+function couplingDropped(coupling: MateCouplingRecord): CompilerDiagnostic {
+  const offset = coupling.offset ? ` + ${coupling.offset}` : '';
+  return {
+    target: 'export-occt',
+    code: 'export.usd.coupling-dropped',
+    severity: 'warn',
+    message: `Mate '${coupling.driven}' is coupled to '${coupling.source}' (${coupling.driven} = ${coupling.ratio} * ${coupling.source}${offset}, authored units), but UsdPhysics has no joint coupling; '${coupling.driven}' was emitted as an independent joint.`,
+    hint: 'The simulator will not enforce this coupling. Drive both joints from the controller with the authored ratio, or export a format that carries joint couplings.',
+    nextAction: NEXT_ACTIONS['export.usd.coupling-dropped'],
   };
 }
 

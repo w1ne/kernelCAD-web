@@ -276,6 +276,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
   },
+  'export.usd.coupling-dropped': {
+    hintTemplate:
+      'UsdPhysics has no joint coupling schema; a coupleMates coupling was not carried, so the driven joint moves freely in the simulator. Enforce the ratio in the simulator controller, or export a format that carries joint couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A coupleMates coupling could not be represented in a usd-isaac physics stage; the driven joint was emitted as an independent joint.',
+  },
   'export.usd.pose-unsolved': {
     hintTemplate:
       'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
