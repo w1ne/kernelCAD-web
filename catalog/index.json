@@ -311307,15 +311307,17 @@
     {
       "id": "hose-barb-adapter",
       "kit": "standard-components",
-      "title": "Hose barb adapter",
-      "description": "Stepped hose-barb adapter with a hollow center and three grip ribs Knobs: model size, steel, stainless steel, brass.",
+      "title": "Hose barb adapter (illustrative)",
+      "description": "Illustrative CC0 one-piece hose-barb adapter with three real tapered retention lips, a continuous axial bore, and six wrench flats. Nominal envelope only, not manufacturer-grade CAD: hose-ID compatibility, insertion/retention forces, pressure rating, thread form, machining tolerance and material grade are not specified. Size and appearance colors are visual controls, not a parts standard.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "hose barb",
         "hose adapter",
         "barbed fitting",
-        "plumbing"
+        "plumbing",
+        "CC0",
+        "scene prop"
       ],
       "compat": [
         "mechanical",
@@ -311326,14 +311328,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/hose-barb-adapter.kcad.ts",
       "preview": "/assets/standard-components-hose-barb-adapter.png",
-      "sourceSha256": "ee842872ed1e12b7beb0b97803f3fa0a7633958e57a61575b04dfe9ff2703f14",
+      "sourceSha256": "5163e5b05f69dd92c41cbd4b6f595082f4e340a16a06ce7d64057fc42b015393",
       "triangleBudget": 500,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model size",
           "choices": [
             "compact",
             "standard",
@@ -311341,75 +311343,39 @@
           ]
         },
         {
-          "name": "steel",
-          "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
-        },
-        {
-          "name": "stainless",
-          "type": "color",
-          "default": "#b8c1c6",
-          "label": "Stainless steel"
-        },
-        {
           "name": "brass",
           "type": "color",
           "default": "#b28a4d",
-          "label": "Brass"
+          "label": "Metal appearance color"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "stainless": "#7d8a91",
           "brass": "#725938"
         },
         "brass": {
-          "steel": "#646f75",
-          "stainless": "#b38b52",
           "brass": "#c0944d"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "stainless": "#8b8275",
           "brass": "#8c734d"
         }
       },
       "stats": {
-        "triangles": 448,
+        "triangles": 408,
         "sizeM": [
           0.028,
           0.036,
-          0.028
+          0.032332
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#b8c1c6",
-          "parts": [
-            "stem"
-          ],
-          "param": "stainless"
-        },
-        {
-          "name": "steel",
-          "color": "#85929a",
-          "parts": [
-            "barb-6",
-            "barb-13",
-            "barb-20"
-          ],
-          "param": "steel"
-        },
-        {
           "name": "brass",
           "color": "#b28a4d",
           "parts": [
-            "hex-body"
+            "single-piece-bored-barbed-fitting"
           ],
           "param": "brass"
         }
