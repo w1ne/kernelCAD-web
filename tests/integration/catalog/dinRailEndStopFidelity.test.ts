@@ -7,6 +7,7 @@ import { NodeIO } from '@gltf-transform/core';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../../../src/agent/catalog/buildCatalog';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
+import { glbTriangles, renderTrianglesPng } from '../../../scripts/lib/glbSoftwareRender';
 type V=[number,number,number]; type Tri=[V,V,V];
 const root=resolve(import.meta.dirname,'../../..');
 const file='catalog/kits/standard-components/din-rail-end-stop.kcad.ts';
@@ -58,6 +59,12 @@ function checkCrossSection(t:Tri[],s:number) {
 }
 beforeAll(async()=>{await initOcct();},30000);
 describe('illustrative TH35 DIN rail end stop geometry',()=>{
+ it('committed gallery preview matches actual evaluated source render',async()=>{
+  const {asset,glb}=await buildCatalogAssetWithGlb(root,file);
+  const rendered=await renderTrianglesPng(await glbTriangles(glb),{yawDeg:35,label:`${asset.id} · ${asset.stats.triangles} tris`});
+  const published=readFileSync(resolve(root,'catalog/kits/standard-components/previews/din-rail-end-stop.png'));
+  expect(Buffer.compare(rendered,published),'thumbnail must reflect edited physical geometry, not an old marketing silhouette').toBe(0);
+ },30000);
  it('has under-lip geometry, actual open channel, transverse stop and separate slotted screw',async()=>{
   const {asset,glb}=await buildCatalogAssetWithGlb(root,file);
   expect(asset.title).toMatch(/illustrative/i);
