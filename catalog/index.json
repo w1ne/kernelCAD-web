@@ -296663,7 +296663,7 @@
       "id": "solar-carport-canopy",
       "kit": "solar-energy",
       "title": "Solar carport canopy",
-      "description": "Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing. Structure four-post or cantilever; fieldService and highVisibility presets.",
+      "description": "Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing, charging cable jacket. Structure four-post or cantilever; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -296687,7 +296687,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
       "preview": "/assets/solar-energy-solar-carport-canopy.png",
-      "sourceSha256": "ffb6db0a815574936decf20af37719c759b3542bd61bd0f34561d30ceb96848c",
+      "sourceSha256": "373f81bb12a451d7f6f4e299478479b178c401c226c6196a86e2f7a932f39274",
       "triangleBudget": 1800,
       "params": [
         {
@@ -296738,6 +296738,12 @@
           "type": "color",
           "default": "#2f8f6a",
           "label": "EV charger housing"
+        },
+        {
+          "name": "chargerCable",
+          "type": "color",
+          "default": "#202427",
+          "label": "EV charging cable jacket"
         }
       ],
       "presets": {
@@ -296746,14 +296752,16 @@
           "aluminum": "#a9b5b9",
           "solarGlass": "#1e4668",
           "concrete": "#a39d92",
-          "chargerPlastic": "#3a6f9c"
+          "chargerPlastic": "#3a6f9c",
+          "chargerCable": "#262b2e"
         },
         "highVisibility": {
           "galvanizedSteel": "#536367",
           "aluminum": "#d4dcdf",
           "solarGlass": "#183a5b",
           "concrete": "#c4beb2",
-          "chargerPlastic": "#e0a31f"
+          "chargerPlastic": "#e0a31f",
+          "chargerCable": "#1b1e20"
         }
       },
       "stats": {
@@ -296795,10 +296803,7 @@
             "column-right-front",
             "column-cap-right-front",
             "knee-brace-right-front",
-            "ev-charger-holster",
-            "ev-charger-cable-0",
-            "ev-charger-cable-1",
-            "ev-charger-cable-2"
+            "ev-charger-holster"
           ],
           "param": "galvanizedSteel"
         },
@@ -296883,6 +296888,16 @@
             "ev-charger-housing"
           ],
           "param": "chargerPlastic"
+        },
+        {
+          "name": "chargerCable",
+          "color": "#202427",
+          "parts": [
+            "ev-charger-cable-0",
+            "ev-charger-cable-1",
+            "ev-charger-cable-2"
+          ],
+          "param": "chargerCable"
         }
       ]
     },
