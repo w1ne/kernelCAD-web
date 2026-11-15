@@ -309870,7 +309870,7 @@
       "id": "cable-clamp",
       "kit": "standard-components",
       "title": "Cable clamp",
-      "description": "Low-profile cable saddle with two fixing ears and a rounded cable guide Knobs: model size, steel, rubber.",
+      "description": "Illustrative CC0 low-poly cable saddle: two open mounting holes, a connected steel arch and a separate rubber liner around the cable passage. Not a load-rated, toleranced or vendor manufacturing model. Knobs: model size and display colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -309888,8 +309888,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-clamp.kcad.ts",
       "preview": "/assets/standard-components-cable-clamp.png",
-      "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
-      "triangleBudget": 300,
+      "sourceSha256": "c085b524edf90fc1face82d7c5d759a75783a424ceb4e09a08b21196df6c86ac",
+      "triangleBudget": 420,
       "params": [
         {
           "name": "size",
@@ -309930,10 +309930,10 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 308,
         "sizeM": [
           0.048,
-          0.012,
+          0.0215,
           0.034
         ],
         "minUpM": 0,
@@ -309944,9 +309944,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "foot",
-            "ear-left",
-            "ear-right"
+            "connected-steel-frame"
           ],
           "param": "steel"
         },
@@ -309954,7 +309952,7 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "saddle"
+            "separate-rubber-liner"
           ],
           "param": "rubber"
         }
@@ -310513,15 +310511,19 @@
     {
       "id": "din-rail",
       "kit": "standard-components",
-      "title": "DIN rail",
-      "description": "Short symmetric top-hat rail profile with a flat web and raised edge lips Knobs: model size, steel, stainless steel, aluminum.",
+      "title": "DIN rail (TH35 illustrative)",
+      "description": "Illustrative CC0 low-poly 35 mm top-hat DIN mounting rail: raised crown, open underside, continuous outward retaining lips, and three actual oblong mounting slots. This is a scene prop, not a dimensionally certified IEC 60715 profile; lip radii, coating, load, tolerances, and mounting pitch are not specified. Model size scales all dimensions; finish color changes appearance only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "din rail",
+        "TH35",
+        "top-hat",
         "mounting rail",
         "control cabinet",
-        "electrical"
+        "electrical",
+        "CC0",
+        "scene prop"
       ],
       "compat": [
         "mechanical",
@@ -310532,14 +310534,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail.kcad.ts",
       "preview": "/assets/standard-components-din-rail.png",
-      "sourceSha256": "ba0de3b93354ce866a8edd169afe498483f420fd930878b8f62254d8fc7bd174",
-      "triangleBudget": 300,
+      "sourceSha256": "9bb5043f4f1e8925e2fbacded94dd9e6b348a472398b3eecc93484f64e246d3f",
+      "triangleBudget": 450,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model scale",
           "choices": [
             "compact",
             "standard",
@@ -310549,45 +310551,27 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
-        },
-        {
-          "name": "stainless",
-          "type": "color",
-          "default": "#b8c1c6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "aluminum",
-          "type": "color",
-          "default": "#aebac0",
-          "label": "Aluminum"
+          "default": "#a5adb1",
+          "label": "Rail finish appearance"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "stainless": "#7d8a91",
-          "aluminum": "#586970"
+          "steel": "#59646a"
         },
-        "brass": {
-          "steel": "#646f75",
-          "stainless": "#b38b52",
-          "aluminum": "#aab8bc"
+        "galvanized": {
+          "steel": "#a5adb1"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "stainless": "#8b8275",
-          "aluminum": "#788177"
+          "steel": "#777870"
         }
       },
       "stats": {
-        "triangles": 48,
+        "triangles": 288,
         "sizeM": [
           0.11,
-          0.012,
-          0.036
+          0.0075,
+          0.035
         ],
         "minUpM": 0,
         "materials": 1
@@ -310595,28 +310579,11 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#a5adb1",
           "parts": [
-            "web"
+            "connected-steel-top-hat-rail"
           ],
           "param": "steel"
-        },
-        {
-          "name": "aluminum",
-          "color": "#aebac0",
-          "parts": [
-            "left-lip",
-            "right-lip"
-          ],
-          "param": "aluminum"
-        },
-        {
-          "name": "stainless",
-          "color": "#b8c1c6",
-          "parts": [
-            "ridge"
-          ],
-          "param": "stainless"
         }
       ]
     },
