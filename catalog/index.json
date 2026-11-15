@@ -217088,7 +217088,7 @@
       "id": "parcel-belt-diverter",
       "kit": "postal-logistics",
       "title": "Parcel belt diverter",
-      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, belt rubber, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -217109,7 +217109,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-belt-diverter.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-belt-diverter.png",
-      "sourceSha256": "4308ca1c1066b274f45ccb95b4b3ef60c5a9e37e7c7e471f14c271244e36cc97",
+      "sourceSha256": "eddaf35dfb9efbd21a45e817cdd704b53ec06e5ae6ccd62b378dc023829d3f19",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217120,6 +217120,12 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#2c3134",
+          "label": "Belt rubber"
         },
         {
           "name": "paintedSteel",
@@ -217142,11 +217148,13 @@
       ],
       "presets": {
         "weathered": {
+          "beltRubber": "#3d4140",
           "paintedSteel": "#68777a",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
+          "beltRubber": "#2c3134",
           "paintedSteel": "#e36d32",
           "structuralSteel": "#454f54",
           "stainlessSteel": "#d9e0de"
@@ -217164,10 +217172,17 @@
       },
       "palette": [
         {
+          "name": "beltRubber",
+          "color": "#2c3134",
+          "parts": [
+            "belt"
+          ],
+          "param": "beltRubber"
+        },
+        {
           "name": "paintedSteel",
           "color": "#587981",
           "parts": [
-            "belt",
             "side-left",
             "side-right",
             "pusher-arm",
