@@ -309870,7 +309870,7 @@
       "id": "cable-clamp",
       "kit": "standard-components",
       "title": "Cable clamp",
-      "description": "Low-profile cable saddle with two fixing ears and a rounded cable guide Knobs: model size, steel, rubber.",
+      "description": "Illustrative CC0 low-poly cable saddle: two open mounting holes, a connected steel arch and a separate rubber liner around the cable passage. Not a load-rated, toleranced or vendor manufacturing model. Knobs: model size and display colors.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -309888,8 +309888,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-clamp.kcad.ts",
       "preview": "/assets/standard-components-cable-clamp.png",
-      "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
-      "triangleBudget": 300,
+      "sourceSha256": "c085b524edf90fc1face82d7c5d759a75783a424ceb4e09a08b21196df6c86ac",
+      "triangleBudget": 420,
       "params": [
         {
           "name": "size",
@@ -309930,10 +309930,10 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 308,
         "sizeM": [
           0.048,
-          0.012,
+          0.0215,
           0.034
         ],
         "minUpM": 0,
@@ -309944,9 +309944,7 @@
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "foot",
-            "ear-left",
-            "ear-right"
+            "connected-steel-frame"
           ],
           "param": "steel"
         },
@@ -309954,7 +309952,7 @@
           "name": "rubber",
           "color": "#353a3d",
           "parts": [
-            "saddle"
+            "separate-rubber-liner"
           ],
           "param": "rubber"
         }
