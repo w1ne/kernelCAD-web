@@ -292494,7 +292494,7 @@
       "id": "welding-curtain-screen",
       "kit": "shipyard",
       "title": "Welding curtain screen",
-      "description": "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Parameters: overall scale, welding curtain vinyl, structural steel and elastomer; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -292517,7 +292517,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/welding-curtain-screen.kcad.ts",
       "preview": "/assets/shipyard-welding-curtain-screen.png",
-      "sourceSha256": "1594485f39a6a7ad6068d6785083c2830721dcbe6f9a97938d68004474726ffb",
+      "sourceSha256": "8a28538216ab92609ea0efdc60682cbfa46a418d20b48a2cd6cc9a1108caa1a3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292530,10 +292530,10 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "curtainVinyl",
           "type": "color",
-          "default": "#7e7060",
-          "label": "Yard finish"
+          "default": "#f07a1a",
+          "label": "Welding curtain vinyl"
         },
         {
           "name": "structuralSteel",
@@ -292550,12 +292550,12 @@
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#958a7d",
+          "curtainVinyl": "#ff8a24",
           "structuralSteel": "#d0d7d8",
           "elastomer": "#3a4245"
         },
         "weathered-yard": {
-          "yardPaint": "#695d50",
+          "curtainVinyl": "#c06a32",
           "structuralSteel": "#828d91",
           "elastomer": "#252b2d"
         }
@@ -292584,13 +292584,13 @@
           "param": "structuralSteel"
         },
         {
-          "name": "yardPaint",
-          "color": "#7e7060",
+          "name": "curtainVinyl",
+          "color": "#f07a1a",
           "parts": [
             "curtain-panel-0",
             "curtain-panel-1"
           ],
-          "param": "yardPaint"
+          "param": "curtainVinyl"
         },
         {
           "name": "elastomer",
