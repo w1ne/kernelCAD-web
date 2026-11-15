@@ -61,7 +61,7 @@ beforeAll(async()=>{await initOcct();},30000);
 describe('illustrative TH35 DIN rail end stop geometry',()=>{
  it('committed gallery preview matches actual evaluated source render',async()=>{
   const {asset,glb}=await buildCatalogAssetWithGlb(root,file);
-  const rendered=await renderTrianglesPng(await glbTriangles(glb),{yawDeg:35,label:`${asset.id} · ${asset.stats.triangles} tris`});
+  const rendered=await renderTrianglesPng(await glbTriangles(glb),{label:`${asset.title} · ${asset.stats.triangles} tris`});
   const published=readFileSync(resolve(root,'catalog/kits/standard-components/previews/din-rail-end-stop.png'));
   expect(Buffer.compare(rendered,published),'thumbnail must reflect edited physical geometry, not an old marketing silhouette').toBe(0);
  },30000);
