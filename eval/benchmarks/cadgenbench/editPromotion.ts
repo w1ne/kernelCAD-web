@@ -72,6 +72,10 @@ export interface EditIntent {
   targetHoleSelector?: 'central' | 'horizontal' | 'any';
   /** "Extend the plate by 5 mm in +X": the bbox side and the maximum growth. */
   targetExtent?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
+  /** "Remove the fillet ...": only a blend goes back to a sharp edge. */
+  removesBlend: boolean;
+  /** The single stated blend size ("the 3mm fillet"), when there is one. */
+  blendSizeMm?: number;
 }
 
 const NUMBER_WORDS: Record<string, number> = {
@@ -252,6 +256,16 @@ export function parseEditIntent(request: string): EditIntent {
     }
   }
 
+  // A plain blend removal, with no other feature named or added. A bore
+  // chamfer removal is left to the hole checks.
+  const removesBlend =
+    !mentionsHoles &&
+    /\b(remove|removes|delete|deletes)\b/.test(text) &&
+    /\b(fillets?|rounds?|chamfers?)\b/.test(text) &&
+    !/\b(add|adds|replace|change|convert|swap|cut|drill|extend|extrude|move|offset|pocket|slot|rib|pattern)\b/.test(text);
+  const blendLengths = removesBlend ? [...text.matchAll(/(\d+(?:\.\d+)?)\s*mm\b/g)] : [];
+  const blendSizeMm = blendLengths.length === 1 ? readMm(blendLengths[0][1]) : undefined;
+
   return {
     direction,
     moveOnly,
@@ -264,6 +278,8 @@ export function parseEditIntent(request: string): EditIntent {
     ...(sourceHoleDiameterMm !== undefined ? { sourceHoleDiameterMm } : {}),
     ...(targetHoleSelector !== undefined ? { targetHoleSelector } : {}),
     ...(targetExtent !== undefined ? { targetExtent } : {}),
+    removesBlend,
+    ...(blendSizeMm !== undefined ? { blendSizeMm } : {}),
   };
 }
 
@@ -801,6 +817,44 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         status: 'failed',
         classification: 'wrong-magnitude',
         reason: `the part grew ${grew.toFixed(3)} mm on the ${label} side, but the request extends it by ${mm} mm (±${extentTolerance.toFixed(3)} mm)`,
+      };
+    }
+  }
+
+  if (intent.removesBlend && before.bbox && after.bbox) {
+    // A blend lies inside the hull of the two faces it joins. Removing it
+    // fills a convex corner or clears a concave one, so no bbox side can move
+    // inward, and a side can move outward by at most the blend size.
+    let shrink = 0;
+    let growth = 0;
+    for (let i = 0; i < 3; i++) {
+      shrink = Math.max(shrink, after.bbox.min[i] - before.bbox.min[i], before.bbox.max[i] - after.bbox.max[i]);
+      growth = Math.max(growth, before.bbox.min[i] - after.bbox.min[i], after.bbox.max[i] - before.bbox.max[i]);
+    }
+    if (shrink > BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-topology',
+        reason: `a blend removal cannot cut the part bounds, but a bbox side moved inward by ${shrink.toFixed(3)} mm; the edit removed material outside the blend`,
+      };
+    }
+    if (intent.blendSizeMm !== undefined && growth > intent.blendSizeMm + BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-magnitude',
+        reason: `removing a ${intent.blendSizeMm} mm blend can grow the part by at most ${intent.blendSizeMm} mm, but a bbox side moved outward by ${growth.toFixed(3)} mm`,
+      };
+    }
+    if (faceDelta > 0) {
+      // Removing a blend deletes its faces. New faces mean the edit also cut
+      // or split other geometry; counts alone cannot show where.
+      return {
+        ...base,
+        status: 'unknown',
+        classification: 'locality-unverified',
+        reason: `a blend removal deletes faces, but the face count rose by ${faceDelta}; volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³ does not show that only the blend changed`,
       };
     }
   }

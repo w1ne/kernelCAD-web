@@ -572,6 +572,74 @@ describe('parseEditIntent', () => {
     expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
   });
 
+  // 100 mm cube, one 5 mm convex fillet on a 100 mm edge: 7 faces. Removing
+  // it adds (1 - pi/4) * 5^2 * 100 = 536.5 mm^3 and leaves 6 faces.
+  const FILLETED = 1_000_000 - 536.5;
+  const withBox = (source: StepInspectReport, min: [number, number, number], max: [number, number, number]) => ({
+    ...source,
+    solids: source.solids.map((solid) => ({ ...solid, bboxExact: { min, max } })),
+  });
+
+  it('accepts a narrow fillet removal that restores the sharp edge', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7, [hole(10, 20, 20)]),
+      after: report(1_000_000, 6, [hole(10, 20, 20)]),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited', faceDelta: -1 });
+  });
+
+  it('rejects a broad cutter that removed the adjacent wall (bbox shrank)', () => {
+    // The fillet face is gone, but a 10 mm slab of the +X wall went with it:
+    // 13x the material of the fillet itself.
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7, [hole(10, 20, 20)]),
+      after: withBox(report(1_000_000 - 7_000, 6, [hole(10, 20, 20)]), [0, 0, 0], [90, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('moved inward by 10.000 mm');
+  });
+
+  it('rejects a blend removal that grew the part beyond the blend size', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7),
+      after: withBox(report(1_080_000, 6), [0, 0, 0], [108, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('accepts a blend removal that grows a side by no more than the blend size', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: withBox(report(FILLETED, 7), [0, 0, 0], [95, 100, 100]),
+      after: report(1_000_000, 6),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('does not accept a blend removal that added faces (annular cutter)', () => {
+    // An annular cutter around the boss leaves a groove floor and two walls.
+    const result = classifyEditPromotion({
+      request: 'Remove the fillet from the outer diameter of the central boss on the +Z side of the part.',
+      before: report(FILLETED, 7),
+      after: report(1_000_000 - 7_000, 9),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified', faceDelta: 2 });
+  });
+
+  it('reads only a plain blend removal as a blend removal', () => {
+    expect(parseEditIntent('Remove the 5mm fillet from the top +X edge.')).toMatchObject({
+      removesBlend: true,
+      blendSizeMm: 5,
+    });
+    expect(parseEditIntent('Remove the chamfers on the outer edges.')).toMatchObject({ removesBlend: true });
+    expect(parseEditIntent('Remove the chamfer on the central bore.').removesBlend).toBe(false);
+    expect(parseEditIntent('Remove the fillet and add a 2mm chamfer.').removesBlend).toBe(false);
+    expect(parseEditIntent('Change the chamfers to 3mm fillets.').removesBlend).toBe(false);
+  });
+
   it('leaves the direction open when a fillet is removed from a named feature', () => {
     expect(
       parseEditIntent('Remove the fillet from the outer diameter of the central boss on the +Z side of the part.')
