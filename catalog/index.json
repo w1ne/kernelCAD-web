@@ -160819,7 +160819,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/lab-gas-manifold-panel.kcad.ts",
       "preview": "/assets/lab-infrastructure-lab-gas-manifold-panel.png",
-      "sourceSha256": "3ff10470b63ce2d733ca8d0153cc1fbafd0cf5226b84768d99eea3fcce10005b",
+      "sourceSha256": "665eec51668c1eded6e465a6f68d5504a672515e1cbf0afdf4714f7bee450042",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160885,8 +160885,7 @@
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "mounting-plate",
-            "main-header"
+            "mounting-plate"
           ],
           "param": "enamel"
         },
@@ -160894,6 +160893,7 @@
           "name": "stainless",
           "color": "#b8c7ca",
           "parts": [
+            "main-header",
             "valve-riser-0",
             "valve-riser-1",
             "valve-riser-2",
