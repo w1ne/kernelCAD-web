@@ -259635,7 +259635,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/pelletizer-extruder.kcad.ts",
       "preview": "/assets/recycling-facility-pelletizer-extruder.png",
-      "sourceSha256": "34caec9237db064753675888d368fd6f1da92a94ee9e58a66b05f1490ed13d3b",
+      "sourceSha256": "b939fefc0f8a936e4314ba498c42daeb50f6fbd9c7aa685f793288d90901e839",
       "triangleBudget": 2200,
       "params": [
         {
@@ -259773,7 +259773,6 @@
           "parts": [
             "coupling-guard",
             "hopper-rim",
-            "air-knife",
             "pelletizer-door",
             "pellet-bin"
           ],
@@ -259793,6 +259792,7 @@
             "changer-ram-1",
             "die-head",
             "water-bath",
+            "air-knife",
             "pellet-chute"
           ],
           "param": "barrel"
