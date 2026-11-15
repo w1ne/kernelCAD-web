@@ -77,3 +77,16 @@ npm run catalog:previews   # rebuild catalog/kits/<kit>/previews/*.png
 
 Look at the preview. A test fails when the index is stale, an asset is over
 budget, needs a second opaque material, or does not stand on y = 0.
+
+CI also re-renders every asset whose source or preview changed and fails when
+the committed preview does not match the source. Run the same check locally:
+
+```sh
+npx tsx scripts/checkChangedCatalogPreviews.ts --base origin/develop
+```
+
+To fix a failure, re-render the preview with
+`npx tsx scripts/renderCatalogPreviews.ts <id>`. A preview that intentionally
+uses another camera needs a reviewed entry in `catalog/preview-exceptions.json`.
+The entry holds the source and preview pixel hashes that the failure message
+prints. The exception stops applying when either one changes.

@@ -174,11 +174,21 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # HEAD^1 is the base the PR merge commit (or the develop push) is compared with.
+          fetch-depth: 2
       - uses: ./.github/actions/setup-cad
       - name: Catalog index freshness
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
         run: npx vitest run tests/integration/catalog/catalogIndex.test.ts
+      # #1416: re-render only the assets whose source or preview changed and
+      # fail on a stale preview, unless catalog/preview-exceptions.json holds a
+      # reviewed exception for that exact source and preview.
+      - name: Changed-source catalog preview gate
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: npx tsx scripts/checkChangedCatalogPreviews.ts --base HEAD^1
 
   # Slow modeled-thread geometry proofs (full M3–M12 helical sweep, modeled
   # tapped holes, bolt-in-nut clearance and interference on the M6 example).

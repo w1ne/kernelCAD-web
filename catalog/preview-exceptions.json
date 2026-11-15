@@ -1,0 +1,8 @@
+{
+  "pipe-elbow-90": {
+    "sourceSha256": "e50f85776a7e205a214860a25ec7ce6f8de266c9cba824e7f79843f90e65a1c6",
+    "previewPixelsSha256": "604abde5bf06a1fe8b0c09b66a20333ba93caa9a017a185cdf8cb709ef6cb238",
+    "reason": "Same 446-triangle low-poly GLB as the canonical render, at a different yaw that shows the open outlet bore (scripts/checkCatalogAsset.ts --png --yaw). The canonical 35 degree view hides the passage that #1342 repaired.",
+    "reviewedIn": "#1342; visual comparison in #1416 on 2026-11-15"
+  }
+}
