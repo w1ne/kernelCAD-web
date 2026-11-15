@@ -356244,7 +356244,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/oil-cooler-module.kcad.ts",
       "preview": "/assets/wind-energy-oil-cooler-module.png",
-      "sourceSha256": "3908a1e83112937318f9c1346045adcfe3e9bd4372e9a41b44b903b22e520647",
+      "sourceSha256": "39e2d71bbdb423824c59ed91e9125edc82c657f77b9b3f8cd4f9f232227dbb7e",
       "triangleBudget": 4200,
       "params": [
         {
@@ -356343,7 +356343,9 @@
             "fan-2-guard-spoke-1",
             "fan-2-guard-spoke-2",
             "fan-2-guard-spoke-3",
-            "fan-2-guard-spoke-4"
+            "fan-2-guard-spoke-4",
+            "header-top",
+            "header-bottom"
           ],
           "param": "aluminium"
         },
@@ -356400,8 +356402,6 @@
           "name": "pipework",
           "color": "#9a5a32",
           "parts": [
-            "header-top",
-            "header-bottom",
             "inlet-line",
             "outlet-line",
             "thermostatic-bypass"
