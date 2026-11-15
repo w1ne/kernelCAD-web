@@ -90,6 +90,8 @@ function shellFaceHashes(ctx: LowerContext, r: FeatureRecord, base: OcctBackend)
   const keys = Object.keys(r.inputs)
     .filter((key) => key === 'face' || /^face_\d+$/.test(key))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  // No face input at all: let pickFace report it, as the single-face form did.
+  if (keys.length === 0) keys.push('face');
   const hashes: { hash: FaceHash }[] = [];
   for (const key of keys) {
     const one: FeatureRecord = key === 'face' ? r : { ...r, inputs: { ...r.inputs, face: r.inputs[key] } };
