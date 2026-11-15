@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ × tests/integration/catalog/miningGrizzlySpringMaterials.test.ts > mining/grizzly-scalping-deck materials > renders the coil springs as support steel and keeps the vibrator covers safety yellow 1747ms
+   → spring-coil-0-0-0 should use the support-steel finish: expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/miningGrizzlySpringMaterials.test.ts > mining/grizzly-scalping-deck materials > renders the coil springs as support steel and keeps the vibrator covers safety yellow
+AssertionError: spring-coil-0-0-0 should use the support-steel finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/miningGrizzlySpringMaterials.test.ts:57:95
+     55|       const colors = colorsFor(name);
+     56|       expect(colors.length, `${name} should be present in the exported…
+     57|       expect(colors.every(matches('#4b5459')), `${name} should use the…
+       |                                                                                               ^
+     58|     }
+     59|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:43:10
+   Duration  22.07s (transform 14.82s, setup 235ms, import 19.17s, tests 2.25s, environment 0ms)
