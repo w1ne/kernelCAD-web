@@ -159,6 +159,13 @@ jobs:
       - uses: ./.github/actions/setup-cad
       - name: QC — typecheck + build:cli + cookbook + drift check
         run: npm run qc:build
+      # vitest.config.ts excludes eval/**/*.test.ts unless KCAD_CORPUS is set,
+      # so the sharded suite never runs the CADGenBench edit-promotion
+      # regressions (real STEP fixtures 201/206/208/229/247). They take ~5 s.
+      - name: CADGenBench edit-promotion regressions
+        env:
+          KCAD_CORPUS: '1'
+        run: npx vitest run eval/benchmarks/cadgenbench/
 
   # Committed catalog/index.json is kernel-dependent (triangle counts). A PR that
   # bumps OCCT without regenerating it can merge green against a stale base, so
