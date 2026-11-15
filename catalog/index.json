@@ -352351,7 +352351,7 @@
       "id": "submersible-lift-station-pump",
       "kit": "water-treatment",
       "title": "Submersible lift station pump",
-      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel, rubber cable jacket; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -352370,7 +352370,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/submersible-lift-station-pump.kcad.ts",
       "preview": "/assets/water-treatment-submersible-lift-station-pump.png",
-      "sourceSha256": "3454bd0b5fc6903cfd9368baa8bed695d9d43a4d4eabf3515694372d91a07dec",
+      "sourceSha256": "e1c98ba27c167e0efdb8532d51554806436fa563d5825119c5283b42c3fd864d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -352393,16 +352393,24 @@
           "type": "color",
           "default": "#68777b",
           "label": "Structural steel"
+        },
+        {
+          "name": "cableJacket",
+          "type": "color",
+          "default": "#23282b",
+          "label": "Rubber cable jacket"
         }
       ],
       "presets": {
         "weathered": {
           "coatedSteel": "#687b78",
-          "structuralSteel": "#6e6b63"
+          "structuralSteel": "#6e6b63",
+          "cableJacket": "#33383a"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
-          "structuralSteel": "#505b60"
+          "structuralSteel": "#505b60",
+          "cableJacket": "#1d2124"
         }
       },
       "stats": {
@@ -352429,8 +352437,7 @@
             "intake-slot-4",
             "intake-slot-5",
             "handle-left",
-            "handle-right",
-            "cable"
+            "handle-right"
           ],
           "param": "coatedSteel"
         },
@@ -352441,6 +352448,14 @@
             "intake-base"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "cableJacket",
+          "color": "#23282b",
+          "parts": [
+            "cable"
+          ],
+          "param": "cableJacket"
         }
       ]
     },
