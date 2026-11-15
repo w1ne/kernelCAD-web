@@ -1,0 +1,2 @@
+evaluate ok: 227 features (develop: TypeError watch.fixed is not a function)
+validate ok: 0 mate gaps; static turntable only

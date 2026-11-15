@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-11-14",
+  "source": "examples/cookbook-parity/asymmetric-chamfer-block.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 11326.666666666668,
+  "expectedVolumeMm3": 11326.666666666668,
+  "faceCount": 10,
+  "boundsMm": {
+    "min": [
+      -2.6645352591003757e-15,
+      -2.6645352591003757e-15,
+      0
+    ],
+    "max": [
+      40,
+      30.000000000000004,
+      10
+    ]
+  },
+  "meshedFeatureCount": 2,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

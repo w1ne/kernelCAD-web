@@ -116,8 +116,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/portfolio/pocket-watch/build.kcad.ts',
   'examples/portfolio/pocket-watch-v2/build.kcad.ts',
   'examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts',
-  // Invalid part-name (spaces) — pre-existing topology-ref-grammar bug.
-  // Not P3's scope.
+  // Decorative pose-only hero: every part is fastened to the base frame at a
+  // representative open pose. It evaluates cleanly, but the crossed arms,
+  // through pins and far fastened mates are not a mechanism, so
+  // `validate --include-interference` reports mechanism: broken.
   'examples/gallery/scissor-lift.kcad.ts',
 ]);
 
@@ -155,10 +157,6 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
   [
     'examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts',
     { issue: 353, testFile: 'tests/integration/examples/skillBuiltSupportedArmColliding.test.ts' },
-  ],
-  [
-    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
-    { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
   ],
   // P9 (2026-06-02) closed the P8 joint-mesh-continuity gap on the
   // Luxo lamp (extended column + pulled-back head-neck + arm spring
@@ -212,6 +210,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     {
       testFile: 'tests/integration/examples/thermalIoLinkMachineHealth.test.ts',
       coverage: 'catalog-fixture',
+    },
+  ],
+  [
+    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts',
+      coverage: 'run-validate-cli',
     },
   ],
 ]);

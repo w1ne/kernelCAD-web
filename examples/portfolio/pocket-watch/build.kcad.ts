@@ -33,7 +33,6 @@ const FRAME_FLAT = 23.0;          // half flat-to-flat of the pink octagon
 const CASE_FLAT = 17.5;           // half flat-to-flat of the yellow octagon
 const DIAL_RADIUS = 12.0;         // teal dial radius
 const DIAL_DEPTH = 1.6;           // dial plate thickness in Y
-const LOOP_BASE_Z = FRAME_FLAT + 0.6; // top of frame (in Z) — base elevation the loop feet rest on
 
 // --- helpers -----------------------------------------------------------------
 
@@ -138,6 +137,33 @@ const CRYSTAL_RISE   = 3.0;                                // apex Y = CRYSTAL_B
 
 const watch = assembly('pop-art octagonal pocket watch');
 
+// G0 migration shim: the v0.5 `fixed(label, parent, child, {origin})`
+// shortcut was removed in favor of the mate vocabulary. `fixed()` packages the
+// connector-pair + 'fastened' mate equivalent (auto-numbered connector names so
+// multi-join parts stay unique) so this portfolio script still builds.
+function frameConnector(origin: [number, number, number]) {
+  return { type: 'frame', origin: { kind: 'vec3', value: origin } } as const;
+}
+let fastenSeq = 0;
+function fixed(
+  label: string,
+  parent: ReturnType<typeof watch.part>,
+  child: ReturnType<typeof watch.part>,
+  opts: { origin: [number, number, number] },
+) {
+  const slot = ++fastenSeq;
+  const parentConn = `fastener-${slot}-parent`;
+  const childConn = `fastener-${slot}-child`;
+  parent.connector(parentConn, frameConnector(opts.origin));
+  child.connector(childConn, frameConnector(opts.origin));
+  watch.mate(
+    `${label}-mate-${slot}`,
+    `${parent.name}.${parentConn}`,
+    `${child.name}.${childConn}`,
+    'fastened',
+  );
+}
+
 // =============================================================================
 // FRAME — pink octagonal outer frame with a pocket for the yellow case.
 // =============================================================================
@@ -184,7 +210,7 @@ for (const [x, z] of screwVerts) {
   caseBored = caseBored.subtract(cb);
 }
 const caseFinal = watch.part('yellow-octagonal-case', caseBored.color('#e8c84a'));
-watch.fixed('case nested into frame pocket', frame, caseFinal, { origin: [0, 0, 0] });
+fixed('case nested into frame pocket', frame, caseFinal, { origin: [0, 0, 0] });
 
 // =============================================================================
 // HEX SCREWS — 8 hex prisms seated inside the counterbores, top flush with
@@ -211,7 +237,7 @@ for (let i = 0; i < screwVerts.length; i += 1) {
   const [x, z] = screwVerts[i];
   const head = hexHead(x, z);
   const screw = watch.part(`bezel-hex-screw-${i}`, head);
-  watch.fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
+  fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
 }
 
 // =============================================================================
@@ -226,7 +252,7 @@ const subdialDialPocket = cylY(DIAL_DEPTH + 1.0, subdialR + 0.1, DIAL_Y_BACK + 0
   .translate(subdialCenterX, 0, subdialCenterZ);
 const dialPlate = dialRaw.subtract(subdialDialPocket).color('#3fc7c4');
 const dial = watch.part('teal-tapisserie-dial-plate', dialPlate);
-watch.fixed('dial plate seated in case dial pocket', caseFinal, dial, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('dial plate seated in case dial pocket', caseFinal, dial, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // =============================================================================
 // TAPISSERIE — raised waffle bumps standing PROUD of the dial front face.
@@ -254,7 +280,7 @@ for (let ix = -TAP_HALF; ix <= TAP_HALF; ix += 1) {
       .translate(x, DIAL_Y_FRONT - TAP_THICK / 2, z)
       .color('#3fc7c4');
     const part = watch.part(`tap-bump-${tapIdx}`, bump);
-    watch.fixed('tap bump bonded to dial', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+    fixed('tap bump bonded to dial', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
     tapIdx += 1;
   }
 }
@@ -336,7 +362,7 @@ const crystalDome = crystalSurf
     clearcoatRoughness: 0.05,
   });
 const crystal = watch.part('domed-nurbs-sapphire-crystal-over-the-dial', crystalDome);
-watch.fixed('crystal mounted above the dial', caseFinal, crystal, { origin: [0, CRYSTAL_BASE_Y, 0] });
+fixed('crystal mounted above the dial', caseFinal, crystal, { origin: [0, CRYSTAL_BASE_Y, 0] });
 
 // =============================================================================
 // NUMERALS — generic 12 / 6 / 9 on the dial face (sketch.text). "3" position
@@ -364,7 +390,7 @@ for (const [value, x, z] of numerals) {
   // text_thickness = 0.5 (see faceText), so frontFaceY = -3.7.
   const numeral = faceText(value, NUMERAL_SIZE, x, z, DIAL_Y_FRONT - 0.5, '#e8c84a');
   const part = watch.part(`numeral-${value}`, numeral);
-  watch.fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+  fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
 }
 
 // =============================================================================
@@ -387,7 +413,7 @@ for (let i = 0; i < 12; i += 1) {
   if (i === 0 || i === 3 || i === 6 || i === 9) continue;
   const stick = stickMarker(i * 30);
   const part = watch.part(`stick-marker-${i}`, stick);
-  watch.fixed('stick marker on dial', dial, part, { origin: [0, DIAL_Y_FRONT, 0] });
+  fixed('stick marker on dial', dial, part, { origin: [0, DIAL_Y_FRONT, 0] });
 }
 
 // =============================================================================
@@ -399,14 +425,14 @@ const subRing = cylY(SUBRING_THICK, subdialR, SUBRING_Y_BACK)
   .translate(subdialCenterX, 0, subdialCenterZ)
   .color('#f8b3c0');
 const subRingPart = watch.part('pink-subdial-ring', subRing);
-watch.fixed('subdial ring around subdial pocket', dial, subRingPart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
+fixed('subdial ring around subdial pocket', dial, subRingPart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
 
 // White subdial face, recessed inside the ring (slightly back).
 const subFace = cylY(SUBFACE_THICK, subdialR - 0.75, SUBFACE_Y_BACK)
   .translate(subdialCenterX, 0, subdialCenterZ)
   .color('#f4f4ef');
 const subFacePart = watch.part('white-subdial-face', subFace);
-watch.fixed('subdial face inside ring', subRingPart, subFacePart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
+fixed('subdial face inside ring', subRingPart, subFacePart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
 
 // Red subdial hand — thin bar pivoting at subdial center.
 const subHandAngleDeg = -40;
@@ -418,7 +444,7 @@ const subHand = box(0.3, SUBHAND_THICK, subHandLen, true)
   .translate(subdialCenterX, 0, subdialCenterZ)
   .color('#c8243a');
 const subHandPart = watch.part('red-subdial-hand', subHand);
-watch.fixed('subdial hand pinned at subdial center', subFacePart, subHandPart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
+fixed('subdial hand pinned at subdial center', subFacePart, subHandPart, { origin: [subdialCenterX, DIAL_Y_FRONT, subdialCenterZ] });
 
 // =============================================================================
 // MAIN HANDS — yellow hour + minute hands on separate Y layers, in front of
@@ -437,13 +463,13 @@ const hourHand = hand(7.0, 1.3, -50, HOUR_HAND_Y_CENTER);
 const minuteHand = hand(10.0, 1.0, 40, MIN_HAND_Y_CENTER);
 const hourPart = watch.part('yellow-hour-hand', hourHand);
 const minPart = watch.part('yellow-minute-hand', minuteHand);
-watch.fixed('hour hand on pinion', dial, hourPart, { origin: [0, DIAL_Y_FRONT, 0] });
-watch.fixed('minute hand above hour hand', dial, minPart, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('hour hand on pinion', dial, hourPart, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('minute hand above hour hand', hourPart, minPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // Central pinion cap — sits in front of both hands.
 const pinion = cylY(PIN_THICK, 0.85, PIN_Y_BACK).color('#e8c84a');
 const pinionPart = watch.part('central-pinion-cap', pinion);
-watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
+fixed('pinion centered on dial', minPart, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // =============================================================================
 // PENDANT — short pink rectangular block sitting on top of the frame, like
@@ -488,7 +514,7 @@ const pendantBlock = extrudePolygon(pendantPts, PENDANT_DEPTH)
   .fillet(0.4)
   .color('#f8b3c0');
 const pendant = watch.part('pink-pendant-block-above-frame', pendantBlock);
-watch.fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_Z_BASE] });
+fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_Z_BASE] });
 
 // =============================================================================
 // CROWN — yellow knurled knob on the pendant top, slightly offset in X so
@@ -515,19 +541,20 @@ const crownKnob = extrudePolygon(knobHexPts, CROWN_KNOB_H)
   .color('#e8c84a');
 const crown = crownStem.union(crownKnob);
 const crownPart = watch.part('yellow-crown', crown);
-watch.fixed('crown atop the pendant', pendant, crownPart, { origin: [CROWN_X_OFFSET, 0, PENDANT_Z_TOP] });
+fixed('crown atop the pendant', pendant, crownPart, { origin: [CROWN_X_OFFSET, 0, PENDANT_Z_TOP] });
 
 // =============================================================================
-// LANYARD LOOP — pink half-torus mounted on a short bail post above the pendant.
+// LANYARD LOOP — pink torus ring mounted on a short bail post above the pendant.
 // The bail axis is at x = 0 (centered on the pendant top), the crown is offset
 // by CROWN_X_OFFSET so the two parts read as distinct silhouettes from the
 // iso pose. Closest surface-to-surface gap between bail post and crown knob:
 // 2.0 (offset) − 0.5 (bail post radius) − 1.4 (knob radius) = 0.1 mm — they
 // just clear without interference.
 // =============================================================================
-// Built as the top half of a torus whose axis runs along world +Y. The torus
-// hole therefore opens along ±Y, so the camera (looking from -Y) sees the
-// circular through-hole — a real chain could be threaded through it.
+// Built as a full torus whose axis runs along world +Y. The torus hole
+// therefore opens along ±Y, so the camera (looking from -Y) sees the circular
+// through-hole — a real chain could be threaded through it. The bail post
+// enters the bottom of the ring, so the ring is kept whole.
 const LOOP_MAJOR_R = 2.5;    // through-hole radius
 const LOOP_TUBE_R  = 0.55;   // tube cross-section radius
 const loopCenterZ  = PENDANT_Z_TOP + 5.0;             // 32 — center of torus; raised so tube bottom clears the crown knob hex
@@ -544,15 +571,12 @@ const BAIL_POST_LEN    = Math.max(0.6, BAIL_POST_TOP_Z - BAIL_POST_BASE_Z);
 const loopFull = torus(LOOP_MAJOR_R, LOOP_TUBE_R, 48)
   .rotate([1, 0, 0], 90)
   .translate(0, 0, loopCenterZ);
-// Cut away everything at z < LOOP_BASE_Z to leave just the upper half.
-const loopCutter = box(40, 30, 100, true).translate(0, 0, LOOP_BASE_Z - 50);
 const bailPost = cylZ(BAIL_POST_LEN, BAIL_POST_R, BAIL_POST_BASE_Z, 24);
 const loopShape = loopFull
-  .subtract(loopCutter)
   .union(bailPost)
   .color('#f8b3c0');
 const loop = watch.part('pink-lanyard-loop', loopShape);
-watch.fixed('lanyard loop attached above pendant', pendant, loop, { origin: [0, 0, BAIL_POST_BASE_Z] });
+fixed('lanyard loop attached above pendant', pendant, loop, { origin: [0, 0, BAIL_POST_BASE_Z] });
 
 // (Ribbon omitted — a flat plank doesn't read as fabric at the iso pose and
 // would inflate the model's Z extent, breaking the camera-fit framing.)

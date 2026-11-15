@@ -1023,7 +1023,7 @@ export class CaptureSession {
     valueParamName: 'radius' | 'distance' | 'thickness',
     value: Editable<number>,
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
-    opts?: { continuity?: import('../../shared/intent/filletContinuityRecord').FilletContinuity },
+    opts?: import('./shapeOperationFeatureRecords').ScalarEdgeFeatureOpts,
   ): Shape {
     return this.createShape(createScalarEdgeFeatureCaptureSpec(
       this.records,
