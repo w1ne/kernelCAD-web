@@ -310302,15 +310302,18 @@
     {
       "id": "din-rail-end-stop",
       "kit": "standard-components",
-      "title": "DIN rail end stop",
-      "description": "Small rail-end stop with a raised clamp block and front-facing tightening boss Knobs: model size, steel, zinc-plated steel.",
+      "title": "DIN rail end stop (TH35 illustrative)",
+      "description": "CC0 low-poly scene prop of a TH35 DIN rail end stop. A two-sided under-lip clip, through-bored clamp housing, separate adjustable screw with a recessed slot, and transverse stop face are modeled. Sized around the illustrative rail cross-section at matching scale, but not a verified clip design, load-rated part, or certified IEC 60715 accessory. Scale changes all dimensions; finish colors are visual only.",
       "category": "attachment",
       "origin": "base",
       "tags": [
         "din rail end stop",
+        "TH35",
         "rail stop",
         "electrical cabinet",
-        "mount"
+        "clip",
+        "CC0",
+        "scene prop"
       ],
       "compat": [
         "mechanical",
@@ -310321,14 +310324,14 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail-end-stop.kcad.ts",
       "preview": "/assets/standard-components-din-rail-end-stop.png",
-      "sourceSha256": "db50b7840d511e370a08ca14943c75607a846839f201bc1a13bd0248a80a6d2d",
-      "triangleBudget": 300,
+      "sourceSha256": "05b42efe4272f5f0f50b26bf93d300901b00eadeb1a6030b1496b43d12b6ef5e",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "size",
           "type": "choice",
           "default": "standard",
-          "label": "Model size",
+          "label": "Illustrative model scale",
           "choices": [
             "compact",
             "standard",
@@ -310338,36 +310341,36 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
-          "label": "Steel"
+          "default": "#879299",
+          "label": "Body finish appearance"
         },
         {
           "name": "zinc",
           "type": "color",
           "default": "#cbd1d5",
-          "label": "Zinc-plated steel"
+          "label": "Screw finish appearance"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "zinc": "#929da3"
+          "steel": "#424c52",
+          "zinc": "#a0a8ad"
         },
         "brass": {
-          "steel": "#646f75",
-          "zinc": "#c29a5c"
+          "steel": "#626d73",
+          "zinc": "#b99b69"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "zinc": "#a19682"
+          "steel": "#6b685f",
+          "zinc": "#9d9a90"
         }
       },
       "stats": {
-        "triangles": 80,
+        "triangles": 294,
         "sizeM": [
-          0.036,
-          0.023,
-          0.032
+          0.025,
+          0.0314,
+          0.0416
         ],
         "minUpM": 0,
         "materials": 1
@@ -310375,10 +310378,9 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#879299",
           "parts": [
-            "foot",
-            "stop-face"
+            "under-lip-clip-and-stop-face"
           ],
           "param": "steel"
         },
@@ -310386,8 +310388,7 @@
           "name": "zinc",
           "color": "#cbd1d5",
           "parts": [
-            "clamp",
-            "boss"
+            "separate-slotted-clamping-screw"
           ],
           "param": "zinc"
         }
