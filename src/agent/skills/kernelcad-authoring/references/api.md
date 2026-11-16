@@ -72,7 +72,8 @@ prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points
 // thickness on each side, extruded along +Z, then fused with the supplied base.
 // `startZ` is the rib bottom (default 0); make it overlap the base for a valid union.
 // Supports straight or non-self-intersecting open polylines. Sharp bends that
-// require a miter longer than 8 × half-thickness are rejected.
+// require a miter longer than 8 × half-thickness are rejected. Unknown option
+// keys (for example `z` for startZ) throw feature.invalid-args.
 rib(base: Shape, centerline: [number, number][], opts: {
   thickness: number;
   height: number;

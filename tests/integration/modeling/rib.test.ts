@@ -55,4 +55,17 @@ describe('rib geometry', () => {
     expect(shape.boundingBox().max[1]).toBeCloseTo(40, 6);
     expect(shape.boundingBox().max[2]).toBeCloseTo(24.9, 6);
   }, 120_000);
+
+  it.each([
+    ['a misspelled startZ', '{ thickness: 2, height: 20, z: 9.9 }', 'opts.z'],
+    ['a lower-case startZ', '{ thickness: 2, height: 20, startz: 9.9 }', 'opts.startz'],
+  ])('rejects %s instead of building the rib from z = 0', async (_label, opts, path) => {
+    await expect(buildModel({
+      fileName: 'rib-option-keys.kcad.ts',
+      code: `return rib(box(40, 30, 10), [[5, 15], [35, 15]], ${opts});`,
+    })).rejects.toMatchObject({
+      code: 'feature.invalid-args',
+      message: expect.stringContaining(`${path} — got an unknown option`),
+    });
+  }, 120_000);
 });
