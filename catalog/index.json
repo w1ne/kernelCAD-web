@@ -38664,7 +38664,7 @@
       "id": "air-rinse-enclosure",
       "kit": "beverage-bottling-line",
       "title": "Air rinse enclosure",
-      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and corrugated board.",
+      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -38683,7 +38683,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/air-rinse-enclosure.kcad.ts",
       "preview": "/assets/beverage-bottling-line-air-rinse-enclosure.png",
-      "sourceSha256": "17f4867ee5c5300faef718bd125fcab16e6d9ef6efdfa6950be203fad56f2e40",
+      "sourceSha256": "4f0bca362fb3fc8e42aa9169d0540941184e124fdab2afea4a68cda3f2457e20",
       "triangleBudget": 2200,
       "params": [
         {
@@ -38712,26 +38712,18 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
-        },
-        {
-          "name": "corrugatedBoard",
-          "type": "color",
-          "default": "#b18a5d",
-          "label": "Corrugated board"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c",
-          "corrugatedBoard": "#c49b6b"
+          "foodPolymer": "#2c828c"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75",
-          "corrugatedBoard": "#886342"
+          "foodPolymer": "#286c75"
         }
       },
       "stats": {
@@ -38776,17 +38768,10 @@
             "air-jet-3",
             "air-jet-4",
             "air-jet-5",
-            "air-jet-6"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "corrugatedBoard",
-          "color": "#b18a5d",
-          "parts": [
+            "air-jet-6",
             "exhaust-stack"
           ],
-          "param": "corrugatedBoard"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -39184,7 +39169,7 @@
       "id": "bottle-date-coder",
       "kit": "beverage-bottling-line",
       "title": "Bottle date coder",
-      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and touchscreen display glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -39203,7 +39188,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-date-coder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-date-coder.png",
-      "sourceSha256": "315c28a6677f195f52465508612d9dcc1c88b5a354e5bae3fa8e4e0790dc6696",
+      "sourceSha256": "85cb9c13c0dd95692f06e99c560233f14fd09b6bca55bb91c4947440d9ae5cda",
       "triangleBudget": 2200,
       "params": [
         {
@@ -39232,18 +39217,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "displayGlass": "#8fdbe4"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "displayGlass": "#5aa9b5"
         }
       },
       "stats": {
@@ -39271,13 +39264,20 @@
           "color": "#aebdc1",
           "parts": [
             "pedestal",
-            "screen",
             "print-arm",
             "print-head",
             "photoeye",
             "cable-cover"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "screen"
+          ],
+          "param": "displayGlass"
         },
         {
           "name": "foodPolymer",
@@ -39799,7 +39799,7 @@
       "id": "cap-delivery-chute",
       "kit": "beverage-bottling-line",
       "title": "Closure delivery chute",
-      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the clear polycarbonate side slot.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -39818,7 +39818,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-delivery-chute.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-delivery-chute.png",
-      "sourceSha256": "a5bec8cc1455b21935d93001c1bf5d8116613fed1b64f02880da23e3ad2363fc",
+      "sourceSha256": "6b9408c083e8269c9beb493bd866d3279c8dc8a1ecad0850d68f7d1aec3d1581",
       "triangleBudget": 2200,
       "params": [
         {
@@ -39841,20 +39841,28 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "type": "color",
+          "default": "#8fd0e6",
+          "label": "Clear polycarbonate side slot"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "clearPolycarbonate": "#a6dcec"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "clearPolycarbonate": "#9cc3c9"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 132,
         "sizeM": [
           0.9425,
           0.4,
@@ -39869,13 +39877,22 @@
           "color": "#aebdc1",
           "parts": [
             "chute-floor",
-            "side-left",
+            "side-left-kick-strip",
+            "side-left-top-strip",
             "side-right",
             "cover",
             "inlet-funnel",
             "handoff-nose"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "color": "#8fd0e6",
+          "parts": [
+            "side-slot-window"
+          ],
+          "param": "clearPolycarbonate"
         },
         {
           "name": "powderCoat",
@@ -40660,7 +40677,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-roller-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-roller-conveyor.png",
-      "sourceSha256": "7b1f1acbb2e1be4b6764cf0de43bcd8584d0f3456505963371822d0e654e2694",
+      "sourceSha256": "51b9c38cb3c9a1c4b1fafbe233df1ded148900cfd17bafbfb91c064153a83229",
       "triangleBudget": 2200,
       "params": [
         {
@@ -40704,11 +40721,11 @@
         }
       },
       "stats": {
-        "triangles": 704,
+        "triangles": 752,
         "sizeM": [
-          1.96,
+          1.68,
           0.495,
-          0.585
+          0.59
         ],
         "minUpM": 0,
         "materials": 1
@@ -40723,7 +40740,15 @@
             "leg-0",
             "leg-1",
             "leg-2",
-            "leg-3"
+            "leg-3",
+            "leg-4",
+            "leg-5",
+            "leg-6",
+            "leg-7",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3"
           ],
           "param": "powderCoat"
         },
@@ -40743,11 +40768,7 @@
             "roller-9",
             "roller-10",
             "roller-11",
-            "roller-12",
-            "crossbar-0",
-            "crossbar-1",
-            "crossbar-2",
-            "crossbar-3"
+            "roller-12"
           ],
           "param": "stainlessSteel"
         },
@@ -40996,7 +41017,7 @@
       "id": "case-labeler",
       "kit": "beverage-bottling-line",
       "title": "Case label applicator",
-      "description": "Print-and-apply head places a shipping label on the face of a moving carton. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Print-and-apply head places a shipping label on the face of a moving carton. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -41015,7 +41036,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-labeler.png",
-      "sourceSha256": "efed32801ab781a9595dfb13ddf4e5740f99ec70bc4b5fe65d63acbac7b9c400",
+      "sourceSha256": "9ed84bd623a51cf25c90530042c1b17726f8a4ad0b46d34b727287e6e3a59802",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41044,18 +41065,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -41091,10 +41120,17 @@
           "param": "stainlessSteel"
         },
         {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "label-roll"
+          ],
+          "param": "labelStock"
+        },
+        {
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "label-roll",
             "apply-pad"
           ],
           "param": "foodPolymer"
@@ -41684,7 +41720,7 @@
       "id": "empty-bottle-divider-tray",
       "kit": "beverage-bottling-line",
       "title": "Empty bottle divider tray",
-      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale and color controls for the food-grade polymer tray shell and the divider insert polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -41703,7 +41739,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/empty-bottle-divider-tray.kcad.ts",
       "preview": "/assets/beverage-bottling-line-empty-bottle-divider-tray.png",
-      "sourceSha256": "cf47600ce0636aa575ff999ec12de84e678ffd14c9ddbd1a42539baeb70afc7b",
+      "sourceSha256": "58788f682b1d42f9a8fc13f737de3890d9f2f5ae61c1c23c7d3a96880dbe4bc7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41716,34 +41752,26 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#aebdc1",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#397e91",
-          "label": "Powder-coated steel"
-        },
-        {
           "name": "foodPolymer",
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "dividerPolymer",
+          "type": "color",
+          "default": "#e6e1d3",
+          "label": "Divider insert polymer"
         }
       ],
       "presets": {
         "sanitaryLine": {
-          "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "dividerPolymer": "#f1ede2"
         },
         "legacyPlant": {
-          "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "dividerPolymer": "#b9b2a0"
         }
       },
       "stats": {
@@ -41762,6 +41790,21 @@
           "color": "#3999a1",
           "parts": [
             "tray-floor",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "foodPolymer"
+        },
+        {
+          "name": "dividerPolymer",
+          "color": "#e6e1d3",
+          "parts": [
             "divider-x-0",
             "divider-x-1",
             "divider-x-2",
@@ -41770,29 +41813,7 @@
             "divider-y-1",
             "divider-y-2"
           ],
-          "param": "foodPolymer"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
-          "parts": [
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#397e91",
-          "parts": [
-            "foot-0",
-            "foot-1",
-            "foot-2",
-            "foot-3"
-          ],
-          "param": "powderCoat"
+          "param": "dividerPolymer"
         }
       ]
     },
@@ -43117,7 +43138,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rotary-capper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rotary-capper.png",
-      "sourceSha256": "ba228c2ac4bd8310709aa82f657904f7a4e2cefd329b0e05757240c775709886",
+      "sourceSha256": "12db81dd947e9e6474f633048193b27615ddc5becff99a31744b3db0452c52f9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -43189,15 +43210,7 @@
           "color": "#3999a1",
           "parts": [
             "bottle-table",
-            "cap-feed-hood",
-            "capper-head-0",
-            "capper-head-1",
-            "capper-head-2",
-            "capper-head-3",
-            "capper-head-4",
-            "capper-head-5",
-            "capper-head-6",
-            "capper-head-7"
+            "cap-feed-hood"
           ],
           "param": "foodPolymer"
         },
@@ -43208,7 +43221,15 @@
             "turret-column",
             "top-plate",
             "infeed-deck",
-            "outfeed-deck"
+            "outfeed-deck",
+            "capper-head-0",
+            "capper-head-1",
+            "capper-head-2",
+            "capper-head-3",
+            "capper-head-4",
+            "capper-head-5",
+            "capper-head-6",
+            "capper-head-7"
           ],
           "param": "stainlessSteel"
         }
@@ -43938,7 +43959,7 @@
       "id": "sleeve-shrink-tunnel",
       "kit": "beverage-bottling-line",
       "title": "Bottle sleeve shrink tunnel",
-      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale and color controls for stainless steel, powder-coated steel, the printed shrink sleeve and the PET bottle.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -43957,7 +43978,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sleeve-shrink-tunnel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sleeve-shrink-tunnel.png",
-      "sourceSha256": "d2a134a7d81f93492ac7511f8e2d6f3cd1b107aa2b9158a32731e5e6f2cbc0c3",
+      "sourceSha256": "8b01662827c61972cc1bc6bfcba9c3c33320e13f061d0fd95b4a20b899743f57",
       "triangleBudget": 2200,
       "params": [
         {
@@ -43980,24 +44001,40 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "sleeveFilm",
+          "type": "color",
+          "default": "#c8423a",
+          "label": "Printed shrink sleeve"
+        },
+        {
+          "name": "petBottle",
+          "type": "color",
+          "default": "#a9d3cf",
+          "label": "PET bottle"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "sleeveFilm": "#2f6fb3",
+          "petBottle": "#c4e3df"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "sleeveFilm": "#d9a13a",
+          "petBottle": "#93b8a9"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 564,
         "sizeM": [
           1.45,
-          1.02,
-          0.6
+          0.935,
+          0.65
         ],
         "minUpM": 0,
         "materials": 1
@@ -44010,8 +44047,8 @@
             "conveyor-bed",
             "tunnel-shell",
             "roof",
-            "opening-front",
-            "opening-back",
+            "opening-collar-infeed",
+            "opening-collar-outfeed",
             "vent-0",
             "vent-1",
             "vent-2"
@@ -44029,6 +44066,26 @@
             "temperature-panel"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "sleeveFilm",
+          "color": "#c8423a",
+          "parts": [
+            "bottle-infeed-sleeve",
+            "bottle-in-tunnel-sleeve",
+            "bottle-outfeed-sleeve"
+          ],
+          "param": "sleeveFilm"
+        },
+        {
+          "name": "petBottle",
+          "color": "#a9d3cf",
+          "parts": [
+            "bottle-infeed-neck",
+            "bottle-in-tunnel-neck",
+            "bottle-outfeed-neck"
+          ],
+          "param": "petBottle"
         }
       ]
     },
@@ -316332,7 +316389,7 @@
       "id": "fiber-dome-closure",
       "kit": "telecom-infrastructure",
       "title": "Fiber dome closure",
-      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale; moulded thermoplastic closure shell, engineering polymer and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316351,7 +316408,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-dome-closure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-dome-closure.png",
-      "sourceSha256": "4724fade4eccec9be0ea1c7fe35c5f1f10ae75d22e3b2f455ee35a5b1caa66de",
+      "sourceSha256": "7101f2ce2981b33658efa515317ead0f4a0e59accb92de45d73c5c94a1acd9f2",
       "triangleBudget": 900,
       "params": [
         {
@@ -316364,26 +316421,26 @@
           "step": 0.05
         },
         {
+          "name": "closureShell",
+          "type": "color",
+          "default": "#4f585c",
+          "label": "Closure shell (moulded thermoplastic)"
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#315267",
           "label": "Engineering polymer and cable jacket"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
         }
       ],
       "presets": {
         "fieldSite": {
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "closureShell": "#3a4245",
+          "polymer": "#263a37"
         },
         "highVisibility": {
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "closureShell": "#e0aa18",
+          "polymer": "#27363c"
         }
       },
       "stats": {
@@ -316398,19 +316455,19 @@
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "closureShell",
+          "color": "#4f585c",
           "parts": [
             "base",
-            "body"
+            "body",
+            "dome"
           ],
-          "param": "powderCoat"
+          "param": "closureShell"
         },
         {
           "name": "polymer",
           "color": "#315267",
           "parts": [
-            "dome",
             "port-a",
             "port-b",
             "port-c",
@@ -316938,7 +316995,7 @@
       "id": "fiber-splice-closure",
       "kit": "telecom-infrastructure",
       "title": "Fiber splice closure",
-      "description": "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale; moulded thermoplastic closure shell, engineering polymer and cable jacket, powder-coated steel mounting feet.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316957,7 +317014,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-splice-closure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-splice-closure.png",
-      "sourceSha256": "453cb4d6b9348bfd5c101f5468df3e9e993c24ce24ee608d2f98621a5d4a8ad3",
+      "sourceSha256": "17d1616054ecc16b3cb7e7f39ac0fa634020ef5cbd041084be1b30bb8458028c",
       "triangleBudget": 900,
       "params": [
         {
@@ -316968,6 +317025,12 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "closureShell",
+          "type": "color",
+          "default": "#4f585c",
+          "label": "Closure shell (moulded thermoplastic)"
         },
         {
           "name": "polymer",
@@ -316984,10 +317047,12 @@
       ],
       "presets": {
         "fieldSite": {
+          "closureShell": "#3a4245",
           "polymer": "#263a37",
           "powderCoat": "#52756b"
         },
         "highVisibility": {
+          "closureShell": "#e0aa18",
           "polymer": "#27363c",
           "powderCoat": "#e0aa18"
         }
@@ -317004,15 +317069,13 @@
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "closureShell",
+          "color": "#4f585c",
           "parts": [
             "shell",
-            "lid",
-            "mount-foot-left",
-            "mount-foot-right"
+            "lid"
           ],
-          "param": "powderCoat"
+          "param": "closureShell"
         },
         {
           "name": "polymer",
@@ -317022,6 +317085,15 @@
             "port-right"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "mount-foot-left",
+            "mount-foot-right"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
