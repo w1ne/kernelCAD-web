@@ -404,6 +404,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
   },
+  'feature.extrude.taper-failed': {
+    hintTemplate:
+      'Reduce taperDeg or depth. An inward taper must not close the profile before the far end: depth × tan(taperDeg) must stay below the smallest half-width of the profile.',
+    nextAction: { kind: 'fix-arg', field: 'taperDeg' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A tapered sketch extrude did not produce one valid frustum-like solid; the profile closed or OCCT could not draft the side faces.',
+  },
   'feature.draft.unchanged': {
     hintTemplate:
       'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',

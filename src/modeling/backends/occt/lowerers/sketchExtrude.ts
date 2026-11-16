@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
+import { assertTaperable, resolveExtrudeTaperDeg, taperExtrudedPrism } from '../../../../kernel/backends/occt/backendExtrudeTaper';
 import { TANGENCY_ERROR_PREFIX } from '../../../../kernel/backends/occt/tangencySolver';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../../shared/diagnostics/registry';
@@ -283,7 +284,12 @@ function extrudeSketchProfile(
     return undefined;
   }
   try {
-    return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
+    // A param-driven taper that resolves to 0 keeps the straight path.
+    const taperDeg = resolveExtrudeTaperDeg(r.params.taperDeg?.evaluated, 'Sketch.extrude');
+    if (taperDeg === 0) return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
+    assertTaperable(taperDeg, twistAngle, sketchInput.getSketchCommands() !== null);
+    const straight = OcctBackend.extrudeFromSketch(sketchInput, depth);
+    return new OcctBackend(taperExtrudedPrism(straight, depth, taperDeg));
   } catch (e) {
     return pushExtrudeFailure(ctx, r, e);
   }
