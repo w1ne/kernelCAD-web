@@ -104,7 +104,7 @@ import {
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
-  assertScalarEdgeValue,
+  assertScalarEdgeValue, assertFilletEndRadius,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 import { assertFinishOptions } from './finishOptions';
@@ -870,17 +870,19 @@ export class Shape {
   }
 
   // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).
+  // `endRadius` tapers the round from `radius` at each edge's low end to
+  // `endRadius` at its high end.
   fillet(
     radius: Editable<number>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape;
   // Variable-radius form (rc.11).
   fillet(groups: Array<{ edges: EdgeSelector; radius: Editable<number> }>): Shape;
   fillet(
     radiusOrGroups: Editable<number> | Array<{ edges: EdgeSelector; radius: Editable<number> }>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
       assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
@@ -900,7 +902,8 @@ export class Shape {
         }
         continuity = opts.continuity;
       }
-      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity });
+      assertFilletEndRadius(opts?.endRadius, this.id);
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity, endRadius: opts?.endRadius });
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }

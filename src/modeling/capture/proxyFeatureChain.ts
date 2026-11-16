@@ -97,6 +97,25 @@ export function assertScalarEdgeValue(
   });
 }
 
+/**
+ * Capture-time guard for the tapered-fillet `endRadius` option. `undefined`
+ * keeps a constant radius; a `ParamRef` is left to the lowerer.
+ */
+export function assertFilletEndRadius(endRadius: unknown, featureId: FeatureId): void {
+  if (endRadius === undefined || isParamRef(endRadius)) return;
+  if (typeof endRadius === 'number' && Number.isFinite(endRadius) && endRadius > 0) return;
+  invalidArgs({
+    api: 'fillet(radius, edges, { endRadius })',
+    path: 'opts.endRadius',
+    got: endRadius,
+    showType: typeof endRadius !== 'number',
+    unit: 'mm',
+    requires: "a finite number > 0 — the round's radius at each edge's high end; `radius` is at the low end",
+    example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+    featureId,
+  });
+}
+
 const GRID_EXAMPLE =
   'hole.patternGrid({ x: { count: 4, direction: [1, 0, 0], spacing: 20 }, y: { count: 3, direction: [0, 1, 0], spacing: 15 } })';
 
