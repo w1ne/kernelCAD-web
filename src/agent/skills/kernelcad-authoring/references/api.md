@@ -562,8 +562,13 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; taperDeg?: Editable<number>; symmetric?: boolean }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
-// Profile coords are (radial-X, axial-Z); all x >= 0.
-.revolve(opts?: { angleDeg?: Editable<number> }): Shape
+// Profile coords are (radial-X, axial-Z); all x >= 0. A partial revolve
+// starts on the sketch plane (y = 0) and turns toward +Y. symmetric: true
+// spans angleDeg/2 to each side of the sketch plane (a mid-plane revolve);
+// angleDeg stays the total angle, and a full 360 revolve is unchanged.
+// Example: 90 degree pipe elbow with its end faces at +/-45 degrees
+//   path().circle(30, 0, 8).revolve({ angleDeg: 90, symmetric: true })
+.revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: Record<string, CanonicalFace | FaceQuery>; symmetric?: boolean }): Shape
 
 // Sweep this profile along a 3D rail.
 // spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;

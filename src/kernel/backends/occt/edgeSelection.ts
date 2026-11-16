@@ -718,6 +718,17 @@ export function pickFace(
   return result;
 }
 
+/** Resolve the face named by another input slot (cutout `upToFace`) with the
+ *  same rules as `face`. It does not report a selection binding. */
+export function pickFaceFromInput(
+  record: FeatureRecord,
+  slot: string,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face | { error: CompilerDiagnostic } {
+  return resolveFace({ ...record, inputs: { ...record.inputs, face: record.inputs[slot] } }, base, records);
+}
+
 /**
  * Every face a FaceRef names. A FaceQuery is a set selector — `{ byNormal: 'X' }`
  * is every +X-facing face — so a face edit can move all of them instead of
