@@ -39793,7 +39793,7 @@
       "id": "cap-delivery-chute",
       "kit": "beverage-bottling-line",
       "title": "Closure delivery chute",
-      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the clear polycarbonate side slot.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -39812,7 +39812,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-delivery-chute.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-delivery-chute.png",
-      "sourceSha256": "a5bec8cc1455b21935d93001c1bf5d8116613fed1b64f02880da23e3ad2363fc",
+      "sourceSha256": "6b9408c083e8269c9beb493bd866d3279c8dc8a1ecad0850d68f7d1aec3d1581",
       "triangleBudget": 2200,
       "params": [
         {
@@ -39835,20 +39835,28 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "type": "color",
+          "default": "#8fd0e6",
+          "label": "Clear polycarbonate side slot"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "clearPolycarbonate": "#a6dcec"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "clearPolycarbonate": "#9cc3c9"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 132,
         "sizeM": [
           0.9425,
           0.4,
@@ -39863,13 +39871,22 @@
           "color": "#aebdc1",
           "parts": [
             "chute-floor",
-            "side-left",
+            "side-left-kick-strip",
+            "side-left-top-strip",
             "side-right",
             "cover",
             "inlet-funnel",
             "handoff-nose"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "color": "#8fd0e6",
+          "parts": [
+            "side-slot-window"
+          ],
+          "param": "clearPolycarbonate"
         },
         {
           "name": "powderCoat",
