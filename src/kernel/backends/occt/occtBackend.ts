@@ -38,6 +38,7 @@ import {
   extrudePolygonShape,
   extrudeRoundedRectShape,
 } from './backendExtrudeProfiles';
+import { resolveExtrudeTaperDeg, taperExtrudedPrism } from './backendExtrudeTaper';
 
 export { initOcct, occtHeapBytes, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
@@ -345,7 +346,7 @@ export class OcctBackend implements ShapeBackend {
   static extrudeFromSketch(
     sketch: OcctBackend,
     depth: number,
-    opts: { twistAngle?: number } = {},
+    opts: { twistAngle?: number; taperDeg?: number } = {},
   ): OcctBackend {
     if (
       sketch.kind !== 'sketch'
@@ -357,6 +358,19 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
     }
     const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudeFromSketch');
+    const taper = resolveExtrudeTaperDeg(opts.taperDeg, 'extrudeFromSketch');
+    if (taper !== 0 && (angle !== 0 || sketch._faceBoundSketch)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'extrudeFromSketch: taperDeg cannot be combined with twistAngle or a face-bound sketch.',
+        undefined,
+        'Use either taperDeg or twistAngle on a path()...close() sketch, not both. For a face-bound sketch, extrude straight and call .draft() on the side faces.',
+      );
+    }
+    if (taper !== 0) {
+      const straight = OcctBackend.extrudeFromSketch(sketch, depth);
+      return new OcctBackend(taperExtrudedPrism(straight, depth, taper));
+    }
     if (sketch._faceBoundSketch) {
       if (angle !== 0) {
         throw new KernelError(

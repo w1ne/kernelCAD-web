@@ -283,7 +283,8 @@ function extrudeSketchProfile(
     return undefined;
   }
   try {
-    return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
+    const taperDeg = r.params.taperDeg?.evaluated;
+    return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle, taperDeg });
   } catch (e) {
     return pushExtrudeFailure(ctx, r, e);
   }
