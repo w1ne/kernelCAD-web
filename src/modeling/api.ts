@@ -243,7 +243,8 @@ export interface KernelCadApi {
    * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
    * rules, and no ports. `bendRadius` is the centreline radius and must
    * exceed `radius`; every straight between corners must be long enough
-   * for the bends (same centreline geometry as `tube()` paths).
+   * for the bends (same centreline geometry as `tube()` paths). A
+   * non-object `opts` or an unknown option key throws `feature.invalid-args`.
    */
   pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
   /**
