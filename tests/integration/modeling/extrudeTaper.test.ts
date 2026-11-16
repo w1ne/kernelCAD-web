@@ -97,6 +97,28 @@ describe('Sketch.extrude taperDeg', () => {
       .toContain('feature.extrude.taper-failed');
   }, 120_000);
 
+  it('names the spline side faces OCCT cannot draft instead of a raw wasm pointer', async () => {
+    // A spline or Bézier segment extrudes to an EXTRUSION_SURFACE side face;
+    // BRepOffsetAPI_DraftAngle throws a bare pointer on it at any angle.
+    for (const profile of [
+      'path().moveTo(-10, 0).smoothSpline(0, 8).smoothSpline(10, 0).lineTo(-10, 0).close()',
+      'path().moveTo(-10, 0).quadraticTo([0, 10], [10, 0]).lineTo(-10, 0).close()',
+    ]) {
+      for (const taperDeg of [0.5, 3, -3]) {
+        const model = await build(`return ${profile}.extrude(5, { taperDeg: ${taperDeg} });`);
+        const [err] = errors(model);
+        expect(err?.code, `${profile} ${taperDeg}`).toBe('feature.extrude.taper-failed');
+        expect(err.message).toContain('side face(s) of type EXTRUSION_SURFACE');
+        expect(err.message).not.toMatch(/taper failed: \d+$/);
+        expect(err.hint).toContain('lines and arcs');
+        expect(err.hint).not.toContain('Reduce taperDeg');
+      }
+    }
+    // An arc side is a cylinder and still tapers.
+    const arc = await build('return path().moveTo(-10, 0).sagittaArc(10, 0, 4).lineTo(-10, 0).close().extrude(5, { taperDeg: 3 });');
+    expect(errors(arc), JSON.stringify(arc.diagnostics)).toEqual([]);
+  }, 120_000);
+
   it('rejects an out-of-range taper and taper combined with twist', async () => {
     for (const code of [
       `return ${SQUARE}.extrude(10, { taperDeg: 90 });`,
