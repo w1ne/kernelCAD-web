@@ -82,6 +82,7 @@ export type { FaceSelector };
  */
 import {
   validateMaterialBaseColor,
+  assertMaterialOptionKeys,
   resolveMaterialFaceLabel,
   cleanMaterialScalars,
   cleanMaterialAttenuation,
@@ -462,7 +463,9 @@ export class Shape {
    * Clamped numeric fields emit `feature.material.value-clamped`. Negative
    * `thickness` throws `feature.material.thickness-negative`. Texture path
    * problems surface as `feature.material.texture-not-found` /
-   * `texture-unsupported-format` / `texture-oversize-error`.
+   * `texture-unsupported-format` / `texture-oversize-error`. An unknown
+   * `opts` key (`metalnes`, `colour`, `textureProjection`) throws
+   * `feature.invalid-args`.
    *
    * Per-face form: passing `face: '<label>'` applies the material to faces
    * matching that label only. The label must resolve against an upstream
@@ -477,6 +480,7 @@ export class Shape {
    */
   material(opts: PBRMaterial & { face?: string }): Shape {
     validateMaterialBaseColor(opts, this.id);
+    assertMaterialOptionKeys(opts, this.id);
     const faceLabel = resolveMaterialFaceLabel(opts, this.id);
     const state = cleanMaterialScalars(opts, this.id);
 
