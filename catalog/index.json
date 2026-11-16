@@ -43953,7 +43953,7 @@
       "id": "sleeve-shrink-tunnel",
       "kit": "beverage-bottling-line",
       "title": "Bottle sleeve shrink tunnel",
-      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale and color controls for stainless steel, powder-coated steel, the printed shrink sleeve and the PET bottle.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -43972,7 +43972,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sleeve-shrink-tunnel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sleeve-shrink-tunnel.png",
-      "sourceSha256": "d2a134a7d81f93492ac7511f8e2d6f3cd1b107aa2b9158a32731e5e6f2cbc0c3",
+      "sourceSha256": "8b01662827c61972cc1bc6bfcba9c3c33320e13f061d0fd95b4a20b899743f57",
       "triangleBudget": 2200,
       "params": [
         {
@@ -43995,24 +43995,40 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "sleeveFilm",
+          "type": "color",
+          "default": "#c8423a",
+          "label": "Printed shrink sleeve"
+        },
+        {
+          "name": "petBottle",
+          "type": "color",
+          "default": "#a9d3cf",
+          "label": "PET bottle"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "sleeveFilm": "#2f6fb3",
+          "petBottle": "#c4e3df"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "sleeveFilm": "#d9a13a",
+          "petBottle": "#93b8a9"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 564,
         "sizeM": [
           1.45,
-          1.02,
-          0.6
+          0.935,
+          0.65
         ],
         "minUpM": 0,
         "materials": 1
@@ -44025,8 +44041,8 @@
             "conveyor-bed",
             "tunnel-shell",
             "roof",
-            "opening-front",
-            "opening-back",
+            "opening-collar-infeed",
+            "opening-collar-outfeed",
             "vent-0",
             "vent-1",
             "vent-2"
@@ -44044,6 +44060,26 @@
             "temperature-panel"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "sleeveFilm",
+          "color": "#c8423a",
+          "parts": [
+            "bottle-infeed-sleeve",
+            "bottle-in-tunnel-sleeve",
+            "bottle-outfeed-sleeve"
+          ],
+          "param": "sleeveFilm"
+        },
+        {
+          "name": "petBottle",
+          "color": "#a9d3cf",
+          "parts": [
+            "bottle-infeed-neck",
+            "bottle-in-tunnel-neck",
+            "bottle-outfeed-neck"
+          ],
+          "param": "petBottle"
         }
       ]
     },
