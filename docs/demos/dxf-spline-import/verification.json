@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-11-16T23:49:04.356Z",
+  "source": "examples/interoperability/dxf-spline/spline-profile.kcad.ts",
+  "inputDxf": "examples/interoperability/dxf-spline/spline-profile.dxf",
+  "sourceSha256": {
+    "model": "6dcaeb33952f7dbf469373e81af98ea7a93f8b3b83ac28057e515a72e0a4a671",
+    "dxf": "2ca830ed9b18dbdea4d10373a8438e20e24fe705a006c15f8152f4a9bbeee7b0"
+  },
+  "invocation": "timeout 180s npx tsx docs/demos/dxf-spline-import/capture.mts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "importedNurbs": {
+    "degree": 2,
+    "knots": [
+      0,
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "weights": [
+      1,
+      0.7071067811865476,
+      1
+    ]
+  },
+  "topologicallyValid": true,
+  "volumeMm3": 235.61944901850396,
+  "expectedQuarterCylinderVolumeMm3": 235.61944901923448,
+  "boundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      10,
+      10,
+      3
+    ]
+  },
+  "meshedFeatureCount": 1,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoSettings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 12,
+    "codec": "H.264",
+    "crf": 22
+  },
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployed behavior, or hardware acceptance test.",
+  "video": {
+    "path": "demo.mp4",
+    "sha256": "a8a7ab3ca17d2c8bb12d11abe715716f689ca917a266be77d291a172054061ff",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "12/1"
+        }
+      ],
+      "format": {
+        "duration": "8.083333",
+        "size": "111097"
+      }
+    }
+  },
+  "inspectedFrames": [
+    "review-frame-source.png",
+    "review-frame-result.png"
+  ]
+}

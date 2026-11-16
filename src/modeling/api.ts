@@ -118,9 +118,11 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE. SPLINE/ELLIPSE/INSERT are
-   * refused with a diagnostic naming the entity and line number rather than
-   * dropped. `$INSUNITS` sets the scale; absent or Unitless means mm.
+   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE and clamped continuous planar SPLINE
+   * entities with control points and knots. Spline control points, knots and
+   * rational weights are preserved as NURBS geometry; periodic, fit-point-only,
+   * discontinuous and nonplanar splines, plus ELLIPSE/INSERT, are refused with
+   * an entity and line diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**
