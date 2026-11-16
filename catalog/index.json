@@ -142452,7 +142452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/compressed-air-receiver.kcad.ts",
       "preview": "/assets/industrial-plant-compressed-air-receiver.png",
-      "sourceSha256": "078566a98ef6db9eeec5c6c67723cda8bf0f702e3c9ab6b424da8bc1a6128e42",
+      "sourceSha256": "8f85f99112f842886794bf26499d3f16b9130628f04e22970cc91e8947a5759c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -142494,7 +142494,7 @@
         }
       },
       "stats": {
-        "triangles": 556,
+        "triangles": 644,
         "sizeM": [
           0.884,
           0.5735,
@@ -142518,7 +142518,9 @@
             "top-port-1",
             "port-flange-1",
             "top-port-2",
-            "port-flange-2"
+            "port-flange-2",
+            "gauge-stem",
+            "pressure-gauge"
           ],
           "param": "steel"
         },
@@ -142538,7 +142540,7 @@
           "name": "gaugeGlass",
           "color": "#91c6c8",
           "parts": [
-            "pressure-gauge"
+            "pressure-gauge-lens"
           ],
           "param": "gaugeGlass"
         }
