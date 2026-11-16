@@ -970,13 +970,29 @@ export class Shape {
   /**
    * Hollow the solid to a wall of `thickness`, opening `opts.face`. Pass an
    * array to open several faces at once: `{ face: ['top', 'bottom'] }` leaves
-   * a sleeve open at both ends.
+   * a sleeve open at both ends. Any key other than `face` (`faces`,
+   * `enabled`, `direction`) throws `feature.invalid-args`.
    */
   shell(
     thickness: Editable<number>,
     opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
   ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
+    const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
+      ? Object.keys(opts).find((key) => key !== 'face')
+      : undefined;
+    if (unknownKey !== undefined) {
+      // A dropped `faces: ['bottom']` left the bottom closed, and a dropped
+      // `enabled: false` still hollowed the solid.
+      invalidArgs({
+        api: 'shell(thickness, { face })',
+        path: `opts.${unknownKey}`,
+        got: (opts as Record<string, unknown>)[unknownKey],
+        requires: "a known option key; shell accepts only face — pass an array to open several faces: { face: ['top', 'bottom'] }",
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+        featureId: this.id,
+      });
+    }
     const face = (opts as { face?: unknown } | undefined | null)?.face;
     const list = Array.isArray(face) ? [...face] : [face];
     if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
