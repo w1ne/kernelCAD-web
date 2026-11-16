@@ -840,17 +840,19 @@ export class Shape {
   }
 
   // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).
+  // `endRadius` tapers the round from `radius` at each edge's low end to
+  // `endRadius` at its high end.
   fillet(
     radius: Editable<number>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape;
   // Variable-radius form (rc.11).
   fillet(groups: Array<{ edges: EdgeSelector; radius: Editable<number> }>): Shape;
   fillet(
     radiusOrGroups: Editable<number> | Array<{ edges: EdgeSelector; radius: Editable<number> }>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
       assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
@@ -870,7 +872,21 @@ export class Shape {
         }
         continuity = opts.continuity;
       }
-      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity });
+      const endRadius = opts?.endRadius;
+      if (endRadius !== undefined && !isParamRef(endRadius)
+        && !(typeof endRadius === 'number' && Number.isFinite(endRadius) && endRadius > 0)) {
+        invalidArgs({
+          api: 'fillet(radius, edges, { endRadius })',
+          path: 'opts.endRadius',
+          got: endRadius,
+          showType: typeof endRadius !== 'number',
+          unit: 'mm',
+          requires: "a finite number > 0 — the round's radius at each edge's high end; `radius` is at the low end",
+          example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+          featureId: this.id,
+        });
+      }
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity, endRadius });
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
