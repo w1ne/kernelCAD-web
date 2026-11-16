@@ -119,13 +119,13 @@ for (let i = 0; i < 6; i++) {
 for (const [k, x] of [['a', -540], ['b', 0], ['c', 540]]) add(`price-tag-${k}`, blk(0, 0, 0, 90, 4, 50).rotateX(-30).translate(x, -385, DECK + 12).color('#f4f1ea'));
 
 // Two stepped tiers of loaves behind the trays.
-const loaf = turned([[0, 0], [60, 0], [62, 25], [48, 55], [0, 68]]).scale([1.7, 1, 1]);
+const loaf = () => turned([[0, 0], [60, 0], [62, 25], [48, 55], [0, 68]]).scale([1.7, 1, 1]);
 const crusts = ['#b07a3c', '#8a5a2c', '#c9944c'];
 [[DECK + 150, 0], [DECK + 300, 150]].forEach(([z, y], ti) => {
   add(`tier-${ti}`, blk(0, y, z - 14, L - 60, 150, 14).color(stainless));
   add(`tier-lip-${ti}`, blk(0, y - 78, z - 14, L - 60, 6, 40).color(stainless));
   for (const [k, x] of [['l', -L / 2 + 60], ['r', L / 2 - 60]]) add(`tier-leg-${ti}-${k}`, blk(x, y, DECK, 20, 20, z - DECK - 14).color(stainless));
-  for (let i = 0; i < 6; i++) add(`loaf-${ti}-${i}`, loaf.translate(-600 + i * 240, y, z).color(crusts[(i + ti) % 3]));
+  for (let i = 0; i < 6; i++) add(`loaf-${ti}-${i}`, loaf().translate(-600 + i * 240, y, z).color(crusts[(i + ti) % 3]));
 });
 
 // Baguette basket on the top shelf.

@@ -18272,7 +18272,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/junior-coaster-track-section.kcad.ts",
       "preview": "/assets/amusement-park-junior-coaster-track-section.png",
-      "sourceSha256": "dead555c004de54a1e4c20f718a304cacb8cb73e142d3e6b668d42c4b983ab8e",
+      "sourceSha256": "3794d26099ec0161ff9ad3ea34ff3f386234be61e218a6b0052cefb41cb0643d",
       "triangleBudget": 4200,
       "params": [
         {
@@ -20654,7 +20654,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-observation-wheel.kcad.ts",
       "preview": "/assets/amusement-park-park-observation-wheel.png",
-      "sourceSha256": "906ddfbb67c799ad5f7203b00d00407bba0d1bf5e196c1d5fabdd6def8e51434",
+      "sourceSha256": "41c19b393777f81c135b15f46861cb8d4c335bd17bfac5f75a734ce33978a2a0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -23196,7 +23196,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/refillable-cup-rack.kcad.ts",
       "preview": "/assets/amusement-park-refillable-cup-rack.png",
-      "sourceSha256": "523ddd6c7c0913f5408fd06f1fade87a7d893339690daa9b481528f4ac0cc0f2",
+      "sourceSha256": "7fa3dbe8f278f4857ea6a1676d04369ec0fe2dc199cd31888f959fe543ecaa21",
       "triangleBudget": 9000,
       "params": [
         {
@@ -24436,7 +24436,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ring-toss-game-counter.kcad.ts",
       "preview": "/assets/amusement-park-ring-toss-game-counter.png",
-      "sourceSha256": "04ba37f422bfad043bf5409846ede5a05e34a890d8f23fd949e93745da8c181a",
+      "sourceSha256": "8b04e8b97b8a3fb24235e305eeef0cc28ab83be0949f3a93cd51037d128a30e7",
       "triangleBudget": 11000,
       "params": [
         {
@@ -25316,7 +25316,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/stroller-parking-rack.kcad.ts",
       "preview": "/assets/amusement-park-stroller-parking-rack.png",
-      "sourceSha256": "f1c8051252ab050a966b6651a9fed1b8e111d071a886e01ee4cf4b33b2d9243b",
+      "sourceSha256": "52027f152297c08faa1e473b7d4927a61ea4c23f39ad650a7f34bf35cfdea2dc",
       "triangleBudget": 5000,
       "params": [
         {
@@ -28835,7 +28835,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-frame.kcad.ts",
       "preview": "/assets/apiary-hive-frame.png",
-      "sourceSha256": "8541d9327505cfd0b3581b731cb20a9334e63436dec19b139505c21fe29443fc",
+      "sourceSha256": "58cc23c55122753c088d9f285f6e2e5998ebf5e74867a12eef33c44b3b8819d9",
       "triangleBudget": 2600,
       "params": [
         {
@@ -121711,7 +121711,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-overhead-line-gantry.kcad.ts",
       "preview": "/assets/grid-substation-substation-overhead-line-gantry.png",
-      "sourceSha256": "b7adb5e9eca57d3436d24bee567f89a3f7f9a8ef346dbecfec7a2277e06f83d3",
+      "sourceSha256": "2be01e215115590de0aa39511ccfaab8c6a7bad9321e831eb10636a9a150a406",
       "triangleBudget": 9000,
       "params": [
         {
@@ -129995,7 +129995,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-circulation-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-circulation-fan.png",
-      "sourceSha256": "f343d78a445ca6277c8bb0fae3686bc6bd9935718ad35c3bbd420de824ca048b",
+      "sourceSha256": "ff3480e4878887b45d0e1a77d71d674900aa246bc4b4f6dc6165f88ece911b88",
       "triangleBudget": 3000,
       "params": [
         {
@@ -130473,7 +130473,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-exhaust-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-exhaust-fan.png",
-      "sourceSha256": "a9455586a672e32dcbcb62f07cf81c1bbe9c537333d313b7aa3ae698fe1d43ed",
+      "sourceSha256": "5724d8b542ebe50111fed79664b6c46c5085247af9c43baab84f0c09b27ceb53",
       "triangleBudget": 3000,
       "params": [
         {
@@ -228052,7 +228052,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/electric-locomotive.kcad.ts",
       "preview": "/assets/railway-electric-locomotive.png",
-      "sourceSha256": "a2bfcdbb5ff2e5e84f8c6fd62f44378f228c46d7610a26528e5bc1bbe2643b8d",
+      "sourceSha256": "a6b34aa6410408fd2a38dd5b0cfb2ee92a27771f43493009f8b9481a66ef7f25",
       "triangleBudget": 10000,
       "params": [
         {
@@ -237753,7 +237753,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/bottle-cleaning-line.kcad.ts",
       "preview": "/assets/recycling-facility-bottle-cleaning-line.png",
-      "sourceSha256": "60a220919969b881e84a0808813d91697e49ed1dd55ca42dee336ae322154646",
+      "sourceSha256": "942d4895c1ce3d1d59a417abd4aebd525713c55afc3a1c25d6c0f8ce8ce85f32",
       "triangleBudget": 4500,
       "params": [
         {
@@ -265951,7 +265951,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/site-boundary-gate.kcad.ts",
       "preview": "/assets/recycling-facility-site-boundary-gate.png",
-      "sourceSha256": "094fa4319541d5abc648910b45e93d99bc95a0411ed2c35066e8968579e637f3",
+      "sourceSha256": "9c4bf12a4a74eb0cef34c0ac0a8f2d6618a217d797f78712182b225377a0da58",
       "triangleBudget": 4500,
       "params": [
         {
@@ -273641,7 +273641,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bakery-display-case.kcad.ts",
       "preview": "/assets/retail-store-bakery-display-case.png",
-      "sourceSha256": "e5fcb9330d3b2cbf197f91c7b76eff3bfdf5c7f25f55e45bdb6ece7feafff5b6",
+      "sourceSha256": "6d1453820c8f62bf66c027b686ec26b61c02c303acff5490cd1c6f70937e75a2",
       "triangleBudget": 4200,
       "params": [
         {
@@ -274915,7 +274915,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
       "preview": "/assets/retail-store-checkout-bagging-stand.png",
-      "sourceSha256": "8dc37230168e7088e4df94f7fbab336873e6661a1a33117b0ee753892d89e06a",
+      "sourceSha256": "04eeab665739115a416d93039f1981eef81f92000e4e255e2aa83a9282799ad3",
       "triangleBudget": 2600,
       "params": [
         {
@@ -279662,7 +279662,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-crate-stack.kcad.ts",
       "preview": "/assets/retail-store-produce-crate-stack.png",
-      "sourceSha256": "9dfdd2861a7ced731fb2bad5696414372a67266ab0cc2e3fe125ca3b887c5590",
+      "sourceSha256": "1c3677980af0b543486a5a71f61bfce9be2ac2ea04c837ccf25da2258290f8e5",
       "triangleBudget": 7000,
       "params": [
         {
@@ -279857,7 +279857,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-display-table.kcad.ts",
       "preview": "/assets/retail-store-produce-display-table.png",
-      "sourceSha256": "8c7326f7a406acd003bee0f2abbad06e7216efb8ea78e4a04344bf141124d809",
+      "sourceSha256": "1ec60b6195312de56e91b57cde66cec27dc9414000c960e146a49ae7d9cab7d3",
       "triangleBudget": 5600,
       "params": [
         {
@@ -280127,7 +280127,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/queue-barrier.kcad.ts",
       "preview": "/assets/retail-store-queue-barrier.png",
-      "sourceSha256": "4b164cc4fd93686583d86f76185d0cdf57985ddd6047c059b77660b8093f1ad0",
+      "sourceSha256": "6d64d22d9c3d7d693e46b8751d8c42860e662f645f36e97102a643f1d78a9378",
       "triangleBudget": 1600,
       "params": [
         {
@@ -281458,7 +281458,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
       "preview": "/assets/retail-store-roll-cage-trolley.png",
-      "sourceSha256": "db7b1541092364544c8465198497816354afaad79f65b7a7e31b093a0fed946a",
+      "sourceSha256": "d48c6d14a8919b1d769d2f18827e5b1bc01066188dfb7fe619b0f98c02ae43c3",
       "triangleBudget": 2500,
       "params": [
         {
@@ -281868,7 +281868,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shelf-endcap.kcad.ts",
       "preview": "/assets/retail-store-shelf-endcap.png",
-      "sourceSha256": "78d05988c11bb023669f12dd53826485f930fb28cbc19e28c82625225a7ef2c2",
+      "sourceSha256": "54d6438369db29ab2e0b0c93704b95eb00d57e3d81ab81e82d8ba31411bf9318",
       "triangleBudget": 3600,
       "params": [
         {
@@ -283377,7 +283377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/upright-drink-cooler.kcad.ts",
       "preview": "/assets/retail-store-upright-drink-cooler.png",
-      "sourceSha256": "9d10e08ee0a45e6d2c395e23dd51e58055d34584fe63ec584fbece420be477d6",
+      "sourceSha256": "82f8accb123066d36968f1f6cbd823aef563bb1c2ed23758c97d245379b34dd3",
       "triangleBudget": 4500,
       "params": [
         {
@@ -283647,7 +283647,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wall-shelf-unit.kcad.ts",
       "preview": "/assets/retail-store-wall-shelf-unit.png",
-      "sourceSha256": "0e2a93801f01aa963d96075c139bb9fde8326049d7db225fc58954b1734b673d",
+      "sourceSha256": "eea14947942b74995dd82be91873eb9adc6269a0a1311133f861d261cb79a34b",
       "triangleBudget": 4200,
       "params": [
         {
@@ -308082,7 +308082,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/starting-block.kcad.ts",
       "preview": "/assets/sports-starting-block.png",
-      "sourceSha256": "70cf5992f779ee3a0c663229335c081611071027a0c3a5891e5a4e1d6bd6ad67",
+      "sourceSha256": "6bc673411a0ab9325e75d29ef4f4f0a0b9ff92d5249c3ae0e69a1fe0a536748b",
       "triangleBudget": 1600,
       "params": [
         {
@@ -312475,7 +312475,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
       "preview": "/assets/standard-components-pipe-coupling.png",
-      "sourceSha256": "b3aed7920c6ea10f85da857cf6be173b34a5254d04d9e623d4f0399e0d1fbf39",
+      "sourceSha256": "20622b727b2c849d6a586a5f7d93b2cd7997a673908ecd31b35c7c6926522150",
       "triangleBudget": 640,
       "params": [
         {
@@ -312601,7 +312601,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-45.png",
-      "sourceSha256": "1c6f27707ef587af113cbbcb23c3c960aff6d39ec453b2653b1efa4749f79ae8",
+      "sourceSha256": "4123ba6cbff11ca8de38454263347b8049cfe0db32203219f7d035b42a70a0f4",
       "triangleBudget": 560,
       "params": [
         {
@@ -312694,7 +312694,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "e50f85776a7e205a214860a25ec7ce6f8de266c9cba824e7f79843f90e65a1c6",
+      "sourceSha256": "03243e39827ae2cce6d2c934ea0a146265b8067ec634c0006215ceca705833b9",
       "triangleBudget": 560,
       "params": [
         {
@@ -314066,7 +314066,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
       "preview": "/assets/standard-components-t-slot-angle-bracket.png",
-      "sourceSha256": "a411ee445a665ba0735824d898e5671d391b3c56cbb6767fcb7ce75a7d223e71",
+      "sourceSha256": "5ac7195ba5782361d986a00d8791f96b0ed8093771caab9cba8c4346b4e1a640",
       "triangleBudget": 600,
       "params": [
         {
@@ -332758,7 +332758,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rigging-handline-cleat.kcad.ts",
       "preview": "/assets/theatre-production-rigging-handline-cleat.png",
-      "sourceSha256": "c10cc19f26a75a8d8f1791a7d992cc376e201114ba8603352d08bace2d87b3d5",
+      "sourceSha256": "a2edc5fd6e9aa5ec91ebd864da595ba1d475d0b2c4982317dc77889d4ad2c46a",
       "triangleBudget": 5000,
       "params": [
         {
@@ -334314,7 +334314,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-batten-section.kcad.ts",
       "preview": "/assets/theatre-production-stage-batten-section.png",
-      "sourceSha256": "9b1c6f1225ec5b9cacfb93a7ae808f9c02390011fec6542bb4e4e01301d32255",
+      "sourceSha256": "902b75f6cfdd18664d8a5492286bcee388ff486adb71e7c5e8543b94e65e4f8d",
       "triangleBudget": 7500,
       "params": [
         {
