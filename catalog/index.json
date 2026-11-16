@@ -351773,7 +351773,7 @@
       "id": "reverse-osmosis-skid",
       "kit": "water-treatment",
       "title": "Reverse osmosis skid",
-      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells; weathered and highVisibility presets.",
+      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells, operator display glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351792,7 +351792,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
       "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
-      "sourceSha256": "be04d7237e0df2c1cd0ce473ef7e779fe0ef37f372d6d10e39864ea24629e695",
+      "sourceSha256": "eb6574e982749d18fc47969b112109afca5b203bf8a1c29d075124c86294fa02",
       "triangleBudget": 3300,
       "params": [
         {
@@ -351838,6 +351838,12 @@
           "type": "color",
           "default": "#f0eee7",
           "label": "Glass-reinforced epoxy shells"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#1f2d36",
+          "label": "Operator display glass"
         }
       ],
       "presets": {
@@ -351845,13 +351851,15 @@
           "coatedSteel": "#687b78",
           "structuralSteel": "#6e6b63",
           "stainlessSteel": "#9ca7a6",
-          "reinforcedComposite": "#d7d3c8"
+          "reinforcedComposite": "#d7d3c8",
+          "displayGlass": "#2a3337"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
           "structuralSteel": "#505b60",
           "stainlessSteel": "#e1ddd0",
-          "reinforcedComposite": "#f7f4e9"
+          "reinforcedComposite": "#f7f4e9",
+          "displayGlass": "#14262f"
         }
       },
       "stats": {
@@ -351884,7 +351892,6 @@
             "feed-pump-fan-cover",
             "pump-support-left",
             "pump-support-right",
-            "operator-display",
             "cabinet-foot-left",
             "cabinet-foot-right"
           ],
@@ -351943,6 +351950,14 @@
             "status-lamp-green"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#1f2d36",
+          "parts": [
+            "operator-display"
+          ],
+          "param": "displayGlass"
         }
       ]
     },

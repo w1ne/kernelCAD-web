@@ -1,0 +1,8 @@
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 2326ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  1683ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:30:57
+   Duration  12.30s (transform 7.88s, setup 186ms, import 9.64s, tests 2.33s, environment 0ms)
+
