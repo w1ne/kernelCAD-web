@@ -460,6 +460,27 @@ describe('pose-envelope review helpers', () => {
     expect(diagnostic.hint).toContain("no pose inside the limits of 'input' keeps it inside [-20, 20]");
   });
 
+  function makeOffsetPair(offset: number) {
+    const { arm, kcad } = makeArm();
+    const axis = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: [0, 0, 1] as [number, number, number] });
+    arm.part('plate', kcad.box(60, 20, 2)).connector('in', axis(0)).connector('out', axis(24));
+    arm.part('pinion', kcad.box(5, 5, 5)).connector('axis', axis(0));
+    arm.part('gear', kcad.box(5, 5, 5)).connector('axis', axis(24));
+    arm.mate('input', 'plate.in', 'pinion.axis', 'revolute', { limitsDeg: [-10, 10] });
+    arm.mate('output', 'plate.out', 'gear.axis', 'revolute', { limitsDeg: [20, 40] });
+    arm.coupleMates('output', { source: 'input', ratio: 1, offset });
+    const current = buildPoseEnvelopeSamples(arm).find((s) => s.name === 'current')!;
+    return validateMatePoseLimits(arm, current.poses, current.name);
+  }
+
+  it('checks a coupled mate at the pose its coupling offset gives it at rest', () => {
+    // At rest input = 0, so output = offset, not its own uncoupled 0.
+    expect(makeOffsetPair(30)).toEqual([]);
+    expect(makeOffsetPair(50).map((d) => [d.code, d.mateName, d.pose])).toEqual([
+      ['assembly.pose.out-of-limits', 'output', 50],
+    ]);
+  });
+
   it('keeps the clamp hint for a mate no coupling drives', () => {
     const arm = makeGearPair([-20, 20]);
     const [diagnostic] = validateMatePoseLimits(arm, { input: 150, output: 0 }, 'current');
