@@ -7,6 +7,7 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
@@ -1262,6 +1263,7 @@ export class Shape {
     scaleMode?: 'original' | 'native' | 'bounds';
     face: FaceSelector | CanonicalFace | string;
   }): Shape {
+    assertEmbossTextOptions(opts, this.id);
     const id = this.session.addEmbossText(this.id, {
       textContent: opts.textContent,
       ...(opts.fontFamily !== undefined ? { fontFamily: opts.fontFamily } : {}),
