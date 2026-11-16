@@ -100,7 +100,7 @@ import {
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
-  assertScalarEdgeValue,
+  assertScalarEdgeValue, assertFilletEndRadius,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 
@@ -894,21 +894,8 @@ export class Shape {
         }
         continuity = opts.continuity;
       }
-      const endRadius = opts?.endRadius;
-      if (endRadius !== undefined && !isParamRef(endRadius)
-        && !(typeof endRadius === 'number' && Number.isFinite(endRadius) && endRadius > 0)) {
-        invalidArgs({
-          api: 'fillet(radius, edges, { endRadius })',
-          path: 'opts.endRadius',
-          got: endRadius,
-          showType: typeof endRadius !== 'number',
-          unit: 'mm',
-          requires: "a finite number > 0 — the round's radius at each edge's high end; `radius` is at the low end",
-          example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
-          featureId: this.id,
-        });
-      }
-      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity, endRadius });
+      assertFilletEndRadius(opts?.endRadius, this.id);
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity, endRadius: opts?.endRadius });
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
