@@ -75150,7 +75150,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/liquid-cooling-manifold.kcad.ts",
       "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
-      "sourceSha256": "cebe0fe8520d8f9e1bd2f4387e08ebba9ec787ce13df385b71f9cba5fe1e70ee",
+      "sourceSha256": "678d7898e0b3bfad6dc7466e2642a39807e74495dd762420ab8baba7382587e8",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75855,7 +75855,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-coolant-header.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
-      "sourceSha256": "3cbf69ffa0428a81a516701d617f82bafd0d23fa662117da761c3518aed2d965",
+      "sourceSha256": "9252d10b8b18ee52062bcbfbbe5c8136eb496493826845e7f91d6e6d600f5d53",
       "triangleBudget": 2200,
       "params": [
         {
@@ -80719,7 +80719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-cable-retractor.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
-      "sourceSha256": "df6f92fb39d270830a69ab4d41f9f99e28e7c6cd6bbe46ded3293d34ad72a404",
+      "sourceSha256": "3991d44b696dc2bf813a304fffa9a870e59004a8e9f35d63b885073142c92b71",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84567,7 +84567,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-balance-arm.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
-      "sourceSha256": "784df5f36f1175ff30cfc90e4fcce62422eef86d2aae5f33df9d9c458d6a802d",
+      "sourceSha256": "eb10b5167b18c2067970e4f4e300bf740dcb0367c474fc728ba274d5c673d6e3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84677,7 +84677,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-management-boom.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
-      "sourceSha256": "e6e1d84a081183566c1fc8e8fdeb3c7f6500116a5211c3c62b2ef02c3583726f",
+      "sourceSha256": "0ea623c01e2cad8d45dcf3a12fd4f5465ee5ad730d54ac81f5d19da6aa65e984",
       "triangleBudget": 2400,
       "params": [
         {
@@ -316443,7 +316443,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-drop-terminal.png",
-      "sourceSha256": "eb06da416f4b3f403f99e799c08b2ecc9e3f189dc173dbc29749a9d1f287ad6d",
+      "sourceSha256": "4f70afacf9d09cccb489113e5bba6a7150ef3c0ea98a5ab6c405f9b3aac368be",
       "triangleBudget": 900,
       "params": [
         {
@@ -318664,7 +318664,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/optical-patch-panel.kcad.ts",
       "preview": "/assets/telecom-infrastructure-optical-patch-panel.png",
-      "sourceSha256": "6171aa2c6ef8ad5187bb53c1fb86ae315b4526a5732de5a0624096d35de47fcf",
+      "sourceSha256": "c1465161754844992e12f56ea72acb99f716163e2060377b4982a4d7ada49650",
       "triangleBudget": 900,
       "params": [
         {
@@ -320241,7 +320241,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/site-id-placard.kcad.ts",
       "preview": "/assets/telecom-infrastructure-site-id-placard.png",
-      "sourceSha256": "79c5ce87a06c51473ccb7e4debe022c4171c1eb0f19eca54f81bb8bd417ce01c",
+      "sourceSha256": "6d85735273267b6eda705f05a3112ff299c14dcb8550cb15720f431e03d36bf6",
       "triangleBudget": 900,
       "params": [
         {
@@ -354354,7 +354354,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/cable-reel-stand.kcad.ts",
       "preview": "/assets/wind-energy-cable-reel-stand.png",
-      "sourceSha256": "503cbbcb88089bb920fcb04bd65934ff8a5f66d6cc02dcd55030ce6232e76ccd",
+      "sourceSha256": "2b9a788e67304ac5eb12717d5e2f8b1793098f0a80f304693e36727ce4ea59b3",
       "triangleBudget": 300,
       "params": [
         {

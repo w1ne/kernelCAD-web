@@ -33,7 +33,6 @@ presets({
 });
 
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2).scale(scale);
-const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("site-id-placard");
 p.part("plate", b(0, 0, 690, 760, 40, 380).color(powderCoat));
