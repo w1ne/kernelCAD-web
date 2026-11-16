@@ -428,6 +428,53 @@ function buildMateRecord(
   };
 }
 
+/** A driven mate takes exactly one pose, ratio × source + offset. Reject a
+ *  coupling that gives it no single pose: coupled to itself, already driven by
+ *  another coupling, or closing a loop of couplings. Pose expansion would
+ *  otherwise keep one equation and drop the other without a diagnostic. */
+function rejectConflictingCoupling(state: AssemblyState, driven: string, source: string): void {
+  const example = "arm.coupleMates('output', { source: 'input', ratio: 3 })";
+  if (driven === source) {
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'opts.source',
+      got: source,
+      requires: `a mate other than the driven mate '${driven}' — a mate cannot drive its own pose`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-self',
+      example,
+    });
+  }
+  const sourceOf = new Map(state.mateCouplings.map((c) => [c.driven, c.source]));
+  const existing = sourceOf.get(driven);
+  if (existing !== undefined) {
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'driven',
+      got: driven,
+      requires:
+        `a mate that no other coupling drives — '${driven}' is already driven by '${existing}'; ` +
+        `couple '${driven}' to one source only, or couple '${source}' to '${existing}' to build a chain`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-already-driven',
+      example,
+    });
+  }
+  const loop = [driven, source];
+  for (let next = sourceOf.get(source); next !== undefined; next = sourceOf.get(next)) {
+    loop.push(next);
+    if (next !== driven) continue;
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'opts.source',
+      got: source,
+      requires:
+        `a source that does not lead back to '${driven}' — this coupling closes the loop ${loop.join(' <- ')}, ` +
+        'so no mate in it has an independent pose; leave one mate in the chain uncoupled as the input',
+      hintSlug: 'invalid-args.assembly.coupled-mate-cycle',
+      example,
+    });
+  }
+}
+
 export function coupleMateRecords(
   state: AssemblyState,
   driven: string,
@@ -470,6 +517,7 @@ export function coupleMateRecords(
       example: "arm.coupleMates('output', { source: 'input', ratio: 3, offset: 0 })",
     });
   }
+  rejectConflictingCoupling(state, driven, opts.source);
   state.mateCouplings.push({
     driven,
     source: opts.source,

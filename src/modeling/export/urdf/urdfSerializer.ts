@@ -14,7 +14,8 @@ import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../ca
 import type { MateRecord } from '../../mates/mate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec } from './mateToJoint';
+import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec, type UrdfMimic } from './mateToJoint';
+import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import { linkInertialBlock } from './linkInertial';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { xmlAttributionComment } from '../../../shared/links/attribution';
@@ -79,7 +80,7 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
   appendLegacyJointBlocks(jointBlocks, legacyJoints, parts, allDummyLinks, diagnostics);
 
   // Mate records via mateToUrdfJoint.
-  appendMateJointBlocks(jointBlocks, mates, parts, allDummyLinks, diagnostics);
+  appendMateJointBlocks(jointBlocks, mates, arm.__mateCouplings(), parts, allDummyLinks, diagnostics);
 
   // Synthesised dummy links from ball decomposition.
   appendDummyLinkBlocks(linkBlocks, allDummyLinks);
@@ -222,17 +223,42 @@ function appendLegacyJointBlocks(
 function appendMateJointBlocks(
   jointBlocks: string[],
   mates: readonly MateRecord[],
+  couplings: readonly MateCouplingRecord[],
   parts: readonly AssemblyPartStored[],
   allDummyLinks: DummyLinkSpec[],
   diagnostics: CompilerDiagnostic[],
 ): void {
   const resolver = makeConnectorResolver(parts);
+  const mimics = mateMimics(mates, couplings);
   for (const m of mates) {
-    const r = mateToUrdfJoint(m, resolver);
+    const r = mateToUrdfJoint(m, resolver, mimics.get(m.name));
     jointBlocks.push(...r.jointBlocks);
     diagnostics.push(...r.diagnostics);
     if (r.dummyLinks) allDummyLinks.push(...r.dummyLinks);
   }
+}
+
+/** coupleMates(driven, { source, ratio, offset }) means
+ *  driven = ratio * source + offset in mm/deg. URDF <mimic> uses the joint
+ *  units (m/rad), so convert the multiplier and offset. coupleMates accepts
+ *  only scalar mates, and each lowers to one URDF joint: cylindrical and
+ *  pin_slot keep their angle. */
+function mateMimics(
+  mates: readonly MateRecord[],
+  couplings: readonly MateCouplingRecord[],
+): Map<string, UrdfMimic> {
+  const toSi = (m: MateRecord | undefined) => (m?.type === 'prismatic' ? MM_TO_M : DEG_TO_RAD);
+  const byName = new Map(mates.map((m) => [m.name, m]));
+  const out = new Map<string, UrdfMimic>();
+  for (const c of couplings) {
+    const driven = toSi(byName.get(c.driven));
+    out.set(c.driven, {
+      joint: c.source,
+      multiplier: (c.ratio * driven) / toSi(byName.get(c.source)),
+      offset: (c.offset ?? 0) * driven,
+    });
+  }
+  return out;
 }
 
 /** Append synthesised dummy links from ball decomposition. */
