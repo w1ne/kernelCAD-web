@@ -95,6 +95,7 @@ import type { HoleCallOpts, HolesCallOpts } from '../validation/holeThreadSugar'
 import { captureHole, captureHoles, captureThreadedHole } from './proxyHoleMethods';
 import {
   validateGridPatternAxis,
+  validateGridPatternOpts,
   validateLinearPatternOpts,
   validateCircularPatternOpts,
   normalizeFaceSelector,
@@ -800,6 +801,7 @@ export class Shape {
     x: { count: number; direction: [number, number, number]; spacing: number };
     y: { count: number; direction: [number, number, number]; spacing: number };
   }): Shape {
+    validateGridPatternOpts(opts, this.id);
     validateGridPatternAxis('patternGrid.x', opts.x, this.id);
     validateGridPatternAxis('patternGrid.y', opts.y, this.id);
     const pattern: PatternSpec = {
@@ -811,12 +813,8 @@ export class Shape {
   }
 
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
-    const pattern: PatternSpec = {
-      kind: 'circular',
-      count: opts.count,
-      axis: opts.axis,
-      angleDeg: validateCircularPatternOpts(opts, this.id),
-    };
+    const angleDeg = validateCircularPatternOpts(opts, this.id);
+    const pattern: PatternSpec = { kind: 'circular', count: opts.count, axis: opts.axis, angleDeg };
     return this.session.patternFeature(this, pattern);
   }
 
