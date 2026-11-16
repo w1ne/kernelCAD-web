@@ -28,7 +28,6 @@ presets({
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z).scale(scale);
 const hx=(x:number,y:number,z:number,l:number,r:number,n=8)=>cylinder(l,r,n).alongAxis([1,0,0]).translate(x-l/2,y,z).scale(scale);
-const hy=(x:number,y:number,z:number,l:number,r:number,n=8)=>cylinder(l,r,n).alongAxis([0,1,0]).translate(x,y-l/2,z).scale(scale);
 
 const p=assembly("overhead-cable-balance-arm");
 p.part("base-plate", b(0, 0, 0, 520, 460, 60).color(stainlessSteel));
@@ -37,7 +36,7 @@ p.part("swing-arm", hx(390, 0, 3220, 1040, 46, 8).color(stainlessSteel));
 p.part("arm-pivot", c(0, 0, 3170, 240, 78, 10).color(stainlessSteel));
 p.part("balance-counterweight", hx(-220, 0, 3220, 360, 75, 8).color(powderCoat));
 p.part("cable-guide", b(760, 0, 3050, 210, 150, 90).color(powderCoat));
-p.part("left-cable-drop", hy(690, -90, 950, 1150, 18, 8).color(cableElastomer));
-p.part("right-cable-drop", hy(920, -90, 950, 1150, 18, 8).color(cableElastomer));
+p.part("left-cable-drop", c(690, -40, 1960, 1150, 18, 8).color(cableElastomer));
+p.part("right-cable-drop", c(920, -40, 1960, 1150, 18, 8).color(cableElastomer));
 
 return p.model();

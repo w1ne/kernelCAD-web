@@ -32,7 +32,11 @@ for (let i = 0; i < 12; i++) {
   const y = r * Math.sin(rad);
   addPart(`coil-segment-${i}`, box(r * 0.62, 48, 48, true).rotateZ(angle + 90).translate(x, y, 24).color(hose));
 }
-addPart('loose-hose', box(D * 0.48, 48, 48, true).rotateZ(28).translate(D * 0.42, -D * 0.19, 24).color(hose));
-addPart('hose-connector', cylinder(75, 35).rotateY(90).translate(D * 0.66, -D * 0.3, 60).color(connector));
+const hoseAng = -38 * Math.PI / 180;
+const p0 = [D * 0.328, -D * 0.088];
+const p1 = [D * 0.6, -D * 0.3];
+const hoseLen = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+addPart('loose-hose', box(hoseLen, 48, 48, true).rotateZ(-38).translate((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, 24).color(hose));
+addPart('hose-connector', cylinder(75, 35).translate(0, 0, -37.5).rotateY(90).rotateZ(-38).translate(p1[0] + 30 * Math.cos(hoseAng), p1[1] + 30 * Math.sin(hoseAng), 35).color(connector));
 
 return a.model();

@@ -25,8 +25,9 @@ presets({
 const p = assembly('bale-wrapper');
 const groundOffset = 0;
 const add = (name, shape, finish = paintedSteelColor) => p.part(name, shape.translate(0, 0, -groundOffset).scale(scale).color(finish));
-add('hay-frame', box(991.2, 85, 78, true).translate(0, 140, 501), paintedSteelColor);
-add('drawbar', box(95, 875, 56, true).translate(0, 752.5, 578), paintedSteelColor);
+add('wrapper-base', box(1100, 560, 70, true).translate(0, 0, 35), paintedSteelColor);
+add('hay-frame', box(991.2, 85, 78, true).translate(0, 0, 501), paintedSteelColor);
+add('drawbar', box(95, 875, 56, true).translate(0, 700, 40), paintedSteelColor);
 add('roller-0', cylinder(638, 95, 10).translate(-259.6, 0, 70), steelColor);
 add('roller-1', cylinder(638, 95, 10).translate(259.6, 0, 70), steelColor);
 add('film-mast', box(44, 44, 1100, true).translate(472, 0, 550), paintedSteelColor);

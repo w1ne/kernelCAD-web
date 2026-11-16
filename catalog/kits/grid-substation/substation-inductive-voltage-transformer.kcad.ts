@@ -47,7 +47,7 @@ const beveledPlate = (width: number, depth: number, thickness: number, cut: numb
 
 p.part("base-plate", beveledPlate(1000, 900, 180, 54).translate(0, 0, 0).scale(scale).color(stainlessSteel));
 p.part("pedestal", taperedColumn(1034, 140, 10).translate(0, 0, 180).scale(scale).color(stainlessSteel));
-p.part("transformer-body", box(820, 702, 658, true).translate(0, 0, 1386.50).scale(scale).color(powderCoat));
+p.part("transformer-body", box(820, 702, 1112.5, true).translate(0, 0, 1613.75).scale(scale).color(powderCoat));
 p.part("top-terminal", box(360, 315, 180, true).translate(0, 0, 2260).scale(scale).color(copper));
 p.part("secondary-box", box(420, 342, 376, true).translate(240, 202.50, 470).scale(scale).color(powderCoat));
 

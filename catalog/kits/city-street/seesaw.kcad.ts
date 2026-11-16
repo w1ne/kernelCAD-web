@@ -42,7 +42,12 @@ for (const side of [-1, 1]) {
   sw.part(`seat-${s}`, onPlank(blk(side * 1550 - 220, -150, 49, side * 1550 + 220, 150, 100)).color(seat));
   sw.part(`handle-post-${s}`, onPlank(blk(side * 1150 - 25, -25, 49, side * 1150 + 25, 25, 380)).color(stand));
   sw.part(`handle-bar-${s}`, onPlank(blk(side * 1150 - 30, -190, 340, side * 1150 + 30, 190, 390)).color(stand));
-  sw.part(`bumper-${s}`, blk(side * 1450 - 150, -150, 0, side * 1450 + 150, 150, 60).color(seat));
 }
 
+if (tilt > 0) {
+  // Bumper wedge under the low end, its top following the plank underside.
+  const k = Math.tan((tilt * Math.PI) / 180);
+  const lowTop = (x: number) => 480 - x * k + 2;
+  sw.part('bumper-r', elev([[1300, 0], [1600, 0], [1600, lowTop(1600)], [1300, lowTop(1300)]], 300).color(seat));
+}
 return sw.model();

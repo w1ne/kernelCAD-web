@@ -34,11 +34,14 @@ presets({
   vintage: { bronze: '#a66b2f' },
 });
 const p = assembly("orchestral-cymbals");
-p.part("upper-cymbal", sphere(79).scale([1, 1, 0.12]).translate(0, 0, 105).scale(scale).color(bronze));
-p.part("lower-cymbal", sphere(79).scale([1, 1, 0.12]).translate(0, 0, 80).scale(scale).color(bronze));
-p.part("upper-boss", sphere(18).translate(0, 0, 120).scale(scale).color(steel));
-p.part("lower-boss", sphere(18).translate(0, 0, 95).scale(scale).color(steel));
-p.part("upper-grip", cylinder(42, 7, 8).translate(0, 0, 136).scale(scale).color(leather));
-p.part("lower-grip", cylinder(42, 7, 8).translate(0, 0, 0).scale(scale).color(leather));
+const R = 79;
+const cym = (x: number) => sphere(R).scale([0.12, 1, 1]).translate(x, 0, R);
+const grip = (x0: number) => cylinder(42, 7, 8).rotate([0, 1, 0], 90).translate(x0, 0, R);
+p.part("upper-cymbal", cym(-8).scale(scale).color(bronze));
+p.part("lower-cymbal", cym(8).scale(scale).color(bronze));
+p.part("upper-boss", sphere(18).translate(-14, 0, R).scale(scale).color(steel));
+p.part("lower-boss", sphere(18).translate(14, 0, R).scale(scale).color(steel));
+p.part("upper-grip", grip(-58).scale(scale).color(leather));
+p.part("lower-grip", grip(16).scale(scale).color(leather));
 
 return p.model();
