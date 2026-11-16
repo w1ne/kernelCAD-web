@@ -924,7 +924,8 @@ export class Shape {
   }
 
   /** TPMS lattice infill inside a solid skin (see latticeCapture.ts); the
-   *  result is a watertight mesh solid, so call it last. */
+   *  result is a watertight mesh solid, so call it last. An unknown `opts`,
+   *  `opts.grade` or `opts.axis` key throws `feature.invalid-args`. */
   lattice(opts: LatticeOptions): Shape { return captureLattice(this.session, this, opts); }
 
   /**
