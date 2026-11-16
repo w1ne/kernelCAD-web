@@ -22,6 +22,8 @@ export interface MateSummary {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
+  /** Set on a mate driven by `coupleMates`: pose = ratio * source pose + offset. */
+  coupling?: { source: string; ratio: number; offset?: number };
 }
 
 export type ListMatesOutput =
@@ -50,16 +52,23 @@ export async function listMatesTool(input: ListMatesInput): Promise<ListMatesOut
       errorCode: 'feature.invalid-args',
     };
   }
+  const couplingByDriven = new Map(arm.__mateCouplings().map((c) => [c.driven, c]));
   return {
     ok: true,
-    mates: arm.__mates().map((m) => ({
-      name: m.name,
-      a: m.a,
-      b: m.b,
-      type: m.type,
-      ...(m.pose !== undefined ? { pose: m.pose } : {}),
-      ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
-      ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
-    })),
+    mates: arm.__mates().map((m) => {
+      const c = couplingByDriven.get(m.name);
+      return {
+        name: m.name,
+        a: m.a,
+        b: m.b,
+        type: m.type,
+        ...(m.pose !== undefined ? { pose: m.pose } : {}),
+        ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+        ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+        ...(c !== undefined
+          ? { coupling: { source: c.source, ratio: c.ratio, ...(c.offset !== undefined ? { offset: c.offset } : {}) } }
+          : {}),
+      };
+    }),
   };
 }
