@@ -39163,7 +39163,7 @@
       "id": "bottle-date-coder",
       "kit": "beverage-bottling-line",
       "title": "Bottle date coder",
-      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and touchscreen display glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -39182,7 +39182,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-date-coder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-date-coder.png",
-      "sourceSha256": "94511e6e121996aedf655a8c86bc05bb47571af96660355c07d668659b4732b8",
+      "sourceSha256": "3e0715a2f09b33c637a9a02a693edba8d805479cfe0e11538eae82cff09c4a5c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -39211,18 +39211,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "displayGlass": "#8fdbe4"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "displayGlass": "#5aa9b5"
         }
       },
       "stats": {
@@ -39250,13 +39258,20 @@
           "color": "#aebdc1",
           "parts": [
             "pedestal",
-            "screen",
             "print-arm",
             "print-head",
             "photoeye",
             "cable-cover"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "screen"
+          ],
+          "param": "displayGlass"
         },
         {
           "name": "foodPolymer",
