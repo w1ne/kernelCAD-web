@@ -17,7 +17,7 @@ import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEdit
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
-  validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
+  assertCutoutOptionKeys, validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
@@ -1157,8 +1157,11 @@ export class Shape {
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
+   * An unknown `opts` key (`enable`, `mode`, `upTo`) throws
+   * `feature.invalid-args`.
    */
   cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: EditableCutoutOpts): Shape {
+    assertCutoutOptionKeys(opts, this.id);
     const resolved = resolveCutoutOpts(opts, this.session.paramTable);
     validateCutoutOpts(resolved, this.id);
     // Auto-close a bare PathBuilder. Duck-type on `.close` to avoid pulling
