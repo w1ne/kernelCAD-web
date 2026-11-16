@@ -41779,7 +41779,7 @@
       "id": "fill-level-inspection-lamp",
       "kit": "beverage-bottling-line",
       "title": "Fill-level inspection lamp",
-      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and the opal acrylic diffuser.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -41798,7 +41798,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/fill-level-inspection-lamp.kcad.ts",
       "preview": "/assets/beverage-bottling-line-fill-level-inspection-lamp.png",
-      "sourceSha256": "eb913ff3e554ec67d4c0490fa29209b4414a0689c4449d4ed953db9465410969",
+      "sourceSha256": "4644ff31dc996c493dee9e3ba08829010a6e9ae3449d323672cf3763ce0f5048",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41827,18 +41827,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "diffuserOpal",
+          "type": "color",
+          "default": "#f4f6f1",
+          "label": "Opal acrylic diffuser"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "diffuserOpal": "#fbfcf8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "diffuserOpal": "#e6e1cb"
         }
       },
       "stats": {
@@ -41865,13 +41873,12 @@
           "param": "powderCoat"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "diffuserOpal",
+          "color": "#f4f6f1",
           "parts": [
-            "diffuser-face",
-            "inspection-knob"
+            "diffuser-face"
           ],
-          "param": "stainlessSteel"
+          "param": "diffuserOpal"
         },
         {
           "name": "foodPolymer",
@@ -41881,6 +41888,14 @@
             "bottle-guide-back"
           ],
           "param": "foodPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "inspection-knob"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
