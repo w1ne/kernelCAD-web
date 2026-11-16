@@ -18,12 +18,23 @@ import {
 } from './apiSupport';
 import type { KernelCadApi } from './api';
 
-/** Reject a non-object opts or an unknown key for the 3D curve constructors.
- *  `spline3d(pts, 0.2)` and `spline3d(pts, { tensoin: 0.2 })` used to build
- *  with the default 0.5 tension, and `nurbsCurve(cp, { periodic: true })`
- *  built an open curve, with no diagnostic. */
-function assertCurveOpts(
-  api: 'nurbsCurve' | 'spline3d',
+/** Leading arguments shown in the error signature. */
+const OPTION_KEY_ARGS = {
+  nurbsCurve: 'points',
+  spline3d: 'points',
+  variableSweep: 'spine, sections',
+  surfaceFromBoundary: 'curves',
+} as const;
+
+/** Reject a non-object opts or an unknown key for the curve, sweep and
+ *  boundary-surface constructors. `spline3d(pts, 0.2)` and
+ *  `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
+ *  tension, `nurbsCurve(cp, { periodic: true })` built an open curve,
+ *  `variableSweep(spine, sections, { continuty: 'C2' })` swept at C1 and
+ *  `surfaceFromBoundary(curves, { samples: 40 })` filled at the default 15
+ *  points, all with no diagnostic. */
+function assertOptionKeys(
+  api: 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary',
   keys: readonly string[],
   example: string,
   opts: unknown,
@@ -31,7 +42,7 @@ function assertCurveOpts(
   if (opts === undefined || opts === null) return;
   if (typeof opts !== 'object' || Array.isArray(opts)) {
     invalidArgs({
-      api: `${api}(points, opts?)`,
+      api: `${api}(${OPTION_KEY_ARGS[api]}, opts?)`,
       path: 'opts',
       got: opts,
       showType: true,
@@ -43,7 +54,7 @@ function assertCurveOpts(
   for (const key of Object.keys(opts)) {
     if (!keys.includes(key)) {
       invalidArgs({
-        api: `${api}(points, opts)`,
+        api: `${api}(${OPTION_KEY_ARGS[api]}, opts)`,
         path: `opts.${key}`,
         gotText: `an unknown option '${key}'`,
         requires: `one of ${keys.join(', ')}`,
@@ -92,7 +103,7 @@ export function makeNurbsSurfaceMethods(
     },
 
     nurbsCurve(controlPoints, opts) {
-      assertCurveOpts('nurbsCurve', ['degree', 'weights', 'knots', 'closed'], 'nurbsCurve([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { degree: 2 })', opts);
+      assertOptionKeys('nurbsCurve', ['degree', 'weights', 'knots', 'closed'], 'nurbsCurve([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { degree: 2 })', opts);
       const degree = opts?.degree ?? 3;
       return session.addCurve3D({
         metadata: {
@@ -134,7 +145,7 @@ export function makeNurbsSurfaceMethods(
           'invalid-args.spline3d.points — pass at least 2 Vec3 points to interpolate.',
         );
       }
-      assertCurveOpts('spline3d', ['tension', 'closed'], 'spline3d([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { tension: 0.2 })', opts);
+      assertOptionKeys('spline3d', ['tension', 'closed'], 'spline3d([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { tension: 0.2 })', opts);
       const tension = opts?.tension ?? 0.5;
       const scale = (1 - tension) / 6;
       if (opts?.closed === true) {
@@ -268,6 +279,7 @@ export function makeSweepMethods(
 ): Pick<KernelCadApi, 'variableSweep' | 'surfaceFromBoundary' | 'sew'> {
   return {
     variableSweep(spine, sections, opts) {
+      assertOptionKeys('variableSweep', ['closed', 'continuity'], "variableSweep(spine, sections, { continuity: 'C2' })", opts);
       const spineId = resolveVariableSweepSpineId(session, spine);
       const sweepSections = requireVariableSweepSections(sections);
 
@@ -303,6 +315,7 @@ export function makeSweepMethods(
           'surface-from-boundary.too-many-curves — if the loop has more than 4 sides, split the patch into adjacent quads.',
         );
       }
+      assertOptionKeys('surfaceFromBoundary', ['continuity', 'sampling'], "surfaceFromBoundary([bottom, right, top, left], { continuity: 'C1', sampling: 30 })", opts);
       // 2. Continuity normalisation: a single grade applies to all 4 edges;
       //    an array must be length 4.
       const contIn = opts?.continuity;
