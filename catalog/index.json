@@ -41697,7 +41697,7 @@
       "id": "empty-bottle-divider-tray",
       "kit": "beverage-bottling-line",
       "title": "Empty bottle divider tray",
-      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale and color controls for the food-grade polymer tray shell and the divider insert polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -41716,7 +41716,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/empty-bottle-divider-tray.kcad.ts",
       "preview": "/assets/beverage-bottling-line-empty-bottle-divider-tray.png",
-      "sourceSha256": "cf47600ce0636aa575ff999ec12de84e678ffd14c9ddbd1a42539baeb70afc7b",
+      "sourceSha256": "58788f682b1d42f9a8fc13f737de3890d9f2f5ae61c1c23c7d3a96880dbe4bc7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41729,34 +41729,26 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#aebdc1",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#397e91",
-          "label": "Powder-coated steel"
-        },
-        {
           "name": "foodPolymer",
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "dividerPolymer",
+          "type": "color",
+          "default": "#e6e1d3",
+          "label": "Divider insert polymer"
         }
       ],
       "presets": {
         "sanitaryLine": {
-          "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "dividerPolymer": "#f1ede2"
         },
         "legacyPlant": {
-          "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "dividerPolymer": "#b9b2a0"
         }
       },
       "stats": {
@@ -41775,6 +41767,21 @@
           "color": "#3999a1",
           "parts": [
             "tray-floor",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "foodPolymer"
+        },
+        {
+          "name": "dividerPolymer",
+          "color": "#e6e1d3",
+          "parts": [
             "divider-x-0",
             "divider-x-1",
             "divider-x-2",
@@ -41783,29 +41790,7 @@
             "divider-y-1",
             "divider-y-2"
           ],
-          "param": "foodPolymer"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
-          "parts": [
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#397e91",
-          "parts": [
-            "foot-0",
-            "foot-1",
-            "foot-2",
-            "foot-3"
-          ],
-          "param": "powderCoat"
+          "param": "dividerPolymer"
         }
       ]
     },
