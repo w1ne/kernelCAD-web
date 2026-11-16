@@ -94,6 +94,8 @@ const compliance = tempRayBan.embossText({
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Default `'original'` (preserves mm size; planar faces only). |
 | `fontFamily` | `string?` | Logical name or `.ttf` path. Default Liberation Sans. |
 
+Any other key throws `feature.invalid-args` (e.g. `font` is not `fontFamily`, `halign` is not `align`).
+
 The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. The fuse / cut runs through history-aware booleans (`fuseWithHistory` / `cutWithHistory`) so the newly-created glyph faces carry created-ref labels on the result `historyMap` and can be targeted downstream:
 
 | `depth` sign | Label on planar glyph face | Label on side walls |
