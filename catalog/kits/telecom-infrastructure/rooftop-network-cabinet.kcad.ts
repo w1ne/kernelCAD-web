@@ -33,10 +33,10 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 
 const p = assembly("rooftop-network-cabinet");
 p.part("curb", b(0, 0, 0, 1250, 850, 60).color(galvanizedSteel));
-p.part("body", b(0, 0, 360, 1150, 750, 660).color(powderCoat));
+p.part("body", b(0, 0, 60, 1150, 750, 660).color(powderCoat));
 p.part("lid", b(0, 0, 720, 1210, 810, 60).color(powderCoat));
-p.part("front-panel", b(0, -383, 370, 860, 18, 500).color(powderCoat));
-p.part("vent-left", b(-350, -397, 370, 130, 12, 210).color(powderCoat));
-p.part("vent-right", b(350, -397, 370, 130, 12, 210).color(powderCoat));
+p.part("front-panel", b(0, -383, 140, 860, 18, 500).color(powderCoat));
+p.part("vent-left", b(-350, -397, 250, 130, 12, 210).color(powderCoat));
+p.part("vent-right", b(350, -397, 250, 130, 12, 210).color(powderCoat));
 
 return p.model();

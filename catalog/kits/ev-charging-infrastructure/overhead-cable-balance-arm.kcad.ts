@@ -37,7 +37,7 @@ p.part("swing-arm", hx(390, 0, 3220, 1040, 46, 8).color(stainlessSteel));
 p.part("arm-pivot", c(0, 0, 3170, 240, 78, 10).color(stainlessSteel));
 p.part("balance-counterweight", hx(-220, 0, 3220, 360, 75, 8).color(powderCoat));
 p.part("cable-guide", b(760, 0, 3050, 210, 150, 90).color(powderCoat));
-p.part("left-cable-drop", hy(690, -90, 950, 1150, 18, 8).color(cableElastomer));
-p.part("right-cable-drop", hy(920, -90, 950, 1150, 18, 8).color(cableElastomer));
+p.part("left-cable-drop", c(690, -40, 1960, 1150, 18, 8).color(cableElastomer));
+p.part("right-cable-drop", c(920, -40, 1960, 1150, 18, 8).color(cableElastomer));
 
 return p.model();

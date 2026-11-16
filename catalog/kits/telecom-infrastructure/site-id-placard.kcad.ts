@@ -38,9 +38,9 @@ const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cyli
 const p = assembly("site-id-placard");
 p.part("plate", b(0, 0, 690, 760, 40, 380).color(powderCoat));
 p.part("inset", b(0, -24, 690, 650, 14, 270).color(powderCoat));
-p.part("post--280", b(-280, 0, 0, 42, 42, 620).color(galvanizedSteel));
-p.part("post-280", b(280, 0, 0, 42, 42, 620).color(galvanizedSteel));
-p.part("bolt--320", c(-320, -30, 780, 18, 15, 8).color(stainlessSteel));
-p.part("bolt-320", c(320, -30, 780, 18, 15, 8).color(stainlessSteel));
+p.part("post--280", b(-280, 0, 0, 42, 42, 800).color(galvanizedSteel));
+p.part("post-280", b(280, 0, 0, 42, 42, 800).color(galvanizedSteel));
+p.part("bolt--320", cylinder(18, 15, 8).rotate([1, 0, 0], 90).translate(-320, -29, 1000).scale(scale).color(stainlessSteel));
+p.part("bolt-320", cylinder(18, 15, 8).rotate([1, 0, 0], 90).translate(320, -29, 1000).scale(scale).color(stainlessSteel));
 
 return p.model();

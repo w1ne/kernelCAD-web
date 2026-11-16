@@ -37,6 +37,6 @@ p.part("swing-arm", hx(390, 0, 2670, 1040, 46, 8).color(stainlessSteel));
 p.part("arm-pivot", c(0, 0, 2620, 240, 78, 10).color(stainlessSteel));
 p.part("retractor-housing", b(820, 0, 2520, 340, 280, 200).color(powderCoat));
 p.part("pulley", c(820, -180, 2445, 90, 78, 8).color(powderCoat));
-p.part("hanging-cable", hy(820, -260, 800, 1000, 18, 8).color(cableElastomer));
+p.part("hanging-cable", c(820, -180, 1500, 1000, 18, 8).color(cableElastomer));
 
 return p.model();

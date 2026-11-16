@@ -35,8 +35,8 @@ p.part("base-plate", b(0, 0, 0, 520, 460, 60).color(stainlessSteel));
 p.part("support-mast", c(0, 0, 60, 2710, 64, 10).color(stainlessSteel));
 p.part("swing-arm", hx(390, 0, 2670, 1040, 46, 8).color(stainlessSteel));
 p.part("arm-pivot", c(0, 0, 2620, 240, 78, 10).color(stainlessSteel));
-p.part("cable-guide", b(790, 0, 2490, 220, 180, 90).color(powderCoat));
-p.part("hanging-cable", hy(790, -130, 900, 1000, 18, 8).color(cableElastomer));
-p.part("balance-weight", c(540, 0, 2350, 150, 86, 8).color(powderCoat));
+p.part("cable-guide", b(790, 0, 2540, 220, 180, 90).color(powderCoat));
+p.part("hanging-cable", c(790, 0, 1500, 1050, 18, 8).color(cableElastomer));
+p.part("balance-weight", c(540, 0, 2480, 150, 86, 8).color(powderCoat));
 
 return p.model();
