@@ -41225,7 +41225,7 @@
       "id": "case-taper",
       "kit": "beverage-bottling-line",
       "title": "Case taper",
-      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and packing tape.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -41244,7 +41244,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-taper.png",
-      "sourceSha256": "b111cc98ed1c2dafd6fe8f2505cf8c8eef24c526e1392157147979dd97370534",
+      "sourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41273,18 +41273,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "packingTape",
+          "type": "color",
+          "default": "#c39058",
+          "label": "Polypropylene packing tape"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "packingTape": "#cf9e66"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "packingTape": "#a87a48"
         }
       },
       "stats": {
@@ -41313,8 +41321,7 @@
           "parts": [
             "infeed-belt",
             "outfeed-belt",
-            "tape-head",
-            "tape-roll"
+            "tape-head"
           ],
           "param": "foodPolymer"
         },
@@ -41330,6 +41337,14 @@
             "hmi"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "packingTape",
+          "color": "#c39058",
+          "parts": [
+            "tape-roll"
+          ],
+          "param": "packingTape"
         }
       ]
     },
