@@ -316389,7 +316389,7 @@
       "id": "fiber-dome-closure",
       "kit": "telecom-infrastructure",
       "title": "Fiber dome closure",
-      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale; moulded thermoplastic closure shell, engineering polymer and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316408,7 +316408,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-dome-closure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-dome-closure.png",
-      "sourceSha256": "4724fade4eccec9be0ea1c7fe35c5f1f10ae75d22e3b2f455ee35a5b1caa66de",
+      "sourceSha256": "7101f2ce2981b33658efa515317ead0f4a0e59accb92de45d73c5c94a1acd9f2",
       "triangleBudget": 900,
       "params": [
         {
@@ -316421,26 +316421,26 @@
           "step": 0.05
         },
         {
+          "name": "closureShell",
+          "type": "color",
+          "default": "#4f585c",
+          "label": "Closure shell (moulded thermoplastic)"
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#315267",
           "label": "Engineering polymer and cable jacket"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
         }
       ],
       "presets": {
         "fieldSite": {
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "closureShell": "#3a4245",
+          "polymer": "#263a37"
         },
         "highVisibility": {
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "closureShell": "#e0aa18",
+          "polymer": "#27363c"
         }
       },
       "stats": {
@@ -316455,19 +316455,19 @@
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "closureShell",
+          "color": "#4f585c",
           "parts": [
             "base",
-            "body"
+            "body",
+            "dome"
           ],
-          "param": "powderCoat"
+          "param": "closureShell"
         },
         {
           "name": "polymer",
           "color": "#315267",
           "parts": [
-            "dome",
             "port-a",
             "port-b",
             "port-c",
