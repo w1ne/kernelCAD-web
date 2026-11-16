@@ -157,6 +157,7 @@ function buildSceneRig(
   resolvedParts: readonly ResolvedMatePart[],
   mates: readonly MateRecord[],
   poses: NumericPoses,
+  couplings: readonly MateCouplingRecord[],
 ): SolvedRigAssembly {
   const connectorsByPartName: Record<string, RigConnector[]> = Object.create(null) as Record<string, RigConnector[]>;
   for (const part of resolvedParts) {
@@ -171,15 +172,20 @@ function buildSceneRig(
       }];
     });
   }
-  const rigMates: RigMate[] = mates.map((mate) => ({
-    name: mate.name,
-    type: mate.type,
-    a: mate.a,
-    b: mate.b,
-    ...(typeof poses[mate.name] === 'number' ? { pose: poses[mate.name] as number } : {}),
-    ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
-    ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
-  }));
+  const couplingByDriven = new Map(couplings.map((coupling) => [coupling.driven, coupling]));
+  const rigMates: RigMate[] = mates.map((mate) => {
+    const coupling = couplingByDriven.get(mate.name);
+    return {
+      name: mate.name,
+      type: mate.type,
+      a: mate.a,
+      b: mate.b,
+      ...(typeof poses[mate.name] === 'number' ? { pose: poses[mate.name] as number } : {}),
+      ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
+      ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
+      ...(coupling !== undefined ? { coupling: { source: coupling.source, ratio: coupling.ratio } } : {}),
+    };
+  });
   return {
     groundedPart: resolvedParts[0]?.name ?? sceneParts[0]!.name,
     parts: sceneParts.map((part) => ({ name: part.name, worldTransform: part.worldTransform.toMat4() })),
@@ -299,7 +305,7 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
     assemblyName: inputs.assemblyName,
     parts: sceneParts,
     ...(inputs.resolvedMateParts !== undefined && inputs.resolvedMates !== undefined
-      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates, inputs.resolvedMatePoses ?? {}) }
+      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates, inputs.resolvedMatePoses ?? {}, inputs.mateCouplings) }
       : {}),
     _kind: 'scene',
   };
@@ -628,7 +634,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     assemblyName,
     parts: sceneParts,
     ...(solvedRigParts !== undefined && solvedRigMates !== undefined
-      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates, solvedRigPoses ?? {}) }
+      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates, solvedRigPoses ?? {}, mateCouplings) }
       : {}),
     _kind: 'scene',
   };
