@@ -439,6 +439,9 @@ shape, not a copy.
 .fillet(radius: number, edges?: EdgeSelector): Shape
 // Variable-radius form — one group per blend region:
 .fillet([{ edges: EdgeSelector, radius: number }, ...]): Shape
+// Tapered round: radius at each edge's low end (lower coordinate on the axis the
+// edge spans most), endRadius at its high end. Open edges only.
+.fillet(radius, edges, { endRadius: number }): Shape
 // Bevel edges (same selector shape as fillet):
 .chamfer(distance: number, edges?: EdgeSelector): Shape
 .chamfer([{ edges: EdgeSelector, distance: number }, ...]): Shape
