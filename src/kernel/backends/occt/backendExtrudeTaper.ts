@@ -20,11 +20,25 @@ import type { OcctBackend } from './occtBackend';
 const HASH_UPPER = 2147483647;
 /** Relative volume slack for the frustum plausibility gate. */
 const VOLUME_SLACK = 1e-6;
+/** Smallest draft OCCT applies: `BRepOffsetAPI_DraftAngle` leaves a face
+ *  unchanged below 1e-4 rad (~0.0057°), so a smaller nonzero taper is
+ *  rejected up front instead of failing the volume gate. */
+const MIN_TAPER_DEG = 0.0058;
 
 /** Validate an optional `taperDeg`: absent means 0; otherwise a finite angle
- *  strictly inside (-90, 90) degrees. */
+ *  strictly inside (-90, 90) degrees and no smaller than MIN_TAPER_DEG. */
 export function resolveExtrudeTaperDeg(taperDeg: number | undefined, context: string): number {
   const angle = taperDeg ?? 0;
+  if (angle !== 0 && Number.isFinite(angle) && Math.abs(angle) < MIN_TAPER_DEG) {
+    invalidArgs({
+      api: `${context}(depth, { taperDeg })`,
+      path: 'opts.taperDeg',
+      got: taperDeg,
+      requires: `0 for a straight extrude, or a draft angle of at least ${MIN_TAPER_DEG}° in magnitude (the OCCT draft resolution, 1e-4 rad)`,
+      unit: 'deg',
+      example: 'path()...close().extrude(10, { taperDeg: 0.5 })',
+    });
+  }
   if (!Number.isFinite(angle) || Math.abs(angle) >= 90) {
     invalidArgs({
       api: `${context}(depth, { taperDeg })`,
