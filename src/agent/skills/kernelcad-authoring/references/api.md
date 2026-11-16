@@ -578,6 +578,8 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // section: 'transverse' (spine 'helix' only): the profile is the cross-section
 //   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
 //   turns once per pitch (how threadedRod builds a whole rod without a boolean).
+// Any key other than frenet, transitionMode, spine, section and faceLabels throws
+// feature.invalid-args (e.g. transition: 'round' is not transitionMode).
 .sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.

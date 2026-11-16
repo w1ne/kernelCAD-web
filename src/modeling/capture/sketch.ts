@@ -110,9 +110,13 @@ const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 'symmetric']);
 
+/** Option keys `Sketch.sweep` accepts. `{ transition: 'round' }` was dropped
+ *  and the sweep kept the default 'right' corners. */
+const ALLOWED_SWEEP_KEYS = new Set(['frenet', 'transitionMode', 'spine', 'section', 'faceLabels']);
+
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
- * Shared by `extrude`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
+ * Shared by `extrude`'s and `sweep`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
  * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
  * every message/hint byte-identical to the hand-rolled guards this replaced.
  */
@@ -405,7 +409,22 @@ export class Sketch {
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
+    if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Sketch.sweep: opts must be an options object; got ${Array.isArray(opts) ? 'an array' : String(opts)}.`,
+        this.id,
+        "Pass sweep(rail, { spine?, transitionMode?, frenet?, section?, faceLabels? }), e.g. sweep(rail, { spine: 'smooth' }).",
+      );
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_SWEEP_KEYS,
+      this.id,
+      (key) => `Sketch.sweep: unknown option '${key}'.`,
+      'sweep',
+    );
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
     const section = checkSweepSection(opts.section, spine, this.id);
