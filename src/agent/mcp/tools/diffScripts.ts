@@ -35,6 +35,8 @@ import {
 import { resolveRootId } from '../../../composition/buildModel';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
+import type { MateRecord } from '../../../modeling/mates/mate';
+import type { MateCouplingRecord } from '../../../modeling/mates/coupledPoses';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';
@@ -92,6 +94,9 @@ export interface DiffMateSummary {
   pose?: unknown;
   limitsDeg?: unknown;
   limitsMm?: unknown;
+  /** Present on a driven mate: `coupleMates(name, { source, ratio, offset })`.
+   *  Without it a ratio or offset edit leaves the mate entry unchanged. */
+  coupling?: { source: string; ratio: number; offset?: number };
 }
 
 export interface DiffParamSummary {
@@ -323,15 +328,8 @@ function sceneSide(
   }));
   const inter = detectInterferences(lowered, INTERFERENCE_EPSILON_MM3, new Set());
   const arm = (run.session.assemblies as Map<string, Assembly>).get(ret.assemblyName);
-  const mates: DiffMateSummary[] = (arm?.__mates() ?? []).map((m) => ({
-    name: m.name,
-    type: m.type,
-    a: m.a,
-    b: m.b,
-    ...(m.pose !== undefined ? { pose: m.pose } : {}),
-    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
-    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
-  }));
+  const couplingByDriven = new Map((arm?.__mateCouplings() ?? []).map((c) => [c.driven, c]));
+  const mates = (arm?.__mates() ?? []).map((m) => mateSummary(m, couplingByDriven.get(m.name)));
   return {
     ok: true,
     side: {
@@ -343,6 +341,23 @@ function sceneSide(
       mates,
       params,
     },
+  };
+}
+
+/** One mate's diff entry. A driven mate carries its coupling, so a ratio or
+ *  offset edit shows up as a changed mate. */
+function mateSummary(m: MateRecord, c: MateCouplingRecord | undefined): DiffMateSummary {
+  return {
+    name: m.name,
+    type: m.type,
+    a: m.a,
+    b: m.b,
+    ...(m.pose !== undefined ? { pose: m.pose } : {}),
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+    ...(c !== undefined
+      ? { coupling: { source: c.source, ratio: c.ratio, ...(c.offset !== undefined ? { offset: c.offset } : {}) } }
+      : {}),
   };
 }
 
