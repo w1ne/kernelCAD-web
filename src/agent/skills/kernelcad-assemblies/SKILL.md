@@ -397,6 +397,8 @@ arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 
 Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`. Each driven mate takes one coupling. A chain (`output` <- `idler` <- `input`) is allowed. A mate coupled to itself, a second coupling for a driven mate, or a coupling that closes a loop throws `feature.invalid-args` at declaration.
 
+Do not give a driven mate its own `pose`. `model()` and `solvedModel()` place the part at that authored pose, but `solve_mates`, `review_cad` and physics use `sourcePose * ratio + offset`. When the two values differ, `review_cad` and `verify({ check: 'assembly' })` report the warning `assembly.joint-topology.coupled-pose-conflict` with both values.
+
 **Joint compliance** (next to `limitsDeg` / `limitsMm`): a spring and viscous damping on a scalar joint. Revolute: `{ stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg }` (N·mm/deg, deg, N·mm·s/deg); prismatic: `{ stiffnessNPerMm, springRefMm, dampingNsPerMm }` (N/mm, mm, N·s/mm). Restoring load is `-stiffness * (q - springRef)`, zero at the reference (default 0). The reference uses the same sign as `pose` / the limits and may lie OUTSIDE them: `springRefDeg: -10` with `limitsDeg: [0, 90]` preloads the joint against its 0 degree stop. Negative stiffness or damping, a non-finite value, or a revolute option on a prismatic mate (and vice versa) throws an invalid-args error naming the option. The physics gate emits them on the `<joint>` in SI, and a stiffened joint counts as a declared hold requirement.
 
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
