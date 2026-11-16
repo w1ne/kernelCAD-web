@@ -44507,7 +44507,7 @@
       "id": "wraparound-labeler",
       "kit": "beverage-bottling-line",
       "title": "Wraparound bottle labeler",
-      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -44526,7 +44526,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/wraparound-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-wraparound-labeler.png",
-      "sourceSha256": "dfdf65e2bad491589c44546e24c7279ba0b54fa2d491bd21471cde9dd723055d",
+      "sourceSha256": "70b150550c45356eb91d116502ac2acc4321c22e848fe8a3ca7e31a02b2cc5c2",
       "triangleBudget": 2200,
       "params": [
         {
@@ -44555,18 +44555,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -44595,7 +44603,6 @@
           "color": "#3999a1",
           "parts": [
             "bottle-deck",
-            "label-roll",
             "web-guide"
           ],
           "param": "foodPolymer"
@@ -44610,6 +44617,14 @@
             "pressure-roller"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "label-roll"
+          ],
+          "param": "labelStock"
         }
       ]
     },
