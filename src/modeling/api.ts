@@ -323,6 +323,8 @@ export interface KernelCadApi {
    * Round every corner of a closed 2D polygon with tangent arcs. Returns
    * points for `extrudePolygon` / the prism helpers. Radius is clamped per
    * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   * `segments` is the only option; a positional count, an unknown key or a
+   * non-finite `segments` raises `feature.invalid-args`.
    */
   filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
   /**
