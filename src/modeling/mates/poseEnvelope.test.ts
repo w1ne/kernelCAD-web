@@ -436,6 +436,37 @@ describe('pose-envelope review helpers', () => {
     ]);
   });
 
+  it('tells the user to narrow the source when a coupling drives a mate past its limits', () => {
+    const arm = makeGearPair([-20, 20]);
+    const sample = buildPoseEnvelopeSamples(arm).find((s) => s.name === 'input:max')!;
+    const [diagnostic] = validateMatePoseLimits(arm, sample.poses, sample.name);
+    expect(diagnostic.message).toContain("It follows 'input' through coupleMates (ratio -0.333333, offset 0).");
+    expect(diagnostic.hint).toContain("'output' follows 'input', so it cannot be clamped on its own");
+    expect(diagnostic.hint).toContain("narrow the limits of 'input' to [-60, 60]");
+    expect(diagnostic.hint).not.toContain("clamp 'output'");
+  });
+
+  it('says no source pose fits when the source limits exclude the coupled range', () => {
+    const { arm, kcad } = makeArm();
+    const axis = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: [0, 0, 1] as [number, number, number] });
+    arm.part('plate', kcad.box(60, 20, 2)).connector('in', axis(0)).connector('out', axis(24));
+    arm.part('pinion', kcad.box(5, 5, 5)).connector('axis', axis(0));
+    arm.part('gear', kcad.box(5, 5, 5)).connector('axis', axis(24));
+    arm.mate('input', 'plate.in', 'pinion.axis', 'revolute', { limitsDeg: [0, 90] });
+    arm.mate('output', 'plate.out', 'gear.axis', 'revolute', { limitsDeg: [-20, 20] });
+    arm.coupleMates('output', { source: 'input', ratio: 1, offset: 50 });
+    const [diagnostic] = validateMatePoseLimits(arm, { input: 0, output: 50 }, 'input:min');
+    expect(diagnostic.mateName).toBe('output');
+    expect(diagnostic.hint).toContain("no pose inside the limits of 'input' keeps it inside [-20, 20]");
+  });
+
+  it('keeps the clamp hint for a mate no coupling drives', () => {
+    const arm = makeGearPair([-20, 20]);
+    const [diagnostic] = validateMatePoseLimits(arm, { input: 150, output: 0 }, 'current');
+    expect(diagnostic.mateName).toBe('input');
+    expect(diagnostic.hint).toContain("clamp 'input' to [-100, 100]");
+  });
+
   it('refuses combinatorial sampling above 8 mates with declared limits', () => {
     const { arm, kcad } = makeArm();
     arm

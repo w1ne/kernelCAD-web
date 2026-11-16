@@ -14,7 +14,7 @@ import { detectInterferences, type InterferencePair, pairKey } from '../runtime/
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
 import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
 import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
-import { expandCoupledPoses } from './coupledPoses';
+import { expandCoupledPoses, type MateCouplingRecord } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
 import { solveMates } from './solver';
@@ -237,27 +237,80 @@ export function validateMatePoseLimits(
   sampleName = 'current',
 ): PoseEnvelopeDiagnostic[] {
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
-  for (const mate of arm.__mates()) {
+  const mates = arm.__mates();
+  const couplingByDriven = new Map(arm.__mateCouplings().map((c) => [c.driven, c]));
+  for (const mate of mates) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
     const pose = resolveMatePose(mate, arm, poses);
     if (pose === undefined || Array.isArray(pose)) continue;
-    const [min, max] = limits;
-    if (pose < min || pose > max) {
-      diagnostics.push({
-        code: 'assembly.pose.out-of-limits',
-        severity: 'error',
-        sampleName,
-        sampleStrategy: classifySampleStrategy(sampleName),
-        mateName: mate.name,
-        pose,
-        limits,
-        message: `Mate '${mate.name}' pose ${pose} is outside its declared limits [${min}, ${max}].`,
-        hint: `invalid-args.assembly.pose-out-of-limits — clamp '${mate.name}' to [${min}, ${max}] or widen the mate limits if the mechanism is intended to travel that far.`,
-      });
-    }
+    if (pose >= limits[0] && pose <= limits[1]) continue;
+    diagnostics.push(outOfLimitsDiagnostic(mate.name, pose, limits, sampleName, mates, couplingByDriven.get(mate.name)));
   }
   return diagnostics;
+}
+
+function outOfLimitsDiagnostic(
+  mateName: string,
+  pose: number,
+  limits: readonly [number, number],
+  sampleName: string,
+  mates: readonly MateRecord[],
+  coupling: MateCouplingRecord | undefined,
+): PoseEnvelopeDiagnostic {
+  const [min, max] = limits;
+  const base = {
+    code: 'assembly.pose.out-of-limits' as const,
+    severity: 'error' as const,
+    sampleName,
+    sampleStrategy: classifySampleStrategy(sampleName),
+    mateName,
+    pose,
+    limits,
+  };
+  const message = `Mate '${mateName}' pose ${pose} is outside its declared limits [${min}, ${max}].`;
+  if (coupling === undefined) {
+    return {
+      ...base,
+      message,
+      hint: `invalid-args.assembly.pose-out-of-limits — clamp '${mateName}' to [${min}, ${max}] or widen the mate limits if the mechanism is intended to travel that far.`,
+    };
+  }
+  const source = mates.find((m) => m.name === coupling.source);
+  return {
+    ...base,
+    message: `${message} It follows '${coupling.source}' through coupleMates (ratio ${Number(coupling.ratio.toPrecision(6))}, offset ${coupling.offset ?? 0}).`,
+    hint: coupledOutOfLimitsHint(mateName, limits, coupling, source?.limitsDeg ?? source?.limitsMm),
+  };
+}
+
+/** A coupled mate cannot be clamped on its own: its pose is ratio × source +
+ *  offset. Name the source range that keeps it inside its limits instead. */
+function coupledOutOfLimitsHint(
+  driven: string,
+  limits: readonly [number, number],
+  coupling: MateCouplingRecord,
+  sourceLimits: readonly [number, number] | undefined,
+): string {
+  const [min, max] = limits;
+  const prefix = `invalid-args.assembly.pose-out-of-limits — '${driven}' follows '${coupling.source}', so it cannot be clamped on its own;`;
+  const tail = `or widen the limits of '${driven}' if the mechanism is intended to travel that far.`;
+  const offset = coupling.offset ?? 0;
+  if (coupling.ratio === 0) {
+    return `${prefix} change the coupleMates offset to a value inside [${min}, ${max}], ${tail}`;
+  }
+  const a = (min - offset) / coupling.ratio;
+  const b = (max - offset) / coupling.ratio;
+  let lo = Math.min(a, b);
+  let hi = Math.max(a, b);
+  if (sourceLimits !== undefined) {
+    lo = Math.max(lo, sourceLimits[0]);
+    hi = Math.min(hi, sourceLimits[1]);
+  }
+  if (lo > hi) {
+    return `${prefix} no pose inside the limits of '${coupling.source}' keeps it inside [${min}, ${max}]; change the coupleMates ratio or offset, ${tail}`;
+  }
+  return `${prefix} narrow the limits of '${coupling.source}' to [${Math.ceil(lo * 1000 - 1e-6) / 1000}, ${Math.floor(hi * 1000 + 1e-6) / 1000}], change the coupleMates ratio or offset, ${tail}`;
 }
 
 export async function reviewPoseEnvelope(
