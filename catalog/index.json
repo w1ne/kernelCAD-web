@@ -38658,7 +38658,7 @@
       "id": "air-rinse-enclosure",
       "kit": "beverage-bottling-line",
       "title": "Air rinse enclosure",
-      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and corrugated board.",
+      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -38677,7 +38677,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/air-rinse-enclosure.kcad.ts",
       "preview": "/assets/beverage-bottling-line-air-rinse-enclosure.png",
-      "sourceSha256": "17f4867ee5c5300faef718bd125fcab16e6d9ef6efdfa6950be203fad56f2e40",
+      "sourceSha256": "4f0bca362fb3fc8e42aa9169d0540941184e124fdab2afea4a68cda3f2457e20",
       "triangleBudget": 2200,
       "params": [
         {
@@ -38706,26 +38706,18 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
-        },
-        {
-          "name": "corrugatedBoard",
-          "type": "color",
-          "default": "#b18a5d",
-          "label": "Corrugated board"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c",
-          "corrugatedBoard": "#c49b6b"
+          "foodPolymer": "#2c828c"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75",
-          "corrugatedBoard": "#886342"
+          "foodPolymer": "#286c75"
         }
       },
       "stats": {
@@ -38770,17 +38762,10 @@
             "air-jet-3",
             "air-jet-4",
             "air-jet-5",
-            "air-jet-6"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "corrugatedBoard",
-          "color": "#b18a5d",
-          "parts": [
+            "air-jet-6",
             "exhaust-stack"
           ],
-          "param": "corrugatedBoard"
+          "param": "stainlessSteel"
         }
       ]
     },
