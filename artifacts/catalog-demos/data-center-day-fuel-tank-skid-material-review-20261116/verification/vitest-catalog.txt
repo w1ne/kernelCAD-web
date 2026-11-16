@@ -1,0 +1,7 @@
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 884636ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  880667ms
+ Test Files  105 passed (105)
+      Tests  173 passed (173)
+   Start at  00:50:52
+   Duration  944.51s (transform 594.69s, setup 24.90s, import 1874.04s, tests 2213.60s, environment 45ms)
+exit 0

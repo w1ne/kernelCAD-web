@@ -1,0 +1,36 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/liftPumpCableMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1014[2mms[22m[39m
+[31m     [31m×[31m draws the power cable tail as a rubber jacket, not coated steel[39m[33m 548[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/liftPumpCableMaterial.test.ts[2m > [22mwater-treatment/submersible-lift-station-pump materials[2m > [22mdraws the power cable tail as a rubber jacket, not coated steel
+[31m[1mAssertionError[22m: expected [ 'coatedSteel', 'structuralSteel' ] to deeply equal [ 'coatedSteel', …(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "coatedSteel",[22m
+[2m    "structuralSteel",[22m
+[32m-   "cableJacket",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/liftPumpCableMaterial.test.ts:[2m22:95[22m[39m
+    [90m 20| [39m
+    [90m 21| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 22| [39m    expect(asset.params.filter((param) => param.type === 'color').map(…
+    [90m   | [39m                                                                                              [31m^[39m
+    [90m 23| [39m      [32m'coatedSteel'[39m[33m,[39m [32m'structuralSteel'[39m[33m,[39m [32m'cableJacket'[39m[33m,[39m
+    [90m 24| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 20:43:07
+[2m   Duration [22m 14.13s[2m (transform 10.18s, setup 261ms, import 12.41s, tests 1.01s, environment 0ms)[22m
+

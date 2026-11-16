@@ -103,7 +103,9 @@ for (let k = 0; k < 6; k++) {
 add("water-bath", blk(0, (-1000 + Y2) / 2, ZW - 350, 800, -1000 - Y2, 400).subtract(blk(0, (-1000 + Y2) / 2, ZW - 280, 700, -1100 - Y2, 400)).color(barrel));
 add("water", blk(0, (-1000 + Y2) / 2, ZW - 280, 700, -1100 - Y2, 230).color('#5d9cc4'));
 for (const y of [-1300, -2900, -4500]) for (const s of [-1, 1]) add(`bath-leg-${y}-${s}`, blk(s * 330, y, 0, 70, 70, ZW - 350).color(machine));
-add("air-knife", blk(0, Y2 + 300, ZW + 50, 760, 120, 120).color(trim));
+// The air knife is a stainless blow-off bar that dries the strands, not a
+// guard, so it takes the bath steel rather than the safety trim.
+add("air-knife", blk(0, Y2 + 300, ZW + 50, 760, 120, 120).color(barrel));
 
 // Strand pelletizer: feed rolls and cutter rotor in a housing, chute to the bin.
 const PY = Y2 - 600;

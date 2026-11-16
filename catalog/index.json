@@ -72719,7 +72719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/cold-aisle-roof-panel.kcad.ts",
       "preview": "/assets/data-center-infrastructure-cold-aisle-roof-panel.png",
-      "sourceSha256": "8298ac65bdac16cfa335632bca6ce5432d84f0aaf51937a3acc87302989e78a0",
+      "sourceSha256": "78dd49cf53066f62bfdff13d7ae3e4875e3b19114780c73c6cf2417eb5adca73",
       "triangleBudget": 2200,
       "params": [
         {
@@ -72773,10 +72773,6 @@
             "canopy-frame-rear",
             "canopy-left-beam",
             "canopy-right-beam",
-            "roof-panel-1",
-            "roof-panel-2",
-            "roof-panel-3",
-            "roof-panel-4",
             "support-post-front",
             "support-post-rear"
           ],
@@ -72786,7 +72782,11 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "roof-panel-0"
+            "roof-panel-0",
+            "roof-panel-1",
+            "roof-panel-2",
+            "roof-panel-3",
+            "roof-panel-4"
           ],
           "param": "polymer"
         }
@@ -72796,7 +72796,7 @@
       "id": "condenser-pump-skid",
       "kit": "data-center-infrastructure",
       "title": "Condenser pump skid",
-      "description": "Pumping skid with paired motors, horizontal pump bodies, and manifold pipes. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Pumping skid with paired motors, horizontal pump bodies, and manifold pipes. Knobs: overall scale; painted steel, skid base steel. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -72816,7 +72816,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/condenser-pump-skid.kcad.ts",
       "preview": "/assets/data-center-infrastructure-condenser-pump-skid.png",
-      "sourceSha256": "8ae612ca1e207eec8e89c48e824b457b41f6b331b4a7d6e28bec75f164383c3d",
+      "sourceSha256": "51bd9744e41647a031921d0f38c59b84d3875fec374ad60f5de3a2512e2f28ba",
       "triangleBudget": 2200,
       "params": [
         {
@@ -72835,20 +72835,20 @@
           "label": "Painted steel"
         },
         {
-          "name": "polymer",
+          "name": "skidSteel",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#3d4449",
+          "label": "Skid base steel"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "skidSteel": "#3d4449"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "skidSteel": "#263e48"
         }
       },
       "stats": {
@@ -72863,12 +72863,12 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "skidSteel",
+          "color": "#3d4449",
           "parts": [
             "base-skid"
           ],
-          "param": "polymer"
+          "param": "skidSteel"
         },
         {
           "name": "steel",
@@ -73550,7 +73550,7 @@
       "id": "day-fuel-tank",
       "kit": "data-center-infrastructure",
       "title": "Generator day tank",
-      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, skid base steel. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -73570,7 +73570,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/day-fuel-tank.kcad.ts",
       "preview": "/assets/data-center-infrastructure-day-fuel-tank.png",
-      "sourceSha256": "59d1dc2c70cd14c5b52c6e1ba0bbd76061918beb8a2adaf3f18afda41e1a44fb",
+      "sourceSha256": "1a5e4a7ac057dedc70e775766e2c01fa33231b6576bc96b1783723dc4fb0436b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -73589,20 +73589,20 @@
           "label": "Painted steel"
         },
         {
-          "name": "polymer",
+          "name": "skidSteel",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#3d4449",
+          "label": "Skid base steel"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "skidSteel": "#3d4449"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "skidSteel": "#263e48"
         }
       },
       "stats": {
@@ -73617,12 +73617,12 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "skidSteel",
+          "color": "#3d4449",
           "parts": [
             "support-skid"
           ],
-          "param": "polymer"
+          "param": "skidSteel"
         },
         {
           "name": "steel",
@@ -88394,7 +88394,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/grain-cart.kcad.ts",
       "preview": "/assets/farm-machinery-grain-cart.png",
-      "sourceSha256": "9ca2f5a9c84e5fdc388d876467553cd5b103bcc989c0788dbe062554343bf662",
+      "sourceSha256": "7d6c9734c232f94c665c8203990d0933138edf647072300a30316c480ddb4ffa",
       "triangleBudget": 2200,
       "params": [
         {
@@ -88459,7 +88459,9 @@
             "wagon-front",
             "wagon-rear",
             "drawbar",
-            "grain-cover"
+            "grain-cover",
+            "auger-base",
+            "auger-tube"
           ],
           "param": "paintedSteelColor"
         },
@@ -88477,9 +88479,7 @@
           "color": "#929b9b",
           "parts": [
             "wagon-wheel--1-hub",
-            "wagon-wheel-1-hub",
-            "auger-base",
-            "auger-tube"
+            "wagon-wheel-1-hub"
           ],
           "param": "steelColor"
         }
@@ -119511,7 +119511,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-hv-cable-termination.kcad.ts",
       "preview": "/assets/grid-substation-substation-hv-cable-termination.png",
-      "sourceSha256": "6f6e7bf3e4a72769a0b6c5f398a0f25fb1751d4c1324f1931b4617c58741e68e",
+      "sourceSha256": "b5b4f900afe7f41a1eb9d0886c4265332cadb74c53dfbaae9d985c571c4b0612",
       "triangleBudget": 1800,
       "params": [
         {
@@ -119574,7 +119574,8 @@
           "name": "galvanizedSteel",
           "color": "#7f8c92",
           "parts": [
-            "base"
+            "base",
+            "cable-clamp"
           ],
           "param": "galvanizedSteel"
         },
@@ -119582,8 +119583,7 @@
           "name": "cableJacket",
           "color": "#263d50",
           "parts": [
-            "cable-riser",
-            "cable-clamp"
+            "cable-riser"
           ],
           "param": "cableJacket"
         },
@@ -124901,7 +124901,7 @@
       "id": "substation-transformer-rail-bogie",
       "kit": "grid-substation",
       "title": "Transformer rail bogie",
-      "description": "Low transport bogie with twin rail shoes, crossmembers, and wheel housings. Material controls: galvanized steel, rubber, stainless steel; finish presets: weathered and maintenance.",
+      "description": "Low transport bogie with twin rail shoes, crossmembers, and wheel housings. Material controls: galvanized steel, wheel steel, stainless steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -124920,7 +124920,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-transformer-rail-bogie.kcad.ts",
       "preview": "/assets/grid-substation-substation-transformer-rail-bogie.png",
-      "sourceSha256": "665acf5093d70e9ab24611c8e2e558d8918c27eb572a90eb533e2914853c771f",
+      "sourceSha256": "01e648dd6e13033c9432fe9805d5ee42b52054e812c2e05bc32523fa705998e6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -124939,10 +124939,10 @@
           "label": "Galvanized steel"
         },
         {
-          "name": "rubber",
+          "name": "wheelSteel",
           "type": "color",
-          "default": "#293034",
-          "label": "Rubber"
+          "default": "#4f565a",
+          "label": "Rail wheel steel"
         },
         {
           "name": "stainlessSteel",
@@ -124954,7 +124954,7 @@
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
-          "rubber": "#3b3f3e",
+          "wheelSteel": "#5d5048",
           "stainlessSteel": "#9da4a0"
         },
         "maintenance": {
@@ -124983,15 +124983,15 @@
           "param": "galvanizedSteel"
         },
         {
-          "name": "rubber",
-          "color": "#293034",
+          "name": "wheelSteel",
+          "color": "#4f565a",
           "parts": [
             "rail-wheel",
             "rail-wheel-2",
             "rail-wheel-3",
             "rail-wheel-4"
           ],
-          "param": "rubber"
+          "param": "wheelSteel"
         },
         {
           "name": "stainlessSteel",
@@ -160819,7 +160819,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/lab-gas-manifold-panel.kcad.ts",
       "preview": "/assets/lab-infrastructure-lab-gas-manifold-panel.png",
-      "sourceSha256": "3ff10470b63ce2d733ca8d0153cc1fbafd0cf5226b84768d99eea3fcce10005b",
+      "sourceSha256": "665eec51668c1eded6e465a6f68d5504a672515e1cbf0afdf4714f7bee450042",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160885,8 +160885,7 @@
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "mounting-plate",
-            "main-header"
+            "mounting-plate"
           ],
           "param": "enamel"
         },
@@ -160894,6 +160893,7 @@
           "name": "stainless",
           "color": "#b8c7ca",
           "parts": [
+            "main-header",
             "valve-riser-0",
             "valve-riser-1",
             "valve-riser-2",
@@ -180193,7 +180193,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/grizzly-scalping-deck.kcad.ts",
       "preview": "/assets/mining-grizzly-scalping-deck.png",
-      "sourceSha256": "cefd322b64d9df9aebcfdde3ed5d1ebd62f15a5b41b0267a04c2413b828201d6",
+      "sourceSha256": "21d958484970ce1149d13bfdf7f9bdb9fd1eac7dfd2d914aa017b045e608bd1e",
       "triangleBudget": 3200,
       "params": [
         {
@@ -180352,13 +180352,33 @@
             "vibrator-motor-1",
             "vibrator-feet-1",
             "vibrator-terminal-box-1",
+            "spring-coil-0-0-0",
+            "spring-coil-0-0-1",
+            "spring-coil-0-0-2",
+            "spring-coil-0-0-3",
+            "spring-coil-0-0-4",
             "spring-pedestal-0-0",
             "pedestal-base-0-0",
+            "spring-coil-0-1-0",
+            "spring-coil-0-1-1",
+            "spring-coil-0-1-2",
+            "spring-coil-0-1-3",
+            "spring-coil-0-1-4",
             "spring-pedestal-0-1",
             "pedestal-base-0-1",
             "pedestal-tie-0",
+            "spring-coil-1-0-0",
+            "spring-coil-1-0-1",
+            "spring-coil-1-0-2",
+            "spring-coil-1-0-3",
+            "spring-coil-1-0-4",
             "spring-pedestal-1-0",
             "pedestal-base-1-0",
+            "spring-coil-1-1-0",
+            "spring-coil-1-1-1",
+            "spring-coil-1-1-2",
+            "spring-coil-1-1-3",
+            "spring-coil-1-1-4",
             "spring-pedestal-1-1",
             "pedestal-base-1-1",
             "pedestal-tie-1",
@@ -180375,27 +180395,7 @@
           "color": "#e8c21e",
           "parts": [
             "vibrator-weight-cover-0",
-            "vibrator-weight-cover-1",
-            "spring-coil-0-0-0",
-            "spring-coil-0-0-1",
-            "spring-coil-0-0-2",
-            "spring-coil-0-0-3",
-            "spring-coil-0-0-4",
-            "spring-coil-0-1-0",
-            "spring-coil-0-1-1",
-            "spring-coil-0-1-2",
-            "spring-coil-0-1-3",
-            "spring-coil-0-1-4",
-            "spring-coil-1-0-0",
-            "spring-coil-1-0-1",
-            "spring-coil-1-0-2",
-            "spring-coil-1-0-3",
-            "spring-coil-1-0-4",
-            "spring-coil-1-1-0",
-            "spring-coil-1-1-1",
-            "spring-coil-1-1-2",
-            "spring-coil-1-1-3",
-            "spring-coil-1-1-4"
+            "vibrator-weight-cover-1"
           ]
         },
         {
@@ -182230,7 +182230,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/magnetic-separator-drum.kcad.ts",
       "preview": "/assets/mining-magnetic-separator-drum.png",
-      "sourceSha256": "dfabd08d558c7b78eaf5838e547ce50e31d508e943e4e2017340236c05ba8f5e",
+      "sourceSha256": "a109d9f828cc2464ac4ff46f019d789b8a420165d01a0963c654209a6e2f1942",
       "triangleBudget": 2800,
       "params": [
         {
@@ -182360,6 +182360,7 @@
             "feed-pipe-0",
             "feed-pipe-elbow-0",
             "spray-pipe-0",
+            "wash-header-0",
             "pinch-valve-0-0",
             "pinch-valve-1-0",
             "leg-0-0",
@@ -182408,13 +182409,6 @@
             "launder-outlet-0",
             "tails-spigot-0-0",
             "tails-spigot-1-0"
-          ]
-        },
-        {
-          "name": "wash-header-0",
-          "color": "#7fa6b8",
-          "parts": [
-            "wash-header-0"
           ]
         }
       ]
@@ -187439,7 +187433,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/shaft-headframe.kcad.ts",
       "preview": "/assets/mining-shaft-headframe.png",
-      "sourceSha256": "947fbbbf8b860cba78fadb567b9c908e7d50ba712c0e5611ef90bfca63c79c69",
+      "sourceSha256": "cd95c5be55c08260432c06e779da7000ba2d0c23f00632a6fbc2c109332a2727",
       "triangleBudget": 4500,
       "params": [
         {
@@ -187635,6 +187629,7 @@
             "sheave-1-plummer-a",
             "sheave-1-plummer-b",
             "cage-crosshead",
+            "skip-body",
             "skip-bail",
             "guide-rail--2000",
             "guide-rail-2000"
@@ -187670,7 +187665,6 @@
             "deck-post-3-2",
             "deck-post-3-3",
             "cage-body",
-            "skip-body",
             "winder-house-walls",
             "ladder-stile--2250",
             "ladder-stile--1750",
@@ -216981,7 +216975,7 @@
       "id": "package-induction-conveyor",
       "kit": "postal-logistics",
       "title": "Package induction conveyor",
-      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Scale, belt rubber, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -217002,7 +216996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/package-induction-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-package-induction-conveyor.png",
-      "sourceSha256": "2abb2df7304e2d639a2f445230f81cc6e5ea2720a81d3d32605266a9011f6eb7",
+      "sourceSha256": "793752fd50f3d663fca92148c8826f1d588c77055dfd3abc575bb70c8852b7e7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217015,10 +217009,10 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "beltRubber",
           "type": "color",
-          "default": "#52758b",
-          "label": "Painted steel"
+          "default": "#2c3134",
+          "label": "Belt rubber"
         },
         {
           "name": "structuralSteel",
@@ -217035,13 +217029,12 @@
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#68777a",
+          "beltRubber": "#3d4140",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
-          "paintedSteel": "#e36d32",
-          "structuralSteel": "#454f54",
+          "structuralSteel": "#e36d32",
           "stainlessSteel": "#d9e0de"
         }
       },
@@ -217057,12 +217050,12 @@
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#52758b",
+          "name": "beltRubber",
+          "color": "#2c3134",
           "parts": [
             "belt"
           ],
-          "param": "paintedSteel"
+          "param": "beltRubber"
         },
         {
           "name": "structuralSteel",
@@ -217095,7 +217088,7 @@
       "id": "parcel-belt-diverter",
       "kit": "postal-logistics",
       "title": "Parcel belt diverter",
-      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, belt rubber, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -217116,7 +217109,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-belt-diverter.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-belt-diverter.png",
-      "sourceSha256": "4308ca1c1066b274f45ccb95b4b3ef60c5a9e37e7c7e471f14c271244e36cc97",
+      "sourceSha256": "eddaf35dfb9efbd21a45e817cdd704b53ec06e5ae6ccd62b378dc023829d3f19",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217127,6 +217120,12 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#2c3134",
+          "label": "Belt rubber"
         },
         {
           "name": "paintedSteel",
@@ -217149,11 +217148,13 @@
       ],
       "presets": {
         "weathered": {
+          "beltRubber": "#3d4140",
           "paintedSteel": "#68777a",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
+          "beltRubber": "#2c3134",
           "paintedSteel": "#e36d32",
           "structuralSteel": "#454f54",
           "stainlessSteel": "#d9e0de"
@@ -217171,10 +217172,17 @@
       },
       "palette": [
         {
+          "name": "beltRubber",
+          "color": "#2c3134",
+          "parts": [
+            "belt"
+          ],
+          "param": "beltRubber"
+        },
+        {
           "name": "paintedSteel",
           "color": "#587981",
           "parts": [
-            "belt",
             "side-left",
             "side-right",
             "pusher-arm",
@@ -217907,7 +217915,7 @@
       "id": "postage-meter-workstation",
       "kit": "postal-logistics",
       "title": "Postage meter workstation",
-      "description": "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Scale, painted steel, moulded polymer, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+      "description": "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Scale, painted steel, label tape paper, moulded polymer, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -217928,7 +217936,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postage-meter-workstation.kcad.ts",
       "preview": "/assets/postal-logistics-postage-meter-workstation.png",
-      "sourceSha256": "cd675812737ed55b1cb350c934fd7f9af7215e9d553f0b8e8c0549914d2f91a2",
+      "sourceSha256": "789d1dfbaee36699141f3607c3b9a44176d5cc49264e76531f7777c3cc717f59",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217945,6 +217953,12 @@
           "type": "color",
           "default": "#617780",
           "label": "Painted steel"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#ece7da",
+          "label": "Label tape paper"
         },
         {
           "name": "polymer",
@@ -217968,12 +217982,14 @@
       "presets": {
         "weathered": {
           "paintedSteel": "#68777a",
+          "labelPaper": "#d8cfb9",
           "polymer": "#6c7c7c",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6"
         },
         "highVisibility": {
           "paintedSteel": "#e36d32",
+          "labelPaper": "#f3f1ea",
           "polymer": "#e0b245",
           "structuralSteel": "#454f54",
           "stainlessSteel": "#d9e0de"
@@ -218006,7 +218022,6 @@
             "countertop",
             "display",
             "scale-platform",
-            "paper-roll",
             "lower-door"
           ],
           "param": "paintedSteel"
@@ -218026,6 +218041,14 @@
             "meter-head"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelPaper",
+          "color": "#ece7da",
+          "parts": [
+            "paper-roll"
+          ],
+          "param": "labelPaper"
         }
       ]
     },
@@ -219449,7 +219472,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sliding-shoe-sorter-section.kcad.ts",
       "preview": "/assets/postal-logistics-sliding-shoe-sorter-section.png",
-      "sourceSha256": "83b2475d4aae0e8d6ea4eddf40e6dc926d88423235aa76f02bf216ae321f0f5e",
+      "sourceSha256": "dc01d46c672d5af93aae3aa6c225466e0819b835e9c21cabd2e348eb5dfd1482",
       "triangleBudget": 1800,
       "params": [
         {
@@ -219525,7 +219548,8 @@
           "color": "#bbc4c4",
           "parts": [
             "left-guide",
-            "right-guide"
+            "right-guide",
+            "shoe-rail"
           ],
           "param": "stainlessSteel"
         },
@@ -219533,7 +219557,6 @@
           "name": "safetyAmber",
           "color": "#e7aa35",
           "parts": [
-            "shoe-rail",
             "shoe-a",
             "shoe-b",
             "shoe-c",
@@ -246078,7 +246101,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/friction-washer.kcad.ts",
       "preview": "/assets/recycling-facility-friction-washer.png",
-      "sourceSha256": "91e3e073134e753471707d406f54223dfc5bd1bde2d14d5ded1cd74c16ddf711",
+      "sourceSha256": "e64bf4a5dd68ab092fd85ceea48dfc50779c0ac741c2a211eb73bd4ca13626e4",
       "triangleBudget": 3000,
       "params": [
         {
@@ -246169,6 +246192,7 @@
             "tube",
             "end-plate-feed",
             "end-plate-top",
+            "spray-header",
             "sump-rim",
             "feed-hopper",
             "discharge-chute"
@@ -246268,10 +246292,9 @@
           "param": "drive"
         },
         {
-          "name": "spray-header",
+          "name": "spray-drop-0",
           "color": "#5b8fb0",
           "parts": [
-            "spray-header",
             "spray-drop-0",
             "spray-drop-1",
             "spray-drop-2",
@@ -259641,7 +259664,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/pelletizer-extruder.kcad.ts",
       "preview": "/assets/recycling-facility-pelletizer-extruder.png",
-      "sourceSha256": "34caec9237db064753675888d368fd6f1da92a94ee9e58a66b05f1490ed13d3b",
+      "sourceSha256": "b939fefc0f8a936e4314ba498c42daeb50f6fbd9c7aa685f793288d90901e839",
       "triangleBudget": 2200,
       "params": [
         {
@@ -259779,7 +259802,6 @@
           "parts": [
             "coupling-guard",
             "hopper-rim",
-            "air-knife",
             "pelletizer-door",
             "pellet-bin"
           ],
@@ -259799,6 +259821,7 @@
             "changer-ram-1",
             "die-head",
             "water-bath",
+            "air-knife",
             "pellet-chute"
           ],
           "param": "barrel"
@@ -292471,7 +292494,7 @@
       "id": "welding-curtain-screen",
       "kit": "shipyard",
       "title": "Welding curtain screen",
-      "description": "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Parameters: overall scale, welding curtain vinyl, structural steel and elastomer; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -292494,7 +292517,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/welding-curtain-screen.kcad.ts",
       "preview": "/assets/shipyard-welding-curtain-screen.png",
-      "sourceSha256": "1594485f39a6a7ad6068d6785083c2830721dcbe6f9a97938d68004474726ffb",
+      "sourceSha256": "8a28538216ab92609ea0efdc60682cbfa46a418d20b48a2cd6cc9a1108caa1a3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292507,10 +292530,10 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "curtainVinyl",
           "type": "color",
-          "default": "#7e7060",
-          "label": "Yard finish"
+          "default": "#f07a1a",
+          "label": "Welding curtain vinyl"
         },
         {
           "name": "structuralSteel",
@@ -292527,12 +292550,12 @@
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#958a7d",
+          "curtainVinyl": "#ff8a24",
           "structuralSteel": "#d0d7d8",
           "elastomer": "#3a4245"
         },
         "weathered-yard": {
-          "yardPaint": "#695d50",
+          "curtainVinyl": "#c06a32",
           "structuralSteel": "#828d91",
           "elastomer": "#252b2d"
         }
@@ -292561,13 +292584,13 @@
           "param": "structuralSteel"
         },
         {
-          "name": "yardPaint",
-          "color": "#7e7060",
+          "name": "curtainVinyl",
+          "color": "#f07a1a",
           "parts": [
             "curtain-panel-0",
             "curtain-panel-1"
           ],
-          "param": "yardPaint"
+          "param": "curtainVinyl"
         },
         {
           "name": "elastomer",
@@ -292610,7 +292633,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/welding-gas-cylinder-trolley.kcad.ts",
       "preview": "/assets/shipyard-welding-gas-cylinder-trolley.png",
-      "sourceSha256": "c7eeaf1c1cd8e2e4cc168ef8ec8a022134acc148c87d27b04b176411ee4dc117",
+      "sourceSha256": "99ea73064b33b3c1c3ad81f4ad3552b2bb8609eb85993f6b2077c27bf7a48f37",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292678,9 +292701,7 @@
           "parts": [
             "toe-plate",
             "pull-handle",
-            "cylinder-valve-neck-0",
             "cylinder-valve-handle-0",
-            "cylinder-valve-neck-1",
             "cylinder-valve-handle-1"
           ],
           "param": "structuralSteel"
@@ -292712,6 +292733,14 @@
             "top-grip"
           ],
           "param": "elastomer"
+        },
+        {
+          "name": "cylinder-valve-neck-0",
+          "color": "#c9a43a",
+          "parts": [
+            "cylinder-valve-neck-0",
+            "cylinder-valve-neck-1"
+          ]
         }
       ]
     },
@@ -296634,7 +296663,7 @@
       "id": "solar-carport-canopy",
       "kit": "solar-energy",
       "title": "Solar carport canopy",
-      "description": "Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing. Structure four-post or cantilever; fieldService and highVisibility presets.",
+      "description": "Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing, charging cable jacket. Structure four-post or cantilever; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -296658,7 +296687,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
       "preview": "/assets/solar-energy-solar-carport-canopy.png",
-      "sourceSha256": "ffb6db0a815574936decf20af37719c759b3542bd61bd0f34561d30ceb96848c",
+      "sourceSha256": "373f81bb12a451d7f6f4e299478479b178c401c226c6196a86e2f7a932f39274",
       "triangleBudget": 1800,
       "params": [
         {
@@ -296709,6 +296738,12 @@
           "type": "color",
           "default": "#2f8f6a",
           "label": "EV charger housing"
+        },
+        {
+          "name": "chargerCable",
+          "type": "color",
+          "default": "#202427",
+          "label": "EV charging cable jacket"
         }
       ],
       "presets": {
@@ -296717,14 +296752,16 @@
           "aluminum": "#a9b5b9",
           "solarGlass": "#1e4668",
           "concrete": "#a39d92",
-          "chargerPlastic": "#3a6f9c"
+          "chargerPlastic": "#3a6f9c",
+          "chargerCable": "#262b2e"
         },
         "highVisibility": {
           "galvanizedSteel": "#536367",
           "aluminum": "#d4dcdf",
           "solarGlass": "#183a5b",
           "concrete": "#c4beb2",
-          "chargerPlastic": "#e0a31f"
+          "chargerPlastic": "#e0a31f",
+          "chargerCable": "#1b1e20"
         }
       },
       "stats": {
@@ -296766,10 +296803,7 @@
             "column-right-front",
             "column-cap-right-front",
             "knee-brace-right-front",
-            "ev-charger-holster",
-            "ev-charger-cable-0",
-            "ev-charger-cable-1",
-            "ev-charger-cable-2"
+            "ev-charger-holster"
           ],
           "param": "galvanizedSteel"
         },
@@ -296854,6 +296888,16 @@
             "ev-charger-housing"
           ],
           "param": "chargerPlastic"
+        },
+        {
+          "name": "chargerCable",
+          "color": "#202427",
+          "parts": [
+            "ev-charger-cable-0",
+            "ev-charger-cable-1",
+            "ev-charger-cable-2"
+          ],
+          "param": "chargerCable"
         }
       ]
     },
@@ -351729,7 +351773,7 @@
       "id": "reverse-osmosis-skid",
       "kit": "water-treatment",
       "title": "Reverse osmosis skid",
-      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells; weathered and highVisibility presets.",
+      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells, operator display glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351748,7 +351792,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
       "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
-      "sourceSha256": "be04d7237e0df2c1cd0ce473ef7e779fe0ef37f372d6d10e39864ea24629e695",
+      "sourceSha256": "eb6574e982749d18fc47969b112109afca5b203bf8a1c29d075124c86294fa02",
       "triangleBudget": 3300,
       "params": [
         {
@@ -351794,6 +351838,12 @@
           "type": "color",
           "default": "#f0eee7",
           "label": "Glass-reinforced epoxy shells"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#1f2d36",
+          "label": "Operator display glass"
         }
       ],
       "presets": {
@@ -351801,13 +351851,15 @@
           "coatedSteel": "#687b78",
           "structuralSteel": "#6e6b63",
           "stainlessSteel": "#9ca7a6",
-          "reinforcedComposite": "#d7d3c8"
+          "reinforcedComposite": "#d7d3c8",
+          "displayGlass": "#2a3337"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
           "structuralSteel": "#505b60",
           "stainlessSteel": "#e1ddd0",
-          "reinforcedComposite": "#f7f4e9"
+          "reinforcedComposite": "#f7f4e9",
+          "displayGlass": "#14262f"
         }
       },
       "stats": {
@@ -351840,7 +351892,6 @@
             "feed-pump-fan-cover",
             "pump-support-left",
             "pump-support-right",
-            "operator-display",
             "cabinet-foot-left",
             "cabinet-foot-right"
           ],
@@ -351899,6 +351950,14 @@
             "status-lamp-green"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#1f2d36",
+          "parts": [
+            "operator-display"
+          ],
+          "param": "displayGlass"
         }
       ]
     },
@@ -352322,7 +352381,7 @@
       "id": "submersible-lift-station-pump",
       "kit": "water-treatment",
       "title": "Submersible lift station pump",
-      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel, rubber cable jacket; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -352341,7 +352400,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/submersible-lift-station-pump.kcad.ts",
       "preview": "/assets/water-treatment-submersible-lift-station-pump.png",
-      "sourceSha256": "3454bd0b5fc6903cfd9368baa8bed695d9d43a4d4eabf3515694372d91a07dec",
+      "sourceSha256": "e1c98ba27c167e0efdb8532d51554806436fa563d5825119c5283b42c3fd864d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -352364,16 +352423,24 @@
           "type": "color",
           "default": "#68777b",
           "label": "Structural steel"
+        },
+        {
+          "name": "cableJacket",
+          "type": "color",
+          "default": "#23282b",
+          "label": "Rubber cable jacket"
         }
       ],
       "presets": {
         "weathered": {
           "coatedSteel": "#687b78",
-          "structuralSteel": "#6e6b63"
+          "structuralSteel": "#6e6b63",
+          "cableJacket": "#33383a"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
-          "structuralSteel": "#505b60"
+          "structuralSteel": "#505b60",
+          "cableJacket": "#1d2124"
         }
       },
       "stats": {
@@ -352400,8 +352467,7 @@
             "intake-slot-4",
             "intake-slot-5",
             "handle-left",
-            "handle-right",
-            "cable"
+            "handle-right"
           ],
           "param": "coatedSteel"
         },
@@ -352412,6 +352478,14 @@
             "intake-base"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "cableJacket",
+          "color": "#23282b",
+          "parts": [
+            "cable"
+          ],
+          "param": "cableJacket"
         }
       ]
     },
@@ -356171,7 +356245,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/oil-cooler-module.kcad.ts",
       "preview": "/assets/wind-energy-oil-cooler-module.png",
-      "sourceSha256": "3908a1e83112937318f9c1346045adcfe3e9bd4372e9a41b44b903b22e520647",
+      "sourceSha256": "39e2d71bbdb423824c59ed91e9125edc82c657f77b9b3f8cd4f9f232227dbb7e",
       "triangleBudget": 4200,
       "params": [
         {
@@ -356270,7 +356344,9 @@
             "fan-2-guard-spoke-1",
             "fan-2-guard-spoke-2",
             "fan-2-guard-spoke-3",
-            "fan-2-guard-spoke-4"
+            "fan-2-guard-spoke-4",
+            "header-top",
+            "header-bottom"
           ],
           "param": "aluminium"
         },
@@ -356327,8 +356403,6 @@
           "name": "pipework",
           "color": "#9a5a32",
           "parts": [
-            "header-top",
-            "header-bottom",
             "inlet-line",
             "outlet-line",
             "thermostatic-bypass"

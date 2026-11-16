@@ -1,0 +1,3 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'base' ] to deeply equal ArrayContaining ["base", "cable-clamp"]
+      Tests  1 failed (1)
