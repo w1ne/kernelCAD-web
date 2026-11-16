@@ -64,6 +64,36 @@ function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
 }
 
+const CUTOUT_OPTION_KEYS: ReadonlySet<string> = new Set(['face', 'depth', 'upToFace', 'depthMode', 'name', 'enabled']);
+
+/** Reject a missing option bag or a key `cutout` does not read. A misspelt
+ *  `enable: false` used to be dropped and the pocket still cut; `mode` or
+ *  `symmetric` left the cut blind; a missing `opts` failed with a raw
+ *  TypeError. */
+export function assertCutoutOptionKeys(opts: unknown, featureId: FeatureId | undefined): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'cutout(profile, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { face, depth | upToFace, depthMode?, name?, enabled? }',
+      example: CUTOUT_EXAMPLE,
+      featureId,
+    });
+  }
+  const unknown = Object.keys(opts).find((key) => !CUTOUT_OPTION_KEYS.has(key));
+  if (unknown === undefined) return;
+  invalidArgs({
+    api: 'cutout(profile, opts)',
+    path: `opts.${unknown}`,
+    got: (opts as Record<string, unknown>)[unknown],
+    requires: `a known option key; cutout accepts ${[...CUTOUT_OPTION_KEYS].join(', ')}`,
+    example: CUTOUT_EXAMPLE,
+    featureId,
+  });
+}
+
 /** Cheap O(n²) line-segment self-intersection check. Slice-1 limitation:
  *  only straight (lineTo) segments are checked; segments involving arcs
  *  (tangentArc / threePointsArc / sagittaArc / bulgeArc / radiusArc) are
