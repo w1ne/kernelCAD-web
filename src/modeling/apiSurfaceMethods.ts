@@ -7,6 +7,7 @@ import type { Curve3D } from './capture/curveProxy';
 import type { Sketch } from './capture/sketch';
 import type { Vec3 } from '../shared/intent/types';
 import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import { solveHermiteG2 } from '../kernel/geometry/hermiteG2';
 import { bridgeCurves } from './capture/bridgeCurves';
 import {
@@ -16,6 +17,42 @@ import {
   validateNurbsDegree,
 } from './apiSupport';
 import type { KernelCadApi } from './api';
+
+/** Reject a non-object opts or an unknown key for the 3D curve constructors.
+ *  `spline3d(pts, 0.2)` and `spline3d(pts, { tensoin: 0.2 })` used to build
+ *  with the default 0.5 tension, and `nurbsCurve(cp, { periodic: true })`
+ *  built an open curve, with no diagnostic. */
+function assertCurveOpts(
+  api: 'nurbsCurve' | 'spline3d',
+  keys: readonly string[],
+  example: string,
+  opts: unknown,
+): void {
+  if (opts === undefined || opts === null) return;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: `${api}(points, opts?)`,
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an options object with ${keys.join(', ')}; options are not positional arguments`,
+      example,
+      featureId: api,
+    });
+  }
+  for (const key of Object.keys(opts)) {
+    if (!keys.includes(key)) {
+      invalidArgs({
+        api: `${api}(points, opts)`,
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${keys.join(', ')}`,
+        example,
+        featureId: api,
+      });
+    }
+  }
+}
 
 export function makeNurbsSurfaceMethods(
   session: CaptureSession,
@@ -55,6 +92,7 @@ export function makeNurbsSurfaceMethods(
     },
 
     nurbsCurve(controlPoints, opts) {
+      assertCurveOpts('nurbsCurve', ['degree', 'weights', 'knots', 'closed'], 'nurbsCurve([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { degree: 2 })', opts);
       const degree = opts?.degree ?? 3;
       return session.addCurve3D({
         metadata: {
@@ -96,6 +134,7 @@ export function makeNurbsSurfaceMethods(
           'invalid-args.spline3d.points — pass at least 2 Vec3 points to interpolate.',
         );
       }
+      assertCurveOpts('spline3d', ['tension', 'closed'], 'spline3d([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { tension: 0.2 })', opts);
       const tension = opts?.tension ?? 0.5;
       const scale = (1 - tension) / 6;
       if (opts?.closed === true) {
