@@ -36,6 +36,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import type { Transform } from '../../../shared/runtime/se3';
 import { linkInertialBlock } from '../urdf/linkInertial';
 import { solveMates } from '../../mates/solver';
+import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import { mateToSdfJoint, type ConnectorResolver } from './mateToSdfJoint';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { xmlAttributionComment } from '../../../shared/links/attribution';
@@ -165,6 +166,11 @@ function buildJointBlocks(
     const r = mateToSdfJoint(m, resolver);
     diagnostics.push(...r.diagnostics);
     jointBlocks.push(...r.jointBlocks);
+  }
+  // SDFormat 1.10 has no <mimic>: a coupled joint ships as an independent
+  // joint, so say so instead of dropping the coupling silently.
+  for (const coupling of arm.__mateCouplings()) {
+    diagnostics.push(couplingDropped(coupling));
   }
 
   // World anchor: a fixed virtual joint declared against the `world` frame
@@ -319,6 +325,18 @@ function danglingLinkRef(jointName: string, parent: string, child: string): Comp
     message: `Joint '${jointName}' references undeclared link(s): parent='${parent}', child='${child}'.`,
     hint: 'Every joint must reference parts declared via arm.part(). Call inspect_robot to see the link/joint shape before export.',
     nextAction: NEXT_ACTIONS['export.sdf-gazebo.dangling-link-ref'],
+  };
+}
+
+function couplingDropped(coupling: MateCouplingRecord): CompilerDiagnostic {
+  const offset = coupling.offset ? ` + ${coupling.offset}` : '';
+  return {
+    target: 'export-occt',
+    code: 'export.sdf-gazebo.coupling-dropped',
+    severity: 'warn',
+    message: `Mate '${coupling.driven}' is coupled to '${coupling.source}' (${coupling.driven} = ${coupling.ratio} * ${coupling.source}${offset}, authored units), but SDFormat ${SDF_VERSION} has no <mimic>; '${coupling.driven}' was emitted as an independent joint.`,
+    hint: 'The simulator will not enforce this coupling. Drive both joints from the controller with the authored ratio, or export a format that carries joint couplings.',
+    nextAction: NEXT_ACTIONS['export.sdf-gazebo.coupling-dropped'],
   };
 }
 
