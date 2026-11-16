@@ -40,7 +40,9 @@ p.part("cab-side-window-left", box(97.6, 5, 66.53, true).translate(201.30, -92.4
 p.part("cab-side-window-right", box(97.6, 5, 66.53, true).translate(201.30, 92.45, 244.57).scale(scale).color(windshieldGlass));
 p.part("service-box", box(292.8, 198, 246.4, true).translate(-103.7, 0, 219.2).scale(scale).color(vehiclePaint));
 p.part("lift-platform", box(189.1, 200.2, 20, true).translate(-170.8, 0, 530).scale(scale).color(vehiclePaint));
-p.part("lift-mast", box(18, 18, 132, true).translate(-268.4, 0, 310.8).scale(scale).color(stainlessSteel));
+p.part("lift-post-left", box(14, 14, 178, true).translate(-100, -80, 431).scale(scale).color(stainlessSteel));
+p.part("lift-post-right", box(14, 14, 178, true).translate(-100, 80, 431).scale(scale).color(stainlessSteel));
+p.part("lift-mast", box(18, 18, 275, true).translate(-268.4, 0, 382.5).scale(scale).color(stainlessSteel));
 p.part("wheel-1-left", cylinder(16, 38, 8).rotate([1, 0, 0], 90).translate(-189.1, -98.4, 38).scale(scale).color(rubber));
 p.part("wheel-1-right", cylinder(16, 38, 8).rotate([1, 0, 0], 90).translate(-189.1, 130.4, 38).scale(scale).color(rubber));
 p.part("wheel-2-left", cylinder(16, 38, 8).rotate([1, 0, 0], 90).translate(189.1, -98.4, 38).scale(scale).color(rubber));

@@ -78,12 +78,13 @@ p.part("chassis", b("chassis", [1500, 850, 230], [0, 0, 410]).color(yardPaint));
 p.part("operator-floor", b("operator-floor", [740, 720, 120], [-300, 0, 590]).color(yardPaint));
 p.part("front-cowl", b("front-cowl", [620, 820, 600], [480, 0, 830]).color(yardPaint));
 p.part("seat", b("seat", [440, 460, 180], [-450, 0, 920]).color(yardPaint));
+for (const [px, py] of [[-640, -330], [-640, 330], [40, -330], [40, 330]] as const) p.part(`guard-post-${px}-${py}`, b("guard-post", [70, 70, 925], [px, py, 1112.5]).color(structuralSteel));
 p.part("overhead-guard", b("overhead-guard", [880, 760, 130], [-330, 0, 1640]).color(structuralSteel));
 p.part("traction-wheel-0", c("traction-wheel-0", 190, 310, 12, [-550, -490, 310], [90, 0, 0], 90).color(elastomer));
 p.part("traction-wheel-1", c("traction-wheel-1", 190, 310, 12, [550, -490, 310], [90, 0, 0], 90).color(elastomer));
 p.part("traction-wheel-2", c("traction-wheel-2", 190, 310, 12, [-550, 490, 310], [90, 0, 0], 90).color(elastomer));
 p.part("traction-wheel-3", c("traction-wheel-3", 190, 310, 12, [550, 490, 310], [90, 0, 0], 90).color(elastomer));
-p.part("tow-hook", b("tow-hook", [240, 180, 260], [-900, 0, 290]).color(structuralSteel));
-p.part("bumper", b("bumper", [180, 1000, 170], [870, 0, 250]).color(elastomer));
+p.part("tow-hook", b("tow-hook", [240, 180, 260], [-830, 0, 290]).color(structuralSteel));
+p.part("bumper", b("bumper", [180, 1000, 170], [830, 0, 250]).color(elastomer));
 
 return p.model();

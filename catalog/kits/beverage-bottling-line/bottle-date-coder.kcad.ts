@@ -47,8 +47,8 @@ p.part("controller", finishPart("controller", boxPart(0, -60, 610, 260, 120, 220
 p.part("screen", finishPart("screen", boxPart(0, -130, 690, 190, 25, 100)));
 p.part("print-arm", finishPart("print-arm", boxPart(170, 0, 450, 340, 45, 45)));
 p.part("print-head", finishPart("print-head", boxPart(330, 0, 410, 120, 100, 180)));
-p.part("adjustment-wheel", finishPart("adjustment-wheel", cylinderPart(170, -55, 370, 45, 42, 10)));
-p.part("photoeye", finishPart("photoeye", boxPart(360, 0, 220, 90, 85, 70)));
-p.part("cable-cover", finishPart("cable-cover", boxPart(-180, 0, 70, 35, 50, 550)));
+p.part("adjustment-wheel", finishPart("adjustment-wheel", cylinderPart(170, -55, 410, 45, 42, 10)));
+p.part("photoeye", finishPart("photoeye", boxPart(360, 0, 345, 90, 85, 70)));
+p.part("cable-cover", finishPart("cable-cover", boxPart(-55, 0, 50, 35, 50, 550)));
 
 return p.model();

@@ -30,17 +30,16 @@ presets({
 });
 
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2).scale(scale);
-const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("fiber-drop-terminal");
-p.part("case", b(0, 0, 72, 430, 180, 220).color(powderCoat));
-p.part("hood", b(0, 0, 207, 470, 220, 45).color(powderCoat));
-p.part("face", b(0, -96, 92, 370, 14, 150).color(powderCoat));
-p.part("port-0", c(-135, -110, 0, 45, 18, 8).color(polymer));
-p.part("port-1", c(-81, -110, 0, 45, 18, 8).color(polymer));
-p.part("port-2", c(-27, -110, 0, 45, 18, 8).color(polymer));
-p.part("port-3", c(27, -110, 0, 45, 18, 8).color(polymer));
-p.part("port-4", c(81, -110, 0, 45, 18, 8).color(polymer));
-p.part("port-5", c(135, -110, 0, 45, 18, 8).color(polymer));
+p.part("case", b(0, 0, 0, 430, 180, 220).color(powderCoat));
+p.part("hood", b(0, 0, 220, 470, 220, 45).color(powderCoat));
+p.part("face", b(0, -96, 20, 370, 14, 150).color(powderCoat));
+p.part("port-0", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(-135, -96, 95).scale(scale).color(polymer));
+p.part("port-1", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(-81, -96, 95).scale(scale).color(polymer));
+p.part("port-2", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(-27, -96, 95).scale(scale).color(polymer));
+p.part("port-3", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(27, -96, 95).scale(scale).color(polymer));
+p.part("port-4", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(81, -96, 95).scale(scale).color(polymer));
+p.part("port-5", cylinder(45, 18, 8).rotate([1, 0, 0], 90).translate(135, -96, 95).scale(scale).color(polymer));
 
 return p.model();

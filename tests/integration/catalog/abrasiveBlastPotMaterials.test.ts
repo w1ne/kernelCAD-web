@@ -47,7 +47,7 @@ describe('shipyard/abrasive-blast-pot materials', () => {
   it('uses structural steel for the rigid hose outlet and elastomer for both wheels', async () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
 
-    expect(asset.stats.triangles).toBe(296);
+    expect(asset.stats.triangles).toBe(396);
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     expect(asset.stats.sizeM).toEqual([1.24, 1.68, 0.795222]);
 

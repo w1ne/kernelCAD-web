@@ -33,8 +33,8 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 
 const p = assembly("fiber-route-marker");
 p.part("foot", b(0, 0, 0, 250, 250, 50).color(galvanizedSteel));
-p.part("post", b(0, 0, 220, 95, 95, 390).color(galvanizedSteel));
-p.part("cap", b(0, 0, 445, 210, 210, 60).color(powderCoat));
-p.part("face", b(0, -54, 235, 55, 18, 180).color(powderCoat));
+p.part("post", b(0, 0, 50, 95, 95, 390).color(galvanizedSteel));
+p.part("cap", b(0, 0, 440, 210, 210, 60).color(powderCoat));
+p.part("face", b(0, -54, 90, 55, 18, 180).color(powderCoat));
 
 return p.model();

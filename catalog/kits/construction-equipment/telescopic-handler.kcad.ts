@@ -40,10 +40,11 @@ add('chassis', box(993.6, 436.8, 190, true).translate(0, 0, 335), structuralStee
 add('cab', box(331.2, 304.2, 520, true).translate(276, -140.4, 690), equipmentPaintColor);
 add('cab-glazing', box(99.36, 14, 130.00, true).translate(259.44, -299.50, 825.20), cabGlassColor);
 add('telescopic-boom', box(966, 100, 120, true).translate(-110.4, 0, 530), equipmentPaintColor);
+add('boom-pedestal', box(160, 160, 160, true).translate(-200, 0, 450), structuralSteelColor);
 add('inner-boom', box(524.4, 75, 68, true).translate(-538.2, 0, 569), equipmentPaintColor);
-add('boom-carriage', box(100, 280.8, 180, true).translate(-855.6, 0, 560), structuralSteelColor);
-add('fork-tine-left', box(270, 38, 42, true).translate(-1048.8, -140.4, 131), structuralSteelColor);
-add('fork-tine-right', box(270, 38, 42, true).translate(-1048.8, 140.4, 131), structuralSteelColor);
+add('boom-carriage', box(100, 280.8, 560, true).translate(-855.6, 0, 380), structuralSteelColor);
+add('fork-tine-left', box(270, 38, 42, true).translate(-1030, -140.4, 131), structuralSteelColor);
+add('fork-tine-right', box(270, 38, 42, true).translate(-1030, 140.4, 131), structuralSteelColor);
 
 add('front-grille', path().moveTo(-98.80, -91.26).lineTo(98.80, -91.26).lineTo(83.20, 91.26).lineTo(-83.20, 91.26).close().extrude(16).rotateY(90).translate(446.60, -140.40, 586.00), structuralSteelColor);
 add('headlamp-near', box(22, 45.63, 49.40, true).translate(451.60, -234.70, 554.80), cabGlassColor);
