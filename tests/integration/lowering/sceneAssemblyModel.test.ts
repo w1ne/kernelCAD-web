@@ -202,9 +202,11 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
   it.each([
     { label: 'parameter source with signed ratio and offset', sourcePose: 30, drivenPose: undefined, expectedDriven: -55 },
     { label: 'explicit driven override', sourcePose: 30, drivenPose: 17, expectedDriven: 17 },
-    { label: 'absent source pose', sourcePose: undefined, drivenPose: undefined, expectedDriven: 0 },
+    // An unposed source rests at zero, so the driven mate takes the offset.
+    { label: 'absent source pose', sourcePose: undefined, drivenPose: undefined, expectedDriven: 5 },
+    { label: 'absent source pose in solvedModel', sourcePose: undefined, drivenPose: undefined, expectedDriven: 5, solved: true },
     { label: 'explicit zero source with offset', sourcePose: 0, drivenPose: undefined, expectedDriven: 5 },
-  ])('keeps capture and lowerer coupling poses aligned: $label', async ({ sourcePose, drivenPose, expectedDriven }) => {
+  ])('keeps capture and lowerer coupling poses aligned: $label', async ({ sourcePose, drivenPose, expectedDriven, solved }) => {
     const { records, paramTable, returnValue } = await runScript({
       fileName: 'model-scene-coupled-mate-transforms.kcad.ts',
       code: `
@@ -220,7 +222,7 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
         arm.mate('input', 'base.input', 'driver.axis', 'revolute'${sourcePose === undefined ? '' : ', { pose: drive }'});
         arm.mate('output', 'base.output', 'driven.axis', 'revolute'${drivenPose === undefined ? '' : `, { pose: ${drivenPose} }`});
         arm.coupleMates('output', { source: 'input', ratio: -2, offset: 5 });
-        return arm.model();
+        return ${solved ? "await arm.solvedModel({}, { validate: 'off' })" : 'arm.model()'};
       `,
     });
     const result = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });

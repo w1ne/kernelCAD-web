@@ -110,11 +110,26 @@ describe('diffScriptsTool', () => {
       arm.coupleMates('output', { source: 'input', ratio: -2 });
       return arm.model();
     `;
+    // A ratio-only edit leaves the default pose (source at 0) in place, so no
+    // part moves; only the mate entry changes.
+    const ratioOnly = await diffScriptsTool({
+      baseCode: coupled,
+      code: coupled.replace('ratio: -2 }', 'ratio: -3 }'),
+    });
+    expect(ratioOnly.ok).toBe(true);
+    if (!ratioOnly.ok) return;
+    expect(ratioOnly.parts.changed).toHaveLength(0);
+    expect(ratioOnly.mates.changed.map((m) => m.name)).toEqual(['output']);
+
     const revised = coupled.replace('ratio: -2 }', 'ratio: -3, offset: 15 }');
     const r = await diffScriptsTool({ baseCode: coupled, code: revised });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.parts.changed).toHaveLength(0);
+    // The offset applies at the default pose (#1442), so the driven part 'b'
+    // turns 15 degrees: same volume, moved bbox. Nothing else moves.
+    expect(r.parts.changed.map((p) => p.name)).toEqual(['b']);
+    expect(Math.abs(r.parts.changed[0].volumeMm3.delta)).toBeLessThan(1e-6);
+    expect(r.parts.changed[0].bbox.revised).not.toEqual(r.parts.changed[0].bbox.base);
     expect(r.mates.added).toHaveLength(0);
     expect(r.mates.removed).toHaveLength(0);
     expect(r.mates.changed).toHaveLength(1);

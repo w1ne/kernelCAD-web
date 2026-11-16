@@ -23,6 +23,14 @@ export interface ResolvedConnector {
 
 export type ConnectorResolver = (ref: string) => ResolvedConnector;
 
+/** URDF `<mimic>`: this joint = multiplier * `joint` + offset, in SI units
+ *  (rad or m) of the two joints. */
+export interface UrdfMimic {
+  joint: string;
+  multiplier: number;
+  offset: number;
+}
+
 export interface DummyLinkSpec {
   name: string;
   /** Negligible point mass. The serialiser stamps a 1e-6 kg inertial block. */
@@ -38,10 +46,12 @@ export interface MateToJointResult {
 const DEG_TO_RAD = Math.PI / 180;
 const MM_TO_M = 1e-3;
 
-/** Lower a single MateRecord into URDF joint XML + diagnostics. */
+/** Lower a single MateRecord into URDF joint XML + diagnostics. `mimic`
+ *  is set when coupleMates drives this mate from another mate. */
 export function mateToUrdfJoint(
   mate: MateRecord,
   resolver: ConnectorResolver,
+  mimic?: UrdfMimic,
 ): MateToJointResult {
   const a = resolver(mate.a);
   const b = resolver(mate.b);
@@ -59,13 +69,13 @@ export function mateToUrdfJoint(
     case 'revolute': {
       const kind = mate.limitsDeg !== undefined ? 'revolute' : 'continuous';
       return {
-        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg)],
+        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg, mimic)],
         diagnostics: [],
       };
     }
     case 'prismatic':
       return {
-        jointBlocks: [prismaticJoint(mate.name, parent, child, origin, axis, mate.limitsMm)],
+        jointBlocks: [prismaticJoint(mate.name, parent, child, origin, axis, mate.limitsMm, mimic)],
         diagnostics: [],
       };
     case 'planar':
@@ -76,14 +86,14 @@ export function mateToUrdfJoint(
     case 'cylindrical': {
       const kind = mate.limitsDeg !== undefined ? 'revolute' : 'continuous';
       return {
-        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg)],
+        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg, mimic)],
         diagnostics: [lossyDiag('export.urdf.cylindrical-lossy', mate)],
       };
     }
     case 'pin_slot': {
       const kind = mate.limitsDeg !== undefined ? 'revolute' : 'continuous';
       return {
-        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg)],
+        jointBlocks: [revoluteJoint(mate.name, kind, parent, child, origin, axis, mate.limitsDeg, mimic)],
         diagnostics: [lossyDiag('export.urdf.pin-slot-lossy', mate)],
       };
     }
@@ -126,6 +136,7 @@ function revoluteJoint(
   originMm: Vec3,
   axis: Vec3,
   limitsDeg: readonly [number, number] | undefined,
+  mimic?: UrdfMimic,
 ): string {
   const limitLine = kind === 'revolute' && limitsDeg
     ? `    <limit lower="${(limitsDeg[0] * DEG_TO_RAD).toFixed(6)}" upper="${(limitsDeg[1] * DEG_TO_RAD).toFixed(6)}" effort="1.0" velocity="1.0"/>`
@@ -137,6 +148,7 @@ function revoluteJoint(
     `    <origin xyz="${xyzMmToM(originMm)}" rpy="0 0 0"/>`,
     `    <axis xyz="${axis.map(n => n.toFixed(6)).join(' ')}"/>`,
     ...(limitLine ? [limitLine] : []),
+    ...mimicLines(mimic),
     `  </joint>`,
   ].join('\n');
 }
@@ -148,6 +160,7 @@ function prismaticJoint(
   originMm: Vec3,
   axis: Vec3,
   limitsMm: readonly [number, number] | undefined,
+  mimic?: UrdfMimic,
 ): string {
   const limitLine = limitsMm
     ? `    <limit lower="${(limitsMm[0] * MM_TO_M).toFixed(6)}" upper="${(limitsMm[1] * MM_TO_M).toFixed(6)}" effort="1.0" velocity="1.0"/>`
@@ -159,6 +172,7 @@ function prismaticJoint(
     `    <origin xyz="${xyzMmToM(originMm)}" rpy="0 0 0"/>`,
     `    <axis xyz="${axis.map(n => n.toFixed(6)).join(' ')}"/>`,
     ...(limitLine ? [limitLine] : []),
+    ...mimicLines(mimic),
     `  </joint>`,
   ].join('\n');
 }
@@ -172,6 +186,11 @@ function planarJoint(name: string, parent: string, child: string, originMm: Vec3
     `    <axis xyz="${normal.map(n => n.toFixed(6)).join(' ')}"/>`,
     `  </joint>`,
   ].join('\n');
+}
+
+function mimicLines(mimic: UrdfMimic | undefined): string[] {
+  if (mimic === undefined) return [];
+  return [`    <mimic joint="${escapeXml(mimic.joint)}" multiplier="${mimic.multiplier.toFixed(6)}" offset="${mimic.offset.toFixed(6)}"/>`];
 }
 
 function xyzMmToM(v: Vec3): string {

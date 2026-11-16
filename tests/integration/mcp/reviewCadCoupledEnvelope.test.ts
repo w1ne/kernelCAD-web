@@ -9,7 +9,7 @@ import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 /** 12:36 module-1 pair, 24 mm centres. `gearPhase` is the half-tooth turn
  *  that puts a gear space on the line of centres. */
-function gearPair(outputLimits: string, gearPhase = '180 / 36'): string {
+function gearPair(outputLimits: string, gearPhase = '180 / 36', inputLimits = '[-100, 100]', offset = 0, outputPose?: number): string {
   return `
 const pinion = spurGear({ module: 1, teeth: 12, faceWidth: 8, bore: 5, backlash: 0.15 }).translate(0, 0, 5.5);
 const gear = spurGear({ module: 1, teeth: 36, faceWidth: 8, bore: 4, backlash: 0.15 })
@@ -19,9 +19,9 @@ const stage = assembly('coupled-envelope');
 stage.part('plate', box(60, 40, 5).translate(-12, -20, 0)).connector('in', axis(0)).connector('out', axis(24));
 stage.part('pinion', pinion).connector('axis', axis(0));
 stage.part('gear', gear).connector('axis', axis(24));
-stage.mate('input', 'plate.in', 'pinion.axis', 'revolute', { limitsDeg: [-100, 100] });
-stage.mate('output', 'plate.out', 'gear.axis', 'revolute', { limitsDeg: ${outputLimits} });
-stage.coupleMates('output', { source: 'input', ratio: -12 / 36 });
+stage.mate('input', 'plate.in', 'pinion.axis', 'revolute', { limitsDeg: ${inputLimits} });
+stage.mate('output', 'plate.out', 'gear.axis', 'revolute', { limitsDeg: ${outputLimits}${outputPose === undefined ? '' : `, pose: ${outputPose}`} });
+stage.coupleMates('output', { source: 'input', ratio: -12 / 36, offset: ${offset} });
 stage.transmission('pinion-to-gear', {
   kind: 'gear-pair', sourceMate: 'input', drivenMates: ['output'],
   input: 'pinion', output: 'gear', path: ['pinion', 'gear'], ratio: -12 / 36,
@@ -55,5 +55,34 @@ describe('review_cad pose envelope with coupled mates', () => {
     expect(clashes).toContainEqual(['input:min', 'pinion', 'gear']);
     expect(clashes).toContainEqual(['input:max', 'pinion', 'gear']);
     expect(review.ok).toBe(false);
+  }, 180_000);
+
+  it('checks the driven gear limits at its coupling offset at rest', async () => {
+    // A 30-degree offset is three gear teeth, so the mesh is unchanged. At
+    // rest the gear sits at 30 degrees, inside [10, 50]; its uncoupled 0 is not.
+    const review = await reviewCadTool({
+      code: gearPair('[10, 50]', '180 / 36', '[-60, 60]', 30),
+      includeInterference: true,
+      includePoseEnvelope: true,
+    });
+    expect(review.diagnostics.filter((d) => d.code === 'assembly.pose.out-of-limits')).toEqual([]);
+    expect(review.poseEnvelope!.interferencePairs).toEqual([]);
+    expect(review.ok).toBe(true);
+  }, 180_000);
+
+  it('warns when the driven gear declares a pose its coupling contradicts', async () => {
+    // 20 degrees is two gear teeth, so the mesh is clean either way. The model
+    // shows the gear at 20 degrees; solve_mates and review derive 0 from the
+    // pinion at rest. Say so instead of checking a pose nobody sees.
+    const review = await reviewCadTool({
+      code: gearPair('[-35, 35]', '180 / 36', '[-100, 100]', 0, 20),
+      includeInterference: true,
+      includePoseEnvelope: true,
+    });
+    const conflicts = review.diagnostics.filter((d) => d.code === 'assembly.joint-topology.coupled-pose-conflict');
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0]).toMatchObject({ severity: 'warning', mateName: 'output' });
+    expect(conflicts[0].message).toContain("declares pose 20, but coupleMates derives 0 from 'input'");
+    expect(review.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   }, 180_000);
 });

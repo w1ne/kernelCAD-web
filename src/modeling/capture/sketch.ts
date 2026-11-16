@@ -108,7 +108,7 @@ const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
 
 /** Option keys `Sketch.extrude` accepts. Anything else is a likely typo and is
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
-const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
+const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 'symmetric']);
 
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
@@ -219,12 +219,26 @@ export class Sketch {
    *   sweeps, so a profile that does not touch the origin changes its
    *   bounding box. Defaults to 0 (straight extrude). Not supported for
    *   face-bound sketches (throws at lowering time).
+   * @param opts.taperDeg draft angle of the side walls in degrees (number or
+   *   ParamRef), strictly between -90 and 90. The profile stays exact on the
+   *   sketch plane; a positive taper narrows it toward the far end by
+   *   `depth × tan(taperDeg)` per side (the walls lean in), a negative taper
+   *   widens it. Cannot be combined with `twistAngle`.
+   * @param opts.symmetric when `true`, extrude `depth / 2` to each side of the
+   *   sketch plane (a mid-plane extrude: z from `-depth / 2` to `depth / 2`)
+   *   instead of 0..depth along +Z. `depth` stays the total thickness. Cannot
+   *   be combined with `taperDeg`, `twistAngle` or a face-bound sketch.
    *
    * Returns a `Shape` (3D solid).
    */
   extrude(
     depth: Editable<number>,
-    opts?: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } | null,
+    opts?: {
+      faceLabels?: FaceLabelsMap;
+      twistAngle?: Editable<number>;
+      taperDeg?: Editable<number>;
+      symmetric?: boolean;
+    } | null,
   ): Shape {
     // Tolerate an explicit `null` opts: the pre-guard implementation read
     // `opts?.faceLabels`, so JS/agent callers could pass null. Keep that
@@ -243,6 +257,22 @@ export class Sketch {
       this.id,
       'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
     );
+    assertEditableNumber(
+      opts.taperDeg,
+      'Sketch.extrude: opts.taperDeg',
+      this.id,
+      'Pass opts.taperDeg as a draft angle in degrees — a number or a param() reference.',
+    );
+    if (opts.symmetric !== undefined && typeof opts.symmetric !== 'boolean') {
+      invalidArgs({
+        api: 'Sketch.extrude(depth, { symmetric })',
+        path: 'opts.symmetric',
+        got: opts.symmetric,
+        requires: 'true (extrude depth/2 to each side of the sketch plane) or false',
+        example: 'path()...close().extrude(10, { symmetric: true })',
+        featureId: this.id,
+      });
+    }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -258,6 +288,14 @@ export class Sketch {
         // byte-identical to the old literal record for a plain number.
         depth: toParam(depth, 'mm'),
         twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
+        // Recorded only when given, so untapered records stay byte-identical.
+        ...(opts.taperDeg === undefined || opts.taperDeg === 0
+          ? {}
+          : { taperDeg: toParam(opts.taperDeg, 'deg') }),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...(opts.symmetric === true
+          ? { symmetric: { expression: 'true', unit: 'unitless', evaluated: 1 } }
+          : {}),
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });

@@ -543,7 +543,18 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // does not touch the origin changes its bounding box. Face-bound extrudes
 // (projectCurve output) reject a non-zero twist with feature.invalid-args,
 // as does any unknown option key.
-.extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape
+// taperDeg (deg; number or ParamRef, strictly inside -90..90) drafts the side
+// walls about the sketch plane: positive narrows the profile toward the far end
+// by depth*tan(taperDeg) per side, negative widens it. Not with twistAngle or a
+// face-bound sketch; a taper that closes the profile emits
+// feature.extrude.taper-failed. Example: drafted boss
+//   path().moveTo(-10,-10).lineTo(10,-10).lineTo(10,10).lineTo(-10,10).close().extrude(10, { taperDeg: 3 })
+// symmetric: true extrudes depth/2 to each side of the sketch plane (a
+// mid-plane extrude, z = -depth/2..depth/2); depth stays the total thickness.
+// Not with taperDeg, twistAngle or a face-bound sketch (feature.invalid-args).
+// Example: 8 mm link bar centred on z = 0
+//   path()...close().extrude(8, { symmetric: true })
+.extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; taperDeg?: Editable<number>; symmetric?: boolean }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
 // Profile coords are (radial-X, axial-Z); all x >= 0.

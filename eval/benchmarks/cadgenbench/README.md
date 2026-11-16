@@ -25,6 +25,15 @@ the leaderboard is a separate, manual decision.
 | generation | drawing PNG(s) + prompt → LLM writes `.kcad.ts` → STEP export → validity pre-check |
 | editing | `input.step` + `inspect({ of: 'step' })` summary + renders + change request → LLM writes `.kcad.ts` that calls `lib.fromSTEP('./input.step')` → STEP export → validity pre-check |
 
+- Optional bounded visual correction: the existing --visual-review flag still
+  runs one review. --visual-review-rounds 2 (or 3) tests successive revisions,
+  starting each round from the last accepted STEP. Invalid, unclear, unchanged,
+  or worse revisions stop the loop; every accepted candidate passes the same
+  STEP gate and matched-view A/B review before it replaces the checkpoint.
+  Individual review/response/comparison files and checkpoints are numbered
+  from the second round. Max three rounds; no new solver or MCP tools.
+  The effect on held-out CAD Score has not yet been measured. The default
+  remains zero visual rounds, to avoid extra model calls and false confidence.
 - The closed loop (`src/agent/loop/closedLoop.ts`) repairs failures. An
   export error or a failed validity check (open shell, non-manifold mesh,
   BRepCheck error) becomes a typed verdict in the repair prompt.
