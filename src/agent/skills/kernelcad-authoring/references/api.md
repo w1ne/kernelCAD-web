@@ -517,6 +517,19 @@ const plate = box(60, 40, 6)
 
 **Loads from motion.** `feaStudy({ loadsFrom: { motion, part } })` takes the worst sampled joint wrench from `kinematic.motionLoad` instead of a hand-typed load. `partLoads` ranks samples by a named proxy (section bending stress, else joint-moment magnitude); the study applies the selected force + moment as a statically equivalent remote load and records the pose in the summary and S2 ledger. `loads` and `loadsFrom` are mutually exclusive; a part with no sampled load throws at capture.
 
+**Rocket flight study.** `arm.flightStudy({ motor, aero, launch, recovery, minStabilityCal })` (or `shape.flightStudy` for a one-solid rocket) declares a model-rocket flight. Mass and CG come from the parts; name the motor stand-in with `motor.part` (its mass is replaced by `totalMassKg`, propellant burns with impulse). Name `aero.nose.part` and `aero.fins: { count, part }` and the Barrowman CP comes from that geometry (root / tip chord, span, sweep, position); otherwise declare the dimensions in mm. `minStabilityCal` fails evaluate with `flight.stability.below-min`. `run_flight` returns apogee, max speed / acceleration, rail-exit speed, descent rate, a t/z/v/a/p_static series and an animationView track. The script must `return arm.model()`.
+
+```typescript
+arm.flightStudy({
+  motor: { thrustCurve: [[0, 0], [0.15, 30], [1.9, 12], [2.12, 0]], totalMassKg: 0.062, propellantKg: 0.03, part: 'motor' },
+  aero: { cd: 0.55, nose: { shape: 'ogive', part: 'nose' }, fins: { count: 3, part: 'fins' } },
+  launch: { railM: 1.5, siteAltitudeM: 120 },
+  recovery: [{ part: 'chute', cd: 1.5, diameterMm: 450, deploy: 'apogee+1', separates: ['nose'] }],
+  minStabilityCal: 1,
+});
+return arm.model();
+```
+
 ### Sketch methods
 
 A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
