@@ -53,5 +53,11 @@ describe('parseArgs', () => {
   it('keeps visual review opt-in', () => {
     expect(parseArgs([], {}).visualReview).toBe(false);
     expect(parseArgs(['--visual-review'], {}).visualReview).toBe(true);
+    expect(parseArgs([], {}).visualReviewRounds).toBe(0);
+    expect(parseArgs(['--visual-review'], {}).visualReviewRounds).toBe(1);
+    expect(parseArgs(['--visual-review-rounds', '2'], {})).toMatchObject({ visualReview: true, visualReviewRounds: 2 });
+    expect(() => parseArgs(['--visual-review-rounds'], {})).toThrow(/--visual-review-rounds/);
+    expect(() => parseArgs(['--visual-review-rounds', '0'], {})).toThrow(/--visual-review-rounds/);
+    expect(() => parseArgs(['--visual-review-rounds', '4'], {})).toThrow(/--visual-review-rounds/);
   });
 });
