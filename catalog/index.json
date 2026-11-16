@@ -41545,7 +41545,7 @@
       "id": "corrugated-case-stack",
       "kit": "beverage-bottling-line",
       "title": "Corrugated case stack",
-      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for stainless steel and corrugated board.",
+      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for corrugated board, paperboard edge protectors and the paper label.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -41564,7 +41564,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/corrugated-case-stack.kcad.ts",
       "preview": "/assets/beverage-bottling-line-corrugated-case-stack.png",
-      "sourceSha256": "0e5ff4412d4931378a740fc5e04f1c5acef2740789118339cafcac50c1e5d3f5",
+      "sourceSha256": "7f81bf1eb77be411760be6b07810548a4b9ccbb2c2b855d77c4a87f1261ab10b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41577,26 +41577,34 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#aebdc1",
-          "label": "Stainless steel"
-        },
-        {
           "name": "corrugatedBoard",
           "type": "color",
           "default": "#b18a5d",
           "label": "Corrugated board"
+        },
+        {
+          "name": "edgeBoard",
+          "type": "color",
+          "default": "#8a6a48",
+          "label": "Paperboard edge protectors"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#ece6d6",
+          "label": "Paper shipping label"
         }
       ],
       "presets": {
         "sanitaryLine": {
-          "stainlessSteel": "#d2dfe1",
-          "corrugatedBoard": "#c49b6b"
+          "corrugatedBoard": "#c49b6b",
+          "edgeBoard": "#9a7a55",
+          "labelPaper": "#f6f3ea"
         },
         "legacyPlant": {
-          "stainlessSteel": "#858f91",
-          "corrugatedBoard": "#886342"
+          "corrugatedBoard": "#886342",
+          "edgeBoard": "#6b513a",
+          "labelPaper": "#d8cfb8"
         }
       },
       "stats": {
@@ -41611,8 +41619,8 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
           "parts": [
             "case-0-body",
             "case-1-body",
@@ -41628,19 +41636,26 @@
             "case-1-flap-back",
             "case-2-flap-back",
             "case-3-flap-back",
-            "case-4-flap-back",
-            "corner-protector-left",
-            "corner-protector-right"
+            "case-4-flap-back"
           ],
-          "param": "stainlessSteel"
+          "param": "corrugatedBoard"
         },
         {
-          "name": "corrugatedBoard",
-          "color": "#b18a5d",
+          "name": "labelPaper",
+          "color": "#ece6d6",
           "parts": [
             "stack-label"
           ],
-          "param": "corrugatedBoard"
+          "param": "labelPaper"
+        },
+        {
+          "name": "edgeBoard",
+          "color": "#8a6a48",
+          "parts": [
+            "corner-protector-left",
+            "corner-protector-right"
+          ],
+          "param": "edgeBoard"
         }
       ]
     },
