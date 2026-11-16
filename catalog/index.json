@@ -62996,7 +62996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/concrete-placement-bucket.kcad.ts",
       "preview": "/assets/construction-equipment-concrete-placement-bucket.png",
-      "sourceSha256": "412c69c00617e876065db320539d9581dfc0e6f5156adf9ee6f04294f7b465eb",
+      "sourceSha256": "64b859fe37d7eeaa988e76f855c3cbab47e674d095b9212f7438e93c9d2c7221",
       "triangleBudget": 3000,
       "params": [
         {
@@ -127994,7 +127994,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dosing-pump-skid.kcad.ts",
       "preview": "/assets/hydroponics-dosing-pump-skid.png",
-      "sourceSha256": "bf20e9cc6a5c79f259f55ed22e3b34c2510023e2a776c9cc3a86764924b5abf1",
+      "sourceSha256": "5ca3d1254df89e41111acd9d8d11be7bc35c59ec79ab45a5aa7f7cdd08e724ae",
       "triangleBudget": 5200,
       "params": [
         {
@@ -130259,7 +130259,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-climate-sensor-post.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-climate-sensor-post.png",
-      "sourceSha256": "e0d5288e3b83f63331525551b7a67248890eb26890f0c5a9f35b40e1bf4a863b",
+      "sourceSha256": "a86161ce8a687b28b72b325a21c553a6da72dfb9d0195e50613bbbde478a2a25",
       "triangleBudget": 2400,
       "params": [
         {
@@ -130738,7 +130738,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-fogger-header.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-fogger-header.png",
-      "sourceSha256": "8641841b5f526b81ae3f4583725a5a606684ac87eb7a14140bd2bed251ca3ebc",
+      "sourceSha256": "86671f9a411cd663aa933483fbff639a65745b527685f361394c87cb3bf3f5d7",
       "triangleBudget": 5200,
       "params": [
         {
@@ -131256,7 +131256,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-tunnel-bay.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-tunnel-bay.png",
-      "sourceSha256": "a5d4b920242aa8da384dbdffb69ffdaf5ad85fd9d058a95166dddbba74b8a570",
+      "sourceSha256": "a414a504ee499f6b11d81e3af76c214e64f831150f8e7f0c70bb2bb6ccf6166a",
       "triangleBudget": 6000,
       "params": [
         {
@@ -131502,7 +131502,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ec-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ec-meter.png",
-      "sourceSha256": "776b1ffeb673cfd30fb1a3fdae56040326696ef1778dc4c7d9129bf4dbc42ece",
+      "sourceSha256": "ffa5cbc0a86e4fb658169109836a5750a87fd307d77ade67e63319679bf968cf",
       "triangleBudget": 2600,
       "params": [
         {
@@ -131723,7 +131723,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ph-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ph-meter.png",
-      "sourceSha256": "b090206e458e1a2a936e73da34be66b6ee0a61cbf8b4ae89b213bb41393c3ef0",
+      "sourceSha256": "91e46e33feafc5b52d298c0a79b9ed7f2942e97cfcca173eec853631a6f78204",
       "triangleBudget": 3600,
       "params": [
         {
@@ -132754,7 +132754,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/inline-water-heater.kcad.ts",
       "preview": "/assets/hydroponics-inline-water-heater.png",
-      "sourceSha256": "980d5b63ff592b0ce6272632932b86950961d8ee619aa29f006347cdbc4532d4",
+      "sourceSha256": "43632d442fbf45037befb6f2ad67a07526d4ef416dcd77ecdb6a571c222a224f",
       "triangleBudget": 3600,
       "params": [
         {
@@ -133334,7 +133334,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/media-filter-vessel.kcad.ts",
       "preview": "/assets/hydroponics-media-filter-vessel.png",
-      "sourceSha256": "9de25a1879e039406ca2facb0dea08441fdd3b3359bdf5166b6d0ae15a2fc741",
+      "sourceSha256": "09b6555a65b5394d2b41892c638be94500c7f3b1f0bef372bf48109958aaabfd",
       "triangleBudget": 4800,
       "params": [
         {
@@ -134462,7 +134462,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-measuring-cylinder.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-measuring-cylinder.png",
-      "sourceSha256": "9c8c2f28c354b62ae9aafd5e96bdecda4330d6239d4087e640f99b07022a644f",
+      "sourceSha256": "3d453192322cef6487867bd52413230bb63c23e01ea1550daa5aa327157729b1",
       "triangleBudget": 3000,
       "params": [
         {
@@ -135220,7 +135220,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/overhead-grow-light-frame.kcad.ts",
       "preview": "/assets/hydroponics-overhead-grow-light-frame.png",
-      "sourceSha256": "ef66c39a655bc155aee300226777835e7c6e813fa04ec789327128b3ae9696f9",
+      "sourceSha256": "991864d8ea40879ddfcecf0c2ab9fa1668e9942a688ec56b6dbb0f108ba57f03",
       "triangleBudget": 3600,
       "params": [
         {
@@ -135480,7 +135480,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/peristaltic-dosing-pump.kcad.ts",
       "preview": "/assets/hydroponics-peristaltic-dosing-pump.png",
-      "sourceSha256": "48f0062e34c218df550a7829a22ac2b2388b71ea2946903e70af500d333ef210",
+      "sourceSha256": "bffeb150689287d9f500ed78155df23983bc8bf7c39c2ab49254a436c08d1e4a",
       "triangleBudget": 6400,
       "params": [
         {
@@ -135825,7 +135825,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ph-probe-flow-cell.kcad.ts",
       "preview": "/assets/hydroponics-ph-probe-flow-cell.png",
-      "sourceSha256": "2ce444979fca7aaf343f6491be7bbe96cd867036e0f87f6a54b670d05fde0ac4",
+      "sourceSha256": "dc559a30fb823b248b0d7f7a620edca1af89657476eb1f10d6f5cfb924fde5aa",
       "triangleBudget": 3600,
       "params": [
         {
@@ -136766,7 +136766,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/return-water-header.kcad.ts",
       "preview": "/assets/hydroponics-return-water-header.png",
-      "sourceSha256": "fe3ee11a16a2a112d718b7e04868763d3cae0127901c7706c18c2f7b23adda9b",
+      "sourceSha256": "0d4b95fadb91cf3aa26e951d6c11e436e2385ffc3de68e390f9381419ce389e6",
       "triangleBudget": 4800,
       "params": [
         {
@@ -137291,7 +137291,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/screen-filter-housing.kcad.ts",
       "preview": "/assets/hydroponics-screen-filter-housing.png",
-      "sourceSha256": "e29b73c0f1f70cb2c62f4b8891a04b5740ddac680099950bf57d190153b650d5",
+      "sourceSha256": "10f6712b1d2ddec5c57de0b170bc2d60304a7024e0ba631fff0df238235e086d",
       "triangleBudget": 2000,
       "params": [
         {
@@ -137907,7 +137907,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/seedling-transplant-tool.kcad.ts",
       "preview": "/assets/hydroponics-seedling-transplant-tool.png",
-      "sourceSha256": "6766640e4b010bdd6366c060bda744fd5eede0c7c94a1db5b9774de76cf3c911",
+      "sourceSha256": "98561709f56b3562d4c0e5d7f517dc2c3bc50916caf38c05a4c6abf3be265ecf",
       "triangleBudget": 1600,
       "params": [
         {
@@ -138064,7 +138064,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/solution-mixing-tank.kcad.ts",
       "preview": "/assets/hydroponics-solution-mixing-tank.png",
-      "sourceSha256": "79ae8b3e2c77f885ef3e76bb74808f4555c8617fc03effbeb9febd1861c617f6",
+      "sourceSha256": "72cad7f71befe6f2fb8f15cd084945632cb3189a022435b4ec2520b2b0d35c9f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -138355,7 +138355,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/stock-solution-tank.kcad.ts",
       "preview": "/assets/hydroponics-stock-solution-tank.png",
-      "sourceSha256": "af332ee8adaef72805123438ad05fa211170f4db89e6b0a37468b274984c2c7b",
+      "sourceSha256": "3d726f89122c725dae8dfc6bf7df0ddcabab36c725760030d7b63d6850d4db0e",
       "triangleBudget": 3200,
       "params": [
         {
@@ -138640,7 +138640,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/substrate-grow-gutter.kcad.ts",
       "preview": "/assets/hydroponics-substrate-grow-gutter.png",
-      "sourceSha256": "6d53b9298b62710bf185c4c2bbcd5ddb438978188e977d0c9ac57daa9b5b9c7b",
+      "sourceSha256": "a7cd7d4d8d124acce5ff57d7a8dfc95cdfd2ca68282febbc2eef9564e57a7bf3",
       "triangleBudget": 2800,
       "params": [
         {
@@ -139143,7 +139143,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/uv-treatment-chamber.kcad.ts",
       "preview": "/assets/hydroponics-uv-treatment-chamber.png",
-      "sourceSha256": "5d6f7b34568f75804f25bb00c9a2045603c3c189c413ce5ca334030b536c9167",
+      "sourceSha256": "a47119c13ad41c95b724f0f5d0d9ad7fe54b354aa65006ebc5111709cebe75bd",
       "triangleBudget": 2400,
       "params": [
         {
@@ -139380,7 +139380,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/venturi-injector-assembly.kcad.ts",
       "preview": "/assets/hydroponics-venturi-injector-assembly.png",
-      "sourceSha256": "f76e7ffb41ca10a55d2a102bbc05f6501feb4be0279eee4183d94af8355d5845",
+      "sourceSha256": "7bfc69972a99edbde1652b55443ad81bfe69cbfa691d8823616b2a48798961c4",
       "triangleBudget": 2800,
       "params": [
         {
@@ -139906,7 +139906,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/wall-mounted-co2-sensor.kcad.ts",
       "preview": "/assets/hydroponics-wall-mounted-co2-sensor.png",
-      "sourceSha256": "cb06c4b0f1d5fa1598fbccadef8e10ecacfbdac56da29eba8eb843030e7bfa1c",
+      "sourceSha256": "ee0a9d56f4a4511009f4845e7f288c23b67f89966c9c383b65871f93e533d528",
       "triangleBudget": 2400,
       "params": [
         {
@@ -340407,7 +340407,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/anesthesia-machine.kcad.ts",
       "preview": "/assets/vet-clinic-anesthesia-machine.png",
-      "sourceSha256": "8287b320e2afa35e612c9ebc318e87b7b4efce9c854cd87ed731eb0ee388941b",
+      "sourceSha256": "c51f71ed8d8548ecd7b9689c9bc488df09d995f4cf6a908313238975116da4ba",
       "triangleBudget": 4000,
       "params": [
         {
@@ -343328,7 +343328,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mobile-surgical-light.kcad.ts",
       "preview": "/assets/vet-clinic-mobile-surgical-light.png",
-      "sourceSha256": "1316377c55385b9b79578fc7419ba5ef8984695226946fd010e38c103684148b",
+      "sourceSha256": "46c8c54e783a1481ae9e2ae5f63c9d39957f2e86eca5a8494861a9fc0f6fd52e",
       "triangleBudget": 4000,
       "params": [
         {
@@ -345065,7 +345065,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/stainless-kennel-bank.kcad.ts",
       "preview": "/assets/vet-clinic-stainless-kennel-bank.png",
-      "sourceSha256": "373ea1e7f4e60b3ad9582716460dd5205c53aa611a73ad95d28f3a93452da987",
+      "sourceSha256": "66fa5d35b4dffa25aae0afb953308591c7e75d66113eb7e8e3d5b9a1858a3be4",
       "triangleBudget": 6500,
       "params": [
         {
@@ -346195,7 +346195,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/veterinary-surgery-table.kcad.ts",
       "preview": "/assets/vet-clinic-veterinary-surgery-table.png",
-      "sourceSha256": "00417bab3cc8e56d0de0998a43765926f51e0319320450684589bea2726030de",
+      "sourceSha256": "0b97c3c449fe356a8584392c9ba4b006d37baeafa1bddc89a1ff44e53956ea7a",
       "triangleBudget": 2000,
       "params": [
         {

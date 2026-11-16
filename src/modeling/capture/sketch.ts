@@ -110,6 +110,9 @@ const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 'symmetric']);
 
+/** Option keys `Sketch.revolve` accepts. */
+const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels']);
+
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
  * Shared by `extrude`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
@@ -317,9 +320,31 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap }): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
-    const angleDeg = opts?.angleDeg ?? 360;
+  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap } | null): Shape {
+    // Tolerate an explicit `null`, as extrude does. A positional angle,
+    // `revolve(180)`, used to be read as an empty option bag and built a full
+    // 360° solid; reject it with the option-bag form.
+    opts ??= {};
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.revolve({ angleDeg })',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an option object { angleDeg?, faceLabels? } or no argument (360°); the angle is not positional',
+        example: 'path()...close().revolve({ angleDeg: 180 })',
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_REVOLVE_KEYS,
+      this.id,
+      (key) => `Sketch.revolve: unknown option '${key}'.`,
+      'revolve',
+    );
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'revolve');
+    const angleDeg = opts.angleDeg ?? 360;
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
