@@ -353,7 +353,7 @@ export function validateCircularPatternOpts(
  * Validate `shell(thickness, opts)` options and return the faces to open.
  * Any key other than `face` throws, as does a missing or empty `face`.
  */
-export function resolveShellFaces(opts: unknown, featureId: FeatureId): unknown[] {
+export function resolveShellFaces(opts: unknown, featureId: FeatureId): (FaceSelector | string)[] {
   const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
     ? Object.keys(opts).find((key) => key !== 'face')
     : undefined;
@@ -382,5 +382,5 @@ export function resolveShellFaces(opts: unknown, featureId: FeatureId): unknown[
       featureId,
     });
   }
-  return list;
+  return list as (FaceSelector | string)[];
 }
