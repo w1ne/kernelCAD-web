@@ -4,6 +4,7 @@
 // the profile toward the far end, a negative taper widens it.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isTopologicallyValid } from '../../../src/kernel/backends/occt/edgeFeatureValidity';
 import { buildModel } from '../../../src/modeling/buildModel';
@@ -104,5 +105,23 @@ describe('Sketch.extrude taperDeg', () => {
     ]) {
       expect(await errorCodes(code), code).toContain('feature.invalid-args');
     }
+  }, 120_000);
+});
+
+describe('drafted-boss-plate cookbook example', () => {
+  beforeAll(async () => { await initOcct(); }, 60_000);
+
+  it('builds two 3° drafted bosses with pilot holes to the closed-form volume', async () => {
+    const code = await readFile('examples/cookbook-parity/drafted-boss-plate.kcad.ts', 'utf8');
+    const model = await buildModel({ fileName: 'drafted-boss-plate.kcad.ts', code });
+    expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([]);
+    const shape = model.tailShape!;
+    expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
+    const top = 4 - 10 * tan(3);
+    const boss = (Math.PI * 10 / 3) * (16 + 4 * top + top * top);
+    const pilot = Math.PI * 1.25 * 1.25 * 9;
+    expect(shape.volume()).toBeCloseTo(60 * 40 * 4 + 2 * boss - 2 * pilot, 2);
+    expect(shape.boundingBox().min).toEqual([0, 0, 0]);
+    expect(shape.boundingBox().max[2]).toBeCloseTo(14, 6);
   }, 120_000);
 });
