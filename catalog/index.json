@@ -42227,7 +42227,7 @@
       "id": "label-reel-stand",
       "kit": "beverage-bottling-line",
       "title": "Label reel stand",
-      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -42246,7 +42246,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/label-reel-stand.kcad.ts",
       "preview": "/assets/beverage-bottling-line-label-reel-stand.png",
-      "sourceSha256": "d898550dfd129006d0bb756ebb757523f23553eba064ebbf59d621cf79b2107d",
+      "sourceSha256": "69fa4db3d8e08e556e17aabcfa9c99a38ef81ed1782de2690c86c0d6607a1235",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42275,18 +42275,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -42317,12 +42325,19 @@
           "color": "#aebdc1",
           "parts": [
             "upright",
-            "unwind-reel",
-            "rewind-reel",
             "tension-arm",
             "adjustment-knob"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "unwind-reel",
+            "rewind-reel"
+          ],
+          "param": "labelStock"
         },
         {
           "name": "foodPolymer",
