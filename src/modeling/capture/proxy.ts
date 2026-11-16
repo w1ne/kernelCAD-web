@@ -29,14 +29,10 @@ import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editabl
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
-import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
-import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { AnyMaterialName } from '../../shared/materials/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef } from '../../shared/intent/textureRef';
-import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
-import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
@@ -91,6 +87,10 @@ import {
   cleanMaterialAnisotropyRotation,
   cleanMaterialTextures,
   assignMaterialMetadata,
+  resolveFinishPbr,
+  assertWrapTextureArgs,
+  existingMaterialBaseColor,
+  attachTextureProjection,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import type { ThreadedHoleOpts } from './threadedHole';
@@ -573,36 +573,8 @@ export class Shape {
    * as `union.member-overlap`.
    */
   finish(name: FinishToken | AnyMaterialName, opts?: { color?: string | TypedParamRef<string>; face?: string }): Shape {
-    // A finish token wins when the name is both (steel, pla, abs, nylon map to
-    // the identically named token anyway). Otherwise an engineering material
-    // name applies its registry default finish, so one material vocabulary
-    // covers mass, FEA and appearance.
     if (opts !== undefined) assertFinishOptions(opts, this.id);
-    let token: string = name;
-    if (!isFinishToken(name)) {
-      const resolved = tryResolveMaterial(name);
-      if (resolved.ok) {
-        if (resolved.material.finish === undefined) {
-          throw new KernelError(
-            'feature.finish.unknown-token',
-            unknownFinishMessage(name),
-            this.id,
-            `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
-              'Pass a finish token such as plastic-glossy, or set the look with .color().',
-          );
-        }
-        token = resolved.material.finish;
-      }
-    }
-    // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
-    // for an unknown name. Valid finishes clamp cleanly, so routing the result
-    // through .material() reuses its validation + per-face plumbing with no
-    // extra clamp warning.
-    const pbr = expandFinish(
-      token,
-      opts?.color !== undefined ? { color: isTypedParamRef(opts.color) ? opts.color.value : opts.color } : undefined,
-      this.id,
-    );
+    const pbr = resolveFinishPbr(name, opts?.color, this.id);
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
   }
 
@@ -642,45 +614,11 @@ export class Shape {
    * @param projection  one of the four projection records above.
    */
   wrapTexture(imageRef: TextureRef, projection: TextureProjection): Shape {
-    if (!isTextureRef(imageRef)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
-        this.id,
-        'Pass { path: "<file-or-url>" } as the first argument.',
-      );
-    }
-    if (!isTextureProjection(projection)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
-        this.id,
-        "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
-      );
-    }
-
-    // Preserve any already-authored baseColor/finish so wrapTexture layers
-    // the albedo texture on top rather than clobbering it (material()
-    // requires baseColor on every call; default to white when none is set
-    // yet, matching the glTF default when a texture supplies the color).
-    const existingRecord = this.session.getRecords().find(r => r.id === this.id);
-    const existingMaterial = (existingRecord?.metadata as { material?: PBRMaterial } | undefined)?.material;
-    this.material({ baseColor: existingMaterial?.baseColor ?? '#ffffff', textures: { albedo: imageRef } });
-
-    const records = this.session.getRecords();
-    const record = records.find(r => r.id === this.id);
-    if (record === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: feature record '${this.id}' not found in session.`,
-        this.id,
-        'Call .wrapTexture() on a Shape produced by the current session.',
-      );
-    }
-    const metadata = record.metadata as { material?: PBRMaterial };
-    // .material() above guarantees metadata.material exists with the
-    // albedo texture attached; attach the projection alongside it.
-    (metadata.material as PBRMaterial).textureProjection = projection;
+    assertWrapTextureArgs(imageRef, projection, this.id);
+    // Keep an already-authored baseColor so the albedo texture layers on top
+    // (material() requires baseColor; white matches the glTF default).
+    this.material({ baseColor: existingMaterialBaseColor(this.session, this.id) ?? '#ffffff', textures: { albedo: imageRef } });
+    attachTextureProjection(this.session, this.id, projection);
 
     return this;
   }
