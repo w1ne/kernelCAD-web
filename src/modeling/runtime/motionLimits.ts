@@ -11,6 +11,8 @@
 //   - A moving DOF with no declared limit (a revolute without limitsDeg, the
 //     offset of a cylindrical joint, ...) cannot be range-checked. It is a
 //     "skipped" note on the verdict, not a failure.
+//   - A mate coupled to an animated joint (`coupleMates`) moves with it, at
+//     source * ratio + offset, so its keys are checked against its own limits.
 //
 // Eases do not overshoot, so the keys bound every pose the timeline visits.
 
@@ -20,6 +22,7 @@ import type { NormalizedAnimationTrack } from '../../shared/intent/animationView
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { isParamRef, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import type { Assembly } from '../capture/assembly';
+import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateLimitRange } from '../mates/mate';
 import { dofLimit, posedDof, unlimitedDofs, type MateDof } from '../mates/mateLimits';
 import {
@@ -28,7 +31,6 @@ import {
   hasMotionIntent,
   poseDrivers,
   sessionRecords,
-  type PoseDriver,
 } from './motionIntent';
 
 const OUT_OF_LIMITS = 'kinematic.pose.out-of-limits' as const;
@@ -120,7 +122,14 @@ function fmt(n: number): string {
   return String(Math.round(n * 1000) / 1000);
 }
 
-function outOfLimits(param: string, driver: PoseDriver, joint: LimitedJoint, key: Key, pose: number): CompilerDiagnostic {
+/** How an animated param sets one joint: the pose at a key value, and the
+ *  coupling source when the joint follows another joint. */
+interface PosedJoint {
+  readonly poseAt: (value: number) => number;
+  readonly coupledTo?: string;
+}
+
+function outOfLimits(param: string, name: string, joint: LimitedJoint, posed: PosedJoint, key: Key, pose: number): CompilerDiagnostic {
   const unit = joint.dof === 'rotation' ? '°' : ' mm';
   const [min, max] = joint.limits;
   const spec = HINT_TEMPLATES[OUT_OF_LIMITS];
@@ -129,11 +138,12 @@ function outOfLimits(param: string, driver: PoseDriver, joint: LimitedJoint, key
     code: OUT_OF_LIMITS,
     severity: 'error',
     message:
-      `The animation sets param '${param}' to ${fmt(key.value)} at ${fmt(key.atMs)} ms, which puts joint '${driver.name}' at ` +
-      `${fmt(pose)}${unit}, outside its limits [${fmt(min)}, ${fmt(max)}]${unit}.`,
+      `The animation sets param '${param}' to ${fmt(key.value)} at ${fmt(key.atMs)} ms, which puts joint '${name}' at ` +
+      `${fmt(pose)}${unit}${posed.coupledTo === undefined ? '' : ` through its coupling to '${posed.coupledTo}'`}, ` +
+      `outside its limits [${fmt(min)}, ${fmt(max)}]${unit}.`,
     hint: spec.template,
     nextAction: spec.nextAction,
-    mateName: driver.name,
+    mateName: name,
     paramName: param,
   };
   return d;
@@ -156,20 +166,56 @@ function trackKeys(arm: Assembly): Map<string, Key[]> {
 
 /** The first key that puts the joint outside its limits, with that pose. */
 function firstKeyOutside(
-  table: ParamTable,
-  param: string,
-  expr: ParamRefExpr,
+  posed: PosedJoint,
   joint: LimitedJoint,
   keys: readonly Key[],
 ): { key: Key; pose: number } | undefined {
   for (const key of keys) {
-    const pose = evaluate(expr, (n) => (n === param ? key.value : currentValue(table, n)));
+    const pose = posed.poseAt(key.value);
     if (!Number.isFinite(pose)) continue;
     if (pose < joint.limits[0] - LIMIT_EPS || pose > joint.limits[1] + LIMIT_EPS) {
       return { key, pose };
     }
   }
   return undefined;
+}
+
+/** Every coupleMates record in the session (a sub-assembly may own one). */
+function sessionCouplings(arm: Assembly): MateCouplingRecord[] {
+  const assemblies = Array.from(arm.__session().assemblies.values()) as Assembly[];
+  return assemblies.flatMap((a) => a.__mateCouplings());
+}
+
+/** The joints one animated param moves: the joints whose pose expression
+ *  reads it, then every mate coupled to one of those, through chains. */
+function posedJoints(
+  table: ParamTable,
+  param: string,
+  drivers: ReturnType<typeof poseDrivers>,
+  couplings: readonly MateCouplingRecord[],
+): Map<string, PosedJoint> {
+  const posed = new Map<string, PosedJoint>();
+  for (const driver of drivers.get(param) ?? []) {
+    const expr = exprOf(driver.pose);
+    if (expr === undefined || posed.has(driver.name)) continue;
+    posed.set(driver.name, {
+      poseAt: (value) => evaluate(expr, (n) => (n === param ? value : currentValue(table, n))),
+    });
+  }
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const c of couplings) {
+      const source = posed.get(c.source);
+      if (source === undefined || posed.has(c.driven)) continue;
+      posed.set(c.driven, {
+        poseAt: (value) => source.poseAt(value) * c.ratio + (c.offset ?? 0),
+        coupledTo: c.source,
+      });
+      grew = true;
+    }
+  }
+  return posed;
 }
 
 /** Moving DOFs nobody limited, as verdict notes. */
@@ -188,15 +234,15 @@ export function checkMotionLimits(arm: Assembly): MotionLimitsResult {
   const limited = jointLimits(arm);
   const keys = trackKeys(arm);
   const drivers = poseDrivers(arm);
+  const couplings = sessionCouplings(arm);
   const checked = new Set<string>();
   for (const param of animated) {
-    for (const driver of drivers.get(param) ?? []) {
-      const joint = limited.get(driver.name);
-      const expr = exprOf(driver.pose);
-      if (joint === undefined || expr === undefined || checked.has(driver.name)) continue;
-      checked.add(driver.name);
-      const hit = firstKeyOutside(table, param, expr, joint, keys.get(param) ?? []);
-      if (hit) failures.push(outOfLimits(param, driver, joint, hit.key, hit.pose));
+    for (const [name, posed] of posedJoints(table, param, drivers, couplings)) {
+      const joint = limited.get(name);
+      if (joint === undefined || checked.has(name)) continue;
+      checked.add(name);
+      const hit = firstKeyOutside(posed, joint, keys.get(param) ?? []);
+      if (hit) failures.push(outOfLimits(param, name, joint, posed, hit.key, hit.pose));
     }
   }
   return { failures, skipped, checked: checked.size };
