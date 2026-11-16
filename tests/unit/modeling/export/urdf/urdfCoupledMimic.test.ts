@@ -15,7 +15,7 @@ function axisConn(part: Part, name: string, origin: Vec3, axis: Vec3) {
 
 /** base carries an input gear (revolute) and an output stage (revolute or
  *  prismatic). coupleMates drives the output from the input. */
-function gearTrain(outputType: 'revolute' | 'prismatic') {
+function gearTrain(outputType: 'revolute' | 'prismatic', withIdler = false) {
   const kcad = createModelingApi({ session: new CaptureSession() });
   const arm = kcad.assembly('train');
   const base = arm.part('base', kcad.box(60, 20, 10), { density: 2700 });
@@ -30,6 +30,12 @@ function gearTrain(outputType: 'revolute' | 'prismatic') {
     arm.mate('output', 'base.out', 'output.hub', 'revolute', { limitsDeg: [-90, 90] });
   } else {
     arm.mate('output', 'base.out', 'output.hub', 'prismatic', { limitsMm: [0, 40] });
+  }
+  if (withIdler) {
+    const idler = arm.part('idler', kcad.cylinder(10, 5), { density: 2700 });
+    axisConn(base, 'idle', [12, 0, 10], [0, 0, 1]);
+    axisConn(idler, 'hub', [0, 0, 0], [0, 0, 1]);
+    arm.mate('idler', 'base.idle', 'idler.hub', 'revolute', { limitsDeg: [-360, 360] });
   }
   return arm;
 }
@@ -63,6 +69,23 @@ describe('urdfSerialize — coupleMates lowers to <mimic>', () => {
     expect(jointBlock(urdf, 'output')).toContain(
       `<mimic joint="input" multiplier="${multiplier.toFixed(6)}" offset="0.000000"/>`,
     );
+  });
+
+  it('a chained coupling mimics the uncoupled root with the composed ratio and offset', async () => {
+    const arm = gearTrain('prismatic', true);
+    // Declared output-first: output = 0.2 * idler + 3 mm, idler = -2 * input + 5 deg,
+    // so output = -0.4 * input + 4 mm.
+    arm.coupleMates('output', { source: 'idler', ratio: 0.2, offset: 3 });
+    arm.coupleMates('idler', { source: 'input', ratio: -2, offset: 5 });
+    const { urdf } = await urdfSerialize(arm, {});
+    const multiplier = (-0.4 * 1e-3) / (Math.PI / 180);
+    expect(jointBlock(urdf, 'output')).toContain(
+      `<mimic joint="input" multiplier="${multiplier.toFixed(6)}" offset="${(0.004).toFixed(6)}"/>`,
+    );
+    expect(jointBlock(urdf, 'idler')).toContain(
+      `<mimic joint="input" multiplier="-2.000000" offset="${(5 * Math.PI / 180).toFixed(6)}"/>`,
+    );
+    expect(urdf).not.toContain('<mimic joint="idler"');
   });
 
   it('an uncoupled assembly emits no <mimic>', async () => {
