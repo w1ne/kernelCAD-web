@@ -57,6 +57,8 @@ export type VariableEdgeValueKey = 'radius' | 'distance';
 
 export interface ScalarEdgeFeatureOpts {
   continuity?: FilletContinuity;
+  /** Fillet only: radius at each edge's high end; `radius` is at the low end. */
+  endRadius?: Editable<number>;
   /** Chamfer only: validated asymmetric-leg options. */
   chamferLegs?: ChamferLegOptions;
   /** Shell only: further faces to open, recorded as `face_2`, `face_3`, … */
@@ -278,6 +280,7 @@ export function buildScalarEdgeFeatureSpec(
       : undefined;
 
   const params: Record<string, Param> = { [valueParamName]: toParam(value, 'mm') };
+  if (kind === 'fillet' && opts?.endRadius !== undefined) params.endRadius = toParam(opts.endRadius, 'mm');
   if (kind === 'chamfer' && opts?.chamferLegs !== undefined) {
     applyChamferLegs(baseId, opts.chamferLegs, params, inputs);
   }

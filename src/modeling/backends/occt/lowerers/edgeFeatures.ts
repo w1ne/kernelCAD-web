@@ -455,6 +455,9 @@ interface EdgeOp {
   kind: 'fillet' | 'chamfer';
   value: number;
   continuity: 'G1' | 'G2';
+  /** Tapered fillet only: `endRadius / radius`. A ratio, so the feasibility
+   *  probe scales both ends of the taper together. */
+  endRatio?: number;
   /** Asymmetric chamfer only: the reference face and the second leg. */
   legs?: ChamferLegOp;
 }
@@ -470,7 +473,8 @@ function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeA
   let result: EdgeFeatureHistoryResult;
   try {
     result = op.kind === 'fillet'
-      ? filletWithHistory(base, refs, op.value, op.continuity)
+      ? filletWithHistory(base, refs, op.value, op.continuity,
+        op.endRatio === undefined ? undefined : op.endRatio * op.value)
       : chamferWithHistory(base, refs, op.value, chamferLegsOf(op));
   } catch (e) {
     // A raw WASM exception pointer (a bare integer) is meaningless — never echo it.
@@ -546,7 +550,7 @@ function applyConstantEdgeFeature(
 ): LowerOutcome {
   const full = attemptEdgeFeature(base, edges, op);
   if (full.ok) return builtFromAttempt(base, full.result, r.id);
-  const filter = filterEdgesByMinLength(edges, 2 * op.value, {
+  const filter = filterEdgesByMinLength(edges, 2 * op.value * Math.max(1, op.endRatio ?? 1), {
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
   if (filter.diagnostic?.severity === 'error') {
@@ -612,6 +616,7 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
   const filletContinuity = meta?.continuity ?? 'G1';
   const radius = requireFilletRadius(ctx, r);
+  const endRadius = r.params.endRadius?.evaluated;
   const edgesResult = pickEdges(r, base, ctx.allRecords);
   if ('error' in edgesResult) {
     ctx.diagnostics.push(edgesResult.error);
@@ -622,7 +627,45 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   if (edgesForFillet === null) {
     return built(base);
   }
-  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, { kind: 'fillet', value: radius, continuity: filletContinuity });
+  if (endRadius !== undefined && !(Number.isFinite(endRadius) && endRadius > 0)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'opts.endRadius', got: endRadius,
+      requires: "a finite number > 0 — the round's radius at each edge's high end",
+    }));
+    return finished(base);
+  }
+  if (endRadius !== undefined && edgesForFillet.some((e) => e.isClosed)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'edges',
+      gotText: 'a closed edge (a full circle or loop), which has no start and end for the taper',
+      requires: 'open edges only — select the straight or open edges to taper, or drop endRadius for a constant round',
+    }));
+    return finished(base);
+  }
+  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, {
+    kind: 'fillet', value: radius, continuity: filletContinuity,
+    ...(endRadius !== undefined ? { endRatio: endRadius / radius } : {}),
+  });
+}
+
+/** A tapered fillet runs from `radius` at one end of each edge to
+ *  `endRadius` at the other; a closed edge (a circle) has no ends. */
+function taperDiagnostic(
+  featureId: FeatureId,
+  spec: { path: string; got?: unknown; gotText?: string; requires: string },
+): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId,
+    severity: 'error',
+    ...invalidArgsText({
+      api: 'fillet(radius, edges, { endRadius })',
+      unit: 'mm',
+      example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+      ...spec,
+    }),
+  };
 }
 
 /** `chamfer` — constant-distance, or the variable form via

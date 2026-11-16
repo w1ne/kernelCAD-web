@@ -38,15 +38,21 @@ const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
 };
 p.part("base-left", finishPart("base-left", boxPart(-420, 0, 0, 250, 600, 55)));
 p.part("base-right", finishPart("base-right", boxPart(420, 0, 0, 250, 600, 55)));
-p.part("column-left", finishPart("column-left", boxPart(-420, 0, 75, 60, 60, 820)));
-p.part("column-right", finishPart("column-right", boxPart(420, 0, 75, 60, 60, 820)));
+p.part("column-left", finishPart("column-left", boxPart(-420, 0, 50, 60, 60, 845)));
+p.part("column-right", finishPart("column-right", boxPart(420, 0, 50, 60, 60, 845)));
 p.part("camera-beam", finishPart("camera-beam", boxPart(0, 0, 895, 920, 80, 70)));
 p.part("top-camera", finishPart("top-camera", boxPart(0, -100, 750, 190, 170, 150)));
-p.part("side-camera-0", finishPart("side-camera-0", boxPart(-390, -100, 490, 150, 140, 120)));
-p.part("side-camera-1", finishPart("side-camera-1", boxPart(390, -100, 490, 150, 140, 120)));
-p.part("backlight", finishPart("backlight", boxPart(0, 235, 500, 600, 40, 330)));
-p.part("reject-sensor", finishPart("reject-sensor", boxPart(330, -150, 360, 85, 75, 85)));
+p.part("side-camera-0", finishPart("side-camera-0", boxPart(-390, -95, 490, 150, 140, 120)));
+p.part("side-camera-1", finishPart("side-camera-1", boxPart(390, -95, 490, 150, 140, 120)));
+p.part("backlight", finishPart("backlight", boxPart(0, 235, 500, 880, 40, 330)));
+p.part("reject-sensor", finishPart("reject-sensor", boxPart(330, -150, 410, 85, 75, 85)));
 p.part("conveyor-left", finishPart("conveyor-left", boxPart(-650, 0, 260, 400, 270, 45)));
 p.part("conveyor-right", finishPart("conveyor-right", boxPart(650, 0, 260, 400, 270, 45)));
+p.part("backlight-bracket-left", finishPart("backlight-bracket-left", boxPart(-420, 122, 580, 40, 190, 40)));
+p.part("backlight-bracket-right", finishPart("backlight-bracket-right", boxPart(420, 122, 580, 40, 190, 40)));
+p.part("conveyor-leg-0", finishPart("conveyor-leg-0", boxPart(-490, 0, 0, 60, 240, 262)));
+p.part("conveyor-leg-1", finishPart("conveyor-leg-1", boxPart(-810, 0, 0, 60, 240, 262)));
+p.part("conveyor-leg-2", finishPart("conveyor-leg-2", boxPart(490, 0, 0, 60, 240, 262)));
+p.part("conveyor-leg-3", finishPart("conveyor-leg-3", boxPart(810, 0, 0, 60, 240, 262)));
 
 return p.model();

@@ -72,7 +72,8 @@ prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points
 // thickness on each side, extruded along +Z, then fused with the supplied base.
 // `startZ` is the rib bottom (default 0); make it overlap the base for a valid union.
 // Supports straight or non-self-intersecting open polylines. Sharp bends that
-// require a miter longer than 8 × half-thickness are rejected.
+// require a miter longer than 8 × half-thickness are rejected. Unknown option
+// keys (for example `z` for startZ) throw feature.invalid-args.
 rib(base: Shape, centerline: [number, number][], opts: {
   thickness: number;
   height: number;
@@ -440,6 +441,9 @@ shape, not a copy.
 .fillet(radius: number, edges?: EdgeSelector): Shape
 // Variable-radius form — one group per blend region:
 .fillet([{ edges: EdgeSelector, radius: number }, ...]): Shape
+// Tapered round: radius at each edge's low end (lower coordinate on the axis the
+// edge spans most), endRadius at its high end. Open edges only.
+.fillet(radius, edges, { endRadius: number }): Shape
 // Bevel edges (same selector shape as fillet):
 .chamfer(distance: number, edges?: EdgeSelector): Shape
 .chamfer([{ edges: EdgeSelector, distance: number }, ...]): Shape
@@ -488,6 +492,7 @@ shape, not a copy.
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
 // Boolean union of the source and its reflection — produces a symmetric part:
 .mirror(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
+// mirror and reflect reject any plane-object key other than plane and offset.
 
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape

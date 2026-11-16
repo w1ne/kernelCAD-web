@@ -91,8 +91,8 @@ const wheel = (name, x, s, r) => {
 // ---- Body: side outline with raked ends, chamfered in plan ----
 const L = 9300;
 const bodySide = [[-L, 1250], [L, 1250], [L + 150, 2300], [L, 3150], [L - 650, 4150], [-(L - 650), 4150], [-L, 3150], [-(L + 150), 2300]];
-const bodyPlan = extrudePolygon([[-(L + 200), -900], [-(L - 400), -1500], [L - 400, -1500], [L + 200, -900], [L + 200, 900], [L - 400, 1500], [-(L - 400), 1500], [-(L + 200), 900]], 3200).translate(0, 0, 1100);
-add('body', side(bodySide, 3000).intersect(bodyPlan).color(paintedSteel));
+const bodyPlan = () => extrudePolygon([[-(L + 200), -900], [-(L - 400), -1500], [L - 400, -1500], [L + 200, -900], [L + 200, 900], [L - 400, 1500], [-(L - 400), 1500], [-(L + 200), 900]], 3200).translate(0, 0, 1100);
+add('body', side(bodySide, 3000).intersect(bodyPlan()).color(paintedSteel));
 add('roof-cover', front([[-1400, 4140], [1400, 4140], [1200, 4300], [-1200, 4300]], 2 * (L - 700)).color(railSteel));
 
 for (const e of [-1, 1]) {
@@ -102,7 +102,7 @@ for (const e of [-1, 1]) {
   const hi = [e * (L - 600), 4080];
   const n = [e * 0.83, 0.56];
   const ws = [[lo[0] + n[0] * 20, lo[1] + n[1] * 20], [hi[0] + n[0] * 20, hi[1] + n[1] * 20]];
-  add(`windscreen-${tag}`, side(bar(ws, 60), 2200).intersect(bodyPlan.translate(e * 30, 0, 0)).color(glass));
+  add(`windscreen-${tag}`, side(bar(ws, 60), 2200).intersect(bodyPlan().translate(e * 30, 0, 0)).color(glass));
   add(`wiper-${tag}`, side(bar([[e * (L - 60), 3330], [e * (L - 300), 3700]], 30), 30, 300).translate(e * 40, 0, 0).color(railSteel));
   // Nose: headlight triangle, lower lamps, buffers and screw coupling.
   for (const s of [-1, 1]) {

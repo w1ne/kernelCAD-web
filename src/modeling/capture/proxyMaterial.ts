@@ -30,6 +30,31 @@ const MATERIAL_SCALAR_RANGES: ReadonlyArray<[keyof PBRMaterial, number, number]>
   ['anisotropy', 0, 1],
 ];
 
+/** Keys `.material()` reads. `textureProjection` is not here: only
+ *  `.wrapTexture()` writes it, and `.material()` used to drop it silently. */
+const MATERIAL_OPTION_KEYS: ReadonlySet<string> = new Set([
+  'face', 'name', 'baseColor', 'metalness', 'roughness', 'clearcoat', 'clearcoatRoughness', 'ior',
+  'transmission', 'sheen', 'opacity', 'thickness', 'attenuationColor', 'attenuationDistance',
+  'anisotropy', 'anisotropyRotation', 'textures',
+]);
+
+/** A misspelt key (`metalnes`, `colour`) used to be dropped and the default
+ *  rendered with no diagnostic; name the first unknown key instead. */
+export function assertMaterialOptionKeys(opts: MaterialCallOpts, id: string): void {
+  const unknown = Object.keys(opts).find((key) => !MATERIAL_OPTION_KEYS.has(key));
+  if (unknown === undefined) return;
+  invalidArgs({
+    api: 'Shape.material(opts)',
+    path: `opts.${unknown}`,
+    got: (opts as unknown as Record<string, unknown>)[unknown],
+    requires: unknown === 'textureProjection'
+      ? 'no textureProjection key; call .wrapTexture(imageRef, projection) to set the UV projection'
+      : `a known option key; .material() accepts ${[...MATERIAL_OPTION_KEYS].join(', ')}`,
+    example: "shape.material({ baseColor: '#b0b0b0', metalness: 1, roughness: 0.3 })",
+    featureId: id,
+  });
+}
+
 export function validateMaterialBaseColor(opts: MaterialCallOpts, id: string): void {
   if (!opts || typeof opts.baseColor !== 'string' || opts.baseColor.length === 0) {
     throw new KernelError(

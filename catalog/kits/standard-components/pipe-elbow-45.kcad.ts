@@ -39,10 +39,10 @@ const outlet = cylinder(upperLength + 2 * s, boreRadius, 16)
   .translate(0, 0, -s).rotateY(45).translate(0, 0, lowerLength);
 a.part('connected-open-elbow', body.subtract(inlet.union(outlet)).color(steel));
 // These two annuli remain open and are decorative, not specified hardware.
-const collar = cylinder(2 * s, outerRadius + s, 16)
+const collar = () => cylinder(2 * s, outerRadius + s, 16)
   .subtract(cylinder(4 * s, boreRadius, 16).translate(0, 0, -s));
-a.part('lower-port-collar', collar.color(bronze));
-a.part('angled-port-collar', collar.rotateY(45)
+a.part('lower-port-collar', collar().color(bronze));
+a.part('angled-port-collar', collar().rotateY(45)
   .translate(upperLength * Math.SQRT1_2 - s * Math.SQRT1_2,
     0, lowerLength + upperLength * Math.SQRT1_2 - s * Math.SQRT1_2).color(bronze));
 return a.model();

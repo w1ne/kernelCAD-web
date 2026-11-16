@@ -17,9 +17,14 @@ const cork = param('cork', '#b6945d', { label: 'Cork tip' });
 const featherNylon = param('featherNylon', '#e8e4d8', { label: 'Skirt nylon' });
 const crownTape = param('crownTape', '#d9b94a', { label: 'Crown binding tape' });
 presets({ clubColors: { cork: '#b6945d', featherNylon: '#d9e7e5' } });
+const ring = (r: number) => {
+  let profile = path().moveTo(r, 0);
+  for (let i = 1; i < 10; i++) profile = profile.lineTo(r * Math.cos(2 * Math.PI * i / 10), r * Math.sin(2 * Math.PI * i / 10));
+  return profile.close();
+};
 const p = assembly('shuttlecock');
 p.part('cork', sphere(19).translate(0, 0, 19).scale(scale).color(cork));
-p.part('skirt', sphere(43).scale([0.9, 0.9, 0.55]).translate(0, 0, 63).scale(scale).color(featherNylon));
-p.part('crown', cylinder(8, 39, 10).translate(0, 0, 91).scale(scale).color(crownTape));
+p.part('skirt', ring(12).loft(ring(45), { spacing: 66, ruled: true }).translate(0, 0, 32).scale(scale).color(featherNylon));
+p.part('crown', cylinder(8, 46, 10).translate(0, 0, 92).scale(scale).color(crownTape));
 
 return p.model();

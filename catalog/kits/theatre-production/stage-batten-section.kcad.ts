@@ -91,7 +91,7 @@ PIGS.forEach((x, i) => {
 });
 
 // Two PAR cans on C-clamps and yokes, focused down toward the stage.
-const can = path().moveTo(0, -120).lineTo(70, -120).lineTo(95, -60).lineTo(95, 130).lineTo(105, 130).lineTo(105, 150)
+const can = () => path().moveTo(0, -120).lineTo(70, -120).lineTo(95, -60).lineTo(95, 130).lineTo(105, 130).lineTo(105, 150)
   .lineTo(0, 150).close().revolve();
 for (const x of [-500, 500]) {
   const tag = x < 0 ? 'l' : 'r';
@@ -103,7 +103,7 @@ for (const x of [-500, 500]) {
     add(`yoke-arm-${tag}-${sx < 0 ? 'a' : 'b'}`, blk(x + sx * 117, 0, ZT - 20, 16, 40, ZP - RP - 100 - ZT + 20).color(pipe));
     add(`yoke-knob-${tag}-${sx < 0 ? 'a' : 'b'}`, alongX(30, 18, 10).translate(x + sx * 125 + (sx < 0 ? -30 : 0), 0, ZT).color(rigging));
   }
-  add(`can-${tag}`, can.rotateX(120).translate(x, 0, ZT).color(pipe));
+  add(`can-${tag}`, can().rotateX(120).translate(x, 0, ZT).color(pipe));
   add(`lens-${tag}`, cylinder(6, 90, 16).translate(0, 0, 146).rotateX(120).translate(x, 0, ZT).color(LENS));
   add(`gel-frame-${tag}`, cylinder(10, 112, 4).rotateZ(45).translate(0, 0, 152).rotateX(120).translate(x, 0, ZT).color(rigging));
   add(`safety-cable-${tag}`, torus(40, 3, 8).rotateY(90).scale([1, 1, 1.5]).translate(x + 40, 0, ZP).color(rigging));

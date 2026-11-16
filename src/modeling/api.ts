@@ -243,7 +243,8 @@ export interface KernelCadApi {
    * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
    * rules, and no ports. `bendRadius` is the centreline radius and must
    * exceed `radius`; every straight between corners must be long enough
-   * for the bends (same centreline geometry as `tube()` paths).
+   * for the bends (same centreline geometry as `tube()` paths). A
+   * non-object `opts` or an unknown option key throws `feature.invalid-args`.
    */
   pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
   /**
@@ -323,6 +324,8 @@ export interface KernelCadApi {
    * Round every corner of a closed 2D polygon with tangent arcs. Returns
    * points for `extrudePolygon` / the prism helpers. Radius is clamped per
    * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   * `segments` is the only option; a positional count, an unknown key or a
+   * non-finite `segments` raises `feature.invalid-args`.
    */
   filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
   /**

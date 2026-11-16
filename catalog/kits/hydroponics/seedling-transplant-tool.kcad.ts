@@ -41,10 +41,10 @@ const p = assembly("seedling-transplant-tool");
 // tip and the handle bulge both rest on the bench.
 const lay = (s: Shape) => s.rotateY(85).translate(0, 0, 2.501).scale(scale);
 const add = (name: string, shape: Shape) => p.part(name, lay(shape));
-const turned = (pts: [number, number][], seg = 14) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const S0 = 140; // where the steel meets the ferrule
 
