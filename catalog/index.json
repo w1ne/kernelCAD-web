@@ -73550,7 +73550,7 @@
       "id": "day-fuel-tank",
       "kit": "data-center-infrastructure",
       "title": "Generator day tank",
-      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, skid base steel. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -73570,7 +73570,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/day-fuel-tank.kcad.ts",
       "preview": "/assets/data-center-infrastructure-day-fuel-tank.png",
-      "sourceSha256": "59d1dc2c70cd14c5b52c6e1ba0bbd76061918beb8a2adaf3f18afda41e1a44fb",
+      "sourceSha256": "1a5e4a7ac057dedc70e775766e2c01fa33231b6576bc96b1783723dc4fb0436b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -73589,20 +73589,20 @@
           "label": "Painted steel"
         },
         {
-          "name": "polymer",
+          "name": "skidSteel",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#3d4449",
+          "label": "Skid base steel"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "skidSteel": "#3d4449"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "skidSteel": "#263e48"
         }
       },
       "stats": {
@@ -73617,12 +73617,12 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "skidSteel",
+          "color": "#3d4449",
           "parts": [
             "support-skid"
           ],
-          "param": "polymer"
+          "param": "skidSteel"
         },
         {
           "name": "steel",

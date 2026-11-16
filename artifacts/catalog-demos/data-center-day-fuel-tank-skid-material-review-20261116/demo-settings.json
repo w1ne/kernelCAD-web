@@ -1,0 +1,16 @@
+{
+  "renderer": "scripts/renderCatalogPreviews.ts with kernelCAD low-poly GLB export",
+  "previewRenderer": "scripts/lib/glbSoftwareRender.ts",
+  "asset": "data-center-infrastructure/day-fuel-tank",
+  "defaultKnobs": true,
+  "triangleBudget": 2200,
+  "defaultTriangles": 200,
+  "video": {
+    "canvas": "1280x720",
+    "fps": 25,
+    "sceneSeconds": 2.5,
+    "codec": "H.264 / libx264",
+    "pixelFormat": "yuv420p"
+  },
+  "claimScope": "Local software-rendered catalog preview and exported-GLB color regression only. No simulation, deployment, hardware or physical acceptance claim."
+}
