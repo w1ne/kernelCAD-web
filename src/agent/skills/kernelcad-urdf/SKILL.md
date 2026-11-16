@@ -79,7 +79,7 @@ URDF requires a tree topology. If the assembly has a closed mate graph (e.g. a 4
 
 ## Pre-export inspection
 
-Call `inspect({ of: 'robot', file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface.
+Call `inspect({ of: 'robot', file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface. A joint driven by `coupleMates` carries `coupling: { source, ratio, offset? }`.
 
 ## Mesh format
 
