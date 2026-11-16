@@ -242,20 +242,35 @@ function appendMateJointBlocks(
  *  driven = ratio * source + offset in mm/deg. URDF <mimic> uses the joint
  *  units (m/rad), so convert the multiplier and offset. coupleMates accepts
  *  only scalar mates, and each lowers to one URDF joint: cylindrical and
- *  pin_slot keep their angle. */
+ *  pin_slot keep their angle. A chained coupling (output <- idler <- input)
+ *  mimics the chain's uncoupled root, because consumers such as the
+ *  ros2_control mock hardware update mimic joints in one pass and would read
+ *  a stale idler value. */
 function mateMimics(
   mates: readonly MateRecord[],
   couplings: readonly MateCouplingRecord[],
 ): Map<string, UrdfMimic> {
   const toSi = (m: MateRecord | undefined) => (m?.type === 'prismatic' ? MM_TO_M : DEG_TO_RAD);
   const byName = new Map(mates.map((m) => [m.name, m]));
+  const byDriven = new Map(couplings.map((c) => [c.driven, c]));
   const out = new Map<string, UrdfMimic>();
   for (const c of couplings) {
+    // Compose driven = ratio * root + offset in authored units of the driven mate.
+    let root = c.source;
+    let ratio = c.ratio;
+    let offset = c.offset ?? 0;
+    const seen = new Set([c.driven]);
+    for (let up = byDriven.get(root); up !== undefined && !seen.has(up.driven); up = byDriven.get(root)) {
+      seen.add(up.driven);
+      offset += ratio * (up.offset ?? 0);
+      ratio *= up.ratio;
+      root = up.source;
+    }
     const driven = toSi(byName.get(c.driven));
     out.set(c.driven, {
-      joint: c.source,
-      multiplier: (c.ratio * driven) / toSi(byName.get(c.source)),
-      offset: (c.offset ?? 0) * driven,
+      joint: root,
+      multiplier: (ratio * driven) / toSi(byName.get(root)),
+      offset: offset * driven,
     });
   }
   return out;

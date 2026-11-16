@@ -128,6 +128,21 @@ describe('Sketch.extrude taperDeg', () => {
       expect(await errorCodes(code), code).toContain('feature.invalid-args');
     }
   }, 120_000);
+
+  it('rejects a nonzero taper below the draft resolution as an argument, not a failed taper', async () => {
+    // OCCT leaves a face undrafted below 1e-4 rad (~0.0057°), so a 0.005°
+    // taper used to come back as taper-failed with "reduce taperDeg".
+    for (const taperDeg of [0.005, -0.001]) {
+      const model = await build(`return ${SQUARE}.extrude(10, { taperDeg: ${taperDeg} });`).catch((e) => e);
+      const diags = 'diagnostics' in model ? errors(model) : [model];
+      expect(diags.map((d: { code?: string }) => d.code), String(taperDeg)).toEqual(['feature.invalid-args']);
+      expect(JSON.stringify(diags.map((d: { message?: string }) => d.message))).toContain('0.0058');
+    }
+    // Just above the resolution the taper is applied.
+    const model = await build(`return ${SQUARE}.extrude(10, { taperDeg: 0.006 });`);
+    expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([]);
+    expect(model.tailShape!.volume()).toBeCloseTo(squareFrustum(20, 20 - 20 * tan(0.006), 10), 3);
+  }, 120_000);
 });
 
 describe('drafted-boss-plate cookbook example', () => {

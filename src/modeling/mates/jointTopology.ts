@@ -5,7 +5,9 @@ import type {
   AssemblyPartStored,
   JointSupportIntentRecord,
 } from '../capture/assembly';
+import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Connector } from './connector';
+import { expandCoupledPoses } from './coupledPoses';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
 import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
 import { collectFreePassiveMates } from './passiveJoints';
@@ -18,7 +20,8 @@ export type JointTopologyDiagnosticCode =
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
   | 'assembly.joint-topology.missing-limit'
-  | 'assembly.joint-topology.unsupported-axis';
+  | 'assembly.joint-topology.unsupported-axis'
+  | 'assembly.joint-topology.coupled-pose-conflict';
 
 export interface JointTopologyDiagnostic {
   readonly code: JointTopologyDiagnosticCode;
@@ -77,6 +80,7 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
 
   const derivedLimitMates = collectCoupledMatesWithLimitedSource(arm);
   collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates, derivedLimitMates }, diagnostics);
+  collectCoupledPoseConflicts(arm, diagnostics);
 
   const stableRoots = collectStableRoots(arm, partsByName);
   // Nothing declared stable: the mate solver grounds solverGroundedPart()
@@ -310,6 +314,36 @@ function collectCoupledMatesWithLimitedSource(arm: Assembly): ReadonlySet<string
     }
   }
   return out;
+}
+
+/** A coupled mate's own authored pose overrides its coupling in model() and
+ *  solvedModel() geometry, but solveMates, reviews and physics derive it as
+ *  ratio × source + offset. Name the mismatch so the rendered pose and the
+ *  checked pose are not silently different. */
+function collectCoupledPoseConflicts(arm: Assembly, diagnostics: JointTopologyDiagnostic[]): void {
+  const couplings = arm.__mateCouplings();
+  if (couplings.length === 0) return;
+  const mates = arm.__mates();
+  const table = arm.__session().paramTable;
+  const authored = (mate: MateRecord): number | undefined =>
+    mate.pose === undefined || Array.isArray(mate.pose) ? undefined : currentValue(mate.pose, table);
+  const coupled = expandCoupledPoses(mates, couplings, {}, { resolveSourcePose: authored });
+  const matesByName = new Map(mates.map((mate) => [mate.name, mate]));
+  for (const coupling of couplings) {
+    const mate = matesByName.get(coupling.driven);
+    const own = mate === undefined ? undefined : authored(mate);
+    const derived = coupled[coupling.driven];
+    if (own === undefined || typeof derived !== 'number' || Math.abs(own - derived) <= 1e-6) continue;
+    const ownText = Number(own.toPrecision(6));
+    const derivedText = Number(derived.toPrecision(6));
+    diagnostics.push({
+      code: 'assembly.joint-topology.coupled-pose-conflict',
+      severity: 'warning',
+      mateName: coupling.driven,
+      message: `Mate '${coupling.driven}' declares pose ${ownText}, but coupleMates derives ${derivedText} from '${coupling.source}' (ratio ${Number(coupling.ratio.toPrecision(6))}, offset ${coupling.offset ?? 0}). model() places it at ${ownText}; solve_mates, review and physics check ${derivedText}.`,
+      hint: `joint-topology.coupled-pose-conflict — remove pose from '${coupling.driven}' so it follows '${coupling.source}', or set it to ${derivedText}.`,
+    });
+  }
 }
 
 function validateMateContract(

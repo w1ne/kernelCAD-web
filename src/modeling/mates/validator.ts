@@ -108,6 +108,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.missing-limit'
   | 'assembly.joint-topology.unsupported-axis'
+  | 'assembly.joint-topology.coupled-pose-conflict'
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
   | 'assembly.mounting-hole.mismatch'
