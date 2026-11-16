@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops.
+// Straight gravity conveyor with transverse steel rollers, side rails and three support stations.
 meta({
   name: 'roller-conveyor-line',
   license: 'CC0-1.0',
   title: 'Roller conveyor line',
-  description: 'Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. Controls: overall scale, steel, safety paint.',
+  description: 'Straight gravity conveyor with transverse steel rollers, side rails and three support stations. Controls: overall scale, structural steel, roller steel and safety paint.',
   tags: ['industrial plant', 'factory', 'process equipment', 'low poly', 'CC0'],
   kit: 'industrial-plant',
   category: 'structure',
@@ -15,35 +15,24 @@ meta({
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const steel = param('steel', '#707f84', { label: 'Structural steel' });
+const rollerSteel = param('rollerSteel', '#b7c1c3', { label: 'Roller steel' });
 const safetyPaint = param('safetyPaint', '#e4ab47', { label: 'Safety paint' });
 presets({
-  weathered: { steel: '#575851', safetyPaint: '#9e722f' },
+  weathered: { steel: '#575851', rollerSteel: '#7d8583', safetyPaint: '#9e722f' },
   highVisibility: { safetyPaint: '#f5c640' },
 });
 const p = assembly('roller-conveyor-line');
-p.part('side-frame--1', box(920, 30, 55, true).translate(0, -165.6, 228).scale(scale).color(safetyPaint));
-p.part('support--1-0', box(26, 26, 210, true).translate(-349.6, -122.4, 108).scale(scale).color(steel));
-p.part('foot--1-0', box(74, 70, 18, true).translate(-349.6, -122.4, 9).scale(scale).color(safetyPaint));
-p.part('support--1-1', box(26, 26, 210, true).translate(0, -122.4, 108).scale(scale).color(steel));
-p.part('foot--1-1', box(74, 70, 18, true).translate(0, -122.4, 9).scale(scale).color(safetyPaint));
-p.part('support--1-2', box(26, 26, 210, true).translate(349.6, -122.4, 108).scale(scale).color(steel));
-p.part('foot--1-2', box(74, 70, 18, true).translate(349.6, -122.4, 9).scale(scale).color(safetyPaint));
-p.part('side-frame-1', box(920, 30, 55, true).translate(0, 165.6, 228).scale(scale).color(safetyPaint));
-p.part('support-1-0', box(26, 26, 210, true).translate(-349.6, 122.4, 108).scale(scale).color(steel));
-p.part('foot-1-0', box(74, 70, 18, true).translate(-349.6, 122.4, 9).scale(scale).color(safetyPaint));
-p.part('support-1-1', box(26, 26, 210, true).translate(0, 122.4, 108).scale(scale).color(steel));
-p.part('foot-1-1', box(74, 70, 18, true).translate(0, 122.4, 9).scale(scale).color(safetyPaint));
-p.part('support-1-2', box(26, 26, 210, true).translate(349.6, 122.4, 108).scale(scale).color(steel));
-p.part('foot-1-2', box(74, 70, 18, true).translate(349.6, 122.4, 9).scale(scale).color(safetyPaint));
-p.part('conveyor-deck', box(920, 295.2, 22, true).translate(0, 0, 300).scale(scale).color(steel));
-p.part('roller-0', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-548.4, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-1', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-451.8, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-2', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-355.2, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-3', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-258.6, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-4', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-162, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-5', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(-65.4, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-6', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(31.2, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-7', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(127.8, 0, 324).scale(scale).color(safetyPaint));
-p.part('roller-8', cylinder(324, 22, 8).rotate([0, 1, 0], 90).translate(224.4, 0, 324).scale(scale).color(safetyPaint));
+for (const [side, y] of [['left', -165.6], ['right', 165.6]] as const) {
+  p.part(`side-rail-${side}`, box(920, 30, 50, true).translate(0, y, 320).scale(scale).color(safetyPaint));
+  for (const [station, x] of [['front', -349.6], ['middle', 0], ['rear', 349.6]] as const) {
+    p.part(`support-${side}-${station}`, box(26, 26, 282, true).translate(x, y, 155).scale(scale).color(steel));
+    p.part(`foot-${side}-${station}`, box(74, 70, 18, true).translate(x, y, 9).scale(scale).color(safetyPaint));
+  }
+}
+
+// Eleven crosswise rollers leave an open bed so loads sit on rotating steel cylinders.
+for (const [index, x] of [-400, -320, -240, -160, -80, 0, 80, 160, 240, 320, 400].entries()) {
+  p.part(`roller-${index}`, cylinder(310, 22, 8).rotate([1, 0, 0], 90).translate(x, 155, 323).scale(scale).color(rollerSteel));
+}
 
 return p.model();

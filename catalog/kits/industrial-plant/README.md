@@ -60,6 +60,14 @@ count are unchanged. Its [semantic-review handoff](../../../artifacts/catalog-de
 records the five-preview ledger, before/after images, GLB color regression,
 local checks, and inspected MP4.
 
+The Nov 16 roller-conveyor review replaces the solid deck and lengthwise yellow
+cylinder with an open bed of eleven crosswise steel rollers. The rollers have a
+separate material control; the steel side rails and six support stations stay
+connected. Its [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/README.md)
+records the five-preview ledger, before/after evidence, exported-GLB regression,
+local checks, and inspected MP4. The change retains the existing asset ID and
+does not make an engineering or manufacturing claim.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -95,7 +103,7 @@ local checks, and inspected MP4.
 | `variable-frequency-drive-cabinet` | Variable frequency drive cabinet | Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. | scale · steel · safety paint · gauge glass |
 | `cable-tray-bridge` | Cable tray bridge | Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. | scale · steel · safety paint |
 | `belt-conveyor` | Belt conveyor | Straight conveyor with a rubber belt, transverse carrying and return rollers, guarded frame, adjustable support stations and drive motor. | scale · support stations · frame steel · belt rubber · roller steel · safety paint |
-| `roller-conveyor-line` | Roller conveyor line | Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. | scale · steel · safety paint |
+| `roller-conveyor-line` | Roller conveyor line | Straight gravity conveyor with transverse steel rollers, side rails and three support stations. | scale · structural steel · roller steel · safety paint |
 | `screw-conveyor` | Screw conveyor | Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. | scale · steel · safety paint |
 | `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, front inspection cutaway showing the contained bucket belt, boot housing, head pulley cover and service ladder. | scale · steel · safety paint · belt rubber · bucket polymer |
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |

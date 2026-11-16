@@ -1,0 +1,3 @@
+73f08e9078e5b1d312ad85d13a375f8115c928c4530270126886aef7c167d430  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/after/roller-conveyor-line.kcad.ts
+1e4a923ef541fad09015ff664800289c566d1092c2b2d96f1d95aece498300f2  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/after/roller-conveyor-line.png
+1e4a923ef541fad09015ff664800289c566d1092c2b2d96f1d95aece498300f2  catalog/kits/industrial-plant/previews/roller-conveyor-line.png

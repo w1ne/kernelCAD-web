@@ -1,0 +1,7 @@
+Result from: python3 scripts/checkCatalogQuality.py --fix-list
+Exit code: 1 (the catalog-wide legacy quality gate finds unrelated existing failures)
+
+catalog/kits/standard-components/beam-coupling.kcad.ts
+catalog/kits/standard-components/din-rail.kcad.ts
+catalog/kits/standard-components/hose-barb-adapter.kcad.ts
+catalog/kits/standard-components/retaining-ring.kcad.ts

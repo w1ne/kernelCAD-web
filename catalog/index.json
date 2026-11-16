@@ -146618,7 +146618,7 @@
       "id": "roller-conveyor-line",
       "kit": "industrial-plant",
       "title": "Roller conveyor line",
-      "description": "Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. Controls: overall scale, steel, safety paint.",
+      "description": "Straight gravity conveyor with transverse steel rollers, side rails and three support stations. Controls: overall scale, structural steel, roller steel and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -146637,7 +146637,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts",
       "preview": "/assets/industrial-plant-roller-conveyor-line.png",
-      "sourceSha256": "df91b1dc1be2b892c78187077ba2d0d1afe2697baf24bc8089b1563d296f8275",
+      "sourceSha256": "73f08e9078e5b1d312ad85d13a375f8115c928c4530270126886aef7c167d430",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146656,6 +146656,12 @@
           "label": "Structural steel"
         },
         {
+          "name": "rollerSteel",
+          "type": "color",
+          "default": "#b7c1c3",
+          "label": "Roller steel"
+        },
+        {
           "name": "safetyPaint",
           "type": "color",
           "default": "#e4ab47",
@@ -146665,6 +146671,7 @@
       "presets": {
         "weathered": {
           "steel": "#575851",
+          "rollerSteel": "#7d8583",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
@@ -146672,11 +146679,11 @@
         }
       },
       "stats": {
-        "triangles": 576,
+        "triangles": 652,
         "sizeM": [
-          1.0968,
-          0.346,
-          0.3612
+          0.92,
+          0.345,
+          0.4012
         ],
         "minUpM": 0,
         "materials": 1
@@ -146686,14 +146693,34 @@
           "name": "safetyPaint",
           "color": "#e4ab47",
           "parts": [
-            "side-frame--1",
-            "foot--1-0",
-            "foot--1-1",
-            "foot--1-2",
-            "side-frame-1",
-            "foot-1-0",
-            "foot-1-1",
-            "foot-1-2",
+            "side-rail-left",
+            "foot-left-front",
+            "foot-left-middle",
+            "foot-left-rear",
+            "side-rail-right",
+            "foot-right-front",
+            "foot-right-middle",
+            "foot-right-rear"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "steel",
+          "color": "#707f84",
+          "parts": [
+            "support-left-front",
+            "support-left-middle",
+            "support-left-rear",
+            "support-right-front",
+            "support-right-middle",
+            "support-right-rear"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rollerSteel",
+          "color": "#b7c1c3",
+          "parts": [
             "roller-0",
             "roller-1",
             "roller-2",
@@ -146702,23 +146729,11 @@
             "roller-5",
             "roller-6",
             "roller-7",
-            "roller-8"
+            "roller-8",
+            "roller-9",
+            "roller-10"
           ],
-          "param": "safetyPaint"
-        },
-        {
-          "name": "steel",
-          "color": "#707f84",
-          "parts": [
-            "support--1-0",
-            "support--1-1",
-            "support--1-2",
-            "support-1-0",
-            "support-1-1",
-            "support-1-2",
-            "conveyor-deck"
-          ],
-          "param": "steel"
+          "param": "rollerSteel"
         }
       ]
     },
