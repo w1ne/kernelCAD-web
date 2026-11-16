@@ -491,6 +491,7 @@ shape, not a copy.
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
 // Boolean union of the source and its reflection — produces a symmetric part:
 .mirror(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
+// mirror and reflect reject any plane-object key other than plane and offset.
 
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape

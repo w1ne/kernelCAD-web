@@ -166,3 +166,34 @@ describe('spline3d()', () => {
     ).toEqual([30, 0, 0]);
   });
 });
+
+describe('curve constructor option keys', () => {
+  const pts: [number, number, number][] = [[0, 0, 0], [10, 5, 0], [20, 0, 5], [30, 0, 0]];
+
+  it('spline3d rejects a misspelled tension instead of building at the default', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    expect(() => kcad.spline3d(pts, { tensoin: 0.2 } as never)).toThrow(/spline3d\(points, opts\): opts\.tensoin .*unknown option 'tensoin'.*tension, closed/);
+    expect(findCurveRecord(session)).toBeUndefined();
+  });
+
+  it('spline3d rejects a positional tension', () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    expect(() => kcad.spline3d(pts, 0.2 as never)).toThrow(/spline3d\(points, opts\?\): opts .*options object/);
+  });
+
+  it('nurbsCurve rejects an unknown key such as periodic', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    expect(() => kcad.nurbsCurve(pts, { degree: 3, periodic: true } as never)).toThrow(/nurbsCurve\(points, opts\): opts\.periodic .*degree, weights, knots, closed/);
+    expect(findCurveRecord(session)).toBeUndefined();
+  });
+
+  it('accepts every documented key and an omitted opts', () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    expect(() => kcad.spline3d(pts, { tension: 0.2, closed: false })).not.toThrow();
+    expect(() => kcad.spline3d(pts)).not.toThrow();
+    expect(() => kcad.nurbsCurve(pts, { degree: 3, weights: [1, 1, 1, 1], closed: false })).not.toThrow();
+    expect(() => kcad.nurbsCurve(pts, undefined)).not.toThrow();
+  });
+});

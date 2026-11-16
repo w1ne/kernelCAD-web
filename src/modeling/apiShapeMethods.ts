@@ -117,6 +117,27 @@ export function makePrimitiveMethods(
   };
 }
 
+const SPRING_KEYS = new Set(['length', 'coilRadius', 'wireRadius', 'turns', 'axis', 'pointsPerTurn', 'endStyle', 'segments']);
+
+/** Reject option keys `spring()` does not read. A misspelled `endStyle`
+ *  (`ends`, `endstyle`) or an unsupported `pitch` used to be dropped, building
+ *  open-ended or differently pitched coils with no diagnostic. */
+function assertSpringKeys(opts: SpringOptions): void {
+  if (!opts || typeof opts !== 'object') return;
+  for (const key of Object.keys(opts)) {
+    if (!SPRING_KEYS.has(key)) {
+      invalidArgs({
+        api: 'spring(opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${[...SPRING_KEYS].join(', ')}; pitch is length / turns`,
+        example: "spring({ length: 30, coilRadius: 5, wireRadius: 1, turns: 8, endStyle: 'closed' })",
+        featureId: 'spring',
+      });
+    }
+  }
+}
+
 /** Validate the four positive dimensions of `spring()` in call order. */
 function resolveSpringSizing(opts: SpringOptions): {
   length: number;
@@ -217,6 +238,7 @@ export function makeSpringMethod(
   self: () => KernelCadApi,
 ): KernelCadApi['spring'] {
   return (opts) => {
+    assertSpringKeys(opts);
     const { length, coilRadius, wireRadius, turns } = resolveSpringSizing(opts);
     const axis = resolveSpringAxis(opts);
     const { pointsPerTurn, cylinderSegments } = resolveSpringSampling(opts);

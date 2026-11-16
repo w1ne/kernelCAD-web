@@ -105,6 +105,26 @@ import {
 import { validateChamferLegOptions } from './chamferLegOptions';
 
 
+const PLANE_SPEC_KEYS = new Set(['plane', 'offset']);
+
+// A misspelled offset (`ofset`, `distance`) used to be dropped, mirroring
+// across the cardinal plane through the origin with no diagnostic.
+function rejectUnknownPlaneKeys(method: 'mirror' | 'reflect', plane: unknown, featureId: FeatureId): void {
+  if (typeof plane !== 'object' || plane === null || Array.isArray(plane)) return;
+  for (const key of Object.keys(plane)) {
+    if (!PLANE_SPEC_KEYS.has(key)) {
+      invalidArgs({
+        api: `${method}({ plane, offset })`,
+        path: `plane.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: 'only plane and offset',
+        example: `box(20, 20, 20).${method}({ plane: 'yz', offset: 5 })`,
+        featureId,
+      });
+    }
+  }
+}
+
 export class Shape {
   /** The feature record this handle stands for. Transforms return a new
    *  handle; reading `id` of an older handle yields a copy of the record as
@@ -762,6 +782,7 @@ export class Shape {
   }
 
   reflect(plane: PlaneSpec): Shape {
+    rejectUnknownPlaneKeys('reflect', plane, this.recordId);
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -774,6 +795,7 @@ export class Shape {
   }
 
   mirror(plane: PlaneSpec): Shape {
+    rejectUnknownPlaneKeys('mirror', plane, this.id);
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.invalid-args',
