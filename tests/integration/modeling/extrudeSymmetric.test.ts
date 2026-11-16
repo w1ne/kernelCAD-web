@@ -101,17 +101,21 @@ describe('Sketch.extrude symmetric', () => {
   }, 120_000);
 });
 
-describe('mid-plane-spacer cookbook example', () => {
+describe('mid-plane-link cookbook example', () => {
   beforeAll(async () => { await initOcct(); }, 60_000);
 
-  it('builds a spacer centred on its mid-plane to the closed-form volume', async () => {
-    const code = await readFile('examples/cookbook-parity/mid-plane-spacer.kcad.ts', 'utf8');
-    const model = await buildModel({ fileName: 'mid-plane-spacer.kcad.ts', code });
+  it('builds a link bar centred on its mid-plane to the closed-form volume', async () => {
+    const code = await readFile('examples/cookbook-parity/mid-plane-link.kcad.ts', 'utf8');
+    const model = await buildModel({ fileName: 'mid-plane-link.kcad.ts', code });
     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([]);
     const shape = model.tailShape!;
     expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
     const bb = shape.boundingBox();
+    expect(bb.min[0]).toBeCloseTo(-6, 6);
+    expect(bb.max[0]).toBeCloseTo(66, 6);
     expect(bb.min[2]).toBeCloseTo(-4, 6);
     expect(bb.max[2]).toBeCloseTo(4, 6);
+    const area = 60 * 12 + Math.PI * 6 * 6 - 2 * Math.PI * 2.6 * 2.6;
+    expect(shape.volume()).toBeCloseTo(area * 8, 2);
   }, 120_000);
 });
