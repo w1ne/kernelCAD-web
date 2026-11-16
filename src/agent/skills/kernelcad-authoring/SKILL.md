@@ -68,6 +68,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | motor mount, NEMA 17 | `holes` on the 31 mm pattern + pilot bore | nema-motor-mounting-plate |
 | photo, trace, reference image | MCP `trace_from_image` (`referenceImage` only overlays) | resolve-photo-trace-assumptions |
 | infill, weak spots, stronger, will it hold, stress | `feaStudy` + `export` 3mf `infill: { fromFea }` (local ccx + gmsh) | stress-graded-infill-fdm |
+| rocket, apogee, stability, parachute, model rocket | `arm.flightStudy({ motor, aero, launch, recovery, minStabilityCal })` + MCP `run_flight` | `examples/flight/pathfinder-rocket.kcad.ts` |
 | screw, nut, bearing, motor, servo | `lib.standard.*`, `lib.findPart`, MCP `find_part` | kernelcad-parts |
 
 ## Before you finish
