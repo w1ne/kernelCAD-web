@@ -10,7 +10,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
-import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
 import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
@@ -1118,6 +1118,7 @@ export class Shape {
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
+   * `upToFace` ends the cut on a planar face of the body instead of a depth.
    * An unknown `opts` key (`enable`, `mode`, `upTo`) throws
    * `feature.invalid-args`.
    */
@@ -1147,6 +1148,7 @@ export class Shape {
       profile: { kind: 'feature', id: sketch.id },
       face: buildFaceInputRef(this.id, faceSel),
     };
+    if (opts.upToFace !== undefined) inputs.upToFace = buildUpToFaceInputRef(this.id, opts.upToFace);
     return this.session.createShape({
       kind: 'cutout',
       inputs,
