@@ -43132,7 +43132,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rotary-capper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rotary-capper.png",
-      "sourceSha256": "ba228c2ac4bd8310709aa82f657904f7a4e2cefd329b0e05757240c775709886",
+      "sourceSha256": "12db81dd947e9e6474f633048193b27615ddc5becff99a31744b3db0452c52f9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -43204,15 +43204,7 @@
           "color": "#3999a1",
           "parts": [
             "bottle-table",
-            "cap-feed-hood",
-            "capper-head-0",
-            "capper-head-1",
-            "capper-head-2",
-            "capper-head-3",
-            "capper-head-4",
-            "capper-head-5",
-            "capper-head-6",
-            "capper-head-7"
+            "cap-feed-hood"
           ],
           "param": "foodPolymer"
         },
@@ -43223,7 +43215,15 @@
             "turret-column",
             "top-plate",
             "infeed-deck",
-            "outfeed-deck"
+            "outfeed-deck",
+            "capper-head-0",
+            "capper-head-1",
+            "capper-head-2",
+            "capper-head-3",
+            "capper-head-4",
+            "capper-head-5",
+            "capper-head-6",
+            "capper-head-7"
           ],
           "param": "stainlessSteel"
         }
