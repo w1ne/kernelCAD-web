@@ -373,8 +373,9 @@ function rangePoses(arm: Assembly, intents: readonly MechanicalJointIntentRecord
 }
 
 /** The independent mate that moves `mateName` and its sampled range. A
- *  driven mate resolves to its root source: the source's own limits, or the
- *  driven limits mapped back through the coupling chain when it has none. */
+ *  driven mate resolves to its root source. The range is the source's own
+ *  limits, cut to the driven limits mapped back through the coupling chain,
+ *  so no sample drives the driven mate past its own limits. */
 function rangeAxis(
   mates: ReadonlyMap<string, MateRecord>,
   couplings: readonly MateCouplingRecord[],
@@ -391,11 +392,14 @@ function rangeAxis(
     root = c.source;
   }
   const own = mates.get(root)?.limitsDeg ?? (root === mateName ? undefined : mates.get(root)?.limitsMm);
-  if (own !== undefined) return { name: root, range: [own[0], own[1]] };
   const driven = mates.get(mateName)?.limitsDeg;
-  if (root === mateName || driven === undefined || ratio === 0) return undefined;
+  if (root === mateName || driven === undefined || ratio === 0) {
+    return own === undefined ? undefined : { name: root, range: [own[0], own[1]] };
+  }
   const a = (driven[0] - offset) / ratio, b = (driven[1] - offset) / ratio;
-  return { name: root, range: [Math.min(a, b), Math.max(a, b)] };
+  const mapped: [number, number] = [Math.min(a, b), Math.max(a, b)];
+  if (own === undefined) return { name: root, range: mapped };
+  return { name: root, range: [Math.max(own[0], mapped[0]), Math.min(own[1], mapped[1])] };
 }
 
 // ─── Kinematics ──────────────────────────────────────────────────────────
