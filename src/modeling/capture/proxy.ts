@@ -945,20 +945,31 @@ export class Shape {
     return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
-  shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+  /**
+   * Hollow the solid to a wall of `thickness`, opening `opts.face`. Pass an
+   * array to open several faces at once: `{ face: ['top', 'bottom'] }` leaves
+   * a sleeve open at both ends.
+   */
+  shell(
+    thickness: Editable<number>,
+    opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
+  ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
-    if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {
+    const face = (opts as { face?: unknown } | undefined | null)?.face;
+    const list = Array.isArray(face) ? [...face] : [face];
+    if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
       invalidArgs({
         api: 'shell(thickness, { face })',
         path: 'opts.face',
-        got: (opts as { face?: unknown } | undefined)?.face,
+        got: face,
         requires:
-          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query; shell() always needs one — it removes that face and leaves a wall of `thickness` behind",
+          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
         example: "box(40, 30, 10).shell(2, { face: 'top' })",
         featureId: this.id,
       });
     }
-    return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
+    return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: list[0] },
+      list.length > 1 ? { extraFaces: list.slice(1) } : undefined);
   }
 
   /**

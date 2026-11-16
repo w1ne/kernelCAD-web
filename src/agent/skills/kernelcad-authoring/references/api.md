@@ -448,6 +448,8 @@ shape, not a copy.
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Open several faces in one shell: a sleeve open at both ends.
+.shell(thickness: number, { face: FaceSelector[] }): Shape  // e.g. { face: ['top', 'bottom'] }
 // Direct face edit. Positive distance / an outward vector grows the solid.
 // OCCT only slides a planar face along its normal and rejects anything else
 // by name (`feature.face-edit.rejected`). A FaceQuery is a SET selector:
