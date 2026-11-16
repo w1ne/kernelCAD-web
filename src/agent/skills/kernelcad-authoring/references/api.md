@@ -467,6 +467,8 @@ shape, not a copy.
 //   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
+// Any key other than face, neutralPlane and pullDir throws feature.invalid-args
+// (e.g. pullDirection is not pullDir).
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
 
 // Lattice infill (TPMS) — LAST step of a body chain; the result is a mesh solid.

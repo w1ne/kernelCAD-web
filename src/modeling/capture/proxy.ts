@@ -1000,11 +1000,8 @@ export class Shape {
       pullDir?: [number, number, number];
     },
   ): Shape {
-    return this.session.draftFeature(this, angleDeg, {
-      face: opts.face,
-      neutralPlane: opts.neutralPlane,
-      pullDir: opts.pullDir,
-    });
+    // Passed whole so capture rejects an unknown key instead of dropping it.
+    return this.session.draftFeature(this, angleDeg, opts);
   }
 
   /**
