@@ -105,6 +105,7 @@ import {
   assertScalarEdgeValue,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
+import { assertFinishOptions } from './finishOptions';
 
 
 const PLANE_SPEC_KEYS = new Set(['plane', 'offset']);
@@ -558,6 +559,8 @@ export class Shape {
    *              but off for raw metals (the metal is its colour).
    * @param opts.face   apply to faces matching an upstream `faceLabels` entry
    *              only, exactly like `.material({ face })`.
+   *              Any other `opts` key throws `feature.invalid-args`
+   *              (`colour` is not `color`).
    *
    * Same lifecycle as `.color()` / `.material()`: the finish lives on the
    * record it is applied to. For one part of one material, build the
@@ -572,6 +575,7 @@ export class Shape {
     // the identically named token anyway). Otherwise an engineering material
     // name applies its registry default finish, so one material vocabulary
     // covers mass, FEA and appearance.
+    if (opts !== undefined) assertFinishOptions(opts, this.id);
     let token: string = name;
     if (!isFinishToken(name)) {
       const resolved = tryResolveMaterial(name);
