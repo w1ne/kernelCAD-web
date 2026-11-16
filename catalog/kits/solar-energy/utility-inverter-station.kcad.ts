@@ -3,7 +3,7 @@ meta({
   name: 'utility-inverter-station',
   license: 'CC0-1.0',
   title: 'Utility inverter station',
-  description: 'Containerized inverter station with service doors, ventilation louvers and cable plinth. Material controls: stainless steel, powder-coated steel.',
+  description: 'Containerized inverter station with service doors, ventilation louvers and cable plinth. Material controls: concrete, stainless steel, powder-coated steel.',
   tags: ['solar energy', 'photovoltaic', 'renewable energy', 'low poly', 'scene prop', 'CC0'],
   kit: 'solar-energy',
   category: 'prop',
@@ -13,11 +13,14 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
+// The cable plinth is the precast concrete foundation the station sits on;
+// the thin skid base above it stays steel.
+const concrete = param('concrete', '#99968d', { label: 'Concrete cable plinth' });
 const stainlessSteel = param('stainlessSteel', '#c3caca', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#687c7c', { label: 'Powder-coated steel' });
 presets({
-  fieldService: { stainlessSteel: '#abb5b7', powderCoat: '#7a807b' },
-  highVisibility: { stainlessSteel: '#e0e5e4', powderCoat: '#d1722b' },
+  fieldService: { concrete: '#8b8982', stainlessSteel: '#abb5b7', powderCoat: '#7a807b' },
+  highVisibility: { concrete: '#77766f', stainlessSteel: '#e0e5e4', powderCoat: '#d1722b' },
 });
 const p = assembly("utility-inverter-station");
 p.part("station-plinth", box(1330.4, 766, 36, true).translate(0, 0, 18).scale(scale).color(stainlessSteel));
@@ -34,6 +37,6 @@ p.part("station-vent-5", box(625.152, 10, 8, true).translate(0, 381, 505.12).sca
 p.part("station-vent-6", box(625.152, 10, 8, true).translate(0, 381, 606.4).scale(scale).color(stainlessSteel));
 p.part("station-end-vent-0", box(120, 540, 358.4, true).translate(-532.8, 0, 504).scale(scale).color(stainlessSteel));
 p.part("station-end-vent-1", box(120, 540, 358.4, true).translate(532.8, 0, 504).scale(scale).color(stainlessSteel));
-p.part("station-cable-plinth", box(1406, 855, 95, true).translate(0, 0, 48).scale(scale).color(stainlessSteel));
+p.part("station-cable-plinth", box(1406, 855, 95, true).translate(0, 0, 48).scale(scale).color(concrete));
 
 return p.model();
