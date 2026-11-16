@@ -69,6 +69,10 @@ function resolveSourcePose(
 
   const pose = source.pose;
   if (typeof pose === 'number') return pose;
+  // An unposed source rests at zero, as solveMates and physics place it, so
+  // the driven mate still gets the coupling offset. A ParamRef pose stays
+  // unresolved here for a caller that has a resolver.
+  if (pose === undefined) return 0;
 
   return undefined;
 }
