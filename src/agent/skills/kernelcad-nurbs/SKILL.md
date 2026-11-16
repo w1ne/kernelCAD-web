@@ -204,7 +204,7 @@ const grip = s0.loft(s1, {
 
 ## G1/G2 fillet continuity (Slice C)
 
-`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default, tangent) and `'G2'` (curvature-continuous). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
+`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default, tangent) and `'G2'` (curvature-continuous). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary. Any other `opts` key throws `feature.invalid-args` (e.g. `continuty` is not `continuity`).
 
 ```ts
 const panel = surfaceFromBoundary([bottom, right, top, left]).thicken(2);

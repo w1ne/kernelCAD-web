@@ -103,6 +103,7 @@ import {
   assertScalarEdgeValue,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
+import { assertFilletOptions } from './filletOptions';
 
 
 export class Shape {
@@ -855,6 +856,7 @@ export class Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
       assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
       let continuity: FilletContinuity | undefined;
+      if (opts !== undefined) assertFilletOptions(opts, this.id);
       if (opts !== undefined && opts.continuity !== undefined) {
         if (!isFilletContinuity(opts.continuity)) {
           invalidArgs({
