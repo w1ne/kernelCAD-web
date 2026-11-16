@@ -410,12 +410,15 @@ export class Sketch {
     } = {},
   ): Shape {
     if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Sketch.sweep: opts must be an options object; got ${Array.isArray(opts) ? 'an array' : String(opts)}.`,
-        this.id,
-        "Pass sweep(rail, { spine?, transitionMode?, frenet?, section?, faceLabels? }), e.g. sweep(rail, { spine: 'smooth' }).",
-      );
+      invalidArgs({
+        api: 'Sketch.sweep(rail, opts)',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an options object { spine?, transitionMode?, frenet?, section?, faceLabels? }',
+        example: "sketch.sweep(rail, { spine: 'smooth' })",
+        featureId: this.id,
+      });
     }
     assertKnownKeys(
       opts,

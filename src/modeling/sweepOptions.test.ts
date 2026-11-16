@@ -16,8 +16,8 @@ describe('Sketch.sweep(rail, opts) option checks', () => {
   it.each([
     [`{ transition: 'round' }`, /unknown option 'transition'/],
     [`{ spine: 'polyline', frenét: true }`, /unknown option 'frenét'/],
-    ['null', /opts must be an options object/],
-    ['[]', /opts must be an options object/],
+    ['null', /opts — got .*requires an options object/],
+    ['[]', /opts — got .*requires an options object/],
   ])('rejects sweep(rail, %s)', async (opts, message) => {
     const error = await buildModel({
       fileName: 'sweep-bad-opts.kcad.ts',
