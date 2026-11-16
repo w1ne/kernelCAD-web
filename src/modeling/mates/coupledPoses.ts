@@ -26,20 +26,30 @@ export function expandCoupledPoses(
   if (couplings.length === 0) return { ...poses };
 
   const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
+  const couplingByDriven = new Map(couplings.map((coupling) => [coupling.driven, coupling]));
   const expanded: NumericPoses = { ...poses };
+  const resolving = new Set<string>();
 
-  for (const coupling of couplings) {
-    if (expanded[coupling.driven] !== undefined) continue;
+  // A chained coupling (output <- idler <- input) can be declared in any
+  // order, so derive a driven source from its own coupling first.
+  const expand = (coupling: MateCouplingRecord): void => {
+    if (expanded[coupling.driven] !== undefined || resolving.has(coupling.driven)) return;
+    resolving.add(coupling.driven);
+    const sourceCoupling = couplingByDriven.get(coupling.source);
+    if (sourceCoupling !== undefined) expand(sourceCoupling);
 
     const sourcePose = resolveSourcePose(
       mateByName.get(coupling.source),
       expanded,
       options.resolveSourcePose,
     );
-    if (sourcePose === undefined || Array.isArray(sourcePose)) continue;
+    resolving.delete(coupling.driven);
+    if (sourcePose === undefined || Array.isArray(sourcePose)) return;
 
     expanded[coupling.driven] = sourcePose * coupling.ratio + (coupling.offset ?? 0);
-  }
+  };
+
+  for (const coupling of couplings) expand(coupling);
 
   return expanded;
 }
