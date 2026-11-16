@@ -68,13 +68,13 @@ const c = (h: number, r: number, segments: number, at: [number, number, number],
 
 p.part("mount-rail", b([1600, 70, 180], [0, 0, 1350]).color(stainlessSteel));
 p.part("drip-channel", b([1600, 160, 80], [0, -80, 860]).color(powderCoat));
-p.part("boot-nozzle-0", c(450, 28, 8, [-600, -130, 1090]).color(elastomer));
-p.part("boot-nozzle-1", c(450, 28, 8, [-360, -130, 1090]).color(elastomer));
-p.part("boot-nozzle-2", c(450, 28, 8, [-120, -130, 1090]).color(elastomer));
-p.part("boot-nozzle-3", c(450, 28, 8, [120, -130, 1090]).color(elastomer));
-p.part("boot-nozzle-4", c(450, 28, 8, [360, -130, 1090]).color(elastomer));
-p.part("boot-nozzle-5", c(450, 28, 8, [600, -130, 1090]).color(elastomer));
-p.part("mount-bracket-0", b([65, 100, 340], [-700, 0, 1200]).color(stainlessSteel));
-p.part("mount-bracket-1", b([65, 100, 340], [700, 0, 1200]).color(stainlessSteel));
+p.part("boot-nozzle-0", c(450, 28, 8, [-600, -80, 900]).color(elastomer));
+p.part("boot-nozzle-1", c(450, 28, 8, [-360, -80, 900]).color(elastomer));
+p.part("boot-nozzle-2", c(450, 28, 8, [-120, -80, 900]).color(elastomer));
+p.part("boot-nozzle-3", c(450, 28, 8, [120, -80, 900]).color(elastomer));
+p.part("boot-nozzle-4", c(450, 28, 8, [360, -80, 900]).color(elastomer));
+p.part("boot-nozzle-5", c(450, 28, 8, [600, -80, 900]).color(elastomer));
+p.part("mount-bracket-0", b([65, 160, 620], [-700, -40, 1130]).color(stainlessSteel));
+p.part("mount-bracket-1", b([65, 160, 620], [700, -40, 1130]).color(stainlessSteel));
 
 return p.model();

@@ -4679,7 +4679,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/catering-truck.kcad.ts",
       "preview": "/assets/airfield-catering-truck.png",
-      "sourceSha256": "e274383c4358534842d9b3e3ceb735b82e026dd4389bb981d2553497d883d8f2",
+      "sourceSha256": "055928243e57292f3d916dcff6db9a742f0e244235eb33a7e2406ca06e180544",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4731,7 +4731,7 @@
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 296,
         "sizeM": [
           0.5414,
           0.54,
@@ -4746,6 +4746,8 @@
           "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "lift-post-left",
+            "lift-post-right",
             "lift-mast"
           ],
           "param": "stainlessSteel"
@@ -5522,7 +5524,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/passenger-boarding-stairs.kcad.ts",
       "preview": "/assets/airfield-passenger-boarding-stairs.png",
-      "sourceSha256": "3221f5c8b886b20d41954c7be5fe7ef2793fa5af7b98e1c1fff0b9ec58b6e43f",
+      "sourceSha256": "03abe97987ed6c6f377f8ea885b7361c6fbaeeb9c327763d59fcd15439ca438a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5566,10 +5568,10 @@
         }
       },
       "stats": {
-        "triangles": 320,
+        "triangles": 368,
         "sizeM": [
           0.3933,
-          0.468,
+          0.532414,
           0.2448
         ],
         "minUpM": 0,
@@ -5597,6 +5599,10 @@
             "step-05",
             "step-06",
             "step-07",
+            "landing-post-left",
+            "landing-post-right",
+            "rail-post-left",
+            "rail-post-right",
             "left-handrail",
             "right-handrail"
           ],
@@ -28640,7 +28646,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/frame-grip.kcad.ts",
       "preview": "/assets/apiary-frame-grip.png",
-      "sourceSha256": "5ef03ee9698f9c79ee4d3342e7069022590416311e22cdfa649094b0accef96c",
+      "sourceSha256": "68b73c352f3ffe0553c9a37b602e6a52bd1f6afc2c6aa6d85345b546b45a363f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -28678,8 +28684,8 @@
       "stats": {
         "triangles": 116,
         "sizeM": [
-          0.35,
-          0.51,
+          0.25,
+          0.5,
           0.22
         ],
         "minUpM": 0,
@@ -31500,7 +31506,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-catching-clip.kcad.ts",
       "preview": "/assets/apiary-queen-catching-clip.png",
-      "sourceSha256": "5893c10fa9b6f5771a9ee8124de21a545c26f34418549a6045ef4b68b7c9e7ac",
+      "sourceSha256": "20e2078fcf23905493fc65e9ad2dd818bf2a9edc278cb3d0472b2fc516cf8746",
       "triangleBudget": 1800,
       "params": [
         {
@@ -31540,7 +31546,7 @@
         "sizeM": [
           0.205,
           0.365,
-          0.09
+          0.13
         ],
         "minUpM": 0,
         "materials": 1
@@ -34710,7 +34716,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/folding-rule.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-folding-rule.png",
-      "sourceSha256": "36c4079934ae43630b4cbd462a0e5b7ad534d8d9643fee9b2513089875e51761",
+      "sourceSha256": "5e62913a738ea0d8ec6d10d5824e2feb67fc3fe0be6cfc2cca1e8176c6259449",
       "triangleBudget": 2400,
       "params": [
         {
@@ -34748,9 +34754,9 @@
       "stats": {
         "triangles": 124,
         "sizeM": [
-          1.07837,
+          1.06237,
           0.052,
-          0.108096
+          0.1109
         ],
         "minUpM": 0,
         "materials": 1
@@ -37301,7 +37307,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/soil-core-sampler.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-soil-core-sampler.png",
-      "sourceSha256": "eb28facc549ee9e0c8bfd123af451fc2a04c1dd8e3d6a99e63015e24f54f370b",
+      "sourceSha256": "122303a7bc0dfa8cab9a43d12c0bc2c2e243075332de82bb66393b5ad2e08c15",
       "triangleBudget": 2400,
       "params": [
         {
@@ -37348,7 +37354,7 @@
         "triangles": 260,
         "sizeM": [
           0.19,
-          0.728,
+          0.523,
           0.116
         ],
         "minUpM": 0,
@@ -39197,7 +39203,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-date-coder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-date-coder.png",
-      "sourceSha256": "94511e6e121996aedf655a8c86bc05bb47571af96660355c07d668659b4732b8",
+      "sourceSha256": "315c28a6677f195f52465508612d9dcc1c88b5a354e5bae3fa8e4e0790dc6696",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41478,7 +41484,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cip-valve-manifold.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cip-valve-manifold.png",
-      "sourceSha256": "ce5b415f706a957f5088d2d1c176076caa87e60a169b4e1bb5e7dd679499b2c9",
+      "sourceSha256": "0d74a0e68aa536332ab89229a7706feaf2194851b2d09186e88e8ef170a578f1",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41516,9 +41522,9 @@
       "stats": {
         "triangles": 448,
         "sizeM": [
-          0.79,
-          0.88,
-          0.51
+          0.85,
+          0.455,
+          0.256
         ],
         "minUpM": 0,
         "materials": 1
@@ -44459,7 +44465,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/vision-inspection-arch.kcad.ts",
       "preview": "/assets/beverage-bottling-line-vision-inspection-arch.png",
-      "sourceSha256": "7cf1ee69cde8c48f7d8229a9d2cb573ef895d8f402081c99cde8aa4b9f3599c9",
+      "sourceSha256": "accb11e89870dba7f147bc7025e5f5e51e6bbbba90655e70689d980b395fd337",
       "triangleBudget": 2200,
       "params": [
         {
@@ -44495,7 +44501,7 @@
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 216,
         "sizeM": [
           1.7,
           0.965,
@@ -44511,7 +44517,11 @@
           "parts": [
             "base-left",
             "base-right",
-            "camera-beam"
+            "camera-beam",
+            "conveyor-leg-0",
+            "conveyor-leg-1",
+            "conveyor-leg-2",
+            "conveyor-leg-3"
           ],
           "param": "powderCoat"
         },
@@ -44527,7 +44537,9 @@
             "backlight",
             "reject-sensor",
             "conveyor-left",
-            "conveyor-right"
+            "conveyor-right",
+            "backlight-bracket-left",
+            "backlight-bracket-right"
           ],
           "param": "stainlessSteel"
         }
@@ -59133,7 +59145,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/seesaw.kcad.ts",
       "preview": "/assets/city-street-seesaw.png",
-      "sourceSha256": "ef6c76d43030db5a137f2d93de14e677818e10de3e6499886e0342abcce3eb1a",
+      "sourceSha256": "1b26ef7b857b127abd7f4640ba4f074ba8269ed4bc41fe069157975c8b386608",
       "triangleBudget": 260,
       "params": [
         {
@@ -59173,7 +59185,7 @@
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 120,
         "sizeM": [
           3.432577,
           1.162118,
@@ -59209,7 +59221,6 @@
           "color": "#e8432e",
           "parts": [
             "seat-l",
-            "bumper-l",
             "seat-r",
             "bumper-r"
           ],
@@ -61867,7 +61878,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/asphalt-transfer-conveyor.kcad.ts",
       "preview": "/assets/construction-equipment-asphalt-transfer-conveyor.png",
-      "sourceSha256": "abad652c0ab886f1576c90dd9fe8d59a54d25c69c46e822dbcb967f489d15be4",
+      "sourceSha256": "d88688a3d786d98253d79edfe9462fae040b58ddd4a4e957a96d874a75b218d4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -61911,11 +61922,11 @@
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 360,
         "sizeM": [
-          1.722,
+          1.722104,
           1.2835,
-          0.5964
+          0.6038
         ],
         "minUpM": 0,
         "materials": 1
@@ -61947,6 +61958,7 @@
             "support-leg--1",
             "truss-rail-1",
             "support-leg-1",
+            "axle",
             "transport-wheel--1-hub--1",
             "transport-wheel--1-hub-1",
             "transport-wheel-1-hub--1",
@@ -68127,7 +68139,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/telescopic-handler.kcad.ts",
       "preview": "/assets/construction-equipment-telescopic-handler.png",
-      "sourceSha256": "7f35a35776e7f658e8f438cc8f02993165cc3575c214ea4272887b236030a376",
+      "sourceSha256": "a17aa6b90e022ae1d200b2fc19f3264ce0b78cda526cce98e366b0774447da6b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -68179,9 +68191,9 @@
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 768,
         "sizeM": [
-          1.8016,
+          1.7828,
           0.95,
           0.683256
         ],
@@ -68213,6 +68225,7 @@
             "handler-wheel-1-1-hub--1",
             "handler-wheel-1-1-hub-1",
             "chassis",
+            "boom-pedestal",
             "boom-carriage",
             "fork-tine-left",
             "fork-tine-right",
@@ -75137,7 +75150,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/liquid-cooling-manifold.kcad.ts",
       "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
-      "sourceSha256": "9593dd25358249511a11d32b7b6f3c85d40a4f772597e5002d33507f703fe90d",
+      "sourceSha256": "678d7898e0b3bfad6dc7466e2642a39807e74495dd762420ab8baba7382587e8",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75175,9 +75188,9 @@
       "stats": {
         "triangles": 552,
         "sizeM": [
-          1.58,
-          0.735,
-          1.7
+          1.7,
+          0.74,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
@@ -75842,7 +75855,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-coolant-header.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
-      "sourceSha256": "7c2ff34a89e4b2fe4df5fd9b3259e6281dc14f1a09af0ad1716cab9d969a3c79",
+      "sourceSha256": "9252d10b8b18ee52062bcbfbbe5c8136eb496493826845e7f91d6e6d600f5d53",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75880,9 +75893,9 @@
       "stats": {
         "triangles": 392,
         "sizeM": [
-          1.71,
+          1.9,
           0.45,
-          1.9
+          0.52
         ],
         "minUpM": 0,
         "materials": 1
@@ -80706,7 +80719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-cable-retractor.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
-      "sourceSha256": "69a2e7b53c5ac0fb22bc7e6786acc78446b00d404a4cf612f093bff2d3436794",
+      "sourceSha256": "3991d44b696dc2bf813a304fffa9a870e59004a8e9f35d63b885073142c92b71",
       "triangleBudget": 2400,
       "params": [
         {
@@ -80754,7 +80767,7 @@
         "sizeM": [
           1.25,
           2.86,
-          1
+          0.488
         ],
         "minUpM": 0,
         "materials": 1
@@ -83238,7 +83251,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/fleet-charging-canopy.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-fleet-charging-canopy.png",
-      "sourceSha256": "f549654bac88e4cce8506d41d92fa207b549dd16c86648bc493a6865b0e39464",
+      "sourceSha256": "4157749e5c0c687ecc74eec20ef8d7031c8b775de7104eae7180d7b7ac184315",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84554,7 +84567,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-balance-arm.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
-      "sourceSha256": "e915572787cd3b9ab598ee908236dc45094cd729a2a62d73487367c855889bfc",
+      "sourceSha256": "eb10b5167b18c2067970e4f4e300bf740dcb0367c474fc728ba274d5c673d6e3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84602,7 +84615,7 @@
         "sizeM": [
           1.338,
           3.41,
-          1.15
+          0.46
         ],
         "minUpM": 0,
         "materials": 1
@@ -84664,7 +84677,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-management-boom.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
-      "sourceSha256": "de68bf2b8c433a3441994808df65743af63d23275e2e998d36a90559a19f878f",
+      "sourceSha256": "0ea623c01e2cad8d45dcf3a12fd4f5465ee5ad730d54ac81f5d19da6aa65e984",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84712,7 +84725,7 @@
         "sizeM": [
           1.17,
           2.86,
-          1
+          0.46
         ],
         "minUpM": 0,
         "materials": 1
@@ -86203,7 +86216,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/bale-spear-attachment.kcad.ts",
       "preview": "/assets/farm-machinery-bale-spear-attachment.png",
-      "sourceSha256": "cf32ba41c0575c659d1732eb0b8cc5ddd07e4fe1b7c52c6c698232068ae6d952",
+      "sourceSha256": "5605314c77d9e0b4f2ed8c3aa9bc2c7c58cea8a22ff0c88f1a4375b6e9eefbe2",
       "triangleBudget": 2200,
       "params": [
         {
@@ -86243,7 +86256,7 @@
         "sizeM": [
           0.76,
           0.5284,
-          0.93
+          0.57
         ],
         "minUpM": 0,
         "materials": 1
@@ -86296,7 +86309,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/bale-wrapper.kcad.ts",
       "preview": "/assets/farm-machinery-bale-wrapper.png",
-      "sourceSha256": "6584905bac64a2ae9d8db296ff693459825d61d8de1a613217f1c4e541a8c07e",
+      "sourceSha256": "e1314d4725c8d6a6b27d56e3d29cafd76b6dfbde7e05e8ab2e0f01da944989db",
       "triangleBudget": 2200,
       "params": [
         {
@@ -86340,11 +86353,11 @@
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 148,
         "sizeM": [
-          1.0151,
           1.1,
-          1.285
+          1.1,
+          1.4175
         ],
         "minUpM": 0,
         "materials": 1
@@ -86354,6 +86367,7 @@
           "name": "paintedSteelColor",
           "color": "#397747",
           "parts": [
+            "wrapper-base",
             "hay-frame",
             "drawbar",
             "film-mast"
@@ -86742,7 +86756,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/combine-harvester.kcad.ts",
       "preview": "/assets/farm-machinery-combine-harvester.png",
-      "sourceSha256": "5f192427fe36269fde00a112f83f6cac889645b1c452df4894d57a029eba79e8",
+      "sourceSha256": "b07a29d2326106ee9fd83dc3ab2fe5ec415f864bc11ccc1dfe5b9cf084d2a658",
       "triangleBudget": 2200,
       "params": [
         {
@@ -86789,7 +86803,7 @@
         "triangles": 448,
         "sizeM": [
           2.2135,
-          3.72,
+          2.337,
           2.807
         ],
         "minUpM": 0,
@@ -87314,7 +87328,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/cotton-picker.kcad.ts",
       "preview": "/assets/farm-machinery-cotton-picker.png",
-      "sourceSha256": "dacccdd45ad0b08002a7294243a744a38296f870df870d54cbee69d5ca09a4f8",
+      "sourceSha256": "8683122df9c86504251d32e2235f21ca500103ccacb58619c7d5bcaae35d4f77",
       "triangleBudget": 2200,
       "params": [
         {
@@ -87361,7 +87375,7 @@
         "triangles": 544,
         "sizeM": [
           2.15525,
-          3.968,
+          2.394,
           2.936
         ],
         "minUpM": 0,
@@ -87662,7 +87676,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/fertilizer-spreader.kcad.ts",
       "preview": "/assets/farm-machinery-fertilizer-spreader.png",
-      "sourceSha256": "7204d22eeebe412b8fc34fe1910b06800d538a564c9f95fd55fcf45fa866ef11",
+      "sourceSha256": "12a6c1cb8421e34fc517e0292d269b0ce7122e886318f9c003f88844fc99deb6",
       "triangleBudget": 2200,
       "params": [
         {
@@ -87701,8 +87715,8 @@
         "triangles": 160,
         "sizeM": [
           0.748,
-          1.246,
-          0.8126
+          0.828,
+          0.7541
         ],
         "minUpM": 0,
         "materials": 1
@@ -87975,7 +87989,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/forage-harvester.kcad.ts",
       "preview": "/assets/farm-machinery-forage-harvester.png",
-      "sourceSha256": "b8fc01e59a89d06cbf5658eb14284b0ee7f1982fd66df06211ca3cd907d2a12d",
+      "sourceSha256": "be8365423e487640f6c5e7ea6e3505856bb005208216be94e79b365152c7509a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -88022,7 +88036,7 @@
         "triangles": 472,
         "sizeM": [
           1.80575,
-          3.808,
+          2.993,
           2.463
         ],
         "minUpM": 0,
@@ -89300,7 +89314,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/land-leveling-scraper.kcad.ts",
       "preview": "/assets/farm-machinery-land-leveling-scraper.png",
-      "sourceSha256": "2d4fa4aed131264d13fcdd47de09c5c9ef8544ab61d21a801b7b9e73de454844",
+      "sourceSha256": "4b3aa2c2b4965575e7ba446cd6435ae815328b5a529c5bc6569ad9757f08dd60",
       "triangleBudget": 2200,
       "params": [
         {
@@ -89339,8 +89353,8 @@
         "triangles": 72,
         "sizeM": [
           1.45,
-          0.771,
-          1.153
+          0.546,
+          1.103
         ],
         "minUpM": 0,
         "materials": 1
@@ -89600,7 +89614,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/no-till-seeder.kcad.ts",
       "preview": "/assets/farm-machinery-no-till-seeder.png",
-      "sourceSha256": "4bef57ad711fa9da8178d6442791560a28de93b35f366c6d0fbea8f3d49c2736",
+      "sourceSha256": "4ad6aac13192880e72c97a73dcc6f042bab7c4f6426a767d4b2a7a377a5ab2a4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -89644,11 +89658,11 @@
         }
       },
       "stats": {
-        "triangles": 712,
+        "triangles": 736,
         "sizeM": [
           2.1,
-          1.44,
-          1.234
+          1.216,
+          1.155
         ],
         "minUpM": 0,
         "materials": 1
@@ -89685,7 +89699,9 @@
             "row-unit-6",
             "seed-tube-6",
             "transport-wheel--1-hub",
-            "transport-wheel-1-hub"
+            "transport-wheel-1-hub",
+            "wheel-strut--1",
+            "wheel-strut-1"
           ],
           "param": "steelColor"
         },
@@ -89730,7 +89746,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/offset-disc-harrow.kcad.ts",
       "preview": "/assets/farm-machinery-offset-disc-harrow.png",
-      "sourceSha256": "15101389323519efc3100df46dfc6b94dcbb029b950d18487885bdd7228b7a73",
+      "sourceSha256": "c643da789670f8349c7ce9e36eaa0d492a01e61366f63bc9f627d100946c7c87",
       "triangleBudget": 2200,
       "params": [
         {
@@ -89774,11 +89790,11 @@
         }
       },
       "stats": {
-        "triangles": 648,
+        "triangles": 672,
         "sizeM": [
           1.85,
-          0.4916,
-          1.072
+          0.287,
+          0.965
         ],
         "minUpM": 0,
         "materials": 1
@@ -89808,6 +89824,8 @@
           "parts": [
             "transport-wheel--1-hub",
             "transport-wheel-1-hub",
+            "wheel-strut--1",
+            "wheel-strut-1",
             "disc--1-0",
             "disc-scraper--1-0",
             "disc--1-1",
@@ -90432,7 +90450,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/potato-harvester.kcad.ts",
       "preview": "/assets/farm-machinery-potato-harvester.png",
-      "sourceSha256": "cc98d6399e540d0a30a76763bdce43f75de87eed2df59b936d60aa781d605b8b",
+      "sourceSha256": "0b5cd8e00d28fe2a31d953dd42de2a2aeaece8413c91c546f5a43d643059b09f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -90476,10 +90494,10 @@
         }
       },
       "stats": {
-        "triangles": 600,
+        "triangles": 624,
         "sizeM": [
           1.209,
-          2.0825,
+          1.58,
           2.672
         ],
         "minUpM": 0,
@@ -90513,6 +90531,8 @@
           "parts": [
             "field-wheel--1-hub",
             "field-wheel-1-hub",
+            "share-arm--1",
+            "share-arm-1",
             "digging-share",
             "separator-roller-0",
             "separator-roller-1",
@@ -90550,7 +90570,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/precision-planter.kcad.ts",
       "preview": "/assets/farm-machinery-precision-planter.png",
-      "sourceSha256": "c59dbf550fd3f33e4989b2f2b2d1941f020ebbf55f81d5ddac9c93e2e188e03d",
+      "sourceSha256": "3a13e498a0c3a0b76b36f130761f50d7e7f1bdfa7349cb11df0c6741b8058c78",
       "triangleBudget": 2200,
       "params": [
         {
@@ -90594,11 +90614,11 @@
         }
       },
       "stats": {
-        "triangles": 716,
+        "triangles": 740,
         "sizeM": [
           2,
-          1.56,
-          1.234
+          1.31,
+          1.155
         ],
         "minUpM": 0,
         "materials": 1
@@ -90639,7 +90659,9 @@
             "row-unit-5",
             "seed-tube-5",
             "transport-wheel--1-hub",
-            "transport-wheel-1-hub"
+            "transport-wheel-1-hub",
+            "wheel-strut--1",
+            "wheel-strut-1"
           ],
           "param": "steelColor"
         },
@@ -91161,7 +91183,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/rotary-tedder.kcad.ts",
       "preview": "/assets/farm-machinery-rotary-tedder.png",
-      "sourceSha256": "00974be119c3d752798c8d417a592c25d4f87b22a8ee02bbc7100524a9ddb9f0",
+      "sourceSha256": "f68a9b2aad4ac7931bf39ce15479a2fd03a8c98d57fefa8e7be18721be9be676",
       "triangleBudget": 2200,
       "params": [
         {
@@ -91197,11 +91219,11 @@
         }
       },
       "stats": {
-        "triangles": 488,
+        "triangles": 536,
         "sizeM": [
           1.981,
-          0.346,
-          1.126
+          0.3024,
+          0.9025
         ],
         "minUpM": 0,
         "materials": 1
@@ -91244,6 +91266,10 @@
           "name": "steelColor",
           "color": "#929b9b",
           "parts": [
+            "rotor-shaft-0",
+            "rotor-shaft-1",
+            "rotor-shaft-2",
+            "rotor-shaft-3",
             "rotor-hub-0",
             "rotor-hub-1",
             "rotor-hub-2",
@@ -91276,7 +91302,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/round-baler.kcad.ts",
       "preview": "/assets/farm-machinery-round-baler.png",
-      "sourceSha256": "779ff4d6abd8f54e3bae5e05461d677b6e954adc2acdaae72c94d5c847a6826f",
+      "sourceSha256": "423c791ced2210a78a682e2087f8553a1d9f4ab131afc62ca87db8224d4aec14",
       "triangleBudget": 2200,
       "params": [
         {
@@ -91322,9 +91348,9 @@
       "stats": {
         "triangles": 600,
         "sizeM": [
-          1.182,
-          2.204,
-          2.1675
+          1.3252,
+          1.43,
+          1.848
         ],
         "minUpM": 0,
         "materials": 1
@@ -91512,7 +91538,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/row-crop-planter.kcad.ts",
       "preview": "/assets/farm-machinery-row-crop-planter.png",
-      "sourceSha256": "672476cca08ecf04eb935548ba527a779a0631fb74643791c89239c28eb4f7db",
+      "sourceSha256": "e4f7d0ec9d68b1f193c01d7d7fc20c6b92e56ea13eb7fde038a610cb69b85a9f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -91556,11 +91582,11 @@
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 780,
         "sizeM": [
           2.2,
-          1.416,
-          1.234
+          1.1982,
+          1.155
         ],
         "minUpM": 0,
         "materials": 1
@@ -91597,7 +91623,9 @@
             "row-unit-7",
             "seed-tube-7",
             "transport-wheel--1-hub",
-            "transport-wheel-1-hub"
+            "transport-wheel-1-hub",
+            "wheel-strut--1",
+            "wheel-strut-1"
           ],
           "param": "steelColor"
         },
@@ -91780,7 +91808,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/seed-drill.kcad.ts",
       "preview": "/assets/farm-machinery-seed-drill.png",
-      "sourceSha256": "e0b26cb3f0c0846c797098930e1f0f221cb749d7696b559d784dbcba2f807f6c",
+      "sourceSha256": "a796a0d2932bec0110207bc2eef644c6f60b8b7839a30b2d645f6bf623343495",
       "triangleBudget": 2200,
       "params": [
         {
@@ -91824,11 +91852,11 @@
         }
       },
       "stats": {
-        "triangles": 848,
+        "triangles": 872,
         "sizeM": [
           1.9,
-          1.26,
-          1.066
+          1.076,
+          0.99
         ],
         "minUpM": 0,
         "materials": 1
@@ -91869,7 +91897,9 @@
             "row-unit-8",
             "seed-tube-8",
             "transport-wheel--1-hub",
-            "transport-wheel-1-hub"
+            "transport-wheel-1-hub",
+            "wheel-strut--1",
+            "wheel-strut-1"
           ],
           "param": "steelColor"
         },
@@ -91916,7 +91946,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/self-propelled-field-sprayer.kcad.ts",
       "preview": "/assets/farm-machinery-self-propelled-field-sprayer.png",
-      "sourceSha256": "62a10803478ecbb96517cab13e6582f803e3a3bc4684b29c1a45f3398106744e",
+      "sourceSha256": "e57bbf50d1a2c65bb66ff7b2f7dce307c96b33c551754a0038f7cca3f581cae7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -91970,8 +92000,8 @@
       "stats": {
         "triangles": 424,
         "sizeM": [
-          5.712,
-          3.024,
+          4.608,
+          1.708,
           2.54
         ],
         "minUpM": 0,
@@ -92150,7 +92180,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/square-baler.kcad.ts",
       "preview": "/assets/farm-machinery-square-baler.png",
-      "sourceSha256": "c7267857d9cd90b5c9182ee7c285960e526e0d24424dd286dc0d869102730cb8",
+      "sourceSha256": "c56f1ac9566c08e937061ae7a2051c55d6e3954b0cba1a12cd0c582f1567b3f5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -92196,8 +92226,8 @@
       "stats": {
         "triangles": 568,
         "sizeM": [
-          1.0392,
-          1.914,
+          1.1892,
+          1.237,
           3.496
         ],
         "minUpM": 0,
@@ -92268,7 +92298,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/stone-picker-implement.kcad.ts",
       "preview": "/assets/farm-machinery-stone-picker-implement.png",
-      "sourceSha256": "80ebdf7c5048361f237d7a10474710c21b9adc797d30dc85f446e27bc336cc22",
+      "sourceSha256": "603bd544cf12eb67e9df5d0926f979b48adbc9ba14b9eedbd5c8a638235288d5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -92312,11 +92342,11 @@
         }
       },
       "stats": {
-        "triangles": 444,
+        "triangles": 468,
         "sizeM": [
           1.5,
           1.0584,
-          1.377
+          1.256
         ],
         "minUpM": 0,
         "materials": 1
@@ -92347,6 +92377,8 @@
           "parts": [
             "transport-wheel--1-hub",
             "transport-wheel-1-hub",
+            "wheel-post--1",
+            "wheel-post-1",
             "pickup-guard",
             "pickup-roller-0",
             "pickup-roller-1",
@@ -92590,7 +92622,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/sugar-beet-harvester.kcad.ts",
       "preview": "/assets/farm-machinery-sugar-beet-harvester.png",
-      "sourceSha256": "a723361b471e06eff791cd1179753198398656e4500a727c4323de1b95075596",
+      "sourceSha256": "5ee5ab370a715712de3ae56d53242ac7bfc0b7794d1b5980e7f4aab786ef654e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -92634,11 +92666,11 @@
         }
       },
       "stats": {
-        "triangles": 612,
+        "triangles": 636,
         "sizeM": [
           1.404,
-          2.7965,
-          2.945
+          1.94,
+          2.936
         ],
         "minUpM": 0,
         "materials": 1
@@ -92671,6 +92703,8 @@
           "parts": [
             "field-wheel--1-hub",
             "field-wheel-1-hub",
+            "share-arm--1",
+            "share-arm-1",
             "digging-share",
             "separator-roller-0",
             "separator-roller-1",
@@ -93294,7 +93328,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/trailed-field-sprayer.kcad.ts",
       "preview": "/assets/farm-machinery-trailed-field-sprayer.png",
-      "sourceSha256": "28c27d57b1644da0dc20d67a0cc16a18fdccb4b490dc906a6008936bcdcbd362",
+      "sourceSha256": "b862818ea1c98e9535b0b1dcbfc4b8e5762a8f693973826ba861a6646bf27045",
       "triangleBudget": 2200,
       "params": [
         {
@@ -93341,8 +93375,8 @@
         "triangles": 864,
         "sizeM": [
           4.472,
-          2.014,
-          2.49
+          1.347,
+          2.121
         ],
         "minUpM": 0,
         "materials": 1
@@ -93418,7 +93452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/traveling-sprinkler-cart.kcad.ts",
       "preview": "/assets/farm-machinery-traveling-sprinkler-cart.png",
-      "sourceSha256": "89cdfdf7a04f6664eec4603af190f9087e023da578e1d42b36dce312ef6f7ebc",
+      "sourceSha256": "04b510e0f8de263a560b981aafed3b75a18e1e5bc8cf6cea3bb1d5dc71a2efe3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -93465,7 +93499,7 @@
         "triangles": 256,
         "sizeM": [
           0.95,
-          1.635,
+          1.17,
           1.41
         ],
         "minUpM": 0,
@@ -93978,7 +94012,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/collapsible-fire-water-tank.kcad.ts",
       "preview": "/assets/fire-rescue-collapsible-fire-water-tank.png",
-      "sourceSha256": "3287891ff7836e543573baaa8b23f6db56328839f2ae00451315eb434d210e17",
+      "sourceSha256": "ec507357132b9df59cb79a6845a4ada7f60a34a126371a1ba82b6ed0906a8751",
       "triangleBudget": 2200,
       "params": [
         {
@@ -94025,7 +94059,7 @@
         "triangles": 152,
         "sizeM": [
           1.0316,
-          0.702,
+          0.494,
           0.76
         ],
         "minUpM": 0,
@@ -94712,7 +94746,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/fire-blanket-canister.kcad.ts",
       "preview": "/assets/fire-rescue-fire-blanket-canister.png",
-      "sourceSha256": "7d110969f250cb548f03f5c76228ccfcb76043438febc4582d0bc75f323455b3",
+      "sourceSha256": "f260f400650ab8c93915c416127d692ac5a86a3a910c12064e08dbf7a4bbbcdf",
       "triangleBudget": 2200,
       "params": [
         {
@@ -94751,8 +94785,8 @@
         "triangles": 48,
         "sizeM": [
           0.37,
-          0.675,
-          0.29
+          0.565,
+          0.255
         ],
         "minUpM": 0,
         "materials": 1
@@ -95543,7 +95577,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/firefighter-facepiece.kcad.ts",
       "preview": "/assets/fire-rescue-firefighter-facepiece.png",
-      "sourceSha256": "579dbbe0a61e015f7536a5138a55654742e537d753406b2271b4e9993570b8b4",
+      "sourceSha256": "fbba64e4fe9d2430bc225bd8b1caf42378dec9aa7899ed372a2ab3c80d231392",
       "triangleBudget": 2200,
       "params": [
         {
@@ -95598,8 +95632,8 @@
         "triangles": 148,
         "sizeM": [
           0.48,
-          0.34,
-          0.19
+          0.275,
+          0.175
         ],
         "minUpM": 0,
         "materials": 1
@@ -98717,7 +98751,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/portable-fire-scene-light.kcad.ts",
       "preview": "/assets/fire-rescue-portable-fire-scene-light.png",
-      "sourceSha256": "a5c2a10bcca315fcc4c12a3c3056e1f7c17d94153e3696f63aac8a527ee5c810",
+      "sourceSha256": "c569a1cedfe5a6f6c3604c84f90a90ae604d43fbf148abf57e2b876d51a83048",
       "triangleBudget": 2200,
       "params": [
         {
@@ -98769,10 +98803,10 @@
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 184,
         "sizeM": [
-          0.55,
-          1.347901,
+          0.61,
+          0.9525,
           0.41
         ],
         "minUpM": 0,
@@ -98785,7 +98819,9 @@
           "parts": [
             "tripod-leg--1",
             "tripod-leg-1",
-            "mast-collar"
+            "mast-collar",
+            "mast",
+            "lamp-crossbar"
           ],
           "param": "guardMetalColor"
         },
@@ -99632,7 +99668,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/rescue-sling-harness.kcad.ts",
       "preview": "/assets/fire-rescue-rescue-sling-harness.png",
-      "sourceSha256": "9b7a22f4253439adc7322711025ff356a6b0f90e0f4f0074440d5a7092b48b92",
+      "sourceSha256": "d943656b31ff0ff5889b25979e879da06b88bf7dd6d169919cbdd29ab300ce29",
       "triangleBudget": 2200,
       "params": [
         {
@@ -99671,7 +99707,7 @@
         "triangles": 84,
         "sizeM": [
           0.44,
-          0.66777,
+          0.43887,
           0.123
         ],
         "minUpM": 0,
@@ -99724,7 +99760,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/rescue-tripod.kcad.ts",
       "preview": "/assets/fire-rescue-rescue-tripod.png",
-      "sourceSha256": "a1f48f7687f6b576ff1fa4afb432bfa32c02d4212bb3cbf1744104f2bdb71677",
+      "sourceSha256": "7c89361d12da71d86f7463ee5cd44b595f8c24575b47566c86658dca5ea0264e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -99770,9 +99806,9 @@
       "stats": {
         "triangles": 172,
         "sizeM": [
-          0.802187,
-          1.651372,
-          0.882724
+          0.776462,
+          1.3054,
+          0.896581
         ],
         "minUpM": 0,
         "materials": 1
@@ -106581,7 +106617,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/station-boot-drying-rack.kcad.ts",
       "preview": "/assets/fire-station-station-boot-drying-rack.png",
-      "sourceSha256": "7a42c17c0da9c29d9fc0f8c00633b8f046c8209d14a190e7006195c33decaffc",
+      "sourceSha256": "b222da86ee0ff323f5ddc3484b66718cacda7fcb03aba2f95ff67e16fcb90aab",
       "triangleBudget": 1800,
       "params": [
         {
@@ -106628,8 +106664,8 @@
         "triangles": 280,
         "sizeM": [
           1.6,
-          0.72,
-          0.21
+          0.62,
+          0.2
         ],
         "minUpM": 0.82,
         "materials": 1
@@ -107681,7 +107717,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/station-equipment-service-cart.kcad.ts",
       "preview": "/assets/fire-station-station-equipment-service-cart.png",
-      "sourceSha256": "86d687add5c9ee0c2682c9eab7ec085e60a985fa9f49b04dd8523a03045940e1",
+      "sourceSha256": "c50fc192377263e5da83003e3168a91b0306290fb726123f882493315fb28362",
       "triangleBudget": 1800,
       "params": [
         {
@@ -107736,8 +107772,8 @@
         "triangles": 308,
         "sizeM": [
           0.82,
-          1.051,
-          0.521
+          1.06,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
@@ -108471,7 +108507,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/station-pager-locker.kcad.ts",
       "preview": "/assets/fire-station-station-pager-locker.png",
-      "sourceSha256": "7769d5a4fa203bc795b4c53ca7aadb4c4527e00d3a5b3fcc194c59e0a1b51a38",
+      "sourceSha256": "c038ba86d2c0c0f0ee473cf7e1a788bfefa66755943e3a1cc375091b0a6eb22d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -108517,9 +108553,9 @@
       "stats": {
         "triangles": 308,
         "sizeM": [
-          1.1625,
+          0.92,
           1.25,
-          0.482
+          0.466
         ],
         "minUpM": 0,
         "materials": 1
@@ -111884,7 +111920,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/coiled-garden-hose.kcad.ts",
       "preview": "/assets/garden-coiled-garden-hose.png",
-      "sourceSha256": "b550371ba1cce02e2da7784bb087672e211001e0be4eba5010262ab5f77b1bf8",
+      "sourceSha256": "08053e167012d00292aaeccc70bbeb6bb7d9fefae9b5f172118ed3daf87ea2d6",
       "triangleBudget": 280,
       "params": [
         {
@@ -111922,9 +111958,9 @@
       "stats": {
         "triangles": 200,
         "sizeM": [
-          0.800789,
-          0.095,
-          0.527577
+          0.758528,
+          0.07,
+          0.542926
         ],
         "minUpM": 0,
         "materials": 1
@@ -116164,7 +116200,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-breaker-timing-analyzer-cart.kcad.ts",
       "preview": "/assets/grid-substation-substation-breaker-timing-analyzer-cart.png",
-      "sourceSha256": "8470e4456255ba8dba566b1104c33c39dfda3845086dd1e1c6b0156fce91d288",
+      "sourceSha256": "bbe0a9c1070d97d6c59e64f3021518419b5223b277b01421655a55cb7b569571",
       "triangleBudget": 1800,
       "params": [
         {
@@ -116216,7 +116252,7 @@
         "triangles": 260,
         "sizeM": [
           1.25,
-          1.38,
+          1.0108,
           0.7566
         ],
         "minUpM": 0,
@@ -119154,7 +119190,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-ground-bar-pedestal.kcad.ts",
       "preview": "/assets/grid-substation-substation-ground-bar-pedestal.png",
-      "sourceSha256": "ca17a25f374a1184134c2838ad6a39b171f3ee7abcb3698f44fee5f05c33c589",
+      "sourceSha256": "27e336514ffa3c89db85f0ab7e79555c189e723bae44047ddf6fb6faa5942b86",
       "triangleBudget": 1800,
       "params": [
         {
@@ -119198,7 +119234,7 @@
       "stats": {
         "triangles": 532,
         "sizeM": [
-          2.603,
+          1.6,
           1.099,
           0.62
         ],
@@ -119601,7 +119637,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-hv-cable-termination.kcad.ts",
       "preview": "/assets/grid-substation-substation-hv-cable-termination.png",
-      "sourceSha256": "b5b4f900afe7f41a1eb9d0886c4265332cadb74c53dfbaae9d985c571c4b0612",
+      "sourceSha256": "53ff852a86bae394644a9daf1fd732605deb1c4228083adb646afddcaf271ed6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -119832,7 +119868,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-inductive-voltage-transformer.kcad.ts",
       "preview": "/assets/grid-substation-substation-inductive-voltage-transformer.png",
-      "sourceSha256": "d0f340a25cfa491af426a26258d33e01744555dd6e65e9ec928164db7998daa2",
+      "sourceSha256": "1d58e4b2be6452ef83c55d9f6277aac20bc1d0889170b2877a619e3a72d6b5fe",
       "triangleBudget": 1800,
       "params": [
         {
@@ -121384,7 +121420,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-oil-cooling-pump-skid.kcad.ts",
       "preview": "/assets/grid-substation-substation-oil-cooling-pump-skid.png",
-      "sourceSha256": "5ada32a3c4c4519e16b82b6096efc5e064737e9afd02497d8d01c4d01c341063",
+      "sourceSha256": "f280201dac13c26178a629572f16c83c024cd7eabcb3fde847a09d55f240c5f9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -122986,7 +123022,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-protection-relay-test-cart.kcad.ts",
       "preview": "/assets/grid-substation-substation-protection-relay-test-cart.png",
-      "sourceSha256": "374a543766e8468abf0433259ff1f001922e585f9105a07787801072010851fa",
+      "sourceSha256": "a561cfd2c2c5e56f031a56605b829b3a51cc77626b63d97a3abd8e90e771b1bc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -123038,7 +123074,7 @@
         "triangles": 260,
         "sizeM": [
           1.45,
-          1.215,
+          1.09,
           0.8245
         ],
         "minUpM": 0,
@@ -123797,7 +123833,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-strain-insulator-string.kcad.ts",
       "preview": "/assets/grid-substation-substation-strain-insulator-string.png",
-      "sourceSha256": "9eacb84bf6b1af680f83122efc92d5a92245b031893c1961cf9fefe76d98def0",
+      "sourceSha256": "fa11b21bc30f8ada2fd1a8bfd832aa8027dc7097501e0af0b73a973a105b257b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -123832,7 +123868,7 @@
         }
       },
       "stats": {
-        "triangles": 1600,
+        "triangles": 1644,
         "sizeM": [
           0.338688,
           1.7,
@@ -123861,7 +123897,8 @@
             "shed-4",
             "shed-5",
             "shed-6",
-            "shed-7"
+            "shed-7",
+            "core-rod"
           ],
           "param": "porcelain"
         }
@@ -123890,7 +123927,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-surge-arrester.kcad.ts",
       "preview": "/assets/grid-substation-substation-surge-arrester.png",
-      "sourceSha256": "e02385be912767b599a03f3379c1323c784127b713c52ebb88af23e327fce8cf",
+      "sourceSha256": "7bcf249bb86957e2b8424b69f6b841ab8bebaadcc996ee1b67e78b14a91d6785",
       "triangleBudget": 1800,
       "params": [
         {
@@ -123932,7 +123969,7 @@
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 348,
         "sizeM": [
           0.6,
           2.4,
@@ -123959,7 +123996,8 @@
             "arrester-section-3",
             "arrester-section-4",
             "arrester-section-5",
-            "arrester-section-6"
+            "arrester-section-6",
+            "core-column"
           ],
           "param": "porcelain"
         },
@@ -125240,7 +125278,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-vertical-break-disconnector.kcad.ts",
       "preview": "/assets/grid-substation-substation-vertical-break-disconnector.png",
-      "sourceSha256": "68b5b3a6dfad608692571e87e90b725e7be9db8ce9e12a25943c81dd8057dc6a",
+      "sourceSha256": "d4b93ad977a06dd17abb9e9c7446d9f87b29735bcb2dad51913aba56f7709156",
       "triangleBudget": 1800,
       "params": [
         {
@@ -125292,7 +125330,7 @@
         "triangles": 1648,
         "sizeM": [
           3.5,
-          2.682878,
+          2.31,
           1.05
         ],
         "minUpM": 0,
@@ -142472,7 +142510,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cyclone-separator.kcad.ts",
       "preview": "/assets/industrial-plant-cyclone-separator.png",
-      "sourceSha256": "ef556d1c259b55dc3d0bbd2c8ccdcadf617a87efac1df0273cbd6be67603db68",
+      "sourceSha256": "2d56c44b7a373ff786e38fa7559a331f5c444b20eced425b7a6f91aafb6c3e34",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143816,7 +143854,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/gantry-crane.kcad.ts",
       "preview": "/assets/industrial-plant-gantry-crane.png",
-      "sourceSha256": "b62c9a602b7bd91b8a22b35ded5646165609265523b4de063ac74be8ece5b2f8",
+      "sourceSha256": "8ca22d152a0e1fd08d75dd37db82ddc8585ce5ae8471f61320cda4a2e6a8a387",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143860,7 +143898,7 @@
       "stats": {
         "triangles": 252,
         "sizeM": [
-          0.845336,
+          0.84,
           0.7922,
           0.6344
         ],
@@ -144825,7 +144863,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/jib-crane.kcad.ts",
       "preview": "/assets/industrial-plant-jib-crane.png",
-      "sourceSha256": "6360bcdcbd3e43d9990dbb5da001cd674dc828aac7e2de9b234279de57ac76b7",
+      "sourceSha256": "1edfdbf6359924338fd9129dd0c06b16e5243e4260e8a20b4071f9bd3440cf61",
       "triangleBudget": 1400,
       "params": [
         {
@@ -144860,11 +144898,11 @@
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 172,
         "sizeM": [
           0.61,
-          0.7248,
-          0.3148
+          0.725,
+          0.316
         ],
         "minUpM": 0,
         "materials": 1
@@ -144876,6 +144914,7 @@
           "parts": [
             "base-rail-left",
             "base-rail-right",
+            "base-plate",
             "boom",
             "hoist",
             "hook"
@@ -157546,7 +157585,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/acid-corrosive-storage-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-acid-corrosive-storage-cabinet.png",
-      "sourceSha256": "68992a8398f09cc2e76a6bbcb1b3d718e1f4c922abb0d47a2bb12e1b1533fe74",
+      "sourceSha256": "a13fbdfab5852e859845dde313ec643fe5773316d79e41d9c5d8788d37c96ade",
       "triangleBudget": 1800,
       "params": [
         {
@@ -157593,7 +157632,7 @@
         "triangles": 84,
         "sizeM": [
           0.7,
-          1.14,
+          0.78,
           0.5845
         ],
         "minUpM": 0,
@@ -159126,7 +159165,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cleanroom-gowning-locker-bank.kcad.ts",
       "preview": "/assets/lab-infrastructure-cleanroom-gowning-locker-bank.png",
-      "sourceSha256": "2a3451a2e4d308a082b8b8b966ba70695dcfe40db4ba0972abffc33a3781a76d",
+      "sourceSha256": "5f9300ce5c3acc2b014ae8a9758b502ebd14be33999bb18dc78c52fac0682e82",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159173,7 +159212,7 @@
         "triangles": 180,
         "sizeM": [
           1.2,
-          2.745,
+          1.85,
           0.553
         ],
         "minUpM": 0,
@@ -159570,7 +159609,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cleanroom-single-door-module.kcad.ts",
       "preview": "/assets/lab-infrastructure-cleanroom-single-door-module.png",
-      "sourceSha256": "f06a15fc33233e77143f5606261e5caa285d34f0d52dd6140fe568bfaf494275",
+      "sourceSha256": "ab7198be1c138a7bbba024b458f912e308a0c61a5920e1fc164d378974c861ec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159617,7 +159656,7 @@
         "triangles": 72,
         "sizeM": [
           1.3,
-          3.264,
+          2.48,
           0.1284
         ],
         "minUpM": 0,
@@ -159877,7 +159916,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cold-room-door-module.kcad.ts",
       "preview": "/assets/lab-infrastructure-cold-room-door-module.png",
-      "sourceSha256": "70ac05c58110ac02d0462d62e545380913ad68add100343210c2fead1eb704aa",
+      "sourceSha256": "40d7994c97bbca437f19ef14328c49049f647beae5b4a3097af1cbcd1b443e6e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159924,7 +159963,7 @@
         "triangles": 72,
         "sizeM": [
           1.2,
-          2.992,
+          2.28,
           0.159
         ],
         "minUpM": 0,
@@ -160401,7 +160440,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/flammable-liquid-storage-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-flammable-liquid-storage-cabinet.png",
-      "sourceSha256": "a939b13bc3a7a04a164216835c66fbfd75a40735353332d99d02e561254d213c",
+      "sourceSha256": "2ae6325adf364815483b73626b9890cfcc49f4dada9634427ae83371e33e175a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160448,7 +160487,7 @@
         "triangles": 144,
         "sizeM": [
           0.9,
-          1.62,
+          1.1,
           0.637
         ],
         "minUpM": 0,
@@ -160688,7 +160727,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/glassware-drying-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-glassware-drying-cabinet.png",
-      "sourceSha256": "a94651d690059571c112a034835e636e427bc88160e256848fa5958e6f91b6b7",
+      "sourceSha256": "db5f156ae5a330351d25281658271329c5dccb4f7ac1d7d72a1513008d61dce1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160735,7 +160774,7 @@
         "triangles": 120,
         "sizeM": [
           0.85,
-          2.145,
+          1.45,
           0.553
         ],
         "minUpM": 0,
@@ -161040,7 +161079,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-base-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-base-cabinet.png",
-      "sourceSha256": "3a8bf976740e8200830f70cfc01b9d3f64d55973c2b58ca839caa09a7ce47ddb",
+      "sourceSha256": "76011d414acf1ac99a8258818fd8a90c55073ed0bd0dcedd5c051018b6ffbe3a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161087,7 +161126,7 @@
         "triangles": 72,
         "sizeM": [
           0.9,
-          1.275,
+          0.87,
           0.6055
         ],
         "minUpM": 0,
@@ -162467,7 +162506,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-sink-base-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-sink-base-cabinet.png",
-      "sourceSha256": "9ad3e7034c27abde06a4c52599bac563d51420452f12e356fd5adf5637339103",
+      "sourceSha256": "de91e18f4b39716fb7423c8b1bbe0064c2308b41a07494c2ab972f498a45e902",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162514,7 +162553,7 @@
         "triangles": 84,
         "sizeM": [
           0.8,
-          1.26,
+          0.86,
           0.637
         ],
         "minUpM": 0,
@@ -163461,7 +163500,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/mobile-underbench-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-mobile-underbench-cabinet.png",
-      "sourceSha256": "e6f60b91c3b76a27ea35438e3c2c123eae6fb87f09e0a4525255999959f7d57e",
+      "sourceSha256": "e0400161ccd7df8975c1365a9743ff6a47f435a2e8f6adbfd6218314087ea3f7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163516,7 +163555,7 @@
         "triangles": 296,
         "sizeM": [
           0.5,
-          0.86925,
+          0.72025,
           0.552
         ],
         "minUpM": 0,
@@ -164081,7 +164120,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/solvent-storage-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-solvent-storage-cabinet.png",
-      "sourceSha256": "09f82d89bae0c8d7c6c1f2a293320f9a463d1d7d019bac91eda1bbaa6aa88e5f",
+      "sourceSha256": "fc0ea8924f6a1a52f54f47c6f474a67ea134cc58c1809a3b4dd732a96cf51a17",
       "triangleBudget": 1800,
       "params": [
         {
@@ -164128,7 +164167,7 @@
         "triangles": 132,
         "sizeM": [
           0.75,
-          1.845,
+          1.25,
           0.595
         ],
         "minUpM": 0,
@@ -164970,7 +165009,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/wall-reagent-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-wall-reagent-cabinet.png",
-      "sourceSha256": "e301b5cae6367f6bbecbb1bc8408d3498e480c5ea2c77c270e5b1567e71df797",
+      "sourceSha256": "f7bc7014b3fae6a9896a912baa433fef6d6af311bc4ca8314b8e2f970009b628",
       "triangleBudget": 1800,
       "params": [
         {
@@ -165017,7 +165056,7 @@
         "triangles": 96,
         "sizeM": [
           1,
-          1.05,
+          0.72,
           0.385
         ],
         "minUpM": 0,
@@ -169999,7 +170038,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/mooring-buoy.kcad.ts",
       "preview": "/assets/marine-mooring-buoy.png",
-      "sourceSha256": "714b258bb1e60674609cc0588d2c0ed3ccb0bdd7f93b6aaad99447f0ce71a168",
+      "sourceSha256": "ec0aa692c71e87e96f9e9adf45a788d5b96180a7780143dfb039a99f6bcb7d71",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175714,7 +175753,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walker-frame.kcad.ts",
       "preview": "/assets/medical-walker-frame.png",
-      "sourceSha256": "685727dceaf5b941df7b1a269367052f75f8c8781caed2e8f68b1b0f547b98d0",
+      "sourceSha256": "be7fe214dcecf47fdda619c6f33e4521286f055bb554c51ab337bb58084dcf62",
       "triangleBudget": 400,
       "params": [
         {
@@ -175761,7 +175800,7 @@
         "triangles": 196,
         "sizeM": [
           0.49,
-          1.022,
+          0.984,
           0.432
         ],
         "minUpM": 0,
@@ -192941,7 +192980,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/french-horn.kcad.ts",
       "preview": "/assets/music-french-horn.png",
-      "sourceSha256": "a3b03770790abbd329e8a8639ba05789df2be254c186dcfb31db5bb56848f486",
+      "sourceSha256": "3e87084a73de0fe6703503bdd0a0c30ab4041d2395f804c9e08e41eae68e525b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -192981,11 +193020,11 @@
         }
       },
       "stats": {
-        "triangles": 416,
+        "triangles": 556,
         "sizeM": [
-          0.257997,
-          0.152,
-          0.212
+          0.346,
+          0.25,
+          0.1
         ],
         "minUpM": 0,
         "materials": 1
@@ -192997,7 +193036,10 @@
           "parts": [
             "outer-loop",
             "inner-loop",
-            "bell"
+            "bell-pipe",
+            "bell-flare-a",
+            "bell-flare-b",
+            "bell-flare-c"
           ],
           "param": "brass"
         },
@@ -193840,7 +193882,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/orchestral-cymbals.kcad.ts",
       "preview": "/assets/music-orchestral-cymbals.png",
-      "sourceSha256": "ad7264a2462220fd880b876c19884c729c0b34702fc852e7d3efe4dee717e3ee",
+      "sourceSha256": "ea27ab08bfd07296128fdaa3aad2cfeb4ceb1d89078e2018ff6374253741170d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -193880,11 +193922,11 @@
         }
       },
       "stats": {
-        "triangles": 316,
+        "triangles": 336,
         "sizeM": [
-          0.118498,
-          0.178,
-          0.136832
+          0.116,
+          0.158,
+          0.157883
         ],
         "minUpM": 0,
         "materials": 1
@@ -194149,7 +194191,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/tambourine.kcad.ts",
       "preview": "/assets/music-tambourine.png",
-      "sourceSha256": "83136117f0c81bbf7985b2f550fb42b4d7d058b790f247b1119752f523058742",
+      "sourceSha256": "0954a32da2d203c54ff95a1d08246eb4a3731561c796ee2fd283b906bf424ae6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -194183,11 +194225,11 @@
         }
       },
       "stats": {
-        "triangles": 286,
+        "triangles": 280,
         "sizeM": [
-          0.186,
-          0.08725,
-          0.186
+          0.190988,
+          0.03225,
+          0.191445
         ],
         "minUpM": 0,
         "materials": 1
@@ -194449,7 +194491,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/trombone.kcad.ts",
       "preview": "/assets/music-trombone.png",
-      "sourceSha256": "4ccf651b937006e6071a5b9cdd221ab5a4fe698f6c614981d0ec5a5a1433a57e",
+      "sourceSha256": "d5e19054651893f595b826ee862f2f800276796575334486ca9303fbaa005003",
       "triangleBudget": 1800,
       "params": [
         {
@@ -194489,25 +194531,16 @@
         }
       },
       "stats": {
-        "triangles": 314,
+        "triangles": 496,
         "sizeM": [
-          0.249984,
-          0.335,
-          0.150229
+          0.568,
+          0.116,
+          0.17
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
-        {
-          "name": "brass",
-          "color": "#c18b34",
-          "parts": [
-            "bell",
-            "bell-pipe"
-          ],
-          "param": "brass"
-        },
         {
           "name": "nickel",
           "color": "#bbc5ca",
@@ -194519,6 +194552,19 @@
             "slide-crossbar"
           ],
           "param": "nickel"
+        },
+        {
+          "name": "brass",
+          "color": "#c18b34",
+          "parts": [
+            "slide-bow",
+            "bell-pipe",
+            "bell-flare-a",
+            "bell-flare-b",
+            "bell-flare-c",
+            "bell-flare-d"
+          ],
+          "param": "brass"
         },
         {
           "name": "ebonite",
@@ -194554,7 +194600,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/trumpet.kcad.ts",
       "preview": "/assets/music-trumpet.png",
-      "sourceSha256": "c20a9da4cabb709801f9a26933b011dc80b5f142d7c82321469fd443a395b3fc",
+      "sourceSha256": "a7cdbb586ab2893d60f5c35ccf377ceaa1647da6ad8bdf95138a12587bf9ade2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -194594,11 +194640,11 @@
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 408,
         "sizeM": [
-          0.309998,
-          0.083,
-          0.291569
+          0.42,
+          0.102,
+          0.096
         ],
         "minUpM": 0,
         "materials": 1
@@ -194609,7 +194655,10 @@
           "color": "#c18b34",
           "parts": [
             "main-pipe",
-            "bell"
+            "bell-flare-a",
+            "bell-flare-b",
+            "bell-flare-c",
+            "bell-flare-d"
           ],
           "param": "brass"
         },
@@ -194658,7 +194707,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/tuba.kcad.ts",
       "preview": "/assets/music-tuba.png",
-      "sourceSha256": "a91d5a73b26c765c76f95de1698e702d4af627c3294619ef0204b494183456b9",
+      "sourceSha256": "7bddf69e5463e95813bc20cba82cc3903ba322aaeba1ec8150dd5fa225754473",
       "triangleBudget": 1800,
       "params": [
         {
@@ -194698,11 +194747,11 @@
         }
       },
       "stats": {
-        "triangles": 480,
+        "triangles": 544,
         "sizeM": [
-          0.208419,
-          0.295,
-          0.184
+          0.225,
+          0.308,
+          0.166
         ],
         "minUpM": 0,
         "materials": 1
@@ -194712,10 +194761,10 @@
           "name": "brass",
           "color": "#bd8730",
           "parts": [
-            "main-bell",
-            "bell-neck",
             "lower-loop",
-            "body"
+            "body",
+            "bell-neck",
+            "main-bell"
           ],
           "param": "brass"
         },
@@ -194882,7 +194931,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/vibraphone.kcad.ts",
       "preview": "/assets/music-vibraphone.png",
-      "sourceSha256": "55f3979a81e4904d17e130b446d069918e2561e40940759b67d2647a509b4b54",
+      "sourceSha256": "5894d03b524c3e69f1cec207fcc1d592e8c07c2593b8ee5616cccc6424809199",
       "triangleBudget": 1800,
       "params": [
         {
@@ -194922,16 +194971,28 @@
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 364,
         "sizeM": [
-          0.33,
+          0.3,
           0.193,
-          0.172
+          0.19
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
+        {
+          "name": "steel",
+          "color": "#3b464d",
+          "parts": [
+            "bar-bed",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4"
+          ],
+          "param": "steel"
+        },
         {
           "name": "aluminum",
           "color": "#aebbc2",
@@ -194941,7 +195002,8 @@
             "bar-three",
             "bar-four",
             "bar-five",
-            "crossbar"
+            "crossbar",
+            "crossbar-back"
           ],
           "param": "aluminum"
         },
@@ -194956,14 +195018,6 @@
             "resonator-five"
           ],
           "param": "resonator"
-        },
-        {
-          "name": "steel",
-          "color": "#3b464d",
-          "parts": [
-            "legs"
-          ],
-          "param": "steel"
         }
       ]
     },
@@ -205723,7 +205777,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/laptop-stand.kcad.ts",
       "preview": "/assets/office-laptop-stand.png",
-      "sourceSha256": "ffea6c7aaa8da8920bc7895e4b9f2bc844db301246a271bad0cc4003e8388e81",
+      "sourceSha256": "9015f76f277f36d4c8d037e0b4db0acf12ec430005c407bc15139602f100a25a",
       "triangleBudget": 150,
       "params": [
         {
@@ -205768,7 +205822,7 @@
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 132,
         "sizeM": [
           0.2,
           0.105,
@@ -205784,6 +205838,10 @@
           "parts": [
             "left-rail",
             "right-rail",
+            "leg-rear-left",
+            "leg-rear-right",
+            "leg-front-left",
+            "leg-front-right",
             "crossbar"
           ],
           "param": "anodizedAluminum"
@@ -211620,7 +211678,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/gimbal-stabilizer.kcad.ts",
       "preview": "/assets/photo-video-studio-gimbal-stabilizer.png",
-      "sourceSha256": "78b818ffbe93942f9db2bb5b93498ced2b981b3d627278b9cf3925eff560ff34",
+      "sourceSha256": "bbd8bb0d95d76547750ef1e163a32fca056888cad538ed1a70a29d40354494d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -211672,9 +211730,9 @@
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 172,
         "sizeM": [
-          0.307,
+          0.293,
           0.7485,
           0.156
         ],
@@ -211695,6 +211753,7 @@
           "color": "#343c43",
           "parts": [
             "control-panel",
+            "yaw-motor",
             "upright-arm",
             "cross-arm",
             "camera-body"
@@ -213306,7 +213365,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/shoulder-rig.kcad.ts",
       "preview": "/assets/photo-video-studio-shoulder-rig.png",
-      "sourceSha256": "72124fc1119943779d5fb44bb717f5bb202655aa344e1fea7814f9c684f70ef9",
+      "sourceSha256": "348a1cfadb658f71b8296bc31238df0884b05f052b1a294c106df67bee7a7792",
       "triangleBudget": 1800,
       "params": [
         {
@@ -213352,7 +213411,7 @@
       "stats": {
         "triangles": 224,
         "sizeM": [
-          0.975,
+          0.795,
           0.22,
           0.228
         ],
@@ -215899,7 +215958,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/gravity-roller-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-gravity-roller-conveyor.png",
-      "sourceSha256": "1607bae3b058ccd48cb1db7feef56b193899af03da47306c4e6daf570eb3c493",
+      "sourceSha256": "e6a02293aa8921dbc92e5f16c188b91013996c33c20d6090f030a2545865004f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -215945,7 +216004,7 @@
       "stats": {
         "triangles": 816,
         "sizeM": [
-          0.615,
+          0.645,
           0.765,
           0.95
         ],
@@ -216013,7 +216072,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/handheld-postal-scanner.kcad.ts",
       "preview": "/assets/postal-logistics-handheld-postal-scanner.png",
-      "sourceSha256": "b25d137caf1bceaf0c03794de33f3ac8dc9f4e0e03fe1a14c13c4fb59772a09b",
+      "sourceSha256": "a7ddcdbca44c32e2c406ba6f9bb810365e7a0d9268dc52d56098c1582eadb4b9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -216068,8 +216127,8 @@
         "triangles": 540,
         "sizeM": [
           0.21,
-          0.365535,
-          0.235
+          0.336,
+          0.177
         ],
         "minUpM": 0,
         "materials": 1
@@ -216267,7 +216326,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/in-motion-weigh-deck.kcad.ts",
       "preview": "/assets/postal-logistics-in-motion-weigh-deck.png",
-      "sourceSha256": "df1cf58543ee72e3ecb673b0c9754eaef23c92b760944d1375d60290a7cbb93d",
+      "sourceSha256": "fae21595c4c4c68e9ed7be536ff15a0c8fe4e78cf82c22e0c8da8237b17a1fb7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -216319,9 +216378,9 @@
         }
       },
       "stats": {
-        "triangles": 724,
+        "triangles": 964,
         "sizeM": [
-          0.97,
+          0.92,
           0.77,
           0.86
         ],
@@ -216335,6 +216394,10 @@
           "parts": [
             "scale-base",
             "indicator-post",
+            "post-fl",
+            "post-fr",
+            "post-bl",
+            "post-br",
             "foot-left",
             "foot-right"
           ],
@@ -216972,7 +217035,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/overhead-scan-gantry.kcad.ts",
       "preview": "/assets/postal-logistics-overhead-scan-gantry.png",
-      "sourceSha256": "5cd4f89d4b80dc2093997e25b90e3aeff6ea68a8919f25a3048ea93a97d37622",
+      "sourceSha256": "e11815b6d80b0bb5088b41c8b70e58178cf6271dd3e547946b7403cb1c087299",
       "triangleBudget": 1800,
       "params": [
         {
@@ -217016,10 +217079,10 @@
         }
       },
       "stats": {
-        "triangles": 720,
+        "triangles": 780,
         "sizeM": [
-          0.8,
-          1.385,
+          0.82,
+          1.445,
           0.98
         ],
         "minUpM": 0,
@@ -217044,6 +217107,7 @@
           "parts": [
             "gantry-front",
             "gantry-back",
+            "gantry-beam",
             "status-box"
           ],
           "param": "paintedSteel"
@@ -219933,7 +219997,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sorter-maintenance-platform.kcad.ts",
       "preview": "/assets/postal-logistics-sorter-maintenance-platform.png",
-      "sourceSha256": "0ea748e7ccd04575788c2a13bf2a8b53198d3d98fda3219dde79c7f6dae2b63f",
+      "sourceSha256": "c8432ce8a8a3cd4c92c1a48187e1b6eb7fa03145a457e07f0285d9e383f2cc5d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -219969,11 +220033,11 @@
         }
       },
       "stats": {
-        "triangles": 840,
+        "triangles": 960,
         "sizeM": [
           0.95,
           1.32,
-          0.815
+          0.73
         ],
         "minUpM": 0,
         "materials": 1
@@ -220003,7 +220067,9 @@
             "rail-left",
             "rail-right",
             "leg-left",
-            "leg-right"
+            "leg-right",
+            "stringer-left",
+            "stringer-right"
           ],
           "param": "structuralSteel"
         }
@@ -220148,7 +220214,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/spiral-parcel-chute.kcad.ts",
       "preview": "/assets/postal-logistics-spiral-parcel-chute.png",
-      "sourceSha256": "5b014b22d2715095f72cf212ac807b823bb8319d6644dfccff14399e62ed9322",
+      "sourceSha256": "0dc9f75e430ff86c1318637178368ee1da8b440e7def5447ec29081383b4a553",
       "triangleBudget": 1800,
       "params": [
         {
@@ -220186,9 +220252,9 @@
       "stats": {
         "triangles": 660,
         "sizeM": [
-          1.2,
+          1.185,
           1.56,
-          1.2
+          1.185
         ],
         "minUpM": 0,
         "materials": 1
@@ -220358,7 +220424,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/tray-induction-loader.kcad.ts",
       "preview": "/assets/postal-logistics-tray-induction-loader.png",
-      "sourceSha256": "afd8c49958d7f32985010130e96a4d84321d6358244ab8d8547bd7dc9f5065b9",
+      "sourceSha256": "c99a5dd3696cd772e56f0d8383a134c94b6852e46623720e2e712af4ccfa8157",
       "triangleBudget": 1800,
       "params": [
         {
@@ -220410,10 +220476,10 @@
         }
       },
       "stats": {
-        "triangles": 660,
+        "triangles": 900,
         "sizeM": [
-          0.98,
-          0.801,
+          0.96,
+          0.81,
           0.65
         ],
         "minUpM": 0,
@@ -220425,6 +220491,10 @@
           "color": "#58656c",
           "parts": [
             "base",
+            "post-fl",
+            "post-fr",
+            "post-bl",
+            "post-br",
             "control-post"
           ],
           "param": "structuralSteel"
@@ -284472,7 +284542,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/abrasive-blast-pot.kcad.ts",
       "preview": "/assets/shipyard-abrasive-blast-pot.png",
-      "sourceSha256": "c2be525a842b958820ba24f16be75553ae947d6bd242ca44804ac01c53e98f8a",
+      "sourceSha256": "528c513f394def278127e976910ab5834114e21eced93d252c3978717a639113",
       "triangleBudget": 1800,
       "params": [
         {
@@ -284516,7 +284586,7 @@
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 396,
         "sizeM": [
           1.24,
           1.68,
@@ -284538,6 +284608,18 @@
           "param": "yardPaint"
         },
         {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "support-skirt",
+            "axle",
+            "handle-stay",
+            "hose-outlet",
+            "handle"
+          ],
+          "param": "structuralSteel"
+        },
+        {
           "name": "elastomer",
           "color": "#30383b",
           "parts": [
@@ -284545,15 +284627,6 @@
             "wheel-1"
           ],
           "param": "elastomer"
-        },
-        {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
-          "parts": [
-            "hose-outlet",
-            "handle"
-          ],
-          "param": "structuralSteel"
         }
       ]
     },
@@ -286729,7 +286802,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/fire-watch-response-cart.kcad.ts",
       "preview": "/assets/shipyard-fire-watch-response-cart.png",
-      "sourceSha256": "428d9b0850009c1abf431bd4a1433ed1969670e432bbe4bf00ac25057daccfaa",
+      "sourceSha256": "f339e0a98fd07db16a404807477928f4cab69105bd658cf4832fffd8cb0d0403",
       "triangleBudget": 1800,
       "params": [
         {
@@ -286781,7 +286854,7 @@
         }
       },
       "stats": {
-        "triangles": 336,
+        "triangles": 392,
         "sizeM": [
           1.467478,
           2.51,
@@ -286796,6 +286869,8 @@
           "color": "#b6c1c4",
           "parts": [
             "cart-frame",
+            "push-handle-post-0",
+            "push-handle-post-1",
             "push-handle"
           ],
           "param": "structuralSteel"
@@ -288699,7 +288774,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/optical-measurement-station.kcad.ts",
       "preview": "/assets/shipyard-optical-measurement-station.png",
-      "sourceSha256": "7c66e75df4706546b5de763f756bdeb7d3243f3c412604c963069d5bf314140e",
+      "sourceSha256": "0405d45106a0c8860a482988e8a00bc698a7e9d06adc4d87a40f79f2f9e3ef78",
       "triangleBudget": 1800,
       "params": [
         {
@@ -288745,9 +288820,9 @@
       "stats": {
         "triangles": 276,
         "sizeM": [
-          0.97,
+          0.82,
           1.85,
-          1.1
+          0.99
         ],
         "minUpM": 0,
         "materials": 1
@@ -292977,7 +293052,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/yard-material-tug-cart.kcad.ts",
       "preview": "/assets/shipyard-yard-material-tug-cart.png",
-      "sourceSha256": "0843e69eafd258a7b2c0980e7e6ff0627f19becc49130af58efef51ed8ff56af",
+      "sourceSha256": "6a17b4f10dee7e7245a77167bed6daa97b956ff4b77e6871d26fa9d97d2463db",
       "triangleBudget": 1800,
       "params": [
         {
@@ -293021,9 +293096,9 @@
         }
       },
       "stats": {
-        "triangles": 372,
+        "triangles": 484,
         "sizeM": [
-          1.98,
+          1.87,
           1.705,
           1.18
         ],
@@ -293046,6 +293121,10 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "guard-post--640--330",
+            "guard-post--640-330",
+            "guard-post-40--330",
+            "guard-post-40-330",
             "overhead-guard",
             "tow-hook"
           ],
@@ -299210,7 +299289,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/dust-protection-screen.kcad.ts",
       "preview": "/assets/space-exploration-dust-protection-screen.png",
-      "sourceSha256": "d1e525c940f502772297a726c1d5d758e36604d3dd9471fee84da1d05d2e1d00",
+      "sourceSha256": "ac3de776e6a62877adf77378c4040448a417d09a012402f95a445c876ae957da",
       "triangleBudget": 668,
       "params": [
         {
@@ -299256,8 +299335,8 @@
       "stats": {
         "triangles": 420,
         "sizeM": [
-          1.132015,
-          1.186263,
+          1.129577,
+          0.855,
           0.5
         ],
         "minUpM": 0,
@@ -301818,7 +301897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-dust-shield.kcad.ts",
       "preview": "/assets/space-exploration-rover-dust-shield.png",
-      "sourceSha256": "2fbec48011d6891c112ba4d884f0fad755227fc12630d03846b32d356de575e3",
+      "sourceSha256": "3586fd0eabd2a67d9ca8bf96661028d58d1ff038c98064aab8ce58889e5478bf",
       "triangleBudget": 752,
       "params": [
         {
@@ -301866,7 +301945,7 @@
         "sizeM": [
           1.2,
           0.94,
-          0.215
+          0.09
         ],
         "minUpM": 0,
         "materials": 1
@@ -301926,7 +302005,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-seat.kcad.ts",
       "preview": "/assets/space-exploration-rover-seat.png",
-      "sourceSha256": "54c9385a446a04af16d92ca1972755160ed45d9f2f366b928aeb210a5fbffadf",
+      "sourceSha256": "3269decb61edc3b5e144100f91c54dfade89773c7aa7bcc40aec28aecebd0824",
       "triangleBudget": 590,
       "params": [
         {
@@ -301973,7 +302052,7 @@
         "triangles": 360,
         "sizeM": [
           0.56,
-          1.29,
+          1.12,
           0.455
         ],
         "minUpM": 0,
@@ -302773,7 +302852,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/satellite-solar-wing.kcad.ts",
       "preview": "/assets/space-exploration-satellite-solar-wing.png",
-      "sourceSha256": "dfee5cddaf24aa8d5438c8ebaf98f55439abfd813fda310af12e3f3e36367a52",
+      "sourceSha256": "b54fa260bdfc41efca085a5b553fe73fcb26391a2530de1bf812912fd0c9219c",
       "triangleBudget": 752,
       "params": [
         {
@@ -302821,7 +302900,7 @@
         "sizeM": [
           0.65,
           0.093,
-          1.289
+          1.109
         ],
         "minUpM": 0,
         "materials": 1
@@ -304272,7 +304351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/transport-sled.kcad.ts",
       "preview": "/assets/space-exploration-transport-sled.png",
-      "sourceSha256": "3e74bf1075d2e0a71cbdaae981a7c6ccd271e9b123114328437bcfa022bfb4a4",
+      "sourceSha256": "f1016f5aa83ad7187338d24f491935380ccbdef926c017b6676c2209bbb5b3d2",
       "triangleBudget": 758,
       "params": [
         {
@@ -304316,11 +304395,11 @@
         }
       },
       "stats": {
-        "triangles": 480,
+        "triangles": 540,
         "sizeM": [
-          1.25,
-          0.165,
-          0.998
+          1.37,
+          0.225,
+          0.58
         ],
         "minUpM": 0,
         "materials": 1
@@ -304335,7 +304414,8 @@
             "cross-0",
             "cross-1",
             "cross-2",
-            "cross-3"
+            "cross-3",
+            "tow-bar"
           ],
           "param": "aluminum"
         },
@@ -307342,7 +307422,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/shuttlecock.kcad.ts",
       "preview": "/assets/sports-shuttlecock.png",
-      "sourceSha256": "2a613cb67f07f57e722375b6af97e400552b5057dfbde9dee0ec5a09956763f7",
+      "sourceSha256": "13d1e80e1f7598ba9e98ab612a6e795bc2cb53b2728c932b2d8edd2d891fd168",
       "triangleBudget": 600,
       "params": [
         {
@@ -307380,11 +307460,11 @@
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 158,
         "sizeM": [
-          0.078,
-          0.099,
-          0.078
+          0.092,
+          0.1,
+          0.092
         ],
         "minUpM": 0,
         "materials": 1
@@ -316363,7 +316443,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-drop-terminal.png",
-      "sourceSha256": "de79ceff43127a83b426a4f0a0a16e4c268f81a4523e007a9cef5faa4237649d",
+      "sourceSha256": "4f70afacf9d09cccb489113e5bba6a7150ef3c0ea98a5ab6c405f9b3aac368be",
       "triangleBudget": 900,
       "params": [
         {
@@ -316402,8 +316482,8 @@
         "triangles": 300,
         "sizeM": [
           0.47,
-          0.292,
-          0.238
+          0.265,
+          0.251
         ],
         "minUpM": 0,
         "materials": 1
@@ -316681,7 +316761,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-route-marker.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-route-marker.png",
-      "sourceSha256": "66aa6ece8a2565b8002c3f8d9b7519f4cd7a39681e67bfc693a23140f2c5c172",
+      "sourceSha256": "bafb5f6e76f2f03dc3778723ad597a67737133d05730168af36ed5021497b716",
       "triangleBudget": 900,
       "params": [
         {
@@ -316720,7 +316800,7 @@
         "triangles": 48,
         "sizeM": [
           0.25,
-          0.61,
+          0.5,
           0.25
         ],
         "minUpM": 0,
@@ -316968,7 +317048,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-terminal-box.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-terminal-box.png",
-      "sourceSha256": "03581d22f8b343451d964fb588a360712d4c417d071d3607109aef5778ed399b",
+      "sourceSha256": "dbd5ff52a389c83cf168966aeb400c55a6921e683a6493791dd5bd66cf1f6cc1",
       "triangleBudget": 900,
       "params": [
         {
@@ -317015,7 +317095,7 @@
         "triangles": 168,
         "sizeM": [
           0.5,
-          0.63,
+          0.54,
           0.227
         ],
         "minUpM": 0,
@@ -318584,7 +318664,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/optical-patch-panel.kcad.ts",
       "preview": "/assets/telecom-infrastructure-optical-patch-panel.png",
-      "sourceSha256": "3d1cab158ea45f511f101ef1d7d3614bd2e9b8479eef661436413cb188a1fdab",
+      "sourceSha256": "c1465161754844992e12f56ea72acb99f716163e2060377b4982a4d7ada49650",
       "triangleBudget": 900,
       "params": [
         {
@@ -318623,8 +318703,8 @@
         "triangles": 476,
         "sizeM": [
           0.6,
-          0.35,
-          0.208
+          0.28,
+          0.229
         ],
         "minUpM": 0,
         "materials": 1
@@ -318896,7 +318976,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/pedestal-fiber-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-pedestal-fiber-terminal.png",
-      "sourceSha256": "fa8613452ab5b52cc6bc51a221ce1e86f718bb8db4a43caf6d26d4f0afa62f36",
+      "sourceSha256": "0454381ae0f879b8ed9e020b3c832060d51ddefb8490fc11e0b27bbe4d325ccf",
       "triangleBudget": 900,
       "params": [
         {
@@ -318935,7 +319015,7 @@
         "triangles": 136,
         "sizeM": [
           0.43,
-          1.12,
+          0.83,
           0.36
         ],
         "minUpM": 0,
@@ -319790,7 +319870,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/rooftop-network-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-rooftop-network-cabinet.png",
-      "sourceSha256": "828403839771c3559c3022f0e49f8ccbab0a30d8375f6783993b7dc87e78a4f1",
+      "sourceSha256": "e2acad19b946501d4cd1bac395d01e1b988dec2167ec0ded6e547f74b57e0873",
       "triangleBudget": 900,
       "params": [
         {
@@ -319829,7 +319909,7 @@
         "triangles": 72,
         "sizeM": [
           1.25,
-          1.02,
+          0.78,
           0.85
         ],
         "minUpM": 0,
@@ -320161,7 +320241,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/site-id-placard.kcad.ts",
       "preview": "/assets/telecom-infrastructure-site-id-placard.png",
-      "sourceSha256": "edbdf966c463150347d772b18efbf3e74e4736d2b4a0b7534c491096e5d4a8a9",
+      "sourceSha256": "6d85735273267b6eda705f05a3112ff299c14dcb8550cb15720f431e03d36bf6",
       "triangleBudget": 900,
       "params": [
         {
@@ -320209,7 +320289,7 @@
         "sizeM": [
           0.76,
           1.07,
-          0.066
+          0.068
         ],
         "minUpM": 0,
         "materials": 1
@@ -320462,7 +320542,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/telecom-cable-marker-post.kcad.ts",
       "preview": "/assets/telecom-infrastructure-telecom-cable-marker-post.png",
-      "sourceSha256": "a814d550ac152974efcd300f87e40c3b92298c0ec1ea0b91105c3f35c662b43a",
+      "sourceSha256": "95b2641d9aa08824a39bea5516cba5245f9f89b69eb2d860f6962df93865e00c",
       "triangleBudget": 900,
       "params": [
         {
@@ -320501,7 +320581,7 @@
         "triangles": 60,
         "sizeM": [
           0.19,
-          0.88,
+          0.7,
           0.19
         ],
         "minUpM": 0,
@@ -345683,7 +345763,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/treatment-cart.kcad.ts",
       "preview": "/assets/vet-clinic-treatment-cart.png",
-      "sourceSha256": "c93cb31beaa04eeb33ba2f0306869e83efa2c1ffd35401b556ceaa1cf9445eb6",
+      "sourceSha256": "16c98bfa3a39a10b28fb9803cbf0b4a3eaa8315ef5c4b8836d65c942e2a03702",
       "triangleBudget": 1800,
       "params": [
         {
@@ -345724,11 +345804,11 @@
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 308,
         "sizeM": [
           0.65,
           0.859,
-          0.488
+          0.467
         ],
         "minUpM": 0,
         "materials": 1
@@ -345753,6 +345833,8 @@
             "post-b",
             "post-c",
             "post-d",
+            "handle-post-a",
+            "handle-post-b",
             "push-handle"
           ],
           "param": "stainlessSteelColor"
@@ -345762,7 +345844,9 @@
           "color": "#30383b",
           "parts": [
             "caster-a",
-            "caster-b"
+            "caster-b",
+            "caster-c",
+            "caster-d"
           ],
           "param": "rubberColor"
         }
@@ -347027,7 +347111,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/aeration-header-bridge.kcad.ts",
       "preview": "/assets/water-treatment-aeration-header-bridge.png",
-      "sourceSha256": "96eeced18694764c8cfce1bb31954ed0c14fc03be0f6bad17244b82417c8e463",
+      "sourceSha256": "d76c782dcba1753e2a6be869eb8c82d9144b38b942ab8c7a41f53fb27bb07821",
       "triangleBudget": 2200,
       "params": [
         {
@@ -347071,9 +347155,9 @@
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 296,
         "sizeM": [
-          1.245,
+          1.43,
           0.505,
           0.275
         ],
@@ -347088,6 +347172,10 @@
             "walkway",
             "post--470",
             "post-470",
+            "rail-post-fl",
+            "rail-post-fr",
+            "rail-post-bl",
+            "rail-post-br",
             "rail-front",
             "rail-back"
           ],
@@ -354266,7 +354354,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/cable-reel-stand.kcad.ts",
       "preview": "/assets/wind-energy-cable-reel-stand.png",
-      "sourceSha256": "17a6ddda9e6f286742e98d32a8856755b304d93dc1d0df400ca67989aac03c37",
+      "sourceSha256": "2b9a788e67304ac5eb12717d5e2f8b1793098f0a80f304693e36727ce4ea59b3",
       "triangleBudget": 300,
       "params": [
         {
@@ -354311,7 +354399,7 @@
         "triangles": 148,
         "sizeM": [
           0.85,
-          1.02,
+          0.74,
           0.7
         ],
         "minUpM": 0,

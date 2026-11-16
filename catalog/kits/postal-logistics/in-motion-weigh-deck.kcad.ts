@@ -65,9 +65,13 @@ p.part("roller-a", rollerX(0,-280,590,680,38,28).color(stainlessSteel));
 p.part("roller-b", rollerX(0,-100,590,680,38,28).color(stainlessSteel));
 p.part("roller-c", rollerX(0,100,590,680,38,28).color(stainlessSteel));
 p.part("roller-d", rollerX(0,280,590,680,38,28).color(stainlessSteel));
-p.part("indicator-post", b(470,-340,120,65,65,500).color(structuralSteel));
-p.part("indicator-head", b(470,-340,620,220,110,150).color(stainlessSteel));
-p.part("display", b(470,-320,660,160,15,75).color(instrumentGlass));
+p.part("indicator-post", b(420,-340,0,65,65,620).color(structuralSteel));
+p.part("indicator-head", b(420,-340,620,220,110,150).color(stainlessSteel));
+p.part("display", b(420,-320,660,160,15,75).color(instrumentGlass));
+p.part("post-fl", b(-300,-330,120,70,70,400).color(structuralSteel));
+p.part("post-fr", b(300,-330,120,70,70,400).color(structuralSteel));
+p.part("post-bl", b(-300,330,120,70,70,400).color(structuralSteel));
+p.part("post-br", b(300,330,120,70,70,400).color(structuralSteel));
 p.part("foot-left", b(-330,-370,0,80,80,80).color(structuralSteel));
 p.part("foot-right", b(330,-370,0,80,80,80).color(structuralSteel));
 
