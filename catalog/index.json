@@ -40654,7 +40654,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-roller-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-roller-conveyor.png",
-      "sourceSha256": "7b1f1acbb2e1be4b6764cf0de43bcd8584d0f3456505963371822d0e654e2694",
+      "sourceSha256": "51b9c38cb3c9a1c4b1fafbe233df1ded148900cfd17bafbfb91c064153a83229",
       "triangleBudget": 2200,
       "params": [
         {
@@ -40698,11 +40698,11 @@
         }
       },
       "stats": {
-        "triangles": 704,
+        "triangles": 752,
         "sizeM": [
-          1.96,
+          1.68,
           0.495,
-          0.585
+          0.59
         ],
         "minUpM": 0,
         "materials": 1
@@ -40717,7 +40717,15 @@
             "leg-0",
             "leg-1",
             "leg-2",
-            "leg-3"
+            "leg-3",
+            "leg-4",
+            "leg-5",
+            "leg-6",
+            "leg-7",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3"
           ],
           "param": "powderCoat"
         },
@@ -40737,11 +40745,7 @@
             "roller-9",
             "roller-10",
             "roller-11",
-            "roller-12",
-            "crossbar-0",
-            "crossbar-1",
-            "crossbar-2",
-            "crossbar-3"
+            "roller-12"
           ],
           "param": "stainlessSteel"
         },
