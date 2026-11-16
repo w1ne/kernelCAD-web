@@ -155,19 +155,31 @@ function appendMateLimitSamples(
   samples: PoseEnvelopeSample[],
   samplesPerMate: number,
 ): void {
-  const driven = coupledDrivenMates(arm);
-  for (const mate of arm.__mates()) {
-    // A driven mate follows its coupleMates source, so its own limit alone is
-    // a pose the mechanism cannot reach. The source samples move it, and
-    // validateMatePoseLimits still checks its limits at every sample.
-    if (driven.has(mate.name)) continue;
+  const mates = arm.__mates();
+  const couplings = arm.__mateCouplings();
+  const limitedNames = new Set(mates.filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined).map((m) => m.name));
+  const couplingByDriven = new Map(couplings.map((c) => [c.driven, c]));
+  for (const mate of mates) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
+    // A driven mate follows its coupleMates source, so its own limit alone is
+    // a pose the mechanism cannot reach. A limited chain root already sweeps
+    // it, and validateMatePoseLimits checks its limits at every sample. An
+    // unbounded root has no samples of its own, so sweep the driven range
+    // through the root instead.
+    let toPoses = (value: number): NumericPoses => ({ [mate.name]: value });
+    const coupling = couplingByDriven.get(mate.name);
+    if (coupling !== undefined) {
+      const root = couplingRoot(coupling, couplingByDriven);
+      if (root === undefined || root.ratio === 0 || limitedNames.has(root.mate)) continue;
+      toPoses = (value) => ({ [root.mate]: (value - root.offset) / root.ratio });
+    }
     const [min, max] = limits;
+    const via = coupling === undefined ? '' : ' (driven through its coupling source)';
     samples.push({
       name: `${mate.name}:min`,
-      poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: min }),
-      reason: `${mate.name} lower limit`,
+      poses: expandCoupledPoses(mates, couplings, toPoses(min)),
+      reason: `${mate.name} lower limit${via}`,
     });
     if (max !== min) {
       if (samplesPerMate >= 3) {
@@ -177,18 +189,39 @@ function appendMateLimitSamples(
           const value = min + (max - min) * t;
           samples.push({
             name: `${mate.name}:interior-${i}`,
-            poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: value }),
-            reason: `${mate.name} interior sample ${i}/${interiorCount}`,
+            poses: expandCoupledPoses(mates, couplings, toPoses(value)),
+            reason: `${mate.name} interior sample ${i}/${interiorCount}${via}`,
           });
         }
       }
       samples.push({
         name: `${mate.name}:max`,
-        poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: max }),
-        reason: `${mate.name} upper limit`,
+        poses: expandCoupledPoses(mates, couplings, toPoses(max)),
+        reason: `${mate.name} upper limit${via}`,
       });
     }
   }
+}
+
+/** Compose a coupling chain (output <- idler <- input) down to its uncoupled
+ *  root: driven = ratio * root + offset, in the driven mate's authored units.
+ *  Returns undefined for a coupling cycle, which has no root. */
+function couplingRoot(
+  coupling: MateCouplingRecord,
+  couplingByDriven: ReadonlyMap<string, MateCouplingRecord>,
+): { mate: string; ratio: number; offset: number } | undefined {
+  let mate = coupling.source;
+  let ratio = coupling.ratio;
+  let offset = coupling.offset ?? 0;
+  const seen = new Set([coupling.driven]);
+  for (let up = couplingByDriven.get(mate); up !== undefined; up = couplingByDriven.get(mate)) {
+    if (seen.has(up.driven)) return undefined;
+    seen.add(up.driven);
+    offset += ratio * (up.offset ?? 0);
+    ratio *= up.ratio;
+    mate = up.source;
+  }
+  return { mate, ratio, offset };
 }
 
 /** Names of the mates that coupleMates drives from another mate. */

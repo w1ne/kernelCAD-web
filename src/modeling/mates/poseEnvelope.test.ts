@@ -428,6 +428,30 @@ describe('pose-envelope review helpers', () => {
     }
   });
 
+  it('samples a coupled mate range through an unbounded chain root', () => {
+    // motor (no limits) -> idler -> output [-30, 60]: output = 0.25 * (-2 * motor + 10) + 5.
+    const { arm, kcad } = makeArm();
+    const axis = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: [0, 0, 1] as [number, number, number] });
+    arm.part('plate', kcad.box(90, 20, 2)).connector('m', axis(0)).connector('i', axis(24)).connector('o', axis(48));
+    arm.part('pinion', kcad.box(5, 5, 5)).connector('axis', axis(0));
+    arm.part('idlerGear', kcad.box(5, 5, 5)).connector('axis', axis(24));
+    arm.part('gear', kcad.box(5, 5, 5)).connector('axis', axis(48));
+    arm.mate('motor', 'plate.m', 'pinion.axis', 'revolute');
+    arm.mate('idler', 'plate.i', 'idlerGear.axis', 'revolute');
+    arm.mate('output', 'plate.o', 'gear.axis', 'revolute', { limitsDeg: [-30, 60] });
+    arm.coupleMates('output', { source: 'idler', ratio: 0.25, offset: 5 });
+    arm.coupleMates('idler', { source: 'motor', ratio: -2, offset: 10 });
+    const samples = buildPoseEnvelopeSamples(arm, { samplesPerMate: 3 });
+    expect(samples.map((s) => s.name)).toEqual(['current', 'output:min', 'output:interior-1', 'output:max']);
+    const expected = [[75, -140, -30], [-15, 40, 15], [-105, 220, 60]];
+    samples.slice(1).forEach((sample, k) => {
+      expect(sample.poses.motor).toBeCloseTo(expected[k][0], 9);
+      expect(sample.poses.idler).toBeCloseTo(expected[k][1], 9);
+      expect(sample.poses.output).toBeCloseTo(expected[k][2], 9);
+    });
+    for (const sample of samples) expect(validateMatePoseLimits(arm, sample.poses, sample.name)).toEqual([]);
+  });
+
   it('still reports a source sample that drives a coupled mate past its limits', () => {
     const arm = makeGearPair([-20, 20]);
     const sample = buildPoseEnvelopeSamples(arm).find((s) => s.name === 'input:max')!;
