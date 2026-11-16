@@ -10,6 +10,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
 import type { Scene } from '../validation/scene';
@@ -1276,6 +1277,8 @@ export class Shape {
    * `asEdge: true` is captured but rejected at lower time — open-wire
    * projection is not implemented (the OCCT binding is available; see
    * `projectCurveLowerer.ts` for why the return type is the open question).
+   * An unknown `opts` key (`scale`, `edge`, `curve`) throws
+   * `feature.invalid-args`.
    */
   projectCurve(opts: {
     source: import('../../shared/intent/projectCurveRecord').ProjectCurveSource;
@@ -1283,6 +1286,7 @@ export class Shape {
     scaleMode?: 'original' | 'native' | 'bounds';
     asEdge?: boolean;
   }): import('./sketch').Sketch {
+    assertProjectCurveOptions(opts, this.id);
     const id = this.session.addProjectCurve(this.id, {
       source: opts.source,
       face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,

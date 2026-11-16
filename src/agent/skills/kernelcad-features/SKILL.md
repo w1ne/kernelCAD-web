@@ -133,6 +133,8 @@ const branded = bottle.union(raised);
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Same as embossText. |
 | `asEdge` | `boolean?` | **NOT IMPLEMENTED.** When `true`, the lowerer emits `feature.project-curve.no-intersection`. Use closed-curve projection. |
 
+Any other key throws `feature.invalid-args` (e.g. `scale` is not `scaleMode`, `curve` is not `source`).
+
 ### Recovery table
 
 | Diagnostic code | What it means | Fix |
