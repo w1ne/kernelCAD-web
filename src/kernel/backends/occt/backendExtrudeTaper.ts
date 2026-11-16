@@ -15,11 +15,16 @@ import { KernelError } from '../../../shared/intent/kernelError';
 import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { draftWithHistory } from './draftWithHistory';
 import { countFaces, isTopologicallyValid } from './edgeFeatureValidity';
+import { describeOcctThrow } from './occtException';
 import type { OcctBackend } from './occtBackend';
 
 const HASH_UPPER = 2147483647;
 /** Relative volume slack for the frustum plausibility gate. */
 const VOLUME_SLACK = 1e-6;
+/** Side-face surface types `BRepOffsetAPI_DraftAngle` can lean: a line
+ *  segment extrudes to a plane, an arc to a cylinder. A spline or Bézier
+ *  segment extrudes to an EXTRUSION_SURFACE, which OCCT does not draft. */
+const DRAFTABLE_SIDE_TYPES = new Set(['PLANE', 'CYLINDRE']);
 /** Smallest draft OCCT applies: `BRepOffsetAPI_DraftAngle` leaves a face
  *  unchanged below 1e-4 rad (~0.0057°), so a smaller nonzero taper is
  *  rejected up front instead of failing the volume gate. */
@@ -67,13 +72,13 @@ export function assertTaperable(taperDeg: number, twistAngle: number, hasPathCom
   });
 }
 
-function taperFailed(message: string): KernelError {
-  return new KernelError(
-    'feature.extrude.taper-failed',
-    `extrude taper failed: ${message}`,
-    undefined,
-    'Reduce taperDeg or depth. An inward taper must not close the profile before the far end: depth × tan(taperDeg) must stay below the smallest half-width of the profile.',
-  );
+const CLOSES_HINT =
+  'Reduce taperDeg or depth. An inward taper must not close the profile before the far end: depth × tan(taperDeg) must stay below the smallest half-width of the profile.';
+const CURVED_SIDE_HINT =
+  'Build the profile from lines and arcs (lineTo, threePointsArc, sagittaArc, radiusArc), or loft between the base profile and a scaled top profile. A smaller taperDeg does not help.';
+
+function taperFailed(message: string, hint = CLOSES_HINT): KernelError {
+  return new KernelError('feature.extrude.taper-failed', `extrude taper failed: ${message}`, undefined, hint);
 }
 
 /**
@@ -92,13 +97,14 @@ export function taperExtrudedPrism(
   const raw = prism.getReplicadShape();
   const tol = Math.max(1e-6, depth * 1e-7);
   // Side faces span the full depth; the two caps are flat at z = 0 / depth.
-  const sides = raw.faces
-    .filter((f) => {
-      const [[, , zMin], [, , zMax]] = f.boundingBox.bounds;
-      return zMax - zMin > tol;
-    })
+  const sideFaces = raw.faces.filter((f) => {
+    const [[, , zMin], [, , zMax]] = f.boundingBox.bounds;
+    return zMax - zMin > tol;
+  });
+  const sides = sideFaces
     .map((f) => ({ hash: (f.wrapped as unknown as { HashCode(n: number): number }).HashCode(HASH_UPPER).toString(16) }));
   if (sides.length === 0) throw taperFailed('the prism has no side faces to taper.');
+  const curvedSides = sideFaces.filter((f) => !DRAFTABLE_SIDE_TYPES.has(f.geomType));
 
   let drafted: replicad.Shape3D;
   try {
@@ -110,7 +116,14 @@ export function taperExtrudedPrism(
     });
     drafted = replicad.cast(res.shape as never) as replicad.Shape3D;
   } catch (e) {
-    throw taperFailed(e instanceof Error ? e.message : String(e));
+    const cause = describeOcctThrow(e);
+    if (curvedSides.length === 0) throw taperFailed(cause);
+    // OCCT throws a bare pointer here; name the side faces it cannot draft.
+    const types = [...new Set(curvedSides.map((f) => f.geomType))].join(', ');
+    throw taperFailed(
+      `OCCT cannot draft ${curvedSides.length} side face(s) of type ${types}, which spline or Bézier profile segments extrude to (${cause}).`,
+      CURVED_SIDE_HINT,
+    );
   }
 
   if (!isTopologicallyValid(drafted.wrapped)) {

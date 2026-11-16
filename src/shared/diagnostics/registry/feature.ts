@@ -410,7 +410,7 @@ export const FEATURE_CODES = {
     nextAction: { kind: 'fix-arg', field: 'taperDeg' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'A tapered sketch extrude did not produce one valid frustum-like solid; the profile closed or OCCT could not draft the side faces.',
+    description: 'A tapered sketch extrude did not produce one valid frustum-like solid; the profile closed or OCCT could not draft the side faces (spline and Bézier segments give side faces OCCT does not draft).',
   },
   'feature.draft.unchanged': {
     hintTemplate:
