@@ -7,10 +7,12 @@
 // leans by the taper angle. A positive taper narrows the profile toward the
 // far end (the walls lean in), the mould-draft convention.
 //
-// Imports `OcctBackend` as a type only: occtBackend.ts calls this module.
+// Imports `OcctBackend` as a type only, so the module stays below occtBackend.ts
+// in the import graph; the extrude lowerer wraps the returned solid.
 
 import * as replicad from 'replicad';
 import { KernelError } from '../../../shared/intent/kernelError';
+import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { draftWithHistory } from './draftWithHistory';
 import { countFaces, isTopologicallyValid } from './edgeFeatureValidity';
 import type { OcctBackend } from './occtBackend';
@@ -24,14 +26,31 @@ const VOLUME_SLACK = 1e-6;
 export function resolveExtrudeTaperDeg(taperDeg: number | undefined, context: string): number {
   const angle = taperDeg ?? 0;
   if (!Number.isFinite(angle) || Math.abs(angle) >= 90) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${context}: taperDeg must be a finite angle strictly between -90 and 90 degrees (got ${String(taperDeg)}).`,
-      undefined,
-      'Pass taperDeg in degrees: a positive value narrows the profile toward the far end, a negative value widens it. Typical mould draft is 0.5 to 5.',
-    );
+    invalidArgs({
+      api: `${context}(depth, { taperDeg })`,
+      path: 'opts.taperDeg',
+      got: taperDeg,
+      requires: 'a finite draft angle strictly between -90 and 90 (positive narrows toward the far end, negative widens)',
+      unit: 'deg',
+      example: 'path()...close().extrude(10, { taperDeg: 3 })',
+    });
   }
   return angle;
+}
+
+/** Reject a taper the lowerer cannot apply: with a twist, or on a sketch that
+ *  has no path commands (face-bound or text sketches extrude off the Z axis
+ *  or as many loops). */
+export function assertTaperable(taperDeg: number, twistAngle: number, hasPathCommands: boolean): void {
+  if (twistAngle === 0 && hasPathCommands) return;
+  invalidArgs({
+    api: 'Sketch.extrude(depth, { taperDeg })',
+    path: 'opts.taperDeg',
+    got: taperDeg,
+    requires: 'no twistAngle and a path()...close() sketch; for a face-bound sketch extrude straight and call .draft() on the side faces',
+    unit: 'deg',
+    example: 'path()...close().extrude(10, { taperDeg: 3 })',
+  });
 }
 
 function taperFailed(message: string): KernelError {
