@@ -18,6 +18,7 @@ import { surfaceTypeOf } from './createdRefs';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 
 const OVERSHOOT = 0.01;
 const PARALLEL_TOL = 1e-6;
@@ -48,8 +49,31 @@ function perpendicular(n: Vec3): Vec3 {
   return normalize([ref[1] * n[2] - ref[2] * n[1], ref[2] * n[0] - ref[0] * n[2], ref[0] * n[1] - ref[1] * n[0]]);
 }
 
-function invalid(featureId: string, message: string, hint: string): { error: CompilerDiagnostic } {
-  return { error: { target: 'export-occt', code: 'feature.invalid-args', featureId, severity: 'error', message, hint } };
+const UP_TO_FACE_EXAMPLE =
+  "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })";
+
+function invalid(
+  featureId: string,
+  gotText: string,
+  requires: string,
+  hint: string,
+): { error: CompilerDiagnostic } {
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId,
+      severity: 'error',
+      ...invalidArgsText({
+        api: 'cutout(profile, { face, upToFace })',
+        path: 'opts.upToFace',
+        gotText,
+        requires,
+        example: UP_TO_FACE_EXAMPLE,
+        hint,
+      }),
+    },
+  };
 }
 
 function bboxSpan(target: OcctBackend, origin: Vec3, axis: Vec3): { maxAlong: number; diagonal: number } {
@@ -96,7 +120,8 @@ export function buildUpToFaceTool(
   if (surface !== 'PLANE') {
     return invalid(
       feature.id,
-      `cutout: upToFace resolved to a ${surface} face; only a planar target face is supported.`,
+      `${surface} face`,
+      'only a planar target face of the body',
       "Pick a planar face of the body, or use depth (a number or 'through').",
     );
   }
@@ -106,7 +131,8 @@ export function buildUpToFaceTool(
   if (Math.abs(cos) < PARALLEL_TOL) {
     return invalid(
       feature.id,
-      'cutout: the upToFace target plane is parallel to the cut direction, so the cut never reaches it.',
+      'a target plane parallel to the cut direction',
+      'a target plane that is not parallel to the cut direction, so the cut reaches it',
       'Pick a face that crosses the cut axis, or use depth.',
     );
   }
@@ -115,7 +141,8 @@ export function buildUpToFaceTool(
   if (!(effectiveDepth > AHEAD_TOL)) {
     return invalid(
       feature.id,
-      `cutout: the upToFace target plane is ${effectiveDepth <= 0 ? 'behind or on' : 'on'} the entry face (distance ${effectiveDepth.toFixed(4)} mm along the cut).`,
+      `${effectiveDepth.toFixed(4)} mm along the cut direction`,
+      'a target plane strictly ahead of the entry face; behind or on the entry face is invalid',
       'Pick a face ahead of the entry face along the cut direction.',
     );
   }
