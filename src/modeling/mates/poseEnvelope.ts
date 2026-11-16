@@ -238,11 +238,18 @@ export function validateMatePoseLimits(
 ): PoseEnvelopeDiagnostic[] {
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const mates = arm.__mates();
-  const couplingByDriven = new Map(arm.__mateCouplings().map((c) => [c.driven, c]));
+  const couplings = arm.__mateCouplings();
+  const couplingByDriven = new Map(couplings.map((c) => [c.driven, c]));
+  // Check a driven mate where the solver puts it (ratio × source + offset),
+  // not at its own uncoupled default, so the 'current' sample agrees with
+  // the geometry it solves.
+  const coupledPoses = expandCoupledPoses(mates, couplings, poses ?? {}, {
+    resolveSourcePose: (mate, current) => resolveMatePose(mate, arm, current),
+  });
   for (const mate of mates) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
-    const pose = resolveMatePose(mate, arm, poses);
+    const pose = resolveMatePose(mate, arm, coupledPoses);
     if (pose === undefined || Array.isArray(pose)) continue;
     if (pose >= limits[0] && pose <= limits[1]) continue;
     diagnostics.push(outOfLimitsDiagnostic(mate.name, pose, limits, sampleName, mates, couplingByDriven.get(mate.name)));

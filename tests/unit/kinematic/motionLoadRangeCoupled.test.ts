@@ -76,6 +76,17 @@ describe('checkMotionLoad range mode — coupled driven mate', () => {
     expect(series.map((s) => s.pose['hinge'])).toEqual([-90, 0, 90]);
   }, 120_000);
 
+  it('cuts a wider source range to the driven limits mapped back through the ratio', async () => {
+    // Motor ±360 at ratio 0.5 would put the hinge at ±180, past its [-90, 90].
+    const r = await checkMotionLoad(
+      await load(script({ motorLimits: '[-360, 360]' })),
+      { mode: 'range', rangeSamples: 3 },
+    );
+    const series = hingeSeries(r);
+    expect(series.map((s) => s.pose['motor'])).toEqual([-180, 0, 180]);
+    expect(series.map((s) => s.pose['hinge'])).toEqual([-90, 0, 90]);
+  }, 120_000);
+
   it('an unlimited source is sampled over the driven limits mapped back through the ratio', async () => {
     const r = await checkMotionLoad(
       await load(script({ motorDrive: false })),
