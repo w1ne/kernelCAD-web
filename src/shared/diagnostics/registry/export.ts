@@ -284,6 +284,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
   },
+  'export.usd.coupling-dropped': {
+    hintTemplate:
+      'This usd-isaac export leaves the driven joint independent; the serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The usd-isaac serializer does not author a backend-specific mimic relation for a coupleMates coupling; the driven mate was emitted as an independent physics joint.',
+  },
   'export.usd.pose-unsolved': {
     hintTemplate:
       'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
