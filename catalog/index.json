@@ -42839,7 +42839,7 @@
       "id": "pressure-sensitive-labeler",
       "kit": "beverage-bottling-line",
       "title": "Pressure-sensitive labeler",
-      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -42858,7 +42858,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pressure-sensitive-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pressure-sensitive-labeler.png",
-      "sourceSha256": "d8c1557b43b65e15f488ac6c87704750f8060a51923dee1b486133113de5d63e",
+      "sourceSha256": "09a27a82aecc3a29984d6f88ce17261bd5a5d7b51d2a5965300ddd37a10bdbfa",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42887,18 +42887,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -42928,11 +42936,18 @@
             "conveyor",
             "mast-front",
             "mast-back",
-            "front-roll",
-            "back-roll",
             "hmi-screen"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "front-roll",
+            "back-roll"
+          ],
+          "param": "labelStock"
         },
         {
           "name": "foodPolymer",
