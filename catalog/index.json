@@ -41225,7 +41225,7 @@
       "id": "case-taper",
       "kit": "beverage-bottling-line",
       "title": "Case taper",
-      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and packing tape.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -41244,7 +41244,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-taper.png",
-      "sourceSha256": "b111cc98ed1c2dafd6fe8f2505cf8c8eef24c526e1392157147979dd97370534",
+      "sourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41273,18 +41273,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "packingTape",
+          "type": "color",
+          "default": "#c39058",
+          "label": "Polypropylene packing tape"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "packingTape": "#cf9e66"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "packingTape": "#a87a48"
         }
       },
       "stats": {
@@ -41313,8 +41321,7 @@
           "parts": [
             "infeed-belt",
             "outfeed-belt",
-            "tape-head",
-            "tape-roll"
+            "tape-head"
           ],
           "param": "foodPolymer"
         },
@@ -41330,6 +41337,14 @@
             "hmi"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "packingTape",
+          "color": "#c39058",
+          "parts": [
+            "tape-roll"
+          ],
+          "param": "packingTape"
         }
       ]
     },
@@ -41545,7 +41560,7 @@
       "id": "corrugated-case-stack",
       "kit": "beverage-bottling-line",
       "title": "Corrugated case stack",
-      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for stainless steel and corrugated board.",
+      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for corrugated board, paperboard edge protectors and the paper label.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -41564,7 +41579,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/corrugated-case-stack.kcad.ts",
       "preview": "/assets/beverage-bottling-line-corrugated-case-stack.png",
-      "sourceSha256": "0e5ff4412d4931378a740fc5e04f1c5acef2740789118339cafcac50c1e5d3f5",
+      "sourceSha256": "7f81bf1eb77be411760be6b07810548a4b9ccbb2c2b855d77c4a87f1261ab10b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41577,26 +41592,34 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#aebdc1",
-          "label": "Stainless steel"
-        },
-        {
           "name": "corrugatedBoard",
           "type": "color",
           "default": "#b18a5d",
           "label": "Corrugated board"
+        },
+        {
+          "name": "edgeBoard",
+          "type": "color",
+          "default": "#8a6a48",
+          "label": "Paperboard edge protectors"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#ece6d6",
+          "label": "Paper shipping label"
         }
       ],
       "presets": {
         "sanitaryLine": {
-          "stainlessSteel": "#d2dfe1",
-          "corrugatedBoard": "#c49b6b"
+          "corrugatedBoard": "#c49b6b",
+          "edgeBoard": "#9a7a55",
+          "labelPaper": "#f6f3ea"
         },
         "legacyPlant": {
-          "stainlessSteel": "#858f91",
-          "corrugatedBoard": "#886342"
+          "corrugatedBoard": "#886342",
+          "edgeBoard": "#6b513a",
+          "labelPaper": "#d8cfb8"
         }
       },
       "stats": {
@@ -41611,8 +41634,8 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
           "parts": [
             "case-0-body",
             "case-1-body",
@@ -41628,19 +41651,26 @@
             "case-1-flap-back",
             "case-2-flap-back",
             "case-3-flap-back",
-            "case-4-flap-back",
-            "corner-protector-left",
-            "corner-protector-right"
+            "case-4-flap-back"
           ],
-          "param": "stainlessSteel"
+          "param": "corrugatedBoard"
         },
         {
-          "name": "corrugatedBoard",
-          "color": "#b18a5d",
+          "name": "labelPaper",
+          "color": "#ece6d6",
           "parts": [
             "stack-label"
           ],
-          "param": "corrugatedBoard"
+          "param": "labelPaper"
+        },
+        {
+          "name": "edgeBoard",
+          "color": "#8a6a48",
+          "parts": [
+            "corner-protector-left",
+            "corner-protector-right"
+          ],
+          "param": "edgeBoard"
         }
       ]
     },
@@ -41764,7 +41794,7 @@
       "id": "fill-level-inspection-lamp",
       "kit": "beverage-bottling-line",
       "title": "Fill-level inspection lamp",
-      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and the opal acrylic diffuser.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -41783,7 +41813,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/fill-level-inspection-lamp.kcad.ts",
       "preview": "/assets/beverage-bottling-line-fill-level-inspection-lamp.png",
-      "sourceSha256": "eb913ff3e554ec67d4c0490fa29209b4414a0689c4449d4ed953db9465410969",
+      "sourceSha256": "4644ff31dc996c493dee9e3ba08829010a6e9ae3449d323672cf3763ce0f5048",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41812,18 +41842,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "diffuserOpal",
+          "type": "color",
+          "default": "#f4f6f1",
+          "label": "Opal acrylic diffuser"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "diffuserOpal": "#fbfcf8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "diffuserOpal": "#e6e1cb"
         }
       },
       "stats": {
@@ -41850,13 +41888,12 @@
           "param": "powderCoat"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "diffuserOpal",
+          "color": "#f4f6f1",
           "parts": [
-            "diffuser-face",
-            "inspection-knob"
+            "diffuser-face"
           ],
-          "param": "stainlessSteel"
+          "param": "diffuserOpal"
         },
         {
           "name": "foodPolymer",
@@ -41866,6 +41903,14 @@
             "bottle-guide-back"
           ],
           "param": "foodPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "inspection-knob"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -42182,7 +42227,7 @@
       "id": "label-reel-stand",
       "kit": "beverage-bottling-line",
       "title": "Label reel stand",
-      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -42201,7 +42246,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/label-reel-stand.kcad.ts",
       "preview": "/assets/beverage-bottling-line-label-reel-stand.png",
-      "sourceSha256": "d898550dfd129006d0bb756ebb757523f23553eba064ebbf59d621cf79b2107d",
+      "sourceSha256": "69fa4db3d8e08e556e17aabcfa9c99a38ef81ed1782de2690c86c0d6607a1235",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42230,18 +42275,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -42272,12 +42325,19 @@
           "color": "#aebdc1",
           "parts": [
             "upright",
-            "unwind-reel",
-            "rewind-reel",
             "tension-arm",
             "adjustment-knob"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "unwind-reel",
+            "rewind-reel"
+          ],
+          "param": "labelStock"
         },
         {
           "name": "foodPolymer",
@@ -42809,7 +42869,7 @@
       "id": "pressure-sensitive-labeler",
       "kit": "beverage-bottling-line",
       "title": "Pressure-sensitive labeler",
-      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -42828,7 +42888,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pressure-sensitive-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pressure-sensitive-labeler.png",
-      "sourceSha256": "d8c1557b43b65e15f488ac6c87704750f8060a51923dee1b486133113de5d63e",
+      "sourceSha256": "09a27a82aecc3a29984d6f88ce17261bd5a5d7b51d2a5965300ddd37a10bdbfa",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42857,18 +42917,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -42898,11 +42966,18 @@
             "conveyor",
             "mast-front",
             "mast-back",
-            "front-roll",
-            "back-roll",
             "hmi-screen"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "front-roll",
+            "back-roll"
+          ],
+          "param": "labelStock"
         },
         {
           "name": "foodPolymer",
@@ -44462,7 +44537,7 @@
       "id": "wraparound-labeler",
       "kit": "beverage-bottling-line",
       "title": "Wraparound bottle labeler",
-      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and paper label stock.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -44481,7 +44556,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/wraparound-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-wraparound-labeler.png",
-      "sourceSha256": "dfdf65e2bad491589c44546e24c7279ba0b54fa2d491bd21471cde9dd723055d",
+      "sourceSha256": "70b150550c45356eb91d116502ac2acc4321c22e848fe8a3ca7e31a02b2cc5c2",
       "triangleBudget": 2200,
       "params": [
         {
@@ -44510,18 +44585,26 @@
           "type": "color",
           "default": "#3999a1",
           "label": "Food-grade polymer"
+        },
+        {
+          "name": "labelStock",
+          "type": "color",
+          "default": "#efe9da",
+          "label": "Paper label stock"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "labelStock": "#f6f2e8"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "labelStock": "#ddd4bd"
         }
       },
       "stats": {
@@ -44550,7 +44633,6 @@
           "color": "#3999a1",
           "parts": [
             "bottle-deck",
-            "label-roll",
             "web-guide"
           ],
           "param": "foodPolymer"
@@ -44565,6 +44647,14 @@
             "pressure-roller"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "labelStock",
+          "color": "#efe9da",
+          "parts": [
+            "label-roll"
+          ],
+          "param": "labelStock"
         }
       ]
     },
