@@ -314514,7 +314514,7 @@
       "id": "u-bracket",
       "kit": "standard-components",
       "title": "U bracket",
-      "description": "Open-top channel mounting bracket with a flat back and two parallel side ears Knobs: model size, steel, stainless steel.",
+      "description": "Illustrative CC0 low-poly U-channel bracket with an X-axis pin through both bored side ears. Not manufacturer CAD or load-rated hardware. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -314532,7 +314532,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/u-bracket.kcad.ts",
       "preview": "/assets/standard-components-u-bracket.png",
-      "sourceSha256": "f6facc17f2fcffed341214f578f950ca7bddf338251647668df7f566869f3a4b",
+      "sourceSha256": "f7d7c42f32c921ab876ac3306ebe56c3b774ba9485dd026f7f3e6bdad1badc82",
       "triangleBudget": 320,
       "params": [
         {
@@ -314574,7 +314574,7 @@
         }
       },
       "stats": {
-        "triangles": 80,
+        "triangles": 184,
         "sizeM": [
           0.056,
           0.033,
