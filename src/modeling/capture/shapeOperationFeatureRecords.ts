@@ -59,6 +59,8 @@ export interface ScalarEdgeFeatureOpts {
   continuity?: FilletContinuity;
   /** Chamfer only: validated asymmetric-leg options. */
   chamferLegs?: ChamferLegOptions;
+  /** Shell only: further faces to open, recorded as `face_2`, `face_3`, … */
+  extraFaces?: readonly (ShapeOperationFaceSelector | string)[];
 }
 
 export interface DraftFeatureOpts {
@@ -278,6 +280,11 @@ export function buildScalarEdgeFeatureSpec(
   const params: Record<string, Param> = { [valueParamName]: toParam(value, 'mm') };
   if (kind === 'chamfer' && opts?.chamferLegs !== undefined) {
     applyChamferLegs(baseId, opts.chamferLegs, params, inputs);
+  }
+  if (kind === 'shell' && opts?.extraFaces !== undefined) {
+    opts.extraFaces.forEach((face, index) => {
+      inputs[`face_${index + 2}`] = buildFaceInputRef(baseId, face as ShapeOperationFaceSelector);
+    });
   }
   return {
     kind,

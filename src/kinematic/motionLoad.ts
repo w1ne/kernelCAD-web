@@ -9,7 +9,8 @@
 //      from its BREP and density (or its declared `massKg`).
 //   2. Sample poses: along the animationView tracks (mode 'tracks', the
 //      default), or a quasi-static grid over every driven joint's limits
-//      (mode 'range').
+//      (mode 'range'). A coupleMates driven mate gets no grid axis of its
+//      own: its root source is sampled and the driven pose is derived.
 //   3. solveMates at each sample gives every part's world transform. Along
 //      tracks, CoM acceleration and body angular velocity / acceleration come
 //      from central finite differences of those transforms.
@@ -37,6 +38,7 @@ import { boxDistanceToAxis, nearestAxialContact, type AxialSpan } from '../kerne
 import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
 import { solveMates } from '../modeling/mates/solver';
+import { expandCoupledPoses, type MateCouplingRecord } from '../modeling/mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../modeling/mates/mate';
 import { partAtFor, sceneMotion } from '../modeling/mates/partFrame';
 import { rememberedRestScene } from '../modeling/mates/loweredAssemblyScene';
@@ -347,20 +349,53 @@ function trackPoses(arm: Assembly, sampleMs = DEFAULT_SAMPLE_MS): PoseAt[] {
 
 function rangePoses(arm: Assembly, intents: readonly MechanicalJointIntentRecord[], rangeSamples = 5): PoseAt[] {
   const mates = new Map(arm.__mates().map((m) => [m.name, m]));
-  const axes: Array<{ name: string; values: number[] }> = [];
+  const couplings = arm.__mateCouplings();
+  // A coupleMates driven mate follows its source, so gridding it on its own
+  // axis samples poses the mechanism cannot reach. Sample the root source
+  // instead and derive every driven mate from it.
+  const ranges = new Map<string, [number, number]>();
   for (const i of intents) {
-    const lim = mates.get(i.mate)?.limitsDeg;
-    if (lim !== undefined) axes.push({ name: i.mate, values: [] });
+    const axis = rangeAxis(mates, couplings, i.mate);
+    if (axis === undefined) continue;
+    const prev = ranges.get(axis.name);
+    ranges.set(axis.name, prev === undefined ? axis.range : [Math.max(prev[0], axis.range[0]), Math.min(prev[1], axis.range[1])]);
   }
+  const axes = [...ranges].filter(([, [lo, hi]]) => lo <= hi).map(([name, range]) => ({ name, range, values: [] as number[] }));
   let n = Math.max(2, rangeSamples);
   while (n > 2 && n ** axes.length > MAX_SAMPLES) n -= 1;
   for (const a of axes) {
-    const [lo, hi] = mates.get(a.name)!.limitsDeg!;
+    const [lo, hi] = a.range;
     for (let k = 0; k < n; k++) a.values.push(lo + ((hi - lo) * k) / (n - 1));
   }
   let poses: Array<Record<string, number>> = [{}];
   for (const a of axes) poses = poses.flatMap((p) => a.values.map((v) => ({ ...p, [a.name]: v })));
-  return poses.slice(0, MAX_SAMPLES).map((pose) => ({ pose }));
+  return poses.slice(0, MAX_SAMPLES).map((pose) => ({ pose: expandCoupledPoses(arm.__mates(), couplings, pose) }));
+}
+
+/** The independent mate that moves `mateName` and its sampled range. A
+ *  driven mate resolves to its root source: the source's own limits, or the
+ *  driven limits mapped back through the coupling chain when it has none. */
+function rangeAxis(
+  mates: ReadonlyMap<string, MateRecord>,
+  couplings: readonly MateCouplingRecord[],
+  mateName: string,
+): { name: string; range: [number, number] } | undefined {
+  const byDriven = new Map(couplings.map((c) => [c.driven, c]));
+  // mateName = ratio * root + offset, composed along the chain.
+  let root = mateName, ratio = 1, offset = 0;
+  const seen = new Set<string>();
+  for (let c = byDriven.get(root); c !== undefined && !seen.has(root); c = byDriven.get(root)) {
+    seen.add(root);
+    offset += ratio * (c.offset ?? 0);
+    ratio *= c.ratio;
+    root = c.source;
+  }
+  const own = mates.get(root)?.limitsDeg ?? (root === mateName ? undefined : mates.get(root)?.limitsMm);
+  if (own !== undefined) return { name: root, range: [own[0], own[1]] };
+  const driven = mates.get(mateName)?.limitsDeg;
+  if (root === mateName || driven === undefined || ratio === 0) return undefined;
+  const a = (driven[0] - offset) / ratio, b = (driven[1] - offset) / ratio;
+  return { name: root, range: [Math.min(a, b), Math.max(a, b)] };
 }
 
 // ─── Kinematics ──────────────────────────────────────────────────────────

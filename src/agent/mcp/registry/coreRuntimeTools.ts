@@ -102,7 +102,7 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
       'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
       "deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with " +
       'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
-      'connectors, pose, limits), and param changes (value/min/max). Single-shape scripts ' +
+      'connectors, pose, limits, coupleMates coupling), and param changes (value/min/max). Single-shape scripts ' +
       'diff as one "(root)" pseudo-part; a `return [a, b]` multi-body script diffs per body as "body[0]", "body[1]". ' +
       'An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. ' +
       'Use after editing a script to verify exactly what changed physically before re-rendering. ' +

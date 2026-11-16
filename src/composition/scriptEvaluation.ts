@@ -32,6 +32,7 @@ import {
   runFeaGateOnModel,
   type FeaGateReport,
 } from '../modeling/runtime/fea/runFeaGate';
+import { runFlightGateOnModel } from '../modeling/runtime/flight/runFlightGate';
 import {
   runTubeChecksOnModel,
   type TubeCheckReport,
@@ -235,6 +236,9 @@ async function buildModelForInput(
  *  Only studies that declare `minSafetyFactor` run here — a study without
  *  one is a report you fetch with `run_fea`, not a gate.
  *
+ *  Flight stability: a `flightStudy` with `minStabilityCal` runs its
+ *  stability check (mass, CG, Barrowman CP; no trajectory) here.
+ *
  *  Tube gate: same seam, but not opt-in by a spec record. It runs whenever
  *  the model has tube records (a missing `tubeSpec` only earns a warn). */
 async function runOptInGates(
@@ -252,6 +256,12 @@ async function runOptInGates(
   if (!fatal) {
     feaReport = await runFeaGateOnModel(model);
     if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  // Flight stability gate: same opt-in seam, only studies with minStabilityCal.
+  if (!fatal) {
+    const flightReport = runFlightGateOnModel(model);
+    if (flightReport) model.diagnostics.push(...flightReport.diagnostics);
   }
 
   let tubeReport: TubeCheckReport | undefined;

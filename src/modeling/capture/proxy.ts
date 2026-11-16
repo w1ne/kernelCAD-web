@@ -41,6 +41,8 @@ import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/in
 import type { FeaStudyHandle, FeaStudyMetadata, FeaStudySpec } from '../../shared/intent/feaStudyRecord';
 import type { CfdStudyHandle, CfdStudySpec } from '../../shared/intent/cfdStudyRecord';
 import { captureCfdStudy } from './cfdStudyRecord';
+import type { FlightStudyHandle, FlightStudySpec } from '../../shared/intent/flightStudyRecord';
+import { captureFlightStudy } from './flightStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
@@ -308,6 +310,31 @@ export class Shape {
    */
   cfdStudy(spec: CfdStudySpec): CfdStudyHandle {
     return captureCfdStudy(this.session, spec, this.id);
+  }
+
+  /**
+   * Declare a model-rocket flight study on this solid (the whole rocket as
+   * one body). Declaration-only, like `feaStudy`; `run_flight` runs it, and a
+   * declared `minStabilityCal` makes evaluate fail with
+   * `flight.stability.below-min` when the Barrowman static margin is lower.
+   * For a rocket built from parts, prefer `arm.flightStudy` (mass and CG per
+   * part, CG shift as the motor burns).
+   *
+   * ```ts
+   * rocket.flightStudy({
+   *   motor: { thrustCurve: [[0, 0], [0.1, 30], [1.9, 12], [2.1, 0]], totalMassKg: 0.062, propellantKg: 0.03 },
+   *   aero: { cd: 0.55, refDiameterMm: 42, fins: { count: 3 } },
+   *   launch: { railM: 1.5, siteAltitudeM: 120 },
+   *   recovery: [{ cd: 1.5, diameterMm: 450, deploy: 'apogee+1' }],
+   *   dryMassKg: 0.285,
+   *   minStabilityCal: 1,
+   * });
+   * ```
+   *
+   * Malformed fields throw `feature.invalid-args` at capture.
+   */
+  flightStudy(spec: FlightStudySpec): FlightStudyHandle {
+    return captureFlightStudy(this.session, spec, { shapeId: this.id });
   }
 
   /**
@@ -918,20 +945,31 @@ export class Shape {
     return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
-  shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+  /**
+   * Hollow the solid to a wall of `thickness`, opening `opts.face`. Pass an
+   * array to open several faces at once: `{ face: ['top', 'bottom'] }` leaves
+   * a sleeve open at both ends.
+   */
+  shell(
+    thickness: Editable<number>,
+    opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
+  ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
-    if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {
+    const face = (opts as { face?: unknown } | undefined | null)?.face;
+    const list = Array.isArray(face) ? [...face] : [face];
+    if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
       invalidArgs({
         api: 'shell(thickness, { face })',
         path: 'opts.face',
-        got: (opts as { face?: unknown } | undefined)?.face,
+        got: face,
         requires:
-          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query; shell() always needs one — it removes that face and leaves a wall of `thickness` behind",
+          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
         example: "box(40, 30, 10).shell(2, { face: 'top' })",
         featureId: this.id,
       });
     }
-    return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
+    return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: list[0] },
+      list.length > 1 ? { extraFaces: list.slice(1) } : undefined);
   }
 
   /**

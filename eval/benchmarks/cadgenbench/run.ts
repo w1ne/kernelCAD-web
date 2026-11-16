@@ -52,8 +52,9 @@ export interface CliOptions {
   retryFailed: boolean;
   officialCheck: boolean;
   /** `auto` blocks a valid edit that does not change the requested feature;
-   *  `off` submits the best valid candidate regardless of the edit verdict. */
-  editPromotion: 'auto' | 'off';
+   *  `strict` also blocks on the non-local checks from #1402; `off` submits
+   *  the best valid candidate regardless of the edit verdict. */
+  editPromotion: 'auto' | 'strict' | 'off';
   python?: string;
   prices?: Prices;
   revision: string;
@@ -101,8 +102,8 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     throw new Error(`--edit-fallback must be 'none' or 'passthrough', got ${editFallback}`);
   }
   const editPromotion = value('--edit-promotion') ?? 'auto';
-  if (editPromotion !== 'auto' && editPromotion !== 'off') {
-    throw new Error(`--edit-promotion must be 'auto' or 'off', got ${editPromotion}`);
+  if (editPromotion !== 'auto' && editPromotion !== 'strict' && editPromotion !== 'off') {
+    throw new Error(`--edit-promotion must be 'auto', 'strict' or 'off', got ${editPromotion}`);
   }
   const priceIn = num('--price-in');
   const priceOut = num('--price-out');
@@ -322,7 +323,8 @@ async function main(): Promise<void> {
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(opts.scriptsFrom ? { scriptsFrom: opts.scriptsFrom } : {}),
     editFallback: opts.editFallback,
-    editPromotion: opts.editPromotion,
+    editPromotion: opts.editPromotion === 'strict' ? 'auto' : opts.editPromotion,
+    enforceLocality: opts.editPromotion === 'strict',
     ...(opts.officialCheck ? { official: checkOfficial } : {}),
     keepInvalid: opts.keepInvalid,
     ...(opts.prices ? { prices: opts.prices } : {}),

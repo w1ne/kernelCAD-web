@@ -580,7 +580,7 @@
   },
   {
     "name": "diff_scripts",
-    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ base_file } or { base_code }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part; a `return [a, b]` multi-body script diffs per body as \"body[0]\", \"body[1]\". An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. Use after editing a script to verify exactly what changed physically before re-rendering. On a hosted server pass both versions inline: { base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } (base_code/old_code/before and revised_code/new_code/after are accepted as aliases). Read-only — never touches the active session.",
+    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ base_file } or { base_code }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits, coupleMates coupling), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part; a `return [a, b]` multi-body script diffs per body as \"body[0]\", \"body[1]\". An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. Use after editing a script to verify exactly what changed physically before re-rendering. On a hosted server pass both versions inline: { base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } (base_code/old_code/before and revised_code/new_code/after are accepted as aliases). Read-only — never touches the active session.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -13161,6 +13161,146 @@
         "ok",
         "parts",
         "diagnostics"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "run_flight",
+    "description": "Use this when you need to know how high a model rocket goes, whether it is stable, and how fast it comes down under its parachute. Runs a rocket flight study on the model: mass and CG from the parts (material / density / massKg; the motor part is replaced by the declared motor, so the CG shifts as it burns), the Barrowman centre of pressure and static margin in calibers from the nose and fin geometry (or declared dimensions), and an RK4 point-mass trajectory with ISA atmosphere, launch rail, wind and parachute drag. Returns summary { apogeeM, apogeeTimeS, maxSpeedMs, maxAccelMs2, railExitSpeedMs, descentRateMs, landingTimeS, stability { liftoffCal, burnoutCal, cpFromNoseMm, cgLiftoffFromNoseMm }, motor { totalImpulseNs, impulseClass }, cd, massBreakdown, events, assumptions }, a time series (t, x, z, v, vz, a, a_axial, p_static_hpa, temp_c, mass, thrust, chute) as JSON columns or CSV, and an animationView-compatible track (altitude / downrange / chute / separation params with a ready-to-paste script fragment).\nThe study is EITHER declared in the script with `arm.flightStudy({...})` / `shape.flightStudy({...})` OR passed on the call (fields override a declared study): { code, motor: { thrustCurve: [[t, N], ...] | engFile: '<.eng text>', totalMassKg, propellantKg, part? }, aero: { cd: 'auto' | number, refDiameterMm?, nose?: { shape: 'ogive' | 'cone', part? }, fins?: { count, part? } }, launch: { railM, angleDeg, siteAltitudeM, windMs }, recovery: [{ cd, diameterMm, deploy: 'apogee' | 'apogee+1' | { atS }, part?, separates? }], dry_mass_kg?, min_stability_cal? }. ok is false on an error diagnostic (flight.stability.below-min, flight.stability.unresolved, flight.study.part-unresolved, flight.mass.unavailable, flight.sim.no-liftoff); warnings: flight.rail.exit-speed-low, flight.mass.density-defaulted, flight.sim.timeout. Point mass at zero angle of attack, no Mach effects: an engineering estimate, not OpenRocket and not a certification. Runs in seconds, in process.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script (with a flightStudy, or pass the study on the call)."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source (mutually exclusive with file)."
+        },
+        "study": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "Name of a declared flightStudy (default: the last), or an inline study object."
+        },
+        "motor": {
+          "type": "object",
+          "description": "{ thrustCurve: [[t s, N], ...] | engFile: '.eng text', totalMassKg, propellantKg, part?, cgFromNoseMm? }."
+        },
+        "aero": {
+          "type": "object",
+          "description": "{ cd: 'auto' | number, refDiameterMm?, axis?: '+Z', nose?: { shape?: 'ogive' | 'cone', part?, lengthMm? }, fins?: { count, part?, rootChordMm?, tipChordMm?, spanMm?, sweepMm?, leadingEdgeFromNoseMm? }, lengthMm? }."
+        },
+        "launch": {
+          "type": "object",
+          "description": "{ railM (default 1), angleDeg (from vertical), siteAltitudeM, windMs }."
+        },
+        "recovery": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "[{ cd, diameterMm, deploy: 'apogee' | 'apogee+<s>' | { atS }, inflateS?, part?, separates?: [part names] }]."
+        },
+        "dry_mass_kg": {
+          "type": "number",
+          "description": "Vehicle mass without the motor, kg (overrides the part masses)."
+        },
+        "cg_from_nose_mm": {
+          "type": "number",
+          "description": "Dry CG from the nose tip, mm (overrides the part CG)."
+        },
+        "min_stability_cal": {
+          "type": "number",
+          "description": "Minimum static margin, calibers; below it the run reports flight.stability.below-min."
+        },
+        "max_time_s": {
+          "type": "number",
+          "description": "Simulation cut-off, s (default 300)."
+        },
+        "series": {
+          "type": "string",
+          "enum": [
+            "json",
+            "csv",
+            "none"
+          ],
+          "description": "Time series format: 'json' columns + rows (default), 'csv', or 'none'."
+        },
+        "sample_dt_s": {
+          "type": "number",
+          "description": "Series row spacing, s (default 0.1)."
+        },
+        "animation_speed": {
+          "type": "number",
+          "description": "Animation playback speed-up (default 1 = real time)."
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Also write flight.csv (10 ms rows), summary.json and animation.json here."
+        }
+      }
+    },
+    "title": "Run Rocket Flight Study",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Run Rocket Flight Study"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "False when any error diagnostic was raised (stability below minimum or unresolved, unknown part, no mass, no liftoff)."
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "apogeeM (above the site), apogeeAslM, apogeeTimeS, maxSpeedMs, maxMach, maxAccelMs2, maxAccelG, railExitSpeedMs, burnoutTimeS, descentRateMs, landingTimeS, landed, downrangeM, liftoffMassKg, burnoutMassKg, dryMassKg, thrustToWeight, cd, cdSource, cdBreakdown, refDiameterMm, lengthMm, motor { totalImpulseNs, impulseClass, burnTimeS, peakThrustN, averageThrustN }, stability { liftoffCal, burnoutCal, minCal, cpFromNoseMm, cgLiftoffFromNoseMm, cgBurnoutFromNoseMm, cnAlpha, components }, aero { noseShape, noseLengthMm, fins }, massBreakdown, events, assumptions, disclaimer."
+        },
+        "vehicle": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Mass, motor and stability when the trajectory could not run."
+        },
+        "series": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ columns, rows, sample_dt_s } (series 'json') or { csv, sample_dt_s } (series 'csv')."
+        },
+        "animation": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ durationMs, speed, tracks: [{ param, keys: [{ atMs, value, ease? }] }], scriptFragment } for animationView()."
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Paths written under output_dir: csv, summary, animation."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "flight.* diagnostics raised by the run."
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
       ],
       "additionalProperties": true
     }

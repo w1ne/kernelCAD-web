@@ -94,6 +94,10 @@ export const AssetRigEntrySchema = z.object({
   closed: z.literal(true).optional(),
   degreesOfFreedom: z.tuple([z.literal('rotate'), z.literal('slide')]).optional(),
   slideRange: RigRangeSchema.optional(),
+  coupling: z.object({
+    source: z.string().trim().min(1),
+    ratio: z.number().finite(),
+  }).strict().optional(),
 }).strict();
 
 export const AssetRigSchema = z.record(z.string().trim().min(1), AssetRigEntrySchema);

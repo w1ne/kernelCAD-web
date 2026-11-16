@@ -95,6 +95,39 @@ describe('diffScriptsTool', () => {
     expect(r.mates.removed).toHaveLength(0);
   });
 
+  it('reports a changed coupleMates ratio on the driven mate', async () => {
+    const coupled = `
+      const arm = assembly('rig');
+      const base = arm.part('base', box(10, 10, 10));
+      const a = arm.part('a', box(4, 4, 2).translate(0, 0, 12));
+      const b = arm.part('b', box(4, 4, 2).translate(20, 0, 12));
+      base.connector('ax1', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 5] }, axis: [0, 0, 1] });
+      base.connector('ax2', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 5] }, axis: [0, 0, 1] });
+      a.connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, -1] }, axis: [0, 0, 1] });
+      b.connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, -1] }, axis: [0, 0, 1] });
+      arm.mate('input', 'base.ax1', 'a.hub', 'revolute');
+      arm.mate('output', 'base.ax2', 'b.hub', 'revolute');
+      arm.coupleMates('output', { source: 'input', ratio: -2 });
+      return arm.model();
+    `;
+    const revised = coupled.replace('ratio: -2 }', 'ratio: -3, offset: 15 }');
+    const r = await diffScriptsTool({ baseCode: coupled, code: revised });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.parts.changed).toHaveLength(0);
+    expect(r.mates.added).toHaveLength(0);
+    expect(r.mates.removed).toHaveLength(0);
+    expect(r.mates.changed).toHaveLength(1);
+    expect(r.mates.changed[0].name).toBe('output');
+    expect(r.mates.changed[0].base.coupling).toEqual({ source: 'input', ratio: -2 });
+    expect(r.mates.changed[0].revised.coupling).toEqual({ source: 'input', ratio: -3, offset: 15 });
+
+    const same = await diffScriptsTool({ baseCode: coupled, code: coupled });
+    expect(same.ok).toBe(true);
+    if (!same.ok) return;
+    expect(same.mates.changed).toHaveLength(0);
+  });
+
   it('reports the interference-volume delta when a revision introduces a clash', async () => {
     const clean = `
       const arm = assembly('rig');
