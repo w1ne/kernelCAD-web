@@ -92,12 +92,12 @@ const arch = (r0: number, r1: number) => {
   }
   return pts;
 };
-const handle = profileYZ(arch(88, 104), 10);
+const handle = () => profileYZ(arch(88, 104), 10);
 const hangBag = (k: string, bx: number) => {
   add(`bag-${k}`, blk(bx, 0, ZB, 300, 220, BH).subtract(blk(bx, 0, ZB + 8, 288, 208, BH)).color(bagPoly));
   add(`bag-print-${k}`, blk(bx, -112, ZB + 120, 130, 4, 110).color(signage));
   add(`bag-print-text-${k}`, blk(bx, -115, ZB + 80, 150, 4, 22).color(signage));
-  for (const [s, dx] of [['l', -120], ['r', 120]]) add(`bag-handle-${k}-${s}`, handle.translate(bx + dx, 0, 0).color(bagPoly));
+  for (const [s, dx] of [['l', -120], ['r', 120]]) add(`bag-handle-${k}-${s}`, handle().translate(bx + dx, 0, 0).color(bagPoly));
 };
 
 hangBag('a', -190);
