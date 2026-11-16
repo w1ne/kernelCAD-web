@@ -114,13 +114,21 @@ describe('diffScriptsTool', () => {
     const r = await diffScriptsTool({ baseCode: coupled, code: revised });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.parts.changed).toHaveLength(0);
+    // The new 15° offset applies with the source at rest (#1442), so only the
+    // driven part b moves; the ratio edit alone does not move anything.
+    expect(r.parts.changed.map((p) => p.name)).toEqual(['b']);
     expect(r.mates.added).toHaveLength(0);
     expect(r.mates.removed).toHaveLength(0);
     expect(r.mates.changed).toHaveLength(1);
     expect(r.mates.changed[0].name).toBe('output');
     expect(r.mates.changed[0].base.coupling).toEqual({ source: 'input', ratio: -2 });
     expect(r.mates.changed[0].revised.coupling).toEqual({ source: 'input', ratio: -3, offset: 15 });
+
+    const ratioOnly = await diffScriptsTool({ baseCode: coupled, code: coupled.replace('ratio: -2 }', 'ratio: -3 }') });
+    expect(ratioOnly.ok).toBe(true);
+    if (!ratioOnly.ok) return;
+    expect(ratioOnly.parts.changed).toHaveLength(0);
+    expect(ratioOnly.mates.changed.map((m) => m.name)).toEqual(['output']);
 
     const same = await diffScriptsTool({ baseCode: coupled, code: coupled });
     expect(same.ok).toBe(true);
