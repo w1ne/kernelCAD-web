@@ -23,52 +23,16 @@ import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
+import { assertAssemblyPartOptionKeys } from './assemblyPartOptionKeys';
 import { createPartCollision } from './assemblyPartCollision';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
-  AssemblyConnectorFrame,
-  AssemblyConnectorFrameStored,
-  AssemblyConnectorOpts,
-  AssemblyConnectorRef,
-  AssemblyCrossSection,
-  AssemblyPartOpts,
-  AssemblyPartRef,
-  TubeEnd,
-  AssemblyPartStored,
-  SubAssemblyHandle,
+  AssemblyConnectorFrame, AssemblyConnectorFrameStored, AssemblyConnectorOpts, AssemblyConnectorRef,
+  AssemblyCrossSection, AssemblyPartOpts, AssemblyPartRef, TubeEnd, AssemblyPartStored, SubAssemblyHandle,
 } from './assemblyTypes';
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
-
-// Keep exhaustive with AssemblyPartOpts so new options remain accepted here.
-const ASSEMBLY_PART_OPTION_KEYS: Readonly<Record<keyof AssemblyPartOpts, true>> = {
-  at: true,
-  connectors: true,
-  connect: true,
-  density: true,
-  material: true,
-  process: true,
-  stock: true,
-  massKg: true,
-  crossSection: true,
-  role: true,
-  overlay: true,
-};
-
-function assertAssemblyPartOptionKeys(name: string, shape: Shape, opts: AssemblyPartOpts): void {
-  const knownKeys = Object.keys(ASSEMBLY_PART_OPTION_KEYS);
-  const unknownKey = Object.keys(opts).find((key) => !Object.hasOwn(ASSEMBLY_PART_OPTION_KEYS, key));
-  if (unknownKey === undefined) return;
-  invalidArgs({
-    api: `assembly.part('${name}', shape, opts)`,
-    path: `opts.${unknownKey}`,
-    gotText: `an unknown option '${unknownKey}'`,
-    requires: `one of ${knownKeys.join(', ')}`,
-    example: "arm.part('bracket', box(20, 10, 4), { at: [0, 0, 12], material: 'aluminum' })",
-    featureId: shape.id,
-  });
-}
 
 function normalizeConnectors(
   partName: string,
