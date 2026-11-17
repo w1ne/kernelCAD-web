@@ -233,6 +233,8 @@ const brow = path()
 
 // .nurbsSegment(controlPoints, opts?) — explicit B-spline control polygon.
 // controlPoints[0] must match current pen position; opts.degree default 3.
+// Supported opts are degree, weights, and knots; unknown keys throw
+// feature.invalid-args at capture instead of silently dropping curve settings.
 const explicit = path()
   .moveTo(0, 0)
   .nurbsSegment([[0, 0], [5, 10], [15, 10], [20, 0]], { degree: 3 })
