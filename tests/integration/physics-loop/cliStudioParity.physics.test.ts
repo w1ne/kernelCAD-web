@@ -5,8 +5,6 @@
 // file hosts the heavier drop-test (criteria 5+6) parity check. Shared
 // plumbing: cliStudioParityShared.ts.
 //
-// Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P1)
-// Plan: docs/plans/2026-06-01-physics-loop-P1-surface-convergence.md
 
 import { describe, it, expect } from 'vitest';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';

@@ -4,8 +4,6 @@
 //
 // Assembly → MJCF (MuJoCo XML) converter for the P6 physics gate.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-02-physics-loop-P6-mujoco-wasm-gate.md
 //
 // This is a runtime-only export — the MJCF string is fed directly to
 // `@mujoco/mujoco`'s `MjModel.from_xml_string` inside the physics-loop

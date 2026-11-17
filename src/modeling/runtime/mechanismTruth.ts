@@ -4,8 +4,6 @@
 //
 // Physics-grounded loop — P0 slice.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P0-engine-truth.md
 //
 // The four truth criteria from the spec, applied to an Assembly at
 // single-joint-at-a-time sampled poses. The recompute engine calls

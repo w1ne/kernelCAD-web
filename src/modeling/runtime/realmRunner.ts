@@ -23,7 +23,6 @@ export const REALM_WRAP_OFFSET = wrapOffsetOf(WRAP_PROLOGUE);
  * with `new Function` instead of node `vm`, so the modern `.kcad.ts` engine can
  * execute inside the Web Worker (and node) from one code path. This is Phase 1
  * of the script-engine unification — see kernelCAD-private
- * docs/plans/2026-06-12-unify-script-engine-in-worker.md.
  *
  * Isolation note: `new Function` shares the host realm, so it is a weaker
  * sandbox than `vm.createContext`. That is acceptable on the CLIENT, where the

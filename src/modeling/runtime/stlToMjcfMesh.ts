@@ -15,8 +15,6 @@
 // inlines to ~150 KB of XML — fine for the gate, no temp-file lifecycle
 // to manage.
 //
-// Spec:  docs/specs/2026-06-03-physics-loop-P11-collision-aware-mujoco.md
-// Plan:  docs/plans/2026-06-03-physics-loop-P11-slice-1-collision-geom-emission.md
 
 const HEADER_SIZE = 80;
 const TRIANGLE_COUNT_SIZE = 4;

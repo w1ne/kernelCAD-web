@@ -321,7 +321,6 @@ export interface RecomputeOptions {
    * engine layer doesn't import Assembly — the caller wires
    * `checkMechanismTruth(arm)` from
    * `src/modeling/runtime/mechanismTruth.ts`. See spec
-   * `docs/specs/2026-06-01-physics-grounded-loop-design.md`.
    *
    * Omit (or set to `undefined`) to leave the field at `'unverified'`.
    * This is the default — cheap recomputes (Studio param drags, eval
