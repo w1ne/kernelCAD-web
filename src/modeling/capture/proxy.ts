@@ -7,9 +7,11 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
-import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
+import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
 import type { Scene } from '../validation/scene';
@@ -17,7 +19,7 @@ import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEdit
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
-  validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
+  assertCutoutOptionKeys, validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
@@ -27,14 +29,10 @@ import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editabl
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
-import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
-import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { AnyMaterialName } from '../../shared/materials/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef } from '../../shared/intent/textureRef';
-import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
-import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
@@ -82,12 +80,17 @@ export type { FaceSelector };
  */
 import {
   validateMaterialBaseColor,
+  assertMaterialOptionKeys,
   resolveMaterialFaceLabel,
   cleanMaterialScalars,
   cleanMaterialAttenuation,
   cleanMaterialAnisotropyRotation,
   cleanMaterialTextures,
   assignMaterialMetadata,
+  resolveFinishPbr,
+  assertWrapTextureArgs,
+  existingMaterialBaseColor,
+  attachTextureProjection,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import type { ThreadedHoleOpts } from './threadedHole';
@@ -95,16 +98,39 @@ import type { HoleCallOpts, HolesCallOpts } from '../validation/holeThreadSugar'
 import { captureHole, captureHoles, captureThreadedHole } from './proxyHoleMethods';
 import {
   validateGridPatternAxis,
+  validateGridPatternOpts,
   validateLinearPatternOpts,
   validateCircularPatternOpts,
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
-  assertScalarEdgeValue,
+  assertScalarEdgeValue, assertFilletEndRadius, resolveShellFaces,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 import { assertFilletOptions } from './filletOptions';
+import { assertFinishOptions } from './finishOptions';
+import { assertPlacementOptions } from './placementOptions';
 
+
+const PLANE_SPEC_KEYS = new Set(['plane', 'offset']);
+
+// A misspelled offset (`ofset`, `distance`) used to be dropped, mirroring
+// across the cardinal plane through the origin with no diagnostic.
+function rejectUnknownPlaneKeys(method: 'mirror' | 'reflect', plane: unknown, featureId: FeatureId): void {
+  if (typeof plane !== 'object' || plane === null || Array.isArray(plane)) return;
+  for (const key of Object.keys(plane)) {
+    if (!PLANE_SPEC_KEYS.has(key)) {
+      invalidArgs({
+        api: `${method}({ plane, offset })`,
+        path: `plane.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: 'only plane and offset',
+        example: `box(20, 20, 20).${method}({ plane: 'yz', offset: 5 })`,
+        featureId,
+      });
+    }
+  }
+}
 
 export class Shape {
   /** The feature record this handle stands for. Transforms return a new
@@ -463,7 +489,9 @@ export class Shape {
    * Clamped numeric fields emit `feature.material.value-clamped`. Negative
    * `thickness` throws `feature.material.thickness-negative`. Texture path
    * problems surface as `feature.material.texture-not-found` /
-   * `texture-unsupported-format` / `texture-oversize-error`.
+   * `texture-unsupported-format` / `texture-oversize-error`. An unknown
+   * `opts` key (`metalnes`, `colour`, `textureProjection`) throws
+   * `feature.invalid-args`.
    *
    * Per-face form: passing `face: '<label>'` applies the material to faces
    * matching that label only. The label must resolve against an upstream
@@ -478,6 +506,7 @@ export class Shape {
    */
   material(opts: PBRMaterial & { face?: string }): Shape {
     validateMaterialBaseColor(opts, this.id);
+    assertMaterialOptionKeys(opts, this.id);
     const faceLabel = resolveMaterialFaceLabel(opts, this.id);
     const state = cleanMaterialScalars(opts, this.id);
 
@@ -534,6 +563,8 @@ export class Shape {
    *              but off for raw metals (the metal is its colour).
    * @param opts.face   apply to faces matching an upstream `faceLabels` entry
    *              only, exactly like `.material({ face })`.
+   *              Any other `opts` key throws `feature.invalid-args`
+   *              (`colour` is not `color`).
    *
    * Same lifecycle as `.color()` / `.material()`: the finish lives on the
    * record it is applied to. For one part of one material, build the
@@ -544,35 +575,8 @@ export class Shape {
    * as `union.member-overlap`.
    */
   finish(name: FinishToken | AnyMaterialName, opts?: { color?: string | TypedParamRef<string>; face?: string }): Shape {
-    // A finish token wins when the name is both (steel, pla, abs, nylon map to
-    // the identically named token anyway). Otherwise an engineering material
-    // name applies its registry default finish, so one material vocabulary
-    // covers mass, FEA and appearance.
-    let token: string = name;
-    if (!isFinishToken(name)) {
-      const resolved = tryResolveMaterial(name);
-      if (resolved.ok) {
-        if (resolved.material.finish === undefined) {
-          throw new KernelError(
-            'feature.finish.unknown-token',
-            unknownFinishMessage(name),
-            this.id,
-            `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
-              'Pass a finish token such as plastic-glossy, or set the look with .color().',
-          );
-        }
-        token = resolved.material.finish;
-      }
-    }
-    // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
-    // for an unknown name. Valid finishes clamp cleanly, so routing the result
-    // through .material() reuses its validation + per-face plumbing with no
-    // extra clamp warning.
-    const pbr = expandFinish(
-      token,
-      opts?.color !== undefined ? { color: isTypedParamRef(opts.color) ? opts.color.value : opts.color } : undefined,
-      this.id,
-    );
+    if (opts !== undefined) assertFinishOptions(opts, this.id);
+    const pbr = resolveFinishPbr(name, opts?.color, this.id);
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
   }
 
@@ -612,45 +616,11 @@ export class Shape {
    * @param projection  one of the four projection records above.
    */
   wrapTexture(imageRef: TextureRef, projection: TextureProjection): Shape {
-    if (!isTextureRef(imageRef)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
-        this.id,
-        'Pass { path: "<file-or-url>" } as the first argument.',
-      );
-    }
-    if (!isTextureProjection(projection)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
-        this.id,
-        "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
-      );
-    }
-
-    // Preserve any already-authored baseColor/finish so wrapTexture layers
-    // the albedo texture on top rather than clobbering it (material()
-    // requires baseColor on every call; default to white when none is set
-    // yet, matching the glTF default when a texture supplies the color).
-    const existingRecord = this.session.getRecords().find(r => r.id === this.id);
-    const existingMaterial = (existingRecord?.metadata as { material?: PBRMaterial } | undefined)?.material;
-    this.material({ baseColor: existingMaterial?.baseColor ?? '#ffffff', textures: { albedo: imageRef } });
-
-    const records = this.session.getRecords();
-    const record = records.find(r => r.id === this.id);
-    if (record === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: feature record '${this.id}' not found in session.`,
-        this.id,
-        'Call .wrapTexture() on a Shape produced by the current session.',
-      );
-    }
-    const metadata = record.metadata as { material?: PBRMaterial };
-    // .material() above guarantees metadata.material exists with the
-    // albedo texture attached; attach the projection alongside it.
-    (metadata.material as PBRMaterial).textureProjection = projection;
+    assertWrapTextureArgs(imageRef, projection, this.id);
+    // Keep an already-authored baseColor so the albedo texture layers on top
+    // (material() requires baseColor; white matches the glTF default).
+    this.material({ baseColor: existingMaterialBaseColor(this.session, this.id) ?? '#ffffff', textures: { albedo: imageRef } });
+    attachTextureProjection(this.session, this.id, projection);
 
     return this;
   }
@@ -763,6 +733,7 @@ export class Shape {
   }
 
   reflect(plane: PlaneSpec): Shape {
+    rejectUnknownPlaneKeys('reflect', plane, this.recordId);
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -775,6 +746,7 @@ export class Shape {
   }
 
   mirror(plane: PlaneSpec): Shape {
+    rejectUnknownPlaneKeys('mirror', plane, this.id);
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -801,6 +773,7 @@ export class Shape {
     x: { count: number; direction: [number, number, number]; spacing: number };
     y: { count: number; direction: [number, number, number]; spacing: number };
   }): Shape {
+    validateGridPatternOpts(opts, this.id);
     validateGridPatternAxis('patternGrid.x', opts.x, this.id);
     validateGridPatternAxis('patternGrid.y', opts.y, this.id);
     const pattern: PatternSpec = {
@@ -812,12 +785,8 @@ export class Shape {
   }
 
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
-    const pattern: PatternSpec = {
-      kind: 'circular',
-      count: opts.count,
-      axis: opts.axis,
-      angleDeg: validateCircularPatternOpts(opts, this.id),
-    };
+    const angleDeg = validateCircularPatternOpts(opts, this.id);
+    const pattern: PatternSpec = { kind: 'circular', count: opts.count, axis: opts.axis, angleDeg };
     return this.session.patternFeature(this, pattern);
   }
 
@@ -841,17 +810,19 @@ export class Shape {
   }
 
   // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).
+  // `endRadius` tapers the round from `radius` at each edge's low end to
+  // `endRadius` at its high end.
   fillet(
     radius: Editable<number>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape;
   // Variable-radius form (rc.11).
   fillet(groups: Array<{ edges: EdgeSelector; radius: Editable<number> }>): Shape;
   fillet(
     radiusOrGroups: Editable<number> | Array<{ edges: EdgeSelector; radius: Editable<number> }>,
     edges?: EdgeSelector,
-    opts?: { continuity?: FilletContinuity },
+    opts?: { continuity?: FilletContinuity; endRadius?: Editable<number> },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
       assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
@@ -872,7 +843,8 @@ export class Shape {
         }
         continuity = opts.continuity;
       }
-      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity });
+      assertFilletEndRadius(opts?.endRadius, this.id);
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity, endRadius: opts?.endRadius });
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
@@ -926,14 +898,16 @@ export class Shape {
   }
 
   /** TPMS lattice infill inside a solid skin (see latticeCapture.ts); the
-   *  result is a watertight mesh solid, so call it last. */
+   *  result is a watertight mesh solid, so call it last. An unknown `opts`,
+   *  `opts.grade` or `opts.axis` key throws `feature.invalid-args`. */
   lattice(opts: LatticeOptions): Shape { return captureLattice(this.session, this, opts); }
 
   /**
    * Round the seam where `cutter` met this body. The seam is selected by
    * proximity to the exact `body ∩ cutter` section, so it does not depend on
    * face/edge labels that a boolean split can invalidate. First slice:
-   * constant radius, body-side only.
+   * constant radius, body-side only. Unknown option keys fail with
+   * `feature.invalid-args` instead of silently using the defaults.
    */
   filletIntersection(
     cutter: Shape,
@@ -950,26 +924,15 @@ export class Shape {
   /**
    * Hollow the solid to a wall of `thickness`, opening `opts.face`. Pass an
    * array to open several faces at once: `{ face: ['top', 'bottom'] }` leaves
-   * a sleeve open at both ends.
+   * a sleeve open at both ends. Any key other than `face` (`faces`,
+   * `enabled`, `direction`) throws `feature.invalid-args`.
    */
   shell(
     thickness: Editable<number>,
     opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
   ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
-    const face = (opts as { face?: unknown } | undefined | null)?.face;
-    const list = Array.isArray(face) ? [...face] : [face];
-    if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
-      invalidArgs({
-        api: 'shell(thickness, { face })',
-        path: 'opts.face',
-        got: face,
-        requires:
-          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
-        example: "box(40, 30, 10).shell(2, { face: 'top' })",
-        featureId: this.id,
-      });
-    }
+    const list = resolveShellFaces(opts, this.id);
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: list[0] },
       list.length > 1 ? { extraFaces: list.slice(1) } : undefined);
   }
@@ -1101,6 +1064,10 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * Use `upToFace` instead of `depth` to end the complete bore on the plane
+   * of a selected planar body face. The plane may be inclined; a target that
+   * is non-planar, parallel to the bore axis, or not ahead of the entry face
+   * is rejected with `feature.invalid-args`.
    * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
    * fillet) place the hole by world point instead of `u`/`v`:
    * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
@@ -1114,7 +1081,8 @@ export class Shape {
    * two are mutually exclusive on a single hole.
    *
    * Created face refs (resolvable downstream as `{ face: '<name>' }`):
-   *   `wall` (always), `floor` (blind), `wall-back` (through),
+   *   `wall` (always), `floor` (blind or upToFace pocket),
+   *   `wall-back` (through or upToFace to an exit face),
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
@@ -1137,8 +1105,8 @@ export class Shape {
   /**
    * Drill N holes in a single feature record. Positions use the same
    * (u, v) frame as `.hole()`, and every bore is checked the same way.
-   * All holes share diameter,
-   * depth, and optional counterbore/countersink. Use `.hole()` chained
+   * All holes share diameter and optional counterbore/countersink. Use either
+   * `depth` or `upToFace` for the common end condition. Use `.hole()` chained
    * calls if you need mixed specs.
    *
    * The bare `'wall'` selector on the result resolves to *all* bore walls
@@ -1159,8 +1127,12 @@ export class Shape {
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
+   * `upToFace` ends the cut on a planar face of the body instead of a depth.
+   * An unknown `opts` key (`enable`, `mode`, `upTo`) throws
+   * `feature.invalid-args`.
    */
   cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: EditableCutoutOpts): Shape {
+    assertCutoutOptionKeys(opts, this.id);
     const resolved = resolveCutoutOpts(opts, this.session.paramTable);
     validateCutoutOpts(resolved, this.id);
     // Auto-close a bare PathBuilder. Duck-type on `.close` to avoid pulling
@@ -1185,6 +1157,7 @@ export class Shape {
       profile: { kind: 'feature', id: sketch.id },
       face: buildFaceInputRef(this.id, faceSel),
     };
+    if (opts.upToFace !== undefined) inputs.upToFace = buildUpToFaceInputRef(this.id, opts.upToFace);
     return this.session.createShape({
       kind: 'cutout',
       inputs,
@@ -1213,6 +1186,7 @@ export class Shape {
     scaleMode?: 'original' | 'native' | 'bounds';
     face: FaceSelector | CanonicalFace | string;
   }): Shape {
+    assertEmbossTextOptions(opts, this.id);
     const id = this.session.addEmbossText(this.id, {
       textContent: opts.textContent,
       ...(opts.fontFamily !== undefined ? { fontFamily: opts.fontFamily } : {}),
@@ -1237,6 +1211,8 @@ export class Shape {
    * `asEdge: true` is captured but rejected at lower time — open-wire
    * projection is not implemented (the OCCT binding is available; see
    * `projectCurveLowerer.ts` for why the return type is the open question).
+   * An unknown `opts` key (`scale`, `edge`, `curve`) throws
+   * `feature.invalid-args`.
    */
   projectCurve(opts: {
     source: import('../../shared/intent/projectCurveRecord').ProjectCurveSource;
@@ -1244,6 +1220,7 @@ export class Shape {
     scaleMode?: 'original' | 'native' | 'bounds';
     asEdge?: boolean;
   }): import('./sketch').Sketch {
+    assertProjectCurveOptions(opts, this.id);
     const id = this.session.addProjectCurve(this.id, {
       source: opts.source,
       face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,
@@ -1357,6 +1334,7 @@ export class Shape {
     size: [number, number, number];
     center: [number, number, number];
   }> {
+    assertPlacementOptions('boundingBox', ['exact'], 'await part.boundingBox({ exact: true })', opts, this.id);
     const backend = await this.lower();
     const { min, max } = backend.boundingBox(opts);
     const size: [number, number, number] = [
@@ -1396,6 +1374,7 @@ export class Shape {
    *                    e.g. `recenter({ z: false })` centers x/y, leaves z.
    */
   async recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape> {
+    assertPlacementOptions('recenter', ['x', 'y', 'z'], 'await part.recenter({ z: false })', opts, this.id);
     const { center } = await this.boundingBox();
     const dx = (opts?.x ?? true) ? -center[0] : 0;
     const dy = (opts?.y ?? true) ? -center[1] : 0;
@@ -1417,6 +1396,7 @@ export class Shape {
    * `.recenter()`.
    */
   async seatOnFloor(opts?: { center?: boolean }): Promise<Shape> {
+    assertPlacementOptions('seatOnFloor', ['center'], 'await part.seatOnFloor({ center: false })', opts, this.id);
     const { min, center } = await this.boundingBox();
     const recenterXy = opts?.center ?? true;
     const dx = recenterXy ? -center[0] : 0;

@@ -25,7 +25,7 @@ const p = assembly('cold-room-door-module');
 p.part('outer-frame-left', box(85, 150, 2200, true).translate(-504, 0, 1100).scale(scale).color(steel));
 p.part('outer-frame-right', box(85, 150, 2200, true).translate(504, 0, 1100).scale(scale).color(steel));
 p.part('header', box(1200, 150, 160, true).translate(0, 0, 2200).scale(scale).color(enamel));
-p.part('door-leaf', box(744, 97.5, 1936, true).translate(0, -18, 2024).scale(scale).color(enamel));
+p.part('door-leaf', box(744, 97.5, 1936, true).translate(0, -18, 1056).scale(scale).color(enamel));
 p.part('door-vision-panel', box(360, 18, 484, true).translate(0, -72, 1738).scale(scale).color(glass));
 p.part('door-push-plate', box(40, 12, 170, true).translate(252, -78, 1075).scale(scale).color(enamel));
 

@@ -23,13 +23,13 @@ presets({
   highVisibility: { displayGlassColor: '#69a9ae', metalHardwareColor: '#c5c9b8', gripRubberColor: '#252a2e', housingPolymerColor: '#d07c2d' },
 });
 const p = assembly("firefighter-facepiece");
-const groundOffset = -80;
+const groundOffset = -145;
 const add = (name, shape, finish = housingPolymerColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
 add("mask-frame", box(300, 115, 250, true).translate(0, 0, 295), displayGlassColor);
-add("lens", box(180, 28, 100, true).translate(70, -65, 285), displayGlassColor);
+add("lens", box(240, 28, 120, true).translate(0, -65, 300), displayGlassColor);
 add("left-port", cylinder(85, 48, 8).translate(-110, 0, 145), metalHardwareColor);
 add("right-port", cylinder(85, 48, 8).translate(110, 0, 145), metalHardwareColor);
-add("lower-regulator", box(140, 65, 75, true).translate(0, -100, 117.5), displayGlassColor);
+add("lower-regulator", box(140, 65, 75, true).translate(0, -85, 182.5), displayGlassColor);
 add("strap--1", box(110, 25, 24, true).translate(-185, 0, 257), gripRubberColor);
 add("strap-1", box(110, 25, 24, true).translate(185, 0, 257), gripRubberColor);
 

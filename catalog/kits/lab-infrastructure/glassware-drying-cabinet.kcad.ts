@@ -24,9 +24,9 @@ presets({
 const p = assembly('glassware-drying-cabinet');
 p.part('cabinet-shell', box(850, 520, 1450, true).translate(0, 0, 725).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(782, 468, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(350.88, 18, 1420, true).translate(-187, -265.2, 1435).scale(scale).color(enamel));
+p.part('door-0', box(350.88, 18, 1420, true).translate(-187, -265.2, 725).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 232, true).translate(-70.04, -286, 870).scale(scale).color(polymer));
-p.part('door-1', box(350.88, 18, 1420, true).translate(187, -265.2, 1435).scale(scale).color(enamel));
+p.part('door-1', box(350.88, 18, 1420, true).translate(187, -265.2, 725).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 232, true).translate(303.96, -286, 870).scale(scale).color(polymer));
 p.part('inner-shelf-0', box(748, 447.2, 18, true).translate(0, 0, 299).scale(scale).color(enamel));
 p.part('inner-shelf-1', box(748, 447.2, 18, true).translate(0, 0, 589).scale(scale).color(enamel));

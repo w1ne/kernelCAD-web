@@ -1,5 +1,17 @@
 # Unreleased
 
+- `kinematic.suggestJointRanges` and `verify({ check: 'joint-range' })` suggest
+  revolute and prismatic limits from geometry. Each joint is swept alone from
+  its authored pose, with other mates held at their authored poses, until a
+  non-exempt pair is within the clearance (default 0.3 mm) or the finite
+  search bound is reached. Exact BREP distance brackets the crossing, and the
+  reported stop is the clear side of that bracket so the suggested limit keeps
+  the requested clearance. A gap within 1e-6 mm of the clearance counts as
+  reached. The result is a limits snippet; the model is not rewritten. A
+  missing bound, the sweep budget, or a failed measurement is `unknown`, never
+  a clear range. `no-stop` means the sampled poses found no crossing, not a
+  continuous proof the interval is clear. Mate neighbours and declared contact
+  pairs are not stops.
 - Rocket flight study (#1441). `arm.flightStudy({ motor, aero, launch,
   recovery, minStabilityCal })` (or `shape.flightStudy`) takes mass and CG
   from the parts, replaces `motor.part` with the declared motor (thrust table

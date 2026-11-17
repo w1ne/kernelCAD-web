@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { summarizeMechanism } from './mechanismVerdict';
+import { mergeCoverage, summarizeMechanism } from './mechanismVerdict';
 
 const coverage = { poses: 7, joints: 3, fastened: 2, sweep: true, physics: false, limitsChecked: 2, matesChecked: true, skipped: [] as string[] };
 
@@ -24,6 +24,24 @@ describe('summarizeMechanism', () => {
     expect(s.checked).toContain('no swept collisions; declared ignore pairs also checked during travel: base-frame ↔ platform');
     expect(s.statement).toContain('declared ignore pairs also checked during travel: base-frame ↔ platform');
     expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('retains closed-loop mobility evidence in the structured verdict', () => {
+    const loopMobility = [{
+      assembly: 'scissor', pose: 'rest', loops: ['upper_cross'], coordinates: 4,
+      rank: 3, mobility: 1, gruebler: 1, redundantConstraints: 0, drivenDof: 1,
+      independent: ['lift'],
+    }];
+    const summary = summarizeMechanism({ mechanism: 'real', failures: [], coverage: { ...coverage, loopMobility } });
+
+    expect(summary.loopMobility).toEqual(loopMobility);
+    expect(mergeCoverage([
+      { ...coverage, loopMobility },
+      { ...coverage, loopMobility: [{ ...loopMobility[0], pose: 'max' }] },
+    ])?.loopMobility).toEqual([
+      loopMobility[0],
+      { ...loopMobility[0], pose: 'max' },
+    ]);
   });
 
   it('keeps a real verdict ok but names the joint ranges it could not check', () => {
@@ -114,5 +132,21 @@ describe('summarizeMechanism', () => {
     expect(s.failures).toEqual([{ code: d.code, reason: d.message, joint: 'shoulder' }]);
     expect(s.maxLevel).toBe('error');
     expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('keeps closed-loop and joint names in a broken verdict failure', () => {
+    const diagnostic = {
+      target: 'export-occt', code: 'kinematic.loop.lockup', severity: 'error',
+      message: 'The loop cannot close at this pose.', hint: 'Limit the driven range.',
+      details: { loop: 'coupler_rocker', joint: 'rocker_ground' },
+    } as CompilerDiagnostic;
+    const summary = summarizeMechanism({ mechanism: 'broken', failures: [diagnostic], coverage });
+
+    expect(summary.failures).toEqual([{
+      code: diagnostic.code,
+      reason: diagnostic.message,
+      joint: 'rocker_ground',
+      loop: 'coupler_rocker',
+    }]);
   });
 });

@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/kernelCAD-web/foundation-parity-20261111
+
+ ✓ src/kernel/import/importDxf.test.ts (28 tests) 29ms
+ ✓ src/modeling/parts/fromVectorFormats.test.ts (14 tests) 1700ms
+
+ Test Files  2 passed (2)
+      Tests  42 passed (42)
+   Start at  23:55:19
+   Duration  17.39s (transform 14.29s, setup 1.69s, import 15.18s, tests 1.73s, environment 0ms)

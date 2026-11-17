@@ -30,6 +30,16 @@ describe('kinematic scissor-jack cookbook — mechanism=real', () => {
 
     expect(result.mechanism, messages.join('\n')).toBe('real');
     expect(result.ok, messages.join('\n')).toBe(true);
+    expect(result.mechanismSummary?.loopMobility).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        assembly: expect.any(String),
+        pose: expect.any(String),
+        loops: expect.any(Array),
+        coordinates: expect.any(Number),
+        rank: expect.any(Number),
+        mobility: expect.any(Number),
+      }),
+    ]));
     expect(result.diagnostics.filter((d) => [
       'assembly.solver.did-not-converge',
       'assembly.mechanical.connector-not-in-solid',

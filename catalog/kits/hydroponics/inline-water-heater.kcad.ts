@@ -44,10 +44,10 @@ const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14)
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
 // cylinder(...).rotateX(90) runs from its origin toward -Y.
 const cylY = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).rotateX(90).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 20) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const rod = (a: [number, number, number], b: [number, number, number], r: number, seg = 6) => {
   const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
@@ -113,7 +113,7 @@ add("thermo-needle", box(5, 3, 30, true).rotateY(50).translate(208, -30, ZO + 11
 add("flow-switch", blk(290, 0, ZO + 18, 70, 64, 72).color('#2f6fa8'));
 add("flow-switch-gland", cylZ(290, 0, ZO + 90, 24, 12, 8).color('#3b3f42'));
 add("relief-tee", cylZ(352, 0, ZO, 60, 16, 10).color(pipe));
-add("relief-valve", turned([[0, 0], [26, 0], [26, 50], [16, 66], [16, 90], [0, 90]], 12).translate(352, 0, ZO + 60).color('#c9a43a'));
+add("relief-valve", turned([[0, 0], [26, 0], [26, 50], [16, 66], [16, 90], [0, 90]]).translate(352, 0, ZO + 60).color('#c9a43a'));
 add("relief-lever", blk(352, -20, ZO + 150, 16, 60, 10).color('#c0392b'));
 add("relief-outlet", cylY(352, -22, ZO + 90, 50, 12, 10).color('#c9a43a'));
 add("flow-arrow", blk(260, -27, ZO - 6, 80, 4, 12).color('#f2f2ec'));

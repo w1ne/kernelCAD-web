@@ -41,10 +41,10 @@ const p = assembly("overhead-grow-light-frame");
 const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 10) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 // Gantry: legs on foot plates, top rails along X, purlins along Y, knee braces.

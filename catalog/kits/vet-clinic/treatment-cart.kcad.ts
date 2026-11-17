@@ -26,6 +26,10 @@ const finishFor = (name: string) => {
   switch (name) {
     case "caster-a": return rubberColor;
     case "caster-b": return rubberColor;
+    case "caster-c": return rubberColor;
+    case "caster-d": return rubberColor;
+    case "handle-post-a": return stainlessSteelColor;
+    case "handle-post-b": return stainlessSteelColor;
     case "post-a": return stainlessSteelColor;
     case "post-b": return stainlessSteelColor;
     case "post-c": return stainlessSteelColor;
@@ -59,6 +63,10 @@ b("post-c", [45, 45, 630], [-285, 190, 323]);
 b("post-d", [45, 45, 630], [285, 190, 323]);
 c("caster-a", 42, 44, 8, [-270, -185, 0]);
 c("caster-b", 42, 44, 8, [270, -185, 0]);
-b("push-handle", [520, 42, 42], [0, 230, 838]);
+c("caster-c", 42, 44, 8, [-270, 185, 0]);
+c("caster-d", 42, 44, 8, [270, 185, 0]);
+b("handle-post-a", [34, 34, 220], [-285, 190, 748]);
+b("handle-post-b", [34, 34, 220], [285, 190, 748]);
+b("push-handle", [600, 42, 42], [0, 190, 838]);
 
 return p.model();

@@ -1,0 +1,178 @@
+{
+  "scope": "Local inspect render of one normalized STEP import. Not deployed behavior and not hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/step-inspect-views/render.ts",
+  "source": "docs/demos/step-to-features/source.step",
+  "width": 480,
+  "height": 340,
+  "pngHeight": 396,
+  "importGeneration": "importedStep_1@6a3463c71ad39c55",
+  "refScope": "Selectors name faces and edges of import importedStep_1@6a3463c71ad39c55. They do not survive healing or a later edit.",
+  "target": {
+    "id": "f4",
+    "area": 3841.692040349373,
+    "normal": [
+      0,
+      0,
+      1
+    ],
+    "centroid": [
+      40,
+      25,
+      10
+    ],
+    "ref": {
+      "near": [
+        40,
+        25,
+        10
+      ]
+    },
+    "listRef": "@kc[importedStep_1/face/f4]",
+    "visibleIn": [
+      "front",
+      "right",
+      "top",
+      "iso"
+    ]
+  },
+  "views": [
+    {
+      "name": "front",
+      "file": "front.png",
+      "targetVisible": true,
+      "targetPixels": 448,
+      "labeledFaceIds": [
+        "f9",
+        "f7",
+        "f8"
+      ],
+      "legendFaceIds": [],
+      "labeledEdgeIds": [
+        "e0",
+        "e21",
+        "e4",
+        "e8"
+      ],
+      "legendEdgeIds": [
+        "e7",
+        "e18",
+        "e29",
+        "e30",
+        "e31",
+        "e6",
+        "e20",
+        "e22"
+      ]
+    },
+    {
+      "name": "right",
+      "file": "right.png",
+      "targetVisible": true,
+      "targetPixels": 447,
+      "labeledFaceIds": [
+        "f6",
+        "f3",
+        "f8"
+      ],
+      "legendFaceIds": [],
+      "labeledEdgeIds": [
+        "e5",
+        "e19",
+        "e1",
+        "e29"
+      ],
+      "legendEdgeIds": [
+        "e3",
+        "e18",
+        "e4",
+        "e6",
+        "e17",
+        "e20"
+      ]
+    },
+    {
+      "name": "top",
+      "file": "top.png",
+      "targetVisible": true,
+      "targetPixels": 121545,
+      "labeledFaceIds": [
+        "f4"
+      ],
+      "legendFaceIds": [],
+      "labeledEdgeIds": [
+        "e2",
+        "e7",
+        "e5",
+        "e23"
+      ],
+      "legendEdgeIds": [
+        "e21",
+        "e19",
+        "e11",
+        "e12",
+        "e13",
+        "e14",
+        "e24",
+        "e25",
+        "e26",
+        "e27",
+        "e4",
+        "e6",
+        "e8",
+        "e16",
+        "e17",
+        "e20",
+        "e22"
+      ]
+    },
+    {
+      "name": "iso",
+      "file": "iso.png",
+      "targetVisible": true,
+      "targetPixels": 45856,
+      "labeledFaceIds": [
+        "f4",
+        "f9",
+        "f6",
+        "f10",
+        "f11",
+        "f12",
+        "f13",
+        "f3"
+      ],
+      "legendFaceIds": [
+        "f7",
+        "f8"
+      ],
+      "labeledEdgeIds": [
+        "e2",
+        "e7",
+        "e5",
+        "e23"
+      ],
+      "legendEdgeIds": [
+        "e21",
+        "e19",
+        "e24",
+        "e25",
+        "e26",
+        "e27",
+        "e1",
+        "e18",
+        "e29",
+        "e30",
+        "e31",
+        "e32",
+        "e33",
+        "e34",
+        "e35",
+        "e4",
+        "e6",
+        "e8",
+        "e17",
+        "e20",
+        "e22"
+      ]
+    }
+  ]
+}

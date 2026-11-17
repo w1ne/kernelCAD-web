@@ -27,7 +27,8 @@ presets({
 const p = assembly("gimbal-stabilizer");
 p.part("grip", (box(54, 58, 255, true).translate(0, 0, 145)).translate(0, 0, -17.5).scale(scale).color(rubber));
 p.part("control-panel", (box(68, 28, 74, true).translate(0, -26, 270)).translate(0, 0, -17.5).scale(scale).color(polymer));
-p.part("upright-arm", (box(24, 34, 300, true).translate(122, 0, 492)).translate(0, 0, -17.5).scale(scale).color(polymer));
+p.part("yaw-motor", (box(80, 70, 72, true).translate(0, 0, 291)).translate(0, 0, -17.5).scale(scale).color(polymer));
+p.part("upright-arm", (box(24, 34, 310, true).translate(0, 0, 480)).translate(0, 0, -17.5).scale(scale).color(polymer));
 p.part("cross-arm", (box(240, 34, 24, true).translate(0, 0, 642)).translate(0, 0, -17.5).scale(scale).color(polymer));
 p.part("camera-plate", (box(210, 94, 22, true).translate(-68, 0, 655)).translate(0, 0, -17.5).scale(scale).color(metal));
 p.part("camera-body", (box(140, 86, 96, true).translate(-68, 0, 718)).translate(0, 0, -17.5).scale(scale).color(polymer));

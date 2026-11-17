@@ -46,14 +46,18 @@ const b = (x:number,y:number,z:number,w:number,d:number,h:number) => bevelled(w,
 const p = assembly("tray-induction-loader");
 p.part("base", b(0,0,0,800,650,85).color(structuralSteel));
 p.part("feed-deck", b(0,0,600,760,650,60).color(paintedSteel));
+p.part("post-fl", b(-340,-250,85,60,60,515).color(structuralSteel));
+p.part("post-fr", b(340,-250,85,60,60,515).color(structuralSteel));
+p.part("post-bl", b(-340,250,85,60,60,515).color(structuralSteel));
+p.part("post-br", b(340,250,85,60,60,515).color(structuralSteel));
 p.part("backstop", b(0,290,660,760,45,130).color(paintedSteel));
 p.part("guide-left", b(-365,0,660,35,580,80).color(stainlessSteel));
 p.part("guide-right", b(365,0,660,35,580,80).color(stainlessSteel));
 p.part("tray-stack-a", b(0,-80,675,540,110,42).color(polymer));
 p.part("tray-stack-b", b(0,40,717,540,110,42).color(polymer));
 p.part("tray-stack-c", b(0,160,759,540,110,42).color(polymer));
-p.part("control-post", b(470,-230,0,70,70,520).color(structuralSteel));
-p.part("control-head", b(470,-230,520,220,140,150).color(stainlessSteel));
-p.part("display", b(470,-210,600,155,15,82).color(paintedSteel));
+p.part("control-post", b(440,-230,0,70,70,670).color(structuralSteel));
+p.part("control-head", b(470,-230,660,180,140,150).color(stainlessSteel));
+p.part("display", b(470,-300,690,150,15,75).color(paintedSteel));
 
 return p.model();

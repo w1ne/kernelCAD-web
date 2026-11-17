@@ -1,0 +1,311 @@
+{
+  "recordedAt": "2026-11-17T12:50:05.800Z",
+  "command": "TMPDIR=/tmp TMP=/tmp npx tsx docs/demos/export-health-authored-rest-20261117/record-run.mts",
+  "swing": {
+    "file": "swing-clear.kcad.ts",
+    "ms": 315.6167089999999,
+    "ok": true,
+    "summary": "Export health passed at qpos0.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [
+      {
+        "joint": "swing",
+        "mate": "swing",
+        "qpos": 1.570796
+      }
+    ],
+    "visualCount": 0,
+    "inertiaCount": 3,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "coordinateZero": {
+      "qpos0": [
+        1.570796
+      ],
+      "hits": [
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        }
+      ]
+    }
+  },
+  "declaredMass": {
+    "file": "declared-mass.kcad.ts",
+    "ms": 11.728958000000034,
+    "ok": true,
+    "summary": "Export health passed at qpos0.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [],
+    "visualCount": 0,
+    "inertiaCount": 1,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "block": {
+      "body": "block",
+      "cadMassKg": 0.05500000000000001,
+      "massSource": "declared-mass",
+      "mjcfMassKg": 0.055,
+      "urdfMassKg": 0.055,
+      "mjcfMismatch": false,
+      "urdfMismatch": false
+    }
+  },
+  "limitRest": {
+    "file": "limit-rest.kcad.ts",
+    "ms": 18.567083000000025,
+    "ok": false,
+    "summary": "Export health failed at qpos0: 0 penetrating rest contact(s), 0 margin-only rest contact(s), 0 visual-collision finding(s), 0 inertia row(s) outside tolerance or flagged, 1 qpos0 value(s) outside joint limits.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [
+      {
+        "joint": "shoulder",
+        "mate": "shoulder",
+        "qpos": 0,
+        "lower": 0.20944,
+        "upper": 0.698132
+      }
+    ],
+    "restQpos": [
+      {
+        "joint": "shoulder",
+        "mate": "shoulder",
+        "qpos": 0
+      }
+    ],
+    "visualCount": 0,
+    "inertiaCount": 2,
+    "inertiaMismatch": [],
+    "noteCount": 0
+  },
+  "ballClear": {
+    "file": "ball-clear.kcad.ts",
+    "ms": 26.49924999999996,
+    "ok": true,
+    "summary": "Export health passed at qpos0.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [],
+    "visualCount": 0,
+    "inertiaCount": 5,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "linkBody": "<body name=\"link\" pos=\"0.020000 0 -0.020000\" quat=\"0.707107 0 0.707107 0\">",
+    "wristJoint": "<joint name=\"wrist\" type=\"ball\" pos=\"-0.020000 0 0\"/>",
+    "quat": "0.707107 0 0.707107 0",
+    "jointHasRef": false
+  },
+  "ballOverlap": {
+    "file": "ball-overlap.kcad.ts",
+    "ms": 71.75991700000009,
+    "ok": false,
+    "summary": "Export health failed at qpos0: 4 penetrating rest contact(s), 0 margin-only rest contact(s), 0 visual-collision finding(s), 0 inertia row(s) outside tolerance or flagged, 0 qpos0 value(s) outside joint limits.",
+    "error": null,
+    "penetrating": [
+      {
+        "bodyA": "link",
+        "bodyB": "stop",
+        "geomA": "geom1",
+        "geomB": "geom2",
+        "meshA": "part-link",
+        "meshB": "part-stop",
+        "distM": -0.009999999329447826,
+        "penetrationM": 0.009999999329447826,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 999.9999999999998,
+        "cadDistanceMm": 0,
+        "collisionGeomArtefact": false
+      },
+      {
+        "bodyA": "link",
+        "bodyB": "stop",
+        "geomA": "geom1",
+        "geomB": "geom2",
+        "meshA": "part-link",
+        "meshB": "part-stop",
+        "distM": -0.009999999329447826,
+        "penetrationM": 0.009999999329447826,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 999.9999999999998,
+        "cadDistanceMm": 0,
+        "collisionGeomArtefact": false
+      },
+      {
+        "bodyA": "link",
+        "bodyB": "stop",
+        "geomA": "geom1",
+        "geomB": "geom2",
+        "meshA": "part-link",
+        "meshB": "part-stop",
+        "distM": -0.009999999329447826,
+        "penetrationM": 0.009999999329447826,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 999.9999999999998,
+        "cadDistanceMm": 0,
+        "collisionGeomArtefact": false
+      },
+      {
+        "bodyA": "link",
+        "bodyB": "stop",
+        "geomA": "geom1",
+        "geomB": "geom2",
+        "meshA": "part-link",
+        "meshB": "part-stop",
+        "distM": -0.009999999329447826,
+        "penetrationM": 0.009999999329447826,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 999.9999999999998,
+        "cadDistanceMm": 0,
+        "collisionGeomArtefact": false
+      }
+    ],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [],
+    "visualCount": 0,
+    "inertiaCount": 5,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "row": {
+      "bodyA": "link",
+      "bodyB": "stop",
+      "geomA": "geom1",
+      "geomB": "geom2",
+      "meshA": "part-link",
+      "meshB": "part-stop",
+      "distM": -0.009999999329447826,
+      "penetrationM": 0.009999999329447826,
+      "kind": "penetration",
+      "cadExactOverlapMm3": 999.9999999999998,
+      "cadDistanceMm": 0,
+      "collisionGeomArtefact": false
+    }
+  },
+  "hullCorner": {
+    "file": "hull-corner.kcad.ts",
+    "ms": 63.133125000000064,
+    "ok": true,
+    "summary": "Export health passed at qpos0. 4 rest contact(s) are collision-geometry artefacts; exact CAD overlap is at or below 0.01 mm³.",
+    "error": null,
+    "penetrating": [
+      {
+        "bodyA": "cube",
+        "bodyB": "ell",
+        "geomA": "geom2",
+        "geomB": "geom0",
+        "meshA": "part-cube",
+        "meshB": "part-ell",
+        "distM": -0.01399999996647241,
+        "penetrationM": 0.01399999996647241,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 0,
+        "cadDistanceMm": 4,
+        "collisionGeomArtefact": true
+      },
+      {
+        "bodyA": "cube",
+        "bodyB": "ell",
+        "geomA": "geom2",
+        "geomB": "geom0",
+        "meshA": "part-cube",
+        "meshB": "part-ell",
+        "distM": -0.01399999996647241,
+        "penetrationM": 0.01399999996647241,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 0,
+        "cadDistanceMm": 4,
+        "collisionGeomArtefact": true
+      },
+      {
+        "bodyA": "cube",
+        "bodyB": "ell",
+        "geomA": "geom2",
+        "geomB": "geom0",
+        "meshA": "part-cube",
+        "meshB": "part-ell",
+        "distM": -0.01399999996647241,
+        "penetrationM": 0.01399999996647241,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 0,
+        "cadDistanceMm": 4,
+        "collisionGeomArtefact": true
+      },
+      {
+        "bodyA": "cube",
+        "bodyB": "ell",
+        "geomA": "geom2",
+        "geomB": "geom0",
+        "meshA": "part-cube",
+        "meshB": "part-ell",
+        "distM": -0.01399999996647241,
+        "penetrationM": 0.01399999996647241,
+        "kind": "penetration",
+        "cadExactOverlapMm3": 0,
+        "cadDistanceMm": 4,
+        "collisionGeomArtefact": true
+      }
+    ],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [
+      {
+        "joint": "pin",
+        "mate": "pin",
+        "qpos": 0
+      },
+      {
+        "joint": "seat",
+        "mate": "seat",
+        "qpos": 0
+      }
+    ],
+    "visualCount": 0,
+    "inertiaCount": 3,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "row": {
+      "bodyA": "cube",
+      "bodyB": "ell",
+      "geomA": "geom2",
+      "geomB": "geom0",
+      "meshA": "part-cube",
+      "meshB": "part-ell",
+      "distM": -0.01399999996647241,
+      "penetrationM": 0.01399999996647241,
+      "kind": "penetration",
+      "cadExactOverlapMm3": 0,
+      "cadDistanceMm": 4,
+      "collisionGeomArtefact": true
+    }
+  }
+}

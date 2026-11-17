@@ -40,10 +40,10 @@ const p = assembly("nutrient-measuring-cylinder");
 const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 // Capacity sets bore (R) and graduated height (H); majors every 1/5 of it.
@@ -86,7 +86,7 @@ add("capacity-badge", blk(0, -R - 3.6, ZTOP - 30, 26, 1.2, 10).color(foot));
 // Two-part concentrate bottles, A and B, with coloured caps.
 const bottle = (tag: string, x: number, y: number, cap: string) => {
   add(`${tag}-bottle`, extrudeRoundedRect(110, 70, 14, 200, { axis: 'z' }).translate(x, y, 0).color(bottles));
-  add(`${tag}-shoulder`, turned([[0, 0], [40, 0], [16, 34], [0, 34]], 14).translate(x, y, 200).color(bottles));
+  add(`${tag}-shoulder`, turned([[0, 0], [40, 0], [16, 34], [0, 34]]).translate(x, y, 200).color(bottles));
   add(`${tag}-neck`, cylZ(x, y, 232, 14, 16, 12).color(bottles));
   add(`${tag}-cap`, cylZ(x, y, 244, 22, 19, 12).color(cap));
   add(`${tag}-label`, blk(x, y - 36, 60, 86, 1.2, 100).color(cap));
@@ -99,7 +99,7 @@ bottle('part-b', 260, 70, '#c0392b');
 const S = (s: Shape) => s.rotateY(90).rotateZ(-20).translate(110, -60, 15);
 add("syringe-barrel", S(cylZ(0, 0, 0, 110, 14, 14)).color(wall));
 add("syringe-dose", S(cylZ(0, 0, 0, 60, 14.4, 14)).color(solution));
-add("syringe-tip", S(turned([[0, -24], [4, -24], [14, 0], [0, 0]], 12)).color(wall));
+add("syringe-tip", S(turned([[0, -24], [4, -24], [14, 0], [0, 0]])).color(wall));
 add("syringe-flange", S(blk(0, 0, 108, 26, 48, 4)).color(wall));
 add("plunger-rod", S(blk(0, 0, 112, 6, 18, 40)).color('#f2f2ee'));
 add("plunger-thumb", S(cylZ(0, 0, 152, 4, 13, 12)).color('#f2f2ee'));

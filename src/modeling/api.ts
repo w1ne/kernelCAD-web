@@ -75,6 +75,8 @@ import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
 import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
+import { makeSpurGearPairMethod } from './apiSpurGearPair';
+import type { SpurGearPair, SpurGearPairOptions } from './spurGearPair';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -118,9 +120,12 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE. SPLINE/ELLIPSE/INSERT are
-   * refused with a diagnostic naming the entity and line number rather than
-   * dropped. `$INSUNITS` sets the scale; absent or Unitless means mm.
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
+   * clamped continuous planar SPLINE entities with control points and knots.
+   * Full and partial planar ellipses and supported splines are exact rational
+   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous and
+   * nonplanar splines, plus INSERT, are refused with an entity and line
+   * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**
@@ -130,8 +135,9 @@ export interface PartsLib {
    * SVG's Y axis points down and is reflected about the viewBox top so the
    * profile lands upright in positive Y. Scale comes from `viewBox` plus a
    * physically-dimensioned `width`; without one a user unit is a CSS pixel
-   * (1/96 in). Béziers and true ellipses are chord-approximated within
-   * `opts.curveTolerance` mm; lines and circular arcs are exact.
+   * (1/96 in). Béziers and SVG `<ellipse>` elements are chord-approximated
+   * within `opts.curveTolerance` mm; lines and circular arcs are exact. DXF
+   * planar ELLIPSE entities use exact rational NURBS geometry.
    */
   fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
@@ -243,7 +249,8 @@ export interface KernelCadApi {
    * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
    * rules, and no ports. `bendRadius` is the centreline radius and must
    * exceed `radius`; every straight between corners must be long enough
-   * for the bends (same centreline geometry as `tube()` paths).
+   * for the bends (same centreline geometry as `tube()` paths). A
+   * non-object `opts` or an unknown option key throws `feature.invalid-args`.
    */
   pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
   /**
@@ -257,6 +264,27 @@ export interface KernelCadApi {
    * when z2 is even (0 when odd) so a tooth space faces the first gear.
    */
   spurGear(opts: SpurGearOptions): Shape;
+  /**
+   * External spur pair at centre distance (m1·z1 + m2·z2)/2, phased so a
+   * tooth space faces the driver. `ratio` is ω_driven/ω_driver and is
+   * negative. The assembly carries revolute mates, a couple at that ratio,
+   * and a gear-pair transmission. `toothInterference` reports exact BREP
+   * clearance and common volume over sampled poses, refines beside the
+   * minimum, and measures the pitch-circle backlash. A common volume
+   * strictly above `interferenceVolumeFloorMm3` (0.001 mm³) sets
+   * `anyInterference` and sets `minClearanceMm` to 0. A smaller positive
+   * volume does not. Zero-volume contact (common volume 0 and distance 0)
+   * sets `minClearanceMm` to 0 while `anyInterference` stays false. The
+   * 0.001 mm³ floor is a fixed absolute volume for every module and face
+   * width: overlap volume is the transverse area times the face width, and
+   * similar teeth grow that area with the square of the module. Those
+   * clearance aggregates do not prove the gaps
+   * between samples. `withGeneratingCut`
+   * is opt-in: it subtracts a discrete union of the driver over one tooth
+   * and repeats that space at tooth pitch. The default teeth stay the
+   * involute profile. Geometry only — not strength.
+   */
+  spurGearPair(opts: SpurGearPairOptions): SpurGearPair;
   /**
    * Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim
    * disk minus a bore whose flanks are the external spur profile mirrored
@@ -323,6 +351,8 @@ export interface KernelCadApi {
    * Round every corner of a closed 2D polygon with tangent arcs. Returns
    * points for `extrudePolygon` / the prism helpers. Radius is clamped per
    * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   * `segments` is the only option; a positional count, an unknown key or a
+   * non-finite `segments` raises `feature.invalid-args`.
    */
   filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
   /**
@@ -533,9 +563,11 @@ export interface KernelCadApi {
    * If `opts.requireClosed` is true and the result is still an open shell
    * at lower time, the lowerer emits `feature.surface-sew.open-shell`
    * (severity 'error') instead of returning a partial solid.
+   * Unknown option keys and non-object option bags throw
+   * `feature.invalid-args` instead of silently using the defaults.
    *
    * @throws KernelError('feature.invalid-args') if `surfaces` is not an
-   *  array of at least 1 Surface.
+   *  array of at least 1 Surface or `opts` is malformed.
    */
   sew(
     surfaces: SurfaceProxy[],
@@ -874,6 +906,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     spring: makeSpringMethod(session, () => api),
     pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
+    spurGearPair: makeSpurGearPairMethod(session, () => api),
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
@@ -917,3 +950,9 @@ export type {
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 export type { RibOptions, RibPoint } from './apiRibMethod';
+export type {
+  SpurGearPair,
+  SpurGearPairOptions,
+  SpurGearGeneratingCut,
+  SpurGearToothInterferenceReport,
+} from './spurGearPair';

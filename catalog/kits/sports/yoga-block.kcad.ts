@@ -17,10 +17,11 @@ const evaFoam = param('evaFoam', '#8c6b78', { label: 'EVA foam' });
 const tractionFoam = param('tractionFoam', '#70535f', { label: 'Textured grip foam' });
 presets({ clubColors: { evaFoam: '#587f75', tractionFoam: '#456a60' } });
 const p = assembly('yoga-block');
-p.part('block', box(180, 105, 65, true).translate(0, 0, 32.5).scale(scale).color(evaFoam));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('block', box(180, 105, 65, true).translate(0, 0, 32.5).color(evaFoam));
 
 
 // Shallow traction ribs break up the broad EVA support face.
-for (let i = 0; i < 5; i++) p.part(`traction-rib-${i + 1}`, box(152, 3, 2, true).translate(0, -38 + i * 19, 65).color(tractionFoam));
+for (let i = 0; i < 5; i++) add(`traction-rib-${i + 1}`, box(152, 3, 2, true).translate(0, -38 + i * 19, 65).color(tractionFoam));
 
 return p.model();

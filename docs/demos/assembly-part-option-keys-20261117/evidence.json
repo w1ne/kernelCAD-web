@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-11-17T08:55:42.298Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser or deployed runtime used.",
+  "invocation": "npx tsx docs/demos/assembly-part-option-keys-20261117/capture-demo.mts",
+  "source": {
+    "path": "docs/demos/assembly-part-option-keys-20261117/capture-demo.mts",
+    "sha256": "294fe2b4d4d90199dcbe3ec2e26307fa31b4adf7681a61df88f6dd7b05b954f0"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "regression": {
+    "unknownKey": "att",
+    "errorCode": "feature.invalid-args",
+    "errorMessage": "assembly.part('spacer', shape, opts): opts.att — got an unknown option 'att'; requires one of at, connectors, connect, density, material, process, stock, massKg, crossSection, role, overlay. Example: arm.part('bracket', box(20, 10, 4), { at: [0, 0, 12], material: 'aluminum' })",
+    "errorPath": "opts.att",
+    "priorBehaviorFromOriginDevelop": "The unknown key was ignored and resolvePartPlacement defaulted missing opts.at to [0, 0, 0] mm."
+  },
+  "correctedPlacement": {
+    "part": "spacer",
+    "atMm": [
+      120,
+      0,
+      0
+    ],
+    "source": "resolvedPartAt(spacer.at, session.paramTable)"
+  },
+  "video": {
+    "path": "docs/demos/assembly-part-option-keys-20261117/demo.mp4",
+    "sha256": "575b0f3e62726900d5d44c03351e596dd169a226a3c591522a41bda433e14f4c",
+    "bytes": 121142
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

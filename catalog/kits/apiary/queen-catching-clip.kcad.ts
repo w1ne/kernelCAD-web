@@ -28,9 +28,9 @@ const c=(x:number,y:number,z:number,h:number,r:number,n=8)=>cylinder(h,r,n).tran
 const p=assembly("queen-catching-clip");
 p.part("arm-left",b(-75,0,100,28,36,240).color(stainless));
 p.part("arm-right",b(75,0,100,28,36,240).color(stainless));
-p.part("hinge",c(0,0,80,50,45,8).color(stainless));
-p.part("handle-left",b(-75,0,0,55,45,75).color(rubber));
-p.part("handle-right",b(75,0,0,55,45,75).color(rubber));
+p.part("hinge",c(0,0,80,50,65,8).color(stainless));
+p.part("handle-left",b(-75,0,0,55,45,110).color(rubber));
+p.part("handle-right",b(75,0,0,55,45,110).color(rubber));
 p.part("tip-left",b(-75,0,330,55,55,35).color(stainless));
 p.part("tip-right",b(75,0,330,55,55,35).color(stainless));
 

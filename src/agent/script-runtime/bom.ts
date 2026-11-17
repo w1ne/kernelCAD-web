@@ -34,6 +34,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FabProcess } from '../../shared/fab';
 import { formatStockSpec, type StockSpec } from '../../shared/stock';
+import { fastenerCallout, kindFromFamily } from '../../modeling/parts/fastenerDesignation';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 
@@ -108,9 +109,29 @@ function fingerprint(volumeMm3: number, surfaceAreaMm2: number, bbox: BomBbox): 
   return `geom:${round(volumeMm3)}:${round(surfaceAreaMm2)}:${dims.join(',')}`;
 }
 
+/** Ordering designation. Prefer a stored callout; otherwise derive one from
+ *  the standard, thread and length so a seed record without `attributes.designation`
+ *  still reads `ISO 4762 M2x4 - 8.8`. The class is a nominal callout. */
+function catalogPartNumber(catalogPart: CatalogPartMetadata): string {
+  const stored = catalogPart.attributes.designation;
+  if (typeof stored === 'string' && stored.length > 0) return stored;
+  const thread = catalogPart.attributes.thread;
+  const lengthMm = catalogPart.attributes.lengthMm;
+  if (typeof thread === 'string' && catalogPart.standard !== undefined) {
+    const callout = fastenerCallout({
+      standard: catalogPart.standard,
+      thread,
+      ...(typeof lengthMm === 'number' ? { lengthMm } : {}),
+      kind: kindFromFamily(catalogPart.family),
+    });
+    if (callout !== undefined) return callout;
+  }
+  return catalogPart.standard ?? catalogPart.id;
+}
+
 function catalogInfo(catalogPart: CatalogPartMetadata): BomCatalogInfo {
   const vendor = catalogPart.upstream?.repo ?? (catalogPart.standard !== undefined ? 'kernelCAD catalog' : null);
-  const partNumber = catalogPart.standard ?? catalogPart.id;
+  const partNumber = catalogPartNumber(catalogPart);
   const source = catalogPart.stepUrl ?? catalogPart.glbUrl ?? catalogPart.upstream?.path ?? null;
   return { id: catalogPart.id, vendor, partNumber, source, license: catalogPart.license };
 }

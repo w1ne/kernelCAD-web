@@ -36,10 +36,42 @@ const p = assembly('golf-club');
 const TURN = 120;
 const add = (name, shape) => p.part(name, shape.rotateZ(TURN).scale(scale));
 
+// Eight-sided ruled sections. A smooth revolve of the long shaft is meshed
+// into thousands of triangles by coarser kernels; an octagonal frustum stays
+// a handful of faces and still reads as a round low-poly shaft.
+const FACETS = 8;
+const ring = (r) => {
+  const radius = Math.max(r, 0.05);
+  let pb = path().moveTo(radius, 0);
+  for (let k = 1; k < FACETS; k++) {
+    const a = (2 * Math.PI * k) / FACETS;
+    pb = pb.lineTo(radius * Math.cos(a), radius * Math.sin(a));
+  }
+  return pb.close();
+};
+const frustum = (r0, z0, r1, z1) => ring(r0).loft(ring(Math.max(r1, 0.05)), {
+  planes: [
+    { plane: 'XY', origin: [0, 0, z0] },
+    { plane: 'XY', origin: [0, 0, z1] },
+  ],
+  ruled: true,
+});
 const turned = (pts) => {
-  let pb = path().moveTo(pts[0][0], pts[0][1]);
-  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve();
+  const positive = pts.filter((p) => p[0] > 0.05);
+  const end = pts[pts.length - 1];
+  if (end[0] <= 0.05 && end[1] > positive[positive.length - 1][1] + 0.2) positive.push([0.4, end[1]]);
+  const spans = [];
+  for (let i = 0; i < positive.length - 1; i++) {
+    const [r0, z0] = positive[i];
+    const [r1, z1] = positive[i + 1];
+    if (z1 - z0 > 0.05) spans.push([r0, z0, r1, z1]);
+  }
+  let solid = null;
+  for (const [r0, z0, r1, z1] of spans) {
+    const piece = frustum(r0, solid === null ? z0 : z0 - 0.2, r1, z1);
+    solid = solid === null ? piece : solid.union(piece);
+  }
+  return solid;
 };
 // Profile [[y, z], ...] in the front-to-back plane, extruded across X.
 const sideYZ = (pts, t, x0) => extrudePolygon(pts, t).rotateX(90).rotateZ(90).translate(x0 - t / 2, 0, 0);

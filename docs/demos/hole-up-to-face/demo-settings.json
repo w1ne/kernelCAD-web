@@ -1,0 +1,12 @@
+{
+  "source": "docs/demos/hole-up-to-face/model.kcad.ts",
+  "invocation": "timeout 300s npx tsx docs/demos/hole-up-to-face/capture.mts",
+  "kernel": "occt",
+  "resolution": [1280, 720],
+  "fps": 12,
+  "durationSeconds": 8,
+  "renderer": "Local software z-buffered triangle renderer over OCCT feature meshes",
+  "targetPlaneMm": 10,
+  "expectedVolumeMm3": 11874.336293856408,
+  "provenance": "Local script replay and OCCT geometry validation; not simulation, deployed behavior, or hardware acceptance."
+}

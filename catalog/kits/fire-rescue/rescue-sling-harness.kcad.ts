@@ -21,14 +21,14 @@ presets({
   highVisibility: { safetyTrimColor: '#f0df67', fabricColor: '#d67e2d' },
 });
 const p = assembly("rescue-sling-harness");
-const groundOffset = -93;
+const groundOffset = -174;
 const add = (name, shape, finish = fabricColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
 add("waist-belt", box(440, 70, 72, true).translate(0, 0, 246.8), safetyTrimColor);
-add("shoulder-strap--1", box(78, 80, 341, true).rotateY(-14).translate(-105.6, 0, 585.9), fabricColor);
-add("leg-loop--1", box(190, 75, 42, true).translate(-118.8, 0, 114), safetyTrimColor);
-add("shoulder-strap-1", box(78, 80, 341, true).rotateY(14).translate(105.6, 0, 585.9), fabricColor);
-add("leg-loop-1", box(190, 75, 42, true).translate(118.8, 0, 114), safetyTrimColor);
-add("back-pad", box(210, 55, 248, true).translate(0, 28, 496), fabricColor);
+add("shoulder-strap--1", box(78, 80, 341, true).rotateY(-14).translate(-105.6, 0, 438), fabricColor);
+add("leg-loop--1", box(190, 75, 42, true).translate(-118.8, 0, 195), safetyTrimColor);
+add("shoulder-strap-1", box(78, 80, 341, true).rotateY(14).translate(105.6, 0, 438), fabricColor);
+add("leg-loop-1", box(190, 75, 42, true).translate(118.8, 0, 195), safetyTrimColor);
+add("back-pad", box(210, 55, 248, true).translate(0, 28, 397), fabricColor);
 add("front-buckle", box(90, 35, 60, true).translate(0, -50, 247), safetyTrimColor);
 
 return p.model();
