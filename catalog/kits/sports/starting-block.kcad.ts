@@ -56,11 +56,11 @@ for (let i = 0; i < 24; i++) {
   add(`rack-tooth-${i + 1}`, box(10, 30, 6, true).translate(110 + i * 25, 0, RAIL_H + 3).color(spikeSteel));
 }
 // Track spikes under the rail, each screwed into a steel carrier block.
-const spike = path().moveTo(0, 0).lineTo(5, 0).lineTo(5, 4).lineTo(0, 14).close().revolve();
+const spike = () => path().moveTo(0, 0).lineTo(5, 0).lineTo(5, 4).lineTo(0, 14).close().revolve();
 for (const [i, x] of [60, 400, 740].entries()) {
   for (const s of [-1, 1]) {
     add(`spike-carrier-${i + 1}-${s < 0 ? 'l' : 'r'}`, box(30, 26, 8, true).translate(x, s * 45, -4).color(spikeSteel));
-    add(`spike-${i + 1}-${s < 0 ? 'l' : 'r'}`, spike.rotateX(180).translate(x, s * 45, -8).color(spikeSteel));
+    add(`spike-${i + 1}-${s < 0 ? 'l' : 'r'}`, spike().rotateX(180).translate(x, s * 45, -8).color(spikeSteel));
   }
 }
 // Carry bar across the front with rubber grips.

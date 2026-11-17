@@ -21,11 +21,11 @@ presets({
   highVisibility: { fabricColor: '#d67e2d', safetyTrimColor: '#f0df67' },
 });
 const p = assembly("fire-blanket-canister");
-const groundOffset = -145;
+const groundOffset = -255;
 const add = (name, shape, finish = fabricColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
 add("mounting-plate", box(370, 45, 520, true).translate(0, 30, 560), fabricColor);
 add("case", box(340, 230, 460, true).translate(0, -10, 530), safetyTrimColor);
 add("case-lid", box(300, 30, 420, true).translate(0, -135, 510), fabricColor);
-add("pull-tab", box(95, 30, 60, true).translate(0, -170, 175), safetyTrimColor);
+add("pull-tab", box(95, 30, 90, true).translate(0, -135, 300), safetyTrimColor);
 
 return p.model();

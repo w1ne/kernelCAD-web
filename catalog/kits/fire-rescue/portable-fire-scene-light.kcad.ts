@@ -25,13 +25,15 @@ presets({
 const p = assembly("portable-fire-scene-light");
 const groundOffset = -20;
 const add = (name, shape, finish = fanFramePaintColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
-add("tripod-leg--1", box(44, 44, 900, true).rotateY(-9).translate(-135, 0, 920), guardMetalColor);
-add("lamp-head--1", box(220, 100, 145, true).translate(-140, 0, 1062.5), lensColor);
-add("lamp-face--1", box(160, 20, 100, true).translate(-140, -58, 1040), lensColor);
-add("tripod-leg-1", box(44, 44, 900, true).rotateY(9).translate(135, 0, 920), guardMetalColor);
-add("lamp-head-1", box(220, 100, 145, true).translate(140, 0, 1062.5), lensColor);
-add("lamp-face-1", box(160, 20, 100, true).translate(140, -58, 1040), lensColor);
-add("mast-collar", cylinder(80, 85, 8).translate(0, 0, 820), guardMetalColor);
+add("tripod-leg--1", box(44, 44, 900, true).rotateY(-9).translate(-135, 0, 510), guardMetalColor);
+add("lamp-head--1", box(220, 100, 145, true).translate(-195, 0, 900), lensColor);
+add("lamp-face--1", box(160, 20, 100, true).translate(-195, -58, 878), lensColor);
+add("tripod-leg-1", box(44, 44, 900, true).rotateY(9).translate(135, 0, 510), guardMetalColor);
+add("lamp-head-1", box(220, 100, 145, true).translate(195, 0, 900), lensColor);
+add("lamp-face-1", box(160, 20, 100, true).translate(195, -58, 878), lensColor);
+add("mast-collar", cylinder(80, 85, 8).translate(0, 0, 60), guardMetalColor);
+add("mast", cylinder(840, 22, 8).translate(0, 0, 60), guardMetalColor);
+add("lamp-crossbar", box(440, 40, 40, true).translate(0, 0, 880), guardMetalColor);
 add("ground-foot", box(550, 410, 40, true).translate(0, 0, 40), rubberFootColor);
 
 return p.model();

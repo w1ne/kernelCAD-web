@@ -68,19 +68,19 @@ const wall = (len: number, cols: number, rows: number) => {
   const parts = [];
   const z0 = DZ + 44;
   const h = TOP - z0;
-  parts.push(blk(-len / 2 + 12, 0, z0, 24, 24, h));
-  parts.push(blk(len / 2 - 12, 0, z0, 24, 24, h));
-  parts.push(blk(0, 0, TOP - 24, len, 24, 24));
-  parts.push(blk(0, 0, z0, len, 24, 24));
-  for (let c = 1; c < cols; c++) parts.push(blk(-len / 2 + (c * len) / cols, 0, z0, 6, 6, h));
-  for (let r = 1; r < rows; r++) parts.push(blk(0, 0, z0 + (r * h) / rows, len - 24, 6, 6));
+  parts.push(() => blk(-len / 2 + 12, 0, z0, 24, 24, h));
+  parts.push(() => blk(len / 2 - 12, 0, z0, 24, 24, h));
+  parts.push(() => blk(0, 0, TOP - 24, len, 24, 24));
+  parts.push(() => blk(0, 0, z0, len, 24, 24));
+  for (let c = 1; c < cols; c++) parts.push(() => blk(-len / 2 + (c * len) / cols, 0, z0, 6, 6, h));
+  for (let r = 1; r < rows; r++) parts.push(() => blk(0, 0, z0 + (r * h) / rows, len - 24, 6, 6));
   return parts;
 };
 wall(D - 20, 7, 10).forEach((s, i) => {
-  add(`side-l-${i}`, s.rotateZ(90).translate(-W / 2 + 12, 0, 0).color(mesh));
-  add(`side-r-${i}`, s.rotateZ(90).translate(W / 2 - 12, 0, 0).color(mesh));
+  add(`side-l-${i}`, s().rotateZ(90).translate(-W / 2 + 12, 0, 0).color(mesh));
+  add(`side-r-${i}`, s().rotateZ(90).translate(W / 2 - 12, 0, 0).color(mesh));
 });
-wall(W - 48, 8, 10).forEach((s, i) => add(`back-${i}`, s.translate(0, D / 2 - 12, 0).color(mesh)));
+wall(W - 48, 8, 10).forEach((s, i) => add(`back-${i}`, s().translate(0, D / 2 - 12, 0).color(mesh)));
 // Hinge lugs where the walls meet the deck.
 for (const sy of [-1, 1]) {
   for (const sx of [-1, 1]) add(`hinge-${sx < 0 ? 'l' : 'r'}${sy < 0 ? 'f' : 'b'}`, cylinder(40, 16, 10).translate(sx * (W / 2 - 12), sy * (D / 2 - 60), DZ + 30).color(mesh));

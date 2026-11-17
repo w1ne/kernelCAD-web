@@ -36,9 +36,9 @@ const groundOffset = 55;
 const add = (name, shape, finish = paintedSteelColor) => p.part(name, shape.translate(0, 0, -groundOffset).scale(scale).color(finish));
 add('main-toolbar', box(1450, 110, 94, true).translate(0, 120, 425), paintedSteelColor);
 add('drawbar', box(135, 560, 70, true).translate(0, 430, 469), paintedSteelColor);
-add('scraper-bowl-floor', slopedPrism(1189, 550, 40).translate(0, -80, 195), paintedSteelColor);
-add('bowl-side--1', slopedPrism(65, 680, 546).translate(-551, 0, 553), paintedSteelColor);
-add('bowl-side-1', slopedPrism(65, 680, 546).translate(551, 0, 553), paintedSteelColor);
-add('cutting-edge', box(1247, 46, 54, true).translate(0, -420, 82), steelColor);
+add('scraper-bowl-floor', slopedPrism(1189, 550, 40).translate(0, -80, 75), paintedSteelColor);
+add('bowl-side--1', slopedPrism(65, 680, 546).translate(-551, 0, 328), paintedSteelColor);
+add('bowl-side-1', slopedPrism(65, 680, 546).translate(551, 0, 328), paintedSteelColor);
+add('cutting-edge', box(1247, 46, 54, true).translate(0, -370, 82), steelColor);
 
 return p.model();

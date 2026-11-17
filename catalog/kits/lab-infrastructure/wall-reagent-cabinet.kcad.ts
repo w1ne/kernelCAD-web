@@ -24,9 +24,9 @@ presets({
 const p = assembly('wall-reagent-cabinet');
 p.part('cabinet-shell', box(1000, 360, 720, true).translate(0, 0, 360).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(920, 324, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(412.8, 18, 690, true).translate(-220, -183.6, 705).scale(scale).color(enamel));
+p.part('door-0', box(412.8, 18, 690, true).translate(-220, -183.6, 360).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 115.2, true).translate(-82.4, -198, 432).scale(scale).color(polymer));
-p.part('door-1', box(412.8, 18, 690, true).translate(220, -183.6, 705).scale(scale).color(enamel));
+p.part('door-1', box(412.8, 18, 690, true).translate(220, -183.6, 360).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 115.2, true).translate(357.6, -198, 432).scale(scale).color(polymer));
 p.part('wall-bracket--1', box(35, 198, 170, true).translate(-350, 72, 85).scale(scale).color(steel));
 p.part('wall-bracket-1', box(35, 198, 170, true).translate(350, 72, 85).scale(scale).color(steel));

@@ -1,0 +1,39 @@
+
+ RUN  v4.0.18 /data/worktrees/kernelCAD-web/foundation-parity-20261111
+
+ ❯ src/modeling/parts/fromVectorFormats.test.ts (14 tests | 1 failed | 13 skipped) 321ms
+     ↓ imports a plate and extrudes it to the hand-computed volume
+     ↓ carries the DXF bulge through to real geometry with the right sign
+     × imports a rational DXF NURBS segment exactly into a closed solid profile 64ms
+     ↓ returns every closed region, largest first, so holes can be cut explicitly
+     ↓ records the unit decision on the sketch so it can be inspected later
+     ↓ opts.units rescales the imported profile
+     ↓ imports the L profile at true millimetre scale
+     ↓ the extruded solid sits where the Y flip put it, not where SVG had it
+     ↓ keeps a <circle> analytic — the extruded disc has the exact volume
+     ↓ a missing file names the path
+     ↓ an empty path is rejected before any I/O
+     ↓ an open SVG contour reports the dangling end and how to fix it
+     ↓ an unsupported DXF entity names the entity, the line, and the fix
+     ↓ an empty file is refused rather than yielding an empty sketch list
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modeling/parts/fromVectorFormats.test.ts > lib.fromDXF — round trip to a solid > imports a rational DXF NURBS segment exactly into a closed solid profile
+KernelError: lib.fromDXF: /data/tmp/andrii/kcad-fromvector-f3Rfiq/spline-profile.dxf — SPLINE at line 19: its representation is outside the supported clamped planar control-point subset. Re-export a clamped XY spline with control points and knots.
+ ❯ fromDXF src/modeling/parts/fromVectorFormats.ts:137:13
+    135|   } catch (e) {
+    136|     if (e instanceof DxfParseError) {
+    137|       throw new KernelError(
+       |             ^
+    138|         'feature.kernel-failed',
+    139|         `lib.fromDXF: ${absPath} — ${e.message}`,
+ ❯ src/modeling/parts/fromVectorFormats.test.ts:145:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 skipped (14)
+   Start at  23:50:19
+   Duration  15.83s (transform 2.35s, setup 77ms, import 2.69s, tests 321ms, environment 0ms)

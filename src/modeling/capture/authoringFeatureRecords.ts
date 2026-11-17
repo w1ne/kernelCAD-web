@@ -43,6 +43,7 @@ import type {
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 
@@ -506,6 +507,41 @@ export function buildEmbossTextFeatureSpec(
     },
     metadata: metadata as unknown as Record<string, unknown>,
   };
+}
+
+/** Option keys `Shape.embossText` accepts. `{ font, halign }` used to drop
+ *  both keys and engrave centred text in the default font with no diagnostic. */
+const EMBOSS_TEXT_OPTION_KEYS: ReadonlySet<string> = new Set([
+  'textContent', 'fontFamily', 'size', 'depth', 'align',
+  'anchorU', 'anchorV', 'rotation', 'scaleMode', 'face',
+]);
+
+const EMBOSS_TEXT_EXAMPLE =
+  "box(40, 20, 6).embossText({ textContent: 'KC', face: 'top', size: 6, depth: 0.4, fontFamily: 'Inter' })";
+
+export function assertEmbossTextOptions(opts: unknown, featureId: FeatureId): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'embossText(opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { textContent, face, size, depth, ... }',
+      example: EMBOSS_TEXT_EXAMPLE,
+      featureId,
+    });
+  }
+  const unknown = Object.keys(opts).find((key) => !EMBOSS_TEXT_OPTION_KEYS.has(key));
+  if (unknown !== undefined) {
+    invalidArgs({
+      api: 'embossText(opts)',
+      path: `opts.${unknown}`,
+      got: (opts as Record<string, unknown>)[unknown],
+      requires: `a known option key; embossText accepts ${[...EMBOSS_TEXT_OPTION_KEYS].join(', ')}`,
+      example: EMBOSS_TEXT_EXAMPLE,
+      featureId,
+    });
+  }
 }
 
 export function buildProjectCurveFeatureSpec(

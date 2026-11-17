@@ -52,10 +52,10 @@ add("base-rail-front", box(L + 60, 60, 40, true).translate(0, -D / 2, 20).color(
 add("base-rail-back", box(L + 60, 80, 40, true).translate(0, BACK_Y, 20).color(stainlessSteel));
 
 // Inverted-U hoops between the bays, in the YZ plane, on base plates.
-const hoopTop = torus(HOOP_R, TUBE, 24).rotateY(90).intersect(box(4 * TUBE, 2 * (HOOP_R + TUBE) + 10, HOOP_R + TUBE + 10, true).translate(0, 0, (HOOP_R + TUBE + 10) / 2));
+const hoopTop = () => torus(HOOP_R, TUBE, 24).rotateY(90).intersect(box(4 * TUBE, 2 * (HOOP_R + TUBE) + 10, HOOP_R + TUBE + 10, true).translate(0, 0, (HOOP_R + TUBE + 10) / 2));
 for (let i = 0; i <= BAYS; i++) {
   const x = -L / 2 + i * PITCH;
-  add(`hoop-top-${i}`, hoopTop.translate(x, -60, POST_H).color(powderCoat));
+  add(`hoop-top-${i}`, hoopTop().translate(x, -60, POST_H).color(powderCoat));
   for (const sy of [-1, 1]) {
     const y = -60 + sy * HOOP_R;
     add(`hoop-post-${i}-${sy > 0 ? "b" : "f"}`, cylinder(POST_H, TUBE, 12).translate(x, y, 0).color(powderCoat));

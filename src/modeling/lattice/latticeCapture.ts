@@ -67,6 +67,22 @@ function fail(path: string, got: unknown, requires: string, unit?: string): neve
   return invalidArgs({ api: API, path, got, requires, example: EXAMPLE, ...(unit ? { unit } : {}) });
 }
 
+const OPTION_KEYS: ReadonlySet<string> = new Set([
+  'type', 'variant', 'cell', 'wall', 'density', 'skin', 'grade', 'frame', 'axis', 'resolution', 'tolerance',
+]);
+const GRADE_KEYS: ReadonlySet<string> = new Set(['from', 'near', 'far', 'over', 'study', 'bands']);
+const AXIS_KEYS: ReadonlySet<string> = new Set(['origin', 'direction']);
+
+/** A misspelt key (`densty`, `grade.length`) used to be dropped and its
+ *  default built silently; name the first unknown key instead. */
+function knownKeys(path: string, v: object, allowed: ReadonlySet<string>): void {
+  const unknown = Object.keys(v).find((key) => !allowed.has(key));
+  if (unknown !== undefined) {
+    fail(`${path}.${unknown}`, (v as Record<string, unknown>)[unknown],
+      `a known option key; ${path} accepts ${[...allowed].join(', ')}`);
+  }
+}
+
 function oneOf<T extends string>(path: string, v: unknown, allowed: readonly T[], dflt: T): T {
   if (v === undefined) return dflt;
   if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
@@ -111,6 +127,7 @@ function validateFeaGrade(g: NonNullable<LatticeOptions['grade']>): LatticeGrade
 function validateGrade(g: LatticeOptions['grade'], variant: 'sheet' | 'network', cell: number): LatticeGradeMetadata | undefined {
   if (g === undefined) return undefined;
   if (typeof g !== 'object' || g === null) fail('opts.grade', g, "an object such as { from: 'surface', near: 1.2, over: 8 }");
+  knownKeys('opts.grade', g, GRADE_KEYS);
   const from = oneOf('opts.grade.from', g.from, LATTICE_GRADE_SOURCES, 'surface');
   if (from === 'fea') return validateFeaGrade(g);
   const [lo, hi, unit] = variant === 'sheet' ? [0.1, cell / 2, 'mm'] : [0.05, 0.9, 'ratio'];
@@ -126,6 +143,7 @@ function validateAxis(axis: LatticeOptions['axis']): LatticeMetadata['axis'] {
   const ok = (v: unknown): v is [number, number, number] =>
     Array.isArray(v) && v.length === 3 && v.every((c) => typeof c === 'number' && Number.isFinite(c));
   if (!axis || !ok(axis.origin)) fail('opts.axis.origin', axis?.origin, 'a [x, y, z] point, mm');
+  knownKeys('opts.axis', axis, AXIS_KEYS);
   if (!ok(axis.direction) || Math.hypot(...axis.direction) === 0) fail('opts.axis.direction', axis.direction, 'a non-zero [x, y, z] direction');
   return { origin: [...axis.origin], direction: [...axis.direction] };
 }
@@ -154,7 +172,8 @@ function optionalIn(path: string, v: number | undefined, lo: number, hi: number)
 
 /** Validate options and capture the 'lattice' record on `base`. */
 export function captureLattice(session: CaptureSession, base: Shape, opts: LatticeOptions): Shape {
-  if (typeof opts !== 'object' || opts === null) fail('opts', opts, 'an options object');
+  if (typeof opts !== 'object' || opts === null || Array.isArray(opts)) fail('opts', opts, 'an options object');
+  knownKeys('opts', opts, OPTION_KEYS);
   const type = oneOf('opts.type', opts.type, LATTICE_TYPES, 'gyroid');
   const variant = oneOf('opts.variant', opts.variant, LATTICE_VARIANTS, 'sheet');
   const frame = oneOf('opts.frame', opts.frame, LATTICE_FRAMES, 'part');

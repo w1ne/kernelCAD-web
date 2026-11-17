@@ -89,10 +89,10 @@ for (let i = 0; i < 10; i++) {
   add(`pasta-window-${i}`, blk(x, -137, 640, 60, 4, 110).color('#e8c87a'));
 }
 // Shelf 1: jars with lids.
-const jar = turned([[0, 0], [42, 0], [42, 120], [32, 140], [0, 140]]);
+const jar = () => turned([[0, 0], [42, 0], [42, 120], [32, 140], [0, 140]]);
 for (let i = 0; i < 12; i++) {
   const x = -594 + i * 108;
-  add(`jar-${i}`, jar.translate(x, -60, 960).color(i % 3 === 0 ? '#c8402a' : i % 3 === 1 ? '#7a4a2a' : '#e3b24a'));
+  add(`jar-${i}`, jar().translate(x, -60, 960).color(i % 3 === 0 ? '#c8402a' : i % 3 === 1 ? '#7a4a2a' : '#e3b24a'));
   add(`jar-lid-${i}`, cylinder(22, 34, 10).translate(x, -60, 1100).color('#d9b23a'));
 }
 // Shelf 2: tins two high.

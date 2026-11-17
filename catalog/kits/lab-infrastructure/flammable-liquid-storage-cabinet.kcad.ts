@@ -24,9 +24,9 @@ presets({
 const p = assembly('flammable-liquid-storage-cabinet');
 p.part('cabinet-shell', box(900, 600, 1100, true).translate(0, 0, 550).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(828, 540, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(371.52, 18, 1070, true).translate(-198, -306, 1085).scale(scale).color(enamel));
+p.part('door-0', box(371.52, 18, 1070, true).translate(-198, -306, 550).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 176, true).translate(-74.16, -330, 660).scale(scale).color(polymer));
-p.part('door-1', box(371.52, 18, 1070, true).translate(198, -306, 1085).scale(scale).color(enamel));
+p.part('door-1', box(371.52, 18, 1070, true).translate(198, -306, 550).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 176, true).translate(321.84, -330, 660).scale(scale).color(polymer));
 p.part('vent-slot-0', box(288, 10, 9, true).translate(0, -312, 862.5).scale(scale).color(polymer));
 p.part('vent-slot-1', box(288, 10, 9, true).translate(0, -312, 888.5).scale(scale).color(polymer));

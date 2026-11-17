@@ -92,9 +92,9 @@ add("riser-tee", cylinder(230, 40, 10).rotateX(-90).translate(TL / 2 - 100, -350
 for (const s of [-1, 1]) for (const g of [-1, 0, 1]) add(`guide-${s}-${g}`, blk(s * (TL / 2 + 520), g * 170, DECK + 150, 980, 14, 30).color(stainless));
 for (const s of [-1, 1]) for (const g of [-1, 1]) for (const yp of [-1, 1]) add(`guide-post-${s}-${g}-${yp}`, blk(s * (TL / 2 + 520) + g * 420, yp * (BW / 2 + 30), DECK - 60, 30, 30, 260).color(stainless));
 for (const s of [-1, 1]) for (const yp of [-1, 1]) add(`guide-arm-${s}-${yp}`, blk(s * (TL / 2 + 520), yp * (BW / 2 + 30), DECK + 160, 980, 20, 20).color(stainless));
-const bottle = turned([[0, 0], [38, 0], [38, 150], [13, 215], [13, 245], [0, 245]]);
+const bottle = () => turned([[0, 0], [38, 0], [38, 150], [13, 215], [13, 245], [0, 245]]);
 for (const s of [-1, 1]) for (const row of [-1, 1]) for (let k = 0; k < 4; k++) {
-  add(`bottle-${s}-${row}-${k}`, bottle.translate(s * (TL / 2 + 180 + k * 220), row * 85, DECK + 30).color(bottleGlass));
+  add(`bottle-${s}-${row}-${k}`, bottle().translate(s * (TL / 2 + 180 + k * 220), row * 85, DECK + 30).color(bottleGlass));
 }
 
 // Control pedestal at the infeed, front side.

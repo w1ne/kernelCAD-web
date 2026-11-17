@@ -250,6 +250,78 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     });
   });
 
+  it('mode: stub surfaces topology-origin loads as unverified', async () => {
+    const session = new CaptureSession();
+    const kc = createScriptApi({ session });
+    const arm = kc.assembly('topology-load');
+    const drilled = kc.box(20, 20, 5).hole('top', {
+      u: 0,
+      v: 0,
+      diameter: 5,
+      depth: 'through',
+    });
+    arm.part('a', drilled, { at: [50, 0, 0] }).connector('c', {
+      type: 'axis',
+      origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
+      axis: [0, 0, 1],
+    });
+    arm.part('b', kc.box(10, 10, 10)).connector('c', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('hinge', 'a.c', 'b.c', 'revolute');
+    const hinge = (arm.__mates() as MateRecord[]).find((mate) => mate.name === 'hinge');
+    if (!hinge) throw new Error('fixture: hinge mate not found');
+    (hinge as { maxLoad?: MateLoadLimit }).maxLoad = { torque: 10 };
+
+    const result = await checkLoadCapacity(
+      arm,
+      { a: { force: [0, 0, -1000] } },
+      { mode: 'stub' },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.failures).toEqual([]);
+    expect(result.diagnostics).toMatchObject([
+      { code: 'assembly.joint.load-unverified', severity: 'warn', element: 'hinge' },
+    ]);
+    expect(result.diagnostics[0]?.message).toContain('No force or torque comparison ran');
+  });
+
+  it('mode: stub reports a ball-mate torque rating as unverified', async () => {
+    const session = new CaptureSession();
+    const kc = createScriptApi({ session });
+    const arm = kc.assembly('ball-load');
+    arm.part('housing', kc.box(10, 10, 10), { at: [100, 0, 0] }).connector('pivot', {
+      type: 'ball',
+      origin: { kind: 'vec3', value: [-100, 0, 0] },
+    });
+    arm.part('link', kc.box(10, 10, 10)).connector('pivot', {
+      type: 'ball',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    arm.mate('socket', 'housing.pivot', 'link.pivot', 'ball');
+    const socket = (arm.__mates() as MateRecord[]).find((mate) => mate.name === 'socket');
+    if (!socket) throw new Error('fixture: ball mate not found');
+    (socket as { maxLoad?: MateLoadLimit }).maxLoad = { force: 1000, torque: 50 };
+
+    const result = await checkLoadCapacity(
+      arm,
+      { housing: { force: [0, 0, -500], torque: [0, 0, 75] } },
+      { mode: 'stub' },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.failures).toEqual([]);
+    expect(result.diagnostics).toMatchObject([
+      { code: 'assembly.joint.load-unverified', severity: 'warn', element: 'socket' },
+    ]);
+    expect(result.diagnostics[0]?.message).toContain('does not evaluate torque for ball mates');
+    expect(result.diagnostics[0]?.message).toContain('No torque comparison ran');
+    expect(result.diagnostics[0]?.hint).toContain('unsupported load kinds');
+  });
+
   it('honours opts.safetyFactorThreshold — failing a borderline pass', async () => {
     // Steel 50 N → SF ≈ 5.21. Raising the threshold to 10 should fail it.
     const { arm, partName } = buildCantileverBracket();

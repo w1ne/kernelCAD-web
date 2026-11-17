@@ -25,7 +25,7 @@ const p = assembly('cleanroom-single-door-module');
 p.part('outer-frame-left', box(85, 120, 2400, true).translate(-546, 0, 1200).scale(scale).color(steel));
 p.part('outer-frame-right', box(85, 120, 2400, true).translate(546, 0, 1200).scale(scale).color(steel));
 p.part('header', box(1300, 120, 160, true).translate(0, 0, 2400).scale(scale).color(enamel));
-p.part('door-leaf', box(806, 78, 2112, true).translate(0, -14.4, 2208).scale(scale).color(enamel));
+p.part('door-leaf', box(806, 78, 2112, true).translate(0, -14.4, 1152).scale(scale).color(enamel));
 p.part('door-vision-panel', box(390, 18, 528, true).translate(0, -57.6, 1896).scale(scale).color(glass));
 p.part('door-push-plate', box(40, 12, 170, true).translate(273, -62.4, 1165).scale(scale).color(enamel));
 

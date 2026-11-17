@@ -24,16 +24,16 @@ presets({
 const p = assembly('gantry-crane');
 p.part('base-rail-left', box(840, 42, 34, true).translate(0, -268.4, 17).translate(0, 0, 6).scale(scale).color(safetyPaint));
 p.part('base-rail-right', box(840, 42, 34, true).translate(0, 268.4, 17).translate(0, 0, 6).scale(scale).color(safetyPaint));
-p.part('portal-leg-front--1', box(42, 42, 705.2, true).rotate([0, 1, 0], -8).translate(-352.8, -256.2, 352.6).translate(0, 0, 6).scale(scale).color(steel));
-p.part('portal-leg-back--1', box(42, 42, 705.2, true).rotate([0, 1, 0], 8).translate(352.8, -256.2, 352.6).translate(0, 0, 6).scale(scale).color(steel));
+p.part('portal-leg-front--1', box(42, 42, 781.5, true).rotate([0, 1, 0], 25.5).translate(-183.5, -256.2, 357).translate(0, 0, 6).scale(scale).color(steel));
+p.part('portal-leg-back--1', box(42, 42, 781.5, true).rotate([0, 1, 0], -25.5).translate(183.5, -256.2, 357).translate(0, 0, 6).scale(scale).color(steel));
 p.part('caster--1', cylinder(40, 48, 8).rotate([1, 0, 0], 90).translate(0, -236.2, 42).translate(0, 0, 6).scale(scale).color(rubber));
-p.part('portal-leg-front-1', box(42, 42, 705.2, true).rotate([0, 1, 0], 8).translate(-352.8, 256.2, 352.6).translate(0, 0, 6).scale(scale).color(steel));
-p.part('portal-leg-back-1', box(42, 42, 705.2, true).rotate([0, 1, 0], -8).translate(352.8, 256.2, 352.6).translate(0, 0, 6).scale(scale).color(steel));
+p.part('portal-leg-front-1', box(42, 42, 781.5, true).rotate([0, 1, 0], 25.5).translate(-183.5, 256.2, 357).translate(0, 0, 6).scale(scale).color(steel));
+p.part('portal-leg-back-1', box(42, 42, 781.5, true).rotate([0, 1, 0], -25.5).translate(183.5, 256.2, 357).translate(0, 0, 6).scale(scale).color(steel));
 p.part('caster-1', cylinder(40, 48, 8).rotate([1, 0, 0], 90).translate(0, 276.2, 42).translate(0, 0, 6).scale(scale).color(rubber));
 p.part('bridge-beam', box(58, 634.4, 72, true).translate(0, 0, 705.2).translate(0, 0, 6).scale(scale).color(steel));
 p.part('trolley', box(220, 190, 80, true).translate(0, 0, 746.2).translate(0, 0, 6).scale(scale).color(safetyPaint));
-p.part('chain', cylinder(278.8, 11, 8).translate(0, 0, 459.2).translate(0, 0, 6).scale(scale).color(steel));
+p.part('chain', cylinder(530, 11, 8).translate(0, 0, 180).translate(0, 0, 6).scale(scale).color(steel));
 p.part('hook-block', box(46, 50, 70, true).translate(0, 0, 147.6).translate(0, 0, 6).scale(scale).color(safetyPaint));
-p.part('hook', box(42, 24, 38, true).translate(20, 0, 90.2).translate(0, 0, 6).scale(scale).color(steel));
+p.part('hook', box(42, 24, 38, true).translate(20, 0, 94).translate(0, 0, 6).scale(scale).color(steel));
 
 return p.model();
