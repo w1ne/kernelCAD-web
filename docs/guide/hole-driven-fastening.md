@@ -32,6 +32,9 @@ from `hole()`, `holes()`, a pattern or an import.
   plus hex nut on the back and needs a through bore. `screw` places the
   screw alone and, in a blind hole, picks the longest stocked length that
   still fits.
+- **Partial-thread hex.** `family: 'hex-head-bolt-partial'` (ISO 4014) places
+  that bolt stack. A grip that would leave the nut on the plain shank is
+  refused, and the message names ISO 4017.
 
 ```kcad
 const plate = box(40, 40, 8, true)

@@ -7,8 +7,9 @@
 // not a measured mechanical property.
 //
 // ISO 10642:2026 marks a steel property class with a leading zero (8.8 is
-// written 08.8, 10.9 is written 010.9). The scope note on the 2026 edition
-// calls that prefix out, and published summaries give 010.9 as the example.
+// written 08.8, 10.9 is written 010.9). The public scope note on that edition
+// calls the prefix out. Head and socket dimensions elsewhere follow
+// ISO 10642:2004 Table 1; they were not taken from the 2026 tables.
 // A caller can pass another class; a non-numeric grade is left unchanged.
 
 /** Compact key: "DIN 912", "ISO4762" and "DIN EN ISO 4762" all become din912 / iso4762 / dineniso4762. */

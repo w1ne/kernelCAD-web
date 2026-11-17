@@ -6,6 +6,8 @@
 // is rejected before a solid exists.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { createModelingApi } from '../../../src/modeling/api';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { fastenerSolid } from '../../../src/modeling/parts/fastenerGeometry';
 import { nutLiesOnThread, planStackFor, resolvePart } from '../../../src/modeling/parts/familyTable';
 import { KernelError } from '../../../src/shared/intent/kernelError';
@@ -83,5 +85,59 @@ describe('ISO 4014 envelope in a clearance hole', () => {
   it('refuses ISO 4014 M5×16 before a solid is built', () => {
     expect(() => resolvePart({ family: 'ISO 4014', thread: 'M5', lengthMm: 16 })).toThrow(KernelError);
     expect(() => resolvePart({ family: 'ISO 4014', thread: 'M5', lengthMm: 16 })).toThrow(/ISO 4017/);
+  });
+
+  it('inserts an ISO 4014 bolt through a clearance hole with the nut on the thread', async () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    const plate = kcad.box(40, 40, 14, true).hole('top', {
+      u: 0,
+      v: 0,
+      diameter: 6.6,
+      depth: 'through',
+    });
+    const fitted = await kcad.lib.insert(plate, {
+      diameterMm: 6.6,
+      family: 'hex-head-bolt-partial',
+      mode: 'bolt',
+      detail: 'envelope',
+    });
+    expect(fitted.holes).toHaveLength(1);
+    const hole = fitted.holes[0]!;
+    expect(hole.thread).toBe('M6');
+    expect(hole.fit).toBe('normal');
+    expect(hole.lengthMm).toBe(30);
+    expect(hole.nut).toBeDefined();
+    expect(hole.headWasher).toBeDefined();
+    // Centered 14 mm plate: mouth at z = 7. Head washer 1.6, ISO 4014 M6 k = 4.
+    // Thread length b = 18, so the plain shank ends 12 mm under the head bearing.
+    const mouthZ = 7;
+    const headBearingZ = mouthZ + 1.6;
+    const tipZ = headBearingZ - 30;
+    const threadTopZ = tipZ + 18;
+    const screwBox = await (await hole.screw.lower()).boundingBox();
+    expect(screwBox.max[2]).toBeCloseTo(headBearingZ + 4, 2);
+    expect(screwBox.min[2]).toBeCloseTo(tipZ, 2);
+    const nutBox = await (await hole.nut!.lower()).boundingBox();
+    expect(nutBox.min[2]).toBeGreaterThan(tipZ - 0.05);
+    expect(nutBox.max[2]).toBeLessThan(threadTopZ - 0.05);
+
+    const thin = kcad.box(40, 40, 8, true).hole('top', {
+      u: 0,
+      v: 0,
+      diameter: 6.6,
+      depth: 'through',
+    });
+    await expect(kcad.lib.insert(thin, {
+      diameterMm: 6.6,
+      family: 'hex-head-bolt-partial',
+      mode: 'bolt',
+      detail: 'envelope',
+    })).rejects.toThrow(/plain shank/);
+    await expect(kcad.lib.insert(thin, {
+      diameterMm: 6.6,
+      family: 'hex-head-bolt-partial',
+      mode: 'bolt',
+      detail: 'envelope',
+    })).rejects.toThrow(/ISO 4017/);
   });
 });

@@ -8,9 +8,17 @@
 // ISO 261 coarse pitch.
 // ISO 4762 Table 1: dk max, k max.
 // ISO 7380-1 Table 1: dk max, k max. Stocked through M10.
-// ISO 10642:2026 Table 1 theoretical dk for M3–M6 (6.72, 8.96, 11.20, 13.44).
-//   k is dk/2 − d/2. M8–M12 stay on that formula. The standard covers M2–M20;
-//   this library stocks M3–M12.
+// ISO 10642:2004 Table 1 for stocked M3–M12: theoretical dk max, k max,
+//   reference thread length b, socket s nominal and t min. The 2026 edition's
+//   dimension tables were not used. Its public scope is M2–M20, and its steel
+//   class marking (a leading zero) is the callout only.
+//   Cross-check 2026-11-17, no table text copied: Fuller Fasteners ISO 10642
+//   specification (dk, k, s, t for M3–M12; their b is three length bands, and
+//   the 125 < l ≤ 200 band equals this b for M6, M8, M10 and M12) and
+//   Westfield Fasteners ISO 10642 table (Standards/ScrewBolt-SHCsk-M.html:
+//   dk, k, b, s and t for M3–M12).
+//   partialLength is a stocked length whose modeled thread length is b.
+//   fullLength is a stocked length that stays threaded to the head.
 // ISO 4014:2022 Tables 1–2 and ISO 4017: s nom, k nom.
 //   ISO 4014 dw min is the 2022 value (M5 is 7.20). ISO 4017 M5 dw min stays 6.88.
 //   Stocked ISO 4014 lengths are product grade A, between the stepped lines,
@@ -21,6 +29,14 @@
 // ISO 7089: outside diameter, inside diameter, thickness.
 
 export interface HeadRow { thread: string; d: number; k: number }
+/** ISO 10642:2004 Table 1 row. `d` is theoretical dk max. `t` is t min. */
+export interface CountersunkRow extends HeadRow {
+  b: number;
+  s: number;
+  t: number;
+  partialLength: number;
+  fullLength: number;
+}
 export interface HexRow { thread: string; s: number; k: number; dw: number }
 export interface NutRow { thread: string; s: number; /** m max, the modeled height. */ m: number; /** ISO 4032:2023 Table 1 m min, where read. */ mMin?: number }
 export interface WasherRow { thread: string; outside: number; inside: number; t: number }
@@ -59,14 +75,14 @@ export const ISO_7380: readonly HeadRow[] = [
   { thread: 'M10', d: 17.5, k: 5.5 },
 ];
 
-export const ISO_10642: readonly HeadRow[] = [
-  { thread: 'M3', d: 6.72, k: 1.86 },
-  { thread: 'M4', d: 8.96, k: 2.48 },
-  { thread: 'M5', d: 11.2, k: 3.1 },
-  { thread: 'M6', d: 13.44, k: 3.72 },
-  { thread: 'M8', d: 17.92, k: 4.96 },
-  { thread: 'M10', d: 22.4, k: 6.2 },
-  { thread: 'M12', d: 26.88, k: 7.44 },
+export const ISO_10642: readonly CountersunkRow[] = [
+  { thread: 'M3', d: 6.72, k: 1.86, b: 18, s: 2, t: 1.1, partialLength: 25, fullLength: 16 },
+  { thread: 'M4', d: 8.96, k: 2.48, b: 20, s: 2.5, t: 1.5, partialLength: 30, fullLength: 16 },
+  { thread: 'M5', d: 11.2, k: 3.1, b: 22, s: 3, t: 1.9, partialLength: 30, fullLength: 16 },
+  { thread: 'M6', d: 13.44, k: 3.72, b: 24, s: 4, t: 2.2, partialLength: 35, fullLength: 16 },
+  { thread: 'M8', d: 17.92, k: 4.96, b: 28, s: 5, t: 3, partialLength: 40, fullLength: 20 },
+  { thread: 'M10', d: 22.4, k: 6.2, b: 32, s: 6, t: 3.6, partialLength: 50, fullLength: 25 },
+  { thread: 'M12', d: 26.88, k: 7.44, b: 36, s: 8, t: 4.3, partialLength: 60, fullLength: 40 },
 ];
 
 /** s nom and k nom. dw is ISO 4014:2022 dw min. */

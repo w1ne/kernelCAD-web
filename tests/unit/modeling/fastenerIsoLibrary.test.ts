@@ -55,6 +55,30 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
     }
   });
 
+  it('matches ISO 10642:2004 dk, k, b, socket s and t on every stocked row', () => {
+    for (const row of ISO_10642) {
+      const partial = resolvePart({
+        family: 'flat-head-countersunk',
+        thread: row.thread,
+        lengthMm: row.partialLength,
+      });
+      expect(partial.headDiameterMm).toBe(row.d);
+      expect(partial.headHeightMm).toBe(row.k);
+      expect(partial.iso?.socketAcrossFlatsMm).toBe(row.s);
+      expect(partial.iso?.socketDepthMm).toBe(row.t);
+      expect(partial.iso?.threadLengthMm).toBe(row.b);
+      const full = resolvePart({
+        family: 'flat-head-countersunk',
+        thread: row.thread,
+        lengthMm: row.fullLength,
+      });
+      expect(full.iso?.socketAcrossFlatsMm).toBe(row.s);
+      expect(full.iso?.socketDepthMm).toBe(row.t);
+      expect(full.iso?.threadLengthMm).toBe(row.fullLength);
+      expect(full.iso?.threadLengthMm).not.toBe(row.b);
+    }
+  });
+
   it('matches ISO 4032 nuts and ISO 7089 washers', () => {
     for (const row of ISO_4032) {
       const part = resolvePart({ family: 'hex-nut', thread: row.thread });

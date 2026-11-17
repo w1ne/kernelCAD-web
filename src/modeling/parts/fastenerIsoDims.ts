@@ -35,9 +35,10 @@ export const BHCS_DETAIL: Record<string, { s: number; t: number; r: number }> = 
   M10: { s: 6, t: 3.12, r: 0.4 },
 };
 
-/** ISO 10642 countersunk: socket s, t and reference thread length b.
- *  b for M3–M6 (18, 20, 22, 24) matches ISO 10642:2026 Table 1. Socket s and t
- *  stay the previously stocked values; those 2026 cells were not re-read. */
+/** ISO 10642:2004 Table 1: socket s nominal, t min and reference thread length b
+ *  for the stocked M3–M12 rows. The 2026 edition's dimension tables were not
+ *  used. The leading-zero class on the callout is the 2026 marking, applied
+ *  in fastenerDesignation.ts. Nominal, not certified. */
 export const FLATHEAD_DETAIL: Record<string, { s: number; t: number; b: number }> = {
   M3: { s: 2, t: 1.1, b: 18 },
   M4: { s: 2.5, t: 1.5, b: 20 },

@@ -125,11 +125,10 @@ export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M10: { D: 17.5, K: 5.5 },
 };
 
-/** ISO 10642:2026 90° head. The standard covers M2–M20. This library stocks
- *  M3–M12. D is the theoretical head diameter (2.24·d). The 2026 Table 1
- *  theoretical maximum for M3, M4, M5 and M6 is 6.72, 8.96, 11.20 and
- *  13.44 mm. K is the matching 90° head height, dk/2 − d/2. M8–M12 stay on
- *  that formula; those 2026 cells were not re-read. Nominal, not certified. */
+/** ISO 10642:2004 Table 1 90° head, stocked M3–M12. D is theoretical dk max
+ *  and K is k max. The public ISO 10642:2026 scope is M2–M20; this library
+ *  does not stock the sizes outside M3–M12. The 2026 dimension tables were
+ *  not used. Nominal, not certified. */
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
@@ -529,6 +528,7 @@ function requireThread(request: PartRequest, stocked: string): string {
 function requireRow<T>(threads: Record<string, T>, thread: string, family: string): T {
   const dims = threads[threadKey(thread)];
   if (dims) return dims;
+  // Public scope of ISO 10642:2026 (M2–M20). Not a reading of its dimension tables.
   const libraryLimit = family === 'flat-head-countersunk'
     ? ' ISO 10642:2026 covers M2 to M20; this library stocks M3 to M12 only.'
     : '';
