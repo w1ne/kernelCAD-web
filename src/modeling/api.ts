@@ -120,11 +120,14 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
-   * clamped continuous planar SPLINE entities with control points and knots.
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
+   * planar polyline HATCH boundary, and clamped continuous planar SPLINE
+   * entities with control points and knots. HATCH bulges map to exact arcs;
+   * multi-path, edge-based, and out-of-plane hatches are refused so holes and
+   * islands are not flattened.
    * Full and partial planar ellipses and supported splines are exact rational
-   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous and
-   * nonplanar splines, plus INSERT, are refused with an entity and line
+   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous
+   * and nonplanar splines, plus INSERT, are refused with an entity and line
    * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;

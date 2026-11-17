@@ -164,6 +164,23 @@ describe('lib.fromDXF — round trip to a solid', () => {
     });
   });
 
+  it('imports one closed polyline HATCH boundary and preserves its bulge in the solid', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-bulged-plate.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(5).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // The 40 × 20 mm rectangle includes an outward semicircle of radius 20 mm.
+    expect(backend.volume()).toBeCloseTo((800 + 200 * Math.PI) * 5, 4);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(-20, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(40, 6), expect.closeTo(20, 6), expect.closeTo(5, 6)],
+    });
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
