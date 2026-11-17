@@ -48,8 +48,8 @@ const EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
 // `aws_secret_access_key` is listed whole. A bare `secret` match stops at the
 // underscore in that name and would leave the value in place.
 const ASSIGNMENT = /((?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|aws_secret_access_key|aws_access_key_id|aws_session_token|secret|password|passwd|pwd|token)\s*[:=]\s*)(?:"[^"\n]*"|'[^'\n]*'|[^\s&]+)/gi;
-/** `https://user:pass@host/...` — the userinfo is a credential. The host stays. */
-const URL_USERINFO = /\bhttps?:\/\/[^\s/@:]+:[^\s/@]+@/gi;
+/** `scheme://user:pass@host` — the userinfo is a credential. The scheme and host stay. */
+const URL_USERINFO = /\b[a-z][a-z0-9+.-]*:\/\/[^\s/@:]+:[^\s/@]+@/gi;
 const QUERY = /\?[^\s#)]+/g;
 const FILE_URL = /\bfile:\/\/\S+/gi;
 const LOCAL_PATH = /(?:~\/|(?:\/(?:Users|home|tmp|private|var|Volumes|opt|usr\/local))\/)[^\s"'`)<>|;]+|[A-Za-z]:\\(?:Users|home)\\[^\s"'`)<>|;]+/g;

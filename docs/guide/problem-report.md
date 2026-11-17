@@ -32,7 +32,8 @@ The screenshot is the model viewport only. It is downloaded as
 contains the design. Leave the box unchecked to keep the design on this computer.
 
 Before the text is placed in the issue, Studio removes email addresses,
-tokens and keys, secret assignments, credentials embedded in a URL, query
+tokens and keys, secret assignments, the userinfo of any
+`scheme://user:password@host` URL (the scheme and host stay), query
 strings, and local paths, and it limits how much text is included. A value that does not look like a version, commit, or timestamp
 is left out. Read the issue before you submit it. Nothing is sent until you
 submit it on GitHub.

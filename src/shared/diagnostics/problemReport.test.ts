@@ -15,6 +15,9 @@ import {
 
 const FILLET = 'Fillet radius 12 mm exceeds the 4 mm edge.';
 const TOKEN = 'sk_live_FAKEPROBLEMTOKEN';
+const JWT = 'eyJhbGciOiJub25lIn0.eyJmYWtlIjoicmVwb3J0In0.ZmFrZVNpZ25hdHVyZTE';
+const GITHUB_TOKEN = 'ghp_FAKEGITHUBTOKEN01';
+const GITHUB_PAT = 'github_pat_FAKEGITHUBPAT01';
 const EMAIL = 'ada@example.com';
 const PATH = '/Users/secret/part.kcad.ts';
 const URL = 'https://app.kernelcad.com/p/abc?token=sekret';
@@ -61,6 +64,8 @@ describe('sanitizeReportText', () => {
       'sb_secret_fakeSecretValue123',
       'sb_publishable_fakePublishable123',
       'https://ada:sekret@files.kernelcad.com/parts/plate.step?token=sekret',
+      'ftp://ada:sekret@files.kernelcad.com/incoming/plate.step',
+      'svn+ssh://ada:sekret@files.kernelcad.com/repo',
     ].join(' ');
     const { text } = sanitizeReportText(input);
     expect(text).toBe([
@@ -70,6 +75,8 @@ describe('sanitizeReportText', () => {
       '[redacted-token]',
       '[redacted-token]',
       'https://[redacted]@files.kernelcad.com/parts/plate.step',
+      'ftp://[redacted]@files.kernelcad.com/incoming/plate.step',
+      'svn+ssh://[redacted]@files.kernelcad.com/repo',
     ].join(' '));
     expect(text).not.toContain('FAKEKEYEXAMPLE01');
     expect(text).not.toContain('fakeSecretValue123');
@@ -79,7 +86,7 @@ describe('sanitizeReportText', () => {
   });
 
   it('leaves a place name, a short key prefix and a URL without userinfo', () => {
-    const input = 'ASIA is a place name. sb_secret_short stays. https://files.kernelcad.com/parts/plate.step The word secret is not a credential.';
+    const input = 'ASIA is a place name. sb_secret_short stays. https://files.kernelcad.com/parts/plate.step ftp://files.kernelcad.com/incoming/plate.step The word secret is not a credential.';
     expect(sanitizeReportText(input).text).toBe(input);
     expect(sanitizeReportText(input).redactions).toBe(0);
   });
@@ -201,6 +208,44 @@ describe('buildProblemReport', () => {
     expect(report.body).not.toContain('DESIGN_MARKER_8841');
     expect(report.body).not.toContain('FAKEPROBLEMTOKEN');
     expect(report.designAttachment).not.toContain('FAKEPROBLEMTOKEN');
+  });
+
+  it('redacts a JWT and GitHub tokens in the issue text, the issue URL and the design attachment', () => {
+    const report = buildProblemReport({
+      kind: 'evaluate',
+      errorMessage: `${FILLET} ${JWT}`,
+      hint: `See ${GITHUB_TOKEN}`,
+      logLines: [`tail ${GITHUB_PAT}`],
+      designSource: `return box(20, 30, 10); // ${JWT} ${GITHUB_TOKEN} ${GITHUB_PAT} DESIGN_MARKER_8841`,
+      includeDesign: true,
+      appVersion: '0.17.0',
+      reportedAt,
+    });
+    expect(report.body).toContain(`${FILLET} [redacted-token]`);
+    expect(report.body).toContain('See [redacted-token]');
+    expect(report.body).toContain('- tail [redacted-token]');
+    expect(report.body).not.toContain('DESIGN_MARKER_8841');
+    expect(report.designAttachment).toBe('return box(20, 30, 10); // [redacted-token] [redacted-token] [redacted-token] DESIGN_MARKER_8841');
+    const persisted = `${report.body}\n${report.designAttachment}\n${decodeURIComponent(report.issueUrl)}`;
+    expect(persisted).not.toContain(JWT);
+    expect(persisted).not.toContain(GITHUB_TOKEN);
+    expect(persisted).not.toContain(GITHUB_PAT);
+    expect(persisted).not.toContain('eyJhbGci');
+    expect(persisted).not.toContain('FAKEGITHUB');
+    expect(decodeURIComponent(report.issueUrl)).toContain('[redacted-token]');
+  });
+
+  it('keeps a short GitHub prefix, a short JWT fragment and a credential-free URL in the issue', () => {
+    const kept = 'ghp_short github_pat_short eyJhbGci.eyJzdWI.ZmFrZQ ftp://files.kernelcad.com/incoming/plate.step';
+    const report = buildProblemReport({
+      kind: 'evaluate',
+      errorMessage: kept,
+      appVersion: '0.17.0',
+      reportedAt,
+    });
+    expect(report.body).toContain(kept);
+    expect(decodeURIComponent(report.issueUrl)).toContain(kept);
+    expect(report.redactions).toBe(0);
   });
 
   it('keeps the hint on a diagnostic row and redacts a secret inside it', () => {
