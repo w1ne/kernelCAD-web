@@ -304535,7 +304535,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/american-football.kcad.ts",
       "preview": "/assets/sports-american-football.png",
-      "sourceSha256": "854ab53efb387cebae3bb63860b0f7206f0a000a770806c9e0811f7a29b23215",
+      "sourceSha256": "83c79cdc75a8f385b792316ac4e476a4ed21257d4eec3e86c648e783b30b0978",
       "triangleBudget": 600,
       "params": [
         {
@@ -305071,7 +305071,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball-glove.kcad.ts",
       "preview": "/assets/sports-baseball-glove.png",
-      "sourceSha256": "2f8b38dcf97e501316626f05ddcfa629d08fe759e218fef9c19c7565fc0e4344",
+      "sourceSha256": "dae89b58d13004e44ef6d83dd1c49a228ff1da3f57020f3c6225ba316a34529d",
       "triangleBudget": 600,
       "params": [
         {
@@ -305178,7 +305178,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball.kcad.ts",
       "preview": "/assets/sports-baseball.png",
-      "sourceSha256": "439a76bcfaa24275a1b9c8412f535a56ac9bff59a803a12acd18e454f75423af",
+      "sourceSha256": "3a662c6ecca14fc4e623527467c67b6895c12fa57f41ad0266dd3d36667e0597",
       "triangleBudget": 800,
       "params": [
         {
@@ -305263,7 +305263,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
       "preview": "/assets/sports-basketball-hoop.png",
-      "sourceSha256": "749a3289ebca06a27cd79335dbfbf04c98568b201b17928de32d609b441eb981",
+      "sourceSha256": "01d2bad85819b02096a187f580fb102c636082559c72d6f18bc602f503a5b225",
       "triangleBudget": 900,
       "params": [
         {
@@ -305388,7 +305388,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball.kcad.ts",
       "preview": "/assets/sports-basketball.png",
-      "sourceSha256": "2a00f927d515c8957ee51a244a1219fa7beaf32093e454f886ab6c362f94c124",
+      "sourceSha256": "e347d3eb7be85f4150e3b93d7eacd17d61263b97b2252ddf5dde8c5315d23888",
       "triangleBudget": 800,
       "params": [
         {
@@ -306117,7 +306117,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/exercise-ball.kcad.ts",
       "preview": "/assets/sports-exercise-ball.png",
-      "sourceSha256": "f30ef621591ac5562960bdb4221ffa226531d4bbca8149d5ef9298c0716b2095",
+      "sourceSha256": "6437d7c4e06491b6568a4b6a9899f785e24a474dbac1f1b742909b70fefd7080",
       "triangleBudget": 600,
       "params": [
         {
@@ -306215,7 +306215,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/foam-roller.kcad.ts",
       "preview": "/assets/sports-foam-roller.png",
-      "sourceSha256": "0ca8020eec2d1b970e82dd510332c663c6427bb55839177f12018874e5298268",
+      "sourceSha256": "3667ff3bfeff2cedd3d0ef40a0a44220a7b505346621e9d971c39999dabbe7ba",
       "triangleBudget": 600,
       "params": [
         {
@@ -306299,7 +306299,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-bag.kcad.ts",
       "preview": "/assets/sports-golf-bag.png",
-      "sourceSha256": "1ca562d501459dd0c6f1976989b74b2d87b32827ea9c508975e7a578b0f6f33d",
+      "sourceSha256": "95316943511daa7d0c3f5cfea60ea43c53e5ebd462a759e4c5c6b77f0ca6dd94",
       "triangleBudget": 600,
       "params": [
         {
@@ -306747,7 +306747,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/hockey-puck.kcad.ts",
       "preview": "/assets/sports-hockey-puck.png",
-      "sourceSha256": "4027039ceb4cd3cb1394bd58eafc9e9ac96d1eadeb3329cbe6a224f65dd60db1",
+      "sourceSha256": "873a9546f984d77c4bd616fc6b5ab7533334ba29a4cfa8d1389367a825a90b9b",
       "triangleBudget": 600,
       "params": [
         {
@@ -307386,7 +307386,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
       "preview": "/assets/sports-lacrosse-stick.png",
-      "sourceSha256": "cd229ab961de7b860bd9efa1fe4c211e7dbeab80772467767f6f1581d70ba73d",
+      "sourceSha256": "4995ab897778567cb67339f11074649310f08ec88c21e600f8ce0dc5f7c71dd2",
       "triangleBudget": 600,
       "params": [
         {
@@ -307862,7 +307862,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/soccer-goal.kcad.ts",
       "preview": "/assets/sports-soccer-goal.png",
-      "sourceSha256": "a0ff2ad15029221e77dc1786baec11d78a9e4ee0b4817702f581215c266fd3bb",
+      "sourceSha256": "1967b94a6cbe07fde312e6bc192bcdc8cc1c34ab2ea1bdd6f81bdd3fce71706c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -308054,7 +308054,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/sports-water-bottle.kcad.ts",
       "preview": "/assets/sports-sports-water-bottle.png",
-      "sourceSha256": "9345c17bc2d765ad485876e2de5f1399aa2a703417a2545cb660888f06d943f6",
+      "sourceSha256": "94b2709b58f151c71bd387cb0b2d87b0c037d9c4402663f687a3347ff0838b7d",
       "triangleBudget": 600,
       "params": [
         {
@@ -308342,7 +308342,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-ball.kcad.ts",
       "preview": "/assets/sports-tennis-ball.png",
-      "sourceSha256": "5500cca0310c7357422b5abc3c84257e6cca4b813e3dffff11777cebed432003",
+      "sourceSha256": "ee93ab5c233a00e1f4ead8320f1a1aa000a90080a809aded21978dae8aef5565",
       "triangleBudget": 800,
       "params": [
         {
@@ -308426,7 +308426,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-net.kcad.ts",
       "preview": "/assets/sports-tennis-net.png",
-      "sourceSha256": "a5b5e52e932e1b976f603226f9b7877d7fa4d5eee27fad27c4c75617ed87f76a",
+      "sourceSha256": "07d96a56c7ae5ea1235d8f679b2325fa68086d5710734727f8de198cecf9f227",
       "triangleBudget": 600,
       "params": [
         {
@@ -309118,7 +309118,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball-net.kcad.ts",
       "preview": "/assets/sports-volleyball-net.png",
-      "sourceSha256": "8ae3e1e74b7a48cc1225a08e66185509931b9601aaff9a516cc286c5d309129a",
+      "sourceSha256": "b52f32314c9fb141c9bb20eff9768ae9bfb5071ef3c356c9dea4b1c98b98c890",
       "triangleBudget": 600,
       "params": [
         {
@@ -309259,7 +309259,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball.kcad.ts",
       "preview": "/assets/sports-volleyball.png",
-      "sourceSha256": "d9cbe83c6f5c1e7fd55f9990b9bf90cd5ee497d2608142934353de98a12f88df",
+      "sourceSha256": "e3bd66066e0c9bb3f7f7c8159742c6a7b1f6caf9df96f4968f295a110b8d19cb",
       "triangleBudget": 800,
       "params": [
         {
@@ -309357,7 +309357,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/weight-plate.kcad.ts",
       "preview": "/assets/sports-weight-plate.png",
-      "sourceSha256": "a05a98956e1de9c456b2d9e860794bda15084366a9edde71f7748d5dc29f5be5",
+      "sourceSha256": "08db86ea6dc34d03d68f66396c10e06d8332d9b9ff5d44a1696daa9e38c06cc2",
       "triangleBudget": 600,
       "params": [
         {
@@ -309455,7 +309455,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-block.kcad.ts",
       "preview": "/assets/sports-yoga-block.png",
-      "sourceSha256": "edd523a9df14f1eeac99647db137acf9a029733c910e61c28665ede2b8d68d5f",
+      "sourceSha256": "288e9fff4852238b9ba74fe7a5a41cd1393d744db9a97c96d01dd901a77d435c",
       "triangleBudget": 600,
       "params": [
         {
@@ -309543,7 +309543,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-mat.kcad.ts",
       "preview": "/assets/sports-yoga-mat.png",
-      "sourceSha256": "ba417ee909a73ac9548a290cf7fdcaa523bbc36bf2de473a130a1e11ebe3733a",
+      "sourceSha256": "9321543a89f3ee8808a0487ea6cfe70acafc9242b91429b2c327b8a428696eda",
       "triangleBudget": 600,
       "params": [
         {
@@ -356701,7 +356701,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/rooftop-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-rooftop-wind-turbine.png",
-      "sourceSha256": "d074bc91ac6963b0b67ed4044d3523ca0c52c074cc41f36304aba8778dc0bd95",
+      "sourceSha256": "055880db3ba7c10ca1f81a3675c56a3059da57856b99cb130dc674d8930cdcc1",
       "triangleBudget": 550,
       "params": [
         {
@@ -357137,7 +357137,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/small-farm-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-small-farm-wind-turbine.png",
-      "sourceSha256": "1fb5046efe96808faecbd367641f1d2f34304f3e9ef3caf25f8a82a7995850ab",
+      "sourceSha256": "7f24786f46c90050af72e9514fff0e4446386f2e424773a7e929564222c521f8",
       "triangleBudget": 450,
       "params": [
         {

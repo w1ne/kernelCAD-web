@@ -18,11 +18,12 @@ const boreSteel = param('boreSteel', '#b4bdbe', { label: 'Bore sleeve steel' });
 const markingPaint = param('markingPaint', '#d5d0bf', { label: 'Weight marking paint' });
 presets({ clubColors: { castIron: '#46667a', boreSteel: '#b4bdbe' } });
 const p = assembly('weight-plate');
-p.part('plate', cylinder(22, 82, 16).subtract(cylinder(24, 22, 12).translate(0, 0, -1)).scale(scale).color(castIron));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('plate', cylinder(22, 82, 16).subtract(cylinder(24, 22, 12).translate(0, 0, -1)).color(castIron));
 
 
 // The bright sleeve lines the central bore while leaving its opening clear.
-p.part("bore-sleeve", cylinder(8, 21.6, 16).subtract(cylinder(9, 17.2, 16).translate(0, 0, -0.5)).translate(0, 0, 7).color(boreSteel));
-p.part("weight-mark", box(24, 4, 2, true).translate(0, -73, 11).color(markingPaint));
+add("bore-sleeve", cylinder(8, 21.6, 16).subtract(cylinder(9, 17.2, 16).translate(0, 0, -0.5)).translate(0, 0, 7).color(boreSteel));
+add("weight-mark", box(24, 4, 2, true).translate(0, -73, 11).color(markingPaint));
 
 return p.model();
