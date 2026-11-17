@@ -238,13 +238,13 @@ describe('validateJointLoadCapacity', () => {
     expect(torqueDiag?.hint).toMatch(/torque/);
   });
 
-  it('revolute with topology-origin side silently skips load summation', () => {
+  it('revolute with topology-origin side reports its load check as unverified', () => {
     const { arm, kcad } = makeArm();
     // Side A's connector uses a topology query origin — Gate 3 in v0.7.4
     // does not support sync topology resolution; side B uses a vec3 origin.
-    // The mate's load summation is silently skipped, so external loads that
-    // would otherwise exceed the declaration must not produce a false
-    // load-exceeded diagnostic.
+    // The mate's load summation cannot run synchronously, so external loads
+    // that would otherwise exceed the declaration must be reported as
+    // unverified rather than appearing to pass.
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
     arm
       .part('a', a, { at: [50, 0, 0] })
@@ -260,7 +260,15 @@ describe('validateJointLoadCapacity', () => {
     };
     const diags = validateJointLoadCapacity(arm, externalLoads);
 
-    expect(diags).toEqual([]);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]).toMatchObject({
+      code: 'assembly.joint.load-unverified',
+      severity: 'warning',
+      mateName: 'hinge',
+    });
+    expect(diags[0]?.message).toContain("connector 'a.c' uses a topology origin");
+    expect(diags[0]?.message).toContain('No force or torque comparison ran');
+    expect(diags[0]?.hint).toContain('vec3-origin');
   });
 
   it('ball with maxLoad.force AND maxLoad.torque declared: only force checked, torque silently ignored', () => {

@@ -41,9 +41,9 @@
 // Resolving a `topology` connector origin to a numeric Vec3 requires lowering
 // the part shape (`resolveConnectorOrigin` is async). Gate 3 is sync. For
 // `maxLoad`-declared mates whose connectors use topology origins on either
-// side are silently skipped because no comparison can run. This matches spec
-// open-question 5/2 resolution: vec3-origin requirement for v0.7.4, topology
-// support is a v0.7.x followup.
+// side emit `assembly.joint.load-unverified` because no comparison can run.
+// This matches spec open-question 5/2 resolution: vec3-origin requirement for
+// v0.7.4, topology support is a v0.7.x followup.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
@@ -79,10 +79,11 @@ const MM_PER_M = 1000;
  *
  * Returns the list of diagnostics — possibly empty. Iterates only mates
  * with `maxLoad` declared AND `type ∈ { prismatic, revolute, cylindrical,
- * ball }`. For each mate emits zero or one `assembly.joint.load-exceeded`
- * (severity `error`) per exceeded kind (force / torque can each trip
- * independently on a `cylindrical` mate, so a single mate may emit two
- * diagnostics).
+ * ball }`. For each mate emits an `assembly.joint.load-unverified` warning
+ * when either connector cannot be resolved synchronously, or zero or one
+ * `assembly.joint.load-exceeded` error per exceeded kind (force / torque can
+ * each trip independently on a `cylindrical` mate, so a single mate may emit
+ * two diagnostics).
  *
  * Retained for legacy validator callers that still provide manual
  * `externalLoads`.
@@ -115,8 +116,30 @@ export function validateJointLoadCapacity(
     const bSide = resolveSide(mate.b, partsByName, solvedPlacements);
 
     // Topology-origin or missing sides cannot be compared synchronously.
-    // Skip silently rather than emitting a false load-exceeded diagnostic.
-    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') continue;
+    // Report the skipped check instead of leaving the load result looking
+    // complete when no force or torque comparison ran for this mate.
+    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') {
+      const unresolved = [aSide, bSide].filter(
+        (side): side is DeferredSide | MissingSide => side.kind !== 'resolved',
+      );
+      const reasons = unresolved.map((side) => {
+        const ref = `${side.partName}.${side.connectorName}`;
+        return side.kind === 'deferred'
+          ? `connector '${ref}' uses a topology origin`
+          : `connector '${ref}' could not be resolved`;
+      });
+      out.push({
+        code: 'assembly.joint.load-unverified',
+        severity: 'warning',
+        message:
+          `Joint load capacity for mate '${mate.name}' was not checked because ${reasons.join(' and ')}. ` +
+          'No force or torque comparison ran for this mate.',
+        hint:
+          'Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.',
+        mateName: mate.name,
+      });
+      continue;
+    }
 
     // Per-mate-type force/torque check. Each branch reads `externalLoads`
     // for both parts (a missing entry contributes zero), then compares
