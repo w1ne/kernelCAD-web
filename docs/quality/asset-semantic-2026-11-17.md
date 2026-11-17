@@ -107,3 +107,28 @@ record this local material correction. The public asset remains a generic
 kernelCAD model; it does not claim a vendor design or universal shipyard paint
 standard. Its current public detail page returned HTTP 200 before the change;
 this branch is not deployed, so post-deployment behavior is not claimed.
+
+## Recycling-facility follow-up: no confirmed mismatch
+
+PR #1258 was merged with all 17 reported checks successful and no submitted
+review. Current catalog PR #1507 was open; its applicable checks were successful
+and it had no submitted review. None of the five selected IDs appeared in any
+open issue or PR title/body, and no open PR changed their source files.
+
+Reviewed the rendered previews for `compost-bagging-machine`,
+`recycling-trommel-screen`, `two-ram-baler`, `conveyor-transfer-tower`, and
+`glass-washer-trommel`. All five silhouettes read as their named recycling
+equipment and their visible material zones were coherent. No material mismatch
+was established, so no asset, preview, index row, or test was changed. The local
+PNG SHA-256 matched the public preview for every sample; each public detail page
+and preview returned HTTP 200.
+
+| Asset | Visible identity and material check | Local/public preview SHA-256 |
+|---|---|---|
+| [`compost-bagging-machine`](../../catalog/kits/recycling-facility/previews/compost-bagging-machine.png) | Surge hopper, bag fill/sewing line and palletized sacks; blue machine, steel fittings, green sacks and compost are distinct. No mismatch found. | `b30653b6d694c91a293d7d505aa17cd5fd8532a3d599cf519ece22a281600572` |
+| [`recycling-trommel-screen`](../../catalog/kits/recycling-facility/previews/recycling-trommel-screen.png) | Inclined screen drum, feed hopper, overs/fines discharge and braced frame read as a trommel; steel drum, dark belting and gold chutes are distinct. No mismatch found. | `78e74ab493b2895e472e892e702c39dec1df46e6e379d73ddabf550428989da4` |
+| [`two-ram-baler`](../../catalog/kits/recycling-facility/previews/two-ram-baler.png) | Feed hopper, baling chamber, hydraulic/power pack and bale ejection read as a horizontal baler; green machine, steel hydraulics and brown bale are distinct. No mismatch found. | `6f395ebea2e0272be99fcbd0efce2d3c458de92596174ff43c6a602bce1aae6e` |
+| [`conveyor-transfer-tower`](../../catalog/kits/recycling-facility/previews/conveyor-transfer-tower.png) | Clad transfer tower, inclined gallery, support trestle and outgoing belt are visible; cladding, painted structure and dark belt are distinct. No mismatch found. | `485c5aeb971c6c189ddb0b9774cb35dedd5df70e71032b03cc6052b65991b071` |
+| [`glass-washer-trommel`](../../catalog/kits/recycling-facility/previews/glass-washer-trommel.png) | Rotating wash drum, support frame, drive and cullet discharge read as a glass washer; drum, frame, drive and glass zones are distinct. No mismatch found. | `a2834cc2de70a7f41cd07e480820950d94eb9fae0c1335d9155e526cfa6cf087` |
+
+The reviewed public detail pages are [`compost-bagging-machine`](https://kernelcad.com/catalog/recycling-facility/compost-bagging-machine/), [`recycling-trommel-screen`](https://kernelcad.com/catalog/recycling-facility/recycling-trommel-screen/), [`two-ram-baler`](https://kernelcad.com/catalog/recycling-facility/two-ram-baler/), [`conveyor-transfer-tower`](https://kernelcad.com/catalog/recycling-facility/conveyor-transfer-tower/), and [`glass-washer-trommel`](https://kernelcad.com/catalog/recycling-facility/glass-washer-trommel/). No simulation, deployment, or hardware-acceptance claim is made.
