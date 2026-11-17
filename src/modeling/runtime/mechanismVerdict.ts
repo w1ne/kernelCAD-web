@@ -9,7 +9,7 @@
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Assembly } from '../capture/assembly';
-import type { MechanismCoverage } from './mechanismTruth';
+import type { MechanismCoverage, MechanismLoopMobility } from './mechanismTruth';
 import { hasMotionIntent } from './motionIntent';
 
 export type MechanismVerdictKind = 'real' | 'broken' | 'unverified';
@@ -20,6 +20,8 @@ export interface MechanismVerdictFailure {
   readonly reason: string;
   /** Mate / joint the failure is on, when the check knows it. */
   readonly joint?: string;
+  /** Closed-loop name when the failure came from the loop solver. */
+  readonly loop?: string;
   /** Part the failure moves or names, when the check knows it. */
   readonly part?: string;
 }
@@ -39,6 +41,8 @@ export interface MechanismVerdictSummary {
   readonly skipped: readonly string[];
   /** Error-severity mechanism failures. Empty unless verdict is 'broken'. */
   readonly failures: readonly MechanismVerdictFailure[];
+  /** Jacobian rank and mobility measured for closed-loop clusters per pose. */
+  readonly loopMobility?: readonly MechanismLoopMobility[];
   /** Pair declarations from `solvedModel({ ignore })`; the declarations do
    *  not suppress collision checks during joint travel. */
   readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
@@ -92,13 +96,15 @@ function plural(n: number, word: string): string {
 
 function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
   const legacy = d as { mateName?: unknown; partName?: unknown };
-  const joint = typeof d.details?.mateName === 'string' ? d.details.mateName : legacy.mateName;
+  const joint = d.details?.mateName ?? d.details?.joint ?? legacy.mateName;
   const part = typeof d.details?.partName === 'string' ? d.details.partName : legacy.partName;
+  const loop = d.details?.loop;
   return {
     code: d.code,
     reason: d.message,
     ...(typeof joint === 'string' ? { joint } : {}),
     ...(typeof part === 'string' ? { part } : {}),
+    ...(typeof loop === 'string' ? { loop } : {}),
   };
 }
 
@@ -212,6 +218,8 @@ function unverifiedIgnoreNote(ignoredPairs: ReadonlyArray<readonly [string, stri
 
 /** Build the verdict summary from one (possibly aggregated) probe result. */
 export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdictSummary {
+  const loopMobility = input.coverage?.loopMobility;
+  const loopMobilitySummary = loopMobility !== undefined && loopMobility.length > 0 ? { loopMobility } : {};
   if (input.mechanism === 'broken') {
     const failures = input.failures.filter((d) => d.severity === 'error').map(failureOf);
     const first = failures[0]?.reason ?? 'a mechanism check failed';
@@ -224,6 +232,7 @@ export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdi
       checked: [],
       skipped: [],
       failures,
+      ...loopMobilitySummary,
     }, ignoredPairs);
   }
   if (input.mechanism === 'unverified') {
@@ -236,6 +245,7 @@ export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdi
       checked: [],
       skipped,
       failures: [],
+      ...loopMobilitySummary,
     }, ignoredPairs);
   }
   const checked = checkedOf(input.coverage);
@@ -250,6 +260,7 @@ export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdi
     checked,
     skipped,
     failures: [],
+    ...loopMobilitySummary,
   }, ignoredPairs);
 }
 
@@ -268,6 +279,9 @@ export function mergeCoverage(list: ReadonlyArray<MechanismCoverage | undefined>
     skipped: present.flatMap((c) => c.skipped),
     ...(present.some((c) => (c.ignoredPairs?.length ?? 0) > 0)
       ? { ignoredPairs: present.flatMap((c) => c.ignoredPairs ?? []) }
+      : {}),
+    ...(present.some((c) => (c.loopMobility?.length ?? 0) > 0)
+      ? { loopMobility: present.flatMap((c) => c.loopMobility ?? []) }
       : {}),
   };
 }
