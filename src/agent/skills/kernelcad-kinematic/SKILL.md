@@ -57,9 +57,11 @@ against a mate's deprecated `maxLoad`; for a mated assembly, connector and
 part-frame origins use the solved mate placements. This is a lever-arm sanity
 check, not reaction propagation, FEA, or hardware acceptance. A warning with
 `assembly.joint.load-unverified` means a connector origin could not be resolved
-by this synchronous path, so no capacity comparison ran for that mate. See the
-[Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md)
-and the [topology-origin unverified replay bundle](../../../../docs/demos/joint-load-unverified-topology-1272/README.md).
+by this synchronous path, or a declared load rating is unsupported (the legacy
+checker does not compare torque ratings on ball mates), so that capacity
+comparison did not run. See the [Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md),
+the [topology-origin unverified replay bundle](../../../../docs/demos/joint-load-unverified-topology-1272/README.md),
+and the [ball-joint torque replay bundle](../../../../docs/demos/joint-load-ball-torque-1272/README.md).
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
 

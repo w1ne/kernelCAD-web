@@ -370,11 +370,11 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.joint.load-unverified': {
     hintTemplate:
-      'No load comparison ran for this mate. Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.',
-    nextAction: { kind: 'fix-arg', field: 'connector.origin' },
+      'This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.',
+    nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'A declared legacy joint load comparison could not run because at least one connector origin is unresolved or uses unsupported topology.',
+    description: 'A declared legacy joint load rating was not compared because a connector origin or load kind is unsupported.',
   },
   'assembly.joint.not-visible': {
     hintTemplate:

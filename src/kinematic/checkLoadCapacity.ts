@@ -103,7 +103,7 @@ async function runStubMode(
 
   // Substrate emits `assembly.joint.load-exceeded` with severity 'error' on
   // exceed, and `assembly.joint.load-unverified` with severity 'warning' on
-  // unresolved sides. We surface 'error' rows as
+  // unresolved sides or unsupported load ratings. We surface 'error' rows as
   // structured failures and keep all diags in the envelope.
   for (const d of subDiags) {
     // Map the substrate's ValidatorDiagnostic into the kinematic envelope's
