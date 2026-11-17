@@ -316,3 +316,6 @@ export const inspectionVerificationToolEntries: ToolRegistryEntry[] = [
   ...inspectionVerificationQueryToolEntries,
   ...inspectionVerificationRepairToolEntries,
 ];
+
+// Tail family. Not part of the historical inspect/query/repair slices.
+export { stepInspectViewsToolEntries } from './stepInspectViewsTools';
