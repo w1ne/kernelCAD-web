@@ -108,12 +108,15 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
- * clamped continuous planar SPLINE entities. Arcs keep their DXF bulge exactly;
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
+ * planar polyline HATCH boundary, and clamped continuous planar SPLINE
+ * entities. Polyline and HATCH bulges keep their exact DXF arc geometry;
  * full and partial planar ellipses and supported splines retain exact rational
- * NURBS geometry. Nonplanar ellipses, periodic, fit-point-only, discontinuous and
- * nonplanar SPLINE entities, plus INSERT, are REFUSED with an entity and line
- * diagnostic rather than dropped.
+ * NURBS geometry. Multi-path HATCH is refused to preserve hole/island intent;
+ * edge-based and out-of-plane HATCH boundaries are also refused. Nonplanar
+ * ellipses, periodic,
+ * fit-point-only, discontinuous and nonplanar SPLINE entities, plus INSERT,
+ * are REFUSED with an entity and line diagnostic rather than dropped.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as

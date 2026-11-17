@@ -189,7 +189,10 @@ lib.fromSTL(path: string, opts?: {
 
 // ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
 // area so the caller can choose which regions are outlines, holes or parts.
-// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE are supported.
+// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and one closed,
+// planar polyline boundary from a DXF HATCH are supported. Pattern styling is
+// ignored; multi-path, edge-based, and out-of-plane hatches are refused so
+// hole/island intent remains explicit.
 // Full ellipses use four exact rational NURBS segments; partial elliptical arcs
 // retain exact rational NURBS geometry and can join other profile edges.
 // Clamped, continuous, planar XY SPLINE entities retain their control points,

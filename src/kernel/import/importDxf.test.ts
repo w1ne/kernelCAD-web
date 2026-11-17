@@ -19,6 +19,14 @@ function entities(...pairs: Array<[number, string | number]>): string {
   return dxf([0, 'SECTION'], [2, 'ENTITIES'], ...pairs, [0, 'ENDSEC'], [0, 'EOF']);
 }
 
+function hatch(...pairs: Array<[number, string | number]>): string {
+  return entities(
+    [0, 'HATCH'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbHatch'],
+    [10, 0], [20, 0], [30, 0], [210, 0], [220, 0], [230, 1], [2, 'SOLID'], [70, 1], [71, 0],
+    ...pairs,
+  );
+}
+
 function header(...pairs: Array<[number, string | number]>): Array<[number, string | number]> {
   return [[0, 'SECTION'], [2, 'HEADER'], ...pairs, [0, 'ENDSEC']];
 }
@@ -98,6 +106,23 @@ describe('importDxfText — entities', () => {
     expect(nurbs.map(command => command.weights?.map(weight => weight.evaluated))).toEqual(
       Array.from({ length: 2 }, () => [1, Math.SQRT1_2, 1]),
     );
+  });
+
+  it('refuses HATCH entities with multiple paths instead of flattening holes into separate profiles', () => {
+    expect(() => importDxfText(hatch([91, 2]))).toThrow(/2 boundary paths are not supported/);
+  });
+
+  it('refuses edge-based HATCH paths until their exact curve geometry is supported', () => {
+    expect(() => importDxfText(hatch([91, 1], [92, 1]))).toThrow(/edge-based boundary paths are not supported/);
+  });
+
+  it('refuses HATCH paths outside the XY plane', () => {
+    const text = entities(
+      [0, 'HATCH'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbHatch'],
+      [10, 0], [20, 0], [30, 5], [210, 0], [220, 0], [230, 1], [2, 'SOLID'], [70, 1], [71, 0],
+      [91, 1], [92, 3],
+    );
+    expect(() => importDxfText(text)).toThrow(/only a zero-elevation XY boundary/);
   });
 
   it('reads a closed LWPOLYLINE as one region with exact area', () => {
