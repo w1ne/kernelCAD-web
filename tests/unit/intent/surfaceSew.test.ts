@@ -50,6 +50,51 @@ describe('sew() capture record', () => {
     expect((sewRec!.metadata as { requireClosed?: boolean }).requireClosed).toBe(true);
   });
 
+  it('rejects misspelled options before capturing a sew feature', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const surface = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
+    const before = session.getRecords().length;
+
+    try {
+      api.sew([surface], { requireClosd: true } as never);
+      throw new Error('expected sew() to reject the unknown option');
+    } catch (error) {
+      expect(error).toBeInstanceOf(KernelError);
+      expect((error as KernelError).code).toBe('feature.invalid-args');
+      expect((error as Error).message).toContain('opts.requireClosd');
+      expect((error as Error).message).toContain('tolerance, requireClosed');
+    }
+
+    expect(session.getRecords()).toHaveLength(before);
+  });
+
+  it.each([false, 1, 'closed', []])('rejects non-object sew options: %j', (opts) => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const surface = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
+
+    try {
+      api.sew([surface], opts as never);
+      throw new Error('expected sew() to reject the malformed options bag');
+    } catch (error) {
+      expect(error).toBeInstanceOf(KernelError);
+      expect((error as KernelError).code).toBe('feature.invalid-args');
+      expect((error as Error).message).toContain('an options object');
+    }
+  });
+
+  it('preserves the existing null options default', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const surface = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
+
+    const sewn = api.sew([surface], null as never);
+    const sewRec = session.getRecords().find(r => r.id === sewn.id);
+    expect((sewRec!.metadata as { requireClosed?: boolean }).requireClosed).toBe(false);
+    expect((sewRec!.params.tolerance as { evaluated: number }).evaluated).toBeCloseTo(1e-6, 10);
+  });
+
   it('inputs map contains a surface ref for each input surface', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });

@@ -1,0 +1,22 @@
+{
+  "title": "Unverified legacy joint load check",
+  "invocation": "npx tsx docs/demos/joint-load-unverified-topology-1272/capture-demo.ts",
+  "width": 1280,
+  "height": 720,
+  "framesPerSecond": 24,
+  "durationSeconds": 8,
+  "slides": 4,
+  "secondsPerSlide": 2,
+  "checkMode": "stub",
+  "externalLoad": {
+    "part": "housing",
+    "forceN": [0, 0, -1000]
+  },
+  "connectorOrigin": "topology face-center query",
+  "claims": {
+    "localValidatorReplay": true,
+    "physicsSimulation": false,
+    "deployedBehaviorVerified": false,
+    "hardwareAcceptance": false
+  }
+}

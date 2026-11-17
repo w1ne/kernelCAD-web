@@ -75,15 +75,17 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
   return shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
 };
 
-p.part("cart-frame", b("cart-frame", [1280, 700, 150], [0, 0, 430]).color(structuralSteel));
+p.part("cart-frame", b("cart-frame", [1280, 700, 200], [0, 0, 430]).color(structuralSteel));
 p.part("tool-chest", b("tool-chest", [760, 560, 660], [-170, 0, 835]).color(yardPaint));
-p.part("hose-reel", c("hose-reel", 180, 300, 14, [480, 0, 850], [90, 0, 0], 90).color(elastomer));
+p.part("hose-reel", c("hose-reel", 180, 300, 14, [480, 0, 830], [90, 0, 0], 90).color(elastomer));
 p.part("extinguisher-cradle", b("extinguisher-cradle", [300, 350, 520], [420, 300, 690]).color(yardPaint));
-p.part("signal-mast", c("signal-mast", 1030, 45, 8, [550, 280, 1480]).color(safetyMarking));
+p.part("signal-mast", c("signal-mast", 1560, 45, 8, [500, 280, 950]).color(safetyMarking));
 p.part("cart-wheel-0", c("cart-wheel-0", 80, 165, 10, [-520, -300, 165], [90, 0, 0], 90).color(elastomer));
 p.part("cart-wheel-1", c("cart-wheel-1", 80, 165, 10, [520, -300, 165], [90, 0, 0], 90).color(elastomer));
 p.part("cart-wheel-2", c("cart-wheel-2", 80, 165, 10, [-520, 300, 165], [90, 0, 0], 90).color(elastomer));
 p.part("cart-wheel-3", c("cart-wheel-3", 80, 165, 10, [520, 300, 165], [90, 0, 0], 90).color(elastomer));
+p.part("push-handle-post-0", b("push-handle-post-0", [90, 90, 420], [-650, -250, 730]).color(structuralSteel));
+p.part("push-handle-post-1", b("push-handle-post-1", [90, 90, 420], [-650, 250, 730]).color(structuralSteel));
 p.part("push-handle", b("push-handle", [90, 650, 90], [-650, 0, 940]).color(structuralSteel));
 
 return p.model();

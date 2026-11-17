@@ -307,19 +307,13 @@ export function resolveFromMetadataHit(
       if (!result.ok) return { error: result.diagnostic };
       return { face: faceByHash(base, result.faceHash) };
     }
-    // No historyMap — fall back to centroid heuristic (un-transformed primitive).
+    // No historyMap and no kind tag: a sketch extrude, sweep, loft or revolve.
+    // Resolve by geometry, the same as the bare canonical name on this shape.
     if (!base.kind) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.face-ref.not-resolvable',
-          featureId: consumer.id,
-          severity: 'error',
-          message: `Label '${face}' (canonical alias): the shape has no lineage data. Apply transforms after the face feature, not before.`,
-          hint: 'Apply this feature before any transform, or use a label / FaceQuery instead of a canonical alias.',
-        },
-      };
+      const swept = canonicalFaceOnSweptSolid(consumer, base, face);
+      return 'error' in swept ? swept : { face: swept };
     }
+    // No historyMap — fall back to centroid heuristic (un-transformed primitive).
     const found = findCanonicalFace(base, face);
     if (found === null) {
       return {

@@ -83,7 +83,9 @@ frame('fan-terminal-box', bar(0, fy - 60, z0 + H - 220, 180, 120, 160));
 blade('fan-cable', bar(0, fy - 60, z0 + H - 60, 24, 24, 80));
 
 // Oil headers along top and bottom, flanged inlet and outlet on the right.
-const header = (name, z) => pipe(name, cylinder(W - 40, 70, 14).rotateY(90).translate(-(W - 40) / 2, 0, z));
+// The headers are the core's welded aluminium manifolds, so they take the core
+// finish; only the external lines and bypass are pipework.
+const header = (name, z) => alu(name, cylinder(W - 40, 70, 14).rotateY(90).translate(-(W - 40) / 2, 0, z));
 header('header-top', z0 + H + 120);
 header('header-bottom', z0 - 130);
 for (const [name, z] of [['inlet', z0 + H + 120], ['outlet', z0 - 130]]) {

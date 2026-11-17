@@ -1,0 +1,127 @@
+#usda 1.0
+(
+    defaultPrim = "coupling_warning_demo"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "coupling_warning_demo" (
+    prepend apiSchemas = ["PhysicsArticulationRootAPI"]
+)
+{
+    def Xform "Links"
+    {
+        def Xform "base" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.000000, 0.000000, 0.000000)
+            quatf xformOp:orient = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            float physics:mass = 0.032400
+            point3f physics:centerOfMass = (0.030000, 0.010000, 0.005000)
+            float3 physics:diagonalInertia = (1.350000e-6, 9.990000e-6, 1.080000e-5)
+            quatf physics:principalAxes = (1.000000, 0.000000, 0.000000, 0.000000)
+
+            def Mesh "visual" (
+                prepend references = @./meshes/base.usda@
+            )
+            {
+            }
+
+            def Mesh "collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+                prepend references = @./meshes/base.usda@
+            )
+            {
+                uniform token physics:approximation = "convexHull"
+                uniform token purpose = "guide"
+            }
+        }
+
+        def Xform "input" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.000000, 0.000000, 0.010000)
+            quatf xformOp:orient = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            float physics:mass = 0.001696
+            point3f physics:centerOfMass = (0.000000, 0.000000, 0.004000)
+            float3 physics:diagonalInertia = (1.965066e-8, 1.965066e-8, 2.120575e-8)
+            quatf physics:principalAxes = (1.000000, 0.000000, 0.000000, 0.000000)
+
+            def Mesh "visual" (
+                prepend references = @./meshes/input.usda@
+            )
+            {
+            }
+
+            def Mesh "collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+                prepend references = @./meshes/input.usda@
+            )
+            {
+                uniform token physics:approximation = "convexHull"
+                uniform token purpose = "guide"
+            }
+        }
+
+        def Xform "output" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.024000, 0.000000, 0.010000)
+            quatf xformOp:orient = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            float physics:mass = 0.003393
+            point3f physics:centerOfMass = (0.000000, 0.000000, 0.008000)
+            float3 physics:diagonalInertia = (9.358805e-8, 9.358805e-8, 4.241150e-8)
+            quatf physics:principalAxes = (1.000000, 0.000000, 0.000000, 0.000000)
+
+            def Mesh "visual" (
+                prepend references = @./meshes/output.usda@
+            )
+            {
+            }
+
+            def Mesh "collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+                prepend references = @./meshes/output.usda@
+            )
+            {
+                uniform token physics:approximation = "convexHull"
+                uniform token purpose = "guide"
+            }
+        }
+    }
+
+    def Scope "Joints"
+    {
+        def PhysicsRevoluteJoint "input"
+        {
+            rel physics:body0 = </coupling_warning_demo/Links/base>
+            rel physics:body1 = </coupling_warning_demo/Links/input>
+            point3f physics:localPos0 = (0.000000, 0.000000, 0.010000)
+            quatf physics:localRot0 = (1.000000, 0.000000, 0.000000, 0.000000)
+            point3f physics:localPos1 = (0.000000, 0.000000, 0.000000)
+            quatf physics:localRot1 = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token physics:axis = "Z"
+            float physics:lowerLimit = -180.000000
+            float physics:upperLimit = 180.000000
+        }
+
+        def PhysicsRevoluteJoint "output"
+        {
+            rel physics:body0 = </coupling_warning_demo/Links/base>
+            rel physics:body1 = </coupling_warning_demo/Links/output>
+            point3f physics:localPos0 = (0.024000, 0.000000, 0.010000)
+            quatf physics:localRot0 = (1.000000, 0.000000, 0.000000, 0.000000)
+            point3f physics:localPos1 = (0.000000, 0.000000, 0.000000)
+            quatf physics:localRot1 = (1.000000, 0.000000, 0.000000, 0.000000)
+            uniform token physics:axis = "Z"
+            float physics:lowerLimit = -90.000000
+            float physics:upperLimit = 90.000000
+        }
+    }
+}

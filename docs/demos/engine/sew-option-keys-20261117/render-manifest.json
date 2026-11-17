@@ -1,0 +1,33 @@
+{
+  "capturedAtUtc": "2026-11-17T08:20:07.321464+00:00",
+  "source": "demo.ts",
+  "invocation": "npx tsx docs/demos/engine/sew-option-keys-20261117/demo.ts",
+  "renderInvocation": "python3 docs/demos/engine/sew-option-keys-20261117/render_demo.py",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "durationSeconds": 6,
+    "codec": "libx264",
+    "crf": 24
+  },
+  "video": "sew-option-keys.mp4",
+  "sha256": "b55abf1665e3306869a895ee3df0a8abaf4fdac0bffdf34fa96cf5b3c2ef8691",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "6.000000",
+      "size": "64292"
+    }
+  },
+  "provenance": "actual local CaptureSession API result; no OCCT lowering, deployed behavior, or hardware acceptance"
+}

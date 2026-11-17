@@ -70,10 +70,10 @@ for (const sx of [-1, 1]) {
 // Propeller: pitched paddle blades on a hub.
 const n = Number(bladeCount.value);
 const BY = -60; // blade plane
-const paddle = extrudePolygon([[-60, 150], [60, 150], [150, 480], [130, 590], [-40, 610], [-120, 520]], 6).rotateX(90);
+const paddle = () => extrudePolygon([[-60, 150], [60, 150], [150, 480], [130, 590], [-40, 610], [-120, 520]], 6).rotateX(90);
 for (let k = 0; k < n; k++) {
   const wide = n === 3 ? 1.35 : 1;
-  add(`blade-${k}`, paddle.scale([wide, 1, 1]).rotateZ(24).rotateY(k * 360 / n + 15).translate(0, BY, ZC).color(blades));
+  add(`blade-${k}`, paddle().scale([wide, 1, 1]).rotateZ(24).rotateY(k * 360 / n + 15).translate(0, BY, ZC).color(blades));
 }
 add("hub", cylY(0, BY - 60, ZC, 120, 150, 16).color(blades));
 add("hub-cap", cylY(0, BY - 80, ZC, 20, 90, 14).color('#8c9296'));

@@ -19,15 +19,16 @@ const safetyBand = param('safetyBand', '#f0eee3', { label: 'Top safety band' });
 const baseRubber = param('baseRubber', '#303638', { label: 'Base rubber' });
 presets({ clubColors: { powderCoat: '#526c55', meshNylon: '#e6e1d4' } });
 const p = assembly('volleyball-net');
-p.part('left-post', cylinder(205, 8, 10).translate(-185, 0, 0).scale(scale).color(powderCoat));
-p.part('right-post', cylinder(205, 8, 10).translate(185, 0, 0).scale(scale).color(powderCoat));
-p.part('top-band', box(370, 14, 12, true).translate(0, 0, 200).scale(scale).color(safetyBand));
-p.part('base-left', box(90, 36, 10, true).translate(-185, 0, 5).scale(scale).color(baseRubber));
-p.part('base-right', box(90, 36, 10, true).translate(185, 0, 5).scale(scale).color(baseRubber));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('left-post', cylinder(205, 8, 10).translate(-185, 0, 0).color(powderCoat));
+add('right-post', cylinder(205, 8, 10).translate(185, 0, 0).color(powderCoat));
+add('top-band', box(370, 14, 12, true).translate(0, 0, 200).color(safetyBand));
+add('base-left', box(90, 36, 10, true).translate(-185, 0, 5).color(baseRubber));
+add('base-right', box(90, 36, 10, true).translate(185, 0, 5).color(baseRubber));
 
 
 // A fine open nylon lattice is tensioned between the posts under the safety band.
-for (let i = 0; i <= 18; i++) p.part(`mesh-vertical-${i + 1}`, box(2, 3, 180, true).translate(-175 + i * 19.4, 0, 105).color(meshNylon));
-for (let i = 0; i <= 9; i++) p.part(`mesh-horizontal-${i + 1}`, box(358, 3, 2, true).translate(0, 0, 22 + i * 18).color(meshNylon));
+for (let i = 0; i <= 18; i++) add(`mesh-vertical-${i + 1}`, box(2, 3, 180, true).translate(-175 + i * 19.4, 0, 105).color(meshNylon));
+for (let i = 0; i <= 9; i++) add(`mesh-horizontal-${i + 1}`, box(358, 3, 2, true).translate(0, 0, 22 + i * 18).color(meshNylon));
 
 return p.model();

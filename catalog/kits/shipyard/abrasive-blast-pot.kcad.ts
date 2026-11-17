@@ -76,6 +76,9 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
 
 p.part("pressure-vessel", c("pressure-vessel", 950, 390, 14, [0, 0, 690]).color(yardPaint));
 p.part("hopper", c("hopper", 360, 300, 12, [0, 0, 1320]).color(yardPaint));
+p.part("support-skirt", c("support-skirt", 470, 380, 12, [0, 0, 220]).color(structuralSteel));
+p.part("axle", b("axle", [1240, 100, 100], [0, 0, 220]).color(structuralSteel));
+p.part("handle-stay", b("handle-stay", [200, 100, 100], [-480, 0, 1120]).color(structuralSteel));
 p.part("top-lid", b("top-lid", [610, 610, 120], [0, 0, 1570]).color(yardPaint));
 p.part("manifold", b("manifold", [620, 150, 180], [0, -340, 790]).color(yardPaint));
 p.part("wheel-0", c("wheel-0", 100, 220, 12, [-520, 0, 220], [0, 90, 0], 90).color(elastomer));

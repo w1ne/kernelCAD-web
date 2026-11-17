@@ -38,10 +38,10 @@ const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxSh
 const p = assembly("rover-dust-shield");
 p.part("shield-left",b(-380,0,240,420,65,700).color(paint));
 p.part("shield-right",b(380,0,240,420,65,700).color(paint));
-p.part("strut--380--80",b(-380,-80,0,55,55,440).color(aluminum));
-p.part("strut--380-80",b(-380,80,0,55,55,440).color(aluminum));
-p.part("strut-380--80",b(380,-80,0,55,55,440).color(aluminum));
-p.part("strut-380-80",b(380,80,0,55,55,440).color(aluminum));
+p.part("strut--380--80",b(-500,0,0,55,55,440).color(aluminum));
+p.part("strut--380-80",b(-260,0,0,55,55,440).color(aluminum));
+p.part("strut-380--80",b(260,0,0,55,55,440).color(aluminum));
+p.part("strut-380-80",b(500,0,0,55,55,440).color(aluminum));
 p.part("lip-left",b(-380,-40,590,440,35,55).color(rubber));
 p.part("lip-right",b(380,-40,590,440,35,55).color(rubber));
 

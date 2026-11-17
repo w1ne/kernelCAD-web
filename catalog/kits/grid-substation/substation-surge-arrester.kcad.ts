@@ -36,6 +36,7 @@ p.part("arrester-section-3", cylinder(252, 216, 10).translate(0, 0, 804).scale(s
 p.part("arrester-section-4", cylinder(252, 186, 10).translate(0, 0, 1116).scale(scale).color(porcelain));
 p.part("arrester-section-5", cylinder(252, 216, 10).translate(0, 0, 1428).scale(scale).color(porcelain));
 p.part("arrester-section-6", cylinder(252, 186, 10).translate(0, 0, 1740).scale(scale).color(porcelain));
+p.part("core-column", cylinder(2050, 150, 10).translate(0, 0, 180).scale(scale).color(porcelain));
 p.part("top-terminal", box(252, 252, 170, true).translate(0, 0, 2315).scale(scale).color(copper));
 
 return p.model();

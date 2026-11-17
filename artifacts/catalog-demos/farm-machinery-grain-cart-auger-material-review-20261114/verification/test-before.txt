@@ -1,0 +1,4 @@
+[31m     [31m×[31m paints the unloading auger with the cart, not the exposed-steel hub finish[39m[32m 205[2mms[22m[39m
+[41m[1m FAIL [22m[49m tests/integration/catalog/grainCartAugerMaterial.test.ts[2m > [22mfarm-machinery/grain-cart materials[2m > [22mpaints the unloading auger with the cart, not the exposed-steel hub finish
+[31m[1mAssertionError[22m: expected [ Array(8) ] to include 'auger-base'[39m
+    [90m 31| [39m    [35mfor[39m ([35mconst[39m part [35mof[39m auger) {

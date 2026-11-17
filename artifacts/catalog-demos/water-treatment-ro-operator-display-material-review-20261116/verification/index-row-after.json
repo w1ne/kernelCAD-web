@@ -1,0 +1,192 @@
+{
+  "id": "reverse-osmosis-skid",
+  "kit": "water-treatment",
+  "title": "Reverse osmosis skid",
+  "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells, operator display glass; weathered and highVisibility presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "water treatment",
+    "water utility",
+    "infrastructure",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "water-treatment",
+    "utility",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
+  "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
+  "sourceSha256": "eb6574e982749d18fc47969b112109afca5b203bf8a1c29d075124c86294fa02",
+  "triangleBudget": 3300,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "membraneVessels",
+      "type": "choice",
+      "default": "3",
+      "label": "Membrane vessels",
+      "choices": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#3d8589",
+      "label": "Coated equipment steel"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#68777b",
+      "label": "Structural steel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c0",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "reinforcedComposite",
+      "type": "color",
+      "default": "#f0eee7",
+      "label": "Glass-reinforced epoxy shells"
+    },
+    {
+      "name": "displayGlass",
+      "type": "color",
+      "default": "#1f2d36",
+      "label": "Operator display glass"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#687b78",
+      "structuralSteel": "#6e6b63",
+      "stainlessSteel": "#9ca7a6",
+      "reinforcedComposite": "#d7d3c8",
+      "displayGlass": "#2a3337"
+    },
+    "highVisibility": {
+      "coatedSteel": "#e5682d",
+      "structuralSteel": "#505b60",
+      "stainlessSteel": "#e1ddd0",
+      "reinforcedComposite": "#f7f4e9",
+      "displayGlass": "#14262f"
+    }
+  },
+  "stats": {
+    "triangles": 2660,
+    "sizeM": [
+      1.28,
+      0.325,
+      0.76
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "structuralSteel",
+      "color": "#68777b",
+      "parts": [
+        "skid-base",
+        "frame-rail-front",
+        "frame-rail-back",
+        "cross-member-left",
+        "cross-member-center",
+        "cross-member-right",
+        "vessel-band-left-1",
+        "vessel-band-right-1",
+        "vessel-band-left-2",
+        "vessel-band-right-2",
+        "vessel-band-left-3",
+        "vessel-band-right-3",
+        "feed-pump-fan-cover",
+        "pump-support-left",
+        "pump-support-right",
+        "cabinet-foot-left",
+        "cabinet-foot-right"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "reinforcedComposite",
+      "color": "#f0eee7",
+      "parts": [
+        "membrane-vessel-1",
+        "membrane-vessel-2",
+        "membrane-vessel-3"
+      ],
+      "param": "reinforcedComposite"
+    },
+    {
+      "name": "coatedSteel",
+      "color": "#3d8589",
+      "parts": [
+        "membrane-cap-left-1",
+        "membrane-cap-right-1",
+        "vessel-saddle-left-1",
+        "vessel-saddle-right-1",
+        "membrane-cap-left-2",
+        "membrane-cap-right-2",
+        "vessel-saddle-left-2",
+        "vessel-saddle-right-2",
+        "membrane-cap-left-3",
+        "membrane-cap-right-3",
+        "vessel-saddle-left-3",
+        "vessel-saddle-right-3",
+        "feed-isolation-valve",
+        "permeate-valve",
+        "feed-pump-motor",
+        "pump-volute",
+        "control-cabinet",
+        "status-lamp-red"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c0",
+      "parts": [
+        "feed-branch-1",
+        "permeate-branch-1",
+        "feed-branch-2",
+        "permeate-branch-2",
+        "feed-branch-3",
+        "permeate-branch-3",
+        "feed-manifold",
+        "permeate-manifold",
+        "pump-coupling",
+        "pump-discharge-pipe",
+        "cabinet-door",
+        "status-lamp-green"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "displayGlass",
+      "color": "#1f2d36",
+      "parts": [
+        "operator-display"
+      ],
+      "param": "displayGlass"
+    }
+  ]
+}

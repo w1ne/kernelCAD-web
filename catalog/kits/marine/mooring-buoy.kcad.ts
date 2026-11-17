@@ -26,6 +26,6 @@ const p = assembly("mooring-buoy");
 p.part("float-body", (sphere(180).scale([1, 1, 0.82]).translate(0, 0, 230)).translate(0, 0, 0).scale(scale).color(safetyVinyl));
 p.part("top-cap", (cylinder(44, 90, 12).translate(0, 0, 356)).translate(0, 0, 0).scale(scale).color(safetyVinyl));
 p.part("lifting-eye", (cylinder(34, 50, 12).subtract(cylinder(36, 28, 12).translate(0, 0, -1)).translate(0, 0, 398)).translate(0, 0, 0).scale(scale).color(galvanizedSteel));
-p.part("chain-shackle", (cylinder(54, 33, 10).translate(0, 0, 0)).translate(0, 0, 0).scale(scale).color(stainlessSteel));
+p.part("chain-shackle", (cylinder(100, 33, 10).translate(0, 0, 0)).translate(0, 0, 0).scale(scale).color(stainlessSteel));
 
 return p.model();

@@ -88,6 +88,19 @@ describe('spring({ length, coilRadius, wireRadius, turns })', () => {
       .toThrow(/turns/);
   });
 
+  it('rejects unknown option keys instead of dropping them', () => {
+    const api = makeApi();
+    const base = { length: 30, coilRadius: 5, wireRadius: 1, turns: 8 };
+    expect(() => api.spring({ ...base, ends: 'closed' } as never))
+      .toThrow(/opts\.ends — got an unknown option 'ends'/);
+    expect(() => api.spring({ ...base, endstyle: 'closed' } as never))
+      .toThrow(/opts\.endstyle/);
+    expect(() => api.spring({ ...base, pitch: 2 } as never))
+      .toThrow(/opts\.pitch .*pitch is length \/ turns/);
+    expect(() => api.spring({ ...base, axis: 'Y', endStyle: 'closed', pointsPerTurn: 12, segments: 8 }))
+      .not.toThrow();
+  });
+
   it('is advertised to agents as a top-level modeling primitive', () => {
     const entry = GLOBALS.find((g) => g.name === 'spring');
     expect(entry?.signature).toContain('length');

@@ -1,0 +1,20 @@
++ Received
+  [
+    "coatedSteel",
+    "structuralSteel",
+    "stainlessSteel",
+    "reinforcedComposite",
+-   "displayGlass",
+  ]
+ ❯ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts:21:95
+     19|     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, so…
+     20|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     21|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     22|       'coatedSteel', 'structuralSteel', 'stainlessSteel', 'reinforcedC…
+     23|     ]);
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  01:30:42
+   Duration  14.19s (transform 9.77s, setup 281ms, import 11.18s, tests 2.47s, environment 0ms)

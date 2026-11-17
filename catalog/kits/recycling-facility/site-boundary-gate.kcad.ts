@@ -43,7 +43,7 @@ const profileXZ = (pts: [number, number][], t: number) => extrudePolygon(pts, t)
 
 // One triple-pointed palisade pale, 70 mm wide, standing on z = 0.
 const PH = 2400;
-const pale = profileXZ([[-35, 0], [35, 0], [35, PH - 60], [30, PH], [12, PH - 50], [0, PH - 10], [-12, PH - 50], [-30, PH], [-35, PH - 60]], 6);
+const pale = () => profileXZ([[-35, 0], [35, 0], [35, PH - 60], [30, PH], [12, PH - 50], [0, PH - 10], [-12, PH - 50], [-30, PH], [-35, PH - 60]], 6);
 
 // Gate leaves: built with the hinge at x = 0, extending toward dir.
 type Col = typeof palisade;
@@ -53,7 +53,7 @@ const leaf = (dir: number, name: string) => {
   for (const z of [G0 + 250, G0 + 1250, G0 + 2050]) parts.push([`rail-${z}`, blk(dir * (L / 2 + 40), 15, z, L - 20, 40, 50), palisade]);
   for (const x of [60, L - 30]) parts.push([`stile-${x}`, blk(dir * x, 15, G0 + 100, 60, 60, 2050), palisade]);
   const n = Math.floor((L - 60) / 125);
-  for (let k = 0; k < n; k++) parts.push([`pale-${k}`, pale.translate(dir * (110 + k * 125), -10, G0 + 80), palisade]);
+  for (let k = 0; k < n; k++) parts.push([`pale-${k}`, pale().translate(dir * (110 + k * 125), -10, G0 + 80), palisade]);
   const bl = Math.hypot(L - 160, 900);
   parts.push(['brace', box(bl, 30, 50, true).rotateY(dir * (Math.atan2(900, L - 160) * 180) / Math.PI).translate(dir * (L / 2 + 30), 30, G0 + 780), palisade]);
   for (const z of [G0 + 300, G0 + 1900]) parts.push([`hinge-${z}`, cylinder(120, 30, 10).translate(0, 15, z), posts]);
@@ -95,7 +95,7 @@ for (const s of [-1, 1]) {
   const sd = s < 0 ? 'l' : 'r';
   add(`fence-post-${sd}`, blk(x1, 30, 0, 100, 100, 2500).color(palisade));
   for (const z of [400, 2000]) add(`fence-rail-${sd}-${z}`, blk((x0 + x1) / 2, 30, z, FL, 40, 50).color(palisade));
-  for (let k = 0; k < 17; k++) add(`fence-pale-${sd}-${k}`, pale.translate(x0 + s * (60 + k * 125), 0, 40).color(palisade));
+  for (let k = 0; k < 17; k++) add(`fence-pale-${sd}-${k}`, pale().translate(x0 + s * (60 + k * 125), 0, 40).color(palisade));
 }
 
 // Site sign with opening hours on the -X fence run.

@@ -181,6 +181,30 @@ function readDiameter(diameterMm: unknown): number {
   return diameterArg('diameterMm', diameterMm, 'a finite number > 0 — the nominal major diameter, or a tap drill when kind is tap_drill');
 }
 
+const DIAMETER_OPTION_KEYS = ['kind', 'toleranceMm'];
+
+// A misspelled key (`{ mode: 'tap_drill' }`) used to be dropped, so a 5 mm
+// tap drill matched the M5 nominal instead of M6 with no diagnostic.
+function readOptions(opts: unknown): MetricThreadFromDiameterOptions {
+  if (opts === undefined || opts === null) return {};
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    return diameterArg('opts', opts, 'an options object with kind and/or toleranceMm');
+  }
+  for (const key of Object.keys(opts)) {
+    if (!DIAMETER_OPTION_KEYS.includes(key)) {
+      invalidArgs({
+        api: 'metricThreadFromDiameter(diameterMm, opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${DIAMETER_OPTION_KEYS.join(', ')}`,
+        example: DIAMETER_EXAMPLE,
+        featureId: 'metricThreadFromDiameter',
+      });
+    }
+  }
+  return opts as MetricThreadFromDiameterOptions;
+}
+
 function readKind(kind: unknown): MetricThreadMatchKind {
   if (kind === undefined) return 'nominal';
   if (kind === 'nominal' || kind === 'tap_drill' || kind === 'auto') return kind;
@@ -240,8 +264,9 @@ export function matchMetricThreadFromDiameter(
   opts?: MetricThreadFromDiameterOptions,
 ): MetricThreadMatch {
   const diameter = readDiameter(diameterMm);
-  const kind = readKind(opts?.kind);
-  const toleranceMm = readTolerance(opts?.toleranceMm);
+  const options = readOptions(opts);
+  const kind = readKind(options.kind);
+  const toleranceMm = readTolerance(options.toleranceMm);
   const nominalTol = toleranceMm ?? NOMINAL_DIAMETER_TOL_MM;
   const tapTol = toleranceMm ?? TAP_DRILL_DIAMETER_TOL_MM;
   if (kind !== 'tap_drill') {

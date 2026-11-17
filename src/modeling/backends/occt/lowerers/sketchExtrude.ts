@@ -2,12 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
+import { assertTaperable, resolveExtrudeTaperDeg, taperExtrudedPrism } from '../../../../kernel/backends/occt/backendExtrudeTaper';
 import { TANGENCY_ERROR_PREFIX } from '../../../../kernel/backends/occt/tangencySolver';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isKernelError } from '../../../../shared/intent/kernelError';
-import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
+import { invalidArgs, invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -283,8 +284,32 @@ function extrudeSketchProfile(
     return undefined;
   }
   try {
-    return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
+    // A param-driven taper that resolves to 0 keeps the straight path.
+    const taperDeg = resolveExtrudeTaperDeg(r.params.taperDeg?.evaluated, 'Sketch.extrude');
+    if ((r.params.symmetric?.evaluated ?? 0) > 0.5) {
+      assertSymmetricExtrudable(taperDeg, twistAngle, sketchInput.getSketchCommands() !== null);
+      // A path sketch always extrudes 0..depth along +Z; centre it on z = 0.
+      return OcctBackend.extrudeFromSketch(sketchInput, depth).translate(0, 0, -depth / 2);
+    }
+    if (taperDeg === 0) return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
+    assertTaperable(taperDeg, twistAngle, sketchInput.getSketchCommands() !== null);
+    const straight = OcctBackend.extrudeFromSketch(sketchInput, depth);
+    return new OcctBackend(taperExtrudedPrism(straight, depth, taperDeg));
   } catch (e) {
     return pushExtrudeFailure(ctx, r, e);
   }
+}
+
+/** Reject a symmetric extrude the lowerer cannot centre: with a taper or a
+ *  twist (both are defined from the sketch plane outward), or on a sketch
+ *  without path commands (a face-bound sketch extrudes along its face normal). */
+function assertSymmetricExtrudable(taperDeg: number, twistAngle: number, hasPathCommands: boolean): void {
+  if (taperDeg === 0 && twistAngle === 0 && hasPathCommands) return;
+  invalidArgs({
+    api: 'Sketch.extrude(depth, { symmetric })',
+    path: 'opts.symmetric',
+    got: true,
+    requires: 'no taperDeg, no twistAngle and a path()...close() sketch; otherwise extrude one-sided and translate by -depth/2',
+    example: 'path()...close().extrude(10, { symmetric: true })',
+  });
 }

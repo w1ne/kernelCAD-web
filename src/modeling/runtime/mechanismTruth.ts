@@ -50,6 +50,8 @@ import { jointGraphHasLoops } from '../capture/forwardKinematics';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureId } from '../../shared/intent/types';
+import { appendLoopEvidence, type MechanismLoopMobility } from './mechanismLoopEvidence';
+export type { MechanismLoopMobility } from './mechanismLoopEvidence';
 import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -208,6 +210,8 @@ export interface MechanismCoverage {
   /** `solvedModel({ ignore })` declarations, listed for transparency; they
    *  do not suppress collision checks at sampled joint-travel poses. */
   readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
+  /** Closed-loop rank and mobility measured by the mate solver per sampled pose. */
+  readonly loopMobility?: readonly MechanismLoopMobility[];
 }
 
 /**
@@ -365,6 +369,10 @@ function mechanismVerdict(
   return 'real';
 }
 
+function mateClosureFailures(moving: boolean, closure: readonly ClosureSample[]): CompilerDiagnostic[] {
+  return moving ? checkMateClosure(closure) : [];
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -400,11 +408,14 @@ export async function checkMechanismTruth(
   // criteria 2 + 3 will lazily lower BREP per-sample below.
   const solved: SolvedSample[] = [];
   const closure: ClosureSample[] = [];
+  const loopMobility: MechanismLoopMobility[] = [];
+  const seenLoopDiagnostics = new Set<string>();
   for (const sample of samples) {
     try {
       const r = await solveMates(arm, sample.poses);
       solved.push({ sample, transforms: r.poses });
       closure.push({ name: sample.name, status: r.status, ...(r.loopResiduals ? { loopResiduals: r.loopResiduals } : {}) });
+      appendLoopEvidence(r.loop, arm.name, sample.name, loopMobility, failures, seenLoopDiagnostics);
     } catch {
       // A solver throw at a sampled pose is itself a mechanism failure,
       // but it's already surfaced by the pose-envelope review path. Skip
@@ -416,7 +427,7 @@ export async function checkMechanismTruth(
   // Per-mate satisfaction at every solved pose (loop mates; tree mates are
   // placed by the FK walk). Moving models only: a static rigid loop keeps
   // its existing validator surface.
-  if (moving) failures.push(...checkMateClosure(closure));
+  failures.push(...mateClosureFailures(moving, closure));
 
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
@@ -466,6 +477,7 @@ export async function checkMechanismTruth(
       ...scope,
       sweep: !sweepSkipped,
       physics: physics?.ran ?? false,
+      ...(loopMobility.length > 0 ? { loopMobility } : {}),
     }, ignoredPairs),
   };
 }

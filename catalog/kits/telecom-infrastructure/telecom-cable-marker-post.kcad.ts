@@ -32,8 +32,8 @@ presets({
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2).scale(scale);
 
 const p = assembly("telecom-cable-marker-post");
-p.part("post", b(0, 0, 280, 80, 80, 600).color(galvanizedSteel));
-p.part("cap", b(0, 0, 610, 120, 120, 60).color(powderCoat));
+p.part("post", b(0, 0, 40, 80, 80, 600).color(galvanizedSteel));
+p.part("cap", b(0, 0, 640, 120, 120, 60).color(powderCoat));
 p.part("tag", b(0, -50, 390, 110, 22, 120).color(galvanizedSteel));
 p.part("band", b(0, 0, 120, 100, 100, 35).color(galvanizedSteel));
 p.part("foot", b(0, 0, 0, 190, 190, 40).color(galvanizedSteel));

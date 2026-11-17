@@ -37,9 +37,9 @@ const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxSh
 const br = (x: number,y: number,z: number,w: number,d: number,h: number,rx=0,ry=0) => boxShape(w,d,h).rotateX(rx).rotateY(ry).translate(x,y,z+h/2).scale(scale);
 
 const p = assembly("dust-protection-screen");
-p.part("panel-0",br(-360,0,390,320,45,780,0,-7).color(stainlessSteel));
-p.part("panel-1",br(0,0,390,320,45,780,0,0).color(stainlessSteel));
-p.part("panel-2",br(360,0,390,320,45,780,0,7).color(stainlessSteel));
+p.part("panel-0",br(-360,0,40,320,45,760,0,-7).color(stainlessSteel));
+p.part("panel-1",br(0,0,40,320,45,760,0,0).color(stainlessSteel));
+p.part("panel-2",br(360,0,40,320,45,760,0,7).color(stainlessSteel));
 p.part("top-rail",b(0,0,800,1080,65,55).color(paint));
 p.part("bottom-rail",b(0,0,15,1080,65,30).color(paint));
 p.part("skid-left",b(-360,0,0,180,500,50).color(aluminum));

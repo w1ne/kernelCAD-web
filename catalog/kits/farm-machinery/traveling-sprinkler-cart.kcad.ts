@@ -30,8 +30,8 @@ add('cart-wheel--1', cylinder(88, 180, 12).rotate([0, 1, 0], 90).translate(-44, 
 add('cart-wheel--1-hub', cylinder(96.8, 61.2, 10).translate(-48.4, -525, 180), steelColor);
 add('cart-wheel-1', cylinder(88, 180, 12).rotate([0, 1, 0], 90).translate(-44, 525, 180), rubberColor);
 add('cart-wheel-1-hub', cylinder(96.8, 61.2, 10).translate(-48.4, 525, 180), steelColor);
-add('hose-reel', box(646, 90, 810, true).translate(0, 0, 1230), rubberColor);
-add('sprinkler-mast', cylinder(1020, 28, 8).translate(0, 450, 220), paintedSteelColor);
-add('sprinkler-arm', box(320, 25, 28, true).translate(0, 450, 1349), paintedSteelColor);
+add('hose-reel', box(646, 90, 810, true).translate(0, 0, 575), rubberColor);
+add('sprinkler-mast', cylinder(1020, 28, 8).translate(0, 450, 150), paintedSteelColor);
+add('sprinkler-arm', box(320, 25, 28, true).translate(0, 450, 1156), paintedSteelColor);
 
 return p.model();

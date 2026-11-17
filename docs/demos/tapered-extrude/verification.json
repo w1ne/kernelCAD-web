@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-11-16",
+  "source": "examples/cookbook-parity/drafted-boss-plate.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 10390.98965417548,
+  "expectedVolumeMm3": 10390.989654175482,
+  "bossTopDiameterMm": 6.951844414339176,
+  "bossBoundsMm": {
+    "min": [
+      11,
+      16.011184692382812,
+      4
+    ],
+    "max": [
+      19,
+      23.988815307617188,
+      14
+    ]
+  },
+  "faceCount": 16,
+  "boundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      60,
+      40,
+      14
+    ]
+  },
+  "meshedFeatureCount": 9,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}
