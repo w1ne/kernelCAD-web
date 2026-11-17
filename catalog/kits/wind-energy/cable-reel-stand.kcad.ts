@@ -25,15 +25,14 @@ presets({
 });
 
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const c=(x:number,y:number,z:number,h:number,r:number,n=8)=>cylinder(h,r,n).translate(x,y,z).scale(scale);
 
 const p=assembly("cable-reel-stand");
 p.part("foot-left",b(-360,0,0,130,700,60).color(structuralSteel));
 p.part("foot-right",b(360,0,0,130,700,60).color(structuralSteel));
-p.part("upright-left",b(-360,0,340,70,90,680).color(structuralSteel));
-p.part("upright-right",b(360,0,340,70,90,680).color(structuralSteel));
-p.part("axle",c(0,0,550,90,45,8).color(stainlessSteel));
-p.part("reel",c(0,0,290,180,240,8).color(structuralSteel));
+p.part("upright-left",b(-360,0,60,70,90,680).color(structuralSteel));
+p.part("upright-right",b(360,0,60,70,90,680).color(structuralSteel));
+p.part("axle",cylinder(800,30,8).translate(0,0,-400).rotate([0,1,0],90).translate(0,0,400).scale(scale).color(stainlessSteel));
+p.part("reel",cylinder(500,240,8).translate(0,0,-250).rotate([0,1,0],90).translate(0,0,400).scale(scale).color(structuralSteel));
 p.part("crossbar",b(0,0,660,790,70,55).color(safetyPaint));
 
 return p.model();

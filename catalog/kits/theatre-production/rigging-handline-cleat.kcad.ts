@@ -64,14 +64,14 @@ add("frame-bottom", box(W + 60, 45, 30, true).translate(0, 5, 15).color(hardware
 
 // Horn cleat side profile: base on the wall, two legs, bar with horns.
 const cleatPts = [[0, -100], [0, 100], [-40, 78], [-66, 165], [-86, 186], [-104, 172], [-100, 60], [-100, -60], [-104, -172], [-86, -186], [-66, -165], [-40, -78]];
-const cleatShape = profileYZ(cleatPts, 52).subtract(box(80, 44, 90, true).translate(0, -40, 0));
+const cleatShape = () => profileYZ(cleatPts, 52).subtract(box(80, 44, 90, true).translate(0, -40, 0));
 
 const CZ = 1120; // cleat centre
 const FZ = 1580; // fairlead height
 add("fairlead-bar", box(W - 80, 130, 30, true).translate(0, -65, FZ).color(hardware));
 
 for (const [s, cx] of [["stage-left", -210], ["stage-right", 210]] as [string, number][]) {
-  add(`cleat-${s}`, cleatShape.translate(cx, 0, CZ).color(cleat));
+  add(`cleat-${s}`, cleatShape().translate(cx, 0, CZ).color(cleat));
 
   // Line down through the fairlead, round turn, figure-eight, locking turn.
   add(`fairlead-ring-${s}`, torus(30, 7, 14).translate(cx - 40, -100, FZ + 15).color(hardware));
@@ -97,13 +97,13 @@ const RZ = 360;
 add("pin-rail", alongX(W - 80, 24).translate(-(W - 80) / 2, -110, RZ).color(hardware));
 for (const [s, x] of [["left", -340], ["right", 340]] as [string, number][])
   add(`rail-bracket-${s}`, box(30, 110, 40, true).translate(x, -55, RZ).color(hardware));
-const pin = (() => {
+const pin = () => {
   const pts = [[0, -150], [10, -150], [10, 0], [20, 6], [20, 18], [14, 26], [16, 120], [12, 160], [0, 166]];
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
   return pb.close().revolve();
-})();
+};
 for (const [s, x] of [["a", -60], ["b", 0], ["c", 60]] as [string, number][])
-  add(`belaying-pin-${s}`, pin.translate(x, -110, RZ + 24).color(cleat));
+  add(`belaying-pin-${s}`, pin().translate(x, -110, RZ + 24).color(cleat));
 
 return p.model();

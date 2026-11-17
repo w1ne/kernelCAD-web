@@ -67,8 +67,8 @@ async function evaluateClean(code: string): Promise<void> {
 }
 
 /** Every pose failure at swing angle `deg`; [] is a pass. */
-async function poseFailures(code: string, deg: number): Promise<string[]> {
-  const ev = await evaluateScriptTool({ code });
+async function poseFailures(code: string, deg: number, skipMechanismCheck = false): Promise<string[]> {
+  const ev = await evaluateScriptTool({ code, skipMechanismCheck });
   if (!ev.ok) return [`evaluate_script failed`];
   const solved = await solveMatesTool({ poses: { swing: deg } });
   if (!solved.ok) return [`solve_mates failed: ${solved.error}`];
@@ -167,6 +167,24 @@ describe('manufacturing benchmark 08: SG90 servo lever on a printed plate (#1227
   it('re-imports from STEP as three solids with the expected volumes and boxes', async () => {
     expect(stepFailures(await exportSolids(SOURCE), DEFAULT_REACH)).toEqual([]);
   }, 120_000);
+
+  it('rejects a flipped servo body even when mate poses alone still pass', async () => {
+    const code = inject(SOURCE, 'const servo = await lib.standard.sg90();',
+      'const servo = (await lib.standard.sg90()).rotate([1, 0, 0], 180);');
+
+    // The declared joint frames are unchanged, so solve_mates alone cannot
+    // see that the imported servo geometry was turned over in its local frame.
+    expect(await poseFailures(code, 0, true)).toEqual([]);
+
+    // The full mechanism gate must reject the geometry-to-mate mismatch even
+    // though the authored mate graph still solves to the expected transforms.
+    const evaluated = await evaluateScriptTool({ code });
+    expect(evaluated.ok).toBe(false);
+    expect(evaluated.mechanism).toBe('broken');
+    const codes = evaluated.diagnostics.map((diagnostic) => diagnostic.code);
+    expect(codes).toContain('mechanism.joint-mesh-gap');
+    expect(codes).toContain('assembly.mechanical.connector-not-in-solid');
+  }, 180_000);
 
   it('a LeverReach edit lengthens the lever and stays clash-free', async () => {
     const edited = setParamValue(SOURCE, 'LeverReach', 75);

@@ -212,6 +212,27 @@ describe('Shape transform validators (capture-time)', () => {
     // mirror creates a new feature record
     expect(result.records.length).toBeGreaterThanOrEqual(1);
   });
+
+  // A misspelled offset used to be dropped: the part mirrored about x = 0.
+  it.each([
+    ['mirror', `{ plane: 'yz', ofset: 5 }`, 'plane.ofset'],
+    ['mirror', `{ plane: 'yz', distance: 5 }`, 'plane.distance'],
+    ['reflect', `{ plane: 'xy', Offset: 5 }`, 'plane.Offset'],
+  ])('%s rejects the unknown plane key in %s', async (method, plane, path) => {
+    await expect(runScript({ code: `return box(10, 10, 10).${method}(${plane});`, fileName: 'test.kcad.ts' }))
+      .rejects.toMatchObject({
+        code: 'feature.invalid-args',
+        message: expect.stringContaining(`${path} — got an unknown option`),
+      });
+  });
+
+  it('mirror and reflect still accept { plane, offset }', async () => {
+    const result = await runScript({
+      code: `return box(5, 5, 5).mirror({ plane: 'yz', offset: 5 }).reflect({ plane: 'xy', offset: 1 });`,
+      fileName: 'test.kcad.ts',
+    });
+    expect(result.records.length).toBeGreaterThanOrEqual(1);
+  });
 });
 
 describe('formatScalarForError robustness', () => {

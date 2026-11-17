@@ -57,6 +57,8 @@ export type VariableEdgeValueKey = 'radius' | 'distance';
 
 export interface ScalarEdgeFeatureOpts {
   continuity?: FilletContinuity;
+  /** Fillet only: radius at each edge's high end; `radius` is at the low end. */
+  endRadius?: Editable<number>;
   /** Chamfer only: validated asymmetric-leg options. */
   chamferLegs?: ChamferLegOptions;
   /** Shell only: further faces to open, recorded as `face_2`, `face_3`, … */
@@ -106,6 +108,22 @@ export function buildFaceInputRef(
     featureId: baseId,
     ref: { kind: 'query', query: face as never },
   };
+}
+
+const FACE_REF_KINDS: ReadonlySet<string> = new Set([
+  'canonical', 'tracked', 'created', 'propagated', 'label', 'query', 'queryDsl',
+]);
+
+/** Build an `inputs.upToFace` FeatureRef. Accepts the documented FaceRef
+ *  (`{ kind: 'canonical', face: 'bottom' }`) and every form `face` accepts. */
+export function buildUpToFaceInputRef(baseId: FeatureId, upToFace: unknown): FeatureRef {
+  if (typeof upToFace === 'object' && upToFace !== null && !isQueryValue(upToFace)) {
+    const kind = (upToFace as { kind?: unknown }).kind;
+    if (typeof kind === 'string' && FACE_REF_KINDS.has(kind)) {
+      return { kind: 'face', featureId: baseId, ref: upToFace as never };
+    }
+  }
+  return buildFaceInputRef(baseId, upToFace as ShapeOperationFaceSelector);
 }
 
 function queryDslFaceRef(baseId: FeatureId, q: ShapeOperationQueryValue): FeatureRef {
@@ -278,6 +296,7 @@ export function buildScalarEdgeFeatureSpec(
       : undefined;
 
   const params: Record<string, Param> = { [valueParamName]: toParam(value, 'mm') };
+  if (kind === 'fillet' && opts?.endRadius !== undefined) params.endRadius = toParam(opts.endRadius, 'mm');
   if (kind === 'chamfer' && opts?.chamferLegs !== undefined) {
     applyChamferLegs(baseId, opts.chamferLegs, params, inputs);
   }
