@@ -92,6 +92,18 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
   });
 });
 
+describe('Assembly.part option keys', () => {
+  it('rejects an unknown placement key instead of silently placing the part at the origin', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    const misspelled = { att: [120, 0, 0] } as unknown as NonNullable<Parameters<typeof arm.part>[2]>;
+
+    expect(() => arm.part('spacer', box, misspelled)).toThrow(/opts\.att.*unknown/i);
+  });
+});
+
 describe('Assembly.part connectors inline-map — F-surface gate enforcement', () => {
   it('rejects an inline connector-map key containing a dot', () => {
     const session = new CaptureSession();

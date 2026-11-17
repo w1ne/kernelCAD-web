@@ -155,6 +155,8 @@ interface Assembly {
 }
 ```
 
+`assembly.part` also accepts `process`, `stock`, `massKg`, `crossSection`, `role`, and `overlay`. Unknown option keys fail with `feature.invalid-args` and name the offending `opts.<key>` path. For example, `{ att: [120, 0, 0] }` is rejected instead of leaving the part at the default origin; use `{ at: [120, 0, 0] }` for an explicit placement.
+
 ## Scene API
 
 `Assembly.model()` and `Assembly.solvedModel(poses)` return a `Scene` — a frozen, ordered list of named parts with per-part world transforms. A Scene is iterable (`for (const p of scene)`), exposes `.parts` for indexed access, and offers two ways to collapse to a single Shape when one is required.
