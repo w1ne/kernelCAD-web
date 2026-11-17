@@ -149,6 +149,21 @@ export interface AssemblyJointRef {
   kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
 }
 
+/** `subAssembly(name, other, opts)` options. */
+export interface SubAssemblyImportOpts {
+  /**
+   * Variant declared on the child with `variant()`. The import copies that
+   * set and does not change which parts the child itself shows.
+   */
+  variant?: string;
+}
+
+/** `variant(name, opts)` options. Omitted `suppress` keeps every part. */
+export interface AssemblyVariantOpts {
+  /** Part names to leave out. A part connected to one of these is left out too. */
+  suppress?: readonly string[];
+}
+
 /**
  * Returned by `Assembly.subAssembly(name, other)`. Lets the caller mate
  * INTO the imported parts without manually re-spelling the namespace

@@ -133,6 +133,10 @@ await arm.instance('block-a', {
 
 Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. A geometry file the part names with a literal path is resolved beside the part file and is part of that evaluation, so replacing the file rebuilds the solid. A path the part computes is read on every instance. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. The failed call also does not record the connector interface. `subAssembly()` copies a configured part's interface onto the parent and rejects a mismatch before any part of that import is recorded. The same import keeps each part's placement and its density, material, process, stock, mass, cross-section, role, and overlay, whether the part is an ordinary `part()` or a configured instance. A part with no density still has no BOM mass. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
 
+A part placed with `connect` keeps that link through `subAssembly()`. The import copies the resolved `at` and points the link at the copied parent, so a mate that moves the imported parent moves the connected child with it. A connected child whose parent is not in the same import is rejected before any part is copied.
+
+`arm.variant('open', { suppress: ['cover'] })` names parts to leave out of this assembly. A part connected to a suppressed part is left out too. `arm.useVariant('open')` applies that set to the assembly's own parts, mates, joints, and mate couplings; call it again with another name to restore the parts that name keeps. `parent.subAssembly('nest', child, { variant: 'open' })` copies that named set and does not change which parts the child shows. A plain `subAssembly(name, other)` copies the parts the child currently shows. The import does not copy wrap geoms or collision shapes. A variant does not rewrite tendons, loop-mode pins, planning groups, disabled-collision pairs, or part lineage.
+
 ```typescript
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
@@ -164,6 +168,9 @@ interface Assembly {
       exposure?: 'exposed' | 'concealed';
     },
   ): AssemblyMateRef;
+  variant(name: string, opts?: { suppress?: string[] }): this;
+  useVariant(name: string): this;
+  subAssembly(name: string, other: Assembly, opts?: { variant?: string }): SubAssemblyHandle;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }

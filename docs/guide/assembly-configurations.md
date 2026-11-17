@@ -59,5 +59,20 @@ its density, material, process, stock, mass, cross-section, role, and overlay.
 An ordinary part and a configured instance take the same path. A part with no
 placement stays at the origin, and a part with no density still has no mass.
 
+A part placed with `connect` keeps that link. The import points the link at
+the copied parent, so a mate that moves the imported parent moves the
+connected child with it. A child whose connected parent is not part of the
+same import is rejected before any part of that import is recorded.
+
+`variant(name, { suppress: ['cover'] })` names parts to leave out.
+A part connected to a suppressed part is left out too. `useVariant(name)`
+applies that set to the assembly's own parts, mates, joints, and mate
+couplings. `subAssembly(name, other, { variant: 'open' })` copies the named
+set from the child and does not change which parts the child itself shows.
+A plain `subAssembly(name, other)` copies whatever the child currently
+shows, including a set chosen with `useVariant`. The import does not copy
+wrap geoms or collision shapes. A variant does not rewrite tendons,
+loop-mode pins, planning groups, disabled-collision pairs, or part lineage.
+
 This page is local validation of the script. It is not a claim about a
 printed part or a deployed service.

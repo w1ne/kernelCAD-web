@@ -52,6 +52,7 @@ import { buildMateMetadata, recordSolvedModel, solveJoints, type SolvedModelOpti
 import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
+import { applyAssemblyVariant, declareAssemblyVariant, importPlanFromState, type AssemblyImportPlan } from './assemblyVariant';
 import { instantiateConfiguredPart } from './configuredInstance';
 import { createAssemblyState, type AssemblyState } from './assemblyState';
 import { recordLoopMode, type LoopModeOpts, type LoopPin } from './assemblyLoopModes';
@@ -79,7 +80,9 @@ import type {
   Poses,
   PrismaticJointOpts,
   RevoluteJointOpts,
+  AssemblyVariantOpts,
   SubAssemblyHandle,
+  SubAssemblyImportOpts,
   TransmissionIntentOpts,
   TransmissionIntentRecord,
   VirtualJointRecord,
@@ -115,9 +118,22 @@ export class Assembly {
   }
 
   /** See `recordSubAssembly` in `assemblyParts.ts` for the full
-   *  sub-assembly-import contract. */
-  subAssembly(name: string, other: Assembly): SubAssemblyHandle {
-    return recordSubAssembly(this.state, this, name, other);
+   *  sub-assembly-import contract. `opts.variant` copies that named set
+   *  from `other` and does not change which parts `other` shows. */
+  subAssembly(name: string, other: Assembly, opts?: SubAssemblyImportOpts): SubAssemblyHandle {
+    return recordSubAssembly(this.state, this, name, other, opts);
+  }
+
+  /** Name a set of parts to leave out. A connected child of a named part is included when the variant is applied. */
+  variant(name: string, opts?: AssemblyVariantOpts): this {
+    declareAssemblyVariant(this.state, name, opts);
+    return this;
+  }
+
+  /** Apply a named variant to this assembly's parts, mates, joints, and mate couplings. */
+  useVariant(name: string): this {
+    applyAssemblyVariant(this.state, name);
+    return this;
   }
 
   /** See `revoluteJoint` in `assemblyJoints.ts`. */
@@ -433,6 +449,11 @@ export class Assembly {
    */
   __session(): CaptureSession {
     return this.state.session;
+  }
+
+  /** Parts and mates `subAssembly` would copy. Not part of the agent-facing surface. */
+  __importPlan(variant?: string): AssemblyImportPlan {
+    return importPlanFromState(this.state, variant);
   }
   __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
     if (this.state.mates.length === 0) return undefined;

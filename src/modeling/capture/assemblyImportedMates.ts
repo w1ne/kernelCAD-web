@@ -4,8 +4,7 @@
 // Copy mates from an imported assembly. Part names are prefixed; connector
 // names stay put so a single-dot connector ref still parses.
 
-import { parseConnectorRef } from '../mates/mate';
-import type { Assembly } from './assembly';
+import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { AssemblyState } from './assemblyState';
 
@@ -22,12 +21,16 @@ function copiedConfiguration(om: {
   };
 }
 
-export function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Assembly): void {
+export function importSubAssemblyMates(
+  state: AssemblyState,
+  prefix: string,
+  mates: readonly MateRecord[],
+): void {
   const remapRef = (ref: string): string => {
     const { partName, connectorName } = parseConnectorRef(ref);
     return `${prefix}${partName}.${connectorName}`;
   };
-  for (const om of other.__mates()) {
+  for (const om of mates) {
     state.mates.push({
       name: `${prefix}${om.name}`,
       a: remapRef(om.a),

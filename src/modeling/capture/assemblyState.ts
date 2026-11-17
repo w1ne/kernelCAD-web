@@ -65,6 +65,15 @@ export interface AssemblyState {
    * rejected import does not write an entry.
    */
   readonly configurationInterfaces: Map<string, { readonly name: string; readonly signature: string }>;
+  /** Named suppression sets from `variant()`. Values are the part names the author listed. */
+  readonly variants: Map<string, ReadonlySet<string>>;
+  /** Name of the variant last applied by `useVariant()`, if any. */
+  activeVariant?: string;
+  /** Parts removed from `parts` by the active variant, with the index to splice back. */
+  readonly hiddenParts: ParkedRecord<AssemblyPartStored>[];
+  readonly hiddenMates: ParkedRecord<MateRecord>[];
+  readonly hiddenJoints: ParkedRecord<AssemblyJointStored>[];
+  readonly hiddenCouplings: ParkedRecord<MateCouplingRecord>[];
   /**
    * True once the SCRIPT called `solvedModel(...)` (a validating call). The
    * mechanism-truth gate reads it as "the author declared this a mechanism":
@@ -72,6 +81,12 @@ export interface AssemblyState {
    * Internal re-posing calls pass `validate: 'off'` and do not set it.
    */
   solvedModelRequested: boolean;
+}
+
+/** One record parked by `useVariant`, restored by splicing at `index`. */
+export interface ParkedRecord<T> {
+  readonly index: number;
+  readonly value: T;
 }
 
 /** Fresh, empty `AssemblyState` for a newly constructed `Assembly`. */
@@ -100,6 +115,11 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     contactTolerances: [],
     clearanceTolerances: [],
     configurationInterfaces: new Map(),
+    variants: new Map(),
+    hiddenParts: [],
+    hiddenMates: [],
+    hiddenJoints: [],
+    hiddenCouplings: [],
     solvedModelRequested: false,
   };
 }

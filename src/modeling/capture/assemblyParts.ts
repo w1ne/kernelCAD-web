@@ -24,6 +24,7 @@ import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLi
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
 import { assertAssemblyPartOptionKeys } from './assemblyPartOptionKeys';
 import { createPartCollision } from './assemblyPartCollision';
+import { assertImportedConnectParents, remapImportedConnects } from './assemblyImportedConnect';
 import { importSubAssemblyMates } from './assemblyImportedMates';
 import type { Assembly } from './assembly';
 import type { PartConfigurationIdentity } from './partConfigurationTypes';
@@ -31,6 +32,7 @@ import { commitImportedInterfaces, preflightImportedInterfaces } from './configu
 import type {
   AssemblyConnectorFrame, AssemblyConnectorFrameStored, AssemblyConnectorOpts, AssemblyConnectorRef,
   AssemblyCrossSection, AssemblyPartOpts, AssemblyPartRef, TubeEnd, AssemblyPartStored, SubAssemblyHandle,
+  SubAssemblyImportOpts,
 } from './assemblyTypes';
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
@@ -836,14 +838,23 @@ export function recordPartInternal(
  * (per-sub-assembly root selection, sub-assembly instancing for N
  * identical bolts, cross-assembly mates with their own resolution).
  */
-export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: string, other: Assembly): SubAssemblyHandle {
+export function recordSubAssembly(
+  state: AssemblyState,
+  arm: Assembly,
+  name: string,
+  other: Assembly,
+  opts?: SubAssemblyImportOpts,
+): SubAssemblyHandle {
   validateSubAssemblyImport(state, arm, name, other);
+  const plan = other.__importPlan(opts?.variant);
+  assertImportedConnectParents(plan.parts);
   // Reject a connector-interface mismatch before copying, so a bad import
-  // cannot leave the earlier parts of `other` on this assembly.
-  const interfaceClaims = preflightImportedInterfaces(state, name, other.__parts());
+  // cannot leave the earlier parts of `other` on this assembly. A suppressed
+  // part is not in the plan, so it does not commit an interface.
+  const interfaceClaims = preflightImportedInterfaces(state, name, plan.parts);
   const prefix = `${name}_`;
-  const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, other);
-  importSubAssemblyMates(state, prefix, other);
+  const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, plan.parts, other);
+  importSubAssemblyMates(state, prefix, plan.mates);
   commitImportedInterfaces(state, interfaceClaims);
   const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
     const ref = importedByOriginalName.get(origPartName);
@@ -892,8 +903,8 @@ function validateSubAssemblyImport(state: AssemblyState, arm: Assembly, name: st
 
 // Placement and the physical declarations travel with the part. `at` is
 // already the resolved translation, including a part placed by `connect`.
-// The connect target's id belongs to the child, so the import does not
-// replay `connect`.
+// The import remaps that connect link onto the copied parts instead of
+// recomputing `at`.
 const IMPORTED_PART_FIELDS = ['density', 'material', 'process', 'stock', 'massKg', 'crossSection', 'role', 'overlay'] as const;
 
 function importedPartOpts(part: AssemblyPartStored): AssemblyPartOpts {
@@ -912,10 +923,12 @@ function importSubAssemblyParts(
   state: AssemblyState,
   arm: Assembly,
   prefix: string,
+  parts: readonly AssemblyPartStored[],
   other: Assembly,
 ): Map<string, AssemblyPartRef> {
   const importedByOriginalName = new Map<string, AssemblyPartRef>();
-  for (const op of other.__parts()) {
+  const newIdByOldId = new Map<FeatureId, FeatureId>();
+  for (const op of parts) {
     const newName = `${prefix}${op.name}`;
     const newRef = recordPartInternal(state, arm, newName, op.originalShape, importedPartOpts(op), false, op.configuration);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
@@ -926,7 +939,9 @@ function importSubAssemblyParts(
       newRef.mateConnectors.push(conn);
     }
     importedByOriginalName.set(op.name, newRef);
+    newIdByOldId.set(op.id, newRef.id);
   }
+  remapImportedConnects(state, other.__session(), prefix, parts, newIdByOldId, importedByOriginalName);
   return importedByOriginalName;
 }
 
