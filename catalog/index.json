@@ -145334,7 +145334,7 @@
       "id": "motor-control-center",
       "kit": "industrial-plant",
       "title": "Motor control center",
-      "description": "Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
+      "description": "Motor-control-center lineup with three matching steel cabinet sections, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -145353,7 +145353,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/motor-control-center.kcad.ts",
       "preview": "/assets/industrial-plant-motor-control-center.png",
-      "sourceSha256": "0439eda8121bc80b33676da3fe199da9285b7d719d5d2ea5ff2ba9848433e3c7",
+      "sourceSha256": "ce31e560fe5d397f3d1b3189f0617b3cf99216962f344bd8b726b19aa67ec242",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145404,7 +145404,6 @@
           "parts": [
             "shared-plinth",
             "operator-panel-0",
-            "bay-1",
             "operator-panel-1",
             "operator-panel-2",
             "top-cable-duct"
@@ -145419,6 +145418,7 @@
             "bay-door-0",
             "pushbutton-0-0",
             "pushbutton-0-1",
+            "bay-1",
             "bay-door-1",
             "pushbutton-1-0",
             "pushbutton-1-1",

@@ -120,7 +120,7 @@ index refresh, local checks, and inspected MP4. The branch is not deployed.
 | `cyclone-separator` | Cyclone separator | Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. | scale · steel · safety paint |
 | `industrial-transformer` | Industrial distribution transformer | Oil-filled transformer with two fin banks, ribbed porcelain bushings, copper terminals, lifting lugs and wheel skids. | scale · radiator fin count · tank paint · steel · porcelain · copper |
 | `electrical-control-cabinet` | Electrical control cabinet | Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. | scale · steel · safety paint · gauge glass |
-| `motor-control-center` | Motor control center | Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. | scale · steel · safety paint |
+| `motor-control-center` | Motor control center | Motor-control-center lineup with three matching steel cabinet sections, operator panels and a shared cable base. | scale · steel · safety paint |
 | `plc-control-rack` | PLC control rack | Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. | scale · steel · safety paint |
 | `variable-frequency-drive-cabinet` | Variable frequency drive cabinet | Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. | scale · steel · safety paint · gauge glass |
 | `cable-tray-bridge` | Cable tray bridge | Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. | scale · steel · safety paint |

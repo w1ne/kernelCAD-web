@@ -1,0 +1,28 @@
+{
+  "capture": "Local rendered PNGs assembled into a short evidence video; no browser replay, simulation, or hardware connection.",
+  "segments": [
+    "Five-preview contact sheet",
+    "Checked-in baseline motor-control-center preview",
+    "Regenerated after-fix motor-control-center preview",
+    "Exported-GLB regression card",
+    "Truthful local-only status caption"
+  ],
+  "segmentSeconds": 2.8,
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "frameRate": 25,
+    "codec": "H.264",
+    "crf": 22,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "commands": [
+    "npx tsx scripts/renderCatalogPreviews.ts motor-control-center",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/motorControlCenterBayMaterials.test.ts",
+    "python3 artifacts/catalog-demos/industrial-plant-motor-control-center-material-review-20261117/make_review_assets.py",
+    "artifacts/catalog-demos/industrial-plant-motor-control-center-material-review-20261117/make_demo.sh",
+    "python3 artifacts/catalog-demos/industrial-plant-motor-control-center-material-review-20261117/inspect_video.py"
+  ]
+}
