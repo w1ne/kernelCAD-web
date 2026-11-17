@@ -52,6 +52,37 @@ describe('sanitizeReportText', () => {
   it('does not treat a question mark followed by a space as a query string', () => {
     expect(sanitizeReportText('Which radius? Use 2 mm.').text).toBe('Which radius? Use 2 mm.');
   });
+
+  it('redacts temporary access keys, secret assignments, publishable keys and URL userinfo', () => {
+    const input = [
+      'ASIAFAKEKEYEXAMPLE01',
+      'AKIAFAKEKEYEXAMPLE01',
+      'AWS_SECRET_ACCESS_KEY=fakeSecretValue123/abcd',
+      'sb_secret_fakeSecretValue123',
+      'sb_publishable_fakePublishable123',
+      'https://ada:sekret@files.kernelcad.com/parts/plate.step?token=sekret',
+    ].join(' ');
+    const { text } = sanitizeReportText(input);
+    expect(text).toBe([
+      '[redacted-token]',
+      '[redacted-token]',
+      'AWS_SECRET_ACCESS_KEY=[redacted]',
+      '[redacted-token]',
+      '[redacted-token]',
+      'https://[redacted]@files.kernelcad.com/parts/plate.step',
+    ].join(' '));
+    expect(text).not.toContain('FAKEKEYEXAMPLE01');
+    expect(text).not.toContain('fakeSecretValue123');
+    expect(text).not.toContain('fakePublishable123');
+    expect(text).not.toContain('ada:sekret');
+    expect(text).not.toContain('sekret');
+  });
+
+  it('leaves a place name, a short key prefix and a URL without userinfo', () => {
+    const input = 'ASIA is a place name. sb_secret_short stays. https://files.kernelcad.com/parts/plate.step The word secret is not a credential.';
+    expect(sanitizeReportText(input).text).toBe(input);
+    expect(sanitizeReportText(input).redactions).toBe(0);
+  });
 });
 
 describe('knownDiagnosticCodesIn', () => {
@@ -170,6 +201,23 @@ describe('buildProblemReport', () => {
     expect(report.body).not.toContain('DESIGN_MARKER_8841');
     expect(report.body).not.toContain('FAKEPROBLEMTOKEN');
     expect(report.designAttachment).not.toContain('FAKEPROBLEMTOKEN');
+  });
+
+  it('keeps the hint on a diagnostic row and redacts a secret inside it', () => {
+    const report = buildProblemReport({
+      kind: 'evaluate',
+      errorMessage: FILLET,
+      diagnostics: [{
+        code: 'feature.edge-feature.short-edges-skipped',
+        severity: 'error',
+        message: FILLET,
+        hint: 'OCCT blend solver rejects this radius. AWS_SECRET_ACCESS_KEY=fakeSecretValue123',
+      }],
+      appVersion: '0.17.0',
+      reportedAt,
+    });
+    expect(report.body).toContain(`- feature.edge-feature.short-edges-skipped (error): ${FILLET} — OCCT blend solver rejects this radius. AWS_SECRET_ACCESS_KEY=[redacted]`);
+    expect(report.body).not.toContain('fakeSecretValue123');
   });
 
   it('uses the arguments of each call, so a later failure does not keep the earlier one', () => {

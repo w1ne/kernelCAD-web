@@ -18,9 +18,9 @@ a report for the latest failure that is still showing. A successful evaluate
 or export does not offer the button.
 
 The form is filled from the failure that is current when you open it: the
-error text, the hint, diagnostic codes, a short log tail, the app version and
-commit, and a coarse browser and operating system. Opening the form does not
-send anything.
+error text, the hint, diagnostic codes, the message and hint on each
+diagnostic, a short log tail, the app version and commit, and a coarse browser
+and operating system. Opening the form does not send anything.
 
 ## What is included
 
@@ -32,7 +32,7 @@ The screenshot is the model viewport only. It is downloaded as
 contains the design. Leave the box unchecked to keep the design on this computer.
 
 Before the text is placed in the issue, Studio removes email addresses,
-tokens and keys, query strings, and local paths, and it limits how much text
-is included. A value that does not look like a version, commit, or timestamp
+tokens and keys, secret assignments, credentials embedded in a URL, query
+strings, and local paths, and it limits how much text is included. A value that does not look like a version, commit, or timestamp
 is left out. Read the issue before you submit it. Nothing is sent until you
 submit it on GitHub.

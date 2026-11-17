@@ -38,13 +38,18 @@ const TOKEN_PATTERNS: readonly RegExp[] = [
   /\bgho_[A-Za-z0-9]{8,}\b/g,
   /\bglpat-[A-Za-z0-9_-]{8,}\b/g,
   /\bxox[baprs]-[A-Za-z0-9-]{8,}\b/g,
-  /\bAKIA[0-9A-Z]{16}\b/g,
+  /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g,
+  /\bsb_(?:secret|publishable)_[A-Za-z0-9_-]{8,}\b/g,
   /\bnpm_[A-Za-z0-9]{8,}\b/g,
   /\bBearer\s+[A-Za-z0-9\-._~+/]{8,}=*/gi,
 ];
 
 const EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
-const ASSIGNMENT = /((?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|passwd|pwd|token)\s*[:=]\s*)(?:"[^"\n]*"|'[^'\n]*'|[^\s&]+)/gi;
+// `aws_secret_access_key` is listed whole. A bare `secret` match stops at the
+// underscore in that name and would leave the value in place.
+const ASSIGNMENT = /((?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|aws_secret_access_key|aws_access_key_id|aws_session_token|secret|password|passwd|pwd|token)\s*[:=]\s*)(?:"[^"\n]*"|'[^'\n]*'|[^\s&]+)/gi;
+/** `https://user:pass@host/...` — the userinfo is a credential. The host stays. */
+const URL_USERINFO = /\bhttps?:\/\/[^\s/@:]+:[^\s/@]+@/gi;
 const QUERY = /\?[^\s#)]+/g;
 const FILE_URL = /\bfile:\/\/\S+/gi;
 const LOCAL_PATH = /(?:~\/|(?:\/(?:Users|home|tmp|private|var|Volumes|opt|usr\/local))\/)[^\s"'`)<>|;]+|[A-Za-z]:\\(?:Users|home)\\[^\s"'`)<>|;]+/g;
@@ -103,7 +108,7 @@ export function screenshotWithinBound(byteLength: number): boolean {
   return Number.isFinite(byteLength) && byteLength >= 0 && byteLength <= MAX_SCREENSHOT_BYTES;
 }
 
-/** Strip emails, tokens, credential assignments, query strings and local paths. */
+/** Strip emails, tokens, credential assignments, URL userinfo, query strings and local paths. */
 export function sanitizeReportText(input: string): SanitizedText {
   let text = input;
   let redactions = 0;
@@ -114,6 +119,8 @@ export function sanitizeReportText(input: string): SanitizedText {
       return replacement;
     });
   };
+  // Userinfo before the email pass, so `user:pass@host` is not half-read as an address.
+  apply(URL_USERINFO, (match) => `${match.slice(0, match.indexOf('://') + 3)}[redacted]@`);
   apply(EMAIL, REDACTED_EMAIL);
   for (const pattern of TOKEN_PATTERNS) apply(pattern, REDACTED_TOKEN);
   apply(ASSIGNMENT, (_match, key) => `${key}${REDACTED_SECRET}`);
@@ -227,6 +234,7 @@ interface CleanDiagnostic {
   code?: string;
   severity?: string;
   message?: string;
+  hint?: string;
 }
 
 function cleanDiagnostics(
@@ -250,12 +258,14 @@ function cleanDiagnostics(
     // the message cannot ride along with it.
     if (row.code && !code) continue;
     const message = row.message ? sanitizeLine(row.message, MAX_DIAGNOSTIC_MESSAGE_CHARS) : '';
+    const hint = row.hint ? sanitizeLine(row.hint, MAX_DIAGNOSTIC_MESSAGE_CHARS) : '';
     const severity = cleanSeverity(row.severity);
     if (!code && !message) continue;
     push({
       ...(code ? { code } : {}),
       ...(severity ? { severity } : {}),
       ...(message ? { message } : {}),
+      ...(hint ? { hint } : {}),
     });
   }
   return out.slice(0, MAX_DIAGNOSTICS);
@@ -355,7 +365,8 @@ function renderDiagnostics(rows: readonly CleanDiagnostic[]): string[] {
     const code = row.code ?? '(no code)';
     const severity = row.severity ? ` (${row.severity})` : '';
     const message = row.message ? `: ${row.message}` : '';
-    return `- ${code}${severity}${message}`;
+    const hint = row.hint ? ` — ${row.hint}` : '';
+    return `- ${code}${severity}${message}${hint}`;
   });
 }
 
