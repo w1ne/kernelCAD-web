@@ -42495,7 +42495,7 @@
       "id": "pet-blow-molder",
       "kit": "beverage-bottling-line",
       "title": "PET stretch blow molder",
-      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the light-gray machine enclosure.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -42514,7 +42514,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pet-blow-molder.png",
-      "sourceSha256": "b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb",
+      "sourceSha256": "3264a72debdcd31f4fec39e465d97736612fdd76565d939307ed45a4bfdcffb0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42537,16 +42537,24 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "enclosureCoat",
+          "type": "color",
+          "default": "#d2dfe1",
+          "label": "Light-gray enclosure coating"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "enclosureCoat": "#e1e8ea"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "enclosureCoat": "#a4abad"
         }
       },
       "stats": {
@@ -42571,13 +42579,20 @@
           "param": "powderCoat"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "enclosureCoat",
+          "color": "#d2dfe1",
           "parts": [
             "machine-body",
             "service-door-left",
             "service-door-right",
-            "heating-tunnel",
+            "heating-tunnel"
+          ],
+          "param": "enclosureCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
             "mold-column-0",
             "mold-column-1",
             "mold-column-2",
