@@ -68,6 +68,21 @@ describe('importDxfText — entities', () => {
     expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
   });
 
+  it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
+    const r = importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 40], [20, 30], [11, 20], [21, 0], [40, 0.5], [41, 0], [42, 2 * Math.PI],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(200 * Math.PI, 1);
+    const nurbs = r.regions[0].commands.filter(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    expect(nurbs).toHaveLength(4);
+    expect(nurbs.map(command => command.weights?.map(weight => weight.evaluated))).toEqual(
+      Array.from({ length: 4 }, () => [1, Math.SQRT1_2, 1]),
+    );
+  });
+
   it('reads a closed LWPOLYLINE as one region with exact area', () => {
     const r = importDxfText(entities(...SQUARE_10x5));
     expect(r.regions).toHaveLength(1);
@@ -275,9 +290,10 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/periodic splines are not supported/);
   });
 
-  it('ELLIPSE and INSERT — refused rather than dropped', () => {
-    expect(failure(() => importDxfText(entities([0, 'ELLIPSE'], [10, 0], [20, 0]))).message)
-      .toMatch(/^ELLIPSE at line \d+: an elliptical arc has no exact form/);
+  it('a partial ELLIPSE and an INSERT are refused rather than dropped', () => {
+    expect(failure(() => importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 0], [20, 0], [11, 5], [21, 0], [40, 0.5], [41, 0], [42, Math.PI],
+    ))).message).toMatch(/^ELLIPSE at line \d+: only full ellipses are supported/);
     expect(failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK']))).message)
       .toMatch(/INSERT \(block reference\) at line \d+:.*Explode blocks/s);
   });
