@@ -144,7 +144,7 @@ Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet 
 | Call | What it does |
 |---|---|
 | `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2'; endRadius?: Editable<number> }) => Shape` | Round edges. |
-| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body. |
+| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body; unknown option keys throw `feature.invalid-args`. |
 | `Shape.chamfer(distance, edges?: EdgeSelector, opts?: { distance2?: Editable<number>; angleDeg?: Editable<number>; face?: FaceSelector \| string }) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector \| FaceSelector[] }) => Shape` | Hollow the solid removing the named face, or every face in an array. |

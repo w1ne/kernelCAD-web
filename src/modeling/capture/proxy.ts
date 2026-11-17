@@ -904,7 +904,8 @@ export class Shape {
    * Round the seam where `cutter` met this body. The seam is selected by
    * proximity to the exact `body ∩ cutter` section, so it does not depend on
    * face/edge labels that a boolean split can invalidate. First slice:
-   * constant radius, body-side only.
+   * constant radius, body-side only. Unknown option keys fail with
+   * `feature.invalid-args` instead of silently using the defaults.
    */
   filletIntersection(
     cutter: Shape,
