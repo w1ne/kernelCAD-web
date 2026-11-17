@@ -1,0 +1,14 @@
+{
+  "asset": "shipyard/hull-block-fabrication-jig",
+  "sourceSha256": "cd1288b2f879af9b6e5460da8409db50eec9f19eaf2a563b274ee47b0d22400e",
+  "indexedSourceSha256": "cd1288b2f879af9b6e5460da8409db50eec9f19eaf2a563b274ee47b0d22400e",
+  "sourceHashMatches": true,
+  "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
+  "previewExists": true,
+  "triangles": 420,
+  "triangleBudget": 1800,
+  "sizeM": [2.7, 1.77, 2.3],
+  "catalogAssetCount": 2402,
+  "changedIndexRows": 1,
+  "buildCommand": "npx tsx scripts/buildAssetCatalog.ts"
+}

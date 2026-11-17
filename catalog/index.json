@@ -287393,7 +287393,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
       "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
-      "sourceSha256": "e4d3d432792e12261845b41bd049c34c6d975698a8897542361852cf3013da00",
+      "sourceSha256": "cd1288b2f879af9b6e5460da8409db50eec9f19eaf2a563b274ee47b0d22400e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287451,7 +287451,8 @@
           "name": "yardPaint",
           "color": "#657c78",
           "parts": [
-            "base-rail-0"
+            "base-rail-0",
+            "base-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -287459,7 +287460,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "base-rail-1",
             "cross-rail-0",
             "cross-rail-1",
             "cross-rail-2",

@@ -67,3 +67,25 @@ kernelCAD asset; no vendor product identity is claimed. The branch is not
 deployed, and the local preview/regression do not imply simulation or hardware
 acceptance. The full catalog integration suite passed 137 files and 207 tests,
 including the complete source/export/index-freshness check.
+
+## Shipyard follow-up audit
+
+Five rendered shipyard previews were checked after PR #1258's merged CI was
+confirmed green: `caisson-ballast-manifold-stand`, `electrical-test-cart`,
+`hull-block-fabrication-jig`, `dock-gate-caisson`, and `ship-lift-cradle`.
+None matched an open issue or PR target at selection time. The two base rails
+on `hull-block-fabrication-jig` had different colors despite mirrored, matching
+profiles. The second rail now uses the existing `yardPaint` control to match
+the first; structural steel stays on the cross rails, towers, and alignment
+beams. Geometry, dimensions, presets, and triangle budget are unchanged.
+
+The [five-preview ledger, before/after previews, baseline-failing and passing
+exported-GLB regression, regenerated index evidence, and inspected MP4](../../artifacts/catalog-demos/shipyard-hull-block-fabrication-jig-base-rail-material-review-20261117/README.md)
+record this material-only correction. The preview is a local kernelCAD software
+render; the branch is not deployed, and no simulation or hardware acceptance is
+claimed. A different finish split on the paired rails of `ship-lift-cradle` is
+recorded in the ledger for separate review. The shipyard structural quality
+gate reports 70/70 (100%); the global scan reports 2,398/2,402 (99.83%), with
+four unchanged `standard-components` outliers. The full catalog suite passed
+139 files and 209 tests, including the 2,402-asset source/export/index-freshness
+check. Neither mechanical count proves semantic realism.

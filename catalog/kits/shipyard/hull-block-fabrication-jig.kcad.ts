@@ -53,7 +53,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
 };
 
 p.part("base-rail-0", b("base-rail-0", [2700, 200, 190], [0, -1050, 95]).color(yardPaint));
-p.part("base-rail-1", b("base-rail-1", [2700, 200, 190], [0, 1050, 95]).color(structuralSteel));
+p.part("base-rail-1", b("base-rail-1", [2700, 200, 190], [0, 1050, 95]).color(yardPaint));
 p.part("cross-rail-0", b("cross-rail-0", [180, 2200, 160], [-1000, 0, 190]).color(structuralSteel));
 p.part("cross-rail-1", b("cross-rail-1", [180, 2200, 160], [0, 0, 190]).color(structuralSteel));
 p.part("cross-rail-2", b("cross-rail-2", [180, 2200, 160], [1000, 0, 190]).color(structuralSteel));

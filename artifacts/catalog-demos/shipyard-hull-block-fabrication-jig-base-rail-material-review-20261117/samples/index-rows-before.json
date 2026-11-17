@@ -1,0 +1,609 @@
+[
+  {
+    "id": "caisson-ballast-manifold-stand",
+    "kit": "shipyard",
+    "title": "Caisson ballast manifold stand",
+    "description": "Pipework display skid with a header, four branch valves, support feet, and a drain receiver. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "caisson",
+      "ballast",
+      "manifold",
+      "stand"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/caisson-ballast-manifold-stand.kcad.ts",
+    "preview": "/assets/shipyard-caisson-ballast-manifold-stand.png",
+    "sourceSha256": "2f5a0db6a092cc9f4e6f270c944682102a36207224c28c7dc1201348b6ecaf6f",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#67847e",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "elastomer",
+        "type": "color",
+        "default": "#30383b",
+        "label": "Elastomer"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#829a95",
+        "structuralSteel": "#d0d7d8",
+        "elastomer": "#3a4245"
+      },
+      "weathered-yard": {
+        "yardPaint": "#556e69",
+        "structuralSteel": "#828d91",
+        "elastomer": "#252b2d"
+      }
+    },
+    "stats": {
+      "triangles": 484,
+      "sizeM": [
+        1.93,
+        1.19,
+        0.7
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#67847e",
+        "parts": [
+          "base-skid"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "header-pipe",
+          "branch-pipe-0",
+          "branch-pipe-1",
+          "branch-pipe-2",
+          "branch-pipe-3",
+          "support-foot-0",
+          "support-foot-1",
+          "support-foot-2",
+          "support-foot-3",
+          "drain-receiver"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "elastomer",
+        "color": "#30383b",
+        "parts": [
+          "handwheel-0",
+          "handwheel-1",
+          "handwheel-2",
+          "handwheel-3"
+        ],
+        "param": "elastomer"
+      }
+    ]
+  },
+  {
+    "id": "dock-gate-caisson",
+    "kit": "shipyard",
+    "title": "Dock gate caisson",
+    "description": "Floating drydock gate module with a broad caisson body, stiffening ribs, deck walkway, and paired ballast housings. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "dock",
+      "gate",
+      "caisson"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/dock-gate-caisson.kcad.ts",
+    "preview": "/assets/shipyard-dock-gate-caisson.png",
+    "sourceSha256": "1066fc190b99e2762470ae20d1fdec7fa8e251c7241daaee3be1be5d4ab4f817",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#748987",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "buoyancyCoat",
+        "type": "color",
+        "default": "#4c969b",
+        "label": "Buoyancy coating"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#8d9e9d",
+        "structuralSteel": "#d0d7d8",
+        "buoyancyCoat": "#68b4b6"
+      },
+      "weathered-yard": {
+        "yardPaint": "#607270",
+        "structuralSteel": "#828d91",
+        "buoyancyCoat": "#337277"
+      }
+    },
+    "stats": {
+      "triangles": 336,
+      "sizeM": [
+        2.94,
+        2.17,
+        0.62
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#748987",
+        "parts": [
+          "gate-body",
+          "deck-cap"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "vertical-stiffener-0",
+          "vertical-stiffener-1",
+          "vertical-stiffener-2",
+          "vertical-stiffener-3",
+          "vertical-stiffener-4",
+          "vertical-stiffener-5",
+          "deck-cleat-0",
+          "deck-cleat-1"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "buoyancyCoat",
+        "color": "#4c969b",
+        "parts": [
+          "lower-flotation-cell-0",
+          "lower-flotation-cell-1"
+        ],
+        "param": "buoyancyCoat"
+      }
+    ]
+  },
+  {
+    "id": "electrical-test-cart",
+    "kit": "shipyard",
+    "title": "Electrical test cart",
+    "description": "Mobile electrical checkout cart with a control panel, cable hooks, guarded wheels, and a lower instrument shelf. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "electrical",
+      "test",
+      "cart"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/electrical-test-cart.kcad.ts",
+    "preview": "/assets/shipyard-electrical-test-cart.png",
+    "sourceSha256": "3f2f7a96f23833008cfc56082f2832b5e7e3339dd88a8f815af980235d3c9b4d",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#667d7a",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "elastomer",
+        "type": "color",
+        "default": "#30383b",
+        "label": "Elastomer"
+      },
+      {
+        "name": "safetyMarking",
+        "type": "color",
+        "default": "#efb934",
+        "label": "Safety marking"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#829492",
+        "structuralSteel": "#d0d7d8",
+        "elastomer": "#3a4245",
+        "safetyMarking": "#ffd44d"
+      },
+      "weathered-yard": {
+        "yardPaint": "#556865",
+        "structuralSteel": "#828d91",
+        "elastomer": "#252b2d",
+        "safetyMarking": "#bd8528"
+      }
+    },
+    "stats": {
+      "triangles": 452,
+      "sizeM": [
+        1.285317,
+        1.38,
+        0.88
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#667d7a",
+        "parts": [
+          "cart-deck",
+          "panel-cabinet",
+          "panel-door"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "safetyMarking",
+        "color": "#efb934",
+        "parts": [
+          "indicator-0",
+          "indicator-1",
+          "indicator-2",
+          "indicator-3"
+        ],
+        "param": "safetyMarking"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "instrument-shelf",
+          "push-handle",
+          "cable-hook-0",
+          "cable-hook-1"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "elastomer",
+        "color": "#30383b",
+        "parts": [
+          "cart-wheel-0",
+          "cart-wheel-1",
+          "cart-wheel-2",
+          "cart-wheel-3"
+        ],
+        "param": "elastomer"
+      }
+    ]
+  },
+  {
+    "id": "hull-block-fabrication-jig",
+    "kit": "shipyard",
+    "title": "Hull block fabrication jig",
+    "description": "Open box-section fixture with corner towers, transverse alignment beams, and replaceable block-contact pads. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "hull",
+      "block",
+      "fabrication",
+      "jig"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
+    "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
+    "sourceSha256": "e4d3d432792e12261845b41bd049c34c6d975698a8897542361852cf3013da00",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#657c78",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "elastomer",
+        "type": "color",
+        "default": "#30383b",
+        "label": "Elastomer"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#819490",
+        "structuralSteel": "#d0d7d8",
+        "elastomer": "#3a4245"
+      },
+      "weathered-yard": {
+        "yardPaint": "#546764",
+        "structuralSteel": "#828d91",
+        "elastomer": "#252b2d"
+      }
+    },
+    "stats": {
+      "triangles": 420,
+      "sizeM": [
+        2.7,
+        1.77,
+        2.3
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#657c78",
+        "parts": [
+          "base-rail-0"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "base-rail-1",
+          "cross-rail-0",
+          "cross-rail-1",
+          "cross-rail-2",
+          "corner-tower-0",
+          "corner-tower-1",
+          "corner-tower-2",
+          "corner-tower-3",
+          "alignment-beam-0",
+          "alignment-beam-1"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "elastomer",
+        "color": "#30383b",
+        "parts": [
+          "contact-pad-0",
+          "contact-pad-1",
+          "contact-pad-2",
+          "contact-pad-3"
+        ],
+        "param": "elastomer"
+      }
+    ]
+  },
+  {
+    "id": "ship-lift-cradle",
+    "kit": "shipyard",
+    "title": "Ship lift cradle",
+    "description": "Transfer cradle with paired guide rails, cross ties, adjustable hull pads, and four guide rollers. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "ship",
+      "lift",
+      "cradle"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
+    "preview": "/assets/shipyard-ship-lift-cradle.png",
+    "sourceSha256": "4a05b8d44f7bc47c87144b57d0af57416e7b28c909d38c81f54ccf415597b2c8",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#76847b",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "elastomer",
+        "type": "color",
+        "default": "#30383b",
+        "label": "Elastomer"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#8f9a93",
+        "structuralSteel": "#d0d7d8",
+        "elastomer": "#3a4245"
+      },
+      "weathered-yard": {
+        "yardPaint": "#626e66",
+        "structuralSteel": "#828d91",
+        "elastomer": "#252b2d"
+      }
+    },
+    "stats": {
+      "triangles": 396,
+      "sizeM": [
+        3,
+        0.78,
+        1.83
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#76847b",
+        "parts": [
+          "side-rail-0"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "side-rail-1",
+          "cross-tie-0",
+          "cross-tie-1",
+          "cross-tie-2",
+          "guide-roller-0",
+          "guide-roller-1",
+          "guide-roller-2",
+          "guide-roller-3"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "elastomer",
+        "color": "#30383b",
+        "parts": [
+          "hull-pad-0",
+          "hull-pad-1",
+          "hull-pad-2",
+          "hull-pad-3"
+        ],
+        "param": "elastomer"
+      }
+    ]
+  }
+]

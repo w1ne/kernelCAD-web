@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts (1 test | 1 failed) 558ms
+     × keeps the equivalent base rails on the same yard finish 279ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts > shipyard/hull-block-fabrication-jig base rail materials > keeps the equivalent base rails on the same yard finish
+AssertionError: base-rail-1 should use the shared yard finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts:56:93
+     54|       const colors = colorsFor(name);
+     55|       expect(colors.length, `${name} should render`).toBeGreaterThan(0…
+     56|       expect(colors.every(matches('#657c78')), `${name} should use the…
+       |                                                                                             ^
+     57|     }
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  09:31:51
+   Duration  6.31s (transform 4.54s, setup 95ms, import 5.53s, tests 558ms, environment 0ms)

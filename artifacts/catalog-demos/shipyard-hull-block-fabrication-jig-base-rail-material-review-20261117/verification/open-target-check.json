@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-11-17T09:24:27Z",
+  "catalogPr1258": {
+    "url": "https://github.com/w1ne/kernelCAD-web/pull/1258",
+    "state": "MERGED",
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "mergeCommit": "be6eadc00430ad02ebd42537b0955c6104e0c93d",
+    "reportedCiChecks": "17 passed",
+    "submittedReviews": 0
+  },
+  "currentCatalogPr1507": {
+    "url": "https://github.com/w1ne/kernelCAD-web/pull/1507",
+    "state": "OPEN",
+    "headAtSelection": "cf38af32eb2babe9fde1e53cdb006dc308060dfe",
+    "requiredChecksAtSelection": "passing",
+    "shipyardSourceOverlap": []
+  },
+  "otherOpenPrs": [
+    {
+      "number": 1514,
+      "head": "fix/catalog-overall-scale-20261117",
+      "assetScope": "sports and wind-energy models",
+      "selectedAssetOverlap": []
+    }
+  ],
+  "openIssuesMatchingSelectedAssetIds": [],
+  "selectedAssets": [
+    "shipyard/caisson-ballast-manifold-stand",
+    "shipyard/electrical-test-cart",
+    "shipyard/hull-block-fabrication-jig",
+    "shipyard/dock-gate-caisson",
+    "shipyard/ship-lift-cradle"
+  ],
+  "notes": [
+    "PR #1507 was open at selection time; the five selected shipyard source files were absent from its diff against origin/develop.",
+    "Issue #1227 is a generic frozen manufacturing-CAD benchmark and names none of the selected catalog assets."
+  ]
+}
