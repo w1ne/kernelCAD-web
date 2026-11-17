@@ -169,6 +169,8 @@ interface Assembly {
 }
 ```
 
+`assembly.part` also accepts `process`, `stock`, `massKg`, `crossSection`, `role`, and `overlay`. Unknown option keys fail with `feature.invalid-args` and name the offending `opts.<key>` path. For example, `{ att: [120, 0, 0] }` is rejected instead of leaving the part at the default origin; use `{ at: [120, 0, 0] }` for an explicit placement.
+
 ## Scene API
 
 `Assembly.model()` and `Assembly.solvedModel(poses)` return a `Scene` — a frozen, ordered list of named parts with per-part world transforms. A Scene is iterable (`for (const p of scene)`), exposes `.parts` for indexed access, and offers two ways to collapse to a single Shape when one is required.
@@ -409,12 +411,15 @@ arm.coupleMates('follow-a', { source: 'drive', ratio: 1 });
 arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 ```
 
-Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
+Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`. Each driven mate takes one coupling. A chain (`output` <- `idler` <- `input`) is allowed. A mate coupled to itself, a second coupling for a driven mate, or a coupling that closes a loop throws `feature.invalid-args` at declaration.
+
+Do not give a driven mate its own `pose`. `model()` and `solvedModel()` place the part at that authored pose, but `solve_mates`, `review_cad` and physics use `sourcePose * ratio + offset`. When the two values differ, `review_cad` and `verify({ check: 'assembly' })` report the warning `assembly.joint-topology.coupled-pose-conflict` with both values.
 
 **Joint compliance** (next to `limitsDeg` / `limitsMm`): a spring and viscous damping on a scalar joint. Revolute: `{ stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg }` (N·mm/deg, deg, N·mm·s/deg); prismatic: `{ stiffnessNPerMm, springRefMm, dampingNsPerMm }` (N/mm, mm, N·s/mm). Restoring load is `-stiffness * (q - springRef)`, zero at the reference (default 0). The reference uses the same sign as `pose` / the limits and may lie OUTSIDE them: `springRefDeg: -10` with `limitsDeg: [0, 90]` preloads the joint against its 0 degree stop. Negative stiffness or damping, a non-finite value, or a revolute option on a prismatic mate (and vice versa) throws an invalid-args error naming the option. The physics gate emits them on the `<joint>` in SI, and a stiffened joint counts as a declared hold requirement.
 
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
+- When supplied, the fifth `arm.mate(..., opts)` argument must be an options object; `null`, arrays, and primitives are rejected at capture time. Unknown keys are rejected with the path `opts.<key>`. This also covers object variables and JavaScript callers, where malformed options or a typo such as `limtsDeg` could otherwise silently create an unbounded mate.
 - `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery: pick a compatible mate type or change the connector types.
 - `invalid-args.assembly.mate-connector-not-found` — the `"part.connector"` ref is malformed, the part is undeclared, or the connector wasn't registered. Recovery: declare the part / register the connector before calling `arm.mate(...)`.
 
@@ -494,7 +499,7 @@ The MCP server exposes assembly-specific tools for runtime introspection:
 - `add_part({ code, assembly_binding, part_name, shape_expression, binding_name?, at? })` — insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)`. Returns the part binding used by `add_connector`.
 - `add_connector({ code, part_binding, name, type, origin, axis?, normal? })` — insert `<partBinding>.connector(name, { type, origin, axis?, normal? })`. `type` is one of `frame`/`axis`/`planar`/`ball`; `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`. Use the part binding returned by `add_part`.
 - `add_mate({ relation, code, assembly_binding, ... })` — author a mate-graph relationship into source. `relation: 'mate'` → `{ name, a, b, type, pose?, limitsDeg?, limitsMm? }` (refs `"<partName>.<connectorName>"`); `relation: 'coupling'` → `{ driven, source, ratio, offset? }`; `relation: 'transmission'` → `{ name, kind, sourceMate, drivenMates, path, ... }`.
-- `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
+- `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm?, coupling? }, ...] }`; `coupling: { source, ratio, offset? }` marks a mate driven by `coupleMates`. Read-only.
 - `verify({ check: 'assembly', assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['output.tool-point']` to focus workspace output on an output point; connector workspace is only computed when pose-envelope sampling is enabled. Tracked connector poses are returned per sample in `connectorPoses`; track two connectors to measure their separation across the sweep.
@@ -791,6 +796,7 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
 | `assembly.joint-axis.unbound` | solvedModel — advisory (`info`): revolute/prismatic/cylindrical axis floats outside both bound parts' BREP. Merge gate: `mechanism.dof-mismatch`. |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared legacy `maxLoad` exceeded by external force/torque; torque uses the solved connector and part frames when available (manual-load sanity check, not reaction propagation) |
+| `assembly.joint.load-unverified` | A declared legacy `maxLoad` check could not resolve a connector synchronously, or its load kind is unsupported (ball-mate torque); that comparison did not run |
 | `assembly.mounting-hole.mismatch` | solvedModel — advisory (`info`): `fastened` mate's two bound faces lack compatible hole features. Merge gate: `mechanism.disconnect`. |
 | `assembly.joint.not-visible` | solvedModel({validate:'error'}), only for mates declaring `exposure: 'exposed'` — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen the fork gap / thin the tongue / extend the pin directly. A warning-severity variant reports that the pin radius could not be measured. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |

@@ -1,0 +1,6 @@
+     × makes the cylinder valves brass, not the trolley frame steel 609ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/shipyardGasTrolleyValveMaterial.test.ts > shipyard/welding-gas-cylinder-trolley materials > makes the cylinder valves brass, not the trolley frame steel
+AssertionError: cylinder-valve-neck-0 should be brass: expected false to be true // Object.is equality
+     55|       expect(valve.every(matches('#c9a43a')), `${name} should be brass…
+      Tests  1 failed (1)

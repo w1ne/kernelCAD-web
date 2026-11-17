@@ -72,6 +72,8 @@ Result: `out/model.sdf` with all 4 joints preserved and solved link poses, plus 
 | `cylindrical` | `revolute` (lossy) | SDFormat also lacks cylindrical; `export.sdf-gazebo.cylindrical-lossy`. |
 | `pin_slot` | `revolute` (lossy) | Same; `export.sdf-gazebo.pin-slot-lossy`. |
 
+A `coupleMates` coupling is not carried: SDFormat 1.10 has no `<mimic>`, so the driven mate ships as an independent joint and the export emits `export.sdf-gazebo.coupling-dropped` (warn) for each coupling. Enforce the ratio in the simulator controller.
+
 ## Simulator consumer notes (verified 2026-06 against gz-sim Harmonic + Ionic, headless)
 
 - Serial chains and ball joints simulate correctly out of the box: links spawn at solved poses, joints articulate under `JointController` / `JointPositionController` plugins, ball mates swing under gravity.

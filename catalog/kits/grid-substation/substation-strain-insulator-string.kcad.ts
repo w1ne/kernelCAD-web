@@ -47,6 +47,7 @@ p.part("shed-4", loftedInsulator(115, 144, 10).translate(0, 0, 675.71).scale(sca
 p.part("shed-5", loftedInsulator(115, 172.80, 10).translate(0, 0, 844.29).scale(scale).color(porcelain));
 p.part("shed-6", loftedInsulator(115, 144, 10).translate(0, 0, 1012.86).scale(scale).color(porcelain));
 p.part("shed-7", loftedInsulator(115, 172.80, 10).translate(0, 0, 1181.43).scale(scale).color(porcelain));
+p.part("core-rod", cylinder(1360, 70, 10).translate(0, 0, 170).scale(scale).color(porcelain));
 p.part("lower-clevis", cylinder(190, 115.20, 10).translate(0, 0, 0).scale(scale).color(stainlessSteel));
 
 return p.model();

@@ -33,6 +33,15 @@ export interface RigMate {
   readonly pose?: number;
   readonly limitsDeg?: readonly [number, number];
   readonly limitsMm?: readonly [number, number];
+  /** coupleMates link: this mate's pose follows `source` by `ratio`. */
+  readonly coupling?: RigCoupling;
+}
+
+/** Relative to the exported rest pose: driven delta = ratio * source delta. */
+export interface RigCoupling {
+  /** Source mate name; also its key in the rig map. */
+  readonly source: string;
+  readonly ratio: number;
 }
 
 export interface RigEntry {
@@ -47,6 +56,8 @@ export interface RigEntry {
   readonly degreesOfFreedom?: readonly ['rotate', 'slide'];
   /** Cylindrical axial limits in millimetres, relative to its zero axial pose. */
   readonly slideRange?: readonly [number, number];
+  /** Present on a coupled (driven) mate; do not animate it independently. */
+  readonly coupling?: RigCoupling;
 }
 
 export interface RigNode {
@@ -290,6 +301,9 @@ function makePivotNode(mate: RigMate, closed: boolean, matrix: readonly number[]
       degreesOfFreedom: ['rotate', 'slide'] as const,
       slideRange: mate.limitsMm ?? [-1000, 1000],
     } : {}),
+    ...(mate.coupling !== undefined
+      ? { coupling: { source: mate.coupling.source, ratio: mate.coupling.ratio } }
+      : {}),
   };
   return { name, kind: 'pivot', matrix: [...matrix], children: [], rig, warnings: [] };
 }

@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-15T22:16:28.146Z",
+  "invocation": "npx tsx docs/demos/usd-coupling-warning-20261115/capture-demo.ts",
+  "target": "usd-isaac",
+  "localSerializer": {
+    "outputWritten": true,
+    "stageBytes": 4918,
+    "stageSha256": "f64d18fe9c4b0db4d83a8f4c95f2912de84ed22dc1393ae5fc78951c9655f206",
+    "couplingWarnings": 1,
+    "severity": "warn",
+    "warningMessage": "Mate 'output' is coupled to 'input' (output = -0.5 * input, authored units), but the usd-isaac serializer does not author a coupling API; 'output' was emitted as an independent joint.",
+    "independentDrivenJointPresent": true,
+    "mimicApiPresent": false
+  },
+  "scope": {
+    "isaacSimRuntimeReplay": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

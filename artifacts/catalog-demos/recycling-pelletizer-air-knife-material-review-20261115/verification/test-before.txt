@@ -1,0 +1,6 @@
+     × gives the strand air knife bath steel, not the safety trim 821ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/pelletizerAirKnifeMaterial.test.ts > recycling-facility/pelletizer-extruder materials > gives the strand air knife bath steel, not the safety trim
+AssertionError: air-knife should be bath steel: expected false to be true // Object.is equality
+     55|       expect(part.every(matches('#b8bfc2')), `${name} should be bath s…
+      Tests  1 failed (1)

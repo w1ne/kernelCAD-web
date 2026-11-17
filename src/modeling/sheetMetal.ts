@@ -46,6 +46,38 @@ export function computeBendAllowance(inputs: BendAllowanceInputs): number {
   return (Math.PI * Math.abs(angleDeg) / 180) * (kFactor * thickness + radius);
 }
 
+const SHEET_METAL_KEYS = ['thickness', 'kFactor', 'faceLabels'] as const;
+const SHEET_METAL_EXAMPLE = 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 })';
+
+/** Throws KernelError 'feature.invalid-args' unless opts is a plain object
+ *  with only thickness / kFactor / faceLabels. A dropped `bendRadius` or
+ *  `material` key would otherwise build the blank with no diagnostic. */
+export function validateSheetMetalOptionKeys(opts: unknown, featureId?: string): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'sheetMetal(profile, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object with thickness and kFactor',
+      example: SHEET_METAL_EXAMPLE,
+      featureId,
+    });
+  }
+  for (const key of Object.keys(opts as object)) {
+    if (!(SHEET_METAL_KEYS as readonly string[]).includes(key)) {
+      invalidArgs({
+        api: 'sheetMetal(profile, opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${SHEET_METAL_KEYS.join(', ')}; the bend radius is the third argument of .bend(edgeRef, angle, radius)`,
+        example: SHEET_METAL_EXAMPLE,
+        featureId,
+      });
+    }
+  }
+}
+
 /** Throws KernelError 'feature.sheetMetal.kfactor-invalid' if k is out of
  *  [0, 1] or non-finite. */
 export function validateKFactor(k: number, featureId?: string): void {

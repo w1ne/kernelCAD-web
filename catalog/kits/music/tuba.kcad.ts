@@ -34,15 +34,17 @@ presets({
   vintage: { brass: '#a2692b' },
 });
 const p = assembly("tuba");
-p.part("main-bell", path().circle(0, 0, 24, 12).loft(path().circle(0, 0, 83, 12), { spacing: 90, ruled: true }).translate(0, 0, 155).scale(scale).color(brass));
-p.part("bell-neck", cylinder(150, 24, 10).translate(0, 0, 145).scale(scale).color(brass));
-p.part("lower-loop", cylinder(20, 92, 12).subtract(cylinder(22, 66, 12).translate(0, 0, -1)).translate(0, 0, 0).scale(scale).color(brass));
-p.part("body", sphere(86).scale([0.78, 0.6, 0.78]).translate(50, 0, 95).scale(scale).color(brass));
-p.part("valve-one", cylinder(55, 9, 8).translate(15, -26, 62).scale(scale).color(nickel));
-p.part("valve-two", cylinder(55, 9, 8).translate(40, -26, 62).scale(scale).color(nickel));
-p.part("valve-three", cylinder(55, 9, 8).translate(65, -26, 62).scale(scale).color(nickel));
-p.part("valve-button-one", cylinder(6, 9, 8).translate(15, -26, 117).scale(scale).color(ebonite));
-p.part("valve-button-two", cylinder(6, 9, 8).translate(40, -26, 117).scale(scale).color(ebonite));
-p.part("valve-button-three", cylinder(6, 9, 8).translate(65, -26, 117).scale(scale).color(ebonite));
+const C = 92;
+const ring = (h: number, ro: number, ri: number) => cylinder(h, ro, 12).subtract(cylinder(h + 2, ri, 12).translate(0, 0, -1)).rotate([1, 0, 0], -90).translate(0, -h / 2, C);
+p.part("lower-loop", ring(36, 92, 66).scale(scale).color(brass));
+p.part("body", ring(28, 70, 50).scale(scale).color(brass));
+p.part("bell-neck", cylinder(80, 22, 10).translate(-50, 0, 138).scale(scale).color(brass));
+p.part("main-bell", path().circle(0, 0, 22, 12).loft(path().circle(0, 0, 83, 12), { spacing: 90, ruled: true }).translate(-50, 0, 218).scale(scale).color(brass));
+p.part("valve-one", cylinder(50, 9, 8).translate(10, -18, 120).scale(scale).color(nickel));
+p.part("valve-two", cylinder(50, 9, 8).translate(32, -18, 120).scale(scale).color(nickel));
+p.part("valve-three", cylinder(50, 9, 8).translate(54, -18, 120).scale(scale).color(nickel));
+p.part("valve-button-one", cylinder(6, 9, 8).translate(10, -18, 170).scale(scale).color(ebonite));
+p.part("valve-button-two", cylinder(6, 9, 8).translate(32, -18, 170).scale(scale).color(ebonite));
+p.part("valve-button-three", cylinder(6, 9, 8).translate(54, -18, 170).scale(scale).color(ebonite));
 
 return p.model();

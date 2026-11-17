@@ -115,7 +115,7 @@ for (let k = 0; k <= bays; k++) {
 }
 
 // ---- Strain insulator strings, conductors and down-drop jumpers ----
-const disc = lathe([[60, 0], [140, 20], [140, 45], [55, 110], [30, 150]], 10);
+const disc = () => lathe([[60, 0], [140, 20], [140, 45], [55, 110], [30, 150]], 10);
 const discs = 10, pitch = 150;
 [-3600, 0, 3600].forEach((x, i) => {
   const n = `phase-${i + 1}`;
@@ -125,7 +125,7 @@ const discs = 10, pitch = 150;
   add(`${n}-attachment-plate`, blk(x - 120, -hw - 80, beamZ0 + 120, x + 120, -hw + 10, beamZ0 + 380).color(galvanizedSteel));
   add(`${n}-shackle`, strut(a, at(220), 40).color(conductor));
   add(`${n}-yoke`, aim(blk(-180, -25, 0, 180, 25, 60), at(220), at(300)).color(conductor));
-  for (let k = 0; k < discs; k++) add(`${n}-disc-${k}`, aim(disc, at(300 + k * pitch), at(400 + k * pitch)).color(porcelain));
+  for (let k = 0; k < discs; k++) add(`${n}-disc-${k}`, aim(disc(), at(300 + k * pitch), at(400 + k * pitch)).color(porcelain));
   const tEnd = 300 + discs * pitch;
   add(`${n}-line-horn`, strut(at(tEnd - 80), [x + 260, at(tEnd)[1], at(tEnd)[2] + 260], 22).color(conductor));
   add(`${n}-ground-horn`, strut(at(320), [x + 260, at(320)[1], at(320)[2] + 260], 22).color(conductor));

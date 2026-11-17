@@ -5,7 +5,7 @@ meta({
   name: "parcel-belt-diverter",
   license: 'CC0-1.0',
   title: "Parcel belt diverter",
-  description: "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+  description: "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, belt rubber, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
   tags: ['postal logistics', 'mail', 'parcel', 'package processing', 'low poly', 'scene prop'],
   kit: 'postal-logistics',
   category: 'prop',
@@ -15,12 +15,14 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
+// The belt is a rubber-covered carrying belt; painted steel is only the side walls, pusher arm and paddle.
+const beltRubber = param('beltRubber', '#2c3134', { label: 'Belt rubber' });
 const paintedSteel = param('paintedSteel', '#587981', { label: 'Painted steel' });
 const structuralSteel = param('structuralSteel', '#58656c', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#bbc4c4', { label: 'Stainless steel' });
 presets({
-  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
-  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', stainlessSteel: '#d9e0de' },
+  weathered: { beltRubber: '#3d4140', paintedSteel: '#68777a', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
+  highVisibility: { beltRubber: '#2c3134', paintedSteel: '#e36d32', structuralSteel: '#454f54', stainlessSteel: '#d9e0de' },
 });
 const octRect = (w:number,d:number,cut:number) => path()
   .moveTo(-w/2+cut,-d/2).lineTo(w/2-cut,-d/2).lineTo(w/2,-d/2+cut)
@@ -59,7 +61,7 @@ const rollerX=(x:number,y:number,z:number,w:number,d:number,h:number)=>loftCylin
 const tiltedZ = (x:number,y:number,z:number,w:number,d:number,h:number,a:number) => bevelled(w,d,h).translate(0,0,-h/2).rotateZ(a).translate(x,y,z+h/2).scale(scale);
 
 const p = assembly("parcel-belt-diverter");
-p.part("belt", b(0,0,680,640,950,65).color(paintedSteel));
+p.part("belt", b(0,0,680,640,950,65).color(beltRubber));
 p.part("side-left", b(-310,0,725,25,950,70).color(paintedSteel));
 p.part("side-right", b(310,0,725,25,950,70).color(paintedSteel));
 p.part("support-1", b(-240,-350,0,55,55,680).color(structuralSteel));

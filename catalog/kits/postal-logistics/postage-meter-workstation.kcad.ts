@@ -5,7 +5,7 @@ meta({
   name: "postage-meter-workstation",
   license: 'CC0-1.0',
   title: "Postage meter workstation",
-  description: "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Scale, painted steel, moulded polymer, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+  description: "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Scale, painted steel, label tape paper, moulded polymer, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
   tags: ['postal logistics', 'mail', 'parcel', 'package processing', 'low poly', 'scene prop'],
   kit: 'postal-logistics',
   category: 'prop',
@@ -16,12 +16,14 @@ meta({
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const paintedSteel = param('paintedSteel', '#617780', { label: 'Painted steel' });
+// The roll beside the meter is paper label tape; painted steel is only the counter, display, scale platform and door.
+const labelPaper = param('labelPaper', '#ece7da', { label: 'Label tape paper' });
 const polymer = param('polymer', '#477c8e', { label: 'Moulded polymer' });
 const structuralSteel = param('structuralSteel', '#58656c', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#bbc4c4', { label: 'Stainless steel' });
 presets({
-  weathered: { paintedSteel: '#68777a', polymer: '#6c7c7c', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
-  highVisibility: { paintedSteel: '#e36d32', polymer: '#e0b245', structuralSteel: '#454f54', stainlessSteel: '#d9e0de' },
+  weathered: { paintedSteel: '#68777a', labelPaper: '#d8cfb9', polymer: '#6c7c7c', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
+  highVisibility: { paintedSteel: '#e36d32', labelPaper: '#f3f1ea', polymer: '#e0b245', structuralSteel: '#454f54', stainlessSteel: '#d9e0de' },
 });
 const octRect = (w:number,d:number,cut:number) => path()
   .moveTo(-w/2+cut,-d/2).lineTo(w/2-cut,-d/2).lineTo(w/2,-d/2+cut)
@@ -66,7 +68,7 @@ p.part("meter-head", b(-90,20,1015,260,220,180).color(stainlessSteel));
 p.part("display", b(-90,-112,1050,145,18,78).color(paintedSteel));
 p.part("scale-platform", b(220,70,820,190,180,55).color(paintedSteel));
 p.part("catch-tray", b(80,-210,820,410,120,35).color(polymer));
-p.part("paper-roll", rollerX(-280,100,815,95,95,80).color(paintedSteel));
+p.part("paper-roll", rollerX(-280,100,815,95,95,80).color(labelPaper));
 p.part("lower-door", b(0,-214,250,430,18,360).color(paintedSteel));
 
 return p.model();

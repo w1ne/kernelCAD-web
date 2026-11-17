@@ -19,11 +19,12 @@ describe('water-treatment/reverse-osmosis-skid materials', () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     expect(asset.params.filter((param) => param.type === 'color').map((param) => param.name)).toEqual([
-      'coatedSteel', 'structuralSteel', 'stainlessSteel', 'reinforcedComposite',
+      'coatedSteel', 'structuralSteel', 'stainlessSteel', 'reinforcedComposite', 'displayGlass',
     ]);
     expect(Object.keys(asset.presets)).toEqual(['weathered', 'highVisibility']);
     for (const preset of Object.values(asset.presets)) {
       expect(preset).toHaveProperty('reinforcedComposite');
+      expect(preset).toHaveProperty('displayGlass');
     }
     expect(asset.palette.find((zone) => zone.name === 'reinforcedComposite')?.parts).toEqual(
       expect.arrayContaining(['membrane-vessel-1', 'membrane-vessel-2', 'membrane-vessel-3']),
@@ -62,5 +63,11 @@ describe('water-treatment/reverse-osmosis-skid materials', () => {
     expect(vesselColors.every(matches(frpShell))).toBe(true);
     expect(manifoldColors.length).toBeGreaterThan(0);
     expect(manifoldColors.every(matches(stainless))).toBe(true);
+
+    // The operator display is a dark glass screen, not a structural-steel plate.
+    const displayColors = colorsFor('operator-display');
+    expect(displayColors.length, 'operator-display should be present in the exported GLB').toBeGreaterThan(0);
+    expect(displayColors.every(matches([0x1f / 255, 0x2d / 255, 0x36 / 255])), 'operator-display should use display glass').toBe(true);
+    expect(colorsFor('cabinet-door').every(matches(stainless)), 'cabinet-door should keep stainless steel').toBe(true);
   }, 120_000);
 });

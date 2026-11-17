@@ -17,10 +17,11 @@ const vulcanizedRubber = param('vulcanizedRubber', '#383d42', { label: 'Vulcaniz
 const faceRubber = param('faceRubber', '#252a2e', { label: 'Face rubber' });
 presets({ clubColors: { vulcanizedRubber: '#3b6682', faceRubber: '#252a2e' } });
 const p = assembly('hockey-puck');
-p.part('puck', cylinder(24, 38, 12).scale(scale).color(vulcanizedRubber));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('puck', cylinder(24, 38, 12).color(vulcanizedRubber));
 
 
 // A shallow face ring gives the molded rubber puck a distinct top surface.
-p.part("face-inset-ring", cylinder(2, 29, 12).subtract(cylinder(3, 22, 12).translate(0, 0, -0.5)).translate(0, 0, 22).color(faceRubber));
+add("face-inset-ring", cylinder(2, 29, 12).subtract(cylinder(3, 22, 12).translate(0, 0, -0.5)).translate(0, 0, 22).color(faceRubber));
 
 return p.model();

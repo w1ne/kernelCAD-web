@@ -39,6 +39,7 @@ import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { cfdToolEntries } from './registry/cfdTools';
+import { flightToolEntries } from './registry/flightTools';
 import { costEstimateToolEntries } from './registry/costTools';
 import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
@@ -141,6 +142,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...metricThreadToolEntries,
   // Appended after the metric-thread resolver: shape.split keep-parts.
   ...splitKeepPartsToolEntries,
+  // Appended after split_keep_parts: model-rocket flight study.
+  ...flightToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

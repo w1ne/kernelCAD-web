@@ -15,6 +15,7 @@
 //   5. extrude(-depth) — extrudes inward (since plane normal is outward).
 //      For 'symmetric', translate the plane outward by depth first and
 //      extrude(-2*depth). For 'through', use deriveThroughDepth(target).
+//      For upToFace, cutoutUpToFace trims a long prism at the target plane.
 //   6. cutWithHistory(target, tool) → the post-boolean result.
 //   7. Walk new faces, classify via createdFaceTracker.classifyCutoutFace.
 //
@@ -35,6 +36,7 @@ import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
 import { faceFrameOrigin } from './faceFrame';
+import { buildUpToFaceTool } from './cutoutUpToFace';
 import {
   applyCreatedRefs,
   captureAllFaceSnapshots,
@@ -339,6 +341,21 @@ function tryBuildPrismTool(
   }
 }
 
+/** Depth-driven tool: blind, symmetric or 'through'. */
+function buildDepthTool(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  commands: readonly SketchCommand[],
+): { tool: replicad.Shape3D; effectiveDepth: number; through: boolean } | { error: CompilerDiagnostic } {
+  const depthRes = resolveCutoutDepth(feature, target, entry);
+  if ('error' in depthRes) return depthRes;
+  const { effectiveDepth, through, symmetric } = depthRes;
+  const tool = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  if ('error' in tool) return tool;
+  return { tool, effectiveDepth, through };
+}
+
 /** Boolean-cut the tool out of the target, converting a throw into a diagnostic. */
 function tryCutWithHistory(
   target: OcctBackend,
@@ -436,19 +453,14 @@ export function lowerCutout(
   // Suppress unused-var warning until slice-2 might consume profileBackend.
   void profileBackend;
 
-  const depthRes = resolveCutoutDepth(feature, target, entry);
-  if ('error' in depthRes) {
-    diagnostics.push(depthRes.error);
-    return { backend: target, diagnostics };
-  }
-  const { effectiveDepth, through, symmetric } = depthRes;
-
-  const toolRes = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  const toolRes = feature.inputs.upToFace
+    ? buildUpToFaceTool(feature, target, records, entry, (depth) => buildPrismTool(entry, commands, depth, false))
+    : buildDepthTool(feature, target, entry, commands);
   if ('error' in toolRes) {
     diagnostics.push(toolRes.error);
     return { backend: target, diagnostics };
   }
-  const toolShape = toolRes;
+  const { tool: toolShape, effectiveDepth, through } = toolRes;
 
   const toolBackend = new OcctBackend(toolShape);
   const cutRes = tryCutWithHistory(target, toolBackend, feature.id);

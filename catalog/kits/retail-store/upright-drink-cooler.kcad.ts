@@ -63,7 +63,7 @@ add("canopy-wave", profileYZ([[-D / 2 - 26, 70], [-D / 2 - 35, 70], [-D / 2 - 46
 
 // Wire shelves with price strips, stocked with bottles and cans.
 const shelfZ = [PL + 70, PL + 470, PL + 870, PL + 1270];
-const bottle = turned([[0, 0], [30, 0], [30, 170], [11, 240], [0, 240]]);
+const bottle = () => turned([[0, 0], [30, 0], [30, 170], [11, 240], [0, 240]]);
 const flavours = ['#c8232c', '#2f8a4a', '#f2a51a', '#c8232c', '#3d6fc1', '#8b2a8a'];
 shelfZ.forEach((z, si) => {
   add(`shelf-${si}`, blk(0, 0, z - 14, W - 90, D - 120, 14).color('#c4cbcf'));
@@ -71,7 +71,7 @@ shelfZ.forEach((z, si) => {
   for (let c = 0; c < 2; c++) {
     const y = -150 + c * 140;
     if (si % 2 === 0 && c === 0) {
-      for (let k = 0; k < 7; k++) add(`bottle-${si}-${c}-${k}`, bottle.translate(-225 + k * 75, y, z).color(flavours[(k + si) % 6]));
+      for (let k = 0; k < 7; k++) add(`bottle-${si}-${c}-${k}`, bottle().translate(-225 + k * 75, y, z).color(flavours[(k + si) % 6]));
     } else {
       for (let k = 0; k < 8; k++) add(`can-${si}-${c}-${k}`, cylinder(122, 33, 10).translate(-232 + k * 66, y, z).color(flavours[(k + si + 2) % 6]));
     }

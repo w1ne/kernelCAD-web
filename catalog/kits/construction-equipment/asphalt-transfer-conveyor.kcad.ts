@@ -24,11 +24,12 @@ presets({
 const p = assembly('asphalt-transfer-conveyor');
 const add = (name, shape, finish = equipmentPaintColor) => p.part(name, shape.scale(scale).color(finish));
 add('hopper', box(374, 516, 406, true).translate(646, 0, 203), equipmentPaintColor);
-add('conveyor-belt', box(1496, 192, 70, true).translate(-102, 0, 499), tireRubberColor);
-add('truss-rail--1', box(1496, 35, 45, true).translate(-136, -132, 370.5), structuralSteelColor);
-add('support-leg--1', box(45, 45, 609, true).translate(-374, -132, 304.5), structuralSteelColor);
-add('truss-rail-1', box(1496, 35, 45, true).translate(-136, 132, 370.5), structuralSteelColor);
-add('support-leg-1', box(45, 45, 609, true).translate(-374, 132, 304.5), structuralSteelColor);
+add('conveyor-belt', box(1712, 270, 70, true).rotateY(29.5).translate(-105, 0, 821), tireRubberColor);
+add('truss-rail--1', box(1712, 35, 45, true).rotateY(29.5).translate(-133, -132, 771), structuralSteelColor);
+add('support-leg--1', box(45, 45, 907, true).translate(-374, -132, 453.5), structuralSteelColor);
+add('truss-rail-1', box(1712, 35, 45, true).rotateY(29.5).translate(-133, 132, 771), structuralSteelColor);
+add('support-leg-1', box(45, 45, 907, true).translate(-374, 132, 453.5), structuralSteelColor);
+add('axle', box(90, 600, 40, true).translate(-340, 0, 125), structuralSteelColor);
 add('transport-wheel--1', cylinder(70, 125, 12).rotateX(90).translate(-306, -217, 125), tireRubberColor);
 add('transport-wheel--1-hub--1', cylinder(11.2, 47.5, 10).rotateX(90).translate(-306, -292.6, 125), structuralSteelColor);
 add('transport-wheel--1-hub-1', cylinder(11.2, 47.5, 10).rotateX(90).translate(-306, -211.4, 125), structuralSteelColor);

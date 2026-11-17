@@ -180,3 +180,36 @@ describe('variableSweep()', () => {
     ).toThrow(KernelError);
   });
 });
+
+describe('variableSweep() option keys', () => {
+  function setup() {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const spine = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0], [20, 0, 0], [30, 0, 0]]);
+    const square = (h: number) =>
+      kcad.path().moveTo(-h, -h).lineTo(h, -h).lineTo(h, h).lineTo(-h, h).close();
+    const sections = [{ t: 0, profile: square(2) }, { t: 1, profile: square(1) }];
+    return { session, kcad, spine, sections };
+  }
+
+  it('rejects a misspelled continuity instead of sweeping at C1', () => {
+    const { session, kcad, spine, sections } = setup();
+    expect(() => kcad.variableSweep(spine, sections, { continuty: 'C2' } as never)).toThrow(
+      /variableSweep\(spine, sections, opts\): opts\.continuty .*unknown option 'continuty'.*closed, continuity/,
+    );
+    expect(findSweepMeta(session)).toBeUndefined();
+  });
+
+  it('rejects a positional option', () => {
+    const { kcad, spine, sections } = setup();
+    expect(() => kcad.variableSweep(spine, sections, 'C2' as never)).toThrow(
+      /variableSweep\(spine, sections, opts\?\): opts .*options object/,
+    );
+  });
+
+  it('accepts every documented key and an omitted opts', () => {
+    const { kcad, spine, sections } = setup();
+    expect(() => kcad.variableSweep(spine, sections, { closed: false, continuity: 'C2' })).not.toThrow();
+    expect(() => kcad.variableSweep(spine, sections)).not.toThrow();
+  });
+});

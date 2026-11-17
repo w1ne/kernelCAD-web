@@ -92,6 +92,53 @@ function angleDelta(from: number, to: number): number {
   return d;
 }
 
+const FILLET_EXAMPLE = 'filletPolygon(outline, 4, { segments: 8 })';
+
+/** Reject a non-object opts, an unknown key or a non-finite `segments`
+ *  instead of silently using 8 samples: `filletPolygon(pts, 4, 16)` and
+ *  `{ segs: 16 }` used to drop the request, and `{ segments: NaN }` turned
+ *  every arc into a chamfer. Returns the sample count per corner. */
+function filletSegments(opts: unknown): number {
+  if (opts === undefined || opts === null) return 8;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'filletPolygon(points, radius, opts?)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object such as { segments }; the sample count is not a positional argument',
+      hintSlug: 'invalid-args.polygon.opts',
+      example: FILLET_EXAMPLE,
+    });
+  }
+  for (const key of Object.keys(opts)) {
+    if (key !== 'segments') {
+      invalidArgs({
+        api: 'filletPolygon(points, radius, opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: 'segments, the only filletPolygon option',
+        hintSlug: 'invalid-args.polygon.opts',
+        example: FILLET_EXAMPLE,
+      });
+    }
+  }
+  const segments = (opts as FilletPolygonOptions).segments;
+  if (segments === undefined) return 8;
+  if (typeof segments !== 'number' || !Number.isFinite(segments)) {
+    invalidArgs({
+      api: 'filletPolygon(points, radius, opts)',
+      path: 'opts.segments',
+      got: segments,
+      showType: true,
+      requires: 'a finite number of samples per corner (minimum 2)',
+      hintSlug: 'invalid-args.polygon.opts',
+      example: FILLET_EXAMPLE,
+    });
+  }
+  return Math.max(2, Math.floor(segments));
+}
+
 /**
  * Round every corner of a closed 2D polygon with a tangent arc. Returns a new
  * point array; the input is untouched. Winding may be CW or CCW. Radius is
@@ -101,7 +148,7 @@ function angleDelta(from: number, to: number): number {
 export function filletPolygon(
   points: readonly PolygonPoint[],
   radius: number,
-  opts: FilletPolygonOptions = {},
+  opts?: FilletPolygonOptions,
 ): [number, number][] {
   assertPolygon(points, 'filletPolygon');
   if (!Number.isFinite(radius) || radius < 0) {
@@ -113,10 +160,10 @@ export function filletPolygon(
       requires: 'a finite radius >= 0 (0 returns the polygon unchanged)',
       unit: 'mm',
       hintSlug: 'invalid-args.polygon.radius',
-      example: 'filletPolygon(outline, 4, { segments: 8 })',
+      example: FILLET_EXAMPLE,
     });
   }
-  const segments = Math.max(2, Math.floor(opts.segments ?? 8));
+  const segments = filletSegments(opts);
   if (radius === 0) return points.map(([x, y]) => [x, y] as [number, number]);
 
   const orientation = signedArea(points) >= 0 ? 1 : -1;

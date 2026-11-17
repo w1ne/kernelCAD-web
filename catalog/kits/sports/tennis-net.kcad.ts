@@ -18,15 +18,16 @@ const netNylon = param('netNylon', '#dddccf', { label: 'Net nylon' });
 const baseRubber = param('baseRubber', '#303638', { label: 'Base rubber' });
 presets({ clubColors: { powderCoat: '#526d56', netNylon: '#e6e1d4' } });
 const p = assembly('tennis-net');
-p.part('left-post', cylinder(145, 7, 10).translate(-220, 0, 0).scale(scale).color(powderCoat));
-p.part('right-post', cylinder(145, 7, 10).translate(220, 0, 0).scale(scale).color(powderCoat));
-p.part('top-band', box(445, 12, 12, true).translate(0, 0, 145).scale(scale).color(powderCoat));
-p.part('base-left', box(72, 32, 8, true).translate(-220, 0, 4).scale(scale).color(baseRubber));
-p.part('base-right', box(72, 32, 8, true).translate(220, 0, 4).scale(scale).color(baseRubber));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('left-post', cylinder(145, 7, 10).translate(-220, 0, 0).color(powderCoat));
+add('right-post', cylinder(145, 7, 10).translate(220, 0, 0).color(powderCoat));
+add('top-band', box(445, 12, 12, true).translate(0, 0, 145).color(powderCoat));
+add('base-left', box(72, 32, 8, true).translate(-220, 0, 4).color(baseRubber));
+add('base-right', box(72, 32, 8, true).translate(220, 0, 4).color(baseRubber));
 
 
 // Thin nylon cords make the practice net open and visibly woven, not a flat slab.
-for (let i = 0; i <= 18; i++) p.part(`mesh-vertical-${i + 1}`, box(2, 2.5, 116, true).translate(-210 + i * 23.3, 0, 85).color(netNylon));
-for (let i = 0; i <= 6; i++) p.part(`mesh-horizontal-${i + 1}`, box(430, 2.5, 2, true).translate(0, 0, 30 + i * 18).color(netNylon));
+for (let i = 0; i <= 18; i++) add(`mesh-vertical-${i + 1}`, box(2, 2.5, 116, true).translate(-210 + i * 23.3, 0, 85).color(netNylon));
+for (let i = 0; i <= 6; i++) add(`mesh-horizontal-${i + 1}`, box(430, 2.5, 2, true).translate(0, 0, 30 + i * 18).color(netNylon));
 
 return p.model();

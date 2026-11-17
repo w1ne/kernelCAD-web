@@ -86,8 +86,8 @@ for (let k = 0; k < 20; k++) {
 if (open) add("flake-in-tube", T(blk(L / 2 + 300, 0, -R + 30, L - 1700, 2 * R * 0.72, 110)).color(flake));
 for (const x of [-170, L + 130]) add(`bearing-${x > 0 ? 'top' : 'feed'}`, T(blk(x, 0, -110, 160, 260, 220)).color(drive));
 
-// Spray-water header with drop nozzles along the top.
-add("spray-header", T(cylinder(L - 600, 32, 10).rotateY(90).translate(300, -R + 120, R + 110)).color(water));
+// Spray-water header (stainless pipe) with water dropping from it along the top.
+add("spray-header", T(cylinder(L - 600, 32, 10).rotateY(90).translate(300, -R + 120, R + 110)).color(tube));
 for (let k = 0; k < 7; k++) add(`spray-drop-${k}`, T(blk(500 + k * 520, -R + 120, R - 30, 36, 36, 140)).color(water));
 add("water-valve", T(blk(240, -R + 120, R + 60, 120, 120, 120)).color('#c8322a'));
 

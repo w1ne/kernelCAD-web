@@ -18,11 +18,12 @@ const seamTape = param('seamTape', '#eee8dc', { label: 'Reinforced seam tape' })
 const valvePolymer = param('valvePolymer', '#333b40', { label: 'Valve polymer' });
 presets({ clubColors: { vinylCover: '#ce5948', seamTape: '#eee8dc' } });
 const p = assembly('exercise-ball');
-p.part('ball', sphere(108).translate(0, 0, 108).scale(scale).color(vinylCover));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('ball', sphere(108).translate(0, 0, 108).color(vinylCover));
 
 
 // A broad reinforcing seam and small inflation valve distinguish the fitness ball.
-p.part("reinforced-seam", torus(63.4, 0.7, 12).translate(0, 0, 64).color(seamTape));
-p.part("inflation-valve", cylinder(5, 5, 8).translate(0, -61, 60).color(valvePolymer));
+add("reinforced-seam", torus(63.4, 0.7, 12).translate(0, 0, 64).color(seamTape));
+add("inflation-valve", cylinder(5, 5, 8).translate(0, -61, 60).color(valvePolymer));
 
 return p.model();

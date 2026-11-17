@@ -26,12 +26,12 @@ const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true)
 const c=(x:number,y:number,z:number,h:number,r:number,n=8)=>cylinder(h,r,n).translate(x,y,z).scale(scale);
 
 const p=assembly("frame-grip");
-p.part("jaw-left",b(-70,0,250,28,220,260).color(stainless));
-p.part("jaw-right",b(70,0,250,28,220,260).color(stainless));
-p.part("pivot",c(0,0,190,55,52,8).color(stainless));
-p.part("handle-left",b(-110,0,80,34,45,160).color(stainless));
-p.part("handle-right",b(110,0,80,34,45,160).color(stainless));
-p.part("grip-left",b(-150,0,0,50,70,90).color(rubber));
-p.part("grip-right",b(150,0,0,50,70,90).color(rubber));
+p.part("jaw-left",b(-70,0,240,28,220,260).color(stainless));
+p.part("jaw-right",b(70,0,240,28,220,260).color(stainless));
+p.part("pivot",c(0,0,190,55,62,8).color(stainless));
+p.part("handle-left",b(-75,0,120,34,45,130).color(stainless));
+p.part("handle-right",b(75,0,120,34,45,130).color(stainless));
+p.part("grip-left",b(-100,0,0,50,70,130).color(rubber));
+p.part("grip-right",b(100,0,0,50,70,130).color(rubber));
 
 return p.model();

@@ -17,6 +17,8 @@ const yardPaint = param("yardPaint", "#759084", { label: "Yard finish" });
 const structuralSteel = param("structuralSteel", "#b6c1c4", { label: "Structural steel" });
 const elastomer = param("elastomer", "#30383b", { label: "Elastomer" });
 const safetyMarking = param("safetyMarking", "#efb934", { label: "Safety marking" });
+// Cylinder valves are forged brass, the same finish as props/gas-cylinder.
+const valveBrass = "#c9a43a";
 
 presets({
   'fresh-coat': {"yardPaint": "#8ea49a", "structuralSteel": "#d0d7d8", "elastomer": "#3a4245", "safetyMarking": "#ffd44d"},
@@ -84,9 +86,9 @@ p.part("trolley-wheel-0", c("trolley-wheel-0", 90, 230, 12, [-420, 0, 230], [0, 
 p.part("trolley-wheel-1", c("trolley-wheel-1", 90, 230, 12, [420, 0, 230], [0, 90, 0], 90).color(elastomer));
 p.part("pull-handle", b("pull-handle", [90, 110, 1180], [-480, 0, 930]).color(structuralSteel));
 p.part("top-grip", b("top-grip", [100, 660, 100], [-480, 0, 1510]).color(elastomer));
-p.part('cylinder-valve-neck-0', c('cylinder-valve-neck-0', 90, 72, 8, [-200, 0, 1438]).color(structuralSteel));
+p.part('cylinder-valve-neck-0', c('cylinder-valve-neck-0', 90, 72, 8, [-200, 0, 1438]).color(valveBrass));
 p.part('cylinder-valve-handle-0', b('cylinder-valve-handle-0', [210, 42, 32], [-200, 0, 1535]).color(structuralSteel));
-p.part('cylinder-valve-neck-1', c('cylinder-valve-neck-1', 90, 72, 8, [200, 0, 1438]).color(structuralSteel));
+p.part('cylinder-valve-neck-1', c('cylinder-valve-neck-1', 90, 72, 8, [200, 0, 1438]).color(valveBrass));
 p.part('cylinder-valve-handle-1', b('cylinder-valve-handle-1', [210, 42, 32], [200, 0, 1535]).color(structuralSteel));
 
 return p.model();

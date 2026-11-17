@@ -102,4 +102,20 @@ describe('shape.split keeps leftover solids', () => {
     expect((error as KernelError).code).toBe('feature.invalid-args');
     expect((error as KernelError).message).toMatch(/opts\.keep/);
   });
+
+  // A misspelled `keep` was dropped: `{ kep: 'a_only' }` returned all three
+  // fragments instead of the one a_only body.
+  it.each([
+    ["{ kep: 'a_only' }", /unknown keys: kep/],
+    ["{ keep: 'a_only', fragment: 'b_only' }", /unknown keys: fragment/],
+    ["'a_only'", /opts/],
+  ])('rejects split options %s', async (opts, message) => {
+    const error = await buildModel({
+      fileName: 'split-bad-opts.kcad.ts',
+      code: `return box(10, 10, 10).split(box(10, 10, 10).translate(5, 0, 0), ${opts});`,
+    }).then(() => undefined, (reason: unknown) => reason);
+    expect(error).toBeInstanceOf(KernelError);
+    expect((error as KernelError).code).toBe('feature.invalid-args');
+    expect((error as KernelError).message).toMatch(message);
+  });
 });

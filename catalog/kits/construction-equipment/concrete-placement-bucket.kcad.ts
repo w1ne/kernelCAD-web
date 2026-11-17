@@ -38,10 +38,10 @@ const p = assembly('concrete-placement-bucket');
 const add = (name, shape) => p.part(name, shape.scale(scale));
 
 // Revolve an (r, z) profile about Z.
-const turned = (pts, n) => {
+const turned = (pts) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(n);
+  return pb.close().revolve();
 };
 // Tube from p0 to p1 with an n-sided section.
 const rod = (p0, p1, r, n = 8) => {
@@ -72,7 +72,7 @@ for (const [i, f] of [0.38, 0.72].entries()) {
   add(`stiffening-band-${i}`, turned([[rAt(z) - 5, z - 30], [rAt(z) + 25, z - 30], [rAt(z) + 25, z + 30], [rAt(z) - 5, z + 30]]).color(bucketPaint));
 }
 add('concrete-load', turned([[0, ZO], [RO, ZO], [rAt(ZT - 140), ZT - 140], [rAt(ZT - 140) * 0.6, ZT - 90], [0, ZT - 60]]).color(concrete));
-add('concrete-splash', turned([[RT - 6, ZT + 20], [RT + 36, ZT + 20], [RT + 30, ZT + 32], [RT, ZT + 32]], 12).color(concrete));
+add('concrete-splash', turned([[RT - 6, ZT + 20], [RT + 36, ZT + 20], [RT + 30, ZT + 32], [RT, ZT + 32]]).color(concrete));
 
 // Trunnions and lifting bail meeting at the crane eye.
 const ZP = ZO + 0.72 * (ZT - ZO);
@@ -86,12 +86,12 @@ for (const s of [-1, 1]) {
   add(`bail-sling-${k}`, rod([s * (XP + 10), 0, ZT + 220], [s * 70, 0, ZE - 40], 32, 8).color(frameSteel));
 }
 add('crane-eye-plate', box(160, 30, 170, true).translate(0, 0, ZE).color(frameSteel));
-add('crane-eye', turned([[45, -18], [85, -18], [85, 18], [45, 18]], 16).rotateX(90).translate(0, 0, ZE + 130).color(frameSteel));
+add('crane-eye', turned([[45, -18], [85, -18], [85, 18], [45, 18]]).rotateX(90).translate(0, 0, ZE + 130).color(frameSteel));
 
 // Stand frame: four splayed legs from a collar to a skid ring.
 const ZC = ZO + 160;
 add('stand-collar', turned([[rAt(ZC) - 5, ZC - 30], [rAt(ZC) + 30, ZC - 30], [rAt(ZC) + 30, ZC + 30], [rAt(ZC) - 5, ZC + 30]]).color(frameSteel));
-add('skid-ring', turned([[RT - 120, 0], [RT - 50, 0], [RT - 50, 60], [RT - 120, 60]], 16).color(frameSteel));
+add('skid-ring', turned([[RT - 120, 0], [RT - 50, 0], [RT - 50, 60], [RT - 120, 60]]).color(frameSteel));
 for (let i = 0; i < 4; i++) {
   const a = ((i * 90 + 45) * Math.PI) / 180;
   const c = Math.cos(a);
@@ -111,6 +111,6 @@ const hose = [[0, 0, ZO - 175], [-40, 0, ZO - 300], [-170, 0, ZO - 370], [-360, 
 for (let i = 0; i < hose.length - 1; i++) {
   add(`hose-${i}`, rod(hose[i], hose[i + 1], 120, 12).color(hoseRubber));
 }
-add('hose-clamp', turned([[RO + 18, ZO - 175], [RO + 30, ZO - 175], [RO + 30, ZO - 135], [RO + 18, ZO - 135]], 16).color(frameSteel));
+add('hose-clamp', turned([[RO + 18, ZO - 175], [RO + 30, ZO - 175], [RO + 30, ZO - 135], [RO + 18, ZO - 135]]).color(frameSteel));
 
 return p.model();
