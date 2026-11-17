@@ -16,7 +16,7 @@
 //                fit / clash / installation check measures: a modeled thread
 //                in a tapped or clearance hole, or in its nut, is not a clash.
 //
-// Dimensions are nominal values from the standards' tables (familyTable.ts);
+// Dimensions are nominal values from the standards' tables (fastenerStockTables.ts);
 // they are not certified geometry.
 //
 // Cost model: a thread is ONE screw-motion sweep of the thread's transverse

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Standard-table detail the 'full' fastener geometry draws beyond the
-// envelope dimensions in familyTable.ts: hex socket, under-head fillet,
+// envelope dimensions in fastenerStockTables.ts: hex socket, under-head fillet,
 // thread length b, washer face, set-screw point, coarse pitch.
 
 import { isoThreadInfo } from '../threads';
