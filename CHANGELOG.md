@@ -1,5 +1,14 @@
 # Unreleased
 
+- `kinematic.suggestJointRanges` and `verify({ check: 'joint-range' })` suggest
+  revolute and prismatic limits from geometry. Each joint is swept alone from
+  its authored pose, with other mates held at their authored poses, until a
+  non-exempt pair is within the clearance (default 0.3 mm) or the finite
+  search bound is reached. Exact BREP distance brackets the stop. A gap
+  within 1e-6 mm of the clearance counts as reached. The result
+  is a limits snippet; the model is not rewritten. A missing bound, the sweep
+  budget, or a failed measurement is `unknown`, never a clear range. Mate
+  neighbours and declared contact pairs are not stops.
 - Travel-gear catalog wave: 12 original parametric low-poly CC0 assets in the
   new `catalog/kits/travel-gear` kit for luggage and small journey accessories.
   Kit README, generated previews and the reproducible local demo bundle:
