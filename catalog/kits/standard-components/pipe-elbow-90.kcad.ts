@@ -39,9 +39,9 @@ const sidePassage = cylinder(outletLength + 2 * s, boreRadius, 16)
   .rotateY(90).translate(-s, 0, elbowHeight);
 const shell = outer.subtract(verticalPassage.union(sidePassage));
 a.part('one-piece-open-elbow', shell.color(steel));
-const collar = cylinder(2 * s, 14 * s, 16)
+const collar = () => cylinder(2 * s, 14 * s, 16)
   .subtract(cylinder(4 * s, boreRadius, 16).translate(0, 0, -s));
-a.part('inlet-reinforcing-collar', collar.color(bronze));
-a.part('outlet-reinforcing-collar', collar.rotateY(90)
+a.part('inlet-reinforcing-collar', collar().color(bronze));
+a.part('outlet-reinforcing-collar', collar().rotateY(90)
   .translate(outletLength - s, 0, elbowHeight).color(bronze));
 return a.model();

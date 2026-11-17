@@ -45,10 +45,10 @@ const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12)
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
 // Extrude a (y, z) side profile along X, centred on x = 0.
 const profileYZ = (pts: [number, number][], t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0).rotateZ(90);
-const turned = (pts: [number, number][], seg = 10) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 const L = 2600, Z0 = 800;
@@ -92,7 +92,7 @@ for (const x of [-1000, 0, 1000]) add(`feed-clip-${x}`, blk(x, -165, Z0 + 60, 30
 
 // Drain outlet at the -X end into a PVC collection pipe.
 add("drain-spout", cylZ(-L / 2 + 70, 0, Z0 - 120, 125, 22, 12).color(gutter));
-add("collection-funnel", turned([[30, 0], [60, 40], [60, 52], [26, 12], [26, 0]], 14).translate(-L / 2 + 70, 0, Z0 - 230).color('#7f878b'));
+add("collection-funnel", turned([[30, 0], [60, 40], [60, 52], [26, 12], [26, 0]]).translate(-L / 2 + 70, 0, Z0 - 230).color('#7f878b'));
 add("collection-pipe", cylZ(-L / 2 + 70, 0, 30, Z0 - 260, 30, 14).color('#7f878b'));
 add("collection-elbow", blk(-L / 2 + 70, 60, 0, 70, 180, 70).color('#7f878b'));
 add("collection-run", cylinder(L - 300, 32, 14).rotateY(90).translate(-L / 2 + 70, 120, 35).color('#7f878b'));

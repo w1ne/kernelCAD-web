@@ -117,6 +117,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.child-modeled-in-place'
   | 'assembly.joint.load-exceeded'
+  | 'assembly.joint.load-unverified'
   | 'assembly.joint.not-visible'
   | 'assembly.mate.not-physically-realized'
   | 'assembly.workspace.unreachable'

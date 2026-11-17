@@ -47,12 +47,12 @@ const tiltedY = (x:number,y:number,z:number,w:number,d:number,h:number,a:number)
 const p = assembly("handheld-postal-scanner");
 p.part("scanner-head", b(0,0,245,210,150,70).color(stainlessSteel));
 p.part("reader-window", b(0,-8,315,150,105,20).color(instrumentGlass));
-p.part("handle", tiltedY(0,-115,140,95,75,220,-10).color(paintedSteel));
-p.part("handle-end", b(0,-115,35,120,90,35).color(paintedSteel));
-p.part("trigger", b(0,-75,220,40,20,50).color(safetyAmber));
+p.part("handle", tiltedY(0,-45,40,95,75,220,-10).color(paintedSteel));
+p.part("handle-end", b(0,-45,35,120,90,35).color(paintedSteel));
+p.part("trigger", b(0,-92,200,40,20,50).color(safetyAmber));
 p.part("top-key-a", b(-58,34,320,34,30,16).color(safetyAmber));
 p.part("top-key-b", b(0,34,320,34,30,16).color(safetyAmber));
 p.part("top-key-c", b(58,34,320,34,30,16).color(safetyAmber));
-p.part("battery-pack", b(0,-125,0,88,70,48).color(paintedSteel));
+p.part("battery-pack", b(0,-45,0,88,70,48).color(paintedSteel));
 
 return p.model();

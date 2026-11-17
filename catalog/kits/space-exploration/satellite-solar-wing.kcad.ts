@@ -36,12 +36,12 @@ const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxSh
 
 const p = assembly("satellite-solar-wing");
 p.part("spine",b(0,0,0,90,1100,70).color(paint));
-p.part("panel-0",b(0,-360,65,620,300,28).color(solarCell));
-p.part("panel-1",b(0,0,65,620,300,28).color(solarCell));
-p.part("panel-2",b(0,360,65,620,300,28).color(solarCell));
-p.part("crossbar-0",b(0,-360,20,650,38,30).color(aluminum));
-p.part("crossbar-1",b(0,0,20,650,38,30).color(aluminum));
-p.part("crossbar-2",b(0,360,20,650,38,30).color(aluminum));
-p.part("crossbar-3",b(0,720,20,650,38,30).color(aluminum));
+p.part("panel-0",b(0,-360,65,620,350,28).color(solarCell));
+p.part("panel-1",b(0,0,65,620,350,28).color(solarCell));
+p.part("panel-2",b(0,360,65,620,350,28).color(solarCell));
+p.part("crossbar-0",b(0,-360,35,650,38,30).color(aluminum));
+p.part("crossbar-1",b(0,0,35,650,38,30).color(aluminum));
+p.part("crossbar-2",b(0,360,35,650,38,30).color(aluminum));
+p.part("crossbar-3",b(0,540,35,650,38,30).color(aluminum));
 
 return p.model();

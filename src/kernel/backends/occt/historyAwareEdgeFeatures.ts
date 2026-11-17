@@ -158,6 +158,9 @@ function enumerateAndRecord(
  * blend surface is curvature-continuous. The construction-time fillet form
  * stays `ChFi3d_Rational` (matches the historical default in this codebase).
  *
+ * `endRadius` tapers each edge's round linearly from `radius` at the edge's
+ * low end to `endRadius` at its high end (see `startsAtLowEnd`).
+ *
  * @throws {Error} If any edge hash is not found on the body.
  * @throws {Error} If the fillet builder fails (IsDone() === false).
  */
@@ -166,6 +169,7 @@ export function filletWithHistory(
   edges: readonly EdgeRefForFilleting[],
   radius: number,
   continuity: FilletContinuity = 'G1',
+  endRadius?: number,
 ): EdgeFeatureHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -189,12 +193,14 @@ export function filletWithHistory(
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(radius, edgeShape);
+      if (endRadius === undefined) builder.Add_2(radius, edgeShape);
+      else if (startsAtLowEnd(oc, edgeShape)) builder.Add_3(radius, endRadius, edgeShape);
+      else builder.Add_3(endRadius, radius, edgeShape);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
       throw new Error(
-        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}, ${edges.length} edges, continuity ${continuity})`,
+        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}${endRadius === undefined ? '' : ` to ${endRadius}`}, ${edges.length} edges, continuity ${continuity})`,
       );
     }
     const resultShape = builder.Shape();
@@ -212,6 +218,23 @@ export function filletWithHistory(
     builder.delete();
     progress.delete();
   }
+}
+
+/**
+ * Whether the start of `edge`'s parameter range (the end `Add_3` gives `R1`) is the
+ * edge's low end: the lower coordinate on the axis the edge spans most.
+ * A tapered fillet puts `radius` at the low end and `endRadius` at the high
+ * end, independent of how the kernel happens to orient the edge.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function startsAtLowEnd(oc: any, edge: unknown): boolean {
+  const curve = new oc.BRepAdaptor_Curve_2(edge);
+  const first = curve.Value(curve.FirstParameter());
+  const last = curve.Value(curve.LastParameter());
+  const d = [last.X() - first.X(), last.Y() - first.Y(), last.Z() - first.Z()];
+  for (const handle of [curve, first, last]) handle.delete();
+  const axis = d.reduce((best, v, i) => (Math.abs(v) > Math.abs(d[best]) ? i : best), 0);
+  return d[axis] >= 0;
 }
 
 /**

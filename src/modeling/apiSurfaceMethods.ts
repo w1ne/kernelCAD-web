@@ -7,6 +7,7 @@ import type { Curve3D } from './capture/curveProxy';
 import type { Sketch } from './capture/sketch';
 import type { Vec3 } from '../shared/intent/types';
 import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import { solveHermiteG2 } from '../kernel/geometry/hermiteG2';
 import { bridgeCurves } from './capture/bridgeCurves';
 import {
@@ -16,6 +17,55 @@ import {
   validateNurbsDegree,
 } from './apiSupport';
 import type { KernelCadApi } from './api';
+
+/** Leading arguments shown in the error signature. */
+const OPTION_KEY_ARGS = {
+  nurbsCurve: 'points',
+  spline3d: 'points',
+  variableSweep: 'spine, sections',
+  surfaceFromBoundary: 'curves',
+  sew: 'surfaces',
+} as const;
+
+/** Reject a non-object opts or an unknown key for the curve, sweep,
+ *  boundary-surface and sewing operations. `sew(surfaces, { requireClosd: true })`
+ *  used to silently disable the closed-shell requirement. `spline3d(pts, 0.2)`
+ *  and `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
+ *  tension, `nurbsCurve(cp, { periodic: true })` built an open curve,
+ *  `variableSweep(spine, sections, { continuty: 'C2' })` swept at C1 and
+ *  `surfaceFromBoundary(curves, { samples: 40 })` filled at the default 15
+ *  points, all with no diagnostic. */
+function assertOptionKeys(
+  api: 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary' | 'sew',
+  keys: readonly string[],
+  example: string,
+  opts: unknown,
+): void {
+  if (opts === undefined || opts === null) return;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: `${api}(${OPTION_KEY_ARGS[api]}, opts?)`,
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an options object with ${keys.join(', ')}; options are not positional arguments`,
+      example,
+      featureId: api,
+    });
+  }
+  for (const key of Object.keys(opts)) {
+    if (!keys.includes(key)) {
+      invalidArgs({
+        api: `${api}(${OPTION_KEY_ARGS[api]}, opts)`,
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${keys.join(', ')}`,
+        example,
+        featureId: api,
+      });
+    }
+  }
+}
 
 export function makeNurbsSurfaceMethods(
   session: CaptureSession,
@@ -55,6 +105,7 @@ export function makeNurbsSurfaceMethods(
     },
 
     nurbsCurve(controlPoints, opts) {
+      assertOptionKeys('nurbsCurve', ['degree', 'weights', 'knots', 'closed'], 'nurbsCurve([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { degree: 2 })', opts);
       const degree = opts?.degree ?? 3;
       return session.addCurve3D({
         metadata: {
@@ -96,6 +147,7 @@ export function makeNurbsSurfaceMethods(
           'invalid-args.spline3d.points — pass at least 2 Vec3 points to interpolate.',
         );
       }
+      assertOptionKeys('spline3d', ['tension', 'closed'], 'spline3d([[0, 0, 0], [10, 5, 0], [20, 0, 5]], { tension: 0.2 })', opts);
       const tension = opts?.tension ?? 0.5;
       const scale = (1 - tension) / 6;
       if (opts?.closed === true) {
@@ -229,6 +281,7 @@ export function makeSweepMethods(
 ): Pick<KernelCadApi, 'variableSweep' | 'surfaceFromBoundary' | 'sew'> {
   return {
     variableSweep(spine, sections, opts) {
+      assertOptionKeys('variableSweep', ['closed', 'continuity'], "variableSweep(spine, sections, { continuity: 'C2' })", opts);
       const spineId = resolveVariableSweepSpineId(session, spine);
       const sweepSections = requireVariableSweepSections(sections);
 
@@ -264,6 +317,7 @@ export function makeSweepMethods(
           'surface-from-boundary.too-many-curves — if the loop has more than 4 sides, split the patch into adjacent quads.',
         );
       }
+      assertOptionKeys('surfaceFromBoundary', ['continuity', 'sampling'], "surfaceFromBoundary([bottom, right, top, left], { continuity: 'C1', sampling: 30 })", opts);
       // 2. Continuity normalisation: a single grade applies to all 4 edges;
       //    an array must be length 4.
       const contIn = opts?.continuity;
@@ -299,6 +353,7 @@ export function makeSweepMethods(
           'invalid-args.sew.surfaces — pass an array of at least 1 Surface returned by nurbsSurface() / surfaceFromCurves() / surfaceFromBoundary().',
         );
       }
+      assertOptionKeys('sew', ['tolerance', 'requireClosed'], 'sew([surfaceA, surfaceB], { requireClosed: true })', opts);
       const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
       for (let i = 0; i < surfaces.length; i++) {
         const surface = surfaces[i];

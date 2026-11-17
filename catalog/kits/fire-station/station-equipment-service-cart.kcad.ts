@@ -69,14 +69,14 @@ const c = (h: number, r: number, segments: number, at: [number, number, number],
 
 p.part("lower-shelf", b([820, 500, 55], [0, 0, 190]).color(stainlessSteel));
 p.part("upper-shelf", b([820, 500, 55], [0, 0, 770]).color(stainlessSteel));
-p.part("post-0", b([42, 42, 680], [-365, -205, 480]).color(powderCoat));
-p.part("post-1", b([42, 42, 680], [365, -205, 480]).color(powderCoat));
-p.part("post-2", b([42, 42, 680], [-365, 205, 480]).color(powderCoat));
-p.part("post-3", b([42, 42, 680], [365, 205, 480]).color(powderCoat));
+p.part("post-0", b([42, 42, 780], [-365, -205, 430]).color(powderCoat));
+p.part("post-1", b([42, 42, 780], [365, -205, 430]).color(powderCoat));
+p.part("post-2", b([42, 42, 1020], [-365, 205, 550]).color(powderCoat));
+p.part("post-3", b([42, 42, 1020], [365, 205, 550]).color(powderCoat));
 p.part("caster-0", c(40, 40, 8, [-350, -195, 0]).color(elastomer));
 p.part("caster-1", c(40, 40, 8, [350, -195, 0]).color(elastomer));
 p.part("caster-2", c(40, 40, 8, [-350, 195, 0]).color(elastomer));
 p.part("caster-3", c(40, 40, 8, [350, 195, 0]).color(elastomer));
-p.part("handle", b([720, 42, 42], [0, 250, 1030]).color(polymer));
+p.part("handle", b([720, 42, 42], [0, 205, 1030]).color(polymer));
 
 return p.model();

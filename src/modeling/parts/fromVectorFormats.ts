@@ -108,11 +108,12 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, LWPOLYLINE and POLYLINE. Arcs survive exactly:
- * DXF's bulge factor is the same number `bulgeArc` already carries. SPLINE,
- * ELLIPSE and INSERT are REFUSED with a diagnostic naming the entity and its
- * line number, because each of them carries profile geometry that would
- * otherwise vanish from the result without a trace.
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
+ * clamped continuous planar SPLINE entities. Arcs keep their DXF bulge exactly;
+ * full and partial planar ellipses and supported splines retain exact rational
+ * NURBS geometry. Nonplanar ellipses, periodic, fit-point-only, discontinuous and
+ * nonplanar SPLINE entities, plus INSERT, are REFUSED with an entity and line
+ * diagnostic rather than dropped.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as
@@ -165,7 +166,7 @@ const DXF_HINTS: Record<string, string> = {
   empty: 'the file is empty.',
   'not-dxf': 'the file is not group-code/value DXF text (binary DXF is not supported — re-export as ASCII DXF).',
   'no-entities': 'the file has no ENTITIES section, so it contains no drawable geometry.',
-  'unsupported-entity': 'convert the named entity to lines, arcs or polylines in the source tool and re-export; kernelCAD refuses rather than dropping it, because a dropped entity leaves an invisible hole in the profile.',
+  'unsupported-entity': 'convert the named entity to lines, arcs or polylines in the source tool and re-export. For SPLINE, use a clamped continuous planar XY control-point spline; kernelCAD refuses the entity rather than dropping it from the profile.',
   'malformed-entity': 'the named entity is missing a required group code or carries a non-numeric value; the file is corrupt or truncated.',
   'bad-units': 'state the intended unit with { units: "mm" | "in" | ... }.',
   contour: 'the drawing does not resolve into closed regions — close the contour in the source tool, or raise { tolerance } if the gap is only a rounding artefact.',
@@ -190,9 +191,10 @@ const DXF_HINTS: Record<string, string> = {
  * the sketch metadata as `unitSource` and can be overridden with
  * `opts.units`.
  *
- * Béziers and true ellipses have no exact form in the sketch command set and
- * are subdivided into chords within `opts.curveTolerance` mm (default 0.01);
- * lines and circular arcs are exact.
+ * Béziers and SVG `<ellipse>` elements have no exact form in the sketch
+ * command set and are subdivided into chords within `opts.curveTolerance` mm
+ * (default 0.01); lines and circular arcs are exact. Full planar DXF ellipses
+ * use exact rational NURBS geometry.
  *
  * Returns `Sketch[]`, largest region first. See the module header.
  */

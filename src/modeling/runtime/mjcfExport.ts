@@ -35,10 +35,9 @@
 //                   surfaced here — this is a runtime detail of the gate,
 //                   not an authoring-time export.
 //   - pin_slot    → same as cylindrical (single hinge).
-//   - ball        → emitted as a 3-DOF spherical hinge chain via two dummy
-//                   bodies. MJCF has a real <joint type="ball"> but the
-//                   limit semantics differ from URDF's; for parity with the
-//                   existing URDF decomposition we use 3 hinges.
+//   - ball        → one <joint type="ball">. MuJoCo keeps that joint's
+//                   qpos0 at the identity quaternion and ignores `ref`, so
+//                   an authored Euler triple is the child body's quaternion.
 //   - planar      → emitted as 2 chained slides + 1 hinge (3-DOF planar
 //                   motion). Not exercised by v0.7 corpus but kept for
 //                   completeness.
@@ -59,6 +58,7 @@
 //     fixes via closed-loop tendons.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { NumericPoses } from '../capture/forwardKinematics';
 import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
@@ -72,6 +72,7 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
 import { emitContactBlock, emitMateCouplingBlock } from './mjcfMateConstraints';
+import { authoredRestPoses, mjcfJointRefAttribute, restBodyPlacement, type RestBodyPlacement } from './mjcfRestPose';
 import { escapeXml, fmtNum, sanitizeJointName } from './mjcfXmlFormat';
 
 const MM_TO_M = 1e-3;
@@ -85,7 +86,8 @@ const RAD_TO_DEG = 180 / Math.PI;
  * (water 1000) understates joint loads and lets the gate miss
  * collapsing arms.
  */
-const DEFAULT_DENSITY_KG_M3 = 2700;
+/** Density used when a part declares neither `density` nor `massKg`. Aluminium. */
+export const MJCF_DEFAULT_DENSITY_KG_M3 = 2700;
 
 export interface MjcfExportResult {
     /** MJCF XML string ready to feed `MjModel.from_xml_string`. */
@@ -128,7 +130,8 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     const tendons = arm.__tendons();
     const couplings = arm.__mateCouplings();
     const transmissions = arm.__transmissionIntents();
-    const couplingBlockLines = emitMateCouplingBlock(mates, couplings);
+    const restPoses = authoredRestPoses(arm);
+    const couplingBlockLines = emitMateCouplingBlock(mates, couplings, restPoses);
     if (parts.length === 0) {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
@@ -163,6 +166,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         paramTable,
         jointOrder,
         bodyOrder,
+        restPoses,
     );
 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
@@ -296,7 +300,7 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
         let lowered: OcctBackend | undefined = sceneShapes.get(p.name);
         try {
             lowered ??= (await p.originalShape.lower()) as OcctBackend;
-            const density = p.density ?? DEFAULT_DENSITY_KG_M3;
+            const density = p.density ?? MJCF_DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
             // A declared `massKg` (catalog / datasheet mass) wins over
             // volume × density: CoM and inertia come from the geometry,
@@ -323,14 +327,12 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
                 inertia6: valid.inertia6,
             });
         } catch {
-            // Fall back to a unit inertia tensor (1 kg point mass at the
-            // part origin). Still produces a valid MJCF; the criterion
-            // outputs will note the lossy inertia in their hint.
-            inertials.set(p.name, {
-                massKg: 1,
-                comLocalMm: [0, 0, 0],
-                inertia6: [1e-3, 0, 0, 1e-3, 0, 1e-3],
-            });
+            // Fall back to a unit inertia tensor (1 kg, diagonal 1e-3 kg·m²
+            // at the part origin). Still produces a valid MJCF. The note is
+            // the record that this substitution happened — callers must not
+            // have to notice the 1 kg / 1e-3 pattern on their own.
+            inertiaNotes.push(unitInertiaNote(p.name));
+            inertials.set(p.name, UNIT_INERTIA_SPEC);
         }
         if (lowered !== undefined) {
             try {
@@ -527,10 +529,19 @@ async function resolveTendonSites(
 
 /** A mated child body's position in its parent: the parent-local connector
  *  origin minus the child-local one (they coincide at rest). */
-function childBodyPos(frame: ResolvedMateFrame | undefined): Vec3 {
-    if (frame === undefined) return [0, 0, 0];
-    const o = frame.origin, c = frame.childOrigin;
-    return [o[0] - c[0], o[1] - c[1], o[2] - c[2]];
+function bodyAttrsFor(
+    partName: string,
+    mate: MateRecord | undefined,
+    rootPosMm: Vec3,
+    frame: ResolvedMateFrame | undefined,
+    restPoses: NumericPoses,
+): string {
+    const placed: RestBodyPlacement = mate === undefined
+        ? { posMm: [rootPosMm[0], rootPosMm[1], rootPosMm[2]] }
+        : restBodyPlacement(mate, frame, restPoses);
+    const posM = placed.posMm.map((v) => fmtNum(v * MM_TO_M)).join(' ');
+    const quat = placed.quat === undefined ? '' : ` quat="${placed.quat.map((v) => fmtNum(v)).join(' ')}"`;
+    return `name="${escapeXml(partName)}" pos="${posM}"${quat}`;
 }
 
 // Emit MJCF by recursive body-tree walk.
@@ -545,6 +556,7 @@ function emitWorldbodyBlocks(
     paramTable: ParamTable,
     jointOrder: { mjcfName: string; mateName: string }[],
     bodyOrder: string[],
+    restPoses: NumericPoses,
 ): string[] {
     function partAttachPos(part: AssemblyPartStored): Vec3 {
         // Root bodies use the part's `at` placement (mm → m). Non-root
@@ -564,13 +576,15 @@ function emitWorldbodyBlocks(
         if (part === undefined) return '';
         const inertial = inertials.get(partName)!;
 
-        // Body position: root uses part.at; non-root sits where its mate
-        // connector lands on the parent's. Both in mm; convert to m.
-        const posMm: Vec3 = mateFromParent === undefined
-            ? partAttachPos(part)
-            : childBodyPos(resolvedMateAxes.get(mateFromParent.name));
-        const posM = posMm.map((v) => v * MM_TO_M);
-        const bodyAttrs = `name="${escapeXml(partName)}" pos="${posM.map(fmtNum).join(' ')}"`;
+        // Root uses part.at. A mated child is placed at its authored rest:
+        // MuJoCo shows this frame at qpos0 and applies (qpos - qpos0).
+        const bodyAttrs = bodyAttrsFor(
+            partName,
+            mateFromParent,
+            partAttachPos(part),
+            mateFromParent === undefined ? undefined : resolvedMateAxes.get(mateFromParent.name),
+            restPoses,
+        );
 
         const lines: string[] = [];
         lines.push(`${indent}<body ${bodyAttrs}>`);
@@ -589,7 +603,7 @@ function emitWorldbodyBlocks(
         // child body, not on the parent — that's a key MJCF vs URDF
         // difference.
         if (mateFromParent !== undefined) {
-            const jointXml = mateToMjcfJoint(mateFromParent, resolvedMateAxes, jointOrder);
+            const jointXml = mateToMjcfJoint(mateFromParent, resolvedMateAxes, jointOrder, restPoses);
             for (const j of jointXml) lines.push(`${indent}  ${j}`);
         }
 
@@ -794,6 +808,18 @@ interface InertiaSpec {
     readonly inertia6: readonly [number, number, number, number, number, number];
 }
 
+/** Substituted when mass properties cannot be computed. Diagonal 1e-3 kg·m², 1 kg, origin. */
+const UNIT_INERTIA_SPEC: InertiaSpec = {
+    massKg: 1,
+    comLocalMm: [0, 0, 0],
+    inertia6: [1e-3, 0, 0, 1e-3, 0, 1e-3],
+};
+
+/** Recorded on `inertiaNotes` when `UNIT_INERTIA_SPEC` replaces the CAD tensor. */
+export function unitInertiaNote(partName: string): string {
+    return `${partName}: mass properties unavailable; substituted unit inertia (mass 1 kg, diagonal 1e-3 kg·m², centre of mass at the part origin)`;
+}
+
 // Joint spring / damping → MJCF SI. The exported joint coordinate has the
 // same sign as the mate pose / limits (no axis flip), so the spring reference
 // maps straight to `springref`.
@@ -834,6 +860,7 @@ function mateToMjcfJoint(
     mate: MateRecord,
     resolved: Map<string, ResolvedMateFrame>,
     jointOrder: { mjcfName: string; mateName: string }[],
+    restPoses: NumericPoses,
 ): string[] {
     const frame = resolved.get(mate.name) ?? { origin: [0, 0, 0] as Vec3, axis: [0, 0, 1] as Vec3, childOrigin: [0, 0, 0] as Vec3 };
     const axis = frame.axis;
@@ -855,8 +882,9 @@ function mateToMjcfJoint(
             const limitedAttrs = limits !== undefined
                 ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
+            const refAttr = mjcfJointRefAttribute(mate, restPoses);
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${refAttr}${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'prismatic': {
@@ -865,8 +893,9 @@ function mateToMjcfJoint(
             const limitedAttrs = limits !== undefined
                 ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
+            const refAttr = mjcfJointRefAttribute(mate, restPoses);
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${refAttr}${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'planar': {
@@ -886,11 +915,10 @@ function mateToMjcfJoint(
             ];
         }
         case 'ball': {
-            // Single <joint type="ball"> — MuJoCo's spherical joint uses
-            // a quaternion for qpos (4 entries instead of 1), which we
-            // surface as a single ball entry in jointOrder. The
-            // criterion 6 drift test treats this as one joint and
-            // computes an angle-of-rotation drift from the quaternion.
+            // One <joint type="ball">. qpos is a quaternion and qpos0 stays
+            // the identity; `ref` does not apply. The authored Euler triple
+            // is the child body quaternion from `restBodyPlacement`, so the
+            // forward at qpos0 is that pose and this element carries none.
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             return [
                 `<joint name="${escapeXml(mjcfJointName)}" type="ball" pos="${anchor}"/>`,
@@ -905,8 +933,12 @@ function mateToMjcfJoint(
  * `part-<slug>` form so `<geom mesh="...">` references stay readable
  * in diagnostic output. Run-collapses non-alphanumeric chars to single
  * '-' separators; leading/trailing separators are trimmed.
+ *
+ * Exported so the export-health check can tell a declared collision
+ * piece (`part-<slug>__cN`) from the whole-part mesh without reading
+ * the MJCF text.
  */
-function mjcfMeshAssetName(partName: string): string {
+export function mjcfMeshAssetName(partName: string): string {
     const slug = partName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')

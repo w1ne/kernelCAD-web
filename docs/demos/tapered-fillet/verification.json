@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-11-16",
+  "source": "examples/cookbook-parity/tapered-fillet-bracket.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 14435.040575034724,
+  "baseVolumeMm3": 14250,
+  "addedVolumeMm3": 185.0405750347236,
+  "circularSectionEstimateMm3": 180.26554274614344,
+  "constantRadiusBoundsMm3": {
+    "r2": 25.752220392306207,
+    "r8": 412.0355262768993
+  },
+  "faceCount": 15,
+  "boundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      60,
+      30,
+      40
+    ]
+  },
+  "meshedFeatureCount": 4,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

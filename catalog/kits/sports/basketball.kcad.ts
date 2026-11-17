@@ -17,11 +17,12 @@ const pebbledCover = param('pebbledCover', '#d47a32', { label: 'Pebbled ball cov
 const channelRubber = param('channelRubber', '#302c29', { label: 'Channel rubber' });
 presets({ clubColors: { pebbledCover: '#3979a3', channelRubber: '#272d32' } });
 const p = assembly('basketball');
-p.part('ball', sphere(62).translate(0, 0, 62).scale(scale).color(pebbledCover));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('ball', sphere(62).translate(0, 0, 62).color(pebbledCover));
 
 
 // Two continuous, shallow torus channels divide the orange ball into familiar panels.
-p.part("equator-channel", torus(61.8, 0.65, 12).translate(0, 0, 62).color(channelRubber));
-p.part("meridian-channel", torus(61.8, 0.4, 12).rotateX(90).translate(0, 0, 62.25).color(channelRubber));
+add("equator-channel", torus(61.8, 0.65, 12).translate(0, 0, 62).color(channelRubber));
+add("meridian-channel", torus(61.8, 0.4, 12).rotateX(90).translate(0, 0, 62.25).color(channelRubber));
 
 return p.model();

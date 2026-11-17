@@ -40,6 +40,8 @@ import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.output
 import { SCAN_REFERENCE_OUTPUT_SCHEMAS } from './registry/scanReferenceTools.outputSchemas';
 import { METRIC_THREAD_OUTPUT_SCHEMAS } from './registry/metricThreadTools.outputSchemas';
 import { SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS } from './registry/splitKeepPartsTools.outputSchemas';
+import { STEP_INSPECT_VIEWS_OUTPUT_SCHEMAS } from './registry/stepInspectViewsTools.outputSchemas';
+import { EXPORT_HEALTH_OUTPUT_SCHEMAS } from './registry/exportHealthTools.outputSchemas';
 import { SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS } from './registry/sdfExportPreviewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
@@ -762,4 +764,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...SCAN_REFERENCE_OUTPUT_SCHEMAS,
   ...METRIC_THREAD_OUTPUT_SCHEMAS,
   ...SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS,
+  ...STEP_INSPECT_VIEWS_OUTPUT_SCHEMAS,
+  ...EXPORT_HEALTH_OUTPUT_SCHEMAS,
 };

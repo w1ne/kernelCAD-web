@@ -72,7 +72,8 @@ prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points
 // thickness on each side, extruded along +Z, then fused with the supplied base.
 // `startZ` is the rib bottom (default 0); make it overlap the base for a valid union.
 // Supports straight or non-self-intersecting open polylines. Sharp bends that
-// require a miter longer than 8 × half-thickness are rejected.
+// require a miter longer than 8 × half-thickness are rejected. Unknown option
+// keys (for example `z` for startZ) throw feature.invalid-args.
 rib(base: Shape, centerline: [number, number][], opts: {
   thickness: number;
   height: number;
@@ -98,9 +99,36 @@ assembly(name?: string): Assembly;
 // pair from overlap and rest-interpenetration diagnostics at the returned pose.
 // Mate-gap, joint-continuity and sampled joint-travel checks remain active.
 
+// External spur pair. Centre distance defaults to (m1·z1 + m2·z2)/2. `ratio`
+// is ω_driven/ω_driver and must be negative. The driven gear is turned so a
+// tooth space faces the driver. The assembly has revolute mates, a couple at
+// −z1/z2, and a gear-pair transmission. Default teeth are the involute from
+// spurGear. `await pair.toothInterference({ cycleSamples })` reports exact
+// BREP distance and common volume over sampled poses, refines beside the
+// minimum, and measures pitch-circle backlash. interferenceVolumeFloorMm3
+// is 0.001 mm³, a fixed absolute volume for every module and face width.
+// Overlap volume is the transverse area times the face width, and similar
+// teeth grow that area with the square of the module, so the same floor is
+// a larger share of a tooth on a fine module and a smaller share on a coarse
+// module or a wide face. A common volume strictly above that floor sets
+// anyInterference and sets minClearanceMm to 0. A smaller positive volume
+// does not. Zero-volume contact (common volume 0 and distance 0) sets
+// minClearanceMm to 0 while anyInterference stays false. anyInterference
+// and minClearanceMm aggregate those poses only
+// — they do not prove the gaps between samples. Geometry only, not strength. `await pair.withGeneratingCut({
+// samples })` is opt-in: a discrete union of the driver over one tooth,
+// repeated at tooth pitch. Its scallopMm is a chordal sagitta bound, not a
+// continuous generating cut. Example: examples/cookbook-parity/involute-spur-gear-pair.kcad.ts
+spurGearPair({
+  module, teeth, drivenTeeth?, ratio?, drivenModule?, pressureAngle?, faceWidth,
+  backlash?, phase?, centerDistance?, driverBore?, drivenBore?, name?,
+}): SpurGearPair;
+
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
+// axis is upper-case 'X' | 'Y' | 'Z'; any other key (there is no handedness
+// option) throws feature.invalid-args.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
@@ -158,6 +186,19 @@ lib.fromSTL(path: string, opts?: {
   allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
+
+// ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
+// area so the caller can choose which regions are outlines, holes or parts.
+// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE are supported.
+// Full ellipses use four exact rational NURBS segments; partial elliptical arcs
+// retain exact rational NURBS geometry and can join other profile edges.
+// Clamped, continuous, planar XY SPLINE entities retain their control points,
+// knots and rational weights. Nonplanar ellipses, periodic, fit-point-only,
+// discontinuous and nonplanar SPLINE, plus INSERT entities, fail with a named diagnostic.
+const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
+const [outline, ...holes] = profiles;
+let plate = outline.extrude(3);
+for (const hole of holes) plate = plate.subtract(hole.extrude(3));
 
 // Full-detail, display-only mesh import. This skips BRep sewing and does not simplify.
 // Rigid transforms, assembly placement and finish/color are supported; solid
@@ -429,7 +470,8 @@ shape, not a copy.
 // named intersection (A ∩ B), a_only (A − B) and b_only (B − A). A fragment
 // at or below 1e-6 mm³ is omitted, so disjoint operands return two parts.
 // keep 'intersection' | 'a_only' | 'b_only' returns that one Shape; an empty
-// request fails. subtract / intersect / union are unchanged. Face refs that
+// request fails. Any option key other than keep, or a non-object opts, throws
+// feature.invalid-args. subtract / intersect / union are unchanged. Face refs that
 // the cut splits stay ambiguous (feature.face-ref.ambiguous-after-split).
 // MCP: split_keep_parts.
 .split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Scene | Shape
@@ -439,6 +481,9 @@ shape, not a copy.
 .fillet(radius: number, edges?: EdgeSelector): Shape
 // Variable-radius form — one group per blend region:
 .fillet([{ edges: EdgeSelector, radius: number }, ...]): Shape
+// Tapered round: radius at each edge's low end (lower coordinate on the axis the
+// edge spans most), endRadius at its high end. Open edges only.
+.fillet(radius, edges, { endRadius: number }): Shape
 // Bevel edges (same selector shape as fillet):
 .chamfer(distance: number, edges?: EdgeSelector): Shape
 .chamfer([{ edges: EdgeSelector, distance: number }, ...]): Shape
@@ -489,6 +534,7 @@ shape, not a copy.
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
 // Boolean union of the source and its reflection — produces a symmetric part:
 .mirror(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
+// mirror and reflect reject any plane-object key other than plane and offset.
 
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape
@@ -559,8 +605,13 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; taperDeg?: Editable<number>; symmetric?: boolean }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
-// Profile coords are (radial-X, axial-Z); all x >= 0.
-.revolve(opts?: { angleDeg?: Editable<number> }): Shape
+// Profile coords are (radial-X, axial-Z); all x >= 0. A partial revolve
+// starts on the sketch plane (y = 0) and turns toward +Y. symmetric: true
+// spans angleDeg/2 to each side of the sketch plane (a mid-plane revolve);
+// angleDeg stays the total angle, and a full 360 revolve is unchanged.
+// Example: 90 degree pipe elbow with its end faces at +/-45 degrees
+//   path().circle(30, 0, 8).revolve({ angleDeg: 90, symmetric: true })
+.revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: Record<string, CanonicalFace | FaceQuery>; symmetric?: boolean }): Shape
 
 // Sweep this profile along a 3D rail.
 // spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
@@ -580,6 +631,8 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // section: 'transverse' (spine 'helix' only): the profile is the cross-section
 //   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
 //   turns once per pitch (how threadedRod builds a whole rod without a boolean).
+// Any key other than frenet, transitionMode, spine, section and faceLabels throws
+// feature.invalid-args (e.g. transition: 'round' is not transitionMode).
 .sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
@@ -719,7 +772,7 @@ Declare a label on a creating op via the `faceLabels` option. The value map acce
 **Canonical alias** — give a custom name to a canonical face:
 
 ```typescript
-box([10, 10, 5], { faceLabels: { lid: 'top', base: 'bottom' } })
+box(10, 10, 5, false, { faceLabels: { lid: 'top', base: 'bottom' } })
   .fillet(2, { face: 'lid' });
 ```
 

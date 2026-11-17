@@ -34,7 +34,7 @@ p.part("motor", cylinder(1100, 425, 10).rotateY(90).translate(-237.50, 0, 645).s
 p.part("coupling-guard", box(450, 650, 490, true).translate(-50, 0, 495).scale(scale).color(galvanizedSteel));
 p.part("suction-pipe", box(1750, 170, 170, true).translate(-225, -344.50, 925).scale(scale).color(stainlessSteel));
 p.part("discharge-pipe", box(1250, 170, 170, true).translate(-425, 292.50, 1362.50).scale(scale).color(stainlessSteel));
-p.part("pipe-support", box(160, 160, 840, true).translate(-437.50, 312, 640).scale(scale).color(stainlessSteel));
-p.part("pipe-support-2", box(160, 160, 840, true).translate(525, 312, 640).scale(scale).color(stainlessSteel));
+p.part("pipe-support", box(160, 160, 1142, true).translate(-437.50, 312, 791).scale(scale).color(stainlessSteel));
+p.part("pipe-support-2", box(160, 160, 1142, true).translate(100, 312, 791).scale(scale).color(stainlessSteel));
 
 return p.model();

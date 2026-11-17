@@ -53,10 +53,10 @@ const rod = (a: [number, number, number], b: [number, number, number], r: number
   return cylinder(l, r, seg).rotateY(tilt).rotateZ(yaw).translate(a[0], a[1], a[2]);
 };
 // Revolved profile around X: [r, x] points.
-const turnedX = (pts: [number, number][], seg = 16) => {
+const turnedX = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, x] of pts.slice(1)) pb = pb.lineTo(r, x);
-  return pb.close().revolve(360, seg).rotateY(90);
+  return pb.close().revolve().rotateY(90);
 };
 // Ball valve on a run along X (or Z when vertical): body, stem and lever handle.
 const ballValve = (name: string, x: number, y: number, z: number, r: number, vertical: boolean) => {
@@ -123,7 +123,7 @@ const DH = big ? 560 : 400;
 const DX = 500;
 const DY = -380;
 add("drum-body", path().moveTo(0, 0).lineTo(DR - 10, 0).lineTo(DR, 20).lineTo(DR, DH - 30).lineTo(DR - 20, DH).lineTo(0, DH).close()
-  .revolve(360, 20).translate(DX, DY, 0).color(drum));
+  .revolve().translate(DX, DY, 0).color(drum));
 for (const [i, z] of [DH * 0.33, DH * 0.66].entries()) add(`drum-rib-${i}`, cylZ(DX, DY, z, 14, DR + 5, 20).color(drum));
 add("drum-cap", cylZ(DX + DR * 0.45, DY, DH, 30, 40, 12).color('#2a2d30'));
 add("drum-vent", cylZ(DX - DR * 0.45, DY, DH, 22, 22, 8).color('#2a2d30'));

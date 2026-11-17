@@ -37,7 +37,7 @@ const p = assembly('self-propelled-field-sprayer');
 const groundOffset = 0;
 const add = (name, shape, finish = paintedSteelColor) => p.part(name, shape.translate(0, 0, -groundOffset).scale(scale).color(finish));
 add('sprayer-chassis', box(1332, 1344, 135, true).translate(0, 0, 587.5), paintedSteelColor);
-add('chemical-tank', slopedPrism(1134, 798, 1053).translate(0, 63, 2011.5), paintedSteelColor);
+add('chemical-tank', slopedPrism(1134, 798, 1053).translate(0, 63, 1181.5), paintedSteelColor);
 add('high-wheel--576-0--840-0', cylinder(92, 430, 12).rotate([0, 1, 0], 90).translate(-622, -840, 430), rubberColor);
 add('high-wheel--576-0--840-0-hub', cylinder(101.2, 146.2, 10).translate(-626.6, -840, 430), steelColor);
 add('high-wheel--576-0-840-0', cylinder(92, 430, 12).rotate([0, 1, 0], 90).translate(-622, 840, 430), rubberColor);
@@ -46,9 +46,9 @@ add('high-wheel-576-0--840-0', cylinder(92, 430, 12).rotate([0, 1, 0], 90).trans
 add('high-wheel-576-0--840-0-hub', cylinder(101.2, 146.2, 10).translate(525.4, -840, 430), steelColor);
 add('high-wheel-576-0-840-0', cylinder(92, 430, 12).rotate([0, 1, 0], 90).translate(530, 840, 430), rubberColor);
 add('high-wheel-576-0-840-0-hub', cylinder(101.2, 146.2, 10).translate(525.4, 840, 430), steelColor);
-add('operator-cab', box(756, 840, 918, true).translate(-450, -567, 2565), paintedSteelColor);
-add('cab-window', box(558, 18, 594, true).translate(-450, -1008, 2457), glassColor);
-add('boom-wing--1', box(1904, 58, 52, true).translate(-1904, -252, 2078), paintedSteelColor);
-add('boom-wing-1', box(1904, 58, 52, true).translate(1904, -252, 2078), paintedSteelColor);
+add('operator-cab', box(756, 840, 918, true).translate(-450, -567, 1114), paintedSteelColor);
+add('cab-window', box(558, 18, 594, true).translate(-450, -990, 1006), glassColor);
+add('boom-wing--1', box(1904, 58, 52, true).translate(-1352, 150, 1250), paintedSteelColor);
+add('boom-wing-1', box(1904, 58, 52, true).translate(1352, 150, 1250), paintedSteelColor);
 
 return p.model();

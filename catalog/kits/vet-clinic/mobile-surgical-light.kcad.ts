@@ -43,15 +43,15 @@ const tube = (a: number[], b: number[], r: number, seg = 12) => {
     .rotateZ((Math.atan2(d[1], d[0]) * 180) / Math.PI)
     .translate(a[0], a[1], a[2]);
 };
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const steel = '#b8c0c2';
 
 // ---- Five-star base ----
-add('base-hub', turned([[0, 0], [110, 0], [110, 60], [70, 110], [0, 110]], 20).translate(0, 0, 70).color(frame));
+add('base-hub', turned([[0, 0], [110, 0], [110, 60], [70, 110], [0, 110]]).translate(0, 0, 70).color(frame));
 for (let k = 0; k < 5; k++) {
   const a = 90 + k * 72;
   const leg = path().moveTo(60, -45).lineTo(370, -24).lineTo(390, 0).lineTo(370, 24).lineTo(60, 45).close().extrude(55);
@@ -64,7 +64,7 @@ for (let k = 0; k < 5; k++) {
 // ---- Column and arm ----
 const H = 1700;
 add('column', cylZ(0, 0, 180, H - 180, 34).color(frame));
-add('column-collar', turned([[0, 0], [52, 0], [52, 50], [36, 70], [0, 70]], 16).translate(0, 0, 180).color(frame));
+add('column-collar', turned([[0, 0], [52, 0], [52, 50], [36, 70], [0, 70]]).translate(0, 0, 180).color(frame));
 add('handle-ring', cylZ(0, 0, 1050, 40, 44).color(castor));
 add('arm-pivot', cylZ(0, 0, H, 90, 50).color(steel));
 // Spring arm: two parallel links from the column top out to the elbow.
@@ -84,7 +84,7 @@ const head = (name: string, e: number[], R: number, drop: number, tiltDeg: numbe
   add(`${name}-yoke-arc-a`, tube([e[0], 0, hc[2] + R * 0.85], [e[0] + dir * R * 0.75, 0, hc[2] + R * 0.6], 20).color(frame));
   add(`${name}-yoke-arc-b`, tube([e[0] + dir * R * 0.75, 0, hc[2] + R * 0.6], [e[0] + dir * R * 1.1, 0, hc[2] + 40], 20).color(frame));
   const T = (s: Shape) => s.rotateY(dir * tiltDeg).translate(hc[0], hc[1], hc[2]);
-  add(`${name}-shell`, T(turned([[0, 0], [R, 0], [R + 8, 30], [R - 20, 85], [R * 0.55, 135], [0, 145]], 24)).color(headShell));
+  add(`${name}-shell`, T(turned([[0, 0], [R, 0], [R + 8, 30], [R - 20, 85], [R * 0.55, 135], [0, 145]])).color(headShell));
   add(`${name}-rim`, T(cylZ(0, 0, -14, 16, R + 4, 24)).color(steel));
   add(`${name}-face`, T(cylZ(0, 0, -18, 6, R - 12, 24)).color('#d8dcdc'));
   const rings: number[][] = [[0.35, 6], [0.72, 12]];
@@ -94,7 +94,7 @@ const head = (name: string, e: number[], R: number, drop: number, tiltDeg: numbe
       add(`${name}-led-${n}-${k}`, T(cylZ(f * R * Math.cos(a), f * R * Math.sin(a), -34, 18, R * 0.12, 12)).color(lens));
     }
   }
-  add(`${name}-sterile-handle`, T(turned([[0, 0], [26, 0], [20, -40], [16, -150], [24, -170], [0, -175]], 14).translate(0, 0, -18)).color('#7fa8c9'));
+  add(`${name}-sterile-handle`, T(turned([[0, 0], [26, 0], [20, -40], [16, -150], [24, -170], [0, -175]]).translate(0, 0, -18)).color('#7fa8c9'));
 };
 const e1 = armTo('arm', 1, 760, 160, 18);
 head('head', e1, 290, 360, 20, 1);

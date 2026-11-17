@@ -46,17 +46,17 @@ const turned = (pts) => {
 
 const X = 500;
 const HEAD = 860;
-const dome = turned([[0, 0], [168, 0], [168, 8], [150, 22], [62, 50], [38, 62], [0, 62]]);
-const cap = turned([[0, 0], [44, 0], [44, 8], [30, 24], [0, 30]]);
+const dome = () => turned([[0, 0], [168, 0], [168, 8], [150, 22], [62, 50], [38, 62], [0, 62]]);
+const cap = () => turned([[0, 0], [44, 0], [44, 8], [30, 24], [0, 30]]);
 
 for (const [k, s] of [['l', -1], ['r', 1]]) {
   const x = s * X;
   add(`rubber-${k}`, cylinder(8, 160, 20).translate(x, 0, 0).color('#151719'));
-  add(`base-${k}`, dome.translate(x, 0, 8).color(base));
+  add(`base-${k}`, dome().translate(x, 0, 8).color(base));
   add(`post-${k}`, cylinder(HEAD - 60, 32, 14).translate(x, 0, 60).color(post));
   add(`head-${k}`, cylinder(100, 42, 16).translate(x, 0, HEAD).color(post));
   add(`head-band-${k}`, cylinder(18, 43, 16).translate(x, 0, HEAD + 6).color(belt));
-  add(`cap-${k}`, cap.translate(x, 0, HEAD + 100).color(post));
+  add(`cap-${k}`, cap().translate(x, 0, HEAD + 100).color(post));
   // Receiver slots on the four sides of the head (the -Y one faces the camera).
   add(`slot-${k}`, blk(x, -42, HEAD + 38, 30, 4, 54).color('#151719'));
 }

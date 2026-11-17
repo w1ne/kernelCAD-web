@@ -1,0 +1,2 @@
+LOCAL RENDER • subtract → filletIntersection(r = 1 mm)
+tolerenceMm typo → feature.invalid-args • no record
