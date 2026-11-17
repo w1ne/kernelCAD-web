@@ -146303,7 +146303,7 @@
       "id": "process-blower",
       "kit": "industrial-plant",
       "title": "Process blower",
-      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint.",
+      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint, motor enamel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146322,7 +146322,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-blower.kcad.ts",
       "preview": "/assets/industrial-plant-process-blower.png",
-      "sourceSha256": "e69029a4fdf281874072e57b61e98c12305c677642c74934868f379006221723",
+      "sourceSha256": "c79414a575c05a8465e1fb83641daf5af90c6497c77c8160965ce5c60a2ec0d2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146345,15 +146345,23 @@
           "type": "color",
           "default": "#dfa744",
           "label": "Safety paint"
+        },
+        {
+          "name": "motorEnamel",
+          "type": "color",
+          "default": "#315f7d",
+          "label": "Motor enamel"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "motorEnamel": "#4a5155"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "safetyPaint": "#f5c640",
+          "motorEnamel": "#315f7d"
         }
       },
       "stats": {
@@ -146373,8 +146381,7 @@
           "parts": [
             "base",
             "inlet-flange",
-            "outlet-stack",
-            "drive-motor"
+            "outlet-stack"
           ],
           "param": "safetyPaint"
         },
@@ -146391,6 +146398,14 @@
             "anchor-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "motorEnamel",
+          "color": "#315f7d",
+          "parts": [
+            "drive-motor"
+          ],
+          "param": "motorEnamel"
         }
       ]
     },

@@ -1,0 +1,32 @@
+{
+  "oldAssetRows": 2402,
+  "newAssetRows": 2402,
+  "changedRows": [
+    {
+      "kit": "industrial-plant",
+      "id": "process-blower"
+    }
+  ],
+  "changedRowCount": 1,
+  "sourceSha256InIndex": "c79414a575c05a8465e1fb83641daf5af90c6497c77c8160965ce5c60a2ec0d2",
+  "sourceSha256OnDisk": "c79414a575c05a8465e1fb83641daf5af90c6497c77c8160965ce5c60a2ec0d2",
+  "sourceHashMatches": true,
+  "preview": "/assets/industrial-plant-process-blower.png",
+  "previewExists": true,
+  "triangles": 292,
+  "triangleBudget": 1400,
+  "sizeM": [
+    0.7003,
+    0.5244,
+    0.418
+  ],
+  "colorParameters": [
+    "steel",
+    "safetyPaint",
+    "motorEnamel"
+  ],
+  "presets": [
+    "highVisibility",
+    "weathered"
+  ]
+}

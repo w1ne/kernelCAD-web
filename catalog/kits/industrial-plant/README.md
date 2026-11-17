@@ -75,6 +75,14 @@ records the five-preview ledger, source and preview snapshots, GLB regression,
 full catalog integration result, index verification, and local MP4. No asset
 IDs, geometry or kit counts changed.
 
+The Nov 17 process-blower review gives the drive motor a separate enamel color
+control; the base and raised outlet remain on safety paint. The model stays at
+292 triangles under a 1,400-triangle budget. Its
+[semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/README.md)
+records the five-preview ledger, before/after source and preview, GLB regression,
+catalog index refresh, local checks, and inspected MP4. No geometry or asset
+count changed, and the branch is not deployed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -92,7 +100,7 @@ IDs, geometry or kit counts changed.
 | `positive-displacement-pump` | Positive displacement pump | Compact external-gear pump scene prop with a horizontal motor, guarded coupling, bolted circular head, raised suction/discharge flanges and a relief return. | scale · steel · motor enamel · safety finish |
 | `air-compressor` | Industrial air compressor | Horizontal receiver on saddles and skid with a belt-driven motor, finned single/twin pump, intake filter and pressure controls. | scale · receiver capacity · pump arrangement · receiver steel · pump iron · motor paint · rubber |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
-| `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |
+| `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint · motor enamel |
 | `diesel-generator-set` | Diesel generator set | Packaged generator with a louvered radiator, isolated skid mounts, service door, controls and exhaust stack. | scale · louver count · enclosure paint · steel · radiator core · rubber |
 | `industrial-boiler` | Industrial boiler | Packaged firetube steam boiler at about real size: banded shell on saddles and skid, dished doors, burner and blower housing with gas train and control panel, rear stack, stop and safety valves, water column with gauge glass. | scale · shell · trim · piping · gauge glass |
 | `burner-management-skid` | Burner management skid | Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. | scale · steel · safety paint |
