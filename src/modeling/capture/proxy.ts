@@ -108,6 +108,7 @@ import {
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 import { assertFinishOptions } from './finishOptions';
+import { assertPlacementOptions } from './placementOptions';
 
 
 const PLANE_SPEC_KEYS = new Set(['plane', 'offset']);
@@ -1330,6 +1331,7 @@ export class Shape {
     size: [number, number, number];
     center: [number, number, number];
   }> {
+    assertPlacementOptions('boundingBox', ['exact'], 'await part.boundingBox({ exact: true })', opts, this.id);
     const backend = await this.lower();
     const { min, max } = backend.boundingBox(opts);
     const size: [number, number, number] = [
@@ -1369,6 +1371,7 @@ export class Shape {
    *                    e.g. `recenter({ z: false })` centers x/y, leaves z.
    */
   async recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape> {
+    assertPlacementOptions('recenter', ['x', 'y', 'z'], 'await part.recenter({ z: false })', opts, this.id);
     const { center } = await this.boundingBox();
     const dx = (opts?.x ?? true) ? -center[0] : 0;
     const dy = (opts?.y ?? true) ? -center[1] : 0;
@@ -1390,6 +1393,7 @@ export class Shape {
    * `.recenter()`.
    */
   async seatOnFloor(opts?: { center?: boolean }): Promise<Shape> {
+    assertPlacementOptions('seatOnFloor', ['center'], 'await part.seatOnFloor({ center: false })', opts, this.id);
     const { min, center } = await this.boundingBox();
     const recenterXy = opts?.center ?? true;
     const dx = recenterXy ? -center[0] : 0;
