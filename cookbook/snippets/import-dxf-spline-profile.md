@@ -22,5 +22,6 @@ return profile.extrude(3);
 ```
 
 Fit-point-only, periodic, discontinuous and nonplanar SPLINE entities remain explicit errors;
-export their control points and knots as a continuous clamped XY spline first. DXF
-`ELLIPSE` and block `INSERT` entities are also refused rather than omitted.
+export their control points and knots as a continuous clamped XY spline first. Full planar
+DXF `ELLIPSE` entities are also preserved exactly as rational NURBS; partial/nonplanar
+ellipses and block `INSERT` entities are refused rather than omitted.

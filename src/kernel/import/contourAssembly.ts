@@ -21,8 +21,9 @@
 // positive counter-clockwise) because that is exactly what
 // `SketchCommand.bulgeArc` already carries — DXF's native encoding maps to it
 // with no conversion and no loss. Clamped DXF SPLINE data maps to
-// `nurbsSegment` with its knots and weights intact. Geometry with no exact
-// command form (such as SVG Béziers and true ellipses) is flattened in the
+// `nurbsSegment` with its knots and weights intact; full planar DXF ELLIPSE
+// entities use four exact rational NURBS segments. Geometry with no exact
+// command form (such as SVG Béziers and SVG ellipses) is flattened in the
 // parsers under an explicit `curveTolerance`.
 //
 // WHAT THIS STAGE REFUSES TO DO
