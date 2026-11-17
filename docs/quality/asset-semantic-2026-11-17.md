@@ -89,3 +89,21 @@ gate reports 70/70 (100%); the global scan reports 2,398/2,402 (99.83%), with
 four unchanged `standard-components` outliers. The full catalog suite passed
 139 files and 209 tests, including the 2,402-asset source/export/index-freshness
 check. Neither mechanical count proves semantic realism.
+
+## Shipyard follow-up: ship-lift cradle
+
+Five rendered shipyard assets were checked after confirming no open issue or PR
+targeted the selected IDs: `ship-lift-cradle`, `shipyard-block-transporter`,
+`plate-rolling-machine`, `weld-fit-up-table`, and `pipe-spool-rotator`. The
+paired side rails on `ship-lift-cradle` had different finishes despite having
+the same dimensions and guide-rail role. `side-rail-1` now shares the existing
+`yardPaint` control with `side-rail-0`; cross ties and guide rollers remain
+`structuralSteel`, and hull pads remain `elastomer`. Geometry and the 396-triangle
+mesh are unchanged.
+
+The [five-preview ledger, before/after renders, baseline-failing and passing
+exported-GLB regression, generated-index evidence, and inspected MP4](../../artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/README.md)
+record this local material correction. The public asset remains a generic
+kernelCAD model; it does not claim a vendor design or universal shipyard paint
+standard. Its current public detail page returned HTTP 200 before the change;
+this branch is not deployed, so post-deployment behavior is not claimed.

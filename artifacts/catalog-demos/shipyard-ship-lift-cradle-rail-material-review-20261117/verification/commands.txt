@@ -1,0 +1,22 @@
+Audit and target selection:
+  python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/check_open_targets.py
+
+Baseline regression (expected to fail before the source edit):
+  npx vitest run tests/integration/catalog/shipLiftCradleRailMaterial.test.ts
+
+Source and generated preview:
+  npx tsx scripts/renderCatalogPreviews.ts ship-lift-cradle
+  npx tsx scripts/buildAssetCatalog.ts
+  python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/verify_asset_index.py
+
+Post-change checks:
+  npx vitest run tests/integration/catalog/shipLiftCradleRailMaterial.test.ts
+  npx eslint catalog/kits/shipyard/ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts
+
+Evidence generation:
+  python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/make_review_assets.py
+  bash artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/make_demo.sh
+  python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/inspect_video.py
+
+Canonical render inspection attempt (attached to the existing Chrome CDP session):
+  PW_CDP_URL=http://127.0.0.1:9333 timeout --signal=TERM --kill-after=5s 75s node dist/cli/index.js render inspect artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/after/ship-lift-cradle.kcad.ts artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/inspection/final --views front,right,top,iso --channels rgb --no-watermark --environment softbox --screenshot-timeout 20000

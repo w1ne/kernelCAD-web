@@ -290973,7 +290973,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
       "preview": "/assets/shipyard-ship-lift-cradle.png",
-      "sourceSha256": "4a05b8d44f7bc47c87144b57d0af57416e7b28c909d38c81f54ccf415597b2c8",
+      "sourceSha256": "c5157d4e1a5be382976afd7ea9f953f1970c700bc2c005d7e4450cc8d8e50aea",
       "triangleBudget": 1800,
       "params": [
         {
@@ -291031,7 +291031,8 @@
           "name": "yardPaint",
           "color": "#76847b",
           "parts": [
-            "side-rail-0"
+            "side-rail-0",
+            "side-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -291039,7 +291040,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "side-rail-1",
             "cross-tie-0",
             "cross-tie-1",
             "cross-tie-2",

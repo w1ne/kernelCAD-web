@@ -1,0 +1,175 @@
+{
+  "checkedAt": "2026-11-17T11:54:01.383663+00:00",
+  "scope": "Open issue text and open PR descriptions plus all changed file paths",
+  "selectedAssets": [
+    "shipyard/ship-lift-cradle",
+    "shipyard/shipyard-block-transporter",
+    "shipyard/plate-rolling-machine",
+    "shipyard/weld-fit-up-table",
+    "shipyard/pipe-spool-rotator"
+  ],
+  "openIssueCount": 15,
+  "openPullRequestCount": 16,
+  "issueHits": [],
+  "pullRequestHits": [],
+  "catalogPullRequests": {
+    "1258": {
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1258",
+      "state": "MERGED",
+      "head": "3aee333615aec86ca4644e8150c494250cf2aa80",
+      "reviewDecision": "",
+      "submittedReviews": 0,
+      "checks": [
+        {
+          "name": "changes",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "reference-parts",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "solidcraft-ledger",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "lint",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "build-and-checks",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "catalog-index",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "geometry-proofs",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (1)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (2)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (3)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (4)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (5)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (6)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (7)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (8)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "external-tools",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        }
+      ]
+    },
+    "1507": {
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1507",
+      "state": "OPEN",
+      "head": "4744a77073521b3bf7e6074f459304b1e8285d79",
+      "reviewDecision": "",
+      "submittedReviews": 0,
+      "checks": [
+        {
+          "name": "changes",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "reference-parts",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "solidcraft-ledger",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "lint",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "build-and-checks",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "catalog-index",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "geometry-proofs",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "test-shard",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "changed-tests",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "external-tools",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "test (draft-light)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        }
+      ]
+    }
+  }
+}
