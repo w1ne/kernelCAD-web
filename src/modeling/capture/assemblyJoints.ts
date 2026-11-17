@@ -23,6 +23,7 @@ import {
 import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
 import { assertMateOptionKeys } from './assemblyMateOptionKeys';
+import { assertCoupleMateOptionKeys } from './assemblyCoupleMateOptionKeys';
 import type {
   AssemblyConnectorRef,
   AssemblyConnectRef,
@@ -482,6 +483,7 @@ export function coupleMateRecords(
   driven: string,
   opts: { source: string; ratio: number; offset?: number },
 ): void {
+  assertCoupleMateOptionKeys(driven, opts);
   const source = state.mates.find((mate) => mate.name === opts.source);
   const drivenMate = state.mates.find((mate) => mate.name === driven);
   if (!source || !drivenMate) {
