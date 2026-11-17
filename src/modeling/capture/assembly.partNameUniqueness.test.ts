@@ -99,8 +99,19 @@ describe('Assembly.part option keys', () => {
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     const misspelled = { att: [120, 0, 0] } as unknown as NonNullable<Parameters<typeof arm.part>[2]>;
+    const partsBefore = arm.__parts().length;
 
-    expect(() => arm.part('spacer', box, misspelled)).toThrow(/opts\.att.*unknown/i);
+    let error: unknown;
+    try {
+      arm.part('spacer', box, misspelled);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(KernelError);
+    expect((error as KernelError).code).toBe('feature.invalid-args');
+    expect((error as KernelError).message).toMatch(/opts\.att.*unknown/i);
+    expect(arm.__parts()).toHaveLength(partsBefore);
   });
 });
 
