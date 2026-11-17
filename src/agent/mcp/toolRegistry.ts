@@ -45,6 +45,7 @@ import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
 import { metricThreadToolEntries } from './registry/metricThreadTools';
 import { splitKeepPartsToolEntries } from './registry/splitKeepPartsTools';
+import { stepInspectViewsToolEntries } from './registry/stepInspectViewsTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -144,6 +145,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...splitKeepPartsToolEntries,
   // Appended after split_keep_parts: model-rocket flight study.
   ...flightToolEntries,
+  // Appended after run_flight: labeled views of one STEP import.
+  ...stepInspectViewsToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
