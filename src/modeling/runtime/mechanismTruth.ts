@@ -50,7 +50,8 @@ import { jointGraphHasLoops } from '../capture/forwardKinematics';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureId } from '../../shared/intent/types';
-import type { LoopDiagnostic, LoopMobility } from '../../shared/kinematics/loopClosure';
+import { appendLoopEvidence, type MechanismLoopMobility } from './mechanismLoopEvidence';
+export type { MechanismLoopMobility } from './mechanismLoopEvidence';
 import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -213,12 +214,6 @@ export interface MechanismCoverage {
   readonly loopMobility?: readonly MechanismLoopMobility[];
 }
 
-/** One solver mobility cluster, tagged with its assembly and sampled pose. */
-export interface MechanismLoopMobility extends LoopMobility {
-  readonly assembly: string;
-  readonly pose: string;
-}
-
 /**
  * Optional knobs for `checkMechanismTruth`. The default is the cheap
  * kinematic-only check (criteria 1-4); `physicsCheck: true` adds
@@ -374,6 +369,10 @@ function mechanismVerdict(
   return 'real';
 }
 
+function mateClosureFailures(moving: boolean, closure: readonly ClosureSample[]): CompilerDiagnostic[] {
+  return moving ? checkMateClosure(closure) : [];
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -416,16 +415,7 @@ export async function checkMechanismTruth(
       const r = await solveMates(arm, sample.poses);
       solved.push({ sample, transforms: r.poses });
       closure.push({ name: sample.name, status: r.status, ...(r.loopResiduals ? { loopResiduals: r.loopResiduals } : {}) });
-      if (r.loop !== undefined) {
-        loopMobility.push(...r.loop.mobility.map((mobility) => ({ assembly: arm.name, pose: sample.name, ...mobility })));
-        for (const diagnostic of r.loop.diagnostics) {
-          const key = JSON.stringify([diagnostic.code, sample.name, diagnostic.loop, diagnostic.joint, diagnostic.pose]);
-          if (!seenLoopDiagnostics.has(key)) {
-            seenLoopDiagnostics.add(key);
-            failures.push(loopDiagnosticFailure(diagnostic, sample.name, r.loop.mobility));
-          }
-        }
-      }
+      appendLoopEvidence(r.loop, arm.name, sample.name, loopMobility, failures, seenLoopDiagnostics);
     } catch {
       // A solver throw at a sampled pose is itself a mechanism failure,
       // but it's already surfaced by the pose-envelope review path. Skip
@@ -437,7 +427,7 @@ export async function checkMechanismTruth(
   // Per-mate satisfaction at every solved pose (loop mates; tree mates are
   // placed by the FK walk). Moving models only: a static rigid loop keeps
   // its existing validator surface.
-  if (moving) failures.push(...checkMateClosure(closure));
+  failures.push(...mateClosureFailures(moving, closure));
 
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
@@ -489,37 +479,6 @@ export async function checkMechanismTruth(
       physics: physics?.ran ?? false,
       ...(loopMobility.length > 0 ? { loopMobility } : {}),
     }, ignoredPairs),
-  };
-}
-
-function loopDiagnosticFailure(
-  diagnostic: LoopDiagnostic,
-  sample: string,
-  mobilityReports: readonly LoopMobility[],
-): CompilerDiagnostic {
-  const mobility = mobilityReports.find((report) => diagnostic.loop === undefined || report.loops.includes(diagnostic.loop));
-  return {
-    target: 'export-occt',
-    code: diagnostic.code,
-    severity: diagnostic.severity === 'warning' ? 'warn' : diagnostic.severity,
-    message: diagnostic.message,
-    hint: HINT_TEMPLATES[diagnostic.code].template,
-    nextAction: HINT_TEMPLATES[diagnostic.code].nextAction,
-    details: {
-      sample,
-      ...(diagnostic.loop !== undefined ? { loop: diagnostic.loop } : {}),
-      ...(diagnostic.joint !== undefined ? { joint: diagnostic.joint } : {}),
-      ...(diagnostic.pose !== undefined ? { pose: JSON.stringify(diagnostic.pose) } : {}),
-      ...(mobility !== undefined ? {
-        coordinates: mobility.coordinates,
-        rank: mobility.rank,
-        mobility: mobility.mobility,
-        gruebler: mobility.gruebler,
-        redundantConstraints: mobility.redundantConstraints,
-        drivenDof: mobility.drivenDof,
-        independent: mobility.independent.join(', '),
-      } : {}),
-    },
   };
 }
 
