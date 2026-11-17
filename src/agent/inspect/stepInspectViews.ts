@@ -458,4 +458,3 @@ export async function inspectStepViews(input: InspectStepViewsInput): Promise<In
   remember(report, full);
   return parsed.detail ? { ...report, full } : report;
 }
-
