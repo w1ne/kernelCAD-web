@@ -890,10 +890,24 @@ function validateSubAssemblyImport(state: AssemblyState, arm: Assembly, name: st
   }
 }
 
-// 1. Copy parts. Use recordPart(...) so the v0.5 record + connectors +
-//    placement validation all run as if the user authored each part
-//    directly — sub-assembly is observationally identical to a flat
-//    authoring (Slice 1 semantics).
+// Placement and the physical declarations travel with the part. `at` is
+// already the resolved translation, including a part placed by `connect`.
+// The connect target's id belongs to the child, so the import does not
+// replay `connect`.
+const IMPORTED_PART_FIELDS = ['density', 'material', 'process', 'stock', 'massKg', 'crossSection', 'role', 'overlay'] as const;
+
+function importedPartOpts(part: AssemblyPartStored): AssemblyPartOpts {
+  const opts: AssemblyPartOpts = {
+    at: part.at,
+    ...(Object.keys(part.connectors).length > 0 ? { connectors: part.connectors } : {}),
+  };
+  for (const key of IMPORTED_PART_FIELDS) {
+    const value = part[key];
+    if (value !== undefined) (opts as Record<string, unknown>)[key] = value;
+  }
+  return opts;
+}
+
 function importSubAssemblyParts(
   state: AssemblyState,
   arm: Assembly,
@@ -903,10 +917,7 @@ function importSubAssemblyParts(
   const importedByOriginalName = new Map<string, AssemblyPartRef>();
   for (const op of other.__parts()) {
     const newName = `${prefix}${op.name}`;
-    const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
-      ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
-      ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
-    }, false, op.configuration);
+    const newRef = recordPartInternal(state, arm, newName, op.originalShape, importedPartOpts(op), false, op.configuration);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an
     // empty mateConnectors array per `part()`; populate it now so post-

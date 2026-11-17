@@ -8,10 +8,17 @@ import { describe, expect, it } from 'vitest';
 import { computeBom } from '../../../src/agent/script-runtime/bom';
 import { lowerScriptScene } from '../../../src/agent/script-runtime/checkInterference';
 import { runScript } from '../../../src/composition/runScript';
+import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { isSceneBackend, type SceneBackendPart } from '../../../src/kernel/backends/sceneBackend';
 import { Assembly } from '../../../src/modeling/capture/assembly';
+import type { AssemblyPartStored } from '../../../src/modeling/capture/assemblyTypes';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { atPlacement, resolvedPartAt } from '../../../src/modeling/mates/partFrame';
 import { detectInterferences } from '../../../src/modeling/runtime/detectInterferences';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import type { Scene } from '../../../src/modeling/validation/scene';
+import type { ParamTable } from '../../../src/shared/runtime/paramTable';
 import type { Vec3 } from '../../../src/shared/intent/types';
 
 const ASSEMBLY = resolve('examples/assemblies/configured-bearing-blocks.kcad.ts');
@@ -22,6 +29,17 @@ const MISMATCH = resolve('tests/fixtures/assembly-configurations/interface-misma
 const COMPACT = { length: 80, width: 50, thickness: 18 } as const;
 const WIDE = { length: 110, width: 70, thickness: 22 } as const;
 const ALUMINUM_DENSITY = 2700;
+const PLATE_MM = { x: 10, y: 10, z: 4 } as const;
+const PAD_MM = { x: 8, y: 8, z: 8 } as const;
+const RAIL_MM = { x: 10, y: 4, z: 4 } as const;
+const BARE_MM = { x: 2, y: 2, z: 2 } as const;
+const PAD_DENSITY = 8000;
+const RAIL_DENSITY = 1000;
+
+/** Grams from mm³ and kg/m³: mm³ → m³ → kg → g. */
+function massG(volumeMm3: number, densityKgM3: number): number {
+  return volumeMm3 * densityKgM3 / 1e6;
+}
 
 /** Blank minus the 8.5 through bore, the Ø22 × 7 seat, and four Ø5.5 mounts. */
 function bearingVolume(length: number, width: number, thickness: number): number {
@@ -38,6 +56,33 @@ function close(point: Vec3, expected: readonly [number, number, number], digits 
   expect(point[0]).toBeCloseTo(expected[0], digits);
   expect(point[1]).toBeCloseTo(expected[1], digits);
   expect(point[2]).toBeCloseTo(expected[2], digits);
+}
+
+/** Part-frame placement. A mate-free part's solid is moved by `at`, and the
+ *  scene motion on top of that is identity, so these corners are the world
+ *  position of the part. */
+function expectPartPlacement(
+  part: AssemblyPartStored,
+  table: ParamTable,
+  origin: readonly [number, number, number],
+  local: readonly [number, number, number],
+  world: readonly [number, number, number],
+): void {
+  const placement = atPlacement(resolvedPartAt(part.at, table));
+  close(placement.point([0, 0, 0]), origin);
+  close(placement.point(local), world);
+}
+
+function expectLoweredWorldBox(
+  part: SceneBackendPart,
+  min: readonly [number, number, number],
+  max: readonly [number, number, number],
+): void {
+  const shape = part.shape as OcctBackend;
+  expect(shape).toBeInstanceOf(OcctBackend);
+  const box = shape.boundingBox();
+  close(part.worldTransform.point([box.min[0], box.min[1], box.min[2]]), min);
+  close(part.worldTransform.point([box.max[0], box.max[1], box.max[2]]), max);
 }
 
 async function failScript(code: string, scriptDir: string): Promise<KernelError> {
@@ -283,6 +328,130 @@ describe('configured part instances', () => {
     expect(parent).toBeInstanceOf(Assembly);
     const pin = (parent as Assembly).__parts().find((part) => part.name === 'pin');
     expect((await pin!.originalShape.lower()).volume()).toBeCloseTo(10 * 10 * 4, 6);
+  });
+
+  it('keeps placement and physical declarations through subAssembly import', async () => {
+    const plateVolume = PLATE_MM.x * PLATE_MM.y * PLATE_MM.z;
+    const padVolume = PAD_MM.x * PAD_MM.y * PAD_MM.z;
+    const railVolume = RAIL_MM.x * RAIL_MM.y * RAIL_MM.z;
+    expect(plateVolume).toBe(400);
+    const run = await runScript({
+      code: `
+        const source = ${JSON.stringify(MISMATCH)};
+        const child = assembly('child');
+        await child.instance('plate', {
+          source,
+          configuration: 'plate',
+          at: [20, 0, 0],
+          density: ${ALUMINUM_DENSITY},
+          material: 'aluminum-6061',
+          process: 'cnc',
+          stock: { kind: 'plate', lengthMm: 12, widthMm: 12, thicknessMm: 6 },
+          massKg: 0.002,
+          crossSection: { kind: 'rectangle', widthMm: 10, heightMm: 4, lengthMm: 10 },
+          role: 'structure',
+        });
+        child.part('pad', box(${PAD_MM.x}, ${PAD_MM.y}, ${PAD_MM.z}), {
+          at: [5, 6, 7],
+          density: ${PAD_DENSITY},
+          material: 'mild-steel',
+          process: '3d-print',
+        });
+        child.part('bare', box(${BARE_MM.x}, ${BARE_MM.y}, ${BARE_MM.z}));
+        const parent = assembly('parent');
+        parent.part('rail', box(${RAIL_MM.x}, ${RAIL_MM.y}, ${RAIL_MM.z}), {
+          at: [100, 0, 0],
+          density: ${RAIL_DENSITY},
+        });
+        parent.subAssembly('nest', child);
+        return parent.model();
+      `,
+      fileName: 'import-placement.kcad.ts',
+      scriptDir: dirname(MISMATCH),
+    });
+    const parent = run.session.assemblies.get('parent');
+    expect(parent).toBeInstanceOf(Assembly);
+    const assembly = parent as Assembly;
+    const plate = assembly.__parts().find((part) => part.name === 'nest_plate');
+    const pad = assembly.__parts().find((part) => part.name === 'nest_pad');
+    const bare = assembly.__parts().find((part) => part.name === 'nest_bare');
+    const rail = assembly.__parts().find((part) => part.name === 'rail');
+    expect(plate).toBeDefined();
+    expect(pad).toBeDefined();
+    expect(bare).toBeDefined();
+    expect(rail).toBeDefined();
+
+    expectPartPlacement(plate!, run.paramTable, [20, 0, 0], [PLATE_MM.x, PLATE_MM.y, PLATE_MM.z], [30, 10, 4]);
+    expectPartPlacement(pad!, run.paramTable, [5, 6, 7], [PAD_MM.x, PAD_MM.y, PAD_MM.z], [13, 14, 15]);
+    expectPartPlacement(bare!, run.paramTable, [0, 0, 0], [BARE_MM.x, BARE_MM.y, BARE_MM.z], [2, 2, 2]);
+    expectPartPlacement(rail!, run.paramTable, [100, 0, 0], [RAIL_MM.x, RAIL_MM.y, RAIL_MM.z], [110, 4, 4]);
+
+    expect(plate).toMatchObject({
+      density: ALUMINUM_DENSITY,
+      material: 'aluminum-6061',
+      process: 'cnc',
+      stock: { kind: 'plate', lengthMm: 12, widthMm: 12, thicknessMm: 6 },
+      massKg: 0.002,
+      crossSection: { kind: 'rectangle', widthMm: 10, heightMm: 4, lengthMm: 10 },
+      role: 'structure',
+      configuration: { source: MISMATCH, name: 'plate', interfaceSignature: 'mount:frame' },
+    });
+    expect(plate!.mateConnectors.find((connector) => connector.name === 'mount')?.type).toBe('frame');
+    expect(pad).toMatchObject({
+      density: PAD_DENSITY,
+      material: 'mild-steel',
+      process: '3d-print',
+    });
+    expect(pad!.configuration).toBeUndefined();
+    expect(pad!.massKg).toBeUndefined();
+    expect(pad!.stock).toBeUndefined();
+    expect(pad!.crossSection).toBeUndefined();
+    expect(pad!.role).toBeUndefined();
+    expect(bare!.density).toBeUndefined();
+    expect(bare!.material).toBeUndefined();
+    expect(bare!.process).toBeUndefined();
+    expect(rail).toMatchObject({ density: RAIL_DENSITY });
+    expect(rail!.material).toBeUndefined();
+
+    const model = [...run.records].reverse().find((record) => record.kind === 'assemblyModel');
+    expect(model?.metadata).toMatchObject({ assemblyName: 'parent' });
+    const lowered = await new RecomputeEngine(createOcctLowerer(run.session)).run(run.records, { paramTable: run.paramTable });
+    expect(lowered.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
+    const scene = lowered.shapes.get(model!.id);
+    expect(isSceneBackend(scene)).toBe(true);
+    if (!isSceneBackend(scene)) return;
+    const byName = new Map(scene.parts.map((part) => [part.name, part]));
+    expectLoweredWorldBox(byName.get('nest_plate')!, [20, 0, 0], [30, 10, 4]);
+    expectLoweredWorldBox(byName.get('nest_pad')!, [5, 6, 7], [13, 14, 15]);
+    expectLoweredWorldBox(byName.get('nest_bare')!, [0, 0, 0], [2, 2, 2]);
+    expectLoweredWorldBox(byName.get('rail')!, [100, 0, 0], [110, 4, 4]);
+
+    const bom = await computeBom(assembly, run.session);
+    const plateRow = bom.rows.find((row) => row.configuration?.name === 'plate');
+    const padRow = bom.rows.find((row) => row.name === 'nest_pad');
+    const bareRow = bom.rows.find((row) => row.name === 'nest_bare');
+    const railRow = bom.rows.find((row) => row.name === 'rail');
+    expect(plateRow).toMatchObject({
+      quantity: 1,
+      density: ALUMINUM_DENSITY,
+      material: 'aluminum-6061',
+      instancePaths: ['nest_plate'],
+    });
+    expect(plateRow?.massGPerUnit).toBeCloseTo(massG(plateVolume, ALUMINUM_DENSITY), 4);
+    expect(plateRow?.massGTotal).toBeCloseTo(massG(plateVolume, ALUMINUM_DENSITY), 4);
+    expect(padRow).toMatchObject({
+      density: PAD_DENSITY,
+      material: 'mild-steel',
+      process: '3d-print',
+    });
+    expect(padRow?.massGPerUnit).toBeCloseTo(massG(padVolume, PAD_DENSITY), 4);
+    expect(bareRow).toMatchObject({ density: null, material: null, massGPerUnit: null, massGTotal: null });
+    expect(railRow?.massGPerUnit).toBeCloseTo(massG(railVolume, RAIL_DENSITY), 4);
+    const unassigned = bom.diagnostics
+      .filter((diagnostic) => diagnostic.code === 'bom.material.unassigned')
+      .map((diagnostic) => diagnostic.message);
+    expect(unassigned.some((message) => message.includes('nest_bare'))).toBe(true);
+    expect(unassigned.some((message) => message.includes('nest_plate') || message.includes('nest_pad') || message.includes("'rail'"))).toBe(false);
   });
 
   it('instances two sizes of the bearing block, repeats compact, and seats the mates', async () => {

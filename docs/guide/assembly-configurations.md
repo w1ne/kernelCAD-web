@@ -54,7 +54,10 @@ is still accepted.
 `subAssembly()` carries each configured part's connector interface onto the
 parent. A mismatch with a configuration already in the parent, or between
 two configured parts in the import, throws `feature.invalid-args` before any
-part of that import is recorded.
+part of that import is recorded. The import keeps each part's placement and
+its density, material, process, stock, mass, cross-section, role, and overlay.
+An ordinary part and a configured instance take the same path. A part with no
+placement stays at the origin, and a part with no density still has no mass.
 
 This page is local validation of the script. It is not a claim about a
 printed part or a deployed service.
