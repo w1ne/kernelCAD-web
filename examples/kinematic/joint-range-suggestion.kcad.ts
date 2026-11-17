@@ -39,8 +39,17 @@ console.log(
     `value=${upper?.value} pair=${upper?.pair?.a}/${upper?.pair?.b}`,
 );
 console.log(suggested.limitsSnippet);
-if (upper?.status !== 'stop' || upper.value === undefined || upper.value < 9.6 || upper.value > 9.85) {
-  throw new Error(`joint-range example expected a stop near 9.7 mm, got ${JSON.stringify(upper)}`);
+// Analytic stop is 9.7 mm. The reported value is the clear side of a
+// 0.05 mm bracket, so it stays at or short of 9.7 and within one step of it.
+const analyticStop = 9.7;
+const resolution = 0.05;
+if (
+  upper?.status !== 'stop' ||
+  upper.value === undefined ||
+  upper.value > analyticStop + 1e-4 ||
+  upper.value < analyticStop - resolution - 1e-4
+) {
+  throw new Error(`joint-range example expected a clear-side stop at or short of 9.7 mm, got ${JSON.stringify(upper)}`);
 }
 if (upper.pair?.a !== 'carriage' || upper.pair?.b !== 'wall') {
   throw new Error(`joint-range example expected carriage/wall, got ${JSON.stringify(upper.pair)}`);

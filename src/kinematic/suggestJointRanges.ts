@@ -7,7 +7,8 @@
 // walk this joint from that rest value toward each finite search bound.
 // The first non-exempt pair whose exact BREP distance drops to the
 // clearance (default 0.3 mm) is that side's stop. A coarse step finds a
-// bracket; bisection shrinks it to the requested resolution.
+// bracket; bisection shrinks it to the requested resolution and reports
+// the clear side, so the suggested limit keeps the requested clearance.
 //
 // The result is a suggestion. Nothing here writes limits back onto the
 // mate. A side that was not measured — no finite bound, the shared BREP
@@ -15,8 +16,10 @@
 //
 // Parent/child parts of a mate or joint-graph joint, declared contact
 // pairs, and disableCollision pairs are neighbours or intentional
-// contacts. They do not count as a stop. A contact narrower than the
-// coarse step can be stepped over; the result records the step.
+// contacts. They do not count as a stop. `no-stop` means no crossing
+// was found at the sampled poses. It is not continuous proof that the
+// interval is clear: a contact narrower than the coarse step can be
+// stepped over. The result records that limit.
 
 import type { Assembly } from '../modeling/capture/assembly';
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses } from '../modeling/capture/forwardKinematics';
@@ -48,7 +51,7 @@ const MAX_BISECTION_STEPS = 32;
  * A running fit modeled at exactly the clearance must not flip between
  * poses. 1e-6 mm is a nanometre, far below the bisection resolution.
  */
-const CLEARANCE_COMPARE_EPSILON_MM = 1e-6;
+export const CLEARANCE_COMPARE_EPSILON_MM = 1e-6;
 
 export type JointRangeSideStatus = 'stop' | 'no-stop' | 'unknown';
 
@@ -141,16 +144,18 @@ export interface SuggestJointRangesResult {
    */
   readonly limitsSnippet: string;
   /**
-   * The coarse step can pass over a contact thinner than one step. The
-   * stop that is found is bracketed by exact distance; a missed thin
-   * contact is not reported as a proven clear range.
+   * What the walk measured. `no-stop` means no crossing was found at the
+   * sampled poses, not continuous proof that the interval is clear. A
+   * contact thinner than one coarse step can be missed and still come
+   * back as `no-stop`. A stop that is found is the clear side of an
+   * exact-distance bracket.
    */
   readonly samplingNote: string;
   readonly error?: string;
 }
 
 const SAMPLING_NOTE =
-  'Each joint is walked from its authored rest in coarse steps, then the clearance crossing is bisected with exact BREP distance. A contact thinner than one coarse step can be missed. An unmeasured side is unknown, not clear.';
+  'Each joint is walked from its authored rest in coarse steps, then the clearance crossing is bisected with exact BREP distance. The reported stop is the clear side of that bracket, so the suggested limit keeps the requested clearance. no-stop means no crossing was found at the sampled poses, not continuous proof that the interval is clear. A contact thinner than one coarse step can be missed. An unmeasured side is unknown, not clear.';
 
 interface ScalarJoint {
   readonly name: string;
@@ -371,9 +376,12 @@ async function bisect(
       lo = mid;
     }
   }
+  // `lo` is the last pose whose exact distance was still outside the
+  // clearance. `hi` is already inside it, by up to one resolution step.
+  // Publishing `hi` would make the paste-ready limit miss the requested gap.
   return {
     status: 'stop',
-    value: hi,
+    value: lo,
     pair,
     resolution: Math.abs(hi - lo),
   };

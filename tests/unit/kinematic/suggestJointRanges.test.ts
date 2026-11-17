@@ -7,13 +7,20 @@
 // The revolute stop solves L·sin(θ) + h·cos(θ) = wall face − clearance.
 
 import { describe, expect, it } from 'vitest';
+import { isSceneBackend } from '../../../src/kernel/backends/sceneBackend';
+import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { checkClearance } from '../../../src/modeling/runtime/dfm/clearance';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkSweptCollision } from '../../../src/kinematic/checkSweptCollision';
 import {
+  CLEARANCE_COMPARE_EPSILON_MM,
   DEFAULT_JOINT_RANGE_CLEARANCE_MM,
   suggestJointRanges,
+  type JointRangePair,
   type JointRangeSide,
 } from '../../../src/kinematic/suggestJointRanges';
 
@@ -48,19 +55,68 @@ function limitSnapshot(arm: Assembly) {
   }));
 }
 
-/** Close side of a bracket: the reported pose is on the near side of the analytic stop. */
-function expectStop(side: JointRangeSide, analytic: number, resolution: number, toward: 1 | -1): void {
+/**
+ * Exact BREP gap of one part pair at a mate pose. This is a second
+ * measurement, not the helper's own stop classification.
+ */
+async function brepGap(
+  arm: Assembly,
+  jointName: string,
+  value: number,
+  pair: JointRangePair,
+): Promise<number> {
+  await initOcct();
+  const scene = await arm.solvedModel({ [jointName]: value }, { validate: 'off' });
+  const session = arm.__session();
+  const engine = new RecomputeEngine(createOcctLowerer(session));
+  const result = await engine.run(session.getRecords(), {
+    paramTable: session.paramTable,
+    gatedFeatureNames: session.gatedFeatureNames,
+    seedShapes: session.reusableLoweredPrefix(),
+  });
+  const sourceId = scene.__sourceFeatureId();
+  const lowered = sourceId === undefined ? undefined : result.shapes.get(sourceId);
+  if (!lowered || !isSceneBackend(lowered)) {
+    throw new Error(`no lowered scene for ${jointName}=${value}`);
+  }
+  const reports = checkClearance(lowered, 0, new Set(), new Set(), [], { forceExact: true });
+  const hit = reports.find((report) =>
+    (report.a === pair.a && report.b === pair.b) || (report.a === pair.b && report.b === pair.a));
+  if (hit === undefined || !hit.exact || !Number.isFinite(hit.distanceMm)) {
+    throw new Error(`no exact BREP gap for ${pair.a}/${pair.b} at ${jointName}=${value}: ${JSON.stringify(hit)}`);
+  }
+  return hit.distanceMm;
+}
+
+/**
+ * Clear side of the analytic crossing, and the BREP gap at that pose
+ * still meets the requested clearance within the compare epsilon.
+ */
+async function expectStop(
+  arm: Assembly,
+  jointName: string,
+  side: JointRangeSide,
+  analytic: number,
+  resolution: number,
+  toward: 1 | -1,
+  clearance = CLEARANCE,
+): Promise<void> {
   expect(side.status, JSON.stringify(side)).toBe('stop');
   expect(side.value, JSON.stringify(side)).toBeTypeOf('number');
   const value = side.value ?? Number.NaN;
   if (toward > 0) {
-    expect(value).toBeGreaterThanOrEqual(analytic - 0.002);
-    expect(value).toBeLessThanOrEqual(analytic + resolution + 0.002);
+    expect(value).toBeLessThanOrEqual(analytic + CLEARANCE_COMPARE_EPSILON_MM);
+    expect(value).toBeGreaterThanOrEqual(analytic - resolution - CLEARANCE_COMPARE_EPSILON_MM);
   } else {
-    expect(value).toBeLessThanOrEqual(analytic + 0.002);
-    expect(value).toBeGreaterThanOrEqual(analytic - resolution - 0.002);
+    expect(value).toBeGreaterThanOrEqual(analytic - CLEARANCE_COMPARE_EPSILON_MM);
+    expect(value).toBeLessThanOrEqual(analytic + resolution + CLEARANCE_COMPARE_EPSILON_MM);
   }
   expect(side.resolution ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(resolution + 1e-9);
+  expect(side.pair, JSON.stringify(side)).toBeDefined();
+  const gap = await brepGap(arm, jointName, value, side.pair!);
+  expect(gap, `BREP gap ${gap} mm at ${jointName}=${value}`).toBeGreaterThanOrEqual(
+    clearance - CLEARANCE_COMPARE_EPSILON_MM,
+  );
 }
 
 function carriageAssembly(opts?: {
@@ -160,7 +216,7 @@ describe('suggestJointRanges', () => {
     expect(slide!.rest).toBe(SLIDE_REST);
     expect(slide!.restWithinClearance).toBe(false);
     expect(slide!.lower).toMatchObject({ status: 'no-stop', value: SLIDE_AUTHORED[0] });
-    expectStop(slide!.upper, slideStop(CLEARANCE), resolution, 1);
+    await expectStop(arm, 'slide', slide!.upper, slideStop(CLEARANCE), resolution, 1);
     expect(slide!.upper.pair).toEqual({ a: 'carriage', b: 'wall' });
     expect(atDefault.patch).toEqual([
       expect.objectContaining({
@@ -177,7 +233,7 @@ describe('suggestJointRanges', () => {
     const atOne = await suggestJointRanges(arm, { clearanceMm: 1, resolution });
     const wider = atOne.joints[0];
     expect(wider?.restWithinClearance).toBe(false);
-    expectStop(wider!.upper, slideStop(1), resolution, 1);
+    await expectStop(arm, 'slide', wider!.upper, slideStop(1), resolution, 1, 1);
     expect(wider!.upper.pair).toEqual({ a: 'carriage', b: 'wall' });
     expect(limitSnapshot(arm)).toEqual(before);
   }, 60_000);
@@ -199,9 +255,9 @@ describe('suggestJointRanges', () => {
     const shift = result.joints.find((joint) => joint.joint === 'shift');
     expect(result.ok, JSON.stringify(result.joints)).toBe(true);
     expect(slide?.rest).toBe(slidePose);
-    expectStop(slide!.upper, slideStop(CLEARANCE), resolution, 1);
+    await expectStop(arm, 'slide', slide!.upper, slideStop(CLEARANCE), resolution, 1);
     expect(slide!.upper.pair).toEqual({ a: 'carriage', b: 'wall' });
-    expectStop(shift!.lower, shiftAnalytic, resolution, -1);
+    await expectStop(arm, 'shift', shift!.lower, shiftAnalytic, resolution, -1);
     expect(shift!.lower.pair).toEqual({ a: 'carriage', b: 'wall' });
     expect(Math.abs((shift!.lower.value ?? 0) - wrongIfSlideHeldAtZero)).toBeGreaterThan(1);
     expect(shift!.upper).toMatchObject({ status: 'no-stop', value: 5 });
@@ -217,6 +273,8 @@ describe('suggestJointRanges', () => {
     expect(result.patch).toEqual([]);
     expect(result.limitsSnippet).toBe('');
     expect(result.joints[0]?.lower.reason).toBeUndefined();
+    expect(result.samplingNote).toMatch(/no-stop means no crossing was found at the sampled poses/);
+    expect(result.samplingNote).toMatch(/not continuous proof that the interval is clear/);
   }, 60_000);
 
   it('returns unknown when the exact probe does not fit the budget', async () => {
@@ -291,7 +349,7 @@ describe('suggestJointRanges', () => {
     const slide = excused.joints.find((joint) => joint.joint === 'slide');
     expect(excused.ok, JSON.stringify(excused.joints)).toBe(true);
     expect(slide?.restWithinClearance).toBe(false);
-    expectStop(slide!.upper, slideStop(CLEARANCE), 0.05, 1);
+    await expectStop(arm, 'slide', slide!.upper, slideStop(CLEARANCE), 0.05, 1);
     expect(slide!.upper.pair).toEqual({ a: 'carriage', b: 'wall' });
   }, 60_000);
 
@@ -330,7 +388,7 @@ describe('suggestJointRanges', () => {
     });
     const open = await suggestJointRanges(loose, { resolution: 0.05 });
     expect(open.joints[0]?.restWithinClearance).toBe(false);
-    expectStop(open.joints[0]!.upper, slideStop(CLEARANCE), 0.05, 1);
+    await expectStop(loose, 'slide', open.joints[0]!.upper, slideStop(CLEARANCE), 0.05, 1);
     expect(open.joints[0]?.upper.pair).toEqual({ a: 'carriage', b: 'wall' });
   }, 60_000);
 
@@ -367,7 +425,7 @@ describe('suggestJointRanges', () => {
     expect(hinge?.rest).toBe(5);
     expect(hinge?.restWithinClearance).toBe(false);
     expect(hinge?.lower).toMatchObject({ status: 'no-stop', value: -10 });
-    expectStop(hinge!.upper, thetaDeg, resolution, 1);
+    await expectStop(arm, 'hinge', hinge!.upper, thetaDeg, resolution, 1);
     expect(hinge!.upper.pair).toEqual({ a: 'bar', b: 'wall' });
     expect(Math.abs((hinge!.upper.value ?? 0) - (thetaDeg - 5))).toBeGreaterThan(1);
     expect(result.limitsSnippet).toMatch(/limitsDeg:/);
