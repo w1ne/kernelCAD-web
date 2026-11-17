@@ -147158,7 +147158,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
       "preview": "/assets/industrial-plant-steam-header-manifold.png",
-      "sourceSha256": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8",
+      "sourceSha256": "bd40a6cbfb0a7c7e9de39c78708f74f2a19b66cd1d3659eb64e7de7a9a49ef95",
       "triangleBudget": 1400,
       "params": [
         {
@@ -147215,15 +147215,10 @@
           "color": "#dfa945",
           "parts": [
             "support-skid",
-            "branch-0",
             "valve-handle-0",
-            "branch-1",
             "valve-handle-1",
-            "branch-2",
             "valve-handle-2",
-            "branch-3",
             "valve-handle-3",
-            "branch-4",
             "valve-handle-4"
           ],
           "param": "safetyPaint"
@@ -147233,14 +147228,19 @@
           "color": "#6e7d84",
           "parts": [
             "main-header",
+            "branch-0",
             "branch-flange-0",
             "valve-body-0",
+            "branch-1",
             "branch-flange-1",
             "valve-body-1",
+            "branch-2",
             "branch-flange-2",
             "valve-body-2",
+            "branch-3",
             "branch-flange-3",
             "valve-body-3",
+            "branch-4",
             "branch-flange-4",
             "valve-body-4"
           ],

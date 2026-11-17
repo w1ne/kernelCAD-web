@@ -1,0 +1,16 @@
+{
+  "mode": "local generated page; not a deployment check",
+  "page": "/tmp/kernelcad-steam-header-pages-20261117/catalog/industrial-plant/steam-header-manifold/index.html",
+  "sourceSha256": "bd40a6cbfb0a7c7e9de39c78708f74f2a19b66cd1d3659eb64e7de7a9a49ef95",
+  "previewSha256": "2217686d992eee846b79e70fc3fa9f4f74ccf0439155b2327779bb04d4688afd",
+  "checks": {
+    "pageExists": true,
+    "titlePresent": true,
+    "steelControlPresent": true,
+    "safetyPaintControlPresent": true,
+    "weatheredPresetPresent": true,
+    "highVisibilityPresetPresent": true,
+    "previewMatchesRenderedSource": true
+  },
+  "allChecksPass": true
+}
