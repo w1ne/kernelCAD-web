@@ -142452,7 +142452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/compressed-air-receiver.kcad.ts",
       "preview": "/assets/industrial-plant-compressed-air-receiver.png",
-      "sourceSha256": "078566a98ef6db9eeec5c6c67723cda8bf0f702e3c9ab6b424da8bc1a6128e42",
+      "sourceSha256": "8f85f99112f842886794bf26499d3f16b9130628f04e22970cc91e8947a5759c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -142494,7 +142494,7 @@
         }
       },
       "stats": {
-        "triangles": 556,
+        "triangles": 644,
         "sizeM": [
           0.884,
           0.5735,
@@ -142518,7 +142518,9 @@
             "top-port-1",
             "port-flange-1",
             "top-port-2",
-            "port-flange-2"
+            "port-flange-2",
+            "gauge-stem",
+            "pressure-gauge"
           ],
           "param": "steel"
         },
@@ -142538,7 +142540,7 @@
           "name": "gaugeGlass",
           "color": "#91c6c8",
           "parts": [
-            "pressure-gauge"
+            "pressure-gauge-lens"
           ],
           "param": "gaugeGlass"
         }
@@ -298796,7 +298798,7 @@
       "id": "utility-inverter-station",
       "kit": "solar-energy",
       "title": "Utility inverter station",
-      "description": "Containerized inverter station with service doors, ventilation louvers and cable plinth. Material controls: stainless steel, powder-coated steel.",
+      "description": "Containerized inverter station with service doors, ventilation louvers and cable plinth. Material controls: concrete, stainless steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -298817,7 +298819,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/utility-inverter-station.kcad.ts",
       "preview": "/assets/solar-energy-utility-inverter-station.png",
-      "sourceSha256": "823dc583a9a181a9d5f8892068f8e82d31017f25aec0c6c9a65f600329837a80",
+      "sourceSha256": "041f51d0c7b3b3e77bbb738d3124d0bc5f4c2b6cc0563779ff35de3395b38e3c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -298828,6 +298830,12 @@
           "min": 0.65,
           "max": 1.35,
           "step": 0.05
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#99968d",
+          "label": "Concrete cable plinth"
         },
         {
           "name": "stainlessSteel",
@@ -298844,10 +298852,12 @@
       ],
       "presets": {
         "fieldService": {
+          "concrete": "#8b8982",
           "stainlessSteel": "#abb5b7",
           "powderCoat": "#7a807b"
         },
         "highVisibility": {
+          "concrete": "#77766f",
           "stainlessSteel": "#e0e5e4",
           "powderCoat": "#d1722b"
         }
@@ -298877,8 +298887,7 @@
             "station-vent-5",
             "station-vent-6",
             "station-end-vent-0",
-            "station-end-vent-1",
-            "station-cable-plinth"
+            "station-end-vent-1"
           ],
           "param": "stainlessSteel"
         },
@@ -298891,6 +298900,14 @@
             "station-door-2"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "concrete",
+          "color": "#99968d",
+          "parts": [
+            "station-cable-plinth"
+          ],
+          "param": "concrete"
         }
       ]
     },

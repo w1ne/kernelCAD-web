@@ -10,7 +10,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
-import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
 import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
@@ -29,14 +29,10 @@ import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editabl
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
-import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
-import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { AnyMaterialName } from '../../shared/materials/engineeringMaterials';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef } from '../../shared/intent/textureRef';
-import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
-import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
@@ -91,6 +87,10 @@ import {
   cleanMaterialAnisotropyRotation,
   cleanMaterialTextures,
   assignMaterialMetadata,
+  resolveFinishPbr,
+  assertWrapTextureArgs,
+  existingMaterialBaseColor,
+  attachTextureProjection,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import type { ThreadedHoleOpts } from './threadedHole';
@@ -104,7 +104,7 @@ import {
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
-  assertScalarEdgeValue, assertFilletEndRadius,
+  assertScalarEdgeValue, assertFilletEndRadius, resolveShellFaces,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 import { assertFinishOptions } from './finishOptions';
@@ -574,36 +574,8 @@ export class Shape {
    * as `union.member-overlap`.
    */
   finish(name: FinishToken | AnyMaterialName, opts?: { color?: string | TypedParamRef<string>; face?: string }): Shape {
-    // A finish token wins when the name is both (steel, pla, abs, nylon map to
-    // the identically named token anyway). Otherwise an engineering material
-    // name applies its registry default finish, so one material vocabulary
-    // covers mass, FEA and appearance.
     if (opts !== undefined) assertFinishOptions(opts, this.id);
-    let token: string = name;
-    if (!isFinishToken(name)) {
-      const resolved = tryResolveMaterial(name);
-      if (resolved.ok) {
-        if (resolved.material.finish === undefined) {
-          throw new KernelError(
-            'feature.finish.unknown-token',
-            unknownFinishMessage(name),
-            this.id,
-            `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
-              'Pass a finish token such as plastic-glossy, or set the look with .color().',
-          );
-        }
-        token = resolved.material.finish;
-      }
-    }
-    // expandFinish throws `feature.finish.unknown-token` (with this shape's id)
-    // for an unknown name. Valid finishes clamp cleanly, so routing the result
-    // through .material() reuses its validation + per-face plumbing with no
-    // extra clamp warning.
-    const pbr = expandFinish(
-      token,
-      opts?.color !== undefined ? { color: isTypedParamRef(opts.color) ? opts.color.value : opts.color } : undefined,
-      this.id,
-    );
+    const pbr = resolveFinishPbr(name, opts?.color, this.id);
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
   }
 
@@ -643,45 +615,11 @@ export class Shape {
    * @param projection  one of the four projection records above.
    */
   wrapTexture(imageRef: TextureRef, projection: TextureProjection): Shape {
-    if (!isTextureRef(imageRef)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
-        this.id,
-        'Pass { path: "<file-or-url>" } as the first argument.',
-      );
-    }
-    if (!isTextureProjection(projection)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
-        this.id,
-        "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
-      );
-    }
-
-    // Preserve any already-authored baseColor/finish so wrapTexture layers
-    // the albedo texture on top rather than clobbering it (material()
-    // requires baseColor on every call; default to white when none is set
-    // yet, matching the glTF default when a texture supplies the color).
-    const existingRecord = this.session.getRecords().find(r => r.id === this.id);
-    const existingMaterial = (existingRecord?.metadata as { material?: PBRMaterial } | undefined)?.material;
-    this.material({ baseColor: existingMaterial?.baseColor ?? '#ffffff', textures: { albedo: imageRef } });
-
-    const records = this.session.getRecords();
-    const record = records.find(r => r.id === this.id);
-    if (record === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.wrapTexture: feature record '${this.id}' not found in session.`,
-        this.id,
-        'Call .wrapTexture() on a Shape produced by the current session.',
-      );
-    }
-    const metadata = record.metadata as { material?: PBRMaterial };
-    // .material() above guarantees metadata.material exists with the
-    // albedo texture attached; attach the projection alongside it.
-    (metadata.material as PBRMaterial).textureProjection = projection;
+    assertWrapTextureArgs(imageRef, projection, this.id);
+    // Keep an already-authored baseColor so the albedo texture layers on top
+    // (material() requires baseColor; white matches the glTF default).
+    this.material({ baseColor: existingMaterialBaseColor(this.session, this.id) ?? '#ffffff', textures: { albedo: imageRef } });
+    attachTextureProjection(this.session, this.id, projection);
 
     return this;
   }
@@ -991,34 +929,7 @@ export class Shape {
     opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
   ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
-    const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
-      ? Object.keys(opts).find((key) => key !== 'face')
-      : undefined;
-    if (unknownKey !== undefined) {
-      // A dropped `faces: ['bottom']` left the bottom closed, and a dropped
-      // `enabled: false` still hollowed the solid.
-      invalidArgs({
-        api: 'shell(thickness, { face })',
-        path: `opts.${unknownKey}`,
-        got: (opts as Record<string, unknown>)[unknownKey],
-        requires: "a known option key; shell accepts only face — pass an array to open several faces: { face: ['top', 'bottom'] }",
-        example: "box(40, 30, 10).shell(2, { face: 'top' })",
-        featureId: this.id,
-      });
-    }
-    const face = (opts as { face?: unknown } | undefined | null)?.face;
-    const list = Array.isArray(face) ? [...face] : [face];
-    if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
-      invalidArgs({
-        api: 'shell(thickness, { face })',
-        path: 'opts.face',
-        got: face,
-        requires:
-          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
-        example: "box(40, 30, 10).shell(2, { face: 'top' })",
-        featureId: this.id,
-      });
-    }
+    const list = resolveShellFaces(opts, this.id);
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: list[0] },
       list.length > 1 ? { extraFaces: list.slice(1) } : undefined);
   }
@@ -1150,6 +1061,10 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * Use `upToFace` instead of `depth` to end the complete bore on the plane
+   * of a selected planar body face. The plane may be inclined; a target that
+   * is non-planar, parallel to the bore axis, or not ahead of the entry face
+   * is rejected with `feature.invalid-args`.
    * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
    * fillet) place the hole by world point instead of `u`/`v`:
    * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
@@ -1163,7 +1078,8 @@ export class Shape {
    * two are mutually exclusive on a single hole.
    *
    * Created face refs (resolvable downstream as `{ face: '<name>' }`):
-   *   `wall` (always), `floor` (blind), `wall-back` (through),
+   *   `wall` (always), `floor` (blind or upToFace pocket),
+   *   `wall-back` (through or upToFace to an exit face),
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
@@ -1186,8 +1102,8 @@ export class Shape {
   /**
    * Drill N holes in a single feature record. Positions use the same
    * (u, v) frame as `.hole()`, and every bore is checked the same way.
-   * All holes share diameter,
-   * depth, and optional counterbore/countersink. Use `.hole()` chained
+   * All holes share diameter and optional counterbore/countersink. Use either
+   * `depth` or `upToFace` for the common end condition. Use `.hole()` chained
    * calls if you need mixed specs.
    *
    * The bare `'wall'` selector on the result resolves to *all* bore walls
@@ -1208,6 +1124,7 @@ export class Shape {
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
+   * `upToFace` ends the cut on a planar face of the body instead of a depth.
    * An unknown `opts` key (`enable`, `mode`, `upTo`) throws
    * `feature.invalid-args`.
    */
@@ -1237,6 +1154,7 @@ export class Shape {
       profile: { kind: 'feature', id: sketch.id },
       face: buildFaceInputRef(this.id, faceSel),
     };
+    if (opts.upToFace !== undefined) inputs.upToFace = buildUpToFaceInputRef(this.id, opts.upToFace);
     return this.session.createShape({
       kind: 'cutout',
       inputs,

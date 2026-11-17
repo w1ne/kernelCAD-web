@@ -1,0 +1,28 @@
+{
+  "title": "Ball-mate torque load is explicitly unverified",
+  "invocation": "npx tsx docs/demos/joint-load-ball-torque-1272/capture-demo.ts",
+  "width": 1280,
+  "height": 720,
+  "framesPerSecond": 24,
+  "durationSeconds": 8,
+  "slides": 4,
+  "secondsPerSlide": 2,
+  "checkMode": "stub",
+  "ballMate": "socket",
+  "maxLoad": {
+    "forceN": 1000,
+    "torqueNm": 50
+  },
+  "externalLoad": {
+    "part": "housing",
+    "forceN": [0, 0, -500],
+    "torqueNm": [0, 0, 75]
+  },
+  "claims": {
+    "localValidatorReplay": true,
+    "physicsSimulation": false,
+    "fea": false,
+    "deployedBehaviorVerified": false,
+    "hardwareAcceptance": false
+  }
+}

@@ -49,6 +49,7 @@ import {
   holeCutMissingDiagnostic,
   type HoleCutRequest,
 } from './holeCutCheck';
+import { buildHoleUpToFace } from './holeUpToFace';
 
 export interface HoleLowerResult {
   backend: OcctBackend;
@@ -628,14 +629,30 @@ export function lowerHole(
   const { entry, u, v, throughDepth } = placed;
 
   let built: OneToolBuild;
-  try {
-    built = buildOneTool(
-      entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
-      thread ? { params: thread, nominalDiameter } : undefined,
+  if (feature.inputs.upToFace) {
+    const upToFace = buildHoleUpToFace(
+      feature, target, records, entry, u, v,
+      (depth) => buildOneTool(
+        entry, u, v, diameter, numericDepth, true, depth, counterbore, countersink,
+        thread ? { params: thread, nominalDiameter } : undefined,
+      ),
+      (error) => toolBuildDiagnostic(error, feature.id),
     );
-  } catch (e) {
-    diagnostics.push(toolBuildDiagnostic(e, feature.id));
-    return { backend: target, diagnostics };
+    if ('error' in upToFace) {
+      diagnostics.push(upToFace.error);
+      return { backend: target, diagnostics };
+    }
+    built = upToFace;
+  } else {
+    try {
+      built = buildOneTool(
+        entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
+        thread ? { params: thread, nominalDiameter } : undefined,
+      );
+    } catch (e) {
+      diagnostics.push(toolBuildDiagnostic(e, feature.id));
+      return { backend: target, diagnostics };
+    }
   }
 
   const requests = [requestOf(0, u, v, built.bore)];
@@ -853,13 +870,36 @@ export function lowerHoles(
 
   const params = resolveHoleGeometryParams(feature);
 
-  const depthRes = resolveBatchThroughDepths(target, entry, positions, params.through, params.diameter, feature.id);
-  if ('error' in depthRes) {
-    diagnostics.push(depthRes.error);
-    return { backend: target, diagnostics };
+  let built: { tools: replicad.Shape3D[]; bores: BoreFrame[] } | { error: CompilerDiagnostic };
+  if (feature.inputs.upToFace) {
+    const tools: replicad.Shape3D[] = [];
+    const bores: BoreFrame[] = [];
+    for (const position of positions) {
+      const one = buildHoleUpToFace(
+        feature, target, records, entry, position.u, position.v,
+        (depth) => buildOneTool(
+          entry, position.u, position.v, params.diameter, params.numericDepth, true, depth,
+          params.counterbore, params.countersink,
+          params.thread ? { params: params.thread, nominalDiameter: params.nominalDiameter } : undefined,
+        ),
+        (error) => toolBuildDiagnostic(error, feature.id),
+      );
+      if ('error' in one) {
+        diagnostics.push(one.error);
+        return { backend: target, diagnostics };
+      }
+      tools.push(one.tool);
+      bores.push(one.bore);
+    }
+    built = { tools, bores };
+  } else {
+    const depthRes = resolveBatchThroughDepths(target, entry, positions, params.through, params.diameter, feature.id);
+    if ('error' in depthRes) {
+      diagnostics.push(depthRes.error);
+      return { backend: target, diagnostics };
+    }
+    built = buildBatchTools(entry, positions, params, depthRes.throughDepths, feature.id);
   }
-
-  const built = buildBatchTools(entry, positions, params, depthRes.throughDepths, feature.id);
   if ('error' in built) {
     diagnostics.push(built.error);
     return { backend: target, diagnostics };

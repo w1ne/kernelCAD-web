@@ -82,7 +82,7 @@ export function lowerRevolve(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return noShape();
   }
   try {
-    shape = OcctBackend.revolveFromSketch(sketchInput, angleDeg);
+    shape = centreSymmetric(r, OcctBackend.revolveFromSketch(sketchInput, angleDeg), angleDeg);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     ctx.diagnostics.push({
@@ -105,6 +105,14 @@ export function lowerRevolve(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     if (e) ctx.diagnostics.push(e);
   }
   return built(shape);
+}
+
+/** A partial revolve sweeps from the sketch plane (y = 0) toward +Y; a
+ *  symmetric one is turned back by half the angle about the revolve axis so
+ *  it spans angleDeg/2 to each side. A full revolve needs no turn. */
+function centreSymmetric(r: FeatureRecord, shape: ShapeBackend, angleDeg: number): ShapeBackend {
+  if ((r.params.symmetric?.evaluated ?? 0) <= 0.5 || angleDeg >= 360) return shape;
+  return shape.rotate([0, 0, 1], -angleDeg / 2);
 }
 
 /** True for command kinds that contribute geometry to the profile. Tangency
