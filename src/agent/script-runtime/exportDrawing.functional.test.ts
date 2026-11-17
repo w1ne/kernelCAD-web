@@ -14,6 +14,21 @@ const options = { format: 'svg-drawing' as const, date: '2026-10-12', autoAnnota
 function svg(extra = {}, source = code) { return runAndExport({ code: source, fileName: 'functional.kcad.ts', format: 'svg-drawing', options: { ...options, ...extra } }); }
 
 describe('functional review exports', () => {
+  it('uses overall dimensions by default and requires opt-in for inferred tolerances', async () => {
+    const source = 'return box(80,50,10);';
+    for (const format of ['svg-drawing','pdf-drawing'] as const) {
+      const result = await runAndExport({
+        code: source, fileName: 'untoleranced.kcad.ts', format,
+        options: { format, date: '2026-10-12', ...(format === 'svg-drawing' ? { pdfSheet: true } : {}) },
+      });
+      expect(result.bytes.length).toBeGreaterThan(0);
+      expect(result.drawingReport?.generalTolerance).toBeUndefined();
+      expect(result.drawingReport?.annotations.some(a => a.kind === 'datum')).toBe(false);
+    }
+    const optIn = await svg({ autoAnnotate: true, pdfSheet: true }, source);
+    expect(optIn.drawingReport?.generalTolerance).toBe('ISO 2768-mK');
+  });
+
   it('preserves the front-only selection through PDF conversion', async () => {
     const result=await runAndExport({code:'return box(500,30,313);',fileName:'front.kcad.ts',format:'pdf-drawing',
       options:{format:'pdf-drawing',views:['front'],autoAnnotate:false}});

@@ -255,9 +255,8 @@ export interface PdfDrawingOptions extends DrawingReviewOptions {
   exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
   balloons?: boolean;
   partsList?: boolean;
-  /** Automatic datums, hole callouts, positions, overall dims and ISO 2768
-   *  note; default ON unless `annotations` are given. `false` falls back to
-   *  the overall bounding-box dimensions. */
+  /** Defaults to overall dimensions when the sheet has no authored annotations.
+   *  Pass `true` or a selection to request inferred feature annotations or tolerances. */
   autoAnnotate?: boolean | AutoAnnotateOptions;
   /** `'architectural'`: a floor plan (section ~1 m above the base, poché
    *  walls, wall / opening dimensions, room labels with area, scale bar,
