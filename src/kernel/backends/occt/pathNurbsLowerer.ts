@@ -43,6 +43,7 @@
 // paths the existing `_drawing` path is kept unchanged.
 
 import * as replicad from 'replicad';
+import { splitSketchLoops } from './sketchToDrawing';
 import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
@@ -556,4 +557,19 @@ export function buildNurbsSketchOnPlane(
     defaultOrigin: opts?.origin ?? [0, 0, 0],
     defaultDirection: planeNormal,
   });
+}
+
+/**
+ * {@link buildNurbsSketchOnPlane} for a command list of several
+ * `moveTo … close` loops: the first loop is the outer boundary, the rest are
+ * holes, returned as one `replicad.CompoundSketch` (its face carries the
+ * holes). A single loop returns exactly what `buildNurbsSketchOnPlane` does.
+ */
+export function buildNurbsProfileOnPlane(
+  commands: SketchCommand[],
+  plane: PlaneName,
+): replicad.Sketch | replicad.CompoundSketch {
+  const loops = splitSketchLoops(commands);
+  if (loops.length <= 1) return buildNurbsSketchOnPlane(commands, plane);
+  return new replicad.CompoundSketch(loops.map(loop => buildNurbsSketchOnPlane(loop, plane)));
 }
