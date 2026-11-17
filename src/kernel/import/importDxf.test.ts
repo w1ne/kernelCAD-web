@@ -83,6 +83,23 @@ describe('importDxfText — entities', () => {
     );
   });
 
+  it('keeps a wrapped partial ELLIPSE exact and follows the DXF counter-clockwise span', () => {
+    const r = importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 0], [20, 0], [11, 10], [21, 0], [40, 0.5],
+      [41, 1.5 * Math.PI], [42, 0.5 * Math.PI],
+      [0, 'LINE'], [10, 0], [20, 5], [11, 0], [21, -5],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(25 * Math.PI, 2);
+    const nurbs = r.regions[0].commands.filter(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    expect(nurbs).toHaveLength(2);
+    expect(nurbs.map(command => command.weights?.map(weight => weight.evaluated))).toEqual(
+      Array.from({ length: 2 }, () => [1, Math.SQRT1_2, 1]),
+    );
+  });
+
   it('reads a closed LWPOLYLINE as one region with exact area', () => {
     const r = importDxfText(entities(...SQUARE_10x5));
     expect(r.regions).toHaveLength(1);
@@ -290,12 +307,17 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/periodic splines are not supported/);
   });
 
-  it('a partial ELLIPSE and an INSERT are refused rather than dropped', () => {
-    expect(failure(() => importDxfText(entities(
-      [0, 'ELLIPSE'], [10, 0], [20, 0], [11, 5], [21, 0], [40, 0.5], [41, 0], [42, Math.PI],
-    ))).message).toMatch(/^ELLIPSE at line \d+: only full ellipses are supported/);
+  it('an INSERT is refused rather than dropped', () => {
     expect(failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK']))).message)
       .toMatch(/INSERT \(block reference\) at line \d+:.*Explode blocks/s);
+  });
+
+  it('rejects a zero-span ELLIPSE as malformed instead of making a degenerate profile', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 0], [20, 0], [11, 5], [21, 0], [40, 0.5], [41, 1], [42, 1],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/^ELLIPSE at line \d+: start\/end parameters must define a non-zero span/);
   });
 
   it('an unknown entity is refused, not skipped', () => {

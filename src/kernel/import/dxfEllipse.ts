@@ -3,8 +3,8 @@
 
 import type { ImportSegment } from './contourAssembly';
 
-/** Exact rational-quadratic segments for one complete planar DXF ellipse. */
-export function fullEllipseSegments(opts: {
+/** Exact rational-quadratic segments for a planar DXF ellipse arc. */
+export function ellipseArcSegments(opts: {
   center: readonly [number, number];
   majorAxis: readonly [number, number];
   axisRatio: number;
@@ -24,9 +24,10 @@ export function fullEllipseSegments(opts: {
   ];
   const sweep = opts.endParameter - opts.startParameter;
   const out: ImportSegment[] = [];
-  for (let i = 0; i < 4; i++) {
-    const start = opts.startParameter + sweep * i / 4;
-    const end = opts.startParameter + sweep * (i + 1) / 4;
+  const segmentCount = Math.max(1, Math.ceil(Math.abs(sweep) / (Math.PI / 2)));
+  for (let i = 0; i < segmentCount; i++) {
+    const start = opts.startParameter + sweep * i / segmentCount;
+    const end = opts.startParameter + sweep * (i + 1) / segmentCount;
     const middle = (start + end) / 2;
     const weight = Math.cos((end - start) / 2);
     const startPoint = point(start);
