@@ -68,14 +68,14 @@ const c = (h: number, r: number, segments: number, at: [number, number, number],
 
 p.part("cabinet", b([920, 420, 1250], [0, 0, 625]).color(powderCoat));
 p.part("door", b([860, 32, 1170], [0, -220, 625]).color(powderCoat));
-p.part("slot-0", b([185, 18, 230], [-305, -245, 790]).color(stainlessSteel));
-p.part("slot-1", b([185, 18, 230], [0, -245, 790]).color(stainlessSteel));
-p.part("slot-2", b([185, 18, 230], [305, -245, 790]).color(stainlessSteel));
-p.part("slot-3", b([185, 18, 230], [610, -245, 790]).color(stainlessSteel));
-p.part("ready-light-0", c(20, 22, 8, [-305, -250, 1100]).color(signalColor));
-p.part("ready-light-1", c(20, 22, 8, [0, -250, 1100]).color(signalColor));
-p.part("ready-light-2", c(20, 22, 8, [305, -250, 1100]).color(signalColor));
-p.part("ready-light-3", c(20, 22, 8, [610, -250, 1100]).color(signalColor));
+p.part("slot-0", b([180, 18, 230], [-330, -245, 790]).color(stainlessSteel));
+p.part("slot-1", b([180, 18, 230], [-110, -245, 790]).color(stainlessSteel));
+p.part("slot-2", b([180, 18, 230], [110, -245, 790]).color(stainlessSteel));
+p.part("slot-3", b([180, 18, 230], [330, -245, 790]).color(stainlessSteel));
+p.part("ready-light-0", c(20, 22, 8, [-330, -236, 1050], [1, 0, 0], 90).color(signalColor));
+p.part("ready-light-1", c(20, 22, 8, [-110, -236, 1050], [1, 0, 0], 90).color(signalColor));
+p.part("ready-light-2", c(20, 22, 8, [110, -236, 1050], [1, 0, 0], 90).color(signalColor));
+p.part("ready-light-3", c(20, 22, 8, [330, -236, 1050], [1, 0, 0], 90).color(signalColor));
 p.part("name-strip", b([600, 18, 70], [0, -245, 1190]).color(powderCoat));
 
 return p.model();

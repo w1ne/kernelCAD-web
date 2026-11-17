@@ -19,6 +19,7 @@ import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
 import { circleCommands } from './pathCircle';
 import { checkSweepSection } from './sweepSection';
+import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
   checkNurbsPenMatch,
@@ -109,6 +110,9 @@ const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
 /** Option keys `Sketch.extrude` accepts. Anything else is a likely typo and is
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 'symmetric']);
+
+/** Option keys `Sketch.revolve` accepts. */
+const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels', 'symmetric']);
 
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
@@ -263,16 +267,12 @@ export class Sketch {
       this.id,
       'Pass opts.taperDeg as a draft angle in degrees — a number or a param() reference.',
     );
-    if (opts.symmetric !== undefined && typeof opts.symmetric !== 'boolean') {
-      invalidArgs({
-        api: 'Sketch.extrude(depth, { symmetric })',
-        path: 'opts.symmetric',
-        got: opts.symmetric,
-        requires: 'true (extrude depth/2 to each side of the sketch plane) or false',
-        example: 'path()...close().extrude(10, { symmetric: true })',
-        featureId: this.id,
-      });
-    }
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.extrude(depth, { symmetric })',
+      requires: 'true (extrude depth/2 to each side of the sketch plane) or false',
+      example: 'path()...close().extrude(10, { symmetric: true })',
+      featureId: this.id,
+    });
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -293,9 +293,7 @@ export class Sketch {
           ? {}
           : { taperDeg: toParam(opts.taperDeg, 'deg') }),
         // Recorded only when true, so one-sided records stay byte-identical.
-        ...(opts.symmetric === true
-          ? { symmetric: { expression: 'true', unit: 'unitless', evaluated: 1 } }
-          : {}),
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -317,9 +315,37 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap }): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
-    const angleDeg = opts?.angleDeg ?? 360;
+  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap; symmetric?: boolean } | null): Shape {
+    // Tolerate an explicit `null`, as extrude does. A positional angle,
+    // `revolve(180)`, used to be read as an empty option bag and built a full
+    // 360° solid; reject it with the option-bag form.
+    opts ??= {};
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.revolve({ angleDeg })',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an option object { angleDeg?, faceLabels?, symmetric? } or no argument (360°); the angle is not positional',
+        example: 'path()...close().revolve({ angleDeg: 180 })',
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_REVOLVE_KEYS,
+      this.id,
+      (key) => `Sketch.revolve: unknown option '${key}'.`,
+      'revolve',
+    );
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.revolve({ angleDeg, symmetric })',
+      requires: 'true (revolve angleDeg/2 to each side of the sketch plane) or false',
+      example: 'path()...close().revolve({ angleDeg: 90, symmetric: true })',
+      featureId: this.id,
+    });
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'revolve');
+    const angleDeg = opts.angleDeg ?? 360;
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
@@ -330,6 +356,8 @@ export class Sketch {
         // A ParamRef angle stays symbolic; the lowerer range-checks the
         // resolved value.
         angleDeg: toParam(angleDeg, 'deg'),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });

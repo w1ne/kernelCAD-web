@@ -41,6 +41,7 @@ const rectPath = (hw: number, hd: number) => path().moveTo(-hw, -hd).lineTo(hw, 
 const H = 240;
 
 // One tapered crate at the origin: open tub, rim, vent slots and end hand-holds.
+const shell = () => {
 let shell = rectPath(290, 190).loft(rectPath(300, 200), { spacing: H, ruled: true })
   .subtract(rectPath(281, 181).loft(rectPath(291, 191), { spacing: H, ruled: true }).translate(0, 0, 10));
 for (let r = 0; r < 3; r++) {
@@ -50,14 +51,16 @@ for (const z of [70, 120]) {
   for (const y of [-110, 0, 110]) shell = shell.subtract(blk(0, y, z, 660, 70, 22));
 }
 shell = shell.subtract(blk(0, 0, 178, 660, 130, 34));
-const rim = blk(0, 0, H - 14, 610, 410, 14).subtract(blk(0, 0, H - 20, 576, 376, 30));
+return shell;
+};
+const rim = () => blk(0, 0, H - 14, 610, 410, 14).subtract(blk(0, 0, H - 20, 576, 376, 30));
 
-const fruitBall = sphere(50);
+const fruitBall = () => sphere(50);
 for (const [id, x] of [['l', -305], ['r', 305]]) {
   for (const [lvl, z] of [['lo', 0], ['up', H]]) {
     const k = `${id}-${lvl}`;
-    add(`crate-${k}`, shell.translate(x, 0, z).color(crate));
-    add(`rim-${k}`, rim.translate(x, 0, z).color(crate));
+    add(`crate-${k}`, shell().translate(x, 0, z).color(crate));
+    add(`rim-${k}`, rim().translate(x, 0, z).color(crate));
     add(`sticker-${k}`, blk(x + 170, -197, z + 182, 110, 4, 40).color(ticket));
     // Fruit volume inside: seen through the vents of the lower crates.
     add(`fill-${k}`, blk(x, 0, z + 10, 560, 360, lvl === 'up' ? 180 : 190).color(fruit));
@@ -66,7 +69,7 @@ for (const [id, x] of [['l', -305], ['r', 305]]) {
       for (let i = 0; i < 5; i++) {
         for (let j = 0; j < 3; j++) {
           const tone = (i + j + (id === 'l' ? 0 : 1)) % 3 === 0 ? blush : fruit;
-          add(`fruit-${k}-${i}-${j}`, fruitBall.translate(x - 224 + i * 112, -118 + j * 118, z + 205 + ((i + j) % 2) * 12).color(tone));
+          add(`fruit-${k}-${i}-${j}`, fruitBall().translate(x - 224 + i * 112, -118 + j * 118, z + 205 + ((i + j) % 2) * 12).color(tone));
         }
       }
     }

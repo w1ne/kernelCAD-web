@@ -57,10 +57,10 @@ const prismY = (pts: number[][], y0: number, y1: number) => {
 const column = (a: number, b: number, c: number, z0: number, z1: number) =>
   path().moveTo(-a + c, -b).lineTo(a - c, -b).lineTo(a, -b + c).lineTo(a, b - c).lineTo(a - c, b)
     .lineTo(-a + c, b).lineTo(-a, b - c).lineTo(-a, -b + c).close().extrude(z1 - z0).translate(0, 0, z0);
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 // ---- Base and pedals ----
@@ -100,11 +100,11 @@ for (const side of [-1, 1]) {
 }
 
 // ---- Drain and bucket ----
-add('drain-funnel', turned([[20, 0], [55, 40], [55, 52], [0, 52], [0, 40], [14, 0]], 14).translate(560, 0, 760).color(topSteel));
+add('drain-funnel', turned([[20, 0], [55, 40], [55, 52], [0, 52], [0, 40], [14, 0]]).translate(560, 0, 760).color(topSteel));
 add('drain-hose', tube([560, 0, 762], [600, 0, 640], 14, 10).color('#9fb3b6'));
 add('drain-hose-lower', tube([600, 0, 640], [700, 0, 590], 14, 10).color('#9fb3b6'));
 add('bucket-hook', blk(612, -12, 640, 650, 12, 790).color(topSteel));
-add('bucket', turned([[0, 0], [110, 0], [130, 230], [122, 230], [104, 12], [0, 12]], 20).translate(740, 0, 380).color(topSteel));
+add('bucket', turned([[0, 0], [110, 0], [130, 230], [122, 230], [104, 12], [0, 12]]).translate(740, 0, 380).color(topSteel));
 add('bucket-handle', tube([620, 0, 640], [740, 0, 700], 6, 6).color(topSteel));
 
 return p.model();

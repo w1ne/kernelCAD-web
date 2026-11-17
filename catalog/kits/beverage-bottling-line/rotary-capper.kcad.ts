@@ -37,6 +37,8 @@ const cylinderPart = (x:number,y:number,z:number,h:number,r:number,n=10) => cyli
 const p = assembly("rotary-capper");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
+  // The torque-chuck spindles are machined stainless; keep them out of the /cap/ polymer rule.
+  if (/capper-head/.test(component)) return shape.color(stainlessSteel);
   if (/belt|guide|film|web|label|pad|seal|grip|cap|bottle|liner|tray|hose|cleat|divider|wheel|wrap|tape|suction|sleeve/i.test(component)) return shape.color(foodPolymer);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);

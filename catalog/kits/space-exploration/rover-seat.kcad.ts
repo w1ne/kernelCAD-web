@@ -44,10 +44,10 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 
 const p = assembly("rover-seat");
 p.part("cushion",b(0,0,440,420,420,130).color(fabric));
-p.part("back",b(0,190,730,420,110,560).color(fabric));
-p.part("arm-left",b(-245,20,580,70,390,70).color(paint));
-p.part("arm-right",b(245,20,580,70,390,70).color(paint));
-p.part("pedestal",c(0,0,60,310,95,8).color(aluminum));
+p.part("back",b(0,190,560,420,110,560).color(fabric));
+p.part("arm-left",b(-245,20,500,70,390,70).color(paint));
+p.part("arm-right",b(245,20,500,70,390,70).color(paint));
+p.part("pedestal",c(0,0,60,380,95,8).color(aluminum));
 p.part("foot",b(0,0,0,360,320,60).color(aluminum));
 
 return p.model();

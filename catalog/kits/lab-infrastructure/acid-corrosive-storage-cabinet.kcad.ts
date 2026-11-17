@@ -24,9 +24,9 @@ presets({
 const p = assembly('acid-corrosive-storage-cabinet');
 p.part('cabinet-shell', box(700, 550, 780, true).translate(0, 0, 390).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(644, 495, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(288.96, 18, 750, true).translate(-154, -280.5, 765).scale(scale).color(enamel));
+p.part('door-0', box(288.96, 18, 750, true).translate(-154, -280.5, 390).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 124.8, true).translate(-57.68, -302.5, 468).scale(scale).color(polymer));
-p.part('door-1', box(288.96, 18, 750, true).translate(154, -280.5, 765).scale(scale).color(enamel));
+p.part('door-1', box(288.96, 18, 750, true).translate(154, -280.5, 390).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 124.8, true).translate(250.32, -302.5, 468).scale(scale).color(polymer));
 p.part('warning-band', box(644, 12, 50, true).translate(0, -291.5, 703.6).scale(scale).color(polymer));
 

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // quality-promotion: beverage-bottling-line 2026-11-05
 // Closure delivery chute: covered gravity chute with inspection lid, clear side slot, and capper handoff nose.
+// The clear slot is a polycarbonate strip in the operator-side wall, so a jam is visible without opening the lid.
 meta({
   name: "cap-delivery-chute",
   license: 'CC0-1.0',
   title: "Closure delivery chute",
-  description: "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+  description: "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the clear polycarbonate side slot.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'prop',
@@ -17,15 +18,18 @@ meta({
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, step: 0.05 });
 const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#397e91', { label: 'Powder-coated steel' });
+const clearPolycarbonate = param('clearPolycarbonate', '#8fd0e6', { label: 'Clear polycarbonate side slot' });
 
 presets({
   sanitaryLine: {
     stainlessSteel: '#d2dfe1',
     powderCoat: '#4b95a4',
+    clearPolycarbonate: '#a6dcec',
   },
   legacyPlant: {
     stainlessSteel: '#858f91',
     powderCoat: '#315b70',
+    clearPolycarbonate: '#9cc3c9',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -37,7 +41,9 @@ const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   return shape.color(stainlessSteel);
 };
 p.part("chute-floor", finishPart("chute-floor", boxPart(0, 0, 160, 760, 250, 50)));
-p.part("side-left", finishPart("side-left", boxPart(0, -128, 210, 760, 24, 150)));
+p.part("side-left-kick-strip", boxPart(0, -128, 210, 760, 24, 40).color(stainlessSteel));
+p.part("side-slot-window", boxPart(0, -128, 250, 760, 18, 80).color(clearPolycarbonate));
+p.part("side-left-top-strip", boxPart(0, -128, 330, 760, 24, 30).color(stainlessSteel));
 p.part("side-right", finishPart("side-right", boxPart(0, 128, 210, 760, 24, 150)));
 p.part("cover", finishPart("cover", boxPart(0, 0, 365, 760, 245, 35)));
 p.part("inlet-funnel", finishPart("inlet-funnel", boxPart(-390, 0, 170, 180, 320, 230)));

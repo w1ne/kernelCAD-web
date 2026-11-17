@@ -50,6 +50,7 @@ p.part("cross-1",b(-150,0,65,80,560,80).color(aluminum));
 p.part("cross-2",b(140,0,65,80,560,80).color(aluminum));
 p.part("cross-3",b(430,0,65,80,560,80).color(aluminum));
 p.part("deck",b(0,0,125,1050,510,40).color(paint));
-p.part("tow-loop",c(0,-670,35,100,38,8).color(rubber));
+p.part("tow-bar",b(-635,0,125,220,60,40).color(aluminum));
+p.part("tow-loop",c(-700,0,165,60,38,8).color(rubber));
 
 return p.model();
