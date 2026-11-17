@@ -22,16 +22,30 @@ const MATE_OPTION_KEYS: Readonly<Record<keyof MateOptions, true>> = {
   fit: true,
 };
 
+function isPlainOptionsObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype === Object.prototype || prototype === null) return true;
+  if (Object.getPrototypeOf(prototype) !== null) return false;
+  // User scripts run in an isolated VM realm, whose native Object constructor
+  // is not reference-equal to this module's Object constructor.
+  const constructor = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+  return typeof constructor === 'function'
+    && Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object);
+}
+
 export function assertMateOptionKeys(name: string, opts: unknown): void {
   const api = `assembly.mate('${name}', aRef, bRef, type, opts)`;
   const example = "arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })";
-  if (opts !== undefined && (opts === null || typeof opts !== 'object' || Array.isArray(opts))) {
+  if (opts !== undefined && !isPlainOptionsObject(opts)) {
+    const got = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
+      ? { gotText: 'a non-plain object' }
+      : { got: opts, showType: true };
     invalidArgs({
       api,
       path: 'opts',
-      got: opts,
-      showType: true,
-      requires: `an options object with only ${Object.keys(MATE_OPTION_KEYS).join(', ')}`,
+      ...got,
+      requires: `a plain options object with only ${Object.keys(MATE_OPTION_KEYS).join(', ')}`,
       example,
     });
   }
