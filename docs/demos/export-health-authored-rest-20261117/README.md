@@ -1,6 +1,6 @@
 # Export health at the authored rest
 
-`demo.mp4` is a 12-second text replay of a local `check_export_health` run.
+`demo.mp4` is an 18-second text replay of a local `check_export_health` run.
 It is not a renderer capture, a deployed Studio session, or hardware acceptance.
 
 The hinge in `swing-clear.kcad.ts` is authored at 90° with limits [−20°, 120°].
@@ -20,6 +20,20 @@ base rigid group, and the swing exclusion would hide the pair.
 - `limit-rest.kcad.ts` authors pose 0 with limits [12°, 40°]. The boxes do not
   overlap. The report is `ok: false` because `qpos0` is outside the range.
 
+`ball-clear.kcad.ts` authors a ball wrist at extrinsic XYZ `[0, 90, 0]`.
+MuJoCo keeps that joint's `qpos0` at the identity quaternion and ignores
+`ref`, so the link body carries `quat="0.707107 0 0.707107 0"` and the joint
+element has no `ref`. The report is `ok: true` with no rest contact.
+`ball-overlap.kcad.ts` is the same solids at `[0, 0, 0]`. The stop overlaps
+the link by 10×10×10 mm³. The compiled depth is 10.000 mm,
+`cadExactOverlapMm3` is 1000, `collisionGeomArtefact` is false, and `ok` is
+false.
+
+`hull-corner.kcad.ts` seats an 8 mm cube in the inner corner of an L, 4 mm
+clear of both faces. The compiled hull penetration is 14.000 mm.
+`cadExactOverlapMm3` is 0, `cadDistanceMm` is 4, and
+`collisionGeomArtefact` is true. The report stays `ok: true`.
+
 `verify({ check: 'physics' })` still starts a mate that a sample does not name
 at coordinate 0. That coordinate is the connector-aligned pose. Export `qpos0`
 is the authored pose.
@@ -31,13 +45,14 @@ TMPDIR=/tmp TMP=/tmp npx tsx docs/demos/export-health-authored-rest-20261117/rec
 node docs/demos/export-health-authored-rest-20261117/make-video.mjs
 ```
 
-`record-run.mts` calls `checkExportHealthTool({ file })` on the three scripts
+`record-run.mts` calls `checkExportHealthTool({ file })` on the six scripts
 in this directory. The coordinate-0 depth is a second `setPose(0)` / `forward`
 on the swing export. The committed `run.json` is that local run.
 
 ## Regression evidence
 
-`src/modeling/runtime/exportHealth.test.ts` covers the same three behaviours:
+`src/modeling/runtime/exportHealth.test.ts` covers the same behaviours:
 the 90° clearance against the 10 mm overlap at coordinate 0, the declared-mass
-row, and the out-of-limit `qpos0`. The non-adjacent negative control is the
-three-box assembly in that file (analytic overlap 20 mm).
+row, the out-of-limit `qpos0`, the ball Euler clearance against the 10 mm
+zero-triple overlap, and the L-corner hull artefact. The non-adjacent negative
+control is the three-box assembly in that file (analytic overlap 20 mm).

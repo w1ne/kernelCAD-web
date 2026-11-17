@@ -44,6 +44,8 @@ const swingQ = run.swing.restQpos[0].qpos;
 const hit = run.swing.coordinateZero.hits[0];
 const limit = run.limitRest.qposOutsideLimits[0];
 const block = run.declaredMass.block;
+const overlap = run.ballOverlap.row;
+const hull = run.hullCorner.row;
 
 const slides = [
   `${background('Export health · authored rest', 'A hinge whose solids overlap at coordinate 0 and clear at the authored pose.', 1)}
@@ -86,6 +88,27 @@ const slides = [
     ${mono(`ok ${run.limitRest.ok}    penetrating ${run.limitRest.penetrating.length}`, 160, 720, 28, FAIL, 700)}
     ${text('The failure is the joint range. The boxes do not overlap.', 160, 800, 26, MUTED)}
   </svg>`,
+  `${background('Authored ball Euler', 'qpos0 stays the identity quaternion. The body frame carries the pose.', 5)}
+    ${panel}
+    ${mono("mate('wrist', ..., 'ball', { pose: [0, 90, 0] })", 160, 290, 28, INK, 700)}
+    ${mono(run.ballClear.linkBody, 160, 360, 24, INK)}
+    ${mono(run.ballClear.wristJoint, 160, 420, 24, INK)}
+    ${mono(`joint ref emitted   ${run.ballClear.jointHasRef}`, 160, 490, 28, INK)}
+    ${mono(`ok ${run.ballClear.ok}    penetrating ${run.ballClear.penetrating.length}`, 160, 560, 30, PASS, 700)}
+    ${text('The same solids at Euler [0, 0, 0] overlap by 10×10×10 mm³.', 160, 660, 28, INK)}
+    ${mono(`penetration ${mm(overlap.penetrationM)} mm    exact volume ${Number(overlap.cadExactOverlapMm3).toFixed(3)} mm³    artefact ${overlap.collisionGeomArtefact}`, 160, 720, 24, FAIL, 700)}
+    ${mono(`ok ${run.ballOverlap.ok}`, 160, 780, 28, FAIL, 700)}
+  </svg>`,
+  `${background('Convex-hull contact, exact solids clear', 'The row stays visible and does not fail the check.', 6)}
+    ${panel}
+    ${mono('hull-corner.kcad.ts    cube in the inner corner of an L', 160, 290, 28, INK, 700)}
+    ${mono(`compiled penetration   ${mm(hull.penetrationM)} mm`, 160, 370, 30, FAIL, 700)}
+    ${mono(`exact CAD overlap   ${hull.cadExactOverlapMm3} mm³`, 160, 440, 30, PASS, 700)}
+    ${mono(`exact CAD distance   ${Number(hull.cadDistanceMm).toFixed(3)} mm`, 160, 510, 30, PASS, 700)}
+    ${mono(`collisionGeomArtefact   ${hull.collisionGeomArtefact}`, 160, 580, 30, INK, 700)}
+    ${mono(`ok ${run.hullCorner.ok}`, 160, 660, 32, PASS, 700)}
+    ${text(run.hullCorner.summary, 160, 740, 24, MUTED)}
+  </svg>`,
 ];
 
 const framePaths = [];
@@ -110,7 +133,7 @@ const probe = JSON.parse(execFileSync(process.env.FFPROBE || 'ffprobe', [
 const evidence = {
   type: 'text replay of a local check_export_health run; not a renderer capture',
   recordedAt: run.recordedAt,
-  models: ['swing-clear.kcad.ts', 'declared-mass.kcad.ts', 'limit-rest.kcad.ts'],
+  models: ['swing-clear.kcad.ts', 'declared-mass.kcad.ts', 'limit-rest.kcad.ts', 'ball-clear.kcad.ts', 'ball-overlap.kcad.ts', 'hull-corner.kcad.ts'],
   invocation: run.command,
   run: { file: 'run.json', sha256: sha256(join(HERE, 'run.json')) },
   slides: { count: framePaths.length, secondsEach: 3, tracked: false },
@@ -129,6 +152,9 @@ const evidence = {
     coordinateZeroPenetrationM: hit.penetrationM,
     declaredMassMatches: block.mjcfMismatch === false && block.urdfMismatch === false,
     outOfLimitFails: run.limitRest.ok === false && run.limitRest.penetrating.length === 0,
+    ballClear: run.ballClear.ok === true && run.ballClear.quat != null && run.ballClear.jointHasRef === false,
+    ballOverlapIsReal: overlap.collisionGeomArtefact === false && overlap.cadExactOverlapMm3 > 0,
+    hullArtefactDoesNotFail: run.hullCorner.ok === true && hull.collisionGeomArtefact === true && hull.cadExactOverlapMm3 === 0,
     deployed: false,
     hardwareAcceptance: false,
   },

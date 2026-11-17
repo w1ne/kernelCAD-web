@@ -78,6 +78,9 @@ async function zeroPosePenetration(file: string) {
 const swingFile = resolve(HERE, 'swing-clear.kcad.ts');
 const massFile = resolve(HERE, 'declared-mass.kcad.ts');
 const limitFile = resolve(HERE, 'limit-rest.kcad.ts');
+const ballClearFile = resolve(HERE, 'ball-clear.kcad.ts');
+const ballOverlapFile = resolve(HERE, 'ball-overlap.kcad.ts');
+const hullFile = resolve(HERE, 'hull-corner.kcad.ts');
 const swing = await timed(swingFile);
 const mass = await timed(massFile);
 const limit = await timed(limitFile);
@@ -101,6 +104,50 @@ const run = {
     },
   },
   limitRest: { file: 'limit-rest.kcad.ts', ms: limit.ms, ...digest(limit.report) },
+  ballClear: await ballClearRecord(ballClearFile),
+  ballOverlap: await contactRecord(ballOverlapFile, 'ball-overlap.kcad.ts', 'link', 'stop'),
+  hullCorner: await contactRecord(hullFile, 'hull-corner.kcad.ts', 'cube', 'ell'),
 };
+
+async function ballClearRecord(file: string) {
+  const checked = await timed(file);
+  const { model } = await evaluateAndBuildScript({ file });
+  const arm = [...(model!.session.assemblies as Map<string, Assembly>).values()][0]!;
+  const exported = await assemblyToMjcf(arm);
+  const body = exported.mjcf.match(/<body name="link"[^>]*>/)?.[0] ?? '';
+  const joint = exported.mjcf.match(/<joint name="wrist"[^/]*\/>/)?.[0] ?? '';
+  return {
+    file: 'ball-clear.kcad.ts',
+    ms: checked.ms,
+    ...digest(checked.report),
+    linkBody: body,
+    wristJoint: joint,
+    quat: body.match(/quat="([^"]+)"/)?.[1] ?? null,
+    jointHasRef: /\bref=/.test(joint),
+  };
+}
+
+async function contactRecord(file: string, name: string, bodyA: string, bodyB: string) {
+  const checked = await timed(file);
+  const row = [...(checked.report.restContacts?.penetrating ?? []), ...(checked.report.restContacts?.marginOnly ?? [])]
+    .find((item: { bodyA: string; bodyB: string }) => item.bodyA === bodyA && item.bodyB === bodyB);
+  return {
+    file: name,
+    ms: checked.ms,
+    ...digest(checked.report),
+    row: row ?? null,
+  };
+}
 writeFileSync(resolve(HERE, 'run.json'), `${JSON.stringify(run, null, 2)}\n`);
-console.log(JSON.stringify({ swing: run.swing.ok, mass: run.declaredMass.ok, limit: run.limitRest.ok, zero: run.swing.coordinateZero.hits[0]?.penetrationM }, null, 2));
+console.log(JSON.stringify({
+  swing: run.swing.ok,
+  mass: run.declaredMass.ok,
+  limit: run.limitRest.ok,
+  zero: run.swing.coordinateZero.hits[0]?.penetrationM,
+  ball: run.ballClear.ok,
+  quat: run.ballClear.quat,
+  ref: run.ballClear.jointHasRef,
+  overlap: run.ballOverlap.row,
+  hull: run.hullCorner.ok,
+  hullRow: run.hullCorner.row,
+}, null, 2));
