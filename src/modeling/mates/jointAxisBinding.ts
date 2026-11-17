@@ -171,7 +171,7 @@ export async function validateJointAxisBindingWithCache(
   arm: Assembly,
 ): Promise<JointAxisBindingResult> {
   const gatedMates = arm.__mates().filter((m) => GATED_MATE_TYPES.has(m.type));
-  if (gatedMates.length === 0) {
+  if (gatedMates.length === 0 && !arm.__mates().some((mate) => mate.adhesive)) {
     return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
   }
 

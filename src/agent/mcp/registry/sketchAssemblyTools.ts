@@ -5,6 +5,7 @@ import { addAssemblyPartSourceTool } from '../tools/addAssemblyPartSource';
 import { addPartConnectorSourceTool } from '../tools/addPartConnectorSource';
 import { addWorkspaceTargetSourceTool } from '../tools/addWorkspaceTargetSource';
 import { setSceneReturnSourceTool } from '../tools/setSceneReturnSource';
+import { ADHESIVE_FACES } from '../../../modeling/mates/mate';
 import { addMateAuthoringTool } from '../tools/addMateAuthoring';
 import { solveMatesTool } from '../tools/solveMates';
 import type { ToolRegistryEntry } from './types';
@@ -177,6 +178,15 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
           pose: { type: 'object', description: "relation:'mate' — optional mate pose." },
+          adhesive: {
+            type: 'object',
+            description: "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",
+            properties: {
+              faceA: { type: 'string', enum: [...ADHESIVE_FACES] },
+              faceB: { type: 'string', enum: [...ADHESIVE_FACES] },
+            },
+            required: ['faceA', 'faceB'],
+          },
           limits_deg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
           limits_mm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
           driven: { type: 'string', description: "relation:'coupling' — driven mate name." },

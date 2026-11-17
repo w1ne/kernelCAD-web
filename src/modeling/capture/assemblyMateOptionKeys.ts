@@ -21,6 +21,7 @@ const MATE_OPTION_KEYS: Readonly<Record<keyof MateOptions, true>> = {
   dampingNsPerMm: true,
   fastener: true,
   fit: true,
+  adhesive: true,
 };
 
 export function assertMateOptionKeys(name: string, opts: unknown): void {

@@ -135,7 +135,7 @@ function fastenedPairs(arm: Assembly): FastenedPair[] {
   const seen = new Set<string>();
   const out: FastenedPair[] = [];
   for (const mate of arm.__mates()) {
-    if (mate.type !== 'fastened') continue;
+    if (mate.type !== 'fastened' || mate.adhesive) continue;
     let partA: string;
     let partB: string;
     try {

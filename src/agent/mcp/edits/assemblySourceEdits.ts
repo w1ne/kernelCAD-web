@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
-import type { MateLimitRange, MatePose } from '../../../modeling/mates/mate';
+import { ADHESIVE_FACES, type AdhesiveMateMetadata, type MateLimitRange, type MatePose } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';
 import type { TransmissionKind } from '../../../modeling/capture/assembly';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -43,6 +43,7 @@ export interface AddMateSourceInput {
   a: string;
   b: string;
   type: MateType;
+  adhesive?: AdhesiveMateMetadata;
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -150,7 +151,14 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
     if (!isNonEmptyString(input[field])) return { ok: false, error: `add_mate: ${field} must be a non-empty string.` };
   }
   if (!isMateType(input.type)) return { ok: false, error: `add_mate: unsupported mate type '${String(input.type)}'.` };
+  const adhesive = input.adhesive;
+  if (adhesive !== undefined &&
+      (input.type !== 'fastened' || !adhesive ||
+        !ADHESIVE_FACES.includes(adhesive.faceA) || !ADHESIVE_FACES.includes(adhesive.faceB))) {
+    return { ok: false, error: 'add_mate: adhesive requires a fastened mate and two canonical planar face names.' };
+  }
   const opts = {
+    ...(adhesive ? { adhesive: { faceA: adhesive.faceA, faceB: adhesive.faceB } } : {}),
     ...(input.pose !== undefined ? { pose: input.pose } : {}),
     ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
     ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),

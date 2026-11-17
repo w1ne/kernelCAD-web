@@ -1055,7 +1055,7 @@ export class OcctBackend implements ShapeBackend {
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): {
+  intersectionMetrics(other: OcctBackend, includeSurfaceContact = false): {
     volumeMm3: number;
     areaMm2: number;
     /** World-frame bounds of the common solid, when OCCT can compute them. */
@@ -1083,7 +1083,8 @@ export class OcctBackend implements ShapeBackend {
         const props = new oc.GProp_GProps_1();
         oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
         const volumeMm3 = Math.abs(props.Mass());
-        props.delete(); if (!(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
+        props.delete();
+        if (!includeSurfaceContact && !(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
         const surface = new oc.GProp_GProps_1();
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());

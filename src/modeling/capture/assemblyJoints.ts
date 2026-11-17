@@ -3,7 +3,7 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { parseConnectorRef, ADHESIVE_FACES, type AdhesiveMateMetadata, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
 import { fastenerRecordOf, fitRecordOf, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
@@ -324,6 +324,8 @@ export interface MateOptions extends FastenerMateOptionsFields {
   fastener?: FastenerMateMetadata;
   /** P2 press/snap fit metadata. Only valid on a fastened mate. */
   fit?: FitMateMetadata;
+  /** Planar adhesive interface on a rigid mate. Does not change placement. */
+  adhesive?: AdhesiveMateMetadata;
 }
 
 const JOINT_DYNAMICS_FIELDS = [
@@ -379,6 +381,14 @@ export function recordMate(
   validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
   validateFastenerMateMetadata(name, type, aRef, bRef, opts);
+  if (opts?.adhesive !== undefined) {
+    const bond = opts.adhesive;
+    if (type !== 'fastened' || !bond || !ADHESIVE_FACES.includes(bond.faceA) || !ADHESIVE_FACES.includes(bond.faceB)) {
+      invalidArgs({ api: 'assembly.mate', path: 'opts.adhesive', got: bond,
+        requires: 'a fastened mate with faceA and faceB set to canonical planar face names',
+        example: "{ adhesive: { faceA: 'right', faceB: 'left' } }" });
+    }
+  }
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
   stampMateConfiguration(state);
 }
@@ -483,6 +493,7 @@ function buildMateRecord(
       : {}),
     ...fastenerRecordOf(opts),
     ...fitRecordOf(opts),
+    ...(opts?.adhesive ? { adhesive: { ...opts.adhesive } } : {}),
   };
 }
 
