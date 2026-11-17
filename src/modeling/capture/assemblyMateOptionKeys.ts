@@ -22,14 +22,27 @@ const MATE_OPTION_KEYS: Readonly<Record<keyof MateOptions, true>> = {
   fit: true,
 };
 
-export function assertMateOptionKeys(name: string, opts: MateOptions | undefined): void {
-  const unknownKey = Object.keys(opts ?? {}).find((key) => !Object.hasOwn(MATE_OPTION_KEYS, key));
+export function assertMateOptionKeys(name: string, opts: unknown): void {
+  const api = `assembly.mate('${name}', aRef, bRef, type, opts)`;
+  const example = "arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })";
+  if (opts !== undefined && (opts === null || typeof opts !== 'object' || Array.isArray(opts))) {
+    invalidArgs({
+      api,
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an options object with only ${Object.keys(MATE_OPTION_KEYS).join(', ')}`,
+      example,
+    });
+  }
+  if (opts === undefined) return;
+  const unknownKey = Object.keys(opts).find((key) => !Object.hasOwn(MATE_OPTION_KEYS, key));
   if (unknownKey === undefined) return;
   invalidArgs({
-    api: `assembly.mate('${name}', aRef, bRef, type, opts)`,
+    api,
     path: `opts.${unknownKey}`,
     gotText: `an unknown option '${unknownKey}'`,
     requires: `one of ${Object.keys(MATE_OPTION_KEYS).join(', ')}`,
-    example: "arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })",
+    example,
   });
 }
