@@ -54,7 +54,7 @@ let bracket: Awaited<ReturnType<typeof exportPdf>>;
 beforeAll(async () => {
   await initOcct();
   dir = mkdtempSync(join(tmpdir(), 'kernelcad-pdf-drawing-'));
-  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B' });
+  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B', autoAnnotate: true });
 }, 180_000);
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -313,7 +313,7 @@ describe('pdf-drawing: public entry points', () => {
       file: BRACKET_FILE,
       format: 'pdf-drawing',
       output_path: out,
-      options: { format: 'pdf-drawing', revision: 'C', date: DATE },
+      options: { format: 'pdf-drawing', revision: 'C', date: DATE, autoAnnotate: true },
     }) as { ok: boolean; byte_count: number; format: string; drawing_report?: { placed: number } };
     expect(r.ok).toBe(true);
     expect(r.format).toBe('pdf-drawing');
