@@ -6110,6 +6110,38 @@
           "type": "object",
           "description": "relation:'mate' — optional mate pose."
         },
+        "adhesive": {
+          "type": "object",
+          "description": "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",
+          "properties": {
+            "faceA": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "front",
+                "back",
+                "top",
+                "bottom"
+              ]
+            },
+            "faceB": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "front",
+                "back",
+                "top",
+                "bottom"
+              ]
+            }
+          },
+          "required": [
+            "faceA",
+            "faceB"
+          ]
+        },
         "limits_deg": {
           "type": "array",
           "items": {
