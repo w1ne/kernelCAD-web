@@ -145,6 +145,34 @@ function cross(o: [number, number], a: [number, number], b: [number, number]): n
   return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
 }
 
+const UP_TO_FACE_EXAMPLE =
+  "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })";
+
+function validateUpToFace(opts: CutoutOpts, featureId: FeatureId | undefined): void {
+  const v: unknown = opts.upToFace;
+  if (typeof v !== 'string' && (typeof v !== 'object' || v === null || Array.isArray(v))) {
+    invalidArgs({
+      api: 'cutout(profile, { face, upToFace })',
+      path: 'opts.upToFace',
+      got: v,
+      showType: true,
+      requires: "a planar face of the body: a FaceRef ({ kind: 'canonical', face: 'bottom' }), a face name, a label or a FaceQuery",
+      example: UP_TO_FACE_EXAMPLE,
+      featureId,
+    });
+  }
+  if (opts.depthMode === 'symmetric') {
+    invalidArgs({
+      api: 'cutout(profile, { face, upToFace, depthMode })',
+      path: 'opts.depthMode',
+      got: opts.depthMode,
+      requires: "no depthMode with upToFace; the cut runs from the entry face to the target face only",
+      example: UP_TO_FACE_EXAMPLE,
+      featureId,
+    });
+  }
+}
+
 export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | undefined): void {
   if (opts.depth === undefined && opts.upToFace === undefined) {
     invalidArgs({
@@ -167,6 +195,7 @@ export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | unde
       featureId,
     });
   }
+  if (opts.upToFace !== undefined) validateUpToFace(opts, featureId);
   if (typeof opts.depth === 'number') {
     if (!isFiniteNumber(opts.depth) || opts.depth <= 0) {
       invalidArgs({

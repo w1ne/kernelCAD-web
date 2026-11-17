@@ -78,6 +78,11 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
     statement: { type: 'string', description: 'One line. Quote it instead of calling the mechanism working.' },
     checked: { type: 'array', items: { type: 'string' }, description: "What ran and held (verdict 'real')." },
     skipped: { type: 'array', items: { type: 'string' }, description: "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)." },
+    loopMobility: {
+      type: 'array',
+      items: { type: 'object', additionalProperties: true },
+      description: 'Closed-loop solver evidence per assembly and sampled pose: loop names, coordinate count, closure-Jacobian rank, mobility, Grübler count, redundant constraints, driven DOF, and independently drivable joints. Omitted when no loop was solved.',
+    },
     ignoredPairs: {
       type: 'array',
       items: {
@@ -90,12 +95,12 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
     },
     failures: {
       type: 'array',
-      description: "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+      description: "Error failures (verdict 'broken'); `joint` names the mate, `loop` names its closed loop, and `part` names the part when known.",
       items: {
         type: 'object',
         additionalProperties: false,
         required: ['code', 'reason'],
-        properties: { code: { type: 'string' }, reason: { type: 'string' }, joint: { type: 'string' }, part: { type: 'string' } },
+        properties: { code: { type: 'string' }, reason: { type: 'string' }, joint: { type: 'string' }, loop: { type: 'string' }, part: { type: 'string' } },
       },
     },
     loads: {

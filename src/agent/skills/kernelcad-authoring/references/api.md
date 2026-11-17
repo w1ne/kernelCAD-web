@@ -102,6 +102,8 @@ assembly(name?: string): Assembly;
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
+// axis is upper-case 'X' | 'Y' | 'Z'; any other key (there is no handedness
+// option) throws feature.invalid-args.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
@@ -159,6 +161,17 @@ lib.fromSTL(path: string, opts?: {
   allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
+
+// ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
+// area so the caller can choose which regions are outlines, holes or parts.
+// LINE / ARC / CIRCLE / LWPOLYLINE / POLYLINE are supported; clamped, continuous, planar
+// XY SPLINE entities with control points and knots become exact NURBS path
+// commands (rational weights are preserved). Periodic, fit-point-only,
+// discontinuous and nonplanar SPLINE, ELLIPSE and INSERT entities fail with a named diagnostic.
+const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
+const [outline, ...holes] = profiles;
+let plate = outline.extrude(3);
+for (const hole of holes) plate = plate.subtract(hole.extrude(3));
 
 // Full-detail, display-only mesh import. This skips BRep sewing and does not simplify.
 // Rigid transforms, assembly placement and finish/color are supported; solid
@@ -563,8 +576,13 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; taperDeg?: Editable<number>; symmetric?: boolean }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
-// Profile coords are (radial-X, axial-Z); all x >= 0.
-.revolve(opts?: { angleDeg?: Editable<number> }): Shape
+// Profile coords are (radial-X, axial-Z); all x >= 0. A partial revolve
+// starts on the sketch plane (y = 0) and turns toward +Y. symmetric: true
+// spans angleDeg/2 to each side of the sketch plane (a mid-plane revolve);
+// angleDeg stays the total angle, and a full 360 revolve is unchanged.
+// Example: 90 degree pipe elbow with its end faces at +/-45 degrees
+//   path().circle(30, 0, 8).revolve({ angleDeg: 90, symmetric: true })
+.revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: Record<string, CanonicalFace | FaceQuery>; symmetric?: boolean }): Shape
 
 // Sweep this profile along a 3D rail.
 // spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
