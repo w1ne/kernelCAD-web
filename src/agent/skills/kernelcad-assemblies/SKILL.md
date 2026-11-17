@@ -406,6 +406,7 @@ Do not give a driven mate its own `pose`. `model()` and `solvedModel()` place th
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
 - When supplied, the fifth `arm.mate(..., opts)` argument must be a plain options object; `null`, arrays, primitives, and built-in objects such as `Date` are rejected at capture time. Unknown keys are rejected with the path `opts.<key>`. This also covers object variables and JavaScript callers, where malformed options or a typo such as `limtsDeg` could otherwise silently create an unbounded mate.
+- `arm.coupleMates(driven, opts)` requires a plain options object with only `source`, `ratio`, and optional `offset`. Unknown keys fail at `opts.<key>` before the coupling is recorded, so a typo such as `offest` cannot be silently ignored.
 - `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery: pick a compatible mate type or change the connector types.
 - `invalid-args.assembly.mate-connector-not-found` — the `"part.connector"` ref is malformed, the part is undeclared, or the connector wasn't registered. Recovery: declare the part / register the connector before calling `arm.mate(...)`.
 
