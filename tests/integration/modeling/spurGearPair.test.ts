@@ -13,11 +13,13 @@ import { Transform } from '../../../src/shared/runtime/se3';
 import {
   SPUR_GEAR_BACKLASH_SEARCH_STEPS,
   SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS,
+  SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
+  aggregateSpurClearance,
 } from '../../../src/modeling/spurGearPairMath';
 import type { SpurGearToothInterferenceReport } from '../../../src/modeling/spurGearPairReport';
 
 /** Common volume above which this file calls a pose interference. */
-const INTERFERENCE_MM3 = 1e-3;
+const INTERFERENCE_MM3 = SPUR_GEAR_INTERFERENCE_VOLUME_MM3;
 
 function mesh(opts: Parameters<ReturnType<typeof createModelingApi>['spurGearPair']>[0]) {
   const session = new CaptureSession();
@@ -48,22 +50,42 @@ function expectSampledClearance(report: SpurGearToothInterferenceReport): void {
   );
 }
 
-function expectAggregatedClear(report: SpurGearToothInterferenceReport): void {
-  const aggregated = [
+function aggregatedSamples(report: SpurGearToothInterferenceReport) {
+  return [
     ...report.samples,
     ...(report.revolutionSamples ?? []),
     ...report.refinedSamples,
   ];
+}
+
+function expectVolumeFloor(report: SpurGearToothInterferenceReport): void {
+  expect(report.interferenceVolumeFloorMm3).toBe(SPUR_GEAR_INTERFERENCE_VOLUME_MM3);
+  expect(report.note).toMatch(/0\.001 mm³/);
+  expect(report.aggregateNote).toMatch(/0\.001 mm³/);
+  const sum = aggregateSpurClearance(aggregatedSamples(report));
+  expect(report.anyInterference).toBe(sum.anyInterference);
+  expect(report.maxInterferenceVolumeMm3).toBe(sum.maxInterferenceVolumeMm3);
+  expect(report.minClearanceMm).toBe(sum.minClearanceMm);
+  for (const sample of aggregatedSamples(report)) {
+    expect(sample.interfering).toBe(sample.interferenceVolumeMm3 > report.interferenceVolumeFloorMm3);
+  }
+}
+
+function expectAggregatedClear(report: SpurGearToothInterferenceReport): void {
+  const aggregated = aggregatedSamples(report);
   for (const sample of aggregated) {
     expect(sample.drivenDeg).toBeCloseTo((-20 / 40) * sample.driverDeg, 9);
     expect(sample.interferenceVolumeMm3).toBeLessThan(INTERFERENCE_MM3);
   }
+  expectVolumeFloor(report);
   expect(report.anyInterference).toBe(false);
-  expect(report.minClearanceMm).toBeCloseTo(Math.min(...aggregated.map((sample) => sample.clearanceMm)), 12);
+  const gap = report.minClearanceMm;
+  if (gap === null) throw new Error('clear mesh published no open gap');
+  expect(gap).toBeCloseTo(Math.min(...aggregated.map((sample) => sample.clearanceMm)), 12);
   const sideGap = (0.05 / 2) * Math.cos((20 * Math.PI) / 180);
   expect(report.samples[0].clearanceMm).toBeCloseTo(sideGap, 3);
-  expect(report.minClearanceMm).toBeGreaterThan(0.01);
-  expect(report.minClearanceMm).toBeLessThan(0.05);
+  expect(gap).toBeGreaterThan(0.01);
+  expect(gap).toBeLessThan(0.05);
 }
 
 function expectBacklashStep(report: SpurGearToothInterferenceReport): void {
@@ -139,7 +161,9 @@ describe('spur gear pair tooth interference', () => {
     expect(report.aggregateNote).toMatch(/already interferes/);
     expect(report.refinementSteps).toBe(0);
     expect(report.refinedSamples).toEqual([]);
+    expectVolumeFloor(report);
     expect(report.anyInterference).toBe(true);
+    expect(report.minClearanceMm).toBe(0);
     expect(Math.max(...report.samples.map((sample) => sample.interferenceVolumeMm3))).toBeGreaterThan(0.5);
   }, 20_000);
 
@@ -156,7 +180,9 @@ describe('spur gear pair tooth interference', () => {
     const report = await pair.toothInterference({ cycleSamples: 2 });
     expect(report.sampleLimited).toBe(true);
     expect(report.refinementSteps).toBe(0);
+    expectVolumeFloor(report);
     expect(report.anyInterference).toBe(true);
+    expect(report.minClearanceMm).toBe(0);
     expect(Math.max(...report.samples.map((sample) => sample.interferenceVolumeMm3))).toBeGreaterThan(INTERFERENCE_MM3);
   }, 20_000);
 });

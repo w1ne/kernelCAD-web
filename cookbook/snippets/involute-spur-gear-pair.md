@@ -18,8 +18,9 @@ when_to_use: >-
   with a gear-pair transmission. Each tooth is the `spurGear(...)`
   involute (trochoid root, correct undercut) as one manifold solid.
   `toothInterference` aggregates exact BREP distance over sampled poses
-  and refines beside the minimum; it does not certify the gaps between
-  samples. `withGeneratingCut` is an opt-in discrete union, not a
+  and refines beside the minimum. A common volume strictly above 0.001 mm³
+  sets `anyInterference` and closes `minClearanceMm`. A smaller positive
+  volume does not. It does not certify the gaps between samples. `withGeneratingCut` is an opt-in discrete union, not a
   continuous envelope.
 ---
 

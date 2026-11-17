@@ -18,7 +18,9 @@ import {
   SPUR_GEAR_MAX_CYCLE_SAMPLES,
   SPUR_GEAR_MIN_CYCLE_SAMPLES,
   SPUR_GEAR_VOLUME_PROBE_DISTANCE_MM,
+  aggregateSpurClearance,
   backlashSearchStepMm,
+  spurVolumeInterferes,
   teethNearFacing,
   toothIndex,
 } from './spurGearPairMath';
@@ -39,6 +41,7 @@ export interface SpurGearToothSample {
   clearanceMm: number;
   /** Exact common volume, mm³. Computed only when the distance is at most 1e-4 mm. */
   interferenceVolumeMm3: number;
+  /** True when `interferenceVolumeMm3` is strictly above the report floor, 0.001 mm³. */
   interfering: boolean;
   /** The single nearest BREP point pair, labelled by tooth. Not every simultaneous contact. */
   nearestToothPair: SpurGearToothPair;
@@ -88,13 +91,28 @@ export interface SpurGearToothInterferenceReport {
    * degrees. Clearance inside that gap was not measured.
    */
   unresolvedStepDeg: number;
-  /** Driver angle of the pose that set `minClearanceMm`. */
+  /**
+   * Driver angle of the lowest BREP distance. When `minClearanceMm` is null,
+   * that pose's distance collapsed on a common volume at or below the floor.
+   */
   minClearanceDriverDeg: number;
   /** States that the clearance aggregates are sample-limited. */
   aggregateNote: string;
+  /**
+   * Common volume, mm³, strictly above which a pose is tooth interference.
+   * Same value as `SPUR_GEAR_INTERFERENCE_VOLUME_MM3`.
+   */
+  interferenceVolumeFloorMm3: number;
+  /** True when any aggregated pose is above `interferenceVolumeFloorMm3`. */
   anyInterference: boolean;
+  /** Largest common volume, mm³, including volumes at or below the floor. */
   maxInterferenceVolumeMm3: number;
-  minClearanceMm: number;
+  /**
+   * 0 when `anyInterference` is true. Otherwise the minimum BREP distance
+   * among poses that are not a positive common volume at or below the floor.
+   * Null when every aggregated pose is in that band.
+   */
+  minClearanceMm: number | null;
   /**
    * Pitch-circle arc of the driven gear between the two flank-contact poses,
    * driver held fixed. Equals the authored circular backlash when the flanks
@@ -136,7 +154,7 @@ export interface SpurGearPairMeasureSpec {
 }
 
 const GEOMETRY_NOTE =
-  'Geometry only. anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate the listed sampled poses, including poses refined beside the minimum. They do not prove clearance between those poses. Clearance is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result, and it is not a continuous no-interference certificate.';
+  `Geometry only. anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate the listed sampled poses, including poses refined beside the minimum. They do not prove clearance between those poses. A common volume strictly above interferenceVolumeFloorMm3 (${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³) is tooth interference: anyInterference is then true and minClearanceMm is 0. A positive common volume at or below that floor is not interference and does not set minClearanceMm to 0. When every sampled pose is in that band, minClearanceMm is null. Clearance on each pose is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result, and it is not a continuous no-interference certificate.`;
 
 interface PoseHit {
   distanceMm: number;
@@ -219,7 +237,7 @@ async function sampleAt(
     sampledBy,
     clearanceMm: hit.distanceMm,
     interferenceVolumeMm3: hit.volumeMm3,
-    interfering: hit.volumeMm3 > SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
+    interfering: spurVolumeInterferes(hit.volumeMm3),
     nearestToothPair: labelledTeeth(hit, spec, driverDeg, drivenDeg),
     candidateToothPairs: candidateToothPairs(spec, driverDeg, drivenDeg),
   };
@@ -357,7 +375,7 @@ function aggregateNoteOf(
   const refined = refinementSteps === 0
     ? 'Refinement was skipped because a sampled pose already interferes.'
     : `Refinement added ${refinementSteps * 2} poses beside the minimum, ${refinementSteps} steps on each side.`;
-  return `anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate ${poseCount} sampled poses. The largest driver-angle gap still touching the minimum-clearance pose is ${unresolvedStepDeg.toFixed(4)}°. ${refined} These fields do not prove clearance between samples.`;
+  return `anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate ${poseCount} sampled poses. The largest driver-angle gap still touching the minimum-clearance pose is ${unresolvedStepDeg.toFixed(4)}°. ${refined} These fields do not prove clearance between samples. anyInterference is a common volume strictly above ${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³, and that is the only case that sets minClearanceMm to 0. A smaller positive volume does not.`;
 }
 
 interface FlankSearch {
@@ -458,25 +476,6 @@ function backlashOf(
     backlashReached: true,
     backlashNote: `Pitch-circle arc of the driven gear from one flank contact to the other, driver held fixed. ${SPUR_GEAR_BACKLASH_SEARCH_STEPS} bisections; the arc can sit up to one step (${step.toFixed(4)}°) past first contact. Geometry only.`,
   };
-}
-
-function totals(samples: readonly SpurGearToothSample[]): {
-  anyInterference: boolean;
-  maxInterferenceVolumeMm3: number;
-  minClearanceMm: number;
-} {
-  let anyInterference = false;
-  let maxInterferenceVolumeMm3 = 0;
-  let minClearanceMm = Number.POSITIVE_INFINITY;
-  for (const sample of samples) {
-    if (sample.interfering) anyInterference = true;
-    if (sample.interferenceVolumeMm3 > maxInterferenceVolumeMm3) {
-      maxInterferenceVolumeMm3 = sample.interferenceVolumeMm3;
-    }
-    if (sample.clearanceMm < minClearanceMm) minClearanceMm = sample.clearanceMm;
-  }
-  if (!Number.isFinite(minClearanceMm)) minClearanceMm = 0;
-  return { anyInterference, maxInterferenceVolumeMm3, minClearanceMm };
 }
 
 interface SamplePlan {
@@ -601,7 +600,7 @@ export async function measureToothInterference(
     domain.usesRevolution,
     aggregated,
   );
-  const sum = totals(aggregated);
+  const sum = aggregateSpurClearance(aggregated);
   return {
     kind: 'geometry',
     centerDistanceMm: spec.centerDistanceMm,
@@ -619,6 +618,7 @@ export async function measureToothInterference(
     unresolvedStepDeg,
     minClearanceDriverDeg: minSample.driverDeg,
     aggregateNote: aggregateNoteOf(aggregated.length, unresolvedStepDeg, refinementSteps),
+    interferenceVolumeFloorMm3: SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
     ...sum,
     ...play,
     backlashStepMm: backlashSearchStepMm(spec.drivenTeeth, drivenPitchRadiusMm),

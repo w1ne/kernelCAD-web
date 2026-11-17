@@ -28,15 +28,17 @@ npx tsx src/agent/cli/index.ts evaluate examples/cookbook-parity/involute-spur-g
 ```
 
 ```
-gear-pair-report {"sampleLimited":true,"clearanceScope":"sampled-poses","anyInterference":false,"aggregatedPoseCount":8,"unresolvedStepDeg":1.125,"refinementSteps":2,"backlashMm":0.04908738521234052,"backlashStepMm":0.0015339807878856412,"backlashReached":true,"minClearanceMm":0.023376654152066634,"minClearanceDriverDeg":9,"centerDistanceMm":30,"ratio":-0.5}
+gear-pair-report {"sampleLimited":true,"clearanceScope":"sampled-poses","anyInterference":false,"interferenceVolumeFloorMm3":0.001,"aggregatedPoseCount":8,"unresolvedStepDeg":1.125,"refinementSteps":2,"backlashMm":0.04908738521234052,"backlashStepMm":0.0015339807878856412,"backlashReached":true,"minClearanceMm":0.023376654152066634,"minClearanceDriverDeg":9,"centerDistanceMm":30,"ratio":-0.5}
 Features: 18
 OK
 ```
 
 The report samples one driver tooth with exact BREP distance and common
-volume, then refines beside the lowest-clearance pose. `anyInterference` and
-`minClearanceMm` aggregate those sampled poses. They do not prove the gaps
-between samples. Backlash is the driven pitch-circle arc. Geometry only.
+volume, then refines beside the lowest-clearance pose. `interferenceVolumeFloorMm3`
+is 0.001 mm³. A common volume strictly above that floor sets `anyInterference`
+and sets `minClearanceMm` to 0. A smaller positive volume does not.
+`anyInterference` and `minClearanceMm` aggregate those sampled poses. They do
+not prove the gaps between samples. Backlash is the driven pitch-circle arc. Geometry only.
 Not tooth strength or load capacity. The physics check is
 `validate --include-interference` on this file: mates, travel and gravity.
 That check uses the ideal gear ratio. It does not simulate tooth contact.

@@ -7,8 +7,72 @@
 // driven angle when z2 = 2·z1. Tooth 0 of each solid sits on +X before the
 // mesh alignment below.
 
-/** Common volume (mm³) above which a sampled pose counts as tooth interference. */
+/**
+ * Common volume (mm³) strictly above which a sampled pose is tooth
+ * interference. `anyInterference` is that test over the aggregated poses,
+ * and only then is `minClearanceMm` 0. A positive volume at or below this
+ * floor is not interference and does not close the reported gap.
+ */
 export const SPUR_GEAR_INTERFERENCE_VOLUME_MM3 = 1e-3;
+
+/** True when `volumeMm3` is strictly above {@link SPUR_GEAR_INTERFERENCE_VOLUME_MM3}. */
+export function spurVolumeInterferes(volumeMm3: number): boolean {
+  return volumeMm3 > SPUR_GEAR_INTERFERENCE_VOLUME_MM3;
+}
+
+export interface SpurClearanceReading {
+  /** BREP distance, mm. Zero when the solids touch or overlap. */
+  clearanceMm: number;
+  /** Common volume, mm³. */
+  interferenceVolumeMm3: number;
+}
+
+export interface SpurClearanceAggregate {
+  anyInterference: boolean;
+  /** Largest common volume, mm³, including volumes at or below the floor. */
+  maxInterferenceVolumeMm3: number;
+  /**
+   * 0 when any reading is above the floor. Otherwise the minimum BREP
+   * distance among readings that are not a positive common volume at or
+   * below the floor. Null when every reading is in that band: the distance
+   * collapsed, and the overlap is not interference.
+   */
+  minClearanceMm: number | null;
+}
+
+/**
+ * `anyInterference` and `minClearanceMm` from sampled distances and common
+ * volumes. A positive volume at or below the floor is omitted from the
+ * minimum, so it cannot publish a closed gap beside `anyInterference: false`.
+ * Exact contact (volume 0 and distance 0) still reports a clearance of 0.
+ */
+export function aggregateSpurClearance(
+  samples: readonly SpurClearanceReading[],
+): SpurClearanceAggregate {
+  let anyInterference = false;
+  let maxInterferenceVolumeMm3 = 0;
+  let minClearanceMm = Number.POSITIVE_INFINITY;
+  let sawMeasuredGap = false;
+  for (const sample of samples) {
+    if (sample.interferenceVolumeMm3 > maxInterferenceVolumeMm3) {
+      maxInterferenceVolumeMm3 = sample.interferenceVolumeMm3;
+    }
+    if (spurVolumeInterferes(sample.interferenceVolumeMm3)) {
+      anyInterference = true;
+      continue;
+    }
+    if (sample.interferenceVolumeMm3 > 0 && sample.clearanceMm <= 0) continue;
+    sawMeasuredGap = true;
+    if (sample.clearanceMm < minClearanceMm) minClearanceMm = sample.clearanceMm;
+  }
+  if (anyInterference) {
+    return { anyInterference: true, maxInterferenceVolumeMm3, minClearanceMm: 0 };
+  }
+  if (!sawMeasuredGap) {
+    return { anyInterference: false, maxInterferenceVolumeMm3, minClearanceMm: null };
+  }
+  return { anyInterference: false, maxInterferenceVolumeMm3, minClearanceMm };
+}
 
 /** Distance (mm) at or below which a backlash probe counts as flank contact. */
 export const SPUR_GEAR_CONTACT_EPS_MM = 5e-4;

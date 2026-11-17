@@ -268,8 +268,11 @@ export interface KernelCadApi {
    * negative. The assembly carries revolute mates, a couple at that ratio,
    * and a gear-pair transmission. `toothInterference` reports exact BREP
    * clearance and common volume over sampled poses, refines beside the
-   * minimum, and measures the pitch-circle backlash. Those clearance
-   * aggregates do not prove the gaps between samples. `withGeneratingCut`
+   * minimum, and measures the pitch-circle backlash. A common volume
+   * strictly above `interferenceVolumeFloorMm3` (0.001 mm³) sets
+   * `anyInterference` and sets `minClearanceMm` to 0. A smaller positive
+   * volume does not. Those clearance aggregates do not prove the gaps
+   * between samples. `withGeneratingCut`
    * is opt-in: it subtracts a discrete union of the driver over one tooth
    * and repeats that space at tooth pitch. The default teeth stay the
    * involute profile. Geometry only — not strength.

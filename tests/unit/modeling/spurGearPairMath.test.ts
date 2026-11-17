@@ -5,6 +5,8 @@ import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import {
   SPUR_GEAR_BACKLASH_SEARCH_STEPS,
+  SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
+  aggregateSpurClearance,
   backlashSearchStepMm,
   driverInDrivenFrame,
   externalCenterDistanceMm,
@@ -21,6 +23,41 @@ function rotateZ(deg: number, x: number, y: number): [number, number] {
   const s = Math.sin(a);
   return [c * x - s * y, s * x + c * y];
 }
+
+describe('spur gear interference volume floor', () => {
+  const floor = SPUR_GEAR_INTERFERENCE_VOLUME_MM3;
+
+  it('closes the gap only for a common volume strictly above the floor', () => {
+    expect(floor).toBe(1e-3);
+    const above = aggregateSpurClearance([
+      { clearanceMm: 0, interferenceVolumeMm3: floor + 1e-9 },
+    ]);
+    expect(above.anyInterference).toBe(true);
+    expect(above.minClearanceMm).toBe(0);
+
+    // Equal to the floor is not above it. A collapsed distance must not
+    // publish a closed gap beside anyInterference: false.
+    const atFloor = aggregateSpurClearance([
+      { clearanceMm: 0, interferenceVolumeMm3: floor },
+    ]);
+    expect(atFloor.anyInterference).toBe(false);
+    expect(atFloor.maxInterferenceVolumeMm3).toBe(floor);
+    expect(atFloor.minClearanceMm).toBeNull();
+
+    const below = aggregateSpurClearance([
+      { clearanceMm: 0, interferenceVolumeMm3: floor - 1e-9 },
+      { clearanceMm: 0.02, interferenceVolumeMm3: 0 },
+    ]);
+    expect(below.anyInterference).toBe(false);
+    expect(below.minClearanceMm).toBeCloseTo(0.02, 12);
+
+    const contact = aggregateSpurClearance([
+      { clearanceMm: 0, interferenceVolumeMm3: 0 },
+    ]);
+    expect(contact.anyInterference).toBe(false);
+    expect(contact.minClearanceMm).toBe(0);
+  });
+});
 
 describe('spur gear pair placement math', () => {
   it('turns one driven-flank bisection into a pitch-circle arc', () => {
