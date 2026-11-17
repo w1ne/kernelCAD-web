@@ -271,21 +271,20 @@ describe('validateJointLoadCapacity', () => {
     expect(diags[0]?.hint).toContain('vec3-origin');
   });
 
-  it('ball with maxLoad.force AND maxLoad.torque declared: only force checked, torque silently ignored', () => {
+  it('ball with maxLoad.force AND maxLoad.torque declared: checks force and surfaces torque as unverified', () => {
     const { arm, kcad } = makeArm();
     // Ball mates resist force but not moment (3 DOF rotational freedom).
-    // The switch branch for `ball` only calls `checkForce`; any
-    // `maxLoad.torque` set on a ball mate is silently ignored even when
-    // the geometric setup would clearly exceed it. Pin this behavior so
-    // the kind-to-mate-type mapping doesn't regress.
+    // The legacy checker only calls `checkForce` for `ball`; a declared
+    // `maxLoad.torque` is unsupported and must be reported as unverified.
     //
     //   partA at [100, 0, 0], connector local origin [-100, 0, 0]
     //   → joint world origin = [0, 0, 0], r = [100, 0, 0] mm
     //   F on partA = [0, 0, -1000] N (|F| = 1000 N)
-    //     - force magnitude 1000 N > 100 N maxLoad.force ✓ (1 diag)
+    //     - force magnitude 1000 N > 100 N maxLoad.force ✓ (force diagnostic)
     //     - |r × F| = |[100,0,0] × [0,0,-1000]| = |[0, 100000, 0]|
-    //       = 100 N·m > 50 N·m maxLoad.torque — would fire IF ball
-    //       branched into checkTorque, but it doesn't (silently ignored).
+    //       = 100 N·m. A ball mate releases all rotations, so the legacy
+    //       checker must surface its declared torque rating as unverified
+    //       instead of applying a revolute-style torque comparison.
     arm
       .part('a', kcad.box(10, 10, 10), { at: [100, 0, 0] })
       .connector('c', { type: 'ball', origin: { kind: 'vec3', value: [-100, 0, 0] } });
@@ -300,16 +299,45 @@ describe('validateJointLoadCapacity', () => {
     };
     const diags = validateJointLoadCapacity(arm, externalLoads);
 
-    expect(diags).toHaveLength(1);
-    expect(diags[0].code).toBe('assembly.joint.load-exceeded');
-    expect(diags[0].severity).toBe('error');
-    expect(diags[0].mateName).toBe('socket');
-    expect(diags[0].partA).toBe('a');
-    expect(diags[0].partB).toBe('b');
-    expect(diags[0].hint).toMatch(/ball/);
-    expect(diags[0].hint).toMatch(/force/);
-    expect(diags[0].hint).not.toMatch(/torque/);
-    expect(diags[0].hint).toMatch(/1000\.00N\b/);   // observed magnitude
-    expect(diags[0].hint).toMatch(/100N\b/);        // declared cap
+    expect(diags).toHaveLength(2);
+    const force = diags.find((d) => d.code === 'assembly.joint.load-exceeded');
+    const torque = diags.find((d) => d.code === 'assembly.joint.load-unverified');
+
+    expect(force).toMatchObject({
+      code: 'assembly.joint.load-exceeded',
+      severity: 'error',
+      mateName: 'socket',
+      partA: 'a',
+      partB: 'b',
+    });
+    expect(force?.hint).toMatch(/ball/);
+    expect(force?.hint).toMatch(/force/);
+    expect(force?.hint).toMatch(/1000\.00N\b/);   // observed magnitude
+    expect(force?.hint).toMatch(/100N\b/);        // declared cap
+
+    expect(torque).toMatchObject({
+      code: 'assembly.joint.load-unverified',
+      severity: 'warning',
+      mateName: 'socket',
+    });
+    expect(torque?.message).toContain('does not evaluate torque for ball mates');
+    expect(torque?.message).toContain('No torque comparison ran');
+    expect(torque?.hint).toContain('analysis that supports that load case');
+  });
+
+  it('ball with only maxLoad.force does not report an unsupported torque check', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('c', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('c', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('socket', 'a.c', 'b.c', 'ball');
+    setMaxLoad(arm, 'socket', { force: 100 });
+
+    const diags = validateJointLoadCapacity(arm, { a: { force: [10, 0, 0] } });
+
+    expect(diags).toHaveLength(0);
   });
 });
