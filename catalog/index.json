@@ -145957,7 +145957,7 @@
       "id": "plc-control-rack",
       "kit": "industrial-plant",
       "title": "PLC control rack",
-      "description": "Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. Controls: overall scale, steel, safety paint.",
+      "description": "Open PLC rack with modular I/O cards, green channel and RUN indicators, red ERROR indicators, steel side rails and wire duct. Controls: overall scale, steel, channel LED, RUN LED and ERROR LED colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -145976,7 +145976,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plc-control-rack.kcad.ts",
       "preview": "/assets/industrial-plant-plc-control-rack.png",
-      "sourceSha256": "9057fee69824c4770e30388643dd5409dee0fc036437b89f12b7298db5745f1b",
+      "sourceSha256": "2681dc24139979918ff90d6a2a710b8fda2b5f00f615d09041f9447d671dda73",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145995,19 +145995,35 @@
           "label": "Structural steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "channelLed",
           "type": "color",
-          "default": "#dfa844",
-          "label": "Safety paint"
+          "default": "#4faf6e",
+          "label": "Channel status LED lens"
+        },
+        {
+          "name": "runLed",
+          "type": "color",
+          "default": "#4faf6e",
+          "label": "RUN status LED lens"
+        },
+        {
+          "name": "errorLed",
+          "type": "color",
+          "default": "#8a4449",
+          "label": "ERROR status LED lens"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "channelLed": "#438f5c",
+          "runLed": "#438f5c",
+          "errorLed": "#763e43"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "channelLed": "#55cf78",
+          "runLed": "#55cf78",
+          "errorLed": "#c44e52"
         }
       },
       "stats": {
@@ -146022,41 +146038,13 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#dfa844",
-          "parts": [
-            "rack-base",
-            "top-crossbar",
-            "io-card-0",
-            "card-led-0-0",
-            "card-led-0-1",
-            "card-led-0-2",
-            "card-led-1-0",
-            "card-led-1-1",
-            "card-led-1-2",
-            "card-led-2-0",
-            "card-led-2-1",
-            "card-led-2-2",
-            "card-led-3-0",
-            "card-led-3-1",
-            "card-led-3-2",
-            "card-led-4-0",
-            "card-led-4-1",
-            "card-led-4-2",
-            "card-led-5-0",
-            "card-led-5-1",
-            "card-led-5-2",
-            "card-led-6-0",
-            "card-led-6-1",
-            "card-led-6-2"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "steel",
           "color": "#667984",
           "parts": [
+            "rack-base",
             "backplane",
+            "top-crossbar",
+            "io-card-0",
             "io-card-1",
             "io-card-2",
             "io-card-3",
@@ -146066,6 +146054,41 @@
             "wire-duct"
           ],
           "param": "steel"
+        },
+        {
+          "name": "channelLed",
+          "color": "#4faf6e",
+          "parts": [
+            "channel-led-0",
+            "run-led-0",
+            "channel-led-1",
+            "run-led-1",
+            "channel-led-2",
+            "run-led-2",
+            "channel-led-3",
+            "run-led-3",
+            "channel-led-4",
+            "run-led-4",
+            "channel-led-5",
+            "run-led-5",
+            "channel-led-6",
+            "run-led-6"
+          ],
+          "param": "channelLed"
+        },
+        {
+          "name": "errorLed",
+          "color": "#8a4449",
+          "parts": [
+            "error-led-0",
+            "error-led-1",
+            "error-led-2",
+            "error-led-3",
+            "error-led-4",
+            "error-led-5",
+            "error-led-6"
+          ],
+          "param": "errorLed"
         }
       ]
     },
