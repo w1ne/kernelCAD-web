@@ -34,6 +34,18 @@ For a `gear-pair` transmission that has a matching scalar coupling, the native r
 
 The [12:48 coupled-gear release demo and evidence bundle](../demos/issue-1321-coupled-gear/README.md) records the signed input sweep and native release residual from the regression fixture.
 
+## Suggested joint limits from geometry
+
+`kinematic.suggestJointRanges(arm, opts)` and `verify({ check: 'joint-range' })` walk each revolute or prismatic joint on its own, from that joint's resolved authored pose. Every other mate stays at its authored pose. The walk goes outward in each direction until a non-exempt pair is within the clearance (default 0.3 mm) or a finite search bound is reached. A coarse step finds a bracket; exact BREP distance bisects it. The reported stop is the clear side of that bracket, so the suggested limit keeps the requested clearance.
+
+The search window is the mate's authored `limitsDeg` or `limitsMm`, or a caller-supplied `search`. A joint with neither is `unknown` (`unbounded`). The tool does not invent a bound. A side the budget or a failed measurement leaves unmeasured is `unknown`, never `no-stop`. `no-stop` means no crossing was found at the sampled poses. It is not continuous proof that the interval is clear. `sweepBudget` defaults to the same 40,000 face-weighted exact probes the mechanism sweep uses, and this check does not raise that cap. A measured gap within 1e-6 mm of the clearance counts as reached, so a running fit modeled on the clearance is a rest finding instead of a stop that flickers from pose to pose.
+
+Parts joined by a mate or a joint-graph joint, pairs declared in `solvedModel({ contacts })`, and `disableCollision` pairs are neighbours or intentional contacts. They are not stops. A contact thinner than one coarse step can be stepped over and still reported as `no-stop`. The [carriage and wall demo](../demos/joint-range-suggestion/README.md) records the suggestion and a short motion up to the clear-side stop.
+
+The return value includes `patch` and `limitsSnippet`. Nothing in the check writes those limits back onto the mate. Applying the snippet is a separate edit.
+
+This walk is not the physics pose sweep. A physics sample starts each mate it does not name at coordinate 0. A joint-range sample starts every other mate at its authored pose, so a nonzero rest pose stays in the measurement.
+
 ## Notes in the broken-mechanism banner
 
 The `MECHANISM BROKEN` banner of `kernelcad validate` and strict `kernelcad render` counts only error-severity entries as failures and prints them as `[ERROR]`. Non-fatal entries follow the errors with their own label: `[NOTE]` for an informational entry, such as the drop of a free passive joint, and `[WARN]` for a warning, such as a skipped pose sweep. A note does not make a mechanism broken. The render watermark and the `mechanism_failure_codes` field of `render_preview` list error codes only; `diagnostics` keeps each entry with its severity.

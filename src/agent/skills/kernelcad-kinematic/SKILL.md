@@ -34,9 +34,9 @@ Load this skill whenever the user asks any of:
 Do NOT load this skill for static CAD authoring (use `kernelcad-authoring`) or
 for visualization (use the renderer). This skill is feasibility-checking only.
 
-## The 6 entry points
+## Entry points
 
-All six live under the `kinematic.*` namespace exposed to every `.kcad.ts`
+These live under the `kinematic.*` namespace exposed to every `.kcad.ts`
 script. The same surface is reachable from host code via `import * as kinematic from
 'src/kinematic'`. Every entry returns a `Promise<…Result>` envelope carrying
 `source: 'local'`.
@@ -45,6 +45,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
+| `kinematic.suggestJointRanges(arm, opts)` | Where should this revolute or prismatic stop so non-exempt parts keep the clearance? | no diagnostic code; the reported stop is the clear side of the bracket; `no-stop` means the sampled poses found no crossing, not a continuous proof; an unmeasured side is `unknown`, never `no-stop` |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `assembly.joint.static-hold.mass-unavailable`, `kinematic.static-hold.no-actuator-declared` |
@@ -128,6 +129,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'mounting-holes' })` — wraps the facade; accepts `file` or `code`
 - `verify({ check: 'assembly-path', file|code, assembly?, directions?, disassemblyOrder?, sequence?, threadedFasteners?, stability?, gravity?, fixtures?, contactToleranceMm? })` — continuous mesh straight-removal check along six world axes plus explicit vectors; per-part valid directions/blockers and three-way states (removable / blocked / unknown), optional greedy order/stuck set, and a `sequence: true` build plan with a model stamp. Fastened/fixed clusters become subassemblies planned recursively inside and installed as one unit; deterministic heuristics order valid steps; stuck sets use a budgeted partition and a sampling fallback labelled found-by-search, never proven. Threaded fasteners are `unknown: non-straight-path` until P2. `stability: true` adds the approximate P3 centre-of-mass/support-polygon check (`needsHold`, `Step.heldBy`, `model.stability`) under a declared `gravity`/`fixtures`; it is not a physics simulation. Contact is conservative; no rotation, inferred axes or hardware certification.
 - `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
+- `verify({ check: 'joint-range' })` — wraps `suggestJointRanges`; accepts `file|code`, `assembly`, `joint`, `search`, `clearance_mm` (default 0.3), `step`, `resolution`. Passing `{ sweep_budget }` sets the face-weighted exact BREP distance budget. Each revolute or prismatic joint is walked alone from its authored pose while other mates stay at their authored poses. Exact BREP distance brackets the first non-exempt pair inside the clearance, and the reported stop is the clear side of that bracket so the suggested limit keeps the requested clearance. Returns the stop, the limiting part pair, the resolution, and `stop` | `no-stop` | `unknown`. `no-stop` means no crossing was found at the sampled poses, not continuous proof that the interval is clear. A missing finite bound, the sweep budget, or a failed measurement is `unknown`, never a clear side. The `limitsSnippet` is for the caller to apply; the script is not rewritten. Mate neighbours, declared contact pairs, and `disableCollision` pairs are not stops. A contact thinner than the coarse step can be missed. Demo: `docs/demos/joint-range-suggestion/README.md`.
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
