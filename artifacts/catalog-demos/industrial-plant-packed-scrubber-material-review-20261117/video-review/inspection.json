@@ -1,0 +1,24 @@
+{
+  "video": "industrial-plant-packed-scrubber-material-review.mp4",
+  "decodedOn": "2026-11-17",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 15.0,
+  "sampleTimesSeconds": [
+    0,
+    3,
+    6,
+    9,
+    12
+  ],
+  "decodedFrames": 5,
+  "sampleSha256": [
+    "c72d8bde88c2f0ce2455ff1f3b822ebe6d78d89f40867291c59a5313a66328cf",
+    "c9ae4e1c65f8f2e48867a52c82fb499f09f13be74aac6d264a71411d584a9efb",
+    "807d705eda0dad066ff322907ae28f39719165843813c41deb782e082c5fe068",
+    "22c89e391681a8750c307f7976543d091445e393742ec401bfce6707b98b93c4",
+    "2dc387f36b963e2cb16382a1ec3a5b5de35fa9e45d914a9bb489c8979bb7b576"
+  ],
+  "manualReview": "Visually inspected the decoded contact sheet and full-resolution before/after and verification frames: all five workflow frames are present, the sump/nozzle color correction is clear, the audit thumbnails are recognizable, text is readable, and no frame is black."
+}

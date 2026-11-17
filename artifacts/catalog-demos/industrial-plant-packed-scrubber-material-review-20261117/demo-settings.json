@@ -1,0 +1,18 @@
+{
+  "capturedOn": "2026-11-17",
+  "workflow": "five industrial-plant previews -> local material review -> source correction -> target preview render -> generated index -> tests and page checks",
+  "video": "artifacts/catalog-demos/industrial-plant-packed-scrubber-material-review-20261117/industrial-plant-packed-scrubber-material-review.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-packed-scrubber-material-review-20261117/capture_demo.py",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts packed-scrubber-column",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "testInvocation": "npx vitest run tests/integration/catalog/packedScrubberWettedPartsMaterial.test.ts",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/industrial-plant-packed-scrubber-material-review-20261117/inspect_video.py",
+  "provenance": "Local software renders and checks of the checked-in kernelCAD source. The branch is not deployed; no simulation or physical acceptance is claimed."
+}

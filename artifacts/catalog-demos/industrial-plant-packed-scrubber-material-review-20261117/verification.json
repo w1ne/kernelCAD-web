@@ -1,0 +1,31 @@
+{
+  "targetChecksPass": true,
+  "catalogTarget": {
+    "id": "industrial-plant/packed-scrubber-column",
+    "triangles": 548,
+    "triangleBudget": 1400
+  },
+  "checks": {
+    "focusedTest": "1 test passed; failed on baseline before the source edit",
+    "integration": "128 files / 198 tests passed, including the 2,402-asset index freshness/export check",
+    "eslint": "clean for catalog/kits/industrial-plant/ and the new regression test",
+    "index": "2,402 rows; one target row changed; source SHA-256 and preview path verified",
+    "localPage": "local detail page, controls, presets and preview passed",
+    "livePage": "detail page and preview HTTP 200; live preview remains the baseline because this branch is not deployed"
+  },
+  "kitQuality": {
+    "kit": "industrial-plant",
+    "passing": 60,
+    "total": 60,
+    "rate": "100.00%"
+  },
+  "catalogQuality": {
+    "passing": 2398,
+    "total": 2402,
+    "rate": "99.83%",
+    "unrelatedThinAssets": 4,
+    "thinAssetKit": "standard-components",
+    "note": "The four global structural-gate failures are unrelated to this semantic correction."
+  },
+  "provenance": "Local software render and validation only. No motion simulation, deployment, or hardware acceptance is claimed."
+}

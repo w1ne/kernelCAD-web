@@ -145454,7 +145454,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
       "preview": "/assets/industrial-plant-packed-scrubber-column.png",
-      "sourceSha256": "e23c17496117618fe7bdfc2e74c51b4d31b89addea0d5171aa81fd4b0e8189f0",
+      "sourceSha256": "73a5d84961c19b3c34311b7f92633d42fb50a4f5a961d18fc9975791f0da12f1",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145505,12 +145505,15 @@
           "parts": [
             "shell",
             "roof-cap",
+            "top-nozzle",
             "deck-post-0",
             "deck-post-1",
+            "sump",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3",
+            "side-nozzle",
             "side-flange",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -145526,15 +145529,12 @@
           "color": "#dca84a",
           "parts": [
             "roof-lip",
-            "top-nozzle",
             "service-deck-0",
             "service-deck-1",
-            "sump",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
             "support-leg-3",
-            "side-nozzle",
             "ladder-left-rail",
             "ladder-right-rail"
           ],
