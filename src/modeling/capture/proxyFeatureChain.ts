@@ -348,3 +348,39 @@ export function validateCircularPatternOpts(
     }
   return angleDeg;
 }
+
+/**
+ * Validate `shell(thickness, opts)` options and return the faces to open.
+ * Any key other than `face` throws, as does a missing or empty `face`.
+ */
+export function resolveShellFaces(opts: unknown, featureId: FeatureId): (FaceSelector | string)[] {
+  const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
+    ? Object.keys(opts).find((key) => key !== 'face')
+    : undefined;
+  if (unknownKey !== undefined) {
+    // A dropped `faces: ['bottom']` left the bottom closed, and a dropped
+    // `enabled: false` still hollowed the solid.
+    invalidArgs({
+      api: 'shell(thickness, { face })',
+      path: `opts.${unknownKey}`,
+      got: (opts as Record<string, unknown>)[unknownKey],
+      requires: "a known option key; shell accepts only face — pass an array to open several faces: { face: ['top', 'bottom'] }",
+      example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      featureId,
+    });
+  }
+  const face = (opts as { face?: unknown } | undefined | null)?.face;
+  const list = Array.isArray(face) ? [...face] : [face];
+  if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
+    invalidArgs({
+      api: 'shell(thickness, { face })',
+      path: 'opts.face',
+      got: face,
+      requires:
+        "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
+      example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      featureId,
+    });
+  }
+  return list as (FaceSelector | string)[];
+}

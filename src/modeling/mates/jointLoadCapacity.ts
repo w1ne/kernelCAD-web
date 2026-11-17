@@ -36,14 +36,17 @@
 //   6. **Mass = 1 kg uniform.** Per spec §Gate 3; the agent passes force
 //      vectors directly, not (mass, acceleration) pairs.
 //
-// ## Topology origins not supported in v0.7.4
+// ## Unsupported load inputs in v0.7.4
 //
 // Resolving a `topology` connector origin to a numeric Vec3 requires lowering
 // the part shape (`resolveConnectorOrigin` is async). Gate 3 is sync. For
 // `maxLoad`-declared mates whose connectors use topology origins on either
-// side are silently skipped because no comparison can run. This matches spec
-// open-question 5/2 resolution: vec3-origin requirement for v0.7.4, topology
-// support is a v0.7.x followup.
+// side emit `assembly.joint.load-unverified` because no comparison can run.
+// This matches spec open-question 5/2 resolution: vec3-origin requirement for
+// v0.7.4, topology support is a v0.7.x followup.
+// A ball mate's declared torque rating is also unsupported here: the legacy
+// checker compares ball-joint force only. Surface that skipped rating as
+// unverified instead of silently treating the mate's load check as complete.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
@@ -79,8 +82,10 @@ const MM_PER_M = 1000;
  *
  * Returns the list of diagnostics — possibly empty. Iterates only mates
  * with `maxLoad` declared AND `type ∈ { prismatic, revolute, cylindrical,
- * ball }`. For each mate emits zero or one `assembly.joint.load-exceeded`
- * (severity `error`) per exceeded kind (force / torque can each trip
+ * ball }`. For each mate emits an `assembly.joint.load-unverified` warning
+ * when either connector cannot be resolved synchronously or a ball mate has
+ * a declared torque rating, or zero or one `assembly.joint.load-exceeded`
+ * error per exceeded supported kind (force / torque can each trip
  * independently on a `cylindrical` mate, so a single mate may emit two
  * diagnostics).
  *
@@ -115,14 +120,35 @@ export function validateJointLoadCapacity(
     const bSide = resolveSide(mate.b, partsByName, solvedPlacements);
 
     // Topology-origin or missing sides cannot be compared synchronously.
-    // Skip silently rather than emitting a false load-exceeded diagnostic.
-    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') continue;
+    // Report the skipped check instead of leaving the load result looking
+    // complete when no force or torque comparison ran for this mate.
+    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') {
+      const unresolved = [aSide, bSide].filter(
+        (side): side is DeferredSide | MissingSide => side.kind !== 'resolved',
+      );
+      const reasons = unresolved.map((side) => {
+        const ref = `${side.partName}.${side.connectorName}`;
+        return side.kind === 'deferred'
+          ? `connector '${ref}' uses a topology origin`
+          : `connector '${ref}' could not be resolved`;
+      });
+      out.push({
+        code: 'assembly.joint.load-unverified',
+        severity: 'warning',
+        message:
+          `Joint load capacity for mate '${mate.name}' was not checked because ${reasons.join(' and ')}. ` +
+          'No force or torque comparison ran for this mate.',
+        hint:
+          'Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.',
+        mateName: mate.name,
+      });
+      continue;
+    }
 
-    // Per-mate-type force/torque check. Each branch reads `externalLoads`
+    // Per-mate-type supported load check. Each branch reads `externalLoads`
     // for both parts (a missing entry contributes zero), then compares
-    // against the declared limit and emits one diagnostic per exceeded
-    // kind (force XOR torque on prismatic/revolute/ball; possibly BOTH on
-    // cylindrical).
+    // against the declared limit. Ball-joint torque is not compared because
+    // this legacy checker only supports its force rating.
     const loadA = externalLoads[aSide.partName];
     const loadB = externalLoads[bSide.partName];
 
@@ -141,6 +167,19 @@ export function validateJointLoadCapacity(
         checkTorque(out, mate, aSide, bSide, loadA, loadB);
         break;
       // No default: GATED_MATE_TYPES filter above bounds the switch space.
+    }
+
+    if (mate.type === 'ball' && mate.maxLoad.torque !== undefined) {
+      out.push({
+        code: 'assembly.joint.load-unverified',
+        severity: 'warning',
+        message:
+          `Joint torque capacity for ball mate '${mate.name}' was not checked because the legacy checker does not evaluate torque for ball mates. ` +
+          'No torque comparison ran for this mate.',
+        hint:
+          'The legacy check compares ball-joint force only. Verify any declared torque rating with an analysis that supports that load case.',
+        mateName: mate.name,
+      });
     }
   }
   return out;

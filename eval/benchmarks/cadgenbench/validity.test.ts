@@ -3,9 +3,12 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { writeStepAssembly } from '../../../src/kernel/backends/occt/stepAssemblyExport';
 import { checkStepValidity, deflectionForDiagonal, gateMeshDeflections, meshManifoldErrors } from './validity';
 
 // Closed tetrahedron, outward-consistent winding.
@@ -49,12 +52,27 @@ describe('gateMeshDeflections', () => {
   });
 });
 
+// The fixtures are written with writeStepAssembly, not replicad.exportSTEP:
+// replicad's writer leaves its STEP work session to two GC finalizers, and a
+// collection then double-frees it. On CI that poisoned the heap and the next
+// import failed with `memory access out of bounds` (#1488). Each fixture
+// forces a collection before the check so a writer that leaves objects to
+// the finalizer fails here every run, not only when V8 happens to collect.
+setFlagsFromString('--expose-gc');
+const gc = runInNewContext('gc') as () => void;
+const collect = async (): Promise<void> => {
+  for (let i = 0; i < 2; i++) {
+    gc();
+    await new Promise((r) => setTimeout(r, 10));
+  }
+};
+
 describe('checkStepValidity', () => {
   let dir: string;
   const writeStep = async (name: string, shape: replicad.AnyShape): Promise<string> => {
-    const blob = replicad.exportSTEP([{ shape: shape as replicad.Shape3D, name }]);
     const path = join(dir, `${name}.step`);
-    writeFileSync(path, new Uint8Array(await blob.arrayBuffer()));
+    writeFileSync(path, writeStepAssembly([{ shape: shape.wrapped, name }]));
+    await collect();
     return path;
   };
 

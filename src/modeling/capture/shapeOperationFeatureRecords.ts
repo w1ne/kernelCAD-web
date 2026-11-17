@@ -110,6 +110,22 @@ export function buildFaceInputRef(
   };
 }
 
+const FACE_REF_KINDS: ReadonlySet<string> = new Set([
+  'canonical', 'tracked', 'created', 'propagated', 'label', 'query', 'queryDsl',
+]);
+
+/** Build an `inputs.upToFace` FeatureRef. Accepts the documented FaceRef
+ *  (`{ kind: 'canonical', face: 'bottom' }`) and every form `face` accepts. */
+export function buildUpToFaceInputRef(baseId: FeatureId, upToFace: unknown): FeatureRef {
+  if (typeof upToFace === 'object' && upToFace !== null && !isQueryValue(upToFace)) {
+    const kind = (upToFace as { kind?: unknown }).kind;
+    if (typeof kind === 'string' && FACE_REF_KINDS.has(kind)) {
+      return { kind: 'face', featureId: baseId, ref: upToFace as never };
+    }
+  }
+  return buildFaceInputRef(baseId, upToFace as ShapeOperationFaceSelector);
+}
+
 function queryDslFaceRef(baseId: FeatureId, q: ShapeOperationQueryValue): FeatureRef {
   return {
     kind: 'face',
