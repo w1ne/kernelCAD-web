@@ -58,6 +58,7 @@ export const TOOL_TITLES: Record<string, string> = {
   resolve_metric_thread: 'Resolve Metric Thread',
   split_keep_parts: 'Split Keep Parts',
   inspect_step_views: 'Inspect STEP Views',
+  check_export_health: 'Check Export Health',
   send_to_printer: 'Send G-code to Printer',
   repair_script: 'Repair CAD Script',
   sweep_tolerance: 'Sweep Tolerance Range',

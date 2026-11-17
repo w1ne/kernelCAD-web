@@ -180,6 +180,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   split_keep_parts: READ,
   // Draws four labeled PNGs plus report.json. Does not change the design.
   inspect_step_views: WRITES_FILE,
+  // Compiles MJCF and compares URDF inertials. Writes nothing.
+  check_export_health: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.
