@@ -169,6 +169,36 @@ describe('cutoutLowerer — basic shapes', () => {
 describe('cutoutLowerer — arc-bounded profiles', () => {
   beforeAll(async () => { await initOcct(); });
 
+  it('resolves ParamRefs in curved cutout profile commands', async () => {
+    const parametricCode = `
+      const halfWidth = param('halfWidth', 3);
+      const rise = param('rise', 5);
+      const sk = path()
+        .moveTo(halfWidth.negate(), 0)
+        .lineTo(halfWidth, 0)
+        .threePointsArc(halfWidth.negate(), 0, 0, rise)
+        .close();
+      return box(40, 40, 10).cutout(sk, { face: 'top', depth: 6 });
+    `;
+    const numericControlCode = `
+      const sk = path()
+        .moveTo(-3, 0)
+        .lineTo(3, 0)
+        .threePointsArc(-3, 0, 0, 5)
+        .close();
+      return box(40, 40, 10).cutout(sk, { face: 'top', depth: 6 });
+    `;
+
+    const { shape, diagnostics } = await lowerScript(parametricCode);
+    const { shape: numericControl, diagnostics: controlDiagnostics } = await lowerScript(numericControlCode);
+    const errors = (items: { severity: string }[]) => items.filter((item) => item.severity === 'error');
+
+    expect(errors(diagnostics as { severity: string }[])).toEqual([]);
+    expect(errors(controlDiagnostics as { severity: string }[])).toEqual([]);
+    expect(shape.volume()).toBeCloseTo(numericControl.volume(), 2);
+    expect(shape.volume()).toBeLessThan(40 * 40 * 10);
+  });
+
   it('keyhole-shaped cutout (rect + half-disk) succeeds', async () => {
     const code = `
       // D-shape: 6mm wide rectangle from (-3,0) to (3,0), arc bulging up to y=5
