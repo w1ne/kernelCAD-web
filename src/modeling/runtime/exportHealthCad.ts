@@ -72,37 +72,43 @@ function distanceMm(scene: SceneBackend, bodyA: string, bodyB: string): number |
     }
 }
 
-/**
- * Exact solid overlap at the authored rest, for the pairs the caller names.
- * A pair whose boolean does not finish is `confirmed: false`. An empty pair
- * list does not lower the assembly.
- */
-export async function measureCadExactPairs(
-    arm: Assembly,
-    pairs: readonly { readonly bodyA: string; readonly bodyB: string }[],
-): Promise<Map<string, CadExactMeasurement>> {
-    const wanted = uniquePairs(pairs);
-    const out = new Map<string, CadExactMeasurement>();
-    if (wanted.length === 0) return out;
-    let scene: SceneBackend | undefined;
+type NamedBodyPair = { readonly bodyA: string; readonly bodyB: string };
+
+function markAllUnconfirmed(out: Map<string, CadExactMeasurement>, pairs: readonly NamedBodyPair[]): void {
+    for (const pair of pairs) out.set(orderedKey(pair.bodyA, pair.bodyB), { confirmed: false, volumeMm3: 0 });
+}
+
+async function sceneAtAuthoredPose(arm: Assembly): Promise<SceneBackend | undefined> {
     try {
-        scene = await loweredAtAuthoredPose(arm);
+        return await loweredAtAuthoredPose(arm);
     } catch {
-        scene = undefined;
+        return undefined;
     }
-    if (scene === undefined) {
-        for (const pair of wanted) out.set(orderedKey(pair.bodyA, pair.bodyB), { confirmed: false, volumeMm3: 0 });
-        return out;
-    }
+}
+
+function brepPartIndex(scene: SceneBackend): Map<string, number> {
     const brep = scene.parts.filter((part) => part.shape instanceof OcctBackend);
-    const indexOf = new Map(brep.map((part, index) => [part.name, index]));
+    return new Map(brep.map((part, index) => [part.name, index]));
+}
+
+function explicitPairIndexes(
+    pairs: readonly NamedBodyPair[],
+    indexOf: ReadonlyMap<string, number>,
+): Array<readonly [number, number]> {
     const explicit: Array<readonly [number, number]> = [];
-    for (const pair of wanted) {
+    for (const pair of pairs) {
         const i = indexOf.get(pair.bodyA);
         const j = indexOf.get(pair.bodyB);
         if (i === undefined || j === undefined) continue;
         explicit.push(i < j ? [i, j] : [j, i]);
     }
+    return explicit;
+}
+
+function interferenceReadout(
+    scene: SceneBackend,
+    explicit: readonly (readonly [number, number])[],
+): { unconfirmed: Set<string>; volumeOf: Map<string, number> } {
     // Epsilon 0 keeps the measured volume. The caller applies the shared
     // 0.01 mm³ floor when it decides a hull artefact.
     const detected = explicit.length === 0
@@ -113,23 +119,62 @@ export async function measureCadExactPairs(
     );
     const volumeOf = new Map<string, number>();
     for (const pair of detected?.pairs ?? []) volumeOf.set(orderedKey(pair.a, pair.b), pair.volumeMm3);
-    for (const pair of wanted) {
-        const key = orderedKey(pair.bodyA, pair.bodyB);
-        if (indexOf.get(pair.bodyA) === undefined || indexOf.get(pair.bodyB) === undefined || unconfirmed.has(key)) {
-            out.set(key, { confirmed: false, volumeMm3: 0 });
-            continue;
-        }
-        let gap: number | undefined;
-        try {
-            gap = distanceMm(scene, pair.bodyA, pair.bodyB);
-        } catch {
-            gap = undefined;
-        }
-        out.set(key, {
-            confirmed: true,
-            volumeMm3: volumeOf.get(key) ?? 0,
-            ...(gap !== undefined && Number.isFinite(gap) ? { distanceMm: gap } : {}),
-        });
+    return { unconfirmed, volumeOf };
+}
+
+function pairMissingFromBrep(pair: NamedBodyPair, indexOf: ReadonlyMap<string, number>): boolean {
+    return indexOf.get(pair.bodyA) === undefined || indexOf.get(pair.bodyB) === undefined;
+}
+
+function finiteDistanceMm(gap: number | undefined): number | undefined {
+    return gap !== undefined && Number.isFinite(gap) ? gap : undefined;
+}
+
+function recordPairMeasurement(
+    out: Map<string, CadExactMeasurement>,
+    scene: SceneBackend,
+    pair: NamedBodyPair,
+    indexOf: ReadonlyMap<string, number>,
+    volumes: { unconfirmed: Set<string>; volumeOf: Map<string, number> },
+): void {
+    const key = orderedKey(pair.bodyA, pair.bodyB);
+    if (pairMissingFromBrep(pair, indexOf) || volumes.unconfirmed.has(key)) {
+        out.set(key, { confirmed: false, volumeMm3: 0 });
+        return;
     }
+    let gap: number | undefined;
+    try {
+        gap = distanceMm(scene, pair.bodyA, pair.bodyB);
+    } catch {
+        gap = undefined;
+    }
+    const distanceMmValue = finiteDistanceMm(gap);
+    out.set(key, {
+        confirmed: true,
+        volumeMm3: volumes.volumeOf.get(key) ?? 0,
+        ...(distanceMmValue !== undefined ? { distanceMm: distanceMmValue } : {}),
+    });
+}
+
+/**
+ * Exact solid overlap at the authored rest, for the pairs the caller names.
+ * A pair whose boolean does not finish is `confirmed: false`. An empty pair
+ * list does not lower the assembly.
+ */
+export async function measureCadExactPairs(
+    arm: Assembly,
+    pairs: readonly NamedBodyPair[],
+): Promise<Map<string, CadExactMeasurement>> {
+    const wanted = uniquePairs(pairs);
+    const out = new Map<string, CadExactMeasurement>();
+    if (wanted.length === 0) return out;
+    const scene = await sceneAtAuthoredPose(arm);
+    if (scene === undefined) {
+        markAllUnconfirmed(out, wanted);
+        return out;
+    }
+    const indexOf = brepPartIndex(scene);
+    const volumes = interferenceReadout(scene, explicitPairIndexes(wanted, indexOf));
+    for (const pair of wanted) recordPairMeasurement(out, scene, pair, indexOf, volumes);
     return out;
 }

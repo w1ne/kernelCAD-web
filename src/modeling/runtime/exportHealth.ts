@@ -306,48 +306,164 @@ export function parseUrdfLinks(urdf: string): ParsedUrdfLink[] {
     return links;
 }
 
-function contactRows(
-    contacts: readonly CompiledContact[],
+function restContactSkipKeys(
     bodies: readonly CompiledBodyDynamics[],
     excludedBodyPairs: readonly ExcludedBodyPair[],
-    geoms: readonly CompiledGeom[],
-): { penetrating: RestContactRow[]; marginOnly: RestContactRow[] } {
+): Set<string> {
     const skip = new Set(excludedBodyPairs.map((pair) => pairKey(pair.bodyA, pair.bodyB)));
     for (const body of bodies) {
         if (body.parentName.length > 0 && body.parentName !== 'world') {
             skip.add(pairKey(body.name, body.parentName));
         }
     }
+    return skip;
+}
+
+/** A world body or a nameless body is not a part-to-part rest contact. */
+function worldOrNamelessContact(contact: CompiledContact): boolean {
+    return contact.bodyA.length === 0
+        || contact.bodyB.length === 0
+        || contact.bodyA === 'world'
+        || contact.bodyB === 'world';
+}
+
+function compiledMesh(geoms: readonly CompiledGeom[], body: string, geomName: string): string | undefined {
+    return geoms.find((geom) => geom.body === body && geom.name === geomName)?.mesh;
+}
+
+function orderedGeomNames(contact: CompiledContact, bodyA: string): { geomA: string; geomB: string } {
+    if (bodyA === contact.bodyA) return { geomA: contact.geomA, geomB: contact.geomB };
+    return { geomA: contact.geomB, geomB: contact.geomA };
+}
+
+function meshPairFields(meshA: string | undefined, meshB: string | undefined): { meshA?: string; meshB?: string } {
+    return {
+        ...(meshA !== undefined ? { meshA } : {}),
+        ...(meshB !== undefined ? { meshB } : {}),
+    };
+}
+
+function penetrationMetres(distM: number): number {
+    return distM < 0 ? -distM : 0;
+}
+
+function contactKindOf(distM: number): RestContactRow['kind'] {
+    return distM < -EXPORT_HEALTH_TOLERANCE.penetrationEpsM ? 'penetration' : 'margin';
+}
+
+function restContactRow(contact: CompiledContact, geoms: readonly CompiledGeom[]): RestContactRow {
+    const [bodyA, bodyB] = orderedPair(contact.bodyA, contact.bodyB);
+    const { geomA, geomB } = orderedGeomNames(contact, bodyA);
+    return {
+        bodyA,
+        bodyB,
+        geomA,
+        geomB,
+        ...meshPairFields(compiledMesh(geoms, bodyA, geomA), compiledMesh(geoms, bodyB, geomB)),
+        distM: contact.distM,
+        penetrationM: penetrationMetres(contact.distM),
+        kind: contactKindOf(contact.distM),
+    };
+}
+
+function compareRestContacts(a: RestContactRow, b: RestContactRow): number {
+    const byBody = a.bodyA.localeCompare(b.bodyA) || a.bodyB.localeCompare(b.bodyB);
+    return byBody || a.distM - b.distM;
+}
+
+function contactRows(
+    contacts: readonly CompiledContact[],
+    bodies: readonly CompiledBodyDynamics[],
+    excludedBodyPairs: readonly ExcludedBodyPair[],
+    geoms: readonly CompiledGeom[],
+): { penetrating: RestContactRow[]; marginOnly: RestContactRow[] } {
+    const skip = restContactSkipKeys(bodies, excludedBodyPairs);
     const penetrating: RestContactRow[] = [];
     const marginOnly: RestContactRow[] = [];
     for (const contact of contacts) {
-        if (contact.bodyA.length === 0 || contact.bodyB.length === 0) continue;
-        if (contact.bodyA === 'world' || contact.bodyB === 'world') continue;
+        if (worldOrNamelessContact(contact)) continue;
         if (skip.has(pairKey(contact.bodyA, contact.bodyB))) continue;
-        const [bodyA, bodyB] = orderedPair(contact.bodyA, contact.bodyB);
-        const swapped = bodyA !== contact.bodyA;
-        const geomA = swapped ? contact.geomB : contact.geomA;
-        const geomB = swapped ? contact.geomA : contact.geomB;
-        const meshA = geoms.find((geom) => geom.body === bodyA && geom.name === geomA)?.mesh;
-        const meshB = geoms.find((geom) => geom.body === bodyB && geom.name === geomB)?.mesh;
-        const row: RestContactRow = {
-            bodyA,
-            bodyB,
-            geomA,
-            geomB,
-            ...(meshA !== undefined ? { meshA } : {}),
-            ...(meshB !== undefined ? { meshB } : {}),
-            distM: contact.distM,
-            penetrationM: contact.distM < 0 ? -contact.distM : 0,
-            kind: contact.distM < -EXPORT_HEALTH_TOLERANCE.penetrationEpsM ? 'penetration' : 'margin',
-        };
-        (row.kind === 'penetration' ? penetrating : marginOnly).push(row);
+        const row = restContactRow(contact, geoms);
+        if (row.kind === 'penetration') penetrating.push(row);
+        else marginOnly.push(row);
     }
-    const byName = (a: RestContactRow, b: RestContactRow) =>
-        a.bodyA.localeCompare(b.bodyA) || a.bodyB.localeCompare(b.bodyB) || a.distM - b.distM;
-    penetrating.sort(byName);
-    marginOnly.sort(byName);
+    penetrating.sort(compareRestContacts);
+    marginOnly.sort(compareRestContacts);
     return { penetrating, marginOnly };
+}
+
+function collisionBitsOn(geom: CompiledGeom): boolean {
+    return geom.contype !== 0 || geom.conaffinity !== 0;
+}
+
+function visualBitFinding(geom: CompiledGeom): VisualFinding {
+    return {
+        body: geom.body,
+        geom: geom.name,
+        kind: 'visual-collision-bits',
+        source: 'mjcf',
+        contype: geom.contype,
+        conaffinity: geom.conaffinity,
+        ...(geom.mesh !== undefined ? { mesh: geom.mesh } : {}),
+        detail: `Visual geom '${geom.name}' on '${geom.body}' has contype ${geom.contype} and conaffinity ${geom.conaffinity}.`,
+    };
+}
+
+/** Visual mesh used by a collision geom when solid collision meshes were declared. */
+function visualMeshOnCollisionGeom(
+    geom: CompiledGeom,
+    expected: BodyExportExpectation | undefined,
+    bitsOn: boolean,
+): string | undefined {
+    if (expected === undefined || expected.solidCollisionMeshes.length === 0) return undefined;
+    if (geom.type !== 'mesh' || geom.mesh === undefined || !bitsOn) return undefined;
+    if (expected.solidCollisionMeshes.includes(geom.mesh)) return undefined;
+    if (!expected.visualMeshNames.includes(geom.mesh)) return undefined;
+    return geom.mesh;
+}
+
+function mjcfVisualMeshFinding(geom: CompiledGeom, mesh: string): VisualFinding {
+    return {
+        body: geom.body,
+        geom: geom.name,
+        kind: 'collision-visual-mesh',
+        source: 'mjcf',
+        contype: geom.contype,
+        conaffinity: geom.conaffinity,
+        mesh,
+        detail: `Collision geom '${geom.name}' on '${geom.body}' uses visual mesh '${mesh}' while solid collision meshes were declared.`,
+    };
+}
+
+function appendMjcfVisualFindings(
+    findings: VisualFinding[],
+    geom: CompiledGeom,
+    expected: BodyExportExpectation | undefined,
+): void {
+    const bitsOn = collisionBitsOn(geom);
+    if (visualOnly(geom) && bitsOn) findings.push(visualBitFinding(geom));
+    const mesh = visualMeshOnCollisionGeom(geom, expected, bitsOn);
+    if (mesh !== undefined) findings.push(mjcfVisualMeshFinding(geom, mesh));
+}
+
+/** Collision mesh when a URDF link reuses its visual mesh despite declared solids. */
+function urdfCollisionReusesVisual(link: ParsedUrdfLink, expected: BodyExportExpectation | undefined): string | undefined {
+    if (expected === undefined || expected.solidCollisionMeshes.length === 0) return undefined;
+    if (link.visualMesh === undefined || link.visualMesh !== link.collisionMesh) return undefined;
+    return link.visualMesh;
+}
+
+function urdfVisualMeshFinding(link: ParsedUrdfLink, mesh: string): VisualFinding {
+    return {
+        body: link.name,
+        geom: 'collision',
+        kind: 'collision-visual-mesh',
+        source: 'urdf',
+        contype: 0,
+        conaffinity: 0,
+        mesh,
+        detail: `URDF link '${link.name}' uses the visual mesh for collision while solid collision pieces were declared.`,
+    };
 }
 
 function visualFindingsOf(
@@ -357,108 +473,122 @@ function visualFindingsOf(
 ): VisualFinding[] {
     const byBody = new Map(expectations.map((item) => [item.body, item]));
     const findings: VisualFinding[] = [];
-    for (const geom of geoms) {
-        const bitsOn = geom.contype !== 0 || geom.conaffinity !== 0;
-        if (visualOnly(geom) && bitsOn) {
-            findings.push({
-                body: geom.body,
-                geom: geom.name,
-                kind: 'visual-collision-bits',
-                source: 'mjcf',
-                contype: geom.contype,
-                conaffinity: geom.conaffinity,
-                ...(geom.mesh !== undefined ? { mesh: geom.mesh } : {}),
-                detail: `Visual geom '${geom.name}' on '${geom.body}' has contype ${geom.contype} and conaffinity ${geom.conaffinity}.`,
-            });
-        }
-        const expected = byBody.get(geom.body);
-        if (
-            expected !== undefined
-            && expected.solidCollisionMeshes.length > 0
-            && geom.type === 'mesh'
-            && geom.mesh !== undefined
-            && bitsOn
-            && !expected.solidCollisionMeshes.includes(geom.mesh)
-            && expected.visualMeshNames.includes(geom.mesh)
-        ) {
-            findings.push({
-                body: geom.body,
-                geom: geom.name,
-                kind: 'collision-visual-mesh',
-                source: 'mjcf',
-                contype: geom.contype,
-                conaffinity: geom.conaffinity,
-                mesh: geom.mesh,
-                detail: `Collision geom '${geom.name}' on '${geom.body}' uses visual mesh '${geom.mesh}' while solid collision meshes were declared.`,
-            });
-        }
-    }
+    for (const geom of geoms) appendMjcfVisualFindings(findings, geom, byBody.get(geom.body));
     for (const link of urdfLinks) {
-        const expected = byBody.get(link.name);
-        if (expected === undefined || expected.solidCollisionMeshes.length === 0) continue;
-        if (link.visualMesh === undefined || link.visualMesh !== link.collisionMesh) continue;
-        findings.push({
-            body: link.name,
-            geom: 'collision',
-            kind: 'collision-visual-mesh',
-            source: 'urdf',
-            contype: 0,
-            conaffinity: 0,
-            mesh: link.collisionMesh,
-            detail: `URDF link '${link.name}' uses the visual mesh for collision while solid collision pieces were declared.`,
-        });
+        const mesh = urdfCollisionReusesVisual(link, byBody.get(link.name));
+        if (mesh !== undefined) findings.push(urdfVisualMeshFinding(link, mesh));
     }
     return findings;
 }
 
-function inertiaRows(input: AssessCompiledExportInput): InertiaRow[] {
-    const names = new Set<string>([
+type CadInertiaPair = { mjcf: InertiaReference; urdf: InertiaReference };
+
+function lookupInertiaSides(body: string, input: AssessCompiledExportInput): {
+    cad: CadInertiaPair | null;
+    compiled: CompiledBodyDynamics | null;
+    urdf: ParsedUrdfLink | null;
+} {
+    return {
+        cad: input.cadByBody.get(body) ?? null,
+        compiled: input.bodies.find((item) => item.name === body) ?? null,
+        urdf: input.urdfLinks.find((link) => link.name === body) ?? null,
+    };
+}
+
+function compiledInertiaSample(compiled: CompiledBodyDynamics | null): InertiaSample | null {
+    if (compiled === null) return null;
+    return { massKg: compiled.massKg, comM: compiled.comM, inertia6: compiled.inertia6 };
+}
+
+function urdfInertiaSample(urdf: ParsedUrdfLink | null): InertiaSample | null {
+    if (urdf === null) return null;
+    return { massKg: urdf.massKg, comM: urdf.comM, inertia6: urdf.inertia6 };
+}
+
+function mjcfSampleMismatch(cad: CadInertiaPair | null, sample: InertiaSample | null): boolean {
+    if (cad !== null && sample !== null) return !inertiaMatches(sample, cad.mjcf);
+    return cad !== null || sample !== null;
+}
+
+function urdfSampleMismatch(
+    synthesisedUrdf: boolean,
+    cad: CadInertiaPair | null,
+    sample: InertiaSample | null,
+): boolean {
+    if (synthesisedUrdf) return false;
+    if (cad !== null && sample !== null) return !inertiaMatches(sample, cad.urdf);
+    return true;
+}
+
+function densityDifferenceNote(cad: CadInertiaPair | null): string | undefined {
+    if (cad === null || cad.mjcf.densityKgM3 === cad.urdf.densityKgM3) return undefined;
+    return `MJCF density ${cad.mjcf.densityKgM3} kg/m³, URDF density ${cad.urdf.densityKgM3} kg/m³.`;
+}
+
+const SYNTHESISED_URDF_NOTE = 'Synthesised URDF link with no CAD solid and no compiled MJCF body.';
+
+function inertiaRowNotes(
+    flagged: readonly string[],
+    synthesisedUrdf: boolean,
+    cad: CadInertiaPair | null,
+): string[] {
+    const notes = [...flagged];
+    if (synthesisedUrdf) notes.push(SYNTHESISED_URDF_NOTE);
+    const density = densityDifferenceNote(cad);
+    if (density !== undefined) notes.push(density);
+    return notes;
+}
+
+function mjcfInertiaCell(sample: InertiaSample | null, mismatch: boolean): InertiaRow['mjcf'] {
+    if (sample === null) return null;
+    return { ...sample, mismatch };
+}
+
+function urdfInertiaCell(
+    sample: InertiaSample | null,
+    mismatch: boolean,
+    cad: CadInertiaPair | null,
+): InertiaRow['urdf'] {
+    if (sample === null) return { missing: true };
+    return {
+        ...sample,
+        mismatch,
+        densityKgM3: cad?.urdf.densityKgM3 ?? URDF_DEFAULT_DENSITY_KG_M3,
+    };
+}
+
+function inertiaRow(body: string, input: AssessCompiledExportInput): InertiaRow {
+    const sides = lookupInertiaSides(body, input);
+    const flags = notesFor(body, input.inertiaNotes);
+    const mjcfSample = compiledInertiaSample(sides.compiled);
+    const urdfSample = urdfInertiaSample(sides.urdf);
+    // A ball mate's URDF decomposition adds dummy links. They are not
+    // CAD solids and they are not MJCF bodies, so they are not a mismatch.
+    const synthesisedUrdf = sides.cad === null && sides.compiled === null && sides.urdf !== null;
+    const mjcfMismatch = mjcfSampleMismatch(sides.cad, mjcfSample);
+    const urdfMismatch = urdfSampleMismatch(synthesisedUrdf, sides.cad, urdfSample);
+    return {
+        body,
+        fallback: flags.fallback,
+        regularized: flags.regularized,
+        mismatch: flags.fallback || flags.regularized || mjcfMismatch || urdfMismatch,
+        notes: inertiaRowNotes(flags.notes, synthesisedUrdf, sides.cad),
+        cad: sides.cad,
+        mjcf: mjcfInertiaCell(mjcfSample, mjcfMismatch),
+        urdf: urdfInertiaCell(urdfSample, urdfMismatch, sides.cad),
+    };
+}
+
+function inertiaBodyNames(input: AssessCompiledExportInput): string[] {
+    return [...new Set<string>([
         ...input.cadByBody.keys(),
         ...input.bodies.map((body) => body.name),
         ...input.urdfLinks.map((link) => link.name),
-    ]);
-    const rows: InertiaRow[] = [];
-    for (const body of [...names].sort()) {
-        const flags = notesFor(body, input.inertiaNotes);
-        const cad = input.cadByBody.get(body) ?? null;
-        const compiled = input.bodies.find((item) => item.name === body) ?? null;
-        const urdf = input.urdfLinks.find((link) => link.name === body) ?? null;
-        const mjcfSample: InertiaSample | null = compiled === null ? null : {
-            massKg: compiled.massKg,
-            comM: compiled.comM,
-            inertia6: compiled.inertia6,
-        };
-        // A ball mate's URDF decomposition adds dummy links. They are not
-        // CAD solids and they are not MJCF bodies, so they are not a mismatch.
-        const synthesisedUrdf = cad === null && compiled === null && urdf !== null;
-        const mjcfMismatch = cad !== null && mjcfSample !== null ? !inertiaMatches(mjcfSample, cad.mjcf) : cad !== null || mjcfSample !== null;
-        const urdfSample: InertiaSample | null = urdf === null ? null : {
-            massKg: urdf.massKg,
-            comM: urdf.comM,
-            inertia6: urdf.inertia6,
-        };
-        const urdfMismatch = synthesisedUrdf
-            ? false
-            : cad !== null && urdfSample !== null ? !inertiaMatches(urdfSample, cad.urdf) : true;
-        const notes = [...flags.notes];
-        if (synthesisedUrdf) notes.push('Synthesised URDF link with no CAD solid and no compiled MJCF body.');
-        if (cad !== null && cad.mjcf.densityKgM3 !== cad.urdf.densityKgM3) {
-            notes.push(`MJCF density ${cad.mjcf.densityKgM3} kg/m³, URDF density ${cad.urdf.densityKgM3} kg/m³.`);
-        }
-        rows.push({
-            body,
-            fallback: flags.fallback,
-            regularized: flags.regularized,
-            mismatch: flags.fallback || flags.regularized || mjcfMismatch || urdfMismatch,
-            notes,
-            cad,
-            mjcf: mjcfSample === null ? null : { ...mjcfSample, mismatch: mjcfMismatch },
-            urdf: urdfSample === null
-                ? { missing: true }
-                : { ...urdfSample, mismatch: urdfMismatch, densityKgM3: cad?.urdf.densityKgM3 ?? URDF_DEFAULT_DENSITY_KG_M3 },
-        });
-    }
-    return rows;
+    ])].sort();
+}
+
+function inertiaRows(input: AssessCompiledExportInput): InertiaRow[] {
+    return inertiaBodyNames(input).map((body) => inertiaRow(body, input));
 }
 
 function qposRows(joints: readonly CompiledJointState[]): { restQpos: RestQposRow[]; qposOutsideLimits: QposLimitFinding[] } {
