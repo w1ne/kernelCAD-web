@@ -1,0 +1,31 @@
+{
+  "invocation": "npx tsx docs/demos/dxf-partial-ellipse-import/capture-demo.mts",
+  "sourceScript": "examples/interoperability/dxf-ellipse/import-partial-ellipse.kcad.ts",
+  "inputFixture": "examples/interoperability/dxf-ellipse/partial-ellipse.dxf",
+  "renderer": "scripts/lib/glbSoftwareRender.ts using triangles meshed from the lowered OCCT B-rep",
+  "browser": "none; offline SVG + Sharp + FFmpeg capture",
+  "width": 1280,
+  "height": 720,
+  "fps": 16,
+  "durationSeconds": 10,
+  "initialViewYawDeg": 72,
+  "encoding": {
+    "codec": "libx264",
+    "preset": "medium",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "fastStart": true
+  },
+  "model": {
+    "majorRadiusMm": 10,
+    "minorRadiusMm": 5,
+    "extrusionMm": 3,
+    "profile": "upper half ellipse closed by its diameter"
+  },
+  "validation": [
+    "OCCT B-rep validity",
+    "measured volume against 75π mm³",
+    "bounding box against fixture extents"
+  ],
+  "scope": "Local geometry validation only; no deployment, simulation, or hardware acceptance."
+}
