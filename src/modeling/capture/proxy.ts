@@ -1060,6 +1060,10 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * Use `upToFace` instead of `depth` to end the complete bore on the plane
+   * of a selected planar body face. The plane may be inclined; a target that
+   * is non-planar, parallel to the bore axis, or not ahead of the entry face
+   * is rejected with `feature.invalid-args`.
    * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
    * fillet) place the hole by world point instead of `u`/`v`:
    * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
@@ -1073,7 +1077,8 @@ export class Shape {
    * two are mutually exclusive on a single hole.
    *
    * Created face refs (resolvable downstream as `{ face: '<name>' }`):
-   *   `wall` (always), `floor` (blind), `wall-back` (through),
+   *   `wall` (always), `floor` (blind or upToFace pocket),
+   *   `wall-back` (through or upToFace to an exit face),
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
@@ -1096,8 +1101,8 @@ export class Shape {
   /**
    * Drill N holes in a single feature record. Positions use the same
    * (u, v) frame as `.hole()`, and every bore is checked the same way.
-   * All holes share diameter,
-   * depth, and optional counterbore/countersink. Use `.hole()` chained
+   * All holes share diameter and optional counterbore/countersink. Use either
+   * `depth` or `upToFace` for the common end condition. Use `.hole()` chained
    * calls if you need mixed specs.
    *
    * The bare `'wall'` selector on the result resolves to *all* bore walls

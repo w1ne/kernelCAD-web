@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// `cutout(profile, { face, upToFace })`: the cut runs from the entry face
-// until it reaches a planar target face of the body. The target plane may be
-// inclined to the cut direction; the pocket end then follows that plane.
+// `cutout(profile, { face, upToFace })` and `hole(s, { upToFace })`: the tool
+// runs from its entry face until it reaches a planar target face of the body.
+// The target plane may be inclined to the cut direction; the tool end follows
+// that plane.
 //
 // The tool is a prism long enough to cross the body, trimmed by a half-space
 // box on the far side of the target plane. When the target is an exit face
@@ -49,27 +50,47 @@ function perpendicular(n: Vec3): Vec3 {
   return normalize([ref[1] * n[2] - ref[2] * n[1], ref[2] * n[0] - ref[0] * n[2], ref[0] * n[1] - ref[1] * n[0]]);
 }
 
-const UP_TO_FACE_EXAMPLE =
-  "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })";
+function upToFaceApi(feature: FeatureRecord): { api: string; example: string; operation: string } {
+  if (feature.kind === 'hole') {
+    return {
+      api: 'hole(face, { upToFace })',
+      example: "plate.hole('top', { u: 0, v: 0, diameter: 4, upToFace: 'bottom' })",
+      operation: 'hole',
+    };
+  }
+  if (feature.kind === 'holes') {
+    return {
+      api: 'holes(face, { upToFace })',
+      example: "plate.holes('top', { positions: [{ u: 0, v: 0 }], diameter: 4, upToFace: 'bottom' })",
+      operation: 'holes',
+    };
+  }
+  return {
+    api: 'cutout(profile, { face, upToFace })',
+    example: "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })",
+    operation: 'cutout',
+  };
+}
 
 function invalid(
-  featureId: string,
+  feature: FeatureRecord,
   gotText: string,
   requires: string,
   hint: string,
 ): { error: CompilerDiagnostic } {
+  const context = upToFaceApi(feature);
   return {
     error: {
       target: 'export-occt',
       code: 'feature.invalid-args',
-      featureId,
+      featureId: feature.id,
       severity: 'error',
       ...invalidArgsText({
-        api: 'cutout(profile, { face, upToFace })',
+        api: context.api,
         path: 'opts.upToFace',
         gotText,
         requires,
-        example: UP_TO_FACE_EXAMPLE,
+        example: context.example,
         hint,
       }),
     },
@@ -105,21 +126,23 @@ function halfSpaceBox(origin: Vec3, away: Vec3, size: number): replicad.Shape3D 
   return replicad.drawRectangle(2 * size, 2 * size).sketchOnPlane(plane).extrude(size) as replicad.Shape3D;
 }
 
-/** Build the cutout tool that ends on the `upToFace` target plane.
- *  `prism(depth)` builds the profile prism from the entry face, inward. */
+/** Build a through-body tool and trim it at the `upToFace` target plane.
+ *  `toolThroughBody(depth)` extends the tool from its entry face inward. */
 export function buildUpToFaceTool(
   feature: FeatureRecord,
   target: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
   entry: UpToFaceEntry,
-  prism: (depth: number) => replicad.Shape3D,
+  toolThroughBody: (depth: number) => replicad.Shape3D,
+  onToolBuildError?: (error: unknown) => CompilerDiagnostic,
 ): UpToFaceTool | { error: CompilerDiagnostic } {
+  const context = upToFaceApi(feature);
   const face = pickFaceFromInput(feature, 'upToFace', target, records);
   if ('error' in face) return face;
   const surface = surfaceTypeOf(face);
   if (surface !== 'PLANE') {
     return invalid(
-      feature.id,
+      feature,
       `${surface} face`,
       'only a planar target face of the body',
       "Pick a planar face of the body, or use depth (a number or 'through').",
@@ -130,7 +153,7 @@ export function buildUpToFaceTool(
   const cos = dot(axis, normal);
   if (Math.abs(cos) < PARALLEL_TOL) {
     return invalid(
-      feature.id,
+      feature,
       'a target plane parallel to the cut direction',
       'a target plane that is not parallel to the cut direction, so the cut reaches it',
       'Pick a face that crosses the cut axis, or use depth.',
@@ -140,7 +163,7 @@ export function buildUpToFaceTool(
   const effectiveDepth = dot(sub(origin, entry.centroid), away) / Math.abs(cos);
   if (!(effectiveDepth > AHEAD_TOL)) {
     return invalid(
-      feature.id,
+      feature,
       `${effectiveDepth.toFixed(4)} mm along the cut direction`,
       'a target plane strictly ahead of the entry face; behind or on the entry face is invalid',
       'Pick a face ahead of the entry face along the cut direction.',
@@ -148,11 +171,28 @@ export function buildUpToFaceTool(
   }
   const through = cos > 0;
   const { maxAlong, diagonal } = bboxSpan(target, entry.centroid, axis);
-  const prismDepth = Math.max(maxAlong, effectiveDepth) + OVERSHOOT;
-  const size = 4 * (diagonal + prismDepth);
+  const toolDepth = Math.max(maxAlong, effectiveDepth) + OVERSHOOT;
+  const size = 4 * (diagonal + toolDepth);
+  let longTool: replicad.Shape3D;
+  try {
+    longTool = toolThroughBody(toolDepth);
+  } catch (e) {
+    if (onToolBuildError) return { error: onToolBuildError(e) };
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId: feature.id,
+        severity: 'error',
+        message: `${context.operation}: could not build the tool before trimming at the upToFace plane: ${msg}`,
+        hint: 'Check the feature dimensions and that its profile or bore intersects the entry face.',
+      },
+    };
+  }
   try {
     const trimOrigin = addScaled(origin, away, through ? OVERSHOOT : 0);
-    const tool = prism(prismDepth).cut(halfSpaceBox(trimOrigin, away, size)) as replicad.Shape3D;
+    const tool = longTool.cut(halfSpaceBox(trimOrigin, away, size)) as replicad.Shape3D;
     return { tool, effectiveDepth, through };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -162,8 +202,8 @@ export function buildUpToFaceTool(
         code: 'feature.kernel-failed',
         featureId: feature.id,
         severity: 'error',
-        message: `cutout: trimming the tool at the upToFace plane failed: ${msg}`,
-        hint: 'Check that the profile lies on the entry face and the target face crosses the cut.',
+        message: `${context.operation}: trimming the tool at the upToFace plane failed: ${msg}`,
+        hint: 'Check that the feature lies on the entry face and the target face crosses the cut.',
       },
     };
   }
