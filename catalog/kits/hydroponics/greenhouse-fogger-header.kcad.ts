@@ -47,10 +47,10 @@ const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12)
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
 // cylinder(...).rotateX(90) runs from its origin toward -Y.
 const cylY = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateX(90).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 12) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 const PX = 900, WZ = 2300, LZ = 2050;

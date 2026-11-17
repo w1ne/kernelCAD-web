@@ -41,10 +41,10 @@ const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: num
   box(Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0), true).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 16) => cylinder(len, r, seg).translate(x, y, z);
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 16) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 const BW = 560, D = 330, T = 20; // bay width, half depth, sheet thickness
@@ -82,7 +82,7 @@ const tier = (name: string, z0: number, h: number, big: boolean) => {
       add(`${name}-grate-${b}-${g}`, blk(gx - 14, -D + 40, z0 + 45, gx + 14, D - T - 10, z0 + 70).color(grate));
     }
     add(`${name}-grate-rails-${b}`, blk(x0 + 4, -D + 40, z0 + 25, x1 - 4, -D + 60, z0 + 50).color(grate));
-    add(`${name}-bowl-${b}`, turned([[0, 0], [70, 0], [95, 60], [86, 60], [62, 12], [0, 12]], 16).translate(cx + (x1 - x0) * 0.28, -D + 150, z0 + 70).color('#d4dadb'));
+    add(`${name}-bowl-${b}`, turned([[0, 0], [70, 0], [95, 60], [86, 60], [62, 12], [0, 12]]).translate(cx + (x1 - x0) * 0.28, -D + 150, z0 + 70).color('#d4dadb'));
     if (b !== 1 || !big) add(`${name}-blanket-${b}`, blk(x0 + 30, -D + 60, z0 + 70, x0 + (x1 - x0) * 0.6, D - 60, z0 + 120).color(bedding));
     add(`${name}-vent-${b}`, blk(cx - 120, D - T - 4, z1 - 120, cx + 120, D - T, z1 - 60).color(latch));
 

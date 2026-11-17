@@ -50,12 +50,44 @@ function assertPipePoints(points: unknown): Vec3[] {
   return out;
 }
 
+/** Reject a non-object opts or an unknown key instead of silently building
+ *  with the default 1.5 × radius bend: `pipe(pts, 3, 8)` and
+ *  `pipe(pts, 3, { bend_radius: 8 })` used to drop the requested bend. */
+function assertPipeOpts(opts: unknown): PipeOptions {
+  if (opts === undefined || opts === null) return {};
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'pipe(points, radius, opts?)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object such as { bendRadius }; the bend radius is not a positional argument',
+      example: EXAMPLE,
+      featureId: 'pipe',
+    });
+  }
+  for (const key of Object.keys(opts)) {
+    if (key !== 'bendRadius') {
+      invalidArgs({
+        api: 'pipe(points, radius, opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: 'bendRadius, the only pipe option',
+        example: EXAMPLE,
+        featureId: 'pipe',
+      });
+    }
+  }
+  return opts as PipeOptions;
+}
+
 /** Capture `pipe(points, radius, opts?)` as a `pipe` feature record. */
 export function makePipeMethod(session: CaptureSession): KernelCadApi['pipe'] {
-  return (points, radius, opts) => {
+  return (points, radius, rawOpts) => {
     const pts = assertPipePoints(points);
+    const opts = assertPipeOpts(rawOpts);
     const r = assertPositiveFinite('pipe', 'radius', radius);
-    const bendRadius = opts?.bendRadius === undefined
+    const bendRadius = opts.bendRadius === undefined
       ? r * 1.5
       : assertPositiveFinite('pipe', 'bendRadius', opts.bendRadius);
     if (bendRadius <= r) {

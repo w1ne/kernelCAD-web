@@ -235,6 +235,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A pin_slot mate was lowered to an SDFormat revolute joint; the slot translation DOF was lost.',
   },
+  'export.sdf-gazebo.coupling-dropped': {
+    hintTemplate:
+      'SDFormat 1.10 has no <mimic> joint; a coupleMates coupling was not carried, so the driven joint moves freely in the simulator. Enforce the ratio in the simulator controller, or export a format that carries joint couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A coupleMates coupling could not be represented in SDFormat 1.10; the driven joint was emitted as an independent joint.',
+  },
   'export.sdf-gazebo.invalid-version': {
     hintTemplate:
       'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.10"> by default — the newest spec current simulator LTS releases parse; do not override.',
@@ -283,6 +291,14 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
+  },
+  'export.usd.coupling-dropped': {
+    hintTemplate:
+      'This usd-isaac export leaves the driven joint independent; the serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The usd-isaac serializer does not author a backend-specific mimic relation for a coupleMates coupling; the driven mate was emitted as an independent physics joint.',
   },
   'export.usd.pose-unsolved': {
     hintTemplate:

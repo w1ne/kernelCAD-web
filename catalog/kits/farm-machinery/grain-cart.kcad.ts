@@ -47,7 +47,7 @@ add('wagon-wheel-1', cylinder(130, 240, 12).rotate([0, 1, 0], 90).translate(-65,
 add('wagon-wheel-1-hub', cylinder(143, 81.6, 10).translate(-71.5, 780, 240), steelColor);
 add('drawbar', box(105, 1175, 72, true).translate(0, -1527.5, 146), paintedSteelColor);
 add('grain-cover', slopedPrism(1200, 1762.5, 40).translate(0, 0, 2310), paintedSteelColor);
-add('auger-base', box(75, 100, 1394, true).translate(600, 470, 2009), steelColor);
-add('auger-tube', box(360, 74, 70, true).translate(945, 470, 1880), steelColor);
+add('auger-base', box(75, 100, 1394, true).translate(600, 470, 2009), paintedSteelColor);
+add('auger-tube', box(360, 74, 70, true).translate(945, 470, 1880), paintedSteelColor);
 
 return p.model();

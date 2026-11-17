@@ -9,22 +9,22 @@
 // --------------------
 // DXF and SVG disagree about almost everything at the front (group codes vs
 // XML, Y-up vs Y-down, `$INSUNITS` vs `viewBox`) and about nothing at the
-// back. Both end up with a pile of line and circular-arc segments in
-// millimetres that have to be chained into loops, oriented, and emitted as
-// the SAME intermediate representation the rest of the repo already uses —
-// `SketchCommand[]`, the thing `PathBuilder` captures and
-// `drawingFromCommands` lowers. Neither importer invents a representation of
-// its own, so an imported profile is indistinguishable downstream from a
-// hand-authored `path().moveTo(...).close()`.
+// back. They share line and circular-arc segments in millimetres; DXF also
+// contributes exact clamped NURBS segments. The contour stage chains and
+// orients them, then emits the same `SketchCommand[]` captured by PathBuilder
+// and lowered by the OCCT sketch path. An imported profile is therefore an
+// ordinary sketch downstream, not a special mesh representation.
 //
 // ARCS ARE KEPT EXACT
 // -------------------
 // Circular arcs travel as a DXF bulge factor (`tan(includedAngle / 4)`,
 // positive counter-clockwise) because that is exactly what
 // `SketchCommand.bulgeArc` already carries — DXF's native encoding maps to it
-// with no conversion and no loss. Only geometry with NO exact representation
-// in the command union (Béziers, true ellipses) is flattened, and that
-// happens in the parsers, under an explicit `curveTolerance`, never here.
+// with no conversion and no loss. Clamped DXF SPLINE data maps to
+// `nurbsSegment` with its knots and weights intact; full planar DXF ELLIPSE
+// entities use four exact rational NURBS segments. Geometry with no exact
+// command form (such as SVG Béziers and SVG ellipses) is flattened in the
+// parsers under an explicit `curveTolerance`.
 //
 // WHAT THIS STAGE REFUSES TO DO
 // -----------------------------
@@ -56,13 +56,24 @@ export interface ImportSegment {
   y1: number;
   bulge?: number;
   source: string;
+  /** Exact planar B-spline geometry. DXF splines are restricted to clamped,
+   * non-periodic forms so the first and last poles are curve endpoints. */
+  nurbs?: ImportNurbsSegment;
+}
+
+export interface ImportNurbsSegment {
+  degree: number;
+  controlPoints: readonly (readonly [number, number])[];
+  knots: readonly number[];
+  weights?: readonly number[];
 }
 
 /** A closed profile ready to become a `Sketch`. */
 export interface ImportedRegion {
   /** `moveTo` … segments … `close`, in the repo's canonical sketch IR. */
   commands: SketchCommand[];
-  /** Enclosed area in mm², always positive (loops are normalised to CCW). */
+  /** Enclosed area in mm², positive after winding normalization. NURBS area is
+   * sampled only for region ranking; emitted geometry remains exact. */
   areaMm2: number;
   /** Number of segments in the loop. */
   segmentCount: number;
@@ -125,19 +136,20 @@ export interface AssembleResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Signed area (mm²) of the loop; positive when the loop runs counter-clockwise.
- *
- * EXACT, not sampled: the shoelace sum over the chord polygon plus, for each
- * arc, the closed-form circular-segment area `r²/2·(θ − sin θ)`. That term is
- * signed the same way the bulge is (θ > 0 bulges left of travel and adds
- * area), so it composes with the shoelace without a case analysis, and it
- * stays exact for major arcs where a chord polygon is badly wrong — a full
- * circle written as two semicircles has NO chord area at all, so a sampled
- * area would have to be dense to even approach the right answer.
+ * Signed area (mm²) of the loop; positive when it runs counter-clockwise.
+ * Lines and circular arcs are integrated exactly. NURBS curves are sampled
+ * only for area ordering and winding; their emitted B-rep geometry is exact.
  */
 function signedArea(loop: readonly ImportSegment[]): number {
   let sum = 0;
   for (const seg of loop) {
+    if (seg.nurbs) {
+      const samples = sampleNurbs(seg.nurbs);
+      for (let i = 0; i + 1 < samples.length; i++) {
+        sum += samples[i][0] * samples[i + 1][1] - samples[i + 1][0] * samples[i][1];
+      }
+      continue;
+    }
     sum += seg.x0 * seg.y1 - seg.x1 * seg.y0;
     const b = seg.bulge ?? 0;
     if (b === 0) continue;
@@ -149,12 +161,83 @@ function signedArea(loop: readonly ImportSegment[]): number {
   return sum / 2;
 }
 
+/** Evaluate one point on a rational B-spline with the de Boor algorithm. */
+function evaluateNurbs(curve: ImportNurbsSegment, u: number): [number, number] {
+  const { degree, controlPoints, knots, weights } = curve;
+  const n = controlPoints.length - 1;
+  const domainEnd = knots[n + 1];
+  let span = n;
+  if (u < domainEnd) {
+    let low = degree;
+    let high = n + 1;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      if (u < knots[mid]) high = mid;
+      else if (u >= knots[mid + 1]) low = mid + 1;
+      else { low = mid; high = mid; }
+    }
+    span = low;
+  }
+
+  const work: Array<[number, number, number]> = [];
+  for (let j = 0; j <= degree; j++) {
+    const index = span - degree + j;
+    const weight = weights?.[index] ?? 1;
+    work.push([controlPoints[index][0] * weight, controlPoints[index][1] * weight, weight]);
+  }
+  for (let r = 1; r <= degree; r++) {
+    for (let j = degree; j >= r; j--) {
+      const index = span - degree + j;
+      const denominator = knots[index + degree - r + 1] - knots[index];
+      const alpha = denominator === 0 ? 0 : (u - knots[index]) / denominator;
+      work[j] = [
+        (1 - alpha) * work[j - 1][0] + alpha * work[j][0],
+        (1 - alpha) * work[j - 1][1] + alpha * work[j][1],
+        (1 - alpha) * work[j - 1][2] + alpha * work[j][2],
+      ];
+    }
+  }
+  const [xw, yw, weight] = work[degree];
+  return [xw / weight, yw / weight];
+}
+
+/** Sample only for contour area ranking. The emitted sketch keeps the exact
+ * NURBS control net and lowers it to a B-spline edge. */
+function sampleNurbs(curve: ImportNurbsSegment): [number, number][] {
+  const { degree, controlPoints, knots } = curve;
+  const start = knots[degree];
+  const end = knots[controlPoints.length];
+  const breaks = [...new Set(knots.filter(k => k >= start && k <= end))].sort((a, b) => a - b);
+  const points: [number, number][] = [];
+  const samplesPerSpan = 128;
+  for (let span = 0; span + 1 < breaks.length; span++) {
+    const a = breaks[span];
+    const b = breaks[span + 1];
+    if (b <= a) continue;
+    const first = span === 0 ? 0 : 1;
+    for (let i = first; i <= samplesPerSpan; i++) {
+      points.push(evaluateNurbs(curve, a + (b - a) * i / samplesPerSpan));
+    }
+  }
+  return points;
+}
+
 function reverseSegment(seg: ImportSegment): ImportSegment {
+  const nurbs = seg.nurbs;
+  const reversedNurbs = nurbs === undefined ? undefined : {
+    ...nurbs,
+    controlPoints: [...nurbs.controlPoints].reverse(),
+    knots: [...nurbs.knots].reverse().map(
+      k => nurbs.knots[0] + nurbs.knots[nurbs.knots.length - 1] - k,
+    ),
+    ...(nurbs.weights === undefined ? {} : { weights: [...nurbs.weights].reverse() }),
+  };
   return {
     x0: seg.x1, y0: seg.y1, x1: seg.x0, y1: seg.y0,
     // Walking an arc backwards swaps which side of the chord it bulges to.
     bulge: seg.bulge === undefined ? undefined : -seg.bulge,
     source: seg.source,
+    ...(reversedNurbs === undefined ? {} : { nurbs: reversedNurbs }),
   };
 }
 
@@ -220,6 +303,12 @@ function dedupe(
   const q = (v: number): number => Math.round(v / tol);
   for (const seg of segs) {
     const b = seg.bulge ?? 0;
+    // Endpoint identity cannot prove two NURBS segments are duplicates. Keep
+    // them so the contour walk reports an ambiguous junction instead.
+    if (seg.nurbs) {
+      kept.push(seg);
+      continue;
+    }
     // A zero-length line is noise; a zero-length ARC is not representable and
     // is equally noise, so both go. Neither can contribute area.
     if (near(seg.x0, seg.y0, seg.x1, seg.y1, tol)) {
@@ -321,6 +410,13 @@ function walkChain(
 function closeLoopGap(loop: ImportSegment[], originX: number, originY: number): number {
   const last = loop[loop.length - 1];
   if (last.x1 !== originX || last.y1 !== originY) {
+    if (last.nurbs) {
+      loop.push({
+        x0: last.x1, y0: last.y1, x1: originX, y1: originY,
+        source: `${last.source} closure gap`,
+      });
+      return 1;
+    }
     loop[loop.length - 1] = { ...last, x1: originX, y1: originY };
     return 1;
   }
@@ -373,6 +469,20 @@ function loopToCommands(loop: readonly ImportSegment[]): SketchCommand[] {
     { kind: 'moveTo', x: toParam(loop[0].x0, 'mm'), y: toParam(loop[0].y0, 'mm') },
   ];
   for (const seg of loop) {
+    if (seg.nurbs) {
+      cmds.push({
+        kind: 'nurbsSegment',
+        controlPoints: seg.nurbs.controlPoints.map(([x, y]) => ({
+          x: toParam(x, 'mm'), y: toParam(y, 'mm'),
+        })),
+        degree: toParam(seg.nurbs.degree, 'unitless'),
+        ...(seg.nurbs.weights === undefined
+          ? {}
+          : { weights: seg.nurbs.weights.map(weight => toParam(weight, 'unitless')) }),
+        knots: seg.nurbs.knots.map(knot => toParam(knot, 'unitless')),
+      });
+      continue;
+    }
     const b = seg.bulge ?? 0;
     if (b === 0) {
       cmds.push({ kind: 'lineTo', x: toParam(seg.x1, 'mm'), y: toParam(seg.y1, 'mm') });

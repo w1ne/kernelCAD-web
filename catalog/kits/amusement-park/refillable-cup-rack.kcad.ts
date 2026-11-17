@@ -54,7 +54,7 @@ const tiers = [
   { z: 1260, r: 220, n: 6 },
 ];
 // Cup hung upside-down: wide rim at the bottom, narrower base on top.
-const cup = turned([[0, 0], [58, 0], [62, 10], [44, 170], [0, 170]]);
+const cup = () => turned([[0, 0], [58, 0], [62, 10], [44, 170], [0, 170]]);
 tiers.forEach((t, i) => {
   add(`tier-${i}`, turned([[0, 0], [t.r, 0], [t.r + 10, 30], [t.r - 10, 40], [0, 40]]).translate(0, 0, t.z).color(enamel));
   add(`tier-hub-${i}`, cylinder(60, 70, 12).translate(0, 0, t.z - 60).color(stainlessSteel));
@@ -64,7 +64,7 @@ tiers.forEach((t, i) => {
     const x = cr * Math.cos(a);
     const y = cr * Math.sin(a);
     add(`peg-${i}-${k}`, cylinder(30, 10, 6).translate(x, y, t.z + 40).color(stainlessSteel));
-    add(`cup-${i}-${k}`, cup.translate(x, y, t.z + 42).color(k % 3 === 2 ? enamel : polymer));
+    add(`cup-${i}-${k}`, cup().translate(x, y, t.z + 42).color(k % 3 === 2 ? enamel : polymer));
     add(`cup-band-${i}-${k}`, cylinder(30, 54, 12).translate(x, y, t.z + 82).color(lid));
   }
   // Stacked spare lids on the hub.

@@ -52,10 +52,10 @@ const rod = (a: [number, number, number], b: [number, number, number], r: number
   return cylinder(l, r, seg).rotateY(tilt).rotateZ(yaw).translate(a[0], a[1], a[2]);
 };
 // Revolved profile around X: [r, x] points.
-const turnedX = (pts: [number, number][], seg = 18) => {
+const turnedX = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, x] of pts.slice(1)) pb = pb.lineTo(r, x);
-  return pb.close().revolve(360, seg).rotateY(90);
+  return pb.close().revolve().rotateY(90);
 };
 
 const R = 60; // chamber radius

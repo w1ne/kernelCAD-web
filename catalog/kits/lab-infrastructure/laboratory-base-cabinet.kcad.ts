@@ -24,9 +24,9 @@ presets({
 const p = assembly('laboratory-base-cabinet');
 p.part('cabinet-shell', box(900, 570, 870, true).translate(0, 0, 435).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(828, 513, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(371.52, 18, 840, true).translate(-198, -290.7, 855).scale(scale).color(enamel));
+p.part('door-0', box(371.52, 18, 840, true).translate(-198, -290.7, 435).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 139.2, true).translate(-74.16, -313.5, 522).scale(scale).color(polymer));
-p.part('door-1', box(371.52, 18, 840, true).translate(198, -290.7, 855).scale(scale).color(enamel));
+p.part('door-1', box(371.52, 18, 840, true).translate(198, -290.7, 435).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 139.2, true).translate(321.84, -313.5, 522).scale(scale).color(polymer));
 
 return p.model();

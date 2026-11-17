@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-11-17T11:17:05.911Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, simulation, or deployed runtime used.",
+  "invocation": "npx tsx docs/demos/assembly-mate-plain-options-20261117/capture-demo.mts",
+  "baselineReproduction": {
+    "baseRevision": "origin/develop fafb4063e897f0d979ed3bc301ad33bb6ff75ef6",
+    "invocation": "npx tsx docs/demos/assembly-mate-plain-options-20261117/baseline-repro.mts",
+    "result": "new Date() was accepted as omitted options and captured an unbounded revolute mate.",
+    "sourceSha256": "c8663afee7468bb5488576541e516ca88c0309b32208a75f4c0926533ccfd6e5"
+  },
+  "fixedReplay": {
+    "date": {
+      "code": "feature.invalid-args",
+      "path": "opts",
+      "message": "assembly.mate('hinge', aRef, bRef, type, opts): opts — got a non-plain object; requires a plain options object with only pose, limitsDeg, limitsMm, exposure, capacity, maxLoad, stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg, stiffnessNPerMm, springRefMm, dampingNsPerMm, fastener, fit. Example: arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })",
+      "recordedMate": false
+    },
+    "validMate": {
+      "name": "hinge",
+      "type": "revolute",
+      "limitsDeg": [
+        -45,
+        45
+      ]
+    },
+    "nullPrototypeOptions": {
+      "name": "hinge",
+      "limitsDeg": [
+        -30,
+        30
+      ]
+    }
+  },
+  "source": {
+    "path": "docs/demos/assembly-mate-plain-options-20261117/capture-demo.mts",
+    "sha256": "775775c48de7b0079a8bc2f8278dff05b04cd29ea9738d897385518fecdf05e3"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/assembly-mate-plain-options-20261117/demo.mp4",
+    "sha256": "c53781996229a81c7b10ae43660c8c3c9c1106e4e6329e571964747f0b383167",
+    "bytes": 94980
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/assemblyMateOptionKeys.test.ts",
+      "result": "1 file passed; 10 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/assemblyMateOptionKeys.ts src/modeling/capture/assemblyMateOptionKeys.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

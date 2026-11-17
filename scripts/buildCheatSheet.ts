@@ -39,6 +39,9 @@ const HEADER = [
   'A boolean that must keep the scrap is `shape.split(other)`.',
   "Default keep `parts` returns a Scene of `intersection`, `a_only` and `b_only`.",
   'The MCP tool is `split_keep_parts`.',
+  'Labeled views of one STEP import are `inspect_step_views`. Face edits on that',
+  'import use `faces[i].ref` (`{ near: centroid }` when the listing id is positional).',
+  'Those selectors do not survive a later edit.',
   '',
 ];
 
@@ -129,7 +132,10 @@ function appendGlbRigNotes(lines: string[]): void {
     'rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).',
     'Cylindrical entries identify both degrees of freedom with',
     '`degreesOfFreedom: [\'rotate\', \'slide\']`; the current solver poses its',
-    'secondary axial degree of freedom at zero. Loop-closing mates have',
+    'secondary axial degree of freedom at zero. A mate driven by `coupleMates`',
+    'carries `coupling: { source, ratio }`, where `source` is the driving mate\'s rig',
+    'key; relative to the rest pose, its motion is `ratio` times the source motion,',
+    'so do not animate it independently. Loop-closing mates have',
     '`closed: true`, are not nested, and generate a warning. Ball, planar, and',
     'pin-slot mates are held fixed with a warning; GLB animation clips and IK are',
     'not emitted. When a solved assembly is active, `asset_manifest` includes the',

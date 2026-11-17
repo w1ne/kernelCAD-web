@@ -1,0 +1,8 @@
+ ✓ tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts (1 test) 923ms
+     ✓ renders the tank support skid as steel, not engineering polymer  402ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:29:31
+   Duration  19.45s (transform 14.82s, setup 317ms, import 17.89s, tests 923ms, environment 0ms)
+

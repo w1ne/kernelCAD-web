@@ -57,6 +57,29 @@ describe('metricThreadFromDiameter', () => {
     expect(ambiguous.message).toMatch(/M1x0\.25/);
     expect(ambiguous.message).toMatch(/M1\.2x0\.25/);
   });
+
+  it('rejects an unknown option key instead of matching the nominal column', () => {
+    // `{ mode: 'tap_drill' }` used to be dropped: 5 mm matched M5, not M6.
+    expect(metricThreadFromDiameter(5, { kind: 'tap_drill' })).toMatchObject({ spec: 'M6x1' });
+    const cases: Array<[unknown, RegExp]> = [
+      [{ mode: 'tap_drill' }, /opts\.mode.*unknown option 'mode'.*kind, toleranceMm/],
+      [{ kind: 'tap_drill', tolerance: 0.5 }, /opts\.tolerance\b/],
+      ['tap_drill', /opts —/],
+      [['tap_drill'], /opts —/],
+    ];
+    for (const [opts, message] of cases) {
+      let caught: unknown;
+      try {
+        metricThreadFromDiameter(5, opts as never);
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught, JSON.stringify(opts)).toBeInstanceOf(KernelError);
+      expect((caught as KernelError).code).toBe('feature.invalid-args');
+      expect((caught as KernelError).message).toMatch(message);
+    }
+    expect(metricThreadFromDiameter(5, null as never)).toMatchObject({ spec: 'M5x0.8' });
+  });
 });
 
 describe('hole thread: true', () => {

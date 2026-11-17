@@ -1,0 +1,4 @@
+1a5e4a7ac057dedc70e775766e2c01fa33231b6576bc96b1783723dc4fb0436b  sources/after/day-fuel-tank.kcad.ts
+59d1dc2c70cd14c5b52c6e1ba0bbd76061918beb8a2adaf3f18afda41e1a44fb  sources/before/day-fuel-tank.kcad.ts
+7080abb83723b1af6f360a6d184edeaac38460e394a2c67c355bfc647e5c74d5  previews/after/day-fuel-tank.png
+398ff88767be94743c3c6ae205e15343715c7d4b85cc8b267f0618d1f47c3ca5  previews/before/day-fuel-tank.png

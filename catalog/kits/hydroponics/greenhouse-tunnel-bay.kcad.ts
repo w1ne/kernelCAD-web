@@ -141,7 +141,7 @@ add("door-handle", hinge(cylZ(2 * DOOR - 100, -30, 1000, 140, 12, 8)).color('#2f
 const plant = () => {
   let pb = path().moveTo(0, 0);
   for (const [r, z] of [[90, 0], [150, 60], [140, 140], [80, 200], [0, 215]] as [number, number][]) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, 8);
+  return pb.close().revolve();
 };
 
 // Raised beds with crops down both sides of a central path.

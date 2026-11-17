@@ -5,7 +5,7 @@ meta({
   name: "corrugated-case-stack",
   license: 'CC0-1.0',
   title: "Corrugated case stack",
-  description: "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for stainless steel and corrugated board.",
+  description: "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for corrugated board, paperboard edge protectors and the paper label.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'item',
@@ -15,17 +15,20 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, step: 0.05 });
-const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const corrugatedBoard = param('corrugatedBoard', '#b18a5d', { label: 'Corrugated board' });
+const edgeBoard = param('edgeBoard', '#8a6a48', { label: 'Paperboard edge protectors' });
+const labelPaper = param('labelPaper', '#ece6d6', { label: 'Paper shipping label' });
 
 presets({
   sanitaryLine: {
-    stainlessSteel: '#d2dfe1',
     corrugatedBoard: '#c49b6b',
+    edgeBoard: '#9a7a55',
+    labelPaper: '#f6f3ea',
   },
   legacyPlant: {
-    stainlessSteel: '#858f91',
     corrugatedBoard: '#886342',
+    edgeBoard: '#6b513a',
+    labelPaper: '#d8cfb8',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -33,8 +36,12 @@ const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w
 const p = assembly("corrugated-case-stack");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
-  if (/carton|paper|sheet|stack|pallet|cardboard|corrugated|case[-_ ]?(?:blank|wall|stack|pack|lift)/i.test(component)) return shape.color(corrugatedBoard);
-  return shape.color(stainlessSteel);
+  // Every part is paper-based: the case bodies and flaps are corrugated board, the
+  // corner protectors are wound paperboard edge boards and the label is paper.
+  // The stack previously fell through to stainless steel, so it rendered as metal.
+  if (/label/i.test(component)) return shape.color(labelPaper);
+  if (/corner-protector/i.test(component)) return shape.color(edgeBoard);
+  return shape.color(corrugatedBoard);
 };
 p.part("case-0-body", finishPart("case-0-body", boxPart(0, 0, 0, 730, 520, 115)));
 p.part("case-1-body", finishPart("case-1-body", boxPart(0, 0, 150, 730, 520, 115)));

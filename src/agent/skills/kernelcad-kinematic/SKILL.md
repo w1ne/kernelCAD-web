@@ -46,7 +46,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
-| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded` |
+| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `assembly.joint.static-hold.mass-unavailable`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
@@ -55,8 +55,13 @@ script. The same surface is reachable from host code via `import * as kinematic 
 `mode: 'stub'` compatibility path compares manually supplied per-part loads
 against a mate's deprecated `maxLoad`; for a mated assembly, connector and
 part-frame origins use the solved mate placements. This is a lever-arm sanity
-check, not reaction propagation, FEA, or hardware acceptance. See the
-[Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md).
+check, not reaction propagation, FEA, or hardware acceptance. A warning with
+`assembly.joint.load-unverified` means a connector origin could not be resolved
+by this synchronous path, or a declared load rating is unsupported (the legacy
+checker does not compare torque ratings on ball mates), so that capacity
+comparison did not run. See the [Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md),
+the [topology-origin unverified replay bundle](../../../../docs/demos/joint-load-unverified-topology-1272/README.md),
+and the [ball-joint torque replay bundle](../../../../docs/demos/joint-load-ball-torque-1272/README.md).
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
 

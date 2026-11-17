@@ -43,10 +43,10 @@ const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).translate(x, y, z);
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 14) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const rod = (a: [number, number, number], b: [number, number, number], r: number, seg = 6) => {
   const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
@@ -104,7 +104,7 @@ fitted.forEach((pr, i) => {
   add(`${pr.name}-boss`, cylZ(x, CY, ZT, 16, 20, 6).color(fittings));
   add(`${pr.name}-nut`, placed(cylZ(0, 0, 14, 14, 15, 6)).color(fittings));
   add(`${pr.name}-body`, placed(cylZ(0, 0, 28, 120, pr.tip ? 6 : 4, 12)).color(pr.tip ? electrode : '#c9ced1'));
-  add(`${pr.name}-head`, placed(turned([[0, 0], [8, 0], [8, 34], [5, 46], [0, 46]], 12).translate(0, 0, 146)).color(electrode));
+  add(`${pr.name}-head`, placed(turned([[0, 0], [8, 0], [8, 34], [5, 46], [0, 46]]).translate(0, 0, 146)).color(electrode));
   add(`${pr.name}-band`, placed(cylZ(0, 0, 156, 10, 8.4, 12)).color(pr.band));
   // Cable from the head top, back to the comb and down behind the base.
   const top: [number, number, number] = [x, CY + Math.sin((TILT * Math.PI) / 180) * 192, ZT + Math.cos((TILT * Math.PI) / 180) * 192];
@@ -115,11 +115,11 @@ fitted.forEach((pr, i) => {
 });
 
 // Calibration kit on the base: KCl storage bottle and a calibration cup.
-add("kcl-bottle", turned([[0, 0], [22, 0], [22, 70], [10, 84], [8, 92], [0, 92]], 14).translate(-150, -60, 22).color('#8a5a2b'));
+add("kcl-bottle", turned([[0, 0], [22, 0], [22, 70], [10, 84], [8, 92], [0, 92]]).translate(-150, -60, 22).color('#8a5a2b'));
 add("kcl-cap", cylZ(-150, -60, 110, 14, 10, 12).color('#f2f2ec'));
 add("kcl-label", blk(-150, -82.5, 40, 30, 1, 28).color('#f2f2ec'));
-add("cal-cup", turned([[0, 0], [24, 0], [27, 56], [24, 56], [21, 4], [0, 4]], 16).translate(150, -60, 22).color('#e9eae6'));
-add("cal-solution", turned([[0, 4], [20.5, 4], [23.4, 50], [0, 50]], 16).translate(150, -60, 22).color('#e57a6c'));
+add("cal-cup", turned([[0, 0], [24, 0], [27, 56], [24, 56], [21, 4], [0, 4]]).translate(150, -60, 22).color('#e9eae6'));
+add("cal-solution", turned([[0, 4], [20.5, 4], [23.4, 50], [0, 50]]).translate(150, -60, 22).color('#e57a6c'));
 add("cup-ring", cylZ(150, -60, 22, 6, 30, 16).subtract(cylZ(150, -60, 20, 10, 25, 16)).color(fittings));
 
 return p.model();

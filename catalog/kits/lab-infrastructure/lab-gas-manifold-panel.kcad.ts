@@ -24,7 +24,8 @@ presets({
 });
 const p = assembly('lab-gas-manifold-panel');
 p.part('mounting-plate', box(850, 160, 700, true).translate(0, 0, 350).scale(scale).color(enamel));
-p.part('main-header', box(714, 45, 52, true).translate(0, -160, 362).scale(scale).color(enamel));
+// Stainless gas header that feeds the four valve risers; only the plate is enamelled.
+p.part('main-header', box(714, 45, 52, true).translate(0, -160, 362).scale(scale).color(stainless));
 p.part('valve-riser-0', cylinder(175, 17, 8).translate(-289, -160, 336).scale(scale).color(stainless));
 p.part('valve-handle-0', box(66, 20, 16, true).translate(-289, -176, 540).scale(scale).color(polymer));
 p.part('outlet-0', box(38, 70, 35, true).translate(-289, -136, 633.5).scale(scale).color(polymer));

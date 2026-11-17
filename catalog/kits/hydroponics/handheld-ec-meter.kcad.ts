@@ -40,10 +40,10 @@ const p = assembly("handheld-ec-meter");
 const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 16) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 // Bench tray.
@@ -52,8 +52,8 @@ add("tray-lip", extrudeRoundedRect(300, 200, 18, 14, { axis: 'z' }).subtract(ext
 
 // Sample cup of nutrient solution, the meter standing in it.
 const CX = -40, CY = 0, CZ = 8;
-add("sample-cup", turned([[0, 0], [34, 0], [40, 95], [37, 95], [31, 3], [0, 3]], 18).translate(CX, CY, CZ).color('#e9eae6'));
-add("sample", turned([[0, 0], [31, 0], [36, 82], [0, 82]], 18).translate(CX, CY, CZ + 3).color(solution));
+add("sample-cup", turned([[0, 0], [34, 0], [40, 95], [37, 95], [31, 3], [0, 3]]).translate(CX, CY, CZ).color('#e9eae6'));
+add("sample", turned([[0, 0], [31, 0], [36, 82], [0, 82]]).translate(CX, CY, CZ + 3).color(solution));
 for (let k = 0; k < 3; k++) add(`cup-mark-${k}`, blk(CX - 12, CY - 37 - k * 0.6, CZ + 30 + k * 20, 12, 1, 1.5).color('#4a5a66'));
 
 // The meter is built upright with its foot at the origin, then leaned back
@@ -91,14 +91,14 @@ if (style.value === 'pen') {
     const col = k === lit ? '#e8862b' : k < 3 ? display : k < 8 ? '#5c7d55' : '#7a4a42';
     add(`led-${k}`, lean(cylinder(2, 3.2, 8).rotateX(90).translate(0, -16, 202 + k * 8.6)).color(col));
   }
-  add("end-cap", lean(turned([[0, 0], [15, 0], [15, 10], [10, 18], [0, 20]], 16).translate(0, 0, 296)).color(trim));
+  add("end-cap", lean(turned([[0, 0], [15, 0], [15, 10], [10, 18], [0, 20]]).translate(0, 0, 296)).color(trim));
   add("lanyard-loop", lean(torus(10, 2, 12).rotateY(90).translate(0, 0, 326)).color('#22262a'));
   // Wand's protective sensor cap lying on the tray.
   add("cap", cylinder(40, 16, 14).rotateY(90).translate(40, -50, 25).color(trim));
 }
 
 // EC calibration standard bottle.
-add("cal-bottle", turned([[0, 0], [30, 0], [30, 120], [14, 136], [12, 146], [0, 146]], 16).translate(130, 40, 8).color('#f2f2ee'));
+add("cal-bottle", turned([[0, 0], [30, 0], [30, 120], [14, 136], [12, 146], [0, 146]]).translate(130, 40, 8).color('#f2f2ee'));
 add("cal-cap", cylZ(130, 40, 152, 18, 14, 12).color(trim));
 add("cal-label", cylinder(60, 30.6, 16).subtract(cylinder(64, 26, 16).translate(0, 0, -2)).subtract(blk(0, 26, -4, 80, 40, 70)).translate(130, 40, 40).color('#e3b52c'));
 add("cal-label-band", blk(130, 9, 78, 30, 1, 8).color('#2a2d30'));

@@ -12,12 +12,14 @@
 // proves the sign convention actually matches the kernel's.
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { getOC } from 'replicad';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -82,6 +84,10 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'plate.dxf'), PLATE_DXF);
   writeFileSync(join(tmpDir, 'plate-hole.dxf'), PLATE_WITH_HOLE_DXF);
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
+  writeFileSync(
+    join(tmpDir, 'spline-profile.dxf'),
+    readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
+  );
   writeFileSync(join(tmpDir, 'ell.svg'), L_SVG);
   writeFileSync(join(tmpDir, 'disc.svg'), DISC_SVG);
   writeFileSync(join(tmpDir, 'open.svg'), OPEN_SVG);
@@ -104,6 +110,36 @@ async function lower(session: CaptureSession, id: string): Promise<OcctBackend> 
 }
 
 describe('lib.fromDXF — round trip to a solid', () => {
+  it('imports a full rotated DXF ellipse as an exact closed profile and extrudes it to the analytic volume', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [profile] = await api.lib.fromDXF('examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    expect(profile).toBeDefined();
+    const commands = session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
+      Array<{
+        kind: string;
+        controlPoints?: Array<{ x: { evaluated: number }; y: { evaluated: number } }>;
+        weights?: Array<{ evaluated: number }>;
+      }>;
+    const ellipseCommands = commands.filter(command => command.kind === 'nurbsSegment');
+    expect(ellipseCommands).toHaveLength(4);
+    const firstArc = ellipseCommands[0];
+    expect(firstArc.controlPoints?.map(point => [point.x.evaluated, point.y.evaluated])).toEqual([
+      [expect.closeTo(40 + Math.sqrt(300), 8), 40],
+      [expect.closeTo(40 + Math.sqrt(300) - 5, 8), expect.closeTo(30 + 10 + Math.sqrt(75), 8)],
+      [35, expect.closeTo(30 + Math.sqrt(75), 8)],
+    ]);
+    expect(firstArc.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+
+    const backend = await lower(session, profile.extrude(5).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo(Math.PI * 20 * 10 * 5, 5);
+    const bounds = backend.boundingBox();
+    expect(bounds.min[2]).toBeCloseTo(0, 6);
+    expect(bounds.max[2]).toBeCloseTo(5, 6);
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
@@ -130,6 +166,24 @@ describe('lib.fromDXF — round trip to a solid', () => {
     // The arc bows OUTWARD, so the area is 100 + segment, never 100 - segment.
     expect(backend.volume()).toBeCloseTo((100 + segment) * 2, 4);
     expect(backend.volume()).toBeGreaterThan(200);
+  });
+
+  it('imports a rational DXF NURBS segment exactly into a closed solid profile', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+
+    const [profile] = await api.lib.fromDXF('spline-profile.dxf');
+    const command = (session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
+      Array<{ kind: string; degree?: { evaluated: number }; knots?: Array<{ evaluated: number }>; weights?: Array<{ evaluated: number }> }>)
+      .find(item => item.kind === 'nurbsSegment');
+    expect(command?.degree?.evaluated).toBe(2);
+    expect(command?.knots?.map(knot => knot.evaluated)).toEqual([0, 0, 0, 1, 1, 1]);
+    expect(command?.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+    const backend = await lower(session, profile.extrude(3).id);
+
+    // This rational quadratic is an exact quarter-circle of radius 10 mm.
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo((Math.PI * 100 / 4) * 3, 5);
   });
 
   it('returns every closed region, largest first, so holes can be cut explicitly', async () => {
@@ -241,13 +295,23 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
   });
 
   it('an unsupported DXF entity names the entity, the line, and the fix', async () => {
-    const p = join(tmpDir, 'spline.dxf');
-    writeFileSync(p, [0, 'SECTION', 2, 'ENTITIES', 0, 'SPLINE', 10, 0, 20, 0, 0, 'ENDSEC'].join('\n') + '\n');
+    const p = join(tmpDir, 'unsupported.dxf');
+    writeFileSync(p, [0, 'SECTION', 2, 'ENTITIES', 0, 'HELIX', 10, 0, 20, 0, 0, 'ENDSEC'].join('\n') + '\n');
     const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
-    const e = await failure(() => api.lib.fromDXF('spline.dxf'));
-    expect(e.message).toMatch(/SPLINE at line \d+/);
+    const e = await failure(() => api.lib.fromDXF('unsupported.dxf'));
+    expect(e.message).toMatch(/HELIX at line \d+/);
     expect(e.hint).toMatch(/kernel-failed\.lib\.fromDXF\.unsupported-entity/);
-    expect(e.hint).toMatch(/refuses rather than dropping it/);
+    expect(e.hint).toMatch(/refuses the entity rather than dropping it/);
+  });
+
+  it('a partial DXF ellipse is refused with its line instead of becoming an incomplete profile', async () => {
+    const ellipsePath = join(process.cwd(), 'examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    const partial = readFileSync(ellipsePath, 'utf8').replace('6.283185307179586', '3.141592653589793');
+    const p = join(tmpDir, 'partial-ellipse.dxf');
+    writeFileSync(p, partial);
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const e = await failure(() => api.lib.fromDXF('partial-ellipse.dxf'));
+    expect(e.message).toMatch(/ELLIPSE at line \d+: only full ellipses are supported/);
   });
 
   it('an empty file is refused rather than yielding an empty sketch list', async () => {

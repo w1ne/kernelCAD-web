@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'paintedSteel', 'polymer', …(2) ] to deeply equal [ 'paintedSteel', 'labelPaper', …(3) ]
+ Test Files  1 failed (1)
+      Tests  1 failed (1)

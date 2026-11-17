@@ -52,18 +52,18 @@ p.part("phase-1-support--1", cylinder(1650, 95, 10).translate(-980, -231, 220).s
 p.part("phase-1-insulator--1", loftedInsulator(570, 145, 10).translate(-980, -231, 1650).scale(scale).color(porcelain));
 p.part("phase-1-support-1", cylinder(1650, 95, 10).translate(-980, 231, 220).scale(scale).color(galvanizedSteel));
 p.part("phase-1-insulator-1", loftedInsulator(570, 145, 10).translate(-980, 231, 1650).scale(scale).color(porcelain));
-p.part("phase-1-blade", box(110, 525, 90, true).rotateX(24).translate(-980, 0, 2535).scale(scale).color(copper));
+p.part("phase-1-blade", box(110, 525, 90, true).translate(-980, 0, 2265).scale(scale).color(copper));
 p.part("phase-2-support--1", cylinder(1650, 95, 10).translate(0, -231, 220).scale(scale).color(galvanizedSteel));
 p.part("phase-2-insulator--1", loftedInsulator(570, 145, 10).translate(0, -231, 1650).scale(scale).color(porcelain));
 p.part("phase-2-support-1", cylinder(1650, 95, 10).translate(0, 231, 220).scale(scale).color(galvanizedSteel));
 p.part("phase-2-insulator-1", loftedInsulator(570, 145, 10).translate(0, 231, 1650).scale(scale).color(porcelain));
-p.part("phase-2-blade", box(110, 525, 90, true).rotateX(24).translate(0, 0, 2535).scale(scale).color(copper));
+p.part("phase-2-blade", box(110, 525, 90, true).translate(0, 0, 2265).scale(scale).color(copper));
 p.part("phase-3-support--1", cylinder(1650, 95, 10).translate(980, -231, 220).scale(scale).color(galvanizedSteel));
 p.part("phase-3-insulator--1", loftedInsulator(570, 145, 10).translate(980, -231, 1650).scale(scale).color(porcelain));
 p.part("phase-3-support-1", cylinder(1650, 95, 10).translate(980, 231, 220).scale(scale).color(galvanizedSteel));
 p.part("phase-3-insulator-1", loftedInsulator(570, 145, 10).translate(980, 231, 1650).scale(scale).color(porcelain));
-p.part("phase-3-blade", box(110, 525, 90, true).rotateX(24).translate(980, 0, 2535).scale(scale).color(copper));
+p.part("phase-3-blade", box(110, 525, 90, true).translate(980, 0, 2265).scale(scale).color(copper));
 p.part("drive-cabinet", box(630, 315, 1020, true).translate(-1260, 0, 730).scale(scale).color(powderCoat));
-p.part("operating-link", box(2170, 95, 90, true).translate(0, 399, 1305).scale(scale).color(copper));
+p.part("operating-link", box(2170, 95, 90, true).translate(0, 231, 1305).scale(scale).color(copper));
 
 return p.model();

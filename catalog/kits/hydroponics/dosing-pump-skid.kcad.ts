@@ -45,10 +45,10 @@ const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14)
 const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
 // cylinder(...).rotateX(90) runs from its origin toward -Y.
 const cylY = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).rotateX(90).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const rod = (a: [number, number, number], b: [number, number, number], r: number, seg = 6) => {
   const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];

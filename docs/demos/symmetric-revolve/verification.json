@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-11-16",
+  "source": "examples/cookbook-parity/symmetric-pipe-elbow.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 4145.233848457527,
+  "expectedVolumeMm3": 4145.23384845753,
+  "outerVolumeMm3": 9474.820225045783,
+  "outerMeshBoundsMm": {
+    "min": [
+      15.55634880065918,
+      -26.870058059692383,
+      -7.977630615234375
+    ],
+    "max": [
+      38,
+      26.870058059692383,
+      7.977630615234375
+    ]
+  },
+  "faceCount": 6,
+  "occtBoundsMm": {
+    "min": [
+      15.556349186104045,
+      -29.08394085974682,
+      -8.000000000000002
+    ],
+    "max": [
+      41.130903611110966,
+      29.083940859746825,
+      7.999999999999996
+    ]
+  },
+  "meshBoundsMm": {
+    "min": [
+      15.55634880065918,
+      -26.870058059692383,
+      -7.977630615234375
+    ],
+    "max": [
+      38,
+      26.870058059692383,
+      7.977630615234375
+    ]
+  },
+  "meshedFeatureCount": 3,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

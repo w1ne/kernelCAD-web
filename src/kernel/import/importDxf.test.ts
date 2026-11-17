@@ -38,7 +38,51 @@ const SQUARE_10x5: Array<[number, string | number]> = [
   [10, 0], [20, 5],
 ];
 
+const RATIONAL_QUARTER_CIRCLE: Array<[number, string | number]> = [
+  [0, 'SPLINE'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbSpline'],
+  [210, 0], [220, 0], [230, 1], [70, 12], [71, 2], [72, 6], [73, 3], [74, 0],
+  [40, 0], [40, 0], [40, 0], [40, 1], [40, 1], [40, 1],
+  [10, 0], [20, 10], [30, 0], [41, 1],
+  [10, 10], [20, 10], [30, 0], [41, Math.SQRT1_2],
+  [10, 10], [20, 0], [30, 0], [41, 1],
+];
+
 describe('importDxfText — entities', () => {
+  it('keeps rational clamped DXF SPLINE geometry in the exact NURBS sketch command', () => {
+    const r = importDxfText(entities(
+      ...RATIONAL_QUARTER_CIRCLE,
+      [0, 'LINE'], [10, 10], [20, 0], [11, 0], [21, 0],
+      [0, 'LINE'], [10, 0], [20, 0], [11, 0], [21, 10],
+    ));
+    const nurbs = r.regions[0].commands.find(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    expect(nurbs).toBeDefined();
+    expect(nurbs?.degree.evaluated).toBe(2);
+    expect(nurbs?.controlPoints.map(point => [point.x.evaluated, point.y.evaluated])).toEqual([
+      [10, 0], [10, 10], [0, 10],
+    ]);
+    expect(nurbs?.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+    expect(nurbs?.knots?.map(knot => knot.evaluated)).toEqual([0, 0, 0, 1, 1, 1]);
+    // NURBS area is sampled for region ordering; the sketch retains the exact curve.
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
+  it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
+    const r = importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 40], [20, 30], [11, 20], [21, 0], [40, 0.5], [41, 0], [42, 2 * Math.PI],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(200 * Math.PI, 1);
+    const nurbs = r.regions[0].commands.filter(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    expect(nurbs).toHaveLength(4);
+    expect(nurbs.map(command => command.weights?.map(weight => weight.evaluated))).toEqual(
+      Array.from({ length: 4 }, () => [1, Math.SQRT1_2, 1]),
+    );
+  });
+
   it('reads a closed LWPOLYLINE as one region with exact area', () => {
     const r = importDxfText(entities(...SQUARE_10x5));
     expect(r.regions).toHaveLength(1);
@@ -237,17 +281,19 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/no ENTITIES section/);
   });
 
-  it('SPLINE — refused, with the reason it cannot be represented', () => {
-    const e = failure(() => importDxfText(entities([0, 'SPLINE'], [71, 3], [10, 0], [20, 0])));
+  it('rejects periodic SPLINE because its curve form is not represented by the path command', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 10], [71, 2], [72, 0], [73, 0],
+    )));
     expect(e.reason).toBe('unsupported-entity');
     expect(e.message).toMatch(/^SPLINE at line \d+:/);
-    expect(e.message).toMatch(/no 2D NURBS segment/);
-    expect(e.message).toMatch(/will not be silently approximated/);
+    expect(e.message).toMatch(/periodic splines are not supported/);
   });
 
-  it('ELLIPSE and INSERT — refused rather than dropped', () => {
-    expect(failure(() => importDxfText(entities([0, 'ELLIPSE'], [10, 0], [20, 0]))).message)
-      .toMatch(/^ELLIPSE at line \d+: an elliptical arc has no exact form/);
+  it('a partial ELLIPSE and an INSERT are refused rather than dropped', () => {
+    expect(failure(() => importDxfText(entities(
+      [0, 'ELLIPSE'], [10, 0], [20, 0], [11, 5], [21, 0], [40, 0.5], [41, 0], [42, Math.PI],
+    ))).message).toMatch(/^ELLIPSE at line \d+: only full ellipses are supported/);
     expect(failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK']))).message)
       .toMatch(/INSERT \(block reference\) at line \d+:.*Explode blocks/s);
   });

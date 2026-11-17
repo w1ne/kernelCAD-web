@@ -4,7 +4,7 @@ meta({
   name: "reverse-osmosis-skid",
   license: 'CC0-1.0',
   title: "Reverse osmosis skid",
-  description: "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells; weathered and highVisibility presets.",
+  description: "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel, glass-reinforced epoxy vessel shells, operator display glass; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -23,10 +23,11 @@ const coatedSteel = param('coatedSteel', '#3d8589', { label: 'Coated equipment s
 const structuralSteel = param('structuralSteel', '#68777b', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
 const reinforcedComposite = param('reinforcedComposite', '#f0eee7', { label: 'Glass-reinforced epoxy shells' });
+const displayGlass = param('displayGlass', '#1f2d36', { label: 'Operator display glass' });
 
 presets({
-  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6', reinforcedComposite: '#d7d3c8' },
-  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0', reinforcedComposite: '#f7f4e9' },
+  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', stainlessSteel: '#9ca7a6', reinforcedComposite: '#d7d3c8', displayGlass: '#2a3337' },
+  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', stainlessSteel: '#e1ddd0', reinforcedComposite: '#f7f4e9', displayGlass: '#14262f' },
 });
 
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) =>
@@ -97,7 +98,7 @@ p.part('pump-support-right', b(-405, -200, 55, 65, 130, 77).color(structuralStee
 // lamps, so the electrical control gear reads as a workstation-sized object.
 p.part('control-cabinet', b(530, -245, 55, 190, 155, 270).color(coatedSteel));
 p.part('cabinet-door', b(530, -327, 75, 150, 9, 225).color(stainlessSteel));
-p.part('operator-display', b(530, -336, 215, 92, 8, 54).color(structuralSteel));
+p.part('operator-display', b(530, -336, 215, 92, 8, 54).color(displayGlass));
 p.part('status-lamp-green', xCylinder(470, -339, 285, 10, 12).color(stainlessSteel));
 p.part('status-lamp-red', xCylinder(503, -339, 285, 10, 12).color(coatedSteel));
 p.part('cabinet-foot-left', b(480, -245, 55, 30, 145, 38).color(structuralSteel));

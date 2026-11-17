@@ -41,12 +41,14 @@ add('transport-wheel--1', cylinder(85, 120, 12).rotate([0, 1, 0], 90).translate(
 add('transport-wheel--1-hub', cylinder(93.5, 40.8, 10).translate(508.25, -253, 120), steelColor);
 add('transport-wheel-1', cylinder(85, 120, 12).rotate([0, 1, 0], 90).translate(512.5, 253, 120), rubberColor);
 add('transport-wheel-1-hub', cylinder(93.5, 40.8, 10).translate(508.25, 253, 120), steelColor);
+add('wheel-post--1', box(60, 60, 480, true).translate(512.5, -200, 360), steelColor);
+add('wheel-post-1', box(60, 60, 480, true).translate(512.5, 200, 360), steelColor);
 add('hopper', slopedPrism(1200, 550, 607.6).translate(0, -110, 754.6), paintedSteelColor);
-add('pickup-guard', box(1140, 90, 160, true).translate(0, -473, 256.4), steelColor);
-add('pickup-roller-0', cylinder(95, 24, 8).translate(-480, -572, 35), steelColor);
-add('pickup-roller-1', cylinder(95, 24, 8).translate(-240, -572, 35), steelColor);
-add('pickup-roller-2', cylinder(95, 24, 8).translate(0, -572, 35), steelColor);
-add('pickup-roller-3', cylinder(95, 24, 8).translate(240, -572, 35), steelColor);
-add('pickup-roller-4', cylinder(95, 24, 8).translate(480, -572, 35), steelColor);
+add('pickup-guard', box(1140, 90, 160, true).translate(0, -430, 400), steelColor);
+add('pickup-roller-0', cylinder(95, 24, 8).translate(-480, -430, 230), steelColor);
+add('pickup-roller-1', cylinder(95, 24, 8).translate(-240, -430, 230), steelColor);
+add('pickup-roller-2', cylinder(95, 24, 8).translate(0, -430, 230), steelColor);
+add('pickup-roller-3', cylinder(95, 24, 8).translate(240, -430, 230), steelColor);
+add('pickup-roller-4', cylinder(95, 24, 8).translate(480, -430, 230), steelColor);
 
 return p.model();

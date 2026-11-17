@@ -79,7 +79,7 @@ URDF requires a tree topology. If the assembly has a closed mate graph (e.g. a 4
 
 ## Pre-export inspection
 
-Call `inspect({ of: 'robot', file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface.
+Call `inspect({ of: 'robot', file })` to preview what the export will emit before writing to disk. The tool returns the link / joint shape, declared planning groups, and any open issues (closed loops, missing density) the export would surface. A joint driven by `coupleMates` carries `coupling: { source, ratio, offset? }`.
 
 ## Mesh format
 
@@ -108,3 +108,4 @@ Fail-closed gates:
 - `export.usd.joint-unsupported` — a `planar`, `cylindrical`, `pin_slot`, or `ball` mate has no UsdPhysics joint that keeps its DOF count. Nothing is written. Restructure the mates, or export `format: 'sdf-gazebo'`, which carries the full mate vocabulary.
 - `export.usd.mass-missing` — a link's mass came back non-finite or non-positive. Nothing is written. Declare a density or material on the part and check it is a closed solid.
 - `export.usd.pose-unsolved` (warning) — the mate graph did not solve, so links were placed at the stage origin. Run `solve_mates`, fix the connector geometry, re-export.
+- `export.usd.coupling-dropped` (warning) — the `usd-isaac` serializer does not author a `coupleMates` relation or backend-specific mimic API. The driven mate ships as an independent joint, one warning per coupling. Enforce the ratio in the simulator controller or use an export format that preserves mate couplings.
