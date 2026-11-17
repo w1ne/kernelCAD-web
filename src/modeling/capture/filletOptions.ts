@@ -6,7 +6,7 @@
 import type { FeatureId } from '../../shared/intent/types';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 
-const FILLET_OPTION_KEYS: ReadonlySet<string> = new Set(['continuity']);
+const FILLET_OPTION_KEYS: ReadonlySet<string> = new Set(['continuity', 'endRadius']);
 
 const FILLET_OPTIONS_EXAMPLE = "box(40, 30, 10).fillet(2, 'top', { continuity: 'G2' })";
 
@@ -17,7 +17,7 @@ export function assertFilletOptions(opts: unknown, featureId: FeatureId): void {
       path: 'opts',
       got: opts,
       showType: true,
-      requires: "an options object { continuity?: 'G1' | 'G2' }",
+      requires: "an options object { continuity?: 'G1' | 'G2', endRadius?: number }",
       example: FILLET_OPTIONS_EXAMPLE,
       featureId,
     });
@@ -28,7 +28,7 @@ export function assertFilletOptions(opts: unknown, featureId: FeatureId): void {
       api: 'fillet(radius, edges, opts)',
       path: `opts.${unknown}`,
       got: (opts as Record<string, unknown>)[unknown],
-      requires: 'a known option key; fillet accepts continuity',
+      requires: 'a known option key; fillet accepts continuity and endRadius',
       example: FILLET_OPTIONS_EXAMPLE,
       featureId,
     });

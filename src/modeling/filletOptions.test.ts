@@ -36,7 +36,7 @@ describe('Shape.fillet option keys', () => {
     const err = caught(() => shape.fillet(2, 'top', { [key]: value } as unknown as FilletOpts));
     expect(err.code).toBe('feature.invalid-args');
     expect(err.message).toContain(`opts.${key}`);
-    expect(err.message).toContain('fillet accepts continuity');
+    expect(err.message).toContain('fillet accepts continuity and endRadius');
     expect(session.getRecords().length).toBe(before);
   });
 
@@ -45,6 +45,14 @@ describe('Shape.fillet option keys', () => {
     const err = caught(() => shape.fillet(2, 'top', opts as unknown as FilletOpts));
     expect(err.code).toBe('feature.invalid-args');
     expect(err.message).toContain('fillet(radius, edges, opts)');
+  });
+
+  it('retains supported tapered-fillet endRadius instead of rejecting it', () => {
+    const { session, shape } = box();
+    const tapered = shape.fillet(2, 'top', { endRadius: 4 });
+    const record = session.getRecords().find((r) => r.id === tapered.id);
+    expect(JSON.stringify(record)).toContain('endRadius');
+    expect(JSON.stringify(record)).toContain('4');
   });
 
   it('still captures continuity and accepts an empty or omitted opts', () => {
