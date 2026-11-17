@@ -102,6 +102,8 @@ assembly(name?: string): Assembly;
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
+// axis is upper-case 'X' | 'Y' | 'Z'; any other key (there is no handedness
+// option) throws feature.invalid-args.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
