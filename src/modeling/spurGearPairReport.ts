@@ -9,7 +9,8 @@ import type { OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { Transform } from '../shared/runtime/se3';
 import { KernelError } from '../shared/intent/kernelError';
 import { invalidArgs } from '../shared/intent/invalidArgs';
-import { brepExtremaClosestBetween, wrappedShape } from './runtime/brepDistance';
+import { wrappedShape } from './runtime/brepDistance';
+import { closestSpurGearFaces } from './spurGearLateralDistance';
 import {
   SPUR_GEAR_BACKLASH_SEARCH_STEPS,
   SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS,
@@ -154,6 +155,10 @@ export interface SpurGearPairMeasureSpec {
   pitchCenterDistanceMm: number;
   ratio: number;
   backlashMm: number;
+  /** Tip radius of the driver solid, mm. Used to reject a buried-gear pose. */
+  driverTipRadiusMm: number;
+  /** Tip radius of the driven solid, mm. */
+  drivenTipRadiusMm: number;
 }
 
 /** Distance 0 and common volume 0: clearance closes, the interference flag stays false. */
@@ -182,8 +187,14 @@ function poseAround(solid: OcctBackend, deg: number, pivotX: number): OcctBacken
   return solid.located(Transform.rotationAroundPivot([0, 0, 1], deg, [pivotX, 0, 0]));
 }
 
-function measurePose(driver: OcctBackend, driven: OcctBackend): PoseHit {
-  const hit = brepExtremaClosestBetween(wrappedShape(driver), wrappedShape(driven));
+function measurePose(driver: OcctBackend, driven: OcctBackend, spec: SpurGearPairMeasureSpec): PoseHit {
+  const hit = closestSpurGearFaces(
+    wrappedShape(driver),
+    wrappedShape(driven),
+    spec.centerDistanceMm,
+    spec.driverTipRadiusMm,
+    spec.drivenTipRadiusMm,
+  );
   if (hit === undefined) {
     throw new KernelError(
       'feature.kernel-failed',
@@ -244,6 +255,7 @@ async function sampleAt(
   const hit = measurePose(
     poseAround(driver, driverDeg, 0),
     poseAround(driven, drivenDeg, spec.centerDistanceMm),
+    spec,
   );
   return {
     driverDeg,
@@ -421,7 +433,7 @@ async function searchFlankAt(
   }
   const at = async (deg: number): Promise<PoseHit> => {
     await Promise.resolve();
-    return measurePose(driver, poseAround(driven, sign * deg, spec.centerDistanceMm));
+    return measurePose(driver, poseAround(driven, sign * deg, spec.centerDistanceMm), spec);
   };
   const bound = await at(halfPitchDeg);
   if (bound.distanceMm > SPUR_GEAR_CONTACT_EPS_MM) {
@@ -593,7 +605,7 @@ export async function measureToothInterference(
 ): Promise<SpurGearToothInterferenceReport> {
   const plan = samplePlan(opts);
   const halfPitchDeg = 180 / spec.drivenTeeth;
-  const rest = measurePose(driver, driven);
+  const rest = measurePose(driver, driven, spec);
   const positive = await searchFlankAt(driver, driven, spec, 1, rest, halfPitchDeg, drivenPitchRadiusMm);
   const negative = await searchFlankAt(driver, driven, spec, -1, rest, halfPitchDeg, drivenPitchRadiusMm);
   const play = backlashOf(positive, negative, halfPitchDeg);

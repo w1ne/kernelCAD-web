@@ -356,6 +356,8 @@ function measureSpecOf(spec: ResolvedPair) {
     pitchCenterDistanceMm: spec.pitchCenterDistanceMm,
     ratio: spec.ratio,
     backlashMm: spec.backlashMm,
+    driverTipRadiusMm: tipRadiusMm(spec.module, spec.teeth),
+    drivenTipRadiusMm: tipRadiusMm(spec.drivenModule, spec.drivenTeeth),
   };
 }
 
