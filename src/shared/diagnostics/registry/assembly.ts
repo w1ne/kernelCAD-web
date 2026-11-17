@@ -368,6 +368,14 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
   },
+  'assembly.joint.load-unverified': {
+    hintTemplate:
+      'No load comparison ran for this mate. Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.',
+    nextAction: { kind: 'fix-arg', field: 'connector.origin' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared legacy joint load comparison could not run because at least one connector origin is unresolved or uses unsupported topology.',
+  },
   'assembly.joint.not-visible': {
     hintTemplate:
       "Widen the fork-plate gap (FORK_GAP_Y) versus the tongue thickness (TONGUE_Y), and/or extend the pivot pin (PIN_LEN) so the joint hardware is visible at typical viewing distance.",

@@ -1,0 +1,41 @@
+{
+  "scenario": "legacy manual-load check with a topology-origin revolute connector",
+  "invocation": "npx tsx docs/demos/joint-load-unverified-topology-1272/capture-demo.ts",
+  "fixture": "topology-load.kcad.ts",
+  "localValidatorReplay": true,
+  "physicsSimulationRun": false,
+  "deployedBehaviorVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "input": {
+    "mode": "stub",
+    "externalLoads": {
+      "housing": {
+        "force": [
+          0,
+          0,
+          -1000
+        ]
+      }
+    },
+    "declaredMaxLoadTorqueNm": 10
+  },
+  "result": {
+    "ok": true,
+    "failures": [],
+    "diagnostics": [
+      {
+        "code": "assembly.joint.load-unverified",
+        "severity": "warn",
+        "message": "Joint load capacity for mate 'hinge' was not checked because connector 'housing.bore-axis' uses a topology origin. No force or torque comparison ran for this mate.",
+        "hint": "No load comparison ran for this mate. Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.",
+        "nextAction": {
+          "kind": "fix-arg",
+          "field": "connector.origin"
+        },
+        "source": "local",
+        "element": "hinge"
+      }
+    ]
+  },
+  "limitations": "A warning reports that this legacy synchronous check did not compare force or torque. It is not reaction propagation, FEA, deployed behavior, or hardware acceptance."
+}
