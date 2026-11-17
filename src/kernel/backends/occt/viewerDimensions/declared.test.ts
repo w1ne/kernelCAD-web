@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { initOcct } from '../occtBackend';
 import { computeViewerDimensions } from './index';
 import type { WorldFramePart } from '../sceneToWorldFrame';
@@ -84,5 +84,25 @@ describe('declared viewer dimensions', () => {
     const r = computeViewerDimensions({ parts, auto: true, declared: [], budgetMs: -1 });
     expect(r.dimensions.map(d => d.id)).toEqual(['auto:overall:model:0', 'auto:overall:model:1', 'auto:overall:model:2']);
     expect(r.diagnostics.map(d => d.code)).toContain('viewer.dimensions.budget-exceeded');
+  });
+  it('keeps authored dimensions when automatic overall dimensions exhaust the budget', () => {
+    let clockReads = 0;
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => clockReads++ < 3 ? 0 : 101);
+    const parts = [{
+      name: 'part',
+      shape: { boundingBox: () => ({ min: [0, 0, 0], max: [40, 20, 5] }) },
+    }] as unknown as WorldFramePart[];
+    try {
+      const r = computeViewerDimensions({
+        parts,
+        auto: true,
+        budgetMs: 100,
+        declared: [{ kind: 'linear', from: [0, 0, 0], to: [40, 0, 0], label: 'width' }],
+      });
+      expect(r.dimensions.map(d => d.text)).toContain('width 40');
+      expect(r.diagnostics.map(d => d.code)).toContain('viewer.dimensions.budget-exceeded');
+    } finally {
+      clock.mockRestore();
+    }
   });
 });
