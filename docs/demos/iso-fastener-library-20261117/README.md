@@ -3,10 +3,10 @@
 Source: `examples/parts/fastener-lineup.kcad.ts`.
 
 The center stack is an ISO 4014 M6×30 hexagon head bolt (`boltHexPartial`),
-an ISO 4032 M6 nut, and two ISO 7089 M6 washers. The solids are envelope
-detail: nominal table geometry. The modeled thread is not drawn. The nut
-sits on the threaded end (18 mm from the tip) and the head washer sits on
-the plain shank under the bearing face.
+an ISO 4032 M6 nut at the ISO 4032:2023 m max height of 5.2 mm, and two
+ISO 7089 M6 washers. The solids are envelope detail: nominal table geometry.
+The modeled thread is not drawn. The nut sits on the threaded end (18 mm
+from the tip) and the head washer sits on the plain shank under the bearing face.
 
 This MP4 is a local `render inspect` sequence of those views. It is not a
 replay, a simulation, a deployed-studio capture, or a hardware acceptance.

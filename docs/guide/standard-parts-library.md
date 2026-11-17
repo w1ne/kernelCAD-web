@@ -25,9 +25,9 @@ const bolt  = await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm:
 const rod   = await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 250 });
 ```
 
-Socket head runs M2 to M20 (ISO 4762), full-thread hex bolts M3 to M20 (ISO 4017), partial-thread hex bolts M2 to M12 (ISO 4014), countersunk M3 to M12 (ISO 10642), button head M3 to M10 (ISO 7380). Set screws are M3 to M12 (ISO 4026), threaded rod M3 to M12 in 250 and 1000 mm lengths (DIN 975). Hex nuts and flat washers go to M20, lock nuts and lock washers to M12. ISO 10642 has no M2 row, and ISO 4014 is not stocked above M12.
+Socket head runs M2 to M20 (ISO 4762), full-thread hex bolts M3 to M20 (ISO 4017), partial-thread hex bolts M2 to M12 (ISO 4014), countersunk M3 to M12 (ISO 10642:2026), button head M3 to M10 (ISO 7380). Set screws are M3 to M12 (ISO 4026), threaded rod M3 to M12 in 250 and 1000 mm lengths (DIN 975). Hex nuts and flat washers go to M20, lock nuts and lock washers to M12. ISO 10642:2026 covers M2 to M20; this library stocks M3 to M12, and a request for M2 names that limit. ISO 4014 is not stocked above M12.
 
-DIN 912 names the same part as ISO 4762, DIN 7991 as ISO 10642, DIN 931 as ISO 4014 and DIN 933 as ISO 4017. Search keeps the DIN name. The BOM designation stays on the ISO document, for example `ISO 4762 M5x16 - 8.8`. The property class on that callout is the nominal ordering grade, not a certified strength.
+DIN 912 names the same part as ISO 4762, DIN 7991 as ISO 10642, DIN 931 as ISO 4014 and DIN 933 as ISO 4017. Search keeps the DIN name. The BOM designation stays on the ISO document. Socket, button and hex heads use a nominal class 8.8, for example `ISO 4762 M5x16 - 8.8` and `ISO 4014 M6x30 - 8.8`. ISO 10642:2026 writes that class with a leading zero, so the countersunk callout is `ISO 10642 M5x16 - 08.8`. `propertyClass: '10.9'` writes `10.9` on the other screws and `010.9` on ISO 10642. The class is a nominal ordering grade, not a certified strength.
 
 ```ts
 const partial = await lib.part({ family: 'hex-head-bolt-partial', thread: 'M6', lengthMm: 30 });
@@ -44,7 +44,7 @@ Two 6 mm bars overlap by 24 mm. One M5 bolt holds them. `lib.stack` takes the gr
 const stack = await lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
 ```
 
-The arithmetic is open. The 1.0 mm washer under the head, the 12 mm grip, the 1.0 mm washer and the 4.7 mm ISO 4032 hex nut stack to 18.7 mm. A bolt should also show thread past the nut, two pitches by default: 1.6 mm on an M5, so the screw needs 20.3 mm. An M5 × 20 would leave 1.3 mm, so the table picks M5 × 25, with 6.3 mm out. `protrusionPitches` changes the margin, and the result reports it as `protrusionMm`. A grip no stocked length can reach is refused with the length it needed, not filled with a short bolt. `mode: 'bolt'` adds the washer under the head plus the tail washer and the nut; `mode: 'screw'` places the screw alone.
+The arithmetic is open. The 1.0 mm washer under the head, the 12 mm grip, the 1.0 mm washer and the 4.7 mm ISO 4032:2023 m max hex nut (the minimum is 4.4 mm) stack to 18.7 mm. A bolt should also show thread past the nut, two pitches by default: 1.6 mm on an M5, so the screw needs 20.3 mm. An M5 × 20 would leave 1.3 mm, so the table picks M5 × 25, with 6.3 mm out. `protrusionPitches` changes the margin, and the result reports it as `protrusionMm`. A grip no stocked length can reach is refused with the length it needed, not filled with a short bolt. `mode: 'bolt'` adds the washer under the head plus the tail washer and the nut; `mode: 'screw'` places the screw alone.
 
 ![The lap joint with the M5 bolt stack](standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
 
@@ -64,7 +64,7 @@ Two edges are reported instead of guessed. A bore that sits exactly on a larger 
 
 ## A flange ring, eight bolts
 
-The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick. Ø6.6 is the normal clearance for M6, and the 10 mm grip plus a 1.6 mm washer, the 5.2 mm nut and two 1 mm pitches comes to 18.8 mm: an M6 × 20 stack per hole. One `lib.insert` call covers all eight.
+The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick. Ø6.6 is the normal clearance for M6, and the 10 mm grip plus a 1.6 mm washer, the 5.2 mm ISO 4032:2023 m max nut (the minimum is 4.9 mm) and two 1 mm pitches comes to 18.8 mm: an M6 × 20 stack per hole. One `lib.insert` call covers all eight.
 
 ![Bolted flange ring](standard-parts-library/flange.png "Eight M6 countersunk bolts on an 85 mm bolt circle. Render of examples/parts/bolted-flange.kcad.ts.")
 

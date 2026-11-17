@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import { iso4014ReferenceThreadMm } from '../../../src/modeling/parts/fastenerIsoDims';
-import { resolvePart } from '../../../src/modeling/parts/familyTable';
+import { nutLiesOnThread, planStackFor, resolvePart } from '../../../src/modeling/parts/familyTable';
 import { findPartHost } from '../../../src/modeling/parts/findPart';
 import { loadCatalog, queryCatalog } from '../../../src/modeling/parts/catalog';
 import {
@@ -24,12 +24,6 @@ import {
 /** Circumscribed diameter of a hexagon with across-flats width s, mm. */
 function acrossCorners(s: number): number {
   return Math.round((2 * s) / Math.sqrt(3) * 1000) / 1000;
-}
-
-/** The nut's mating face is on the thread, and the remaining screw covers the nut. */
-function nutOnThread(lengthMm: number, threadMm: number, gripMm: number, nutMm: number): boolean {
-  const plainUnderHead = lengthMm - threadMm;
-  return gripMm >= plainUnderHead && lengthMm - gripMm >= nutMm;
 }
 
 function representativeLength(thread: string): number {
@@ -66,6 +60,7 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
       const part = resolvePart({ family: 'hex-nut', thread: row.thread });
       expect(part.acrossFlatsMm).toBe(row.s);
       expect(part.headHeightMm).toBe(row.m);
+      if (row.mMin !== undefined) expect(part.headHeightMm).toBeGreaterThan(row.mMin);
       expect(part.designation).toBe(`ISO 4032 ${row.thread} - 8`);
       expect(part.iso?.pitchMm).toBe(COARSE_PITCH[row.thread]);
     }
@@ -135,7 +130,10 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
 
     const flat = resolvePart({ family: 'DIN 7991', thread: 'M5', lengthMm: 16 });
     expect(flat.family).toBe('flat-head-countersunk');
-    expect(flat.designation).toBe('ISO 10642 M5x16 - 8.8');
+    expect(flat.designation).toBe('ISO 10642 M5x16 - 08.8');
+    expect(resolvePart({ family: 'ISO 10642', thread: 'M5', lengthMm: 16, propertyClass: '10.9' }).designation).toBe('ISO 10642 M5x16 - 010.9');
+    expect(resolvePart({ family: 'ISO 10642', thread: 'M5', lengthMm: 16, propertyClass: '08.8' }).designation).toBe('ISO 10642 M5x16 - 08.8');
+    expect(resolvePart({ family: 'ISO 4762', thread: 'M5', lengthMm: 16, propertyClass: '10.9' }).designation).toBe('ISO 4762 M5x16 - 10.9');
 
     const full = resolvePart({ family: 'DIN 933', thread: 'M6', lengthMm: 20 });
     expect(full.designation).toBe('ISO 4017 M6x20 - 8.8');
@@ -148,7 +146,8 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
   });
 
   it('refuses sizes and lengths the cited tables do not stock', () => {
-    expect(() => resolvePart({ family: 'ISO 10642', thread: 'M2', lengthMm: 16 })).toThrow(KernelError);
+    expect(() => resolvePart({ family: 'ISO 10642', thread: 'M2', lengthMm: 16 })).toThrow(/ISO 10642:2026 covers M2 to M20/);
+    expect(() => resolvePart({ family: 'ISO 10642', thread: 'M2', lengthMm: 16 })).toThrow(/M3 to M12/);
     expect(() => resolvePart({ family: 'ISO 7380', thread: 'M12', lengthMm: 20 })).toThrow(KernelError);
     expect(() => resolvePart({ family: 'ISO 4017', thread: 'M2', lengthMm: 16 })).toThrow(KernelError);
     expect(() => resolvePart({ family: 'ISO 4014', thread: 'M16', lengthMm: 80 })).toThrow(KernelError);
@@ -163,16 +162,18 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
     }
   });
 
-  it('puts an ISO 4014 nut on the thread only when the grip clears the plain shank', () => {
-    // M6×30, b = 18, plain shank under the head = 12. ISO 4032 M6 m max = 5.2.
-    const bolt = resolvePart({ family: 'ISO 4014', thread: 'M6', lengthMm: 30 });
-    expect(bolt.iso?.threadLengthMm).toBe(18);
-    expect(nutOnThread(30, 18, 14, 5.2)).toBe(true);
-    expect(nutOnThread(30, 18, 8, 5.2)).toBe(false);
-    // M6×40 is still b = 18, so a 10 mm grip leaves the nut on the plain shank.
-    expect(resolvePart({ family: 'ISO 4014', thread: 'M6', lengthMm: 40 }).iso?.threadLengthMm).toBe(18);
-    expect(nutOnThread(40, 18, 10, 5.2)).toBe(false);
-    expect(nutOnThread(40, 18, 22, 5.2)).toBe(true);
+  it('places an ISO 4014 nut on the thread, and refuses a grip that leaves it on the plain shank', () => {
+    const nut = resolvePart({ family: 'hex-nut', thread: 'M6' });
+    // ISO 4032:2023 Table 1: m max 5.2, m min 4.9. The stack uses m max.
+    expect(nut.headHeightMm).toBe(5.2);
+    expect(nut.headHeightMm).toBeGreaterThan(4.9);
+    const onThread = planStackFor('hex-head-bolt-partial', { thread: 'M6', gripMm: 14, mode: 'bolt' });
+    expect(onThread.lengthMm).toBe(30);
+    expect(onThread.members.find((member) => member.role === 'screw')?.part.iso?.threadLengthMm).toBe(18);
+    expect(nutLiesOnThread(onThread)).toBe(true);
+    expect(planStackFor('hex-head-bolt-partial', { thread: 'M6', gripMm: 22, mode: 'bolt' }).lengthMm).toBe(35);
+    expect(() => planStackFor('hex-head-bolt-partial', { thread: 'M6', gripMm: 8, mode: 'bolt' })).toThrow(/plain shank/);
+    expect(() => planStackFor('hex-head-bolt-partial', { thread: 'M6', gripMm: 8, mode: 'bolt' })).toThrow(/ISO 4017/);
   });
 
   it('finds DIN and ISO names as the canonical designation and leaves a bare size on the catalog', async () => {
@@ -194,7 +195,7 @@ describe('ISO/DIN fastener table against the standard fixture', () => {
     expect(byStandard.results.every((row) => String(row.attributes.designation).startsWith('ISO 4014 '))).toBe(true);
 
     const countersunk = await findPartHost('DIN 7991 M4x16', { source: 'local' });
-    expect(countersunk.results[0]?.designation ?? countersunk.results[0]?.attributes.designation).toBe('ISO 10642 M4x16 - 8.8');
+    expect(countersunk.results[0]?.designation ?? countersunk.results[0]?.attributes.designation).toBe('ISO 10642 M4x16 - 08.8');
 
     expect(await findPartHost('DIN 912', { family: 'hex-nut', source: 'local' })).toMatchObject({ results: [] });
     expect((await findPartHost('ISO 10642 M2', { source: 'local' })).results).toEqual([]);

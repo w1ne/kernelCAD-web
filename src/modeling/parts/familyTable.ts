@@ -6,7 +6,7 @@
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
-import { coarsePitchOf, screwIso, type FastenerIsoDims } from './fastenerIsoDims';
+import { coarsePitchOf, iso4014ReferenceThreadMm, screwIso, type FastenerIsoDims } from './fastenerIsoDims';
 import {
   canonicalFastenerFamily,
   dinAliasTag,
@@ -125,7 +125,11 @@ export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M10: { D: 17.5, K: 5.5 },
 };
 
-/** ISO 10642 Table 1, 90° head, dk max and k max. The table starts at M3; there is no M2 row. */
+/** ISO 10642:2026 90° head. The standard covers M2–M20. This library stocks
+ *  M3–M12. D is the theoretical head diameter (2.24·d). The 2026 Table 1
+ *  theoretical maximum for M3, M4, M5 and M6 is 6.72, 8.96, 11.20 and
+ *  13.44 mm. K is the matching 90° head height, dk/2 − d/2. M8–M12 stay on
+ *  that formula; those 2026 cells were not re-read. Nominal, not certified. */
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
@@ -169,7 +173,12 @@ export const HEX_BOLT_PARTIAL_HEAD: Record<string, { D: number; K: number; S: nu
   M12: HEX_BOLT_HEAD.M12,
 };
 
-/** ISO 4032 style 1 hex nut: s nominal (across flats) and m max (height). Nominal, not certified. */
+/** ISO 4032:2023 style 1 hex nut. `m` is m max, the height the solid uses.
+ *  Table 1 (M5 and up, product grade A) m max / m min: M5 4.7/4.4, M6 5.2/4.9,
+ *  M8 6.8/6.44, M10 8.4/8.04, M12 10.8/10.37, M16 14.8/14.1. M20 stays at the
+ *  stocked m max of 18. Sizes below M5 are Annex A in that edition; M2 1.6,
+ *  M2.5 2, M3 2.4 and M4 3.2 remain the m max values already stocked.
+ *  m min is lower than the solid and is not a fit ceiling. Nominal, not certified. */
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M2: { S: 4, m: 1.6 },
   M2_5: { S: 5, m: 2 },
@@ -256,6 +265,8 @@ export interface PartRequest {
   lengthMm?: number;
   /** Geometric detail; default `'full'`. */
   detail?: FastenerDetail;
+  /** Ordering property class. ISO 10642 steel classes gain a leading zero (8.8 → 08.8). */
+  propertyClass?: string;
 }
 
 export interface ResolvedPart {
@@ -518,13 +529,42 @@ function requireThread(request: PartRequest, stocked: string): string {
 function requireRow<T>(threads: Record<string, T>, thread: string, family: string): T {
   const dims = threads[threadKey(thread)];
   if (dims) return dims;
+  const libraryLimit = family === 'flat-head-countersunk'
+    ? ' ISO 10642:2026 covers M2 to M20; this library stocks M3 to M12 only.'
+    : '';
   invalidArgs({
     api: 'lib.part({ family, thread, lengthMm })',
     path: 'thread',
     got: thread,
-    requires: `a stocked thread for ${family}: ${stockedThreads(threads)}`,
+    requires: `a stocked thread for ${family}: ${stockedThreads(threads)}.${libraryLimit}`,
     example: PART_EXAMPLE,
   });
+}
+
+const PROPERTY_CLASS = /^[A-Za-z0-9][A-Za-z0-9.-]{0,15}$/;
+const PART_CLASS_EXAMPLE = "lib.part({ family: 'flat-head-countersunk', thread: 'M5', lengthMm: 16, propertyClass: '10.9' })";
+
+function assertPropertyClass(request: PartRequest, kind: 'screw' | 'nut' | 'washer'): void {
+  const value = request.propertyClass;
+  if (value === undefined) return;
+  if (kind !== 'screw') {
+    invalidArgs({
+      api: 'lib.part({ family, thread, lengthMm, propertyClass })',
+      path: 'propertyClass',
+      got: value,
+      requires: 'a screw family. Nuts and washers keep their own callout',
+      example: PART_CLASS_EXAMPLE,
+    });
+  }
+  if (!PROPERTY_CLASS.test(value)) {
+    invalidArgs({
+      api: 'lib.part({ family, thread, lengthMm, propertyClass })',
+      path: 'propertyClass',
+      got: value,
+      requires: 'a property class token such as 8.8, 10.9 or 12.9. ISO 10642 writes a steel class with a leading zero, so 10.9 becomes 010.9',
+      example: PART_CLASS_EXAMPLE,
+    });
+  }
 }
 
 function exactStocked(lengths: readonly number[], requested: number, label: string, why?: string): number {
@@ -605,12 +645,19 @@ function fastenerTags(kind: 'screw' | 'nut' | 'washer', standard: string, thread
   return [kind, 'metric', thread, standard, ...(din === undefined ? [] : [din])];
 }
 
-function calloutFor(standard: string, thread: string, family: string, lengthMm: number): string | undefined {
+function calloutFor(
+  standard: string,
+  thread: string,
+  family: string,
+  lengthMm: number,
+  propertyClass?: string,
+): string | undefined {
   return fastenerCallout({
     standard,
     thread,
     lengthMm: lengthMm > 0 ? lengthMm : undefined,
     kind: kindFromFamily(family),
+    ...(propertyClass !== undefined ? { propertyClass } : {}),
   });
 }
 
@@ -639,7 +686,7 @@ function screwPart(
     iso: screwIso(request.family, thread, lengthMm, nominalMm),
     tags: fastenerTags('screw', spec.standard, thread),
     connectors: screwConnectors(spec.headStyle, dims, lengthMm),
-    designation: calloutFor(spec.standard, thread, request.family, lengthMm),
+    designation: calloutFor(spec.standard, thread, request.family, lengthMm, request.propertyClass),
   };
 }
 
@@ -804,6 +851,7 @@ export function resolvePart(request: PartRequest): ResolvedPart {
   const resolved: PartRequest = requestFamily === request.family ? request : { ...request, family: requestFamily };
   const spec = requireFamily(resolved.family);
   if (isFixtureSpec(spec)) return fixturePart(resolved, spec);
+  assertPropertyClass(resolved, spec.kind);
   const thread = requireThread(resolved, stockedThreads(spec.threads));
   const nominalMm = nominalOf(thread);
   if (spec.kind === 'screw') {
@@ -932,6 +980,50 @@ function stackWear(family: string, mode: 'screw' | 'bolt', thread: string): Stac
   };
 }
 
+/** The nut's two faces lie on the screw's threaded length.
+ *  Stack Z: the screw tip is `offsetZ − length`, and the thread runs
+ *  `threadLengthMm` up from the tip. The nut occupies `[offsetZ, offsetZ + m]`,
+ *  with `m` the modeled ISO 4032 height (m max). */
+export function nutLiesOnThread(plan: StackPlan): boolean {
+  const screw = plan.members.find((member) => member.role === 'screw');
+  const nut = plan.members.find((member) => member.role === 'nut');
+  if (screw === undefined || nut === undefined) return false;
+  const threadLength = screw.part.iso?.threadLengthMm ?? screw.part.lengthMm;
+  const tip = screw.offsetZ - screw.part.lengthMm;
+  const threadTop = tip + threadLength;
+  const nutBottom = nut.offsetZ;
+  const nutTop = nut.offsetZ + nut.part.headHeightMm;
+  return nutBottom >= tip - 1e-6 && nutTop <= threadTop + 1e-6;
+}
+
+/** Shortest ISO 4014 length whose plain shank (l − b) ends before the nut. */
+function shortestPartialBolt(
+  lengths: readonly number[],
+  thread: string,
+  gripMm: number,
+  headT: number,
+  tailT: number,
+  nutT: number,
+  minOut: number,
+): number {
+  const nominal = nominalOf(thread);
+  const minLength = headT + gripMm + tailT + nutT + minOut;
+  for (const length of [...lengths].sort((a, b) => a - b)) {
+    if (length + 1e-9 < minLength) continue;
+    const threadLength = iso4014ReferenceThreadMm(nominal, length);
+    const maxLength = headT + gripMm + tailT + threadLength;
+    if (length <= maxLength + 1e-9) return length;
+  }
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
+    path: 'gripMm',
+    got: gripMm,
+    requires: `a grip that keeps the ISO 4032 nut on the ISO 4014 thread. The plain shank is l − b. No stocked ${thread} length both reaches past the nut and leaves the nut clear of that plain shank. Use a longer grip, or a fully threaded ISO 4017 bolt (family hex-head-bolt)`,
+    unit: 'mm',
+    example: "lib.insert(plate, { family: 'hex-head-bolt-partial', diameterMm: 6.6, gripMm: 14, mode: 'bolt' })",
+  });
+}
+
 function stackMembersFor(wear: StackWear, screw: ResolvedPart, gripMm: number): StackMemberPlan[] {
   const headT = wear.headWasher?.headHeightMm ?? 0;
   const tailT = wear.tailWasher?.headHeightMm ?? 0;
@@ -959,11 +1051,28 @@ export function planStackFor(family: string, request: StackRequest): StackPlan {
   const spec = requireScrewFamily(family);
   const wear = stackWear(family, mode, request.thread);
   // Head washer + grip + tail washer + nut, plus the protrusion the bolt
-  // needs past the nut's outer face.
-  const reach = (wear.headWasher?.headHeightMm ?? 0) + gripMm + (wear.nut ? (wear.tailWasher?.headHeightMm ?? 0) + wear.nut.headHeightMm : 0);
+  // needs past the nut's outer face. The nut height is ISO 4032 m max.
+  const headT = wear.headWasher?.headHeightMm ?? 0;
+  const tailT = wear.tailWasher?.headHeightMm ?? 0;
+  const nutT = wear.nut?.headHeightMm ?? 0;
+  const reach = headT + gripMm + tailT + nutT;
   const minOut = wear.nut ? protrusionPitchesOf(request.protrusionPitches) * coarsePitchOf(request.thread) : 0;
-  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), reach + minOut, { label: `${family} ${request.thread}`, minOut, gripMm });
+  const lengths = lengthsFor(spec, request.thread);
+  const lengthMm = family === 'hex-head-bolt-partial' && wear.nut
+    ? shortestPartialBolt(lengths, request.thread, gripMm, headT, tailT, nutT, minOut)
+    : shortestAtLeast(lengths, reach + minOut, { label: `${family} ${request.thread}`, minOut, gripMm });
   const screw = resolvePart({ family, thread: request.thread, lengthMm });
   const out = wear.nut ? { protrusionMm: Math.round((lengthMm - reach) * 1000) / 1000 } : {};
-  return { lengthMm, members: stackMembersFor(wear, screw, gripMm), ...out };
+  const plan = { lengthMm, members: stackMembersFor(wear, screw, gripMm), ...out };
+  if (family === 'hex-head-bolt-partial' && wear.nut && !nutLiesOnThread(plan)) {
+    invalidArgs({
+      api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
+      path: 'gripMm',
+      got: gripMm,
+      requires: `a grip that keeps the ISO 4032 nut on the ISO 4014 thread of the ${lengthMm} mm bolt. Use a longer grip, or a fully threaded ISO 4017 bolt (family hex-head-bolt)`,
+      unit: 'mm',
+      example: "lib.insert(plate, { family: 'hex-head-bolt-partial', diameterMm: 6.6, gripMm: 14, mode: 'bolt' })",
+    });
+  }
+  return plan;
 }

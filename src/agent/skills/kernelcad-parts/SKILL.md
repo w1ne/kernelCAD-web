@@ -110,7 +110,7 @@ listed in `STANDARD_PART_RANGE_REMAINING` instead of being claimed.
 
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
 socket-head (ISO 4762, M2–M20), button-head (ISO 7380, M3–M10), countersunk
-(ISO 10642, M3–M12; the table starts at M3), full-thread hex (ISO 4017,
+(ISO 10642:2026, library stocks M3–M12; the standard covers M2–M20), full-thread hex (ISO 4017,
 M3–M20) and partial-thread hex (ISO 4014, M2–M12) screws and bolts,
 headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
 250/1000), hex nuts (ISO 4032, M2–M20), lock nuts (DIN 985, M3–M12), flat
@@ -125,11 +125,15 @@ is the ISO 4014 shortcut.
 DIN 912, DIN 7991, DIN 931 and DIN 933 are search names for ISO 4762,
 ISO 10642, ISO 4014 and ISO 4017. The family id and the BOM designation stay
 on the ISO document (`ISO 4762 M5x16 - 8.8`, `ISO 4014 M6x30 - 8.8`,
-`ISO 4032 M6 - 8`, `ISO 7089 M6 - 200 HV`). The class is a nominal callout,
-not a certified property. `find_part` with a DIN or ISO name returns that
-designation. `lib.part` builds the solid even when the committed seed catalog
-has not been regenerated; `fetch_part` of a new id still needs the catalog
-files.
+`ISO 10642 M5x16 - 08.8`, `ISO 4032 M6 - 8`, `ISO 7089 M6 - 200 HV`).
+ISO 10642:2026 writes the steel class with a leading zero. Pass
+`propertyClass: '10.9'` for `010.9` on ISO 10642 and `10.9` on the other
+screws. The class is a nominal callout, not a certified property.
+`find_part` with a DIN or ISO name returns that designation. An ISO 10642
+size outside M3–M12 fails and the message names the M2–M20 standard range
+and the library limit. `lib.part` builds the solid even when the committed
+seed catalog has not been regenerated; `fetch_part` of a new id still needs
+the catalog files.
 
 `detail` picks the solid, on `lib.part`, `lib.stack`, `lib.insert` and the
 `lib.standard` fasteners:
@@ -169,9 +173,13 @@ face; socket heads are the only family `lib.stack` plans, and `lib.insert`
 applies the same rule to its through-bolt stacks). Bolt-mode results carry
 `protrusionMm`, the tip's distance past the nut. A grip no stocked length can
 reach fails with `invalid-args` naming the length it needed; it never falls
-back to a short bolt. Nut heights are ISO 4032 m max (M5 4.7, M6 5.2, M8 6.8,
-M10 8.4 mm). Example: a 12 mm M5 grip needs 1 + 12 + 1 + 4.7 + 1.6 = 20.3 mm,
-so the stack takes an M5 × 25.
+back to a short bolt. Nut heights are ISO 4032:2023 m max (M5 4.7, minimum
+4.4; M6 5.2, minimum 4.9; M8 6.8, minimum 6.44; M10 8.4, minimum 8.04).
+The solid and the stack use m max. Example: a 12 mm M5 grip needs
+1 + 12 + 1 + 4.7 + 1.6 = 20.3 mm, so the stack takes an M5 × 25.
+`planStackFor('hex-head-bolt-partial', …)` (and `lib.insert` with that
+family) refuses a grip that would leave the nut on the plain shank and
+names ISO 4017. `lib.stack` itself still plans a socket head.
 
 ## Hole-driven insert — lib.insert
 
@@ -330,7 +338,8 @@ See `kernelcad-mcp` for the full grammar.
 Bundled tier coverage (671 records on the seed catalog):
 
 - M2–M20 socket head (ISO 4762) and M2–M20 hex head bolts (ISO 4017);
-  M3–M12 flat head countersunk (ISO 10642); button head M3–M10 (ISO 7380).
+  M3–M12 flat head countersunk (ISO 10642:2026 stocks M3–M12; the standard
+  covers M2–M20); button head M3–M10 (ISO 7380).
 - M3–M12 set screws (ISO 4026) and M3–M12 threaded rod (DIN 975, 250/1000 mm).
 - M2–M20 hex nuts and flat washers (ISO 4032 / ISO 7089); lock nuts and lock
   washers M3–M12 (DIN 985 / DIN 127B).

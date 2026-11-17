@@ -8,17 +8,21 @@
 // ISO 261 coarse pitch.
 // ISO 4762 Table 1: dk max, k max.
 // ISO 7380-1 Table 1: dk max, k max. Stocked through M10.
-// ISO 10642 Table 1: dk max, k max. The table starts at M3.
+// ISO 10642:2026 Table 1 theoretical dk for M3–M6 (6.72, 8.96, 11.20, 13.44).
+//   k is dk/2 − d/2. M8–M12 stay on that formula. The standard covers M2–M20;
+//   this library stocks M3–M12.
 // ISO 4014:2022 Tables 1–2 and ISO 4017: s nom, k nom.
 //   ISO 4014 dw min is the 2022 value (M5 is 7.20). ISO 4017 M5 dw min stays 6.88.
 //   Stocked ISO 4014 lengths are product grade A, between the stepped lines,
 //   l ≤ 10d. b for every stocked length is 2d+6 because each l is ≤ 125 mm.
-// ISO 4032 style 1: s nom, m max.
+// ISO 4032:2023 Table 1: s nom and m max. mMin is the table minimum for
+//   M5–M12. The solid uses m. Sizes below M5 are Annex A; their m values
+//   stay the stocked m max figures.
 // ISO 7089: outside diameter, inside diameter, thickness.
 
 export interface HeadRow { thread: string; d: number; k: number }
 export interface HexRow { thread: string; s: number; k: number; dw: number }
-export interface NutRow { thread: string; s: number; m: number }
+export interface NutRow { thread: string; s: number; /** m max, the modeled height. */ m: number; /** ISO 4032:2023 Table 1 m min, where read. */ mMin?: number }
 export interface WasherRow { thread: string; outside: number; inside: number; t: number }
 export interface PartialRow { thread: string; lengths: readonly number[]; b: number }
 
@@ -98,11 +102,11 @@ export const ISO_4032: readonly NutRow[] = [
   { thread: 'M2.5', s: 5, m: 2 },
   { thread: 'M3', s: 5.5, m: 2.4 },
   { thread: 'M4', s: 7, m: 3.2 },
-  { thread: 'M5', s: 8, m: 4.7 },
-  { thread: 'M6', s: 10, m: 5.2 },
-  { thread: 'M8', s: 13, m: 6.8 },
-  { thread: 'M10', s: 16, m: 8.4 },
-  { thread: 'M12', s: 18, m: 10.8 },
+  { thread: 'M5', s: 8, m: 4.7, mMin: 4.4 },
+  { thread: 'M6', s: 10, m: 5.2, mMin: 4.9 },
+  { thread: 'M8', s: 13, m: 6.8, mMin: 6.44 },
+  { thread: 'M10', s: 16, m: 8.4, mMin: 8.04 },
+  { thread: 'M12', s: 18, m: 10.8, mMin: 10.37 },
 ];
 
 export const ISO_7089: readonly WasherRow[] = [

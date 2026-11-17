@@ -7,7 +7,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { fastenerSolid } from '../../../src/modeling/parts/fastenerGeometry';
-import { resolvePart } from '../../../src/modeling/parts/familyTable';
+import { nutLiesOnThread, planStackFor, resolvePart } from '../../../src/modeling/parts/familyTable';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 const PLATE = 10;
@@ -36,13 +36,48 @@ describe('ISO 4014 envelope in a clearance hole', () => {
     expect(clearance).toBeLessThan(1);
 
     const undersize = seated().intersectionVolume(plateWithHole(5.8));
-    // Shell π(3² − 2.9²) × 10 mm ≈ 18.5 mm³. The head is above the plate.
-    expect(undersize).toBeGreaterThan(10);
-    expect(undersize).toBeLessThan(30);
+    // Shell π(3² − 2.9²) × 10 mm. The head is above the plate. The band is
+    // the boolean tolerance around that cylinder shell.
+    const shell = Math.PI * (3 ** 2 - 2.9 ** 2) * PLATE;
+    // Measured common is the analytic shell (about 18.535 mm³) to 0.001 mm³.
+    expect(undersize).toBeCloseTo(shell, 3);
 
     const washer = fastenerSolid(resolvePart({ family: 'flat-washer', thread: 'M6' }), 'envelope');
     const shank = fastenerSolid(bolt, 'envelope').translate(0, 0, 4);
     expect(washer.intersectionVolume(shank)).toBeLessThan(1);
+  });
+
+  it('draws an ISO 4014 M6×30 full solid with a plain shank and a shorter thread', () => {
+    const bolt = resolvePart({ family: 'hex-head-bolt-partial', thread: 'M6', lengthMm: 30 });
+    expect(bolt.iso?.threadLengthMm).toBe(18);
+    const plan = planStackFor('hex-head-bolt-partial', { thread: 'M6', gripMm: 14, mode: 'bolt' });
+    expect(nutLiesOnThread(plan)).toBe(true);
+    const screw = plan.members.find((member) => member.role === 'screw')!;
+    const nut = plan.members.find((member) => member.role === 'nut')!;
+    // Bolt frame: head bearing at z = 0, tip at z = −length. Stack Z is the
+    // bolt frame shifted by the head-washer offset.
+    const nutMid = (nut.offsetZ + nut.part.headHeightMm / 2) - screw.offsetZ;
+    expect(nutMid).toBeLessThan(-bolt.lengthMm + (bolt.iso?.threadLengthMm ?? 0));
+    expect(nutMid).toBeGreaterThan(-bolt.lengthMm);
+
+    const full = fastenerSolid(bolt, 'full');
+    const envelope = fastenerSolid(bolt, 'envelope');
+    const fullVolume = full.volume();
+    const envelopeVolume = envelope.volume();
+    expect(fullVolume).toBeLessThan(envelopeVolume * 0.95);
+    expect(fullVolume).toBeGreaterThan(envelopeVolume * 0.85);
+
+    const band = (z: number) => OcctBackend.cylinder(1, 15).translate(0, 0, z);
+    const nominal = Math.PI * 3 * 3;
+    const plain = full.intersectionVolume(band(-6));
+    const threaded = full.intersectionVolume(band(nutMid - 0.5));
+    const envelopeThread = envelope.intersectionVolume(band(nutMid - 0.5));
+    expect(plain).toBeCloseTo(nominal, 4);
+    expect(envelopeThread).toBeCloseTo(nominal, 4);
+    // The helical profile removes material. A 1 mm slab of the envelope is the
+    // full Ø6 disk; the same slab through the thread is about 0.81 of that.
+    expect(threaded).toBeGreaterThan(nominal * 0.75);
+    expect(threaded).toBeLessThan(nominal * 0.88);
   });
 
   it('refuses ISO 4014 M5×16 before a solid is built', () => {
