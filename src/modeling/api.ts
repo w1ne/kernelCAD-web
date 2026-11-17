@@ -538,9 +538,11 @@ export interface KernelCadApi {
    * If `opts.requireClosed` is true and the result is still an open shell
    * at lower time, the lowerer emits `feature.surface-sew.open-shell`
    * (severity 'error') instead of returning a partial solid.
+   * Unknown option keys and non-object option bags throw
+   * `feature.invalid-args` instead of silently using the defaults.
    *
    * @throws KernelError('feature.invalid-args') if `surfaces` is not an
-   *  array of at least 1 Surface.
+   *  array of at least 1 Surface or `opts` is malformed.
    */
   sew(
     surfaces: SurfaceProxy[],
