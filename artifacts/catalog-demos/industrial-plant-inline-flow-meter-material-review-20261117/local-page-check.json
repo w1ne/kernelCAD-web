@@ -1,0 +1,17 @@
+{
+  "mode": "local generated page; not a deployment check",
+  "page": "/tmp/kernelcad-inline-flow-meter-pages/catalog/industrial-plant/inline-flow-meter/index.html",
+  "sourceSha256": "df4482742120e34e45f69c56077655515eb91b0b4f7dcb56ed059ffd3cd6d8fc",
+  "previewSha256": "5a50d22775c2a9d7a79e3d4444f5ec068f41aff4b7cca7ca5fd1daf3e8ac42a2",
+  "checks": {
+    "pageExists": true,
+    "titlePresent": true,
+    "steelControlPresent": true,
+    "safetyPaintControlPresent": true,
+    "gaugeGlassControlPresent": true,
+    "weatheredPresetPresent": true,
+    "highVisibilityPresetPresent": true,
+    "previewMatchesRenderedSource": true
+  },
+  "allChecksPass": true
+}

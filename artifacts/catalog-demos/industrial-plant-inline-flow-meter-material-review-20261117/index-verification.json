@@ -1,0 +1,54 @@
+{
+  "assetCount": 2402,
+  "assetIdsSha256BeforeAndAfter": {
+    "before": "38dd92ca7b920ac961a49de1adf86df602e932e629671df77a709f2949bca175",
+    "after": "38dd92ca7b920ac961a49de1adf86df602e932e629671df77a709f2949bca175"
+  },
+  "nonTargetRowsSha256BeforeAndAfter": {
+    "before": "eb995a2264fe2eccb9191f561c17259737c7c10522abc34d0bfa751832b7c642",
+    "after": "eb995a2264fe2eccb9191f561c17259737c7c10522abc34d0bfa751832b7c642"
+  },
+  "changedAssetRows": [
+    "inline-flow-meter"
+  ],
+  "changedTargetFields": [
+    "palette",
+    "sourceSha256"
+  ],
+  "target": {
+    "id": "industrial-plant/inline-flow-meter",
+    "sourceSha256": {
+      "index": "df4482742120e34e45f69c56077655515eb91b0b4f7dcb56ed059ffd3cd6d8fc",
+      "source": "df4482742120e34e45f69c56077655515eb91b0b4f7dcb56ed059ffd3cd6d8fc"
+    },
+    "preview": "/assets/industrial-plant-inline-flow-meter.png",
+    "previewSha256": "5a50d22775c2a9d7a79e3d4444f5ec068f41aff4b7cca7ca5fd1daf3e8ac42a2",
+    "baselinePreviewSha256": "7ad9c4f2c1a0d6d9baa10602a3c6503225c4f654b62ef5188563459d20ec2916",
+    "params": [
+      "scale",
+      "steel",
+      "safetyPaint",
+      "gaugeGlass"
+    ],
+    "presets": [
+      "weathered",
+      "highVisibility"
+    ],
+    "triangles": 212,
+    "triangleBudget": 1400
+  },
+  "checks": {
+    "assetCountUnchanged": true,
+    "assetIdsUnchanged": true,
+    "targetSourceHashCurrent": true,
+    "targetPreviewPathPresent": true,
+    "targetPreviewFilePresent": true,
+    "nonTargetRowsUnchanged": true,
+    "onlyTargetRowChanged": true,
+    "targetFieldsChangedOnlyForPaletteAndSourceHash": true,
+    "controlsPresetsAndStatsUnchanged": true,
+    "bothFlangesListedAsSteel": true,
+    "flangesRemovedFromSafetyPaint": true
+  },
+  "allChecksPass": true
+}

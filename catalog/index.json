@@ -144817,7 +144817,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
       "preview": "/assets/industrial-plant-inline-flow-meter.png",
-      "sourceSha256": "c1c311175d44589d70131bae3682f1474b41c56b5b48261837ab451bd5dbfa76",
+      "sourceSha256": "df4482742120e34e45f69c56077655515eb91b0b4f7dcb56ed059ffd3cd6d8fc",
       "triangleBudget": 1400,
       "params": [
         {
@@ -144874,6 +144874,8 @@
           "color": "#6e7e84",
           "parts": [
             "pipe-run",
+            "flange--1",
+            "flange-1",
             "cable-gland",
             "instrument-neck"
           ],
@@ -144883,8 +144885,6 @@
           "name": "safetyPaint",
           "color": "#e1aa48",
           "parts": [
-            "flange--1",
-            "flange-1",
             "meter-housing"
           ],
           "param": "safetyPaint"
