@@ -31,7 +31,11 @@ await arm.instance('block-a', {
 
 Each instance evaluates in a fresh parameter table. A `length` parameter on
 the assembly does not change `length` inside the part, and the compact
-instance does not see the wide instance's values. The repeated compact block
+instance does not see the wide instance's values. The instance is read from
+the part file's resolved path. A geometry file the part names with a literal
+path, such as `lib.fromSTEP('housing.step')`, is resolved beside that part
+file and is part of the same read, so replacing the file rebuilds the solid.
+A path the part computes is read on every instance. The repeated compact block
 in `examples/assemblies/configured-bearing-blocks.kcad.ts` is a second
 instance of the same set, so the bill of materials reports quantity 2 for
 compact and quantity 1 for wide.

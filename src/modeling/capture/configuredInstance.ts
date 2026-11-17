@@ -131,9 +131,11 @@ function definedShape(child: { session: import('./captureSession').CaptureSessio
 async function evaluateConfiguredPart(source: LoadedPart, configuration: string): Promise<MemoEntry> {
   const set = configurationByName(readConfigurations(source.text), configuration);
   assertConfigurationAssignments(source.text, set);
-  const key = partEvalMemoKey(source.bytes, configuration, set.values);
-  const cached = partEvalMemo.get(key);
-  if (cached) return cached;
+  const key = await partEvalMemoKey(source, configuration, set.values);
+  if (key !== undefined) {
+    const cached = partEvalMemo.get(key);
+    if (cached) return cached;
+  }
   const { initOcct } = await import('../../kernel/backends/occt/backendInit');
   await initOcct();
   const child = await runPartSource({
@@ -148,7 +150,7 @@ async function evaluateConfiguredPart(source: LoadedPart, configuration: string)
     parameters: parameterSnapshot(child.paramTable),
     interfaceSignature: interfaceSignature(built.connectors),
   };
-  partEvalMemo.set(key, entry);
+  if (key !== undefined) partEvalMemo.set(key, entry);
   return entry;
 }
 

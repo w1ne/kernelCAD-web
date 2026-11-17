@@ -93,9 +93,11 @@ export async function evaluateCacheKey(
   const imports = await importIdentity(source, scriptDir);
   if (!importsAreProvable(imports)) return undefined;
   // instance(name, { source, configuration }) reads another file. The
-  // assembly's own stat does not change when that part file does, so the
-  // part bytes and the configuration name are part of the key. A non-literal
-  // source or configuration cannot be hashed and skips the cache.
+  // assembly's own stat does not change when that part file does, or when a
+  // geometry file the part reads beside itself does. The part's resolved
+  // path, its bytes, those geometry files, and the configuration name are
+  // part of the key. A non-literal source, configuration, or geometry path
+  // cannot be hashed and skips the cache.
   const configs = await configurationImportIdentity(source, scriptDir);
   if (!importsAreProvable(configs)) return undefined;
   return `${fileKey}:imports:${imports}:configs:${configs}`;

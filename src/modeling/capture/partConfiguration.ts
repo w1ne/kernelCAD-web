@@ -4,13 +4,15 @@
 // Named configurations are a file-level contract: one `configurations({ ... })`
 // literal of parameter overrides. `assembly.instance` type-checks a named set
 // against the part's `param()` declarations, rewrites those defaults, and
-// evaluates the part in a fresh parameter table. Nothing here touches the
-// filesystem except the evaluate-cache identity, which goes through the host
-// filesystem port.
+// evaluates the part in a fresh parameter table. The part-eval memo and the
+// evaluate-cache identity both go through the host filesystem port. They hash
+// the part's resolved path and the geometry files that path reads. A
+// dependency that cannot be proven is not cached.
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { FEATURE_NAME_REGEX } from '../../shared/intent/featureName';
 import { getHostFs } from '../../shared/runtime/hostFs';
+import { importIdentity } from '../warm/importIdentity';
 import { normalizeColor } from '../../shared/runtime/paramColor';
 import {
   parseParamDeclaration,
@@ -400,16 +402,66 @@ function hashBytes(bytes: Uint8Array): string {
   return `${bytes.length.toString(16)}:${(h1 >>> 0).toString(16)}:${(h2 >>> 0).toString(16)}`;
 }
 
-/** Stable across calls. The configuration name is part of the key, so two
- *  sets of one file cannot share a lowered solid. */
-export function partEvalMemoKey(
-  bytes: Uint8Array,
+/** Bytes of one part file plus the directory `lib.fromSTEP` and the other
+ *  literal geometry loaders resolve against. */
+export interface PartEvalSource {
+  readonly bytes: Uint8Array;
+  readonly absolutePath: string;
+  readonly scriptDir: string;
+  readonly text: string;
+}
+
+function directoryOf(absolutePath: string): string {
+  const slash = Math.max(absolutePath.lastIndexOf('/'), absolutePath.lastIndexOf('\\'));
+  return slash < 0 ? '' : absolutePath.slice(0, slash);
+}
+
+/** A proven identity is stable. `unprovable`, a missing file, or an unread
+ *  file must not be stored: the next evaluation reads the part again. */
+function dependencyIdentityIsProvable(identity: string): boolean {
+  return !identity.includes('unprovable:')
+    && !identity.includes('unread:')
+    && !identity.includes('missing:')
+    && !identity.includes('unreadable:');
+}
+
+/** Geometry files named by `text`, plus configured parts that `text` instances.
+ *  `stack` stops a part that instances itself from walking forever. */
+async function partFileDependencyIdentity(
+  absolutePath: string,
+  text: string,
+  scriptDir: string,
+  stack: Set<string>,
+): Promise<string> {
+  if (stack.has(absolutePath)) return `unprovable:cycle:${absolutePath}`;
+  stack.add(absolutePath);
+  try {
+    const assets = await importIdentity(text, scriptDir);
+    if (!dependencyIdentityIsProvable(assets)) return `unprovable:${absolutePath}:assets`;
+    const nested = await configurationImportIdentity(text, scriptDir, stack);
+    if (!dependencyIdentityIsProvable(nested)) return `unprovable:${absolutePath}:nested`;
+    return `assets:${assets}|nested:${nested}`;
+  } finally {
+    stack.delete(absolutePath);
+  }
+}
+
+/** Undefined when the part reads a geometry file we cannot hash. The caller
+ *  then evaluates every time. A proven key includes the resolved path, so two
+ *  copies of one source in different directories do not share a solid, and
+ *  the geometry files beside that path, so a changed STEP file does not
+ *  either. The configuration name is part of the key, so two sets of one
+ *  file cannot share a lowered solid. */
+export async function partEvalMemoKey(
+  source: PartEvalSource,
   name: string,
   values: Readonly<Record<string, ConfigValue>>,
-): string {
+): Promise<string | undefined> {
+  const deps = await partFileDependencyIdentity(source.absolutePath, source.text, source.scriptDir, new Set());
+  if (!dependencyIdentityIsProvable(deps)) return undefined;
   const ordered: Record<string, ConfigValue> = {};
   for (const key of Object.keys(values).sort()) ordered[key] = values[key]!;
-  return `${hashBytes(bytes)}|${name}|${JSON.stringify(ordered)}`;
+  return `${source.absolutePath}|${hashBytes(source.bytes)}|${deps}|${name}|${JSON.stringify(ordered)}`;
 }
 
 function isQuote(ch: string): boolean {
@@ -473,13 +525,17 @@ function instanceDependency(code: string, site: number): InstanceDep | 'unprovab
   return { source, configuration };
 }
 
-function hashPart(source: string, scriptDir: string | undefined): string {
+async function hashPart(source: string, scriptDir: string | undefined, stack: Set<string>): Promise<string> {
   const fs = getHostFs();
   if (!fs) return `unread:${source}`;
   const abs = fs.resolveScriptRelative(scriptDir, source);
   if (!fs.fileExists(abs)) return `missing:${abs}`;
   try {
-    return `${abs}:${hashBytes(fs.readFileBytes(abs))}|config:`;
+    const bytes = fs.readFileBytes(abs);
+    const text = new TextDecoder().decode(bytes);
+    const deps = await partFileDependencyIdentity(abs, text, directoryOf(abs), stack);
+    if (!dependencyIdentityIsProvable(deps)) return deps;
+    return `${abs}:${hashBytes(bytes)}|${deps}|config:`;
   } catch {
     return `unreadable:${abs}`;
   }
@@ -488,19 +544,23 @@ function hashPart(source: string, scriptDir: string | undefined): string {
 /**
  * Identity of every literal `instance(..., { source, configuration })`.
  * `none` when the script instances nothing. A non-literal source or
- * configuration returns `unprovable:`, and the evaluate cache skips the script.
+ * configuration, or a geometry file the part reads that cannot be hashed,
+ * returns `unprovable:`, and the evaluate cache skips the script.
  */
-export async function configurationImportIdentity(code: string, scriptDir?: string): Promise<string> {
+export async function configurationImportIdentity(
+  code: string,
+  scriptDir?: string,
+  stack?: Set<string>,
+): Promise<string> {
+  const seen = stack ?? new Set<string>();
   const sites = findCallSites(code, 'instance');
   if (sites.length === 0) return 'none';
   const parts: string[] = [];
   for (const site of sites) {
     const dep = instanceDependency(code, site);
     if (dep === 'unprovable') return 'unprovable:instance';
-    const hashed = hashPart(dep.source, scriptDir);
-    if (hashed.startsWith('missing:') || hashed.startsWith('unreadable:') || hashed.startsWith('unread:')) {
-      return `unprovable:${hashed}`;
-    }
+    const hashed = await hashPart(dep.source, scriptDir, seen);
+    if (!dependencyIdentityIsProvable(hashed)) return `unprovable:${hashed}`;
     parts.push(`${hashed}${dep.configuration}`);
   }
   return parts.sort().join('|');

@@ -131,7 +131,7 @@ await arm.instance('block-a', {
 });
 ```
 
-Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. A geometry file the part names with a literal path is resolved beside the part file and is part of that evaluation, so replacing the file rebuilds the solid. A path the part computes is read on every instance. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
 
 ```typescript
 interface Assembly {
