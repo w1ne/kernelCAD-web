@@ -2,9 +2,9 @@
 
 `inspect_step_views` imports one `.step` file through the same normalized path as `lib.fromSTEP` and returns four PNGs: front, right, top, and iso. kernelCAD is Z-up. Front looks along +Y from −Y, right looks along −X from +X, top looks down from +Z with screen up +Y, and iso sits in the +X, −Y, +Z octant.
 
-Each image labels the largest visible faces and the longest visible edges. The remaining ids are listed in a legend band under the model. `height` is the model viewport in pixels (default 260). The PNG is 56 px taller than `height`. `width` defaults to 360.
+Each image labels the largest visible faces and the longest visible edges. The legend band under the model names at most 18 remaining face ids and 18 remaining edge ids, then a `+N` count. `height` is the model viewport in pixels (default 260). The PNG is 56 px taller than `height`. `width` defaults to 360.
 
-The reply is compact: image paths, a face list, and an edge list. `detail: true` inlines label placements. The same full report is written to `report.json` and can be read back with `report_id` or `report_path` without passing `file`.
+The reply is compact: image paths, a face list, and an edge list. `detail: true` inlines label placements and edge direction. `report.json` stores that full report. A later call with `report_id` or `report_path` and no `file` returns the compact reply unless `detail: true`.
 
 ## Selectors belong to this import
 

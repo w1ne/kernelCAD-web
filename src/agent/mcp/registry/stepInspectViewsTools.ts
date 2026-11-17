@@ -22,8 +22,8 @@ export const stepInspectViewsToolEntries: ToolRegistryEntry[] = [
         'importGeneration is owner@sha256-prefix of the file bytes. refScope says these selectors do not survive healing or a later edit. ' +
         'target_face highlights that face in every view where the face or its boundary is visible. ' +
         'Pass an id, a listRef, or a named ref from this import. A miss returns ok false, errorCode feature.selection.no-match, the face list, and no images. ' +
-        'On-image labels are the largest visible faces and longest visible edges; the rest are named in the legend (max_labels, default 8). ' +
-        'The default reply is compact. detail true, report_id, or report_path returns the saved full report (label placements and edge direction). ' +
+        'On-image labels are the largest visible faces and longest visible edges. The legend names at most 18 remaining face ids and 18 remaining edge ids, then a +N count. max_labels (default 8) caps on-image face labels. ' +
+        'The default reply is compact, including a call that only passes report_id or report_path. detail true returns the saved full report (label placements and edge direction). ' +
         'Images come back as filesystem paths. When KERNELCAD_ARTIFACT_BASE_URL is set, each image also has a url of that base plus the file name.',
       inputSchema: {
         type: 'object',
