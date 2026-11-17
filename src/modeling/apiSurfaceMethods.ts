@@ -24,17 +24,19 @@ const OPTION_KEY_ARGS = {
   spline3d: 'points',
   variableSweep: 'spine, sections',
   surfaceFromBoundary: 'curves',
+  sew: 'surfaces',
 } as const;
 
-/** Reject a non-object opts or an unknown key for the curve, sweep and
- *  boundary-surface constructors. `spline3d(pts, 0.2)` and
- *  `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
+/** Reject a non-object opts or an unknown key for the curve, sweep,
+ *  boundary-surface and sewing operations. `sew(surfaces, { requireClosd: true })`
+ *  used to silently disable the closed-shell requirement. `spline3d(pts, 0.2)`
+ *  and `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
  *  tension, `nurbsCurve(cp, { periodic: true })` built an open curve,
  *  `variableSweep(spine, sections, { continuty: 'C2' })` swept at C1 and
  *  `surfaceFromBoundary(curves, { samples: 40 })` filled at the default 15
  *  points, all with no diagnostic. */
 function assertOptionKeys(
-  api: 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary',
+  api: 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary' | 'sew',
   keys: readonly string[],
   example: string,
   opts: unknown,
@@ -351,6 +353,7 @@ export function makeSweepMethods(
           'invalid-args.sew.surfaces — pass an array of at least 1 Surface returned by nurbsSurface() / surfaceFromCurves() / surfaceFromBoundary().',
         );
       }
+      assertOptionKeys('sew', ['tolerance', 'requireClosed'], 'sew([surfaceA, surfaceB], { requireClosed: true })', opts);
       const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
       for (let i = 0; i < surfaces.length; i++) {
         const surface = surfaces[i];
