@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-17T10:17:11.168301+00:00",
+  "scope": "All open issues and open PR descriptions plus changed file paths",
+  "assets": [
+    "forklift-truck",
+    "centrifugal-pump",
+    "distillation-column",
+    "industrial-boiler",
+    "bridge-crane"
+  ],
+  "openIssueCount": 8,
+  "openPullRequestCount": 9,
+  "issueHits": [],
+  "pullRequestHits": []
+}

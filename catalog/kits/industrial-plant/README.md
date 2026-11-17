@@ -4,6 +4,8 @@ Sixty original low-poly factory scene assets for process equipment, power and co
 
 The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industrial-plant-wave-20261102/README.md) retains the original kit capture and verification. The [2026-11-05 quality promotion bundle](../../../artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/README.md) records the in-place material, preset, geometry, preview, and local validation work. Both bundles distinguish local source and preview checks from deployment and physical equipment acceptance.
 
+The [2026-11-17 bridge crane material review](../../../artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/README.md) records the hoist-motor control correction, its before/after preview and regression evidence.
+
 The Nov 9 machine-detail follow-up refines the existing diesel generator,
 belt conveyor, and distribution transformer after preview review. Their
 material controls distinguish enclosure paint, radiator metal, rubber

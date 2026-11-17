@@ -1,0 +1,28 @@
+{
+  "number": 1258,
+  "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+  "state": "MERGED",
+  "reviewDecision": "",
+  "reviewCount": 0,
+  "successfulChecks": [
+    "changes",
+    "reference-parts",
+    "solidcraft-ledger",
+    "lint",
+    "build-and-checks",
+    "catalog-index",
+    "geometry-proofs",
+    "test-shard (1)",
+    "test-shard (2)",
+    "test-shard (3)",
+    "test-shard (4)",
+    "test-shard (5)",
+    "test-shard (6)",
+    "test-shard (7)",
+    "test-shard (8)",
+    "external-tools",
+    "test"
+  ],
+  "failedChecks": [],
+  "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+}

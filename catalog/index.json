@@ -141061,7 +141061,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bridge-crane.kcad.ts",
       "preview": "/assets/industrial-plant-bridge-crane.png",
-      "sourceSha256": "202720f34b14125a5a9da0b4694653a4deddad8cbb4d402177bf067abe6d5c29",
+      "sourceSha256": "3c1f349d038b6300b3620175cca8fbef308463d986758aa8db8daf064308c238",
       "triangleBudget": 6000,
       "params": [
         {
@@ -141221,7 +141221,6 @@
             "walkway-bracket--400",
             "walkway-bracket-1200",
             "walkway-bracket-2800",
-            "hoist-motor",
             "pendant-box"
           ],
           "param": "girder"
@@ -141251,6 +141250,7 @@
             "drum-bearing--700",
             "drum-bearing-700",
             "hoist-gearbox",
+            "hoist-motor",
             "trolley-cover",
             "hook-crosshead",
             "hook-nut"
