@@ -182,10 +182,10 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
             type: 'object',
             description: "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",
             properties: {
-              faceA: { type: 'string', enum: [...ADHESIVE_FACES] },
-              faceB: { type: 'string', enum: [...ADHESIVE_FACES] },
+              face_a: { type: 'string', enum: [...ADHESIVE_FACES] },
+              face_b: { type: 'string', enum: [...ADHESIVE_FACES] },
             },
-            required: ['faceA', 'faceB'],
+            required: ['face_a', 'face_b'],
           },
           limits_deg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
           limits_mm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },

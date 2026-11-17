@@ -43,7 +43,7 @@ export interface AddMateSourceInput {
   a: string;
   b: string;
   type: MateType;
-  adhesive?: AdhesiveMateMetadata;
+  adhesive?: { face_a: AdhesiveMateMetadata['faceA']; face_b: AdhesiveMateMetadata['faceB'] };
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -144,21 +144,14 @@ export function addPartConnectorSource(input: AddPartConnectorSourceInput): Sour
   );
 }
 
-export function addMateSource(input: AddMateSourceInput): SourceEditResult {
-  const baseError = validateSourceBasics(input.code, input.assembly_binding);
-  if (baseError) return baseError;
-  for (const field of ['name', 'a', 'b'] as const) {
-    if (!isNonEmptyString(input[field])) return { ok: false, error: `add_mate: ${field} must be a non-empty string.` };
-  }
-  if (!isMateType(input.type)) return { ok: false, error: `add_mate: unsupported mate type '${String(input.type)}'.` };
-  const adhesive = input.adhesive;
-  if (adhesive !== undefined &&
-      (input.type !== 'fastened' || !adhesive ||
-        !ADHESIVE_FACES.includes(adhesive.faceA) || !ADHESIVE_FACES.includes(adhesive.faceB))) {
-    return { ok: false, error: 'add_mate: adhesive requires a fastened mate and two canonical planar face names.' };
-  }
-  const opts = {
-    ...(adhesive ? { adhesive: { faceA: adhesive.faceA, faceB: adhesive.faceB } } : {}),
+function validAdhesiveInput(type: MateType, adhesive: NonNullable<AddMateSourceInput['adhesive']>): boolean {
+  return type === 'fastened' && Boolean(adhesive) &&
+    ADHESIVE_FACES.includes(adhesive.face_a) && ADHESIVE_FACES.includes(adhesive.face_b);
+}
+
+function mateSourceOptions(input: AddMateSourceInput, adhesive: AddMateSourceInput['adhesive']) {
+  return {
+    ...(adhesive ? { adhesive: { faceA: adhesive.face_a, faceB: adhesive.face_b } } : {}),
     ...(input.pose !== undefined ? { pose: input.pose } : {}),
     ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
     ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),
@@ -169,6 +162,20 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
     ...(input.springRefMm !== undefined ? { springRefMm: input.springRefMm } : {}),
     ...(input.dampingNsPerMm !== undefined ? { dampingNsPerMm: input.dampingNsPerMm } : {}),
   };
+}
+
+export function addMateSource(input: AddMateSourceInput): SourceEditResult {
+  const baseError = validateSourceBasics(input.code, input.assembly_binding);
+  if (baseError) return baseError;
+  for (const field of ['name', 'a', 'b'] as const) {
+    if (!isNonEmptyString(input[field])) return { ok: false, error: `add_mate: ${field} must be a non-empty string.` };
+  }
+  if (!isMateType(input.type)) return { ok: false, error: `add_mate: unsupported mate type '${String(input.type)}'.` };
+  const adhesive = input.adhesive;
+  if (adhesive !== undefined && !validAdhesiveInput(input.type, adhesive)) {
+    return { ok: false, error: 'add_mate: adhesive requires a fastened mate and two canonical planar face names.' };
+  }
+  const opts = mateSourceOptions(input, adhesive);
   const hasOpts = Object.keys(opts).length > 0;
   const args = [
     quoteString(input.name),

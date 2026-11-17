@@ -15,7 +15,7 @@ describe('adhesive mate contact', () => {
       a: 'base.seat',
       b: 'panel.seat',
       type: 'fastened',
-      adhesive: { faceA: 'right', faceB: 'left' },
+      adhesive: { face_a: 'right', face_b: 'left' },
     });
     expect(result.ok).toBe(true);
     expect(JSON.stringify(result)).toMatch(/adhesive.*faceA.*right.*faceB.*left/);

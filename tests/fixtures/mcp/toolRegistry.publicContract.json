@@ -6114,7 +6114,7 @@
           "type": "object",
           "description": "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",
           "properties": {
-            "faceA": {
+            "face_a": {
               "type": "string",
               "enum": [
                 "left",
@@ -6125,7 +6125,7 @@
                 "bottom"
               ]
             },
-            "faceB": {
+            "face_b": {
               "type": "string",
               "enum": [
                 "left",
@@ -6138,8 +6138,8 @@
             }
           },
           "required": [
-            "faceA",
-            "faceB"
+            "face_a",
+            "face_b"
           ]
         },
         "limits_deg": {
