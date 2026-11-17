@@ -306418,7 +306418,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-club.kcad.ts",
       "preview": "/assets/sports-golf-club.png",
-      "sourceSha256": "513e2d86f543c328c07acec5ea367e29a9ace56e0ff8e8eb3e9941a6340fa154",
+      "sourceSha256": "15c3725fd28470698c69fb8a9aa375fa5aca20c72562a253eb00617ee350ee48",
       "triangleBudget": 2000,
       "params": [
         {
@@ -306481,11 +306481,11 @@
         }
       },
       "stats": {
-        "triangles": 1624,
+        "triangles": 776,
         "sizeM": [
-          0.417894,
+          0.417346,
           0.97777,
-          0.622579
+          0.622434
         ],
         "minUpM": 0,
         "materials": 1
@@ -318600,7 +318600,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/omnidirectional-whip-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-omnidirectional-whip-antenna.png",
-      "sourceSha256": "051a682a183f89748144fcb7462ddeccba903ac8e4616cda3eba2edf82659d68",
+      "sourceSha256": "6285d39bec54f762cf7b3944582c6c72134267e486f1c1217956850a61a0834d",
       "triangleBudget": 2400,
       "params": [
         {
@@ -318658,7 +318658,7 @@
         }
       },
       "stats": {
-        "triangles": 1890,
+        "triangles": 1308,
         "sizeM": [
           0.474,
           2.298,
