@@ -50,7 +50,7 @@ describe('evaluateCache', () => {
     const stat = statSync(path);
     const key = await evaluateCacheKey({ file: path, kernel: 'occt' });
     expect(key).toBe(
-      `file:occt:${path}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}:imports:`,
+      `file:occt:${path}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}:imports::configs:none`,
     );
   });
 

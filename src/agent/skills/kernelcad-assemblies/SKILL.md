@@ -117,7 +117,21 @@ Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass 
 
 Exploded views reuse that same assembly: `render_preview({ explode: { factor, mode } })` / `kernelcad render --explode` pull parts apart along mate axes (`mate-axis`) or from the centroid (`radial`); `export` svg-drawing with `exploded` + `balloons` + `partsList` numbers those parts from the BOM. In mate-axis mode, an earlier standalone part does not prevent later mated components from following their connector axes. There is no `arm.explode()` hook — render and export consume the poses directly. See `examples/exploded/clamshell-table-first.kcad.ts` for a reproducible case.
 
-`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part. A part created with `assembly.instance` groups by part file plus configuration name (two sizes of one file stay two rows; repeated instances of one configuration share a row and add up in `quantity`). Anything else groups by geometry/catalog identity, never by part name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`. Rows split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`).
+
+### Named configurations
+
+A part file can publish several named parameter sets of one solid. `configurations({ compact: { length: 80 }, wide: { length: 110 } })` checks every set against the `param()` declarations and does not change the live defaults. `definePart({ shape, connectors })` returns that same shape and records numeric connector frames (vec3 origins only). An assembly then instances one set:
+
+```typescript
+await arm.instance('block-a', {
+  source: '../parts/bearing-block.kcad.ts',
+  configuration: 'compact',
+  material: 'aluminum-6061',
+});
+```
+
+Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
 
 ```typescript
 interface Assembly {

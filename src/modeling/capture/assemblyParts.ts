@@ -13,7 +13,6 @@ import {
   type Connector,
   type FluidPort,
 } from '../mates/connector';
-import { parseConnectorRef } from '../mates/mate';
 import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
@@ -24,8 +23,9 @@ import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
 import { createPartCollision } from './assemblyPartCollision';
-import { copyMateCapacity } from './assemblyMateCapacity';
+import { importSubAssemblyMates } from './assemblyImportedMates';
 import type { Assembly } from './assembly';
+import type { PartConfigurationIdentity } from './partConfigurationTypes';
 import type {
   AssemblyConnectorFrame,
   AssemblyConnectorFrameStored,
@@ -732,6 +732,7 @@ export function recordPartInternal(
   shape: Shape,
   opts: AssemblyPartOpts,
   promoteCatalogConnectors: boolean,
+  configuration?: PartConfigurationIdentity,
 ): AssemblyPartRef {
   assertTopoRefSafeName(name, 'part-name', shape.id);
   const stock = parseOptionalStockSpec(opts.stock, { partName: name, featureId: shape.id });
@@ -798,6 +799,7 @@ export function recordPartInternal(
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
     ...(opts.overlay !== undefined ? { overlay: opts.overlay } : {}),
+    ...storedConfiguration(configuration),
   };
   state.parts.push(stored);
   if (opts.connect) {
@@ -905,7 +907,7 @@ function importSubAssemblyParts(
     const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
       ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
       ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
-    }, false);
+    }, false, op.configuration);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an
     // empty mateConnectors array per `part()`; populate it now so post-
@@ -918,38 +920,8 @@ function importSubAssemblyParts(
   return importedByOriginalName;
 }
 
-// 2. Copy mates. Remap the partName portion of each `a` / `b` ref by
-//    prepending the prefix, leaving the connectorName intact. Mate
-//    names are also prefixed so name-uniqueness within `state` holds.
-function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Assembly): void {
-  const remapRef = (ref: string): string => {
-    const { partName, connectorName } = parseConnectorRef(ref);
-    return `${prefix}${partName}.${connectorName}`;
-  };
-  for (const om of other.__mates()) {
-    state.mates.push({
-      name: `${prefix}${om.name}`,
-      a: remapRef(om.a),
-      b: remapRef(om.b),
-      type: om.type,
-      ...(om.pose !== undefined ? { pose: om.pose } : {}),
-      ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
-      ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
-      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
-      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
-      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
-      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
-      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
-      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
-      ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
-      ...(om.maxLoad !== undefined
-        ? {
-            maxLoad: {
-              ...(om.maxLoad.force !== undefined ? { force: om.maxLoad.force } : {}),
-              ...(om.maxLoad.torque !== undefined ? { torque: om.maxLoad.torque } : {}),
-            },
-          }
-        : {}),
-    });
-  }
+function storedConfiguration(
+  configuration: PartConfigurationIdentity | undefined,
+): { configuration?: PartConfigurationIdentity } {
+  return configuration !== undefined ? { configuration } : {};
 }

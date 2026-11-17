@@ -7,6 +7,7 @@ import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Shape } from './proxy';
+import type { PartConfigurationIdentity } from './partConfigurationTypes';
 import type { Scene } from '../validation/scene';
 import type { Assembly, SolvedKinematics } from './assembly';
 
@@ -440,6 +441,16 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   /** Display-clip / intentional-overlay flag, copied from
    *  `AssemblyPartOpts.overlay`. */
   readonly overlay?: boolean;
+  /** Set when the part was created by `assembly.instance`. */
+  readonly configuration?: PartConfigurationIdentity;
+}
+
+/** `assembly.instance` options. Connectors come from the part file. */
+export interface AssemblyInstanceOpts extends Omit<AssemblyPartOpts, 'connectors' | 'connect'> {
+  /** Part file, relative to this assembly script or absolute. */
+  source: string;
+  /** Name passed to `configurations()` in that file. */
+  configuration: string;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */

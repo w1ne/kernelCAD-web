@@ -59,6 +59,11 @@ export interface AssemblyState {
   /** Per-pair minimum clearances declared on the last `solvedModel`. */
   clearanceTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
   /**
+   * Connector interface of the first configuration instanced from a part
+   * file. Later configurations of that file must declare the same signature.
+   */
+  readonly configurationInterfaces: Map<string, { readonly name: string; readonly signature: string }>;
+  /**
    * True once the SCRIPT called `solvedModel(...)` (a validating call). The
    * mechanism-truth gate reads it as "the author declared this a mechanism":
    * only a mechanism must have every part linked into the mate graph.
@@ -92,6 +97,7 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     ignoreInterferenceList: [],
     contactTolerances: [],
     clearanceTolerances: [],
+    configurationInterfaces: new Map(),
     solvedModelRequested: false,
   };
 }

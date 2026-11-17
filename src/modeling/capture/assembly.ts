@@ -50,6 +50,7 @@ import { buildMateMetadata, recordSolvedModel, solveJoints, type SolvedModelOpti
 import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
+import { instantiateConfiguredPart } from './configuredInstance';
 import { createAssemblyState, type AssemblyState } from './assemblyState';
 import { recordLoopMode, type LoopModeOpts, type LoopPin } from './assemblyLoopModes';
 
@@ -60,6 +61,7 @@ import type {
   AssemblyConnectRef,
   AssemblyJointRef,
   AssemblyJointStored,
+  AssemblyInstanceOpts,
   AssemblyPartOpts,
   AssemblyPartRef,
   AssemblyPartStored,
@@ -103,6 +105,11 @@ export class Assembly {
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
     return recordPart(this.state, this, name, shape, opts);
+  }
+
+  /** Evaluate one named configuration of a part file as this part. */
+  instance(name: string, opts: AssemblyInstanceOpts): Promise<AssemblyPartRef> {
+    return instantiateConfiguredPart(this.state, this, name, opts);
   }
 
   /** See `recordSubAssembly` in `assemblyParts.ts` for the full

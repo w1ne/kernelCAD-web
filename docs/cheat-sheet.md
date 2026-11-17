@@ -290,6 +290,8 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 | `params(decl) => { [name]: ParamRef \| TypedParamRef }` | Declare many params at once. |
 | `meta(metadata) => void` | Set validated asset metadata for `asset_manifest`: name/title, description, authors, tags, sourceUrl and an SPDX-allowlisted content licence (default CC-BY-4.0, distinct from the kernelCAD package MIT licence). |
 | `presets(presets) => void` | Declare named maps of parameter overrides for `asset_manifest`. |
+| `configurations(sets) => void` | Declare named parameter sets for this part file. |
+| `definePart({ shape, connectors? }) => Shape` | Publish the part solid and its numeric connector frames, and return that same shape. |
 | `ParamRef.add(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef plus `other`. |
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |

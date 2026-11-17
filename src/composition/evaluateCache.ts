@@ -20,6 +20,7 @@
 
 import { readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { configurationImportIdentity } from '../modeling/capture/partConfiguration';
 import { importIdentity } from '../modeling/warm/importIdentity';
 
 /** Sequential sweep + physics only need one live entry; keep a few more
@@ -59,33 +60,45 @@ function usesUnhashedCatalogApi(source: string): boolean {
   return /\blib\b/.test(source);
 }
 
+function cacheableFile(
+  input: { file?: string; code?: string; baseline?: unknown; requirements?: unknown },
+  opts?: { apiFactory?: unknown; skipDfmGate?: boolean },
+): string | undefined {
+  if (input.baseline !== undefined || input.requirements !== undefined) return undefined;
+  if (opts?.apiFactory !== undefined || opts?.skipDfmGate === true) return undefined;
+  // Inline `code` is what unit tests pass. Caching it would share one
+  // Assembly across tests that expect a fresh capture. File evaluates are
+  // the sequential verify({ file }) path this cache exists for.
+  if (input.code !== undefined || input.file === undefined) return undefined;
+  return input.file;
+}
+
 export async function evaluateCacheKey(
   input: { file?: string; code?: string; kernel?: string; scriptDir?: string; baseline?: unknown; requirements?: unknown },
   opts?: { apiFactory?: unknown; skipDfmGate?: boolean },
 ): Promise<string | undefined> {
-  if (input.baseline !== undefined) return undefined;
-  if (input.requirements !== undefined) return undefined;
-  if (opts?.apiFactory !== undefined) return undefined;
-  if (opts?.skipDfmGate === true) return undefined;
-  // Inline `code` is what unit tests pass. Caching it would share one
-  // Assembly across tests that expect a fresh capture. File evaluates are
-  // the sequential verify({ file }) path this cache exists for.
-  if (input.code !== undefined) return undefined;
+  const file = cacheableFile(input, opts);
+  if (file === undefined) return undefined;
   const kernel = input.kernel ?? 'occt';
-  if (input.file === undefined) return undefined;
-  const fileKey = fileIdentity(input.file, kernel);
+  const fileKey = fileIdentity(file, kernel);
   if (fileKey === undefined) return undefined;
   let source: string;
   try {
-    source = readFileSync(input.file, 'utf8');
+    source = readFileSync(file, 'utf8');
   } catch {
     return undefined;
   }
   if (usesUnhashedCatalogApi(source)) return undefined;
-  const scriptDir = input.scriptDir ?? dirname(resolve(input.file));
+  const scriptDir = input.scriptDir ?? dirname(resolve(file));
   const imports = await importIdentity(source, scriptDir);
   if (!importsAreProvable(imports)) return undefined;
-  return `${fileKey}:imports:${imports}`;
+  // instance(name, { source, configuration }) reads another file. The
+  // assembly's own stat does not change when that part file does, so the
+  // part bytes and the configuration name are part of the key. A non-literal
+  // source or configuration cannot be hashed and skips the cache.
+  const configs = await configurationImportIdentity(source, scriptDir);
+  if (!importsAreProvable(configs)) return undefined;
+  return `${fileKey}:imports:${imports}:configs:${configs}`;
 }
 
 export function getEvaluatedScript<T>(key: string): T | undefined {
