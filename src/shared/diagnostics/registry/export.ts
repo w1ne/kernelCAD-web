@@ -195,6 +195,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
   },
+  'export.urdf.inertia-fallback': {
+    hintTemplate:
+      'Mass properties failed for this link, so the URDF inertial is the unit substitute (mass 1 kg, diagonal 1e-3 kg·m², centre of mass at the origin). Repair the solid and export again.',
+    nextAction: { kind: 'fix-arg', field: 'shape' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A URDF link substituted unit inertia because mass properties could not be computed.',
+  },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:
       'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export({ target: \'model\', format: \'srdf\', ... }) or set combinatorial: true.',

@@ -4,12 +4,16 @@
 //
 // MJCF/URDF export health. Exports the assembly, compiles the MJCF, runs
 // forward at qpos0, and compares the compiled model with the CAD solid.
-// qpos0 is the authored mate pose (joint ref). Contacts, geom bits, and
-// joint ranges come from the compiled model, not from XML text.
+// qpos0 is the authored mate pose: scalar joints use `ref`, and a ball
+// joint's Euler triple is the child body quaternion. Contacts, geom bits,
+// and joint ranges come from the compiled model, not from XML text. A
+// compiled contact whose CAD solids do not overlap is a collision-geometry
+// artefact.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { MassProperties } from '../../kernel/properties/massProperties';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { urdfSerialize } from '../export/urdf/urdfSerializer';
 import { URDF_DEFAULT_DENSITY_KG_M3 } from '../export/urdf/linkInertial';
 import {
@@ -17,6 +21,8 @@ import {
     MJCF_DEFAULT_DENSITY_KG_M3,
     mjcfMeshAssetName,
 } from './mjcfExport';
+import { INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { measureCadExactPairs, type CadExactMeasurement } from './exportHealthCad';
 import type {
     CompiledBodyDynamics,
     CompiledContact,
@@ -66,6 +72,19 @@ export interface RestContactRow {
     /** Positive depth. Zero on a margin-only row. */
     readonly penetrationM: number;
     readonly kind: 'penetration' | 'margin';
+    /**
+     * Boolean intersection volume of the two CAD solids at this pose, mm³.
+     * Present when the exact probe finished.
+     */
+    readonly cadExactOverlapMm3?: number;
+    /** Minimum distance between the CAD solids, mm. Zero when they overlap. */
+    readonly cadDistanceMm?: number;
+    /**
+     * The compiled geom overlaps, and the CAD solids do not (volume at or
+     * below the shared 0.01 mm³ floor). A convex hull or mesh decomposition
+     * can do that. The row stays visible and does not fail the check.
+     */
+    readonly collisionGeomArtefact?: boolean;
 }
 
 export interface VisualFinding {
@@ -409,14 +428,20 @@ function inertiaRows(input: AssessCompiledExportInput): InertiaRow[] {
             comM: compiled.comM,
             inertia6: compiled.inertia6,
         };
+        // A ball mate's URDF decomposition adds dummy links. They are not
+        // CAD solids and they are not MJCF bodies, so they are not a mismatch.
+        const synthesisedUrdf = cad === null && compiled === null && urdf !== null;
         const mjcfMismatch = cad !== null && mjcfSample !== null ? !inertiaMatches(mjcfSample, cad.mjcf) : cad !== null || mjcfSample !== null;
         const urdfSample: InertiaSample | null = urdf === null ? null : {
             massKg: urdf.massKg,
             comM: urdf.comM,
             inertia6: urdf.inertia6,
         };
-        const urdfMismatch = cad !== null && urdfSample !== null ? !inertiaMatches(urdfSample, cad.urdf) : true;
+        const urdfMismatch = synthesisedUrdf
+            ? false
+            : cad !== null && urdfSample !== null ? !inertiaMatches(urdfSample, cad.urdf) : true;
         const notes = [...flags.notes];
+        if (synthesisedUrdf) notes.push('Synthesised URDF link with no CAD solid and no compiled MJCF body.');
         if (cad !== null && cad.mjcf.densityKgM3 !== cad.urdf.densityKgM3) {
             notes.push(`MJCF density ${cad.mjcf.densityKgM3} kg/m³, URDF density ${cad.urdf.densityKgM3} kg/m³.`);
         }
@@ -461,16 +486,27 @@ function qposRows(joints: readonly CompiledJointState[]): { restQpos: RestQposRo
     return { restQpos, qposOutsideLimits };
 }
 
+function realContact(row: RestContactRow): boolean {
+    return row.collisionGeomArtefact !== true;
+}
+
 function summarize(report: Omit<ExportHealthReport, 'ok' | 'summary'>): { ok: boolean; summary: string } {
-    const penetrating = report.restContacts.penetrating.length;
-    const margin = report.restContacts.marginOnly.length;
+    const penetrating = report.restContacts.penetrating.filter(realContact).length;
+    const margin = report.restContacts.marginOnly.filter(realContact).length;
+    const artefacts = report.restContacts.penetrating.length
+        + report.restContacts.marginOnly.length
+        - penetrating
+        - margin;
     const visual = report.visualFindings.length;
     const inertia = report.inertia.filter((row) => row.mismatch).length;
     const qpos = report.qposOutsideLimits.length;
     const ok = penetrating === 0 && margin === 0 && visual === 0 && inertia === 0 && qpos === 0;
+    const artefactNote = artefacts === 0
+        ? ''
+        : ` ${artefacts} rest contact(s) are collision-geometry artefacts; exact CAD overlap is at or below ${INTERPENETRATION_EPSILON_MM3} mm³.`;
     const summary = ok
-        ? 'Export health passed at qpos0.'
-        : `Export health failed at qpos0: ${penetrating} penetrating rest contact(s), ${margin} margin-only rest contact(s), ${visual} visual-collision finding(s), ${inertia} inertia row(s) outside tolerance or flagged, ${qpos} qpos0 value(s) outside joint limits.`;
+        ? `Export health passed at qpos0.${artefactNote}`
+        : `Export health failed at qpos0: ${penetrating} penetrating rest contact(s), ${margin} margin-only rest contact(s), ${visual} visual-collision finding(s), ${inertia} inertia row(s) outside tolerance or flagged, ${qpos} qpos0 value(s) outside joint limits.${artefactNote}`;
     return { ok, summary };
 }
 
@@ -518,10 +554,45 @@ async function readCompiled(session: MujocoSession): Promise<Pick<AssessCompiled
     };
 }
 
+function inertiaNotesFrom(mjcfNotes: readonly string[], diagnostics: readonly CompilerDiagnostic[]): string[] {
+    const notes = [...mjcfNotes];
+    const seen = new Set(notes);
+    for (const diagnostic of diagnostics) {
+        if (diagnostic.code !== 'export.urdf.inertia-fallback') continue;
+        if (seen.has(diagnostic.message)) continue;
+        seen.add(diagnostic.message);
+        notes.push(diagnostic.message);
+    }
+    return notes;
+}
+
+function withCadExact(report: ExportHealthReport, measured: ReadonlyMap<string, CadExactMeasurement>): ExportHealthReport {
+    const apply = (row: RestContactRow): RestContactRow => {
+        const hit = measured.get(pairKey(row.bodyA, row.bodyB));
+        if (hit === undefined || !hit.confirmed) return row;
+        const artefact = hit.volumeMm3 <= INTERPENETRATION_EPSILON_MM3;
+        return {
+            ...row,
+            cadExactOverlapMm3: hit.volumeMm3,
+            ...(hit.distanceMm !== undefined ? { cadDistanceMm: hit.distanceMm } : {}),
+            collisionGeomArtefact: artefact,
+        };
+    };
+    const body = {
+        ...report,
+        restContacts: {
+            penetrating: report.restContacts.penetrating.map(apply),
+            marginOnly: report.restContacts.marginOnly.map(apply),
+        },
+    };
+    return { ...body, ...summarize(body) };
+}
+
 /**
  * Export `arm` to MJCF and URDF, compile the MJCF, and run forward at qpos0.
- * qpos0 is the authored mate pose written as each joint's `ref`.
- * The caller owns the MuJoCo session factory (Node or the browser worker).
+ * qpos0 is the authored mate pose. Scalar joints store it as `ref`. A ball
+ * joint keeps the identity quaternion and stores the Euler triple as the
+ * child body orientation. The caller owns the MuJoCo session factory.
  */
 export async function checkExportHealth(
     arm: Assembly,
@@ -535,13 +606,17 @@ export async function checkExportHealth(
     const session = await options.sessionFactory(exported.mjcf, exported.bodyOrder, exported.jointOrder);
     try {
         const compiled = await readCompiled(session);
-        return assessCompiledExport({
+        const report = assessCompiledExport({
             ...compiled,
             expectations: parts.map(expectationFor),
-            inertiaNotes: exported.inertiaNotes,
+            inertiaNotes: inertiaNotesFrom(exported.inertiaNotes, urdf.diagnostics),
             urdfLinks: urdf.urdf.length > 0 ? parseUrdfLinks(urdf.urdf) : [],
             cadByBody,
         });
+        const contacts = [...report.restContacts.penetrating, ...report.restContacts.marginOnly];
+        if (contacts.length === 0) return report;
+        const measured = await measureCadExactPairs(arm, contacts);
+        return withCadExact(report, measured);
     } finally {
         session.dispose();
     }

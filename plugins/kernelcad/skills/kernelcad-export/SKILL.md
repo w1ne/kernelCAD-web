@@ -25,13 +25,19 @@ description: Export a kernelCAD model to STEP, STL, 3MF, GLB, OBJ, PLY, USD, DXF
 - Verify a STEP after export with `inspect({ of: "step", file })`.
 - Before handing an assembly to a physics simulator, call `check_export_health`
   with the same `file` or `code`. It compiles the MJCF and runs forward at
-  `qpos0`, the authored mate pose (joint `ref`: degrees to radians, millimetres
-  to metres; the child body frame is that pose, and joint coordinate 0 stays
-  the connector-aligned pose; a coupled driven joint follows `ratio × source + offset`). It
-  reports unexpected rest contacts, visual geoms that still collide, mass /
-  centre of mass / inertia against the CAD solid for both the MJCF body and
-  the URDF inertial, and any `qpos0` outside its joint range. A declared
-  `massKg` is the mass on both exports. It does not replace
+  `qpos0`, the authored mate pose (scalar joint `ref`: degrees to radians,
+  millimetres to metres; the child body frame is that pose, and joint
+  coordinate 0 stays the connector-aligned pose; a ball joint has no `ref`
+  because its `qpos0` stays the identity quaternion, and the authored XYZ
+  Euler triple is the child body quaternion; a coupled driven joint follows
+  `ratio × source + offset`). It reports unexpected rest contacts, visual
+  geoms that still collide, mass / centre of mass / inertia against the CAD
+  solid for both the MJCF body and the URDF inertial, and any `qpos0` outside
+  its joint range. A contact whose exact CAD overlap is at or below 0.01 mm³
+  is a collision-geometry artefact (`collisionGeomArtefact`, with
+  `cadExactOverlapMm3` and `cadDistanceMm`) and does not fail the check. A
+  declared `massKg` is the mass on both exports. When mass properties throw,
+  both exports substitute unit inertia and the row is a fallback. It does not replace
   `verify({ check: "physics" })`, which still starts unnamed sample mates at
   coordinate 0. The local evidence bundle is
   `docs/demos/export-health-authored-rest-20261117/README.md`.

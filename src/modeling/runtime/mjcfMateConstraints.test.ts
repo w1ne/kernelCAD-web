@@ -57,4 +57,23 @@ describe('rest body frame at the authored pose', () => {
         expect(placed.posMm[2]).toBeCloseTo(0, 9);
         expect(placed.quat).toBeUndefined();
     });
+
+    it('omits the ball quaternion at the zero Euler triple', () => {
+        const ball: MateRecord = { name: 'wrist', a: 'p.x', b: 'c.x', type: 'ball' };
+        expect(restBodyPlacement(ball, frame, {})).toEqual({ posMm: [40, 0, 0] });
+        expect(restBodyPlacement(ball, frame, { wrist: [0, 0, 0] })).toEqual({ posMm: [40, 0, 0] });
+    });
+
+    it('places a ball child at the authored extrinsic XYZ Euler', () => {
+        const ball: MateRecord = { name: 'wrist', a: 'p.x', b: 'c.x', type: 'ball', pose: [0, 90, 0] };
+        const placed = restBodyPlacement(ball, frame, { wrist: [0, 90, 0] });
+        expect(placed.posMm[0]).toBeCloseTo(20, 9);
+        expect(placed.posMm[1]).toBeCloseTo(0, 9);
+        expect(placed.posMm[2]).toBeCloseTo(-20, 9);
+        const half = Math.PI / 4;
+        expect(placed.quat?.[0]).toBeCloseTo(Math.cos(half), 9);
+        expect(placed.quat?.[1]).toBeCloseTo(0, 9);
+        expect(placed.quat?.[2]).toBeCloseTo(Math.sin(half), 9);
+        expect(placed.quat?.[3]).toBeCloseTo(0, 9);
+    });
 });

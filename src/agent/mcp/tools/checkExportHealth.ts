@@ -22,10 +22,12 @@ export type CheckExportHealthOutput =
 
 /**
  * Export the captured assembly and check the compiled model at qpos0.
- * `ok` is true only when there is no unexpected rest contact, no visual
+ * `ok` is true only when there is no unexpected real rest contact, no visual
  * geom with collision bits, no visual mesh used as a collision solid,
  * and every inertia row matches the CAD solid within the stated tolerance.
- * A compiled qpos0 outside its joint range also fails the check.
+ * A compiled contact whose exact CAD overlap is at or below 0.01 mm³ is a
+ * collision-geometry artefact and does not fail the check. A compiled qpos0
+ * outside its joint range also fails the check.
  */
 export async function checkExportHealthTool(input: CheckExportHealthInput): Promise<CheckExportHealthOutput> {
   const { evaluation, model } = await evaluateAndBuildScript(input);

@@ -35,10 +35,9 @@
 //                   surfaced here — this is a runtime detail of the gate,
 //                   not an authoring-time export.
 //   - pin_slot    → same as cylindrical (single hinge).
-//   - ball        → emitted as a 3-DOF spherical hinge chain via two dummy
-//                   bodies. MJCF has a real <joint type="ball"> but the
-//                   limit semantics differ from URDF's; for parity with the
-//                   existing URDF decomposition we use 3 hinges.
+//   - ball        → one <joint type="ball">. MuJoCo keeps that joint's
+//                   qpos0 at the identity quaternion and ignores `ref`, so
+//                   an authored Euler triple is the child body's quaternion.
 //   - planar      → emitted as 2 chained slides + 1 hinge (3-DOF planar
 //                   motion). Not exercised by v0.7 corpus but kept for
 //                   completeness.
@@ -916,11 +915,10 @@ function mateToMjcfJoint(
             ];
         }
         case 'ball': {
-            // Single <joint type="ball"> — MuJoCo's spherical joint uses
-            // a quaternion for qpos (4 entries instead of 1), which we
-            // surface as a single ball entry in jointOrder. The
-            // criterion 6 drift test treats this as one joint and
-            // computes an angle-of-rotation drift from the quaternion.
+            // One <joint type="ball">. qpos is a quaternion and qpos0 stays
+            // the identity; `ref` does not apply. The authored Euler triple
+            // is the child body quaternion from `restBodyPlacement`, so the
+            // forward at qpos0 is that pose and this element carries none.
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             return [
                 `<joint name="${escapeXml(mjcfJointName)}" type="ball" pos="${anchor}"/>`,

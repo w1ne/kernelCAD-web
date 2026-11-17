@@ -12,6 +12,7 @@ import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { assemblyToMjcf, unitInertiaNote } from './mjcfExport';
+import { fmtNum } from './mjcfXmlFormat';
 import { loadMujocoSession } from './mujocoSession';
 import {
     assessCompiledExport,
@@ -195,6 +196,11 @@ describe('three-box export health at qpos0', () => {
             // asset is the identity, read from the model rather than the XML.
             expect(row.meshA).toBe('part-a');
             expect(row.meshB).toBe('part-c');
+            // 35 mm × 30 mm × 20 mm of real solid overlap. A hull-only
+            // contact would report a volume at or below 0.01 mm³.
+            expect(row.collisionGeomArtefact).toBe(false);
+            expect(row.cadExactOverlapMm3).toBeCloseTo(35 * 30 * 20, -1);
+            expect(row.cadDistanceMm).toBeCloseTo(0, 3);
         }
         expect(report.restContacts.marginOnly.filter((row) => row.bodyA === 'a' && row.bodyB === 'c')).toEqual([]);
 
@@ -345,31 +351,14 @@ describe('declared mass and unit-inertia flags', () => {
             throw new Error('mass properties unavailable');
         });
         try {
-            const exported = await assemblyToMjcf(arm);
-            const session = await loadMujocoSession(exported.mjcf, exported.bodyOrder, exported.jointOrder);
-            try {
-                session.forward();
-                const report = assessCompiledExport({
-                    geoms: session.compiledGeoms(),
-                    contacts: session.compiledContacts(),
-                    bodies: session.compiledBodies(),
-                    excludedBodyPairs: session.excludedBodyPairs(),
-                    joints: session.compiledJointStates(),
-                    expectations: [],
-                    inertiaNotes: exported.inertiaNotes,
-                    urdfLinks: [],
-                    cadByBody: new Map([['slug', null]]),
-                });
-                const row = report.inertia.find((item) => item.body === 'slug');
-                expect(exported.inertiaNotes).toContain(unitInertiaNote('slug'));
-                expect(row?.fallback).toBe(true);
-                expect(row?.mismatch).toBe(true);
-                expect(row?.notes.join('\n')).toContain('substituted unit inertia');
-                expect(row?.mjcf?.massKg).toBeCloseTo(1, 6);
-                expect(report.ok).toBe(false);
-            } finally {
-                session.dispose();
-            }
+            const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+            const row = report.inertia.find((item) => item.body === 'slug');
+            expect(row?.fallback).toBe(true);
+            expect(row?.mismatch).toBe(true);
+            expect(row?.notes.join('\n')).toContain(unitInertiaNote('slug'));
+            expect(row?.mjcf?.massKg).toBeCloseTo(1, 6);
+            expect(row?.urdf).toMatchObject({ massKg: 1 });
+            expect(report.ok).toBe(false);
         } finally {
             spy.mockRestore();
         }
@@ -446,6 +435,56 @@ describe('authored rest pose versus coordinate zero', () => {
         expect(report.summary).toContain('outside joint limits');
     }, 30000);
 
+    const ballAt = (origin: [number, number, number]) => ({
+        type: 'ball' as const,
+        origin: { kind: 'vec3' as const, value: origin },
+    });
+
+    it('clears the stop at an authored ball Euler and overlaps it at the zero triple', async () => {
+        await initOcct();
+        const half = Math.PI / 4;
+        const quat = [Math.cos(half), 0, Math.sin(half), 0].map((value) => fmtNum(value)).join(' ');
+        const build = (pose: [number, number, number]) => {
+            const kcad = createModelingApi({ session: new CaptureSession() });
+            const arm = kcad.assembly('ball-rest');
+            // At the zero triple the link occupies x=[20,60]. The free stop
+            // is centred at x=60, so it occupies x=[50,70]: a 10×10×10 mm³
+            // overlap, 10 mm deep. A stop centred on the link is strictly
+            // inside the link hull, and this MuJoCo build reports no contact
+            // for that containment. Ry(90) about the parent connector at x=20
+            // swings the link to x=[15,25], 25 mm clear of the stop.
+            arm.part('base', kcad.box(40, 40, 10, true)).connector('wrist', ballAt([20, 0, 0]));
+            arm.part('link', kcad.box(40, 10, 10, true)).connector('wrist', ballAt([-20, 0, 0]));
+            arm.part('stop', kcad.box(20, 10, 10, true), { at: [60, 0, 0] });
+            arm.mate('wrist', 'base.wrist', 'link.wrist', 'ball', { pose });
+            return arm;
+        };
+
+        const clear = build([0, 90, 0]);
+        const cleared = await checkExportHealth(clear, { sessionFactory: loadMujocoSession });
+        const hits = [...cleared.restContacts.penetrating, ...cleared.restContacts.marginOnly]
+            .map((row) => `${row.bodyA}:${row.bodyB}`);
+        expect(hits).not.toContain('link:stop');
+        expect(cleared.restContacts.penetrating.filter((row) => row.collisionGeomArtefact !== true)).toEqual([]);
+        expect(cleared.ok).toBe(true);
+        const exported = await assemblyToMjcf(clear);
+        expect(exported.mjcf).toContain('type="ball"');
+        expect(exported.mjcf).not.toMatch(/type="ball"[^>]*\bref=/);
+        expect(exported.mjcf).toContain(`quat="${quat}"`);
+
+        const overlapped = await checkExportHealth(build([0, 0, 0]), { sessionFactory: loadMujocoSession });
+        const overlap = overlapped.restContacts.penetrating.filter((row) => row.bodyA === 'link' && row.bodyB === 'stop');
+        expect(overlap.length).toBeGreaterThan(0);
+        for (const row of overlap) {
+            expect(row.penetrationM).toBeCloseTo(0.01, 3);
+            expect(row.collisionGeomArtefact).toBe(false);
+            expect(row.cadExactOverlapMm3).toBeCloseTo(10 * 10 * 10, -1);
+        }
+        expect(overlapped.ok).toBe(false);
+        const identity = await assemblyToMjcf(build([0, 0, 0]));
+        expect(identity.mjcf).not.toContain('quat=');
+    }, 30000);
+
     it('emits the coupling-consistent ref, not a conflicting driven pose', async () => {
         await initOcct();
         const kcad = createModelingApi({ session: new CaptureSession() });
@@ -464,5 +503,51 @@ describe('authored rest pose versus coordinate zero', () => {
         expect(mjcf).toContain(`ref="${rad(-17)}"`);
         expect(mjcf).not.toContain(`ref="${rad(5)}"`);
         expect(mjcf).toMatch(/polycoef="0 -1\.000000 0 0 0"/);
+    }, 30000);
+});
+
+describe('collision geometry that the CAD solid does not share', () => {
+    it('reports a convex-hull contact in the inner corner of an L as an artefact', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('hull-corner');
+        const axis = (origin: [number, number, number]) => ({
+            type: 'axis' as const,
+            origin: { kind: 'vec3' as const, value: origin },
+            axis: [0, 1, 0] as [number, number, number],
+        });
+        // Slab x=[0,40], z=[0,10] plus wall x=[0,10], z=[0,40]. The cube's
+        // world origin is (18, 0, 18) mm, so it occupies x=[14,22], z=[14,22]:
+        // 4 mm clear of both the slab top and the wall face. The collision
+        // cloud is the convex hull of that L, which fills the corner. MuJoCo
+        // reports a 14 mm penetration there. A shape strictly inside another
+        // hull (a box inside a frame) produces no contact in this build, so
+        // the corner has to cross the hull. The anchor is large enough that
+        // its inertia is not regularized, and it does not meet the cube.
+        const slab = kcad.box(40, 20, 10, true).translate(20, 0, 5);
+        const wall = kcad.box(10, 20, 40, true).translate(5, 0, 20);
+        arm.part('ell', kcad.union(slab, wall)).connector('pin', axis([-30, 0, 0]));
+        arm.part('anchor', kcad.box(20, 20, 20, true))
+            .connector('pin', axis([0, 0, 0]))
+            .connector('seat', axis([48, 0, 18]));
+        arm.part('cube', kcad.box(8, 8, 8, true)).connector('seat', axis([0, 0, 0]));
+        arm.mate('pin', 'ell.pin', 'anchor.pin', 'revolute', { pose: 0, limitsDeg: [-90, 90] });
+        arm.mate('seat', 'anchor.seat', 'cube.seat', 'revolute', { pose: 0, limitsDeg: [-90, 90] });
+
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+        const rows = [...report.restContacts.penetrating, ...report.restContacts.marginOnly]
+            .filter((item) => item.bodyA === 'cube' && item.bodyB === 'ell');
+        expect(rows.length).toBeGreaterThan(0);
+        for (const row of rows) {
+            expect(row.kind).toBe('penetration');
+            expect(row.penetrationM).toBeCloseTo(0.014, 3);
+            expect(row.collisionGeomArtefact).toBe(true);
+            expect(row.cadExactOverlapMm3).toBe(0);
+            expect(row.cadDistanceMm).toBeCloseTo(4, 2);
+        }
+        expect(report.restContacts.penetrating.filter((item) => item.collisionGeomArtefact !== true)).toEqual([]);
+        expect(report.restContacts.marginOnly.filter((item) => item.collisionGeomArtefact !== true)).toEqual([]);
+        expect(report.ok).toBe(true);
+        expect(report.summary).toContain('collision-geometry artefacts');
     }, 30000);
 });

@@ -9,6 +9,10 @@
 // `jointOrderToQpos`: degrees become radians, millimetres become metres.
 // A coupled driven joint takes ratio × source + offset from that authored
 // source, which is the rest `solveMates(arm, {})` uses.
+//
+// A ball joint is not a scalar. MuJoCo keeps its qpos0 at the identity
+// quaternion and ignores `ref`, so the authored extrinsic XYZ Euler triple
+// is the child body's quaternion. The zero triple omits that quaternion.
 
 import type { Assembly } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
@@ -17,6 +21,7 @@ import type { MateRecord } from '../mates/mate';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { Transform } from '../../shared/runtime/se3';
 import { fmtNum } from './mjcfXmlFormat';
 
 const MM_TO_M = 1e-3;
@@ -44,15 +49,28 @@ function authoredScalar(mate: MateRecord, table: ParamTable): number | undefined
     return Number.isFinite(value) ? value : undefined;
 }
 
+function authoredEuler(mate: MateRecord, table: ParamTable): [number, number, number] | undefined {
+    if (mate.type !== 'ball' || !Array.isArray(mate.pose)) return undefined;
+    const values = mate.pose.map((item) => currentValue(item, table));
+    if (values.some((value) => !Number.isFinite(value))) return undefined;
+    return [values[0] ?? 0, values[1] ?? 0, values[2] ?? 0];
+}
+
 /**
- * CAD rest in kernelCAD units (degrees or millimetres). Driven mates follow
- * their coupling. A scalar mate with no pose is absent and exports as 0.
+ * CAD rest in kernelCAD units (degrees or millimetres, or an XYZ Euler
+ * triple for a ball). Driven mates follow their coupling. A scalar mate
+ * with no pose is absent and exports as 0.
  */
 export function authoredRestPoses(arm: Assembly): NumericPoses {
     const mates = arm.__mates();
     const couplings = arm.__mateCouplings();
     const table = arm.__session().paramTable;
-    return restPosesFrom(mates, couplings, (mate) => authoredScalar(mate, table));
+    const poses = restPosesFrom(mates, couplings, (mate) => authoredScalar(mate, table));
+    for (const mate of mates) {
+        const euler = authoredEuler(mate, table);
+        if (euler !== undefined) poses[mate.name] = euler;
+    }
+    return poses;
 }
 
 function restPosesFrom(
@@ -129,10 +147,87 @@ function rotateAbout(v: readonly [number, number, number], axis: readonly [numbe
     ];
 }
 
+function eulerTriple(raw: NumericPoses[string] | undefined): [number, number, number] | undefined {
+    if (!Array.isArray(raw) || raw.length !== 3) return undefined;
+    if (!raw.every((value) => typeof value === 'number' && Number.isFinite(value))) return undefined;
+    return [raw[0], raw[1], raw[2]];
+}
+
+/** Unit quaternion (w, x, y, z) of a pure rotation. Positive scalar part. */
+function quatFromRotation(rotation: Transform): [number, number, number, number] {
+    const x = rotation.axisDir([1, 0, 0]);
+    const y = rotation.axisDir([0, 1, 0]);
+    const z = rotation.axisDir([0, 0, 1]);
+    const m00 = x[0];
+    const m10 = x[1];
+    const m20 = x[2];
+    const m01 = y[0];
+    const m11 = y[1];
+    const m21 = y[2];
+    const m02 = z[0];
+    const m12 = z[1];
+    const m22 = z[2];
+    const trace = m00 + m11 + m22;
+    let w: number;
+    let qx: number;
+    let qy: number;
+    let qz: number;
+    if (trace > 0) {
+        const s = 0.5 / Math.sqrt(trace + 1);
+        w = 0.25 / s;
+        qx = (m21 - m12) * s;
+        qy = (m02 - m20) * s;
+        qz = (m10 - m01) * s;
+    } else if (m00 > m11 && m00 > m22) {
+        const s = 2 * Math.sqrt(1 + m00 - m11 - m22);
+        w = (m21 - m12) / s;
+        qx = 0.25 * s;
+        qy = (m01 + m10) / s;
+        qz = (m02 + m20) / s;
+    } else if (m11 > m22) {
+        const s = 2 * Math.sqrt(1 + m11 - m00 - m22);
+        w = (m02 - m20) / s;
+        qx = (m01 + m10) / s;
+        qy = 0.25 * s;
+        qz = (m12 + m21) / s;
+    } else {
+        const s = 2 * Math.sqrt(1 + m22 - m00 - m11);
+        w = (m10 - m01) / s;
+        qx = (m02 + m20) / s;
+        qy = (m12 + m21) / s;
+        qz = 0.25 * s;
+    }
+    const len = Math.hypot(w, qx, qy, qz) || 1;
+    const sign = w < 0 ? -1 : 1;
+    return [sign * w / len, sign * qx / len, sign * qy / len, sign * qz / len];
+}
+
+/**
+ * Ball qpos0 cannot leave the identity quaternion, so the authored Euler
+ * triple is the body frame. The composition matches `jointTransformForMate`:
+ * extrinsic XYZ at the parent connector, then the child connector back.
+ */
+function ballPlacement(
+    origin: readonly [number, number, number],
+    child: readonly [number, number, number],
+    raw: NumericPoses[string] | undefined,
+): RestBodyPlacement {
+    const pos0: [number, number, number] = [origin[0] - child[0], origin[1] - child[1], origin[2] - child[2]];
+    const euler = eulerTriple(raw) ?? [0, 0, 0];
+    if (euler.every((value) => Math.abs(value) < 1e-12)) return { posMm: pos0 };
+    const rotation = Transform.eulerXYZDeg(euler[0], euler[1], euler[2]);
+    const swung = rotation.point([-child[0], -child[1], -child[2]]);
+    return {
+        posMm: [origin[0] + swung[0], origin[1] + swung[1], origin[2] + swung[2]],
+        quat: quatFromRotation(rotation),
+    };
+}
+
 /**
  * Child body placement at the authored rest. Pose 0 keeps the connector
  * translation and omits the quaternion, so those exports stay unchanged.
  * A hinge rotates about the parent connector; a slide shifts along its axis.
+ * A ball uses its Euler triple, because that joint has no scalar `ref`.
  */
 export function restBodyPlacement(
     mate: MateRecord,
@@ -142,6 +237,7 @@ export function restBodyPlacement(
     const origin = vec3(frame?.origin);
     const child = vec3(frame?.childOrigin);
     const pos0: [number, number, number] = [origin[0] - child[0], origin[1] - child[1], origin[2] - child[2]];
+    if (mate.type === 'ball') return ballPlacement(origin, child, poses[mate.name]);
     const si = scalarRestSi(mate, poses);
     if (si === 0 || frame === undefined) return { posMm: pos0 };
     const axis = unit3(frame.axis);

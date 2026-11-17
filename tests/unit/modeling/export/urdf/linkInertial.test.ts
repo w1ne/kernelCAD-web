@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { linkInertialBlock } from '../../../../../src/modeling/export/urdf/linkInertial';
 
@@ -53,5 +53,23 @@ describe('linkInertialBlock — Task B3.B', () => {
     const water = linkInertialBlock(cube, undefined, declaredKg);
     expect(water.diagnostics).toEqual([]);
     expect(parseFloat(water.xml.match(/<mass value="([\d.e+-]+)"/)![1])).toBeCloseTo(declaredKg, 6);
+  });
+
+  it('substitutes unit inertia when mass properties throw', () => {
+    const cube = OcctBackend.box(10, 10, 10);
+    const spy = vi.spyOn(cube, 'massProperties').mockImplementation(() => {
+      throw new Error('mass properties unavailable');
+    });
+    try {
+      const r = linkInertialBlock(cube, 1000, undefined, 'slug');
+      expect(r.diagnostics.map((d) => d.code)).toEqual(['export.urdf.inertia-fallback']);
+      expect(r.diagnostics[0]?.message).toContain('substituted unit inertia');
+      const mass = parseFloat(r.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
+      const ixx = parseFloat(r.xml.match(/ixx="([\d.e+-]+)"/)![1]);
+      expect(mass).toBeCloseTo(1, 6);
+      expect(ixx).toBeCloseTo(1e-3, 8);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
