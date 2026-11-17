@@ -86,6 +86,22 @@ return body.hole('top', {
     expect(plain.tailShape!.volume() - model.tailShape!.volume()).toBeCloseTo(Math.PI * 2 ** 2 * 2.5, 3);
   }, 120_000);
 
+  it('gives each hole in a pattern its own depth against an inclined target plane', async () => {
+    const body = 'const body = prismSideY([[0, 0], [40, 0], [40, 10], [20, 15], [20, 20], [0, 20]], 0, 20);';
+    const plain = await build(`${body}\nreturn body;`);
+    const model = await build(`${body}
+return body.holes('top', {
+  positions: [{ u: -5, v: 0 }, { u: 5, v: 0 }],
+  diameter: 4,
+  upToFace: { containsPoint: [30, 10, 12.5] },
+});`);
+
+    expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([]);
+    expect(isTopologicallyValid(wrappedOf(model.tailShape!))).toBe(true);
+    // The target depths at x=5 and x=15 are 1.25 mm and 3.75 mm.
+    expect(plain.tailShape!.volume() - model.tailShape!.volume()).toBeCloseTo(Math.PI * 2 ** 2 * 5, 3);
+  }, 120_000);
+
   it('rejects the entry plane as a target with a hole-specific diagnostic', async () => {
     const model = await build(`
 return box(20, 20, 20).hole('top', {
