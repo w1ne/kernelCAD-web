@@ -9,8 +9,6 @@
 // structural completeness remains; the multi-minute physics
 // validate-per-example gate does not.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P3)
-// Plan:  docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md (Task 5)
 
 import { readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';

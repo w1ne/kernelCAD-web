@@ -3,8 +3,6 @@
 // src/agent/vision/types.ts
 //
 // Public I/O types for the `trace_from_image` photo-to-sketch trace tool.
-// Spec: kernelCAD-private/docs/specs/2026-05-20-agent-vision-pipeline-design.md §3.
-// Plan: kernelCAD-private/docs/plans/2026-05-20-agent-vision-trace-from-image.md.
 //
 // The tool converts pixel-space features from a reference photo into normalized
 // `[0..1]` waypoints the agent can map to mm via a scale anchor and feed to

@@ -15,8 +15,6 @@ describe('ratchet stool gallery example', () => {
   // pairwise interpenetration overlaps. Tracked consolidation (fuse
   // decorative pieces by stool sub-component) in the issue below.
   //
-  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 2
-  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
   // Issue:  https://github.com/w1ne/kernelCAD-web/issues/351
   it.skip('passes the physics-grounded loop — see issues/351', () => {
     // no body — the citation in the title is what the sweep test reads

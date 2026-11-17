@@ -4,8 +4,6 @@
 //
 // Physics-grounded loop — P0 unit tests.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P0-engine-truth.md §Task 7
 //
 // 5 tests, exactly the spec acceptance set:
 //

@@ -17,7 +17,6 @@
 //                     stage, compare extents / holes / silhouettes
 //
 // Never throws: every failure is a diagnostic on an `ok: false` result.
-// Spec: kernelCAD-private/docs/specs/2026-09-14-pdf-to-cad-design.md.
 
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
