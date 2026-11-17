@@ -7,10 +7,39 @@
 // hints, and evaluation order are unchanged.
 import type { Param } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 
 type NowFn = (p: Param) => number;
+
+const NURBS_SEGMENT_OPTION_KEYS = ['degree', 'weights', 'knots'] as const;
+const NURBS_SEGMENT_OPTION_EXAMPLE = 'path().moveTo(0, 0).nurbsSegment([[0, 0], [5, 10], [10, 0]], { degree: 2 })';
+
+/** Reject NURBS segment option typos before a requested curve setting is dropped. */
+export function assertNurbsSegmentOptionKeys(opts: unknown): void {
+  // Preserve the current optional-chaining behavior for an explicit null.
+  if (opts === undefined || opts === null) return;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'path().nurbsSegment(controlPoints, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an option object with only ${NURBS_SEGMENT_OPTION_KEYS.join(', ')}`,
+      example: NURBS_SEGMENT_OPTION_EXAMPLE,
+    });
+  }
+  const unknownKey = Object.keys(opts).find((key) => !(NURBS_SEGMENT_OPTION_KEYS as readonly string[]).includes(key));
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'path().nurbsSegment(controlPoints, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${NURBS_SEGMENT_OPTION_KEYS.join(', ')}`,
+    example: NURBS_SEGMENT_OPTION_EXAMPLE,
+  });
+}
 
 /** Resolve and validate `opts.degree` (default 3, integer ≥ 1). */
 export function resolveNurbsDegree(optsDegree: number | undefined): number {

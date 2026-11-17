@@ -22,6 +22,7 @@ import { checkSweepSection } from './sweepSection';
 import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
+  assertNurbsSegmentOptionKeys,
   checkNurbsPenMatch,
   resolveNurbsDegree,
   toNurbsControlPoints,
@@ -922,6 +923,7 @@ export class PathBuilder {
    * - `weights` length != controlPoints length;
    * - any weight ≤ 0 (zero collapses the basis; negative is undefined);
    * - `knots` length != controlPoints.length + degree + 1 (when provided).
+   * - any unknown option key, reported at capture as `feature.invalid-args`.
    *
    * Knot vector defaults to a clamped uniform vector
    * (`[0,...,0, ..., 1,...,1]` with multiplicity `degree+1` at each end).
@@ -936,6 +938,7 @@ export class PathBuilder {
     controlPoints: Array<[Editable<number>, Editable<number>]>,
     opts?: { degree?: number; weights?: number[]; knots?: number[] },
   ): PathBuilder {
+    assertNurbsSegmentOptionKeys(opts);
     const degree = resolveNurbsDegree(opts?.degree);
     const now = (p: Param): number => this.#now(p);
     const paramControls = toNurbsControlPoints(controlPoints, degree, now);
