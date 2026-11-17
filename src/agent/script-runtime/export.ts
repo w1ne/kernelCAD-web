@@ -490,6 +490,36 @@ async function exportDirectTarget(
   return undefined;
 }
 
+function refuseMeshPartsForBrepExport(
+  format: ExportInput['format'],
+  lowered: ShapeBackend,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult | undefined {
+  if (isSceneBackend(lowered) && (format === 'step' || format === 'dxf' || format === 'pdf-drawing' || format === 'svg-drawing')) {
+    const meshParts = lowered.parts.filter(part => !(part.shape instanceof OcctBackend));
+    if (meshParts.length > 0) {
+      const code = 'export.scene.requires-brep';
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...diagnostics, {
+          target: 'export-occt',
+          code,
+          featureId: targetId,
+          severity: 'error',
+          message: `'${format}' needs B-rep geometry for every selected part. Unsupported parts: ${meshParts.map(part => JSON.stringify(part.name)).join(', ')}.`,
+          hint: HINT_TEMPLATES[code].template,
+          nextAction: NEXT_ACTIONS[code],
+        }],
+      };
+    }
+  }
+
+  return undefined;
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
@@ -571,25 +601,8 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
   }
 
-  if (isSceneBackend(lowered) && (format === 'step' || format === 'dxf' || format === 'pdf-drawing' || format === 'svg-drawing')) {
-    const meshParts = lowered.parts.filter(part => !(part.shape instanceof OcctBackend));
-    if (meshParts.length > 0) {
-      const code = 'export.scene.requires-brep';
-      return {
-        bytes: new Uint8Array(),
-        featureCount,
-        diagnostics: [...r.diagnostics, {
-          target: 'export-occt',
-          code,
-          featureId: targetId,
-          severity: 'error',
-          message: `'${format}' needs B-rep geometry for every selected part. Unsupported parts: ${meshParts.map(part => JSON.stringify(part.name)).join(', ')}.`,
-          hint: HINT_TEMPLATES[code].template,
-          nextAction: NEXT_ACTIONS[code],
-        }],
-      };
-    }
-  }
+  const sceneRefusal = refuseMeshPartsForBrepExport(format, lowered, targetId, r.diagnostics, featureCount);
+  if (sceneRefusal !== undefined) return sceneRefusal;
 
   const gate = runExportQualityGate(format, lowered, targetId, input.qualityGate);
   r.diagnostics.push(...gate.diagnostics);
