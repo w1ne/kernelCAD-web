@@ -89,6 +89,12 @@ arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90
 return arm.model();
 ```
 
+The body-tree forward-kinematics API `arm.revolute(name, parent, child, opts)`
+accepts `axis`, `origin`, optional `limitsDeg`, and optional `actuator`. It
+rejects unknown option keys during capture. A typo such as `limitsDg` reports
+`feature.invalid-args` at `opts.limitsDg` instead of silently creating an
+unbounded joint.
+
 ### Per-part material and density
 
 Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
@@ -406,6 +412,7 @@ Do not give a driven mate its own `pose`. `model()` and `solvedModel()` place th
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
 - When supplied, the fifth `arm.mate(..., opts)` argument must be a plain options object; `null`, arrays, primitives, and built-in objects such as `Date` are rejected at capture time. Unknown keys are rejected with the path `opts.<key>`. This also covers object variables and JavaScript callers, where malformed options or a typo such as `limtsDeg` could otherwise silently create an unbounded mate.
+- `arm.coupleMates(driven, opts)` requires a plain options object with only `source`, `ratio`, and optional `offset`. Unknown keys fail at `opts.<key>` before the coupling is recorded, so a typo such as `offest` cannot be silently ignored.
 - `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery: pick a compatible mate type or change the connector types.
 - `invalid-args.assembly.mate-connector-not-found` — the `"part.connector"` ref is malformed, the part is undeclared, or the connector wasn't registered. Recovery: declare the part / register the connector before calling `arm.mate(...)`.
 

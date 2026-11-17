@@ -108,10 +108,10 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, full planar ELLIPSE, LWPOLYLINE, POLYLINE and
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
  * clamped continuous planar SPLINE entities. Arcs keep their DXF bulge exactly;
- * ellipses and supported splines retain exact rational NURBS geometry.
- * Partial/nonplanar ellipses, periodic, fit-point-only, discontinuous and
+ * full and partial planar ellipses and supported splines retain exact rational
+ * NURBS geometry. Nonplanar ellipses, periodic, fit-point-only, discontinuous and
  * nonplanar SPLINE entities, plus INSERT, are REFUSED with an entity and line
  * diagnostic rather than dropped.
  *

@@ -457,6 +457,7 @@ export interface SweepEvaluator {
 
 import type { Assembly } from '../modeling/capture/assembly';
 import type { MotionLoadOpts, MotionLoadResult } from './motionLoad';
+import type { SuggestJointRangesOpts, SuggestJointRangesResult } from './suggestJointRanges';
 
 export interface KinematicFacade {
   checkMountingHoleConsistency(arm: Assembly): Promise<MountingHoleResult>;
@@ -464,6 +465,11 @@ export interface KinematicFacade {
     arm: Assembly,
     opts?: SweptCollisionOpts,
   ): Promise<SweptCollisionResult>;
+  /** Suggest revolute/prismatic limits from exact clearance. Does not edit the model. */
+  suggestJointRanges(
+    arm: Assembly,
+    opts?: SuggestJointRangesOpts,
+  ): Promise<SuggestJointRangesResult>;
   checkReachable(arm: Assembly, opts: ReachableOpts): Promise<ReachableResult>;
   checkLoadCapacity(
     arm: Assembly,
