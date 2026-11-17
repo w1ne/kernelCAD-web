@@ -136,7 +136,7 @@ export function observeFastenedMateHoles(arm: Assembly): FastenedMateHoleObserva
   const paramTable = session.paramTable;
   const out: FastenedMateHoleObservation[] = [];
   for (const mate of arm.__mates()) {
-    if (mate.type !== 'fastened') continue;
+    if (mate.type !== 'fastened' || mate.adhesive) continue;
     const sideA = observeSide(mate.a, parts, records, paramTable);
     const sideB = observeSide(mate.b, parts, records, paramTable);
     const observedA = describeHole(sideA);

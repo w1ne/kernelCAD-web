@@ -3,8 +3,8 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
-import { fastenerRecordOf, fitRecordOf, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
+import { parseConnectorRef, type AdhesiveMateMetadata, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { adhesiveRecordOf, fastenerRecordOf, fitRecordOf, validateAdhesiveMateMetadata, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
@@ -324,6 +324,8 @@ export interface MateOptions extends FastenerMateOptionsFields {
   fastener?: FastenerMateMetadata;
   /** P2 press/snap fit metadata. Only valid on a fastened mate. */
   fit?: FitMateMetadata;
+  /** Planar adhesive interface on a rigid mate. Does not change placement. */
+  adhesive?: AdhesiveMateMetadata;
 }
 
 const JOINT_DYNAMICS_FIELDS = [
@@ -379,6 +381,7 @@ export function recordMate(
   validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
   validateFastenerMateMetadata(name, type, aRef, bRef, opts);
+  validateAdhesiveMateMetadata(type, opts?.adhesive);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
   stampMateConfiguration(state);
 }
@@ -460,20 +463,20 @@ function buildMateRecord(
   aRef: string,
   bRef: string,
   type: MateType,
-  opts: MateOptions | undefined,
+  opts: MateOptions = {},
 ): MateRecord {
   return {
     name,
     a: aRef,
     b: bRef,
     type,
-    ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
-    ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
-    ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
+    ...(opts.pose !== undefined ? { pose: opts.pose } : {}),
+    ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+    ...(opts.exposure !== undefined ? { exposure: opts.exposure } : {}),
     ...jointDynamicsOf(opts),
-    ...(opts?.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
-    ...(opts?.maxLoad !== undefined
+    ...(opts.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
+    ...(opts.maxLoad !== undefined
       ? {
           maxLoad: {
             ...(opts.maxLoad.force !== undefined ? { force: opts.maxLoad.force } : {}),
@@ -483,6 +486,7 @@ function buildMateRecord(
       : {}),
     ...fastenerRecordOf(opts),
     ...fitRecordOf(opts),
+    ...adhesiveRecordOf(opts.adhesive),
   };
 }
 

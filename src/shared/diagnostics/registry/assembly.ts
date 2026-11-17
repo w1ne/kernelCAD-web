@@ -218,6 +218,13 @@ export const ASSEMBLY_CODES = {
     description: 'A connector ref tracked by the pose envelope could not be resolved at a sampled pose.',
   },
   // Assembly validator — v0.6.2 limit-missing warning (1)
+  'assembly.mate.adhesive-contact': {
+    hintTemplate: 'Select opposing planar faces that share a positive contact area in the solved assembly.',
+    nextAction: { kind: 'fix-arg', field: 'adhesive' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'The declared adhesive interface could not be verified on the solved geometry.',
+  },
   'assembly.mate.limit-missing': {
     hintTemplate:
       "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",

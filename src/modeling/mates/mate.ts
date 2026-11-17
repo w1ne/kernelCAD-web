@@ -80,7 +80,15 @@ export interface FitMateMetadata {
   readonly axis?: Vec3;
 }
 
+export const ADHESIVE_FACES = ['left', 'right', 'front', 'back', 'top', 'bottom'] as const;
+
+export interface AdhesiveMateMetadata {
+  readonly faceA: typeof ADHESIVE_FACES[number];
+  readonly faceB: typeof ADHESIVE_FACES[number];
+}
+
 export interface MateRecord {
+  readonly adhesive?: AdhesiveMateMetadata;
   readonly name: string;
   /** "<partName>.<connectorName>" */
   readonly a: string;

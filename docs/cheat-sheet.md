@@ -210,7 +210,7 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
-| `assembly(name?) => Assembly` | `asm.part(name, shape, { material, process, stock })` records the blank, for example a CNC bar `{ kind: 'bar', lengthMm: 80, diameterMm: 20 }` or a sheet plate `{ kind: 'plate', lengthMm: 200, widthMm: 120, thicknessMm: 3 }`. |
+| `assembly(name?) => Assembly` | Declare a glued or bonded planar interface with `arm.mate(name, a, b, 'fastened', { adhesive: { faceA: 'right', faceB: 'left' } })`. |
 | `joint : { clevis(opts: ClevisJointOptions): ClevisJoint }` | Mechanism-delivery joint helpers. |
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
