@@ -168,6 +168,13 @@ contains the five-preview ledger, before/after renders, GLB regression, index
 verification and inspected local demo. The correction is a finish assignment;
 geometry, controls and triangle budget are unchanged.
 
+The Nov 17 process-water-silo review assigns the visible top nozzle, side nozzle
+and lower outlet transition to the existing steel control; safety paint remains
+on the roof lip, ring band, access rails and support legs. The [review handoff](../../../artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/README.md)
+contains the five-preview ledger, before/after renders, GLB regression, index
+verification and inspected local demo. Geometry and triangle budget are
+unchanged.
+
 ## Use a catalog asset
 
 Search by object name through the catalog tools, or open a known asset directly in Studio with `?catalog=industrial-plant/<id>`. For example, `?catalog=industrial-plant/bridge-crane` opens the crane source with its scale and palette controls. Exported catalog meshes are low-poly scene props; their geometry is not an engineering specification for real plant equipment.

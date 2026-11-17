@@ -1,0 +1,12 @@
+npx tsx scripts/renderCatalogPreviews.ts process-water-silo
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/verification/verify_index.py
+artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/verification/test-before.sh
+npx vitest run tests/integration/catalog/processWaterSiloNozzleMaterial.test.ts
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/processWaterSiloNozzleMaterial.test.ts
+python scripts/checkCatalogQuality.py --kit industrial-plant
+python scripts/checkCatalogQuality.py
+npx vitest run tests/integration/catalog/
+python3 artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/make_review_assets.py
+artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/make_demo.sh
+artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/video-review/inspect-video.sh

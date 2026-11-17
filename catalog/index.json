@@ -146596,7 +146596,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-water-silo.kcad.ts",
       "preview": "/assets/industrial-plant-process-water-silo.png",
-      "sourceSha256": "42eba30a29db787f04ffa5dddf0ced37f8a313e1ff06dd86ee3b741d26221d4a",
+      "sourceSha256": "d00b465b4ea0497fa43260a000e222cdb559d02fb567256eaba8ffd5fe9a616e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146647,11 +146647,14 @@
           "parts": [
             "shell",
             "roof-cap",
+            "top-nozzle",
+            "discharge-transition",
             "discharge-neck",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3",
+            "side-nozzle",
             "side-flange",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -146667,14 +146670,11 @@
           "color": "#d9a343",
           "parts": [
             "roof-lip",
-            "top-nozzle",
-            "discharge-transition",
             "stiffener-0",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
             "support-leg-3",
-            "side-nozzle",
             "ladder-left-rail",
             "ladder-right-rail"
           ],
