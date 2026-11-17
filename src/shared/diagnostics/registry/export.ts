@@ -4,6 +4,13 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const EXPORT_CODES = {
+  'export.scene.requires-brep': {
+    hintTemplate: 'Select B-rep parts explicitly or replace the named mesh parts with B-rep geometry, then export again.',
+    nextAction: { kind: 'fix-arg', field: 'feature_id' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The requested scene export needs B-rep geometry for all selected parts.',
+  },
   // Export (19)
   'export.feature-not-found': {
     hintTemplate:

@@ -9,7 +9,7 @@ import { detectDetachedMaterial } from '../../modeling/validation/booleanIntegri
 import { runScript } from '../../composition/runScript';
 import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { lowerScriptRun } from './lowerScriptRun';
-import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { meshShapeForExport, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import {
   exportMeshDeflection,
   type ExportMeshToleranceOptions,
@@ -569,6 +569,26 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
 
   if (manifestScene !== undefined && !isSceneBackend(lowered)) {
     throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
+  }
+
+  if (isSceneBackend(lowered) && (format === 'step' || format === 'dxf' || format === 'pdf-drawing' || format === 'svg-drawing')) {
+    const meshParts = lowered.parts.filter(part => !(part.shape instanceof OcctBackend));
+    if (meshParts.length > 0) {
+      const code = 'export.scene.requires-brep';
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code,
+          featureId: targetId,
+          severity: 'error',
+          message: `'${format}' needs B-rep geometry for every selected part. Unsupported parts: ${meshParts.map(part => JSON.stringify(part.name)).join(', ')}.`,
+          hint: HINT_TEMPLATES[code].template,
+          nextAction: NEXT_ACTIONS[code],
+        }],
+      };
+    }
   }
 
   const gate = runExportQualityGate(format, lowered, targetId, input.qualityGate);

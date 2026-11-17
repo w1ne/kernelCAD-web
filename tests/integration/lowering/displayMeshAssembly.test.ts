@@ -5,12 +5,46 @@ import { join } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { meshForHeadlessRender } from '../../../src/agent/render/headlessRender';
 import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
+import { runAndExport } from '../../../src/agent/script-runtime/export';
 
 beforeAll(async () => {
   await initOcct();
 });
 
 describe('display mesh assemblies', () => {
+  it.each(['step', 'dxf', 'pdf-drawing', 'svg-drawing'] as const)(
+    'names display parts that prevent %s export',
+    async (format) => {
+      const dir = mkdtempSync(join(tmpdir(), 'kcad-mixed-export-'));
+      try {
+        writeFileSync(join(dir, 'triangle.stl'), [
+          'solid triangle', 'facet normal 0 0 1', 'outer loop',
+          'vertex 0 0 0', 'vertex 1 0 0', 'vertex 0 1 0',
+          'endloop', 'endfacet', 'endsolid triangle',
+        ].join('\n'));
+        const result = await runAndExport({
+          code: [
+            "const model = assembly('mixed');",
+            "model.part('solid', box(20, 20, 5));",
+            "model.part('preview', await lib.meshFromSTL('./triangle.stl'), { at: [30, 0, 0] });",
+            "return await model.solvedModel({}, { validate: 'none' });",
+          ].join('\n'),
+          fileName: 'mixed.kcad.ts',
+          scriptDir: dir,
+          format,
+        });
+        expect(result.bytes).toHaveLength(0);
+        expect(result.diagnostics).toContainEqual(expect.objectContaining({
+          code: 'export.scene.requires-brep',
+          severity: 'error',
+          message: expect.stringContaining('"preview"'),
+        }));
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+  );
+
   it('meshes translated display mesh parts for headless rendering', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-mesh-assembly-'));
     try {
