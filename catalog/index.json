@@ -146927,7 +146927,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/scissor-lift-table.kcad.ts",
       "preview": "/assets/industrial-plant-scissor-lift-table.png",
-      "sourceSha256": "6a6c19a23fa4c59c591e1eddad96accd4c2c3be97894a85a0ded4771cc2c3b36",
+      "sourceSha256": "07675a3d4b169afe8486eba00b3acb8c9d42149d1a976c1f93e3c9e433839201",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146985,7 +146985,9 @@
           "parts": [
             "base",
             "scissor-arm-a--1",
+            "scissor-arm-b--1",
             "scissor-arm-a-1",
+            "scissor-arm-b-1",
             "control-box",
             "safety-rail--1",
             "safety-rail-1"
@@ -146996,9 +146998,7 @@
           "name": "safetyPaint",
           "color": "#e6a33e",
           "parts": [
-            "platform-deck",
-            "scissor-arm-b--1",
-            "scissor-arm-b-1"
+            "platform-deck"
           ],
           "param": "safetyPaint"
         },

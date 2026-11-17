@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/scissorLiftTableMaterial.test.ts (1 test) 467ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  11:19:56
+   Duration  7.32s (transform 5.47s, setup 126ms, import 6.42s, tests 467ms, environment 0ms)
