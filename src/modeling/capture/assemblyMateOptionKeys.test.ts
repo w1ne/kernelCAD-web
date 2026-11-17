@@ -20,6 +20,37 @@ function makeRevoluteAssembly() {
 }
 
 describe('assembly.mate option keys', () => {
+  it('continues to allow omitted options', () => {
+    const arm = makeRevoluteAssembly();
+
+    arm.mate('hinge', 'base.pivot', 'link.pivot', 'revolute');
+
+    expect(arm.__mates()).toMatchObject([{ name: 'hinge', type: 'revolute' }]);
+  });
+
+  it.each([
+    ['null', null],
+    ['an empty array', []],
+    ['a number', 42],
+  ])('rejects %s as the options argument', (_label, rawOptions) => {
+    const arm = makeRevoluteAssembly();
+    const badOptions = rawOptions as unknown as Parameters<typeof arm.mate>[4];
+    let error: unknown;
+
+    try {
+      arm.mate('hinge', 'base.pivot', 'link.pivot', 'revolute', badOptions);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(KernelError);
+    if (error instanceof KernelError) {
+      expect(error.code).toBe('feature.invalid-args');
+      expect(error.message).toMatch(/opts.*requires an options object/i);
+    }
+    expect(arm.__mates()).toEqual([]);
+  });
+
   it('rejects a misspelled limit instead of recording an unbounded revolute mate', () => {
     const arm = makeRevoluteAssembly();
     const badOptions = { limtsDeg: [-45, 45] } as unknown as Parameters<typeof arm.mate>[4];
