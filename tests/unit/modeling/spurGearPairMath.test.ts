@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import {
+  SPUR_GEAR_BACKLASH_SEARCH_STEPS,
+  backlashSearchStepMm,
   driverInDrivenFrame,
   externalCenterDistanceMm,
   externalSpeedRatio,
@@ -21,6 +23,15 @@ function rotateZ(deg: number, x: number, y: number): [number, number] {
 }
 
 describe('spur gear pair placement math', () => {
+  it('turns one driven-flank bisection into a pitch-circle arc', () => {
+    const drivenTeeth = 40;
+    const pitchRadius = (1 * drivenTeeth) / 2;
+    const stepDeg = (180 / drivenTeeth) / 2 ** SPUR_GEAR_BACKLASH_SEARCH_STEPS;
+    const arc = stepDeg * (Math.PI / 180) * pitchRadius;
+    expect(backlashSearchStepMm(drivenTeeth, pitchRadius)).toBeCloseTo(arc, 12);
+    expect(arc).toBeLessThan(0.002);
+  });
+
   it('places a module-1 20/40 pair at 30 mm with ratio −1/2', () => {
     const centre = (1 * 20 + 1 * 40) / 2;
     expect(externalCenterDistanceMm(1, 20, 1, 40)).toBe(centre);

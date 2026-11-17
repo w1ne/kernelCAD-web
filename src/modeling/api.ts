@@ -267,10 +267,12 @@ export interface KernelCadApi {
    * tooth space faces the driver. `ratio` is ω_driven/ω_driver and is
    * negative. The assembly carries revolute mates, a couple at that ratio,
    * and a gear-pair transmission. `toothInterference` reports exact BREP
-   * clearance, common volume and the measured pitch-circle backlash.
-   * `withGeneratingCut` is opt-in: it subtracts a discrete union of the
-   * driver over one tooth and repeats that space at tooth pitch. The
-   * default teeth stay the involute profile. Geometry only — not strength.
+   * clearance and common volume over sampled poses, refines beside the
+   * minimum, and measures the pitch-circle backlash. Those clearance
+   * aggregates do not prove the gaps between samples. `withGeneratingCut`
+   * is opt-in: it subtracts a discrete union of the driver over one tooth
+   * and repeats that space at tooth pitch. The default teeth stay the
+   * involute profile. Geometry only — not strength.
    */
   spurGearPair(opts: SpurGearPairOptions): SpurGearPair;
   /**

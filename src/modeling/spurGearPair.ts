@@ -107,8 +107,10 @@ export interface SpurGearPair {
   /** Set only on the pair returned by `withGeneratingCut`. */
   generatingCut?: SpurGearGeneratingCut;
   /**
-   * Exact BREP distance and common volume over one driver tooth, plus the
-   * pitch-circle arc between the two flank-contact poses. Geometry only.
+   * Exact BREP distance and common volume over sampled poses of one driver
+   * tooth, plus poses refined beside the minimum and the pitch-circle arc
+   * between the two flank-contact poses. The clearance aggregates are
+   * sample-limited. Geometry only.
    */
   toothInterference(opts?: SpurGearToothInterferenceOptions): Promise<SpurGearToothInterferenceReport>;
   /**

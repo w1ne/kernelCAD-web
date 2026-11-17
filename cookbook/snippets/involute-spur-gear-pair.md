@@ -17,6 +17,10 @@ when_to_use: >-
   driven gear so a tooth space faces the driver, and adds revolute mates
   with a gear-pair transmission. Each tooth is the `spurGear(...)`
   involute (trochoid root, correct undercut) as one manifold solid.
+  `toothInterference` aggregates exact BREP distance over sampled poses
+  and refines beside the minimum; it does not certify the gaps between
+  samples. `withGeneratingCut` is an opt-in discrete union, not a
+  continuous envelope.
 ---
 
 ```typescript

@@ -28,14 +28,18 @@ npx tsx src/agent/cli/index.ts evaluate examples/cookbook-parity/involute-spur-g
 ```
 
 ```
-gear-pair-report {"anyInterference":false,"backlashMm":0.04908738521234052,"backlashReached":true,"minClearanceMm":0.023376654152066634,"centerDistanceMm":30,"ratio":-0.5}
+gear-pair-report {"sampleLimited":true,"clearanceScope":"sampled-poses","anyInterference":false,"aggregatedPoseCount":8,"unresolvedStepDeg":1.125,"refinementSteps":2,"backlashMm":0.04908738521234052,"backlashStepMm":0.0015339807878856412,"backlashReached":true,"minClearanceMm":0.023376654152066634,"minClearanceDriverDeg":9,"centerDistanceMm":30,"ratio":-0.5}
 Features: 18
 OK
 ```
 
 The report samples one driver tooth with exact BREP distance and common
-volume, and measures backlash as the driven pitch-circle arc. Geometry only.
-Not tooth strength or load capacity.
+volume, then refines beside the lowest-clearance pose. `anyInterference` and
+`minClearanceMm` aggregate those sampled poses. They do not prove the gaps
+between samples. Backlash is the driven pitch-circle arc. Geometry only.
+Not tooth strength or load capacity. The physics check is
+`validate --include-interference` on this file: mates, travel and gravity.
+That check uses the ideal gear ratio. It does not simulate tooth contact.
 
 Front: both faces share a height and meet above the plate. Iso: a 20-tooth
 driver and a 40-tooth driven gear, each with a bore, and a driver tooth sitting

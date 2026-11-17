@@ -4,14 +4,17 @@
 // a couple at −z1/z2, and a gear-pair transmission.
 //
 // The log line is a local CAD geometry report: exact BREP distance and
-// common volume over one driver tooth, plus the measured pitch-circle
-// backlash. It is not a motion simulation and not a strength result.
+// common volume over sampled poses of one driver tooth, plus poses refined
+// beside the minimum, plus the measured pitch-circle backlash.
+// anyInterference and minClearanceMm aggregate those poses. They do not
+// prove the gaps between samples. It is not a motion simulation and not a
+// strength result.
 //
 // Run with:
 //   npx tsx src/agent/cli/index.ts evaluate examples/cookbook-parity/involute-spur-gear-pair.kcad.ts
 //
 // Expected console output:
-//   gear-pair-report {"anyInterference":false,"backlashMm":0.04908738521234052,"backlashReached":true,"minClearanceMm":0.023376654152066634,"centerDistanceMm":30,"ratio":-0.5}
+//   gear-pair-report {"sampleLimited":true,"clearanceScope":"sampled-poses","anyInterference":false,"aggregatedPoseCount":8,"unresolvedStepDeg":1.125,"refinementSteps":2,"backlashMm":0.04908738521234052,"backlashStepMm":0.0015339807878856412,"backlashReached":true,"minClearanceMm":0.023376654152066634,"minClearanceDriverDeg":9,"centerDistanceMm":30,"ratio":-0.5}
 //   Features: 18
 //   OK
 
@@ -29,10 +32,17 @@ const pair = spurGearPair({
 
 const report = await pair.toothInterference({ cycleSamples: 4 });
 console.log('gear-pair-report ' + JSON.stringify({
+  sampleLimited: report.sampleLimited,
+  clearanceScope: report.clearanceScope,
   anyInterference: report.anyInterference,
+  aggregatedPoseCount: report.aggregatedPoseCount,
+  unresolvedStepDeg: report.unresolvedStepDeg,
+  refinementSteps: report.refinementSteps,
   backlashMm: report.backlashMm,
+  backlashStepMm: report.backlashStepMm,
   backlashReached: report.backlashReached,
   minClearanceMm: report.minClearanceMm,
+  minClearanceDriverDeg: report.minClearanceDriverDeg,
   centerDistanceMm: report.centerDistanceMm,
   ratio: report.ratio,
 }));

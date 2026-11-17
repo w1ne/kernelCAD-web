@@ -104,8 +104,10 @@ assembly(name?: string): Assembly;
 // tooth space faces the driver. The assembly has revolute mates, a couple at
 // −z1/z2, and a gear-pair transmission. Default teeth are the involute from
 // spurGear. `await pair.toothInterference({ cycleSamples })` reports exact
-// BREP distance, common volume and measured pitch-circle backlash over one
-// driver tooth — geometry only, not strength. `await pair.withGeneratingCut({
+// BREP distance and common volume over sampled poses, refines beside the
+// minimum, and measures pitch-circle backlash. anyInterference and
+// minClearanceMm aggregate those poses only — they do not prove the gaps
+// between samples. Geometry only, not strength. `await pair.withGeneratingCut({
 // samples })` is opt-in: a discrete union of the driver over one tooth,
 // repeated at tooth pitch. Its scallopMm is a chordal sagitta bound, not a
 // continuous generating cut. Example: examples/cookbook-parity/involute-spur-gear-pair.kcad.ts

@@ -19,6 +19,13 @@ export const SPUR_GEAR_VOLUME_PROBE_DISTANCE_MM = 1e-4;
 /** Bisections per flank. The reported arc can sit one step past first contact. */
 export const SPUR_GEAR_BACKLASH_SEARCH_STEPS = 10;
 
+/**
+ * Midpoint samples added on each side of the lowest uniform clearance,
+ * repeated this many times. The gap beside that pose shrinks by half each
+ * step. Skipped when a uniform pose already interferes.
+ */
+export const SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS = 2;
+
 export const SPUR_GEAR_MIN_CYCLE_SAMPLES = 2;
 export const SPUR_GEAR_MAX_CYCLE_SAMPLES = 36;
 export const SPUR_GEAR_MIN_CUT_SAMPLES = 3;
@@ -50,6 +57,16 @@ export function meshAlignDeg(drivenTeeth: number): number {
 
 export function pitchRadiusMm(moduleMm: number, teeth: number): number {
   return (moduleMm * teeth) / 2;
+}
+
+/**
+ * Pitch-circle arc (mm) of one remaining bisection bracket on the driven
+ * gear. The reported flank can sit this far past first contact.
+ */
+export function backlashSearchStepMm(drivenTeeth: number, drivenPitchRadiusMm: number): number {
+  const halfPitchDeg = 180 / drivenTeeth;
+  const stepDeg = halfPitchDeg / 2 ** SPUR_GEAR_BACKLASH_SEARCH_STEPS;
+  return stepDeg * (Math.PI / 180) * drivenPitchRadiusMm;
 }
 
 export function tipRadiusMm(moduleMm: number, teeth: number): number {

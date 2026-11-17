@@ -12,11 +12,13 @@ import { invalidArgs } from '../shared/intent/invalidArgs';
 import { brepExtremaClosestBetween, wrappedShape } from './runtime/brepDistance';
 import {
   SPUR_GEAR_BACKLASH_SEARCH_STEPS,
+  SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS,
   SPUR_GEAR_CONTACT_EPS_MM,
   SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
   SPUR_GEAR_MAX_CYCLE_SAMPLES,
   SPUR_GEAR_MIN_CYCLE_SAMPLES,
   SPUR_GEAR_VOLUME_PROBE_DISTANCE_MM,
+  backlashSearchStepMm,
   teethNearFacing,
   toothIndex,
 } from './spurGearPairMath';
@@ -26,9 +28,13 @@ export interface SpurGearToothPair {
   driven: number;
 }
 
+export type SpurGearSampleOrigin = 'uniform' | 'revolution' | 'refined';
+
 export interface SpurGearToothSample {
   driverDeg: number;
   drivenDeg: number;
+  /** Where this pose came from. `refined` was inserted beside the minimum. */
+  sampledBy: SpurGearSampleOrigin;
   /** Exact BREP distance, mm. Zero when the solids touch or overlap. */
   clearanceMm: number;
   /** Exact common volume, mm³. Computed only when the distance is at most 1e-4 mm. */
@@ -58,6 +64,34 @@ export interface SpurGearToothInterferenceReport {
   authoredBacklashMm: number;
   samples: SpurGearToothSample[];
   revolutionSamples?: SpurGearToothSample[];
+  /**
+   * Poses inserted beside the lowest uniform clearance. Empty when a uniform
+   * pose already interferes: that pose already fixes the aggregate.
+   */
+  refinedSamples: SpurGearToothSample[];
+  /**
+   * Always true. `anyInterference`, `maxInterferenceVolumeMm3` and
+   * `minClearanceMm` are aggregates of `aggregatedPoseCount` poses. They do
+   * not prove the driver-angle gaps between those poses.
+   */
+  sampleLimited: true;
+  /** The only scope those three aggregates have. */
+  clearanceScope: 'sampled-poses';
+  /** Uniform tooth poses, optional revolution poses, and refined poses. */
+  aggregatedPoseCount: number;
+  /** Driver degrees between the requested tooth-cycle poses. */
+  uniformToothStepDeg: number;
+  /** Refinement rounds run beside the minimum. Zero when a pose already interferes. */
+  refinementSteps: number;
+  /**
+   * Largest driver-angle gap that still touches the minimum-clearance pose,
+   * degrees. Clearance inside that gap was not measured.
+   */
+  unresolvedStepDeg: number;
+  /** Driver angle of the pose that set `minClearanceMm`. */
+  minClearanceDriverDeg: number;
+  /** States that the clearance aggregates are sample-limited. */
+  aggregateNote: string;
   anyInterference: boolean;
   maxInterferenceVolumeMm3: number;
   minClearanceMm: number;
@@ -67,6 +101,12 @@ export interface SpurGearToothInterferenceReport {
    * are free. Zero when the authored phase already touches.
    */
   backlashMm: number;
+  /**
+   * Pitch-circle arc of one remaining bisection bracket on one flank, mm.
+   * Each reported flank can sit this far past first contact, so the sum can
+   * differ from the true free arc by up to twice this step.
+   */
+  backlashStepMm: number;
   backlashReached: boolean;
   backlashNote: string;
   positiveFlank: SpurGearBacklashFlank;
@@ -96,7 +136,7 @@ export interface SpurGearPairMeasureSpec {
 }
 
 const GEOMETRY_NOTE =
-  'Geometry only. Clearance is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result.';
+  'Geometry only. anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate the listed sampled poses, including poses refined beside the minimum. They do not prove clearance between those poses. Clearance is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result, and it is not a continuous no-interference certificate.';
 
 interface PoseHit {
   distanceMm: number;
@@ -165,6 +205,7 @@ async function sampleAt(
   driven: OcctBackend,
   spec: SpurGearPairMeasureSpec,
   driverDeg: number,
+  sampledBy: SpurGearSampleOrigin,
 ): Promise<SpurGearToothSample> {
   await Promise.resolve();
   const drivenDeg = spec.ratio * driverDeg;
@@ -175,6 +216,7 @@ async function sampleAt(
   return {
     driverDeg,
     drivenDeg,
+    sampledBy,
     clearanceMm: hit.distanceMm,
     interferenceVolumeMm3: hit.volumeMm3,
     interfering: hit.volumeMm3 > SPUR_GEAR_INTERFERENCE_VOLUME_MM3,
@@ -205,12 +247,117 @@ async function samplesOver(
   spec: SpurGearPairMeasureSpec,
   count: number,
   driverSpanDeg: number,
+  sampledBy: 'uniform' | 'revolution',
 ): Promise<SpurGearToothSample[]> {
   const out: SpurGearToothSample[] = [];
   for (let i = 0; i < count; i += 1) {
-    out.push(await sampleAt(driver, driven, spec, (i * driverSpanDeg) / count));
+    out.push(await sampleAt(driver, driven, spec, (i * driverSpanDeg) / count, sampledBy));
   }
   return out;
+}
+
+function lowestClearance(samples: readonly SpurGearToothSample[]): SpurGearToothSample {
+  let best = samples[0];
+  if (best === undefined) {
+    throw new KernelError(
+      'feature.kernel-failed',
+      'spurGearPair tooth interference had no sampled poses to aggregate.',
+      'spurGearPair',
+      'cycleSamples must be at least 2.',
+    );
+  }
+  for (const sample of samples) {
+    if (sample.clearanceMm < best.clearanceMm) best = sample;
+  }
+  return best;
+}
+
+/** Forward distance from `fromDeg` to `toDeg` along a circle of `spanDeg`. */
+function circularDistance(fromDeg: number, toDeg: number, spanDeg: number): number {
+  const d = (toDeg - fromDeg) % spanDeg;
+  return d < 0 ? d + spanDeg : d;
+}
+
+function wrapSpan(deg: number, spanDeg: number): number {
+  const wrapped = deg % spanDeg;
+  return wrapped < 0 ? wrapped + spanDeg : wrapped;
+}
+
+function neighborDeg(
+  pool: readonly SpurGearToothSample[],
+  atDeg: number,
+  spanDeg: number,
+  direction: 'forward' | 'back',
+): number {
+  let best = spanDeg;
+  let angle = atDeg;
+  for (const other of pool) {
+    const delta = direction === 'forward'
+      ? circularDistance(atDeg, other.driverDeg, spanDeg)
+      : circularDistance(other.driverDeg, atDeg, spanDeg);
+    if (delta > 1e-9 && delta < best) {
+      best = delta;
+      angle = other.driverDeg;
+    }
+  }
+  return angle;
+}
+
+/** Largest driver-angle gap that still touches `sample` inside `pool`. */
+function gapBeside(
+  sample: SpurGearToothSample,
+  pool: readonly SpurGearToothSample[],
+  spanDeg: number,
+): number {
+  const left = circularDistance(neighborDeg(pool, sample.driverDeg, spanDeg, 'back'), sample.driverDeg, spanDeg);
+  const right = circularDistance(sample.driverDeg, neighborDeg(pool, sample.driverDeg, spanDeg, 'forward'), spanDeg);
+  return Math.max(left, right);
+}
+
+/**
+ * Sample the midpoint on each side of the current minimum, then follow
+ * whichever pose is lower. `steps` rounds halve the gap beside that pose.
+ */
+async function refineBesideMinimum(
+  driver: OcctBackend,
+  driven: OcctBackend,
+  spec: SpurGearPairMeasureSpec,
+  pool: readonly SpurGearToothSample[],
+  spanDeg: number,
+  steps: number,
+): Promise<SpurGearToothSample[]> {
+  const known = [...pool];
+  let best = lowestClearance(known);
+  const added: SpurGearToothSample[] = [];
+  for (let i = 0; i < steps; i += 1) {
+    const leftDeg = neighborDeg(known, best.driverDeg, spanDeg, 'back');
+    const rightDeg = neighborDeg(known, best.driverDeg, spanDeg, 'forward');
+    const leftMid = wrapSpan(
+      leftDeg + circularDistance(leftDeg, best.driverDeg, spanDeg) / 2,
+      spanDeg,
+    );
+    const rightMid = wrapSpan(
+      best.driverDeg + circularDistance(best.driverDeg, rightDeg, spanDeg) / 2,
+      spanDeg,
+    );
+    const leftSample = await sampleAt(driver, driven, spec, leftMid, 'refined');
+    const rightSample = await sampleAt(driver, driven, spec, rightMid, 'refined');
+    added.push(leftSample, rightSample);
+    known.push(leftSample, rightSample);
+    best = lowestClearance([best, leftSample, rightSample]);
+  }
+  return added;
+}
+
+function aggregateNoteOf(
+  poseCount: number,
+  unresolvedStepDeg: number,
+  refinementSteps: number,
+): string {
+  const refined = refinementSteps === 0
+    ? 'Refinement was skipped because a sampled pose already interferes.'
+    : `Refinement added ${refinementSteps * 2} poses beside the minimum, ${refinementSteps} steps on each side.`;
+  return `anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate ${poseCount} sampled poses. The largest driver-angle gap still touching the minimum-clearance pose is ${unresolvedStepDeg.toFixed(4)}°. ${refined} These fields do not prove clearance between samples.`;
 }
 
 interface FlankSearch {
@@ -332,6 +479,98 @@ function totals(samples: readonly SpurGearToothSample[]): {
   return { anyInterference, maxInterferenceVolumeMm3, minClearanceMm };
 }
 
+interface SamplePlan {
+  cycleSamples: number;
+  whole: boolean;
+  revolutionCount: number;
+}
+
+function samplePlan(opts: SpurGearToothInterferenceOptions | undefined): SamplePlan {
+  const whole = opts?.wholeRevolution === true;
+  return {
+    cycleSamples: sampleCount(opts?.cycleSamples, 8, 'opts.cycleSamples'),
+    whole,
+    revolutionCount: whole
+      ? sampleCount(opts?.revolutionSamples, 4, 'opts.revolutionSamples')
+      : 0,
+  };
+}
+
+interface RefinementDomain {
+  spanDeg: number;
+  pool: readonly SpurGearToothSample[];
+  /** True when the revolution set is lower, so refinement stays on that circle. */
+  usesRevolution: boolean;
+}
+
+function refinementDomain(
+  samples: readonly SpurGearToothSample[],
+  revolution: readonly SpurGearToothSample[] | undefined,
+  toothSpanDeg: number,
+): RefinementDomain {
+  if (revolution === undefined) {
+    return { spanDeg: toothSpanDeg, pool: samples, usesRevolution: false };
+  }
+  const toothMin = lowestClearance(samples);
+  const revolutionMin = lowestClearance(revolution);
+  if (revolutionMin.clearanceMm < toothMin.clearanceMm - 1e-4) {
+    return { spanDeg: 360, pool: revolution, usesRevolution: true };
+  }
+  return { spanDeg: toothSpanDeg, pool: samples, usesRevolution: false };
+}
+
+async function refinedPoses(
+  driver: OcctBackend,
+  driven: OcctBackend,
+  spec: SpurGearPairMeasureSpec,
+  uniform: readonly SpurGearToothSample[],
+  domain: RefinementDomain,
+): Promise<{ refinedSamples: SpurGearToothSample[]; refinementSteps: number }> {
+  if (uniform.some((sample) => sample.interfering)) {
+    return { refinedSamples: [], refinementSteps: 0 };
+  }
+  const refinedSamples = await refineBesideMinimum(
+    driver,
+    driven,
+    spec,
+    domain.pool,
+    domain.spanDeg,
+    SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS,
+  );
+  return { refinedSamples, refinementSteps: SPUR_GEAR_CLEARANCE_REFINEMENT_STEPS };
+}
+
+function poseListedIn(
+  pool: readonly SpurGearToothSample[] | undefined,
+  sample: SpurGearToothSample,
+): boolean {
+  return pool !== undefined && pool.includes(sample);
+}
+
+/**
+ * Driver-angle gap that still touches the minimum. A revolution minimum is
+ * measured on the 360° set. A tooth-cycle minimum ignores revolution inserts.
+ */
+function unresolvedBesideMinimum(
+  samples: readonly SpurGearToothSample[],
+  revolution: readonly SpurGearToothSample[] | undefined,
+  refinedSamples: readonly SpurGearToothSample[],
+  toothSpanDeg: number,
+  usesRevolution: boolean,
+  aggregated: readonly SpurGearToothSample[],
+): { minSample: SpurGearToothSample; unresolvedStepDeg: number } {
+  const minSample = lowestClearance(aggregated);
+  const minInRevolution = poseListedIn(revolution, minSample)
+    || (usesRevolution && poseListedIn(refinedSamples, minSample));
+  if (minInRevolution) {
+    const revolutionPool = revolution ?? [];
+    const pool = usesRevolution ? revolutionPool.concat(refinedSamples) : revolutionPool;
+    return { minSample, unresolvedStepDeg: gapBeside(minSample, pool, 360) };
+  }
+  const pool = usesRevolution ? [...samples] : samples.concat(refinedSamples);
+  return { minSample, unresolvedStepDeg: gapBeside(minSample, pool, toothSpanDeg) };
+}
+
 export async function measureToothInterference(
   driver: OcctBackend,
   driven: OcctBackend,
@@ -339,21 +578,30 @@ export async function measureToothInterference(
   drivenPitchRadiusMm: number,
   opts: SpurGearToothInterferenceOptions | undefined,
 ): Promise<SpurGearToothInterferenceReport> {
-  const cycleSamples = sampleCount(opts?.cycleSamples, 8, 'opts.cycleSamples');
-  const whole = opts?.wholeRevolution === true;
-  const revolutionSamples = whole
-    ? sampleCount(opts?.revolutionSamples, 4, 'opts.revolutionSamples')
-    : 0;
+  const plan = samplePlan(opts);
+  const halfPitchDeg = 180 / spec.drivenTeeth;
   const rest = measurePose(driver, driven);
-  const positive = await searchFlankAt(driver, driven, spec, 1, rest, 180 / spec.drivenTeeth, drivenPitchRadiusMm);
-  const negative = await searchFlankAt(driver, driven, spec, -1, rest, 180 / spec.drivenTeeth, drivenPitchRadiusMm);
-  const play = backlashOf(positive, negative, 180 / spec.drivenTeeth);
-  const samples = await samplesOver(driver, driven, spec, cycleSamples, 360 / spec.teeth);
-  const revolution = whole
-    ? await samplesOver(driver, driven, spec, revolutionSamples, 360)
+  const positive = await searchFlankAt(driver, driven, spec, 1, rest, halfPitchDeg, drivenPitchRadiusMm);
+  const negative = await searchFlankAt(driver, driven, spec, -1, rest, halfPitchDeg, drivenPitchRadiusMm);
+  const play = backlashOf(positive, negative, halfPitchDeg);
+  const toothSpanDeg = 360 / spec.teeth;
+  const samples = await samplesOver(driver, driven, spec, plan.cycleSamples, toothSpanDeg, 'uniform');
+  const revolution = plan.whole
+    ? await samplesOver(driver, driven, spec, plan.revolutionCount, 360, 'revolution')
     : undefined;
-  const rolled = revolution === undefined ? samples : samples.concat(revolution);
-  const sum = totals(rolled);
+  const domain = refinementDomain(samples, revolution, toothSpanDeg);
+  const uniform = revolution === undefined ? samples : samples.concat(revolution);
+  const { refinedSamples, refinementSteps } = await refinedPoses(driver, driven, spec, uniform, domain);
+  const aggregated = uniform.concat(refinedSamples);
+  const { minSample, unresolvedStepDeg } = unresolvedBesideMinimum(
+    samples,
+    revolution,
+    refinedSamples,
+    toothSpanDeg,
+    domain.usesRevolution,
+    aggregated,
+  );
+  const sum = totals(aggregated);
   return {
     kind: 'geometry',
     centerDistanceMm: spec.centerDistanceMm,
@@ -362,8 +610,18 @@ export async function measureToothInterference(
     authoredBacklashMm: spec.backlashMm,
     samples,
     ...(revolution !== undefined ? { revolutionSamples: revolution } : {}),
+    refinedSamples,
+    sampleLimited: true,
+    clearanceScope: 'sampled-poses',
+    aggregatedPoseCount: aggregated.length,
+    uniformToothStepDeg: toothSpanDeg / plan.cycleSamples,
+    refinementSteps,
+    unresolvedStepDeg,
+    minClearanceDriverDeg: minSample.driverDeg,
+    aggregateNote: aggregateNoteOf(aggregated.length, unresolvedStepDeg, refinementSteps),
     ...sum,
     ...play,
+    backlashStepMm: backlashSearchStepMm(spec.drivenTeeth, drivenPitchRadiusMm),
     positiveFlank: positive.flank,
     negativeFlank: negative.flank,
     note: GEOMETRY_NOTE,

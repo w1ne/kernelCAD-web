@@ -66,10 +66,7 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
   'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',
   'examples/cookbook-parity/wood-joinery-dado-rabbet-mortise.kcad.ts',
-  // Revolute mates and a gear-pair transmission. Stays out of the orphan-part
-  // sweep: evaluate runs the tooth-interference distance report, and
-  // tests/integration/modeling/spurGearPair.test.ts is the timed geometry proof.
-  'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
+
   // Stacked exploded/BOM demo: fastened mates exist, but connector origins
   // sit at assembled stack heights in empty space, so the joint-mesh-gap
   // gate fires by design. Render/export of this file uses --no-mechanism-check.
@@ -222,6 +219,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
     {
       testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/involuteSpurGearPair.test.ts',
       coverage: 'run-validate-cli',
     },
   ],
