@@ -13,6 +13,9 @@
 //   - Session.step(seconds, dt?) → { qpos, xpos, bodyPoses }
 //   - Session.xposNow() → ReadonlyMap<bodyName, Vec3>
 //   - Session.bodyPosesNow() → ReadonlyMap<bodyName, placement in mm>
+//   - Session.forward() — kinematics and contacts, no integration
+//   - Session.compiledGeoms / compiledContacts / compiledBodies /
+//     excludedBodyPairs — compiled model metadata (not XML text)
 //   - Session.dispose()
 //
 // Coordinate units: MuJoCo SI throughout (radians, metres, kg, seconds).
@@ -50,6 +53,97 @@ export interface MujocoBodyPose {
 export type MujocoStepObserver = (qpos: readonly number[], step: number) => void;
 
 const METRES_TO_MM = 1000;
+
+/** mjtObj values from the MuJoCo WASM bindings. */
+const OBJ_BODY = 1;
+const OBJ_GEOM = 5;
+const OBJ_MESH = 10;
+/** mjtGeom.mjGEOM_MESH */
+const GEOM_MESH = 7;
+const GEOM_TYPE_NAME = ['plane', 'hfield', 'sphere', 'capsule', 'ellipsoid', 'cylinder', 'box', 'mesh', 'sdf'] as const;
+
+export interface CompiledGeom {
+    readonly id: number;
+    readonly name: string;
+    readonly bodyId: number;
+    readonly body: string;
+    readonly type: string;
+    readonly group: number;
+    readonly contype: number;
+    readonly conaffinity: number;
+    readonly margin: number;
+    readonly mesh?: string;
+}
+
+export interface CompiledContact {
+    readonly geom1: number;
+    readonly geom2: number;
+    readonly geomA: string;
+    readonly geomB: string;
+    readonly bodyA: string;
+    readonly bodyB: string;
+    /** Signed distance in metres. Negative means penetration. */
+    readonly distM: number;
+}
+
+export interface CompiledBodyDynamics {
+    readonly id: number;
+    readonly name: string;
+    readonly parentId: number;
+    readonly parentName: string;
+    readonly massKg: number;
+    readonly comM: readonly [number, number, number];
+    /** Principal moments about the centre of mass, kg·m². */
+    readonly principalKgM2: readonly [number, number, number];
+    /** Inertia-frame quaternion, MuJoCo order (w, x, y, z). */
+    readonly iquat: readonly [number, number, number, number];
+    /** Centroidal inertia in the body frame: [ixx, ixy, ixz, iyy, iyz, izz]. */
+    readonly inertia6: readonly [number, number, number, number, number, number];
+}
+
+export interface ExcludedBodyPair {
+    readonly bodyA: string;
+    readonly bodyB: string;
+}
+
+/**
+ * Body-frame inertia from principal moments and the inertia quaternion.
+ * `I = R diag(principal) Rᵀ`, with `R` the rotation that maps the
+ * inertia frame into the body frame. An identity quaternion leaves the
+ * diagonal unchanged.
+ */
+export function inertia6FromPrincipal(
+    principal: readonly [number, number, number],
+    iquatWxyz: readonly [number, number, number, number],
+): [number, number, number, number, number, number] {
+    const [w, x, y, z] = iquatWxyz;
+    const xx = x * x, yy = y * y, zz = z * z;
+    const xy = x * y, xz = x * z, yz = y * z;
+    const wx = w * x, wy = w * y, wz = w * z;
+    const r = [
+        [1 - 2 * (yy + zz), 2 * (xy - wz), 2 * (xz + wy)],
+        [2 * (xy + wz), 1 - 2 * (xx + zz), 2 * (yz - wx)],
+        [2 * (xz - wy), 2 * (yz + wx), 1 - 2 * (xx + yy)],
+    ];
+    const at = (row: number, col: number): number =>
+        r[row][0] * principal[0] * r[col][0]
+        + r[row][1] * principal[1] * r[col][1]
+        + r[row][2] * principal[2] * r[col][2];
+    return [at(0, 0), at(0, 1), at(0, 2), at(1, 1), at(1, 2), at(2, 2)];
+}
+
+function modelCount(model: MjModelHandle, field: string): number {
+    const value = model?.[field];
+    return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function modelAt(view: unknown, index: number): number {
+    if (view == null || index < 0) return 0;
+    const indexed = view as { get?: (i: number) => number } & ArrayLike<number>;
+    const value = typeof indexed.get === 'function' ? indexed.get(index) : indexed[index];
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+}
 
 function bodyPoseAt(xpos: ArrayLike<number>, xmat: ArrayLike<number>, bodyIdx: number): MujocoBodyPose {
     const p = bodyIdx * 3;
@@ -252,10 +346,141 @@ export class MujocoSession {
         return out;
     }
 
-    /** Run forward kinematics + dynamics population (no integration). */
+    /** Run forward kinematics and contact generation (no integration). */
     forward(): void {
         this.assertAlive();
         this.mujoco.mj_forward(this.model, this.data);
+    }
+
+    /**
+     * Geoms as the compiler stored them: type, group, collision bits,
+     * and mesh name. Names come from `mj_id2name`, not from the XML.
+     */
+    compiledGeoms(): CompiledGeom[] {
+        this.assertAlive();
+        const ngeom = modelCount(this.model, 'ngeom');
+        const out: CompiledGeom[] = [];
+        for (let id = 0; id < ngeom; id++) {
+            const bodyId = modelAt(this.model.geom_bodyid, id);
+            const typeId = modelAt(this.model.geom_type, id);
+            const mesh = typeId === GEOM_MESH
+                ? this.objectName(OBJ_MESH, modelAt(this.model.geom_dataid, id))
+                : undefined;
+            const name = this.objectName(OBJ_GEOM, id);
+            out.push({
+                id,
+                name: name.length > 0 ? name : `geom${id}`,
+                bodyId,
+                body: this.objectName(OBJ_BODY, bodyId),
+                type: GEOM_TYPE_NAME[typeId] ?? `type${typeId}`,
+                group: modelAt(this.model.geom_group, id),
+                contype: modelAt(this.model.geom_contype, id),
+                conaffinity: modelAt(this.model.geom_conaffinity, id),
+                margin: modelAt(this.model.geom_margin, id),
+                ...(mesh !== undefined && mesh.length > 0 ? { mesh } : {}),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Contacts after the last `forward` or `step`. `distM` is MuJoCo's
+     * signed distance in metres (negative means penetration).
+     */
+    compiledContacts(): CompiledContact[] {
+        this.assertAlive();
+        const ncon = Number(this.data.ncon ?? 0);
+        const contacts = this.data.contact;
+        if (contacts == null || typeof contacts.get !== 'function') return [];
+        const geoms = this.compiledGeoms();
+        const out: CompiledContact[] = [];
+        for (let i = 0; i < ncon; i++) {
+            const contact = contacts.get(i);
+            if (contact === undefined) continue;
+            const geom1 = Number(contact.geom1);
+            const geom2 = Number(contact.geom2);
+            const g1 = geoms[geom1];
+            const g2 = geoms[geom2];
+            out.push({
+                geom1,
+                geom2,
+                geomA: g1?.name ?? `geom${geom1}`,
+                geomB: g2?.name ?? `geom${geom2}`,
+                bodyA: g1?.body ?? '',
+                bodyB: g2?.body ?? '',
+                distM: Number(contact.dist),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Compiled inertial frame of every body except the world body.
+     * `inertia6` is the centroidal tensor in the body frame, rebuilt
+     * from the principal moments and the inertia quaternion.
+     */
+    compiledBodies(): CompiledBodyDynamics[] {
+        this.assertAlive();
+        const nbody = modelCount(this.model, 'nbody');
+        const out: CompiledBodyDynamics[] = [];
+        for (let id = 1; id < nbody; id++) {
+            const parentId = modelAt(this.model.body_parentid, id);
+            const principal: [number, number, number] = [
+                modelAt(this.model.body_inertia, id * 3),
+                modelAt(this.model.body_inertia, id * 3 + 1),
+                modelAt(this.model.body_inertia, id * 3 + 2),
+            ];
+            const iquat: [number, number, number, number] = [
+                modelAt(this.model.body_iquat, id * 4),
+                modelAt(this.model.body_iquat, id * 4 + 1),
+                modelAt(this.model.body_iquat, id * 4 + 2),
+                modelAt(this.model.body_iquat, id * 4 + 3),
+            ];
+            out.push({
+                id,
+                name: this.objectName(OBJ_BODY, id),
+                parentId,
+                parentName: parentId === 0 ? 'world' : this.objectName(OBJ_BODY, parentId),
+                massKg: modelAt(this.model.body_mass, id),
+                comM: [
+                    modelAt(this.model.body_ipos, id * 3),
+                    modelAt(this.model.body_ipos, id * 3 + 1),
+                    modelAt(this.model.body_ipos, id * 3 + 2),
+                ],
+                principalKgM2: principal,
+                iquat,
+                inertia6: inertia6FromPrincipal(principal, iquat),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Body pairs the compiler will not contact. Signature is
+     * `(min(id) << 16) + max(id)`, which is how the engine stores
+     * `<contact><exclude>` after compile.
+     */
+    excludedBodyPairs(): ExcludedBodyPair[] {
+        this.assertAlive();
+        const nexclude = modelCount(this.model, 'nexclude');
+        const out: ExcludedBodyPair[] = [];
+        for (let i = 0; i < nexclude; i++) {
+            const signature = modelAt(this.model.exclude_signature, i);
+            const body1 = signature >>> 16;
+            const body2 = signature & 0xffff;
+            const name1 = this.objectName(OBJ_BODY, body1);
+            const name2 = this.objectName(OBJ_BODY, body2);
+            const [bodyA, bodyB] = name1 < name2 ? [name1, name2] : [name2, name1];
+            out.push({ bodyA, bodyB });
+        }
+        out.sort((a, b) => a.bodyA.localeCompare(b.bodyA) || a.bodyB.localeCompare(b.bodyB));
+        return out;
+    }
+
+    private objectName(objType: number, id: number): string {
+        if (id < 0) return '';
+        const named = this.mujoco.mj_id2name(this.model, objType, id);
+        return typeof named === 'string' ? named : '';
     }
 
     dispose(): void {

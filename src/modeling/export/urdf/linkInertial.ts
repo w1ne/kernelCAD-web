@@ -14,6 +14,9 @@ import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 
 const MM_TO_M = 1e-3;
 
+/** Density used when a link declares neither `density` nor a material. Water. */
+export const URDF_DEFAULT_DENSITY_KG_M3 = 1000;
+
 export interface LinkInertialResult {
   xml: string;
   diagnostics: CompilerDiagnostic[];
@@ -23,7 +26,7 @@ export function linkInertialBlock(
   shape: OcctBackend,
   density: number | undefined,
 ): LinkInertialResult {
-  const effective = density ?? 1000;
+  const effective = density ?? URDF_DEFAULT_DENSITY_KG_M3;
   const mp = shape.massProperties(effective);
   const [ixx, ixy, ixz, iyy, iyz, izz] = mp.inertia6;
   const xml = [

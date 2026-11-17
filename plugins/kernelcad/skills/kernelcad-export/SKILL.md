@@ -23,6 +23,11 @@ description: Export a kernelCAD model to STEP, STL, 3MF, GLB, OBJ, PLY, USD, DXF
 - Before exporting for print: `inspect({ of: "part-stats", code })`. For a
   bill of materials: `inspect({ of: "bom", code })`.
 - Verify a STEP after export with `inspect({ of: "step", file })`.
+- Before handing an assembly to a physics simulator, call `check_export_health`
+  with the same `file` or `code`. It compiles the MJCF at `qpos0` and reports
+  unexpected rest contacts, visual geoms that still collide, and mass / centre
+  of mass / inertia against the CAD solid for both the MJCF body and the URDF
+  inertial. It does not replace `verify({ check: "physics" })`.
 - The hosted server returns a download link or file reference; give the user
   that link and say which format and units it is in. Keep verification on
   (do not pass `no_verify: true`) unless the user asks.

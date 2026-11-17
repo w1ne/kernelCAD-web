@@ -56,6 +56,7 @@ export const TOOL_TITLES: Record<string, string> = {
   fit_model_to_scan: 'Fit Model to Scan',
   resolve_metric_thread: 'Resolve Metric Thread',
   split_keep_parts: 'Split Keep Parts',
+  check_export_health: 'Check Export Health',
   send_to_printer: 'Send G-code to Printer',
   repair_script: 'Repair CAD Script',
   sweep_tolerance: 'Sweep Tolerance Range',

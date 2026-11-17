@@ -34,6 +34,16 @@ For a `gear-pair` transmission that has a matching scalar coupling, the native r
 
 The [12:48 coupled-gear release demo and evidence bundle](../demos/issue-1321-coupled-gear/README.md) records the signed input sweep and native release residual from the regression fixture.
 
+## MJCF and URDF export health
+
+`check_export_health` is separate from `verify({ check: 'physics' })`. It exports the assembly to MJCF and URDF, compiles the MJCF, and runs forward at `qpos0` (the compiled rest coordinates, not a posed sweep). The report is local export validation. It is not a drop test, a travel sweep, or hardware acceptance.
+
+- Rest contacts are read from the compiled model. A row is a penetration when the signed distance is more negative than 0.001 mm, and a margin-only contact otherwise. Parent/child body pairs and explicit contact exclusions are left out of both lists.
+- A visual geom (group 2, group 3, or a `visual-` / `wrap-` name) with a non-zero `contype` or `conaffinity` is reported. A collision mesh that uses the whole-part visual mesh while solid collision pieces were declared is reported too.
+- Each inertia row compares the CAD solid with the compiled MJCF body and the URDF inertial. A declared part mass replaces volume times density on that comparison. Undeclared density is 2700 kg/m³ on the MJCF side and 1000 kg/m³ on the URDF side. A unit-inertia substitution, a regularized tensor, or a component past the stated tolerance fails the row.
+
+`ok` is true only when all three groups are clean.
+
 ## Notes in the broken-mechanism banner
 
 The `MECHANISM BROKEN` banner of `kernelcad validate` and strict `kernelcad render` counts only error-severity entries as failures and prints them as `[ERROR]`. Non-fatal entries follow the errors with their own label: `[NOTE]` for an informational entry, such as the drop of a free passive joint, and `[WARN]` for a warning, such as a skipped pose sweep. A note does not make a mechanism broken. The render watermark and the `mechanism_failure_codes` field of `render_preview` list error codes only; `diagnostics` keeps each entry with its severity.

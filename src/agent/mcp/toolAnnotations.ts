@@ -175,6 +175,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   resolve_metric_thread: READ,
   // Evaluates a split and returns part measures. Writes nothing.
   split_keep_parts: READ,
+  // Compiles MJCF and compares URDF inertials. Writes nothing.
+  check_export_health: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.

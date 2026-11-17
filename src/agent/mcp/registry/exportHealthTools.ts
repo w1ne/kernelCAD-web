@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+//
+// Tail-appended family: MJCF/URDF export health. New families go at the END
+// of TOOL_REGISTRY so kernelCAD-server's index-based public contract stays
+// stable. verify({ check: 'physics' }) is unchanged.
+import { checkExportHealthTool } from '../tools/checkExportHealth';
+import type { ToolRegistryEntry } from './types';
+
+export const exportHealthToolEntries: ToolRegistryEntry[] = [
+  {
+    definition: {
+      name: 'check_export_health',
+      description:
+        'Use this when you need to know whether an assembly export is safe to simulate: rest contacts that are not parent/child or explicitly excluded, visual geoms that still collide, and whether each link\'s mass, centre of mass, and inertia match the CAD solid. ' +
+        'Pass file or code. The tool exports MJCF and URDF, compiles the MJCF, and runs forward at qpos0 (joint coordinates at their compiled rest, not a posed sweep). ' +
+        'Rest-contact rows separate penetration depth from margin-only contacts. Mate neighbours and other excluded body pairs are omitted. ' +
+        'A visual geom (group 2, group 3, or a visual-/wrap- name) with non-zero contype or conaffinity is reported, as is a collision mesh that uses the whole-part visual mesh when solid collision pieces were declared. ' +
+        'Inertia rows compare the CAD solid, including a declared mass when the part sets one, with the compiled MJCF body and the URDF inertial. A unit-inertia substitution, a regularized tensor, or a mismatch beyond the stated tolerance fails the row. ' +
+        'MJCF defaults undeclared density to 2700 kg/m³ and URDF to 1000 kg/m³; each side is compared at the density that export used. ' +
+        'ok is true only when every row is clean. This is an export check at the compiled rest pose. It does not run drop tests, travel sweeps, or hardware acceptance. verify({ check: \'physics\' }) remains the mechanism gate.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path of a .kcad.ts script. Mutually exclusive with code.' },
+          code: { type: 'string', description: 'Inline kernelCAD script. Mutually exclusive with file.' },
+          assembly: { type: 'string', description: 'Assembly name when the script defines more than one. Defaults to the first captured assembly.' },
+        },
+      },
+    },
+    handler: async (input) => checkExportHealthTool(input),
+  },
+];

@@ -1,0 +1,267 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+//
+// Fair check for MJCF/URDF export health. The three-box assembly is real
+// geometry. Expected mass and inertia come from the closed-form box solid,
+// not from the exporter and not from massProperties. One MuJoCo compile
+// covers that assembly. A second, tiny hand-written MJCF covers a visual
+// geom whose collision bits are on; that model is not produced by the exporter.
+
+import { describe, expect, it, vi } from 'vitest';
+import { CaptureSession } from '../capture/captureSession';
+import { createModelingApi } from '../api';
+import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { assemblyToMjcf, unitInertiaNote } from './mjcfExport';
+import { loadMujocoSession } from './mujocoSession';
+import {
+    assessCompiledExport,
+    checkExportHealth,
+    type InertiaSample,
+} from './exportHealth';
+import type { CompiledBodyDynamics, CompiledContact, CompiledGeom } from './mujocoSessionCore';
+
+const A_MM: [number, number, number] = [40, 30, 20];
+const B_MM: [number, number, number] = [10, 30, 20];
+const MJCF_DENSITY = 2700;
+const URDF_DENSITY = 1000;
+
+/** Closed-form mass properties of a centred box. Sizes are full extents in mm. */
+function boxSolid(sizeMm: readonly [number, number, number], densityKgM3: number): InertiaSample {
+    const [sx, sy, sz] = sizeMm.map((mm) => mm / 1000);
+    const massKg = densityKgM3 * sx * sy * sz;
+    return {
+        massKg,
+        comM: [0, 0, 0],
+        inertia6: [
+            massKg * (sy * sy + sz * sz) / 12,
+            0,
+            0,
+            massKg * (sx * sx + sz * sz) / 12,
+            0,
+            massKg * (sx * sx + sy * sy) / 12,
+        ],
+    };
+}
+
+function expectNear(actual: number, expected: number, rel = 1e-4, abs = 1e-9): void {
+    const tol = Math.max(abs, rel * Math.max(Math.abs(actual), Math.abs(expected)));
+    expect(Math.abs(actual - expected), `got ${actual}, expected ${expected}, tol ${tol}`).toBeLessThanOrEqual(tol);
+}
+
+function expectSample(actual: InertiaSample, expected: InertiaSample): void {
+    expectNear(actual.massKg, expected.massKg, 1e-4, 1e-6);
+    for (let i = 0; i < 3; i++) expectNear(actual.comM[i], expected.comM[i], 0, 1e-4);
+    for (let i = 0; i < 6; i++) expectNear(actual.inertia6[i], expected.inertia6[i], 1e-4, 1e-9);
+}
+
+function geom(partial: Partial<CompiledGeom> & Pick<CompiledGeom, 'name' | 'body'>): CompiledGeom {
+    return {
+        id: 0,
+        bodyId: 1,
+        type: 'mesh',
+        group: 1,
+        contype: 1,
+        conaffinity: 1,
+        margin: 0,
+        ...partial,
+    };
+}
+
+describe('export health classification', () => {
+    it('splits penetration from margin contacts and drops parent/child and explicit excludes', () => {
+        const bodies = [
+            { id: 1, name: 'a', parentId: 0, parentName: 'world', massKg: 1, comM: [0, 0, 0], principalKgM2: [1, 1, 1], iquat: [1, 0, 0, 0], inertia6: [1, 0, 0, 1, 0, 1] },
+            { id: 2, name: 'b', parentId: 1, parentName: 'a', massKg: 1, comM: [0, 0, 0], principalKgM2: [1, 1, 1], iquat: [1, 0, 0, 0], inertia6: [1, 0, 0, 1, 0, 1] },
+            { id: 3, name: 'c', parentId: 2, parentName: 'b', massKg: 1, comM: [0, 0, 0], principalKgM2: [1, 1, 1], iquat: [1, 0, 0, 0], inertia6: [1, 0, 0, 1, 0, 1] },
+        ] satisfies CompiledBodyDynamics[];
+        const contacts: CompiledContact[] = [
+            { geom1: 0, geom2: 1, geomA: 'ga', geomB: 'gb', bodyA: 'a', bodyB: 'b', distM: -0.02 },
+            { geom1: 1, geom2: 2, geomA: 'gb', geomB: 'gd', bodyA: 'b', bodyB: 'd', distM: -0.01 },
+            { geom1: 0, geom2: 2, geomA: 'ga', geomB: 'gc', bodyA: 'a', bodyB: 'c', distM: -0.015 },
+            { geom1: 0, geom2: 3, geomA: 'ga', geomB: 'ge', bodyA: 'a', bodyB: 'e', distM: 0.0002 },
+        ];
+        const report = assessCompiledExport({
+            geoms: [],
+            contacts,
+            bodies,
+            excludedBodyPairs: [{ bodyA: 'b', bodyB: 'd' }],
+            expectations: [],
+            inertiaNotes: [],
+            urdfLinks: [],
+            cadByBody: new Map(),
+        });
+        expect(report.restContacts.penetrating.map((row) => [row.bodyA, row.bodyB, row.penetrationM])).toEqual([
+            ['a', 'c', 0.015],
+        ]);
+        expect(report.restContacts.marginOnly).toEqual([
+            expect.objectContaining({ bodyA: 'a', bodyB: 'e', kind: 'margin', penetrationM: 0, distM: 0.0002 }),
+        ]);
+        expect(report.ok).toBe(false);
+    });
+
+    it('flags a visual geom with collision bits and a visual mesh used where a solid was declared', () => {
+        const report = assessCompiledExport({
+            geoms: [
+                geom({ name: 'visual-shell', body: 'base', group: 2, contype: 1, conaffinity: 2, mesh: 'base_visual' }),
+                geom({ name: 'visual-ok', body: 'base', group: 2, contype: 0, conaffinity: 0, type: 'sphere' }),
+                geom({ name: 'collision-from-visual', body: 'base', group: 1, mesh: 'base_visual' }),
+                geom({ name: 'solid-box', body: 'base', group: 1, type: 'box' }),
+            ],
+            contacts: [],
+            bodies: [],
+            excludedBodyPairs: [],
+            expectations: [{ body: 'base', solidCollisionMeshes: ['base_solid'], visualMeshNames: ['base_visual'] }],
+            inertiaNotes: [],
+            urdfLinks: [{
+                name: 'base',
+                massKg: 1,
+                comM: [0, 0, 0],
+                inertia6: [1, 0, 0, 1, 0, 1],
+                visualMesh: 'meshes/base.stl',
+                collisionMesh: 'meshes/base.stl',
+            }],
+            cadByBody: new Map(),
+        });
+        expect(report.visualFindings.map((row) => `${row.source}:${row.kind}:${row.geom}`).sort()).toEqual([
+            'mjcf:collision-visual-mesh:collision-from-visual',
+            'mjcf:collision-visual-mesh:visual-shell',
+            'mjcf:visual-collision-bits:visual-shell',
+            'urdf:collision-visual-mesh:collision',
+        ]);
+        expect(report.visualFindings.find((row) => row.geom === 'visual-ok')).toBeUndefined();
+        expect(report.visualFindings.find((row) => row.geom === 'solid-box')).toBeUndefined();
+    });
+
+    it('records a unit-inertia note when mass properties throw', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('unit-inertia');
+        arm.part('slug', kcad.box(10, 10, 10, true));
+        const spy = vi.spyOn(OcctBackend.prototype, 'massProperties').mockImplementation(() => {
+            throw new Error('mass properties unavailable');
+        });
+        try {
+            const exported = await assemblyToMjcf(arm);
+            expect(exported.inertiaNotes).toContain(unitInertiaNote('slug'));
+        } finally {
+            spy.mockRestore();
+        }
+    });
+});
+
+describe('three-box export health at qpos0', () => {
+    it('reports the non-adjacent overlap, omits mate neighbours, and matches box inertia', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('three-box-rest-overlap');
+        const axisAt = (origin: [number, number, number]) => ({
+            type: 'axis' as const,
+            origin: { kind: 'vec3' as const, value: origin },
+            axis: [0, 1, 0] as [number, number, number],
+        });
+        // A and C are 40×30×20 boxes. At qpos0, C's origin sits 5 mm along +X
+        // from A's origin, so the solids overlap by 35 mm, 30 mm, and 20 mm
+        // on X, Y, and Z. B is the 10 mm spacer between the two revolute mates.
+        arm.part('a', kcad.box(A_MM[0], A_MM[1], A_MM[2], true)).connector('ab', axisAt([20, 0, 0]));
+        arm.part('b', kcad.box(B_MM[0], B_MM[1], B_MM[2], true))
+            .connector('ab', axisAt([-5, 0, 0]))
+            .connector('bc', axisAt([5, 0, 0]))
+            .wrapGeom('rail', { axis: [0, 0, 1], origin: [0, 0, 80], radius: 3, halfLengthMm: 5 });
+        arm.part('c', kcad.box(A_MM[0], A_MM[1], A_MM[2], true)).connector('bc', axisAt([25, 0, 0]));
+        arm.mate('ab', 'a.ab', 'b.ab', 'revolute', { pose: 0, limitsDeg: [-30, 30] });
+        arm.mate('bc', 'b.bc', 'c.bc', 'revolute', { pose: 0, limitsDeg: [-30, 30] });
+
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+
+        expect(report.excludedBodyPairs).toEqual([
+            { bodyA: 'a', bodyB: 'b' },
+            { bodyA: 'b', bodyB: 'c' },
+        ]);
+        const pairs = [...report.restContacts.penetrating, ...report.restContacts.marginOnly]
+            .map((row) => `${row.bodyA}:${row.bodyB}`);
+        expect(pairs).not.toContain('a:b');
+        expect(pairs).not.toContain('b:c');
+        const overlap = report.restContacts.penetrating.filter((row) => row.bodyA === 'a' && row.bodyB === 'c');
+        expect(overlap.length).toBeGreaterThan(0);
+        // Smallest overlap of the two centred boxes is 20 mm along Z.
+        // A metre/millimetre slip would report tens of metres.
+        for (const row of overlap) {
+            expect(row.penetrationM).toBeGreaterThan(0.005);
+            expect(row.penetrationM).toBeLessThan(0.05);
+            expect(row.penetrationM).toBeCloseTo(-row.distM, 12);
+            expect(row.kind).toBe('penetration');
+            // Collision geoms are unnamed in the export. The compiled mesh
+            // asset is the identity, read from the model rather than the XML.
+            expect(row.meshA).toBe('part-a');
+            expect(row.meshB).toBe('part-c');
+        }
+        expect(report.restContacts.marginOnly.filter((row) => row.bodyA === 'a' && row.bodyB === 'c')).toEqual([]);
+
+        const rail = report.geoms.find((row) => row.name.startsWith('wrap-'));
+        expect(rail).toMatchObject({ role: 'visual', contype: 0, conaffinity: 0, group: 3 });
+        expect(report.visualFindings).toEqual([]);
+
+        for (const body of ['a', 'c'] as const) {
+            const row = report.inertia.find((item) => item.body === body);
+            expect(row?.fallback).toBe(false);
+            expect(row?.regularized).toBe(false);
+            expect(row?.mismatch).toBe(false);
+            expect(row?.mjcf).not.toBeNull();
+            expect(row?.urdf).not.toHaveProperty('missing');
+            expectSample(row!.mjcf!, boxSolid(A_MM, MJCF_DENSITY));
+            expectSample(row!.urdf as InertiaSample, boxSolid(A_MM, URDF_DENSITY));
+        }
+        const spacer = report.inertia.find((item) => item.body === 'b');
+        expect(spacer?.mismatch).toBe(false);
+        expectSample(spacer!.mjcf!, boxSolid(B_MM, MJCF_DENSITY));
+        expectSample(spacer!.urdf as InertiaSample, boxSolid(B_MM, URDF_DENSITY));
+        expect(report.ok).toBe(false);
+        expect(report.summary).toContain('penetrating');
+    }, 60000);
+});
+
+describe('compiled visual geom collision bits', () => {
+    it('reads non-zero contype from the compiled model and flags that visual geom', async () => {
+        const mjcf = `<?xml version="1.0"?>
+<mujoco>
+  <asset>
+    <mesh name="base_visual" vertex="0 0 0  0.02 0 0  0 0.02 0  0 0 0.02"/>
+  </asset>
+  <worldbody>
+    <body name="base">
+      <inertial pos="0 0 0" mass="0.01" diaginertia="1e-4 1e-4 1e-4"/>
+      <geom name="visual-shell" type="mesh" mesh="base_visual" group="2" contype="1" conaffinity="2"/>
+      <geom name="visual-ok" type="sphere" size="0.004" pos="0 0 0.05" group="2" contype="0" conaffinity="0"/>
+      <geom name="collision-from-visual" type="mesh" mesh="base_visual" group="1" contype="1" conaffinity="1"/>
+      <geom name="solid-box" type="box" size="0.01 0.01 0.01" group="1" contype="1" conaffinity="1"/>
+    </body>
+  </worldbody>
+</mujoco>
+`;
+        const session = await loadMujocoSession(mjcf, ['base'], []);
+        try {
+            session.setPose(session.getQpos());
+            session.forward();
+            const geoms = session.compiledGeoms();
+            const shell = geoms.find((row) => row.name === 'visual-shell');
+            expect(shell).toMatchObject({ contype: 1, conaffinity: 2, group: 2, mesh: 'base_visual', type: 'mesh' });
+            const clear = geoms.find((row) => row.name === 'visual-ok');
+            expect(clear).toMatchObject({ contype: 0, conaffinity: 0 });
+            const report = assessCompiledExport({
+                geoms,
+                contacts: session.compiledContacts(),
+                bodies: session.compiledBodies(),
+                excludedBodyPairs: session.excludedBodyPairs(),
+                expectations: [{ body: 'base', solidCollisionMeshes: ['base_solid'], visualMeshNames: ['base_visual'] }],
+                inertiaNotes: [],
+                urdfLinks: [],
+                cadByBody: new Map(),
+            });
+            expect(report.visualFindings.some((row) => row.kind === 'visual-collision-bits' && row.geom === 'visual-shell' && row.contype === 1)).toBe(true);
+            expect(report.visualFindings.some((row) => row.kind === 'collision-visual-mesh' && row.geom === 'collision-from-visual' && row.mesh === 'base_visual')).toBe(true);
+            expect(report.visualFindings.some((row) => row.geom === 'visual-ok' || row.geom === 'solid-box')).toBe(false);
+        } finally {
+            session.dispose();
+        }
+    }, 30000);
+});

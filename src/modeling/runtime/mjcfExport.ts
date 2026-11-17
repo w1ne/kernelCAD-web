@@ -85,7 +85,8 @@ const RAD_TO_DEG = 180 / Math.PI;
  * (water 1000) understates joint loads and lets the gate miss
  * collapsing arms.
  */
-const DEFAULT_DENSITY_KG_M3 = 2700;
+/** Density used when a part declares neither `density` nor `massKg`. Aluminium. */
+export const MJCF_DEFAULT_DENSITY_KG_M3 = 2700;
 
 export interface MjcfExportResult {
     /** MJCF XML string ready to feed `MjModel.from_xml_string`. */
@@ -296,7 +297,7 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
         let lowered: OcctBackend | undefined = sceneShapes.get(p.name);
         try {
             lowered ??= (await p.originalShape.lower()) as OcctBackend;
-            const density = p.density ?? DEFAULT_DENSITY_KG_M3;
+            const density = p.density ?? MJCF_DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
             // A declared `massKg` (catalog / datasheet mass) wins over
             // volume × density: CoM and inertia come from the geometry,
@@ -323,14 +324,12 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
                 inertia6: valid.inertia6,
             });
         } catch {
-            // Fall back to a unit inertia tensor (1 kg point mass at the
-            // part origin). Still produces a valid MJCF; the criterion
-            // outputs will note the lossy inertia in their hint.
-            inertials.set(p.name, {
-                massKg: 1,
-                comLocalMm: [0, 0, 0],
-                inertia6: [1e-3, 0, 0, 1e-3, 0, 1e-3],
-            });
+            // Fall back to a unit inertia tensor (1 kg, diagonal 1e-3 kg·m²
+            // at the part origin). Still produces a valid MJCF. The note is
+            // the record that this substitution happened — callers must not
+            // have to notice the 1 kg / 1e-3 pattern on their own.
+            inertiaNotes.push(unitInertiaNote(p.name));
+            inertials.set(p.name, UNIT_INERTIA_SPEC);
         }
         if (lowered !== undefined) {
             try {
@@ -794,6 +793,18 @@ interface InertiaSpec {
     readonly inertia6: readonly [number, number, number, number, number, number];
 }
 
+/** Substituted when mass properties cannot be computed. Diagonal 1e-3 kg·m², 1 kg, origin. */
+const UNIT_INERTIA_SPEC: InertiaSpec = {
+    massKg: 1,
+    comLocalMm: [0, 0, 0],
+    inertia6: [1e-3, 0, 0, 1e-3, 0, 1e-3],
+};
+
+/** Recorded on `inertiaNotes` when `UNIT_INERTIA_SPEC` replaces the CAD tensor. */
+export function unitInertiaNote(partName: string): string {
+    return `${partName}: mass properties unavailable; substituted unit inertia (mass 1 kg, diagonal 1e-3 kg·m², centre of mass at the part origin)`;
+}
+
 // Joint spring / damping → MJCF SI. The exported joint coordinate has the
 // same sign as the mate pose / limits (no axis flip), so the spring reference
 // maps straight to `springref`.
@@ -905,8 +916,12 @@ function mateToMjcfJoint(
  * `part-<slug>` form so `<geom mesh="...">` references stay readable
  * in diagnostic output. Run-collapses non-alphanumeric chars to single
  * '-' separators; leading/trailing separators are trimmed.
+ *
+ * Exported so the export-health check can tell a declared collision
+ * piece (`part-<slug>__cN`) from the whole-part mesh without reading
+ * the MJCF text.
  */
-function mjcfMeshAssetName(partName: string): string {
+export function mjcfMeshAssetName(partName: string): string {
     const slug = partName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
