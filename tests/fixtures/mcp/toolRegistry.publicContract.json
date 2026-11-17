@@ -490,6 +490,14 @@
               },
               "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
+            "loopMobility": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "description": "Closed-loop solver evidence per assembly and sampled pose: loop names, coordinate count, closure-Jacobian rank, mobility, Grübler count, redundant constraints, driven DOF, and independently drivable joints. Omitted when no loop was solved."
+            },
             "ignoredPairs": {
               "type": "array",
               "items": {
@@ -504,7 +512,7 @@
             },
             "failures": {
               "type": "array",
-              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate, `loop` names its closed loop, and `part` names the part when known.",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
@@ -520,6 +528,9 @@
                     "type": "string"
                   },
                   "joint": {
+                    "type": "string"
+                  },
+                  "loop": {
                     "type": "string"
                   },
                   "part": {
@@ -7065,6 +7076,14 @@
               },
               "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
+            "loopMobility": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "description": "Closed-loop solver evidence per assembly and sampled pose: loop names, coordinate count, closure-Jacobian rank, mobility, Grübler count, redundant constraints, driven DOF, and independently drivable joints. Omitted when no loop was solved."
+            },
             "ignoredPairs": {
               "type": "array",
               "items": {
@@ -7079,7 +7098,7 @@
             },
             "failures": {
               "type": "array",
-              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate, `loop` names its closed loop, and `part` names the part when known.",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
@@ -7095,6 +7114,9 @@
                     "type": "string"
                   },
                   "joint": {
+                    "type": "string"
+                  },
+                  "loop": {
                     "type": "string"
                   },
                   "part": {
