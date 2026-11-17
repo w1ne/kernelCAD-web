@@ -14,9 +14,10 @@ import type { ConstraintType } from '../../../modeling/constraints/types';
 
 export interface ListApiInput {
   /**
-   * Optional keyword filter. When provided, only entries whose name, signature,
-   * or description match (token substring, case-insensitive) are returned, WITH
-   * full descriptions. When omitted, every entry is returned in COMPACT form
+   * Optional plain-language keyword filter. Word terms can match different
+   * entries; name matches rank above signature and description matches. Matching
+   * entries are returned WITH full descriptions. When omitted, every entry is
+   * returned in COMPACT form
    * (name + signature + a short blurb, no full description) — the whole API
    * surface is `API_ENTRY_COUNT` entries (see that const — deliberately derived,
    * because the figure written here was stale for months) / ~14k tokens of prose
@@ -28,16 +29,28 @@ export interface ListApiInput {
 }
 
 const COMPACT_BLURB_CHARS = 90;
+const SEARCH_FILLER = new Set(['a', 'an', 'and', 'for', 'in', 'of', 'on', 'the', 'to', 'with']);
 
-function entryHaystack(e: ApiEntry): string {
-  return `${e.name} ${e.signature} ${e.description}`.toLowerCase();
+function words(value: string): string[] {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .match(/[\p{L}\p{N}]+/gu) ?? [];
+}
+
+function queryTokens(query: string): string[] {
+  return [...new Set(words(query))].filter((token) => !SEARCH_FILLER.has(token));
 }
 
 function entryMatchScore(e: ApiEntry, tokens: string[]): number {
-  const hay = entryHaystack(e);
-  let n = 0;
-  for (const t of tokens) if (hay.includes(t)) n += 1;
-  return n;
+  const fields = [words(e.name), words(e.signature), words(e.description)];
+  return tokens.reduce((score, token) => {
+    const matches = (field: string[]) => field.some((word) => word === token || word.startsWith(token) || token.startsWith(word));
+    if (matches(fields[0])) return score + 8;
+    if (matches(fields[1])) return score + 3;
+    if (matches(fields[2])) return score + 1;
+    return score;
+  }, 0);
 }
 
 function compactEntry(e: ApiEntry): ApiEntry {
@@ -52,24 +65,18 @@ function compactEntry(e: ApiEntry): ApiEntry {
 /**
  * Project an ApiEntry[] for the response: filtered+full on query, else compact.
  *
- * Matching prefers entries that contain EVERY query token (precise drill-down).
- * When that yields nothing — typical of agent kitchen-sink queries like
- * "assembly part options metadata provenance purchased fabricated bom" — keep
- * entries that hit a majority of tokens so the real BOM provenance contract
- * still surfaces instead of empty globals/scenePartProperties.
+ * Match terms across name, signature, and description rather than requiring a
+ * single entry to contain the whole plain-language query. A name match ranks
+ * above a signature or description match so constructors and methods surface
+ * ahead of prose-only references.
  */
 function projectEntries(entries: ApiEntry[], tokens: string[]): ApiEntry[] {
   if (tokens.length === 0) return entries.map(compactEntry);
   const scored = entries
     .map((e) => ({ e, score: entryMatchScore(e, tokens) }))
-    .filter((x) => x.score > 0);
-  const full = scored.filter((x) => x.score === tokens.length);
-  if (full.length > 0) return full.map((x) => x.e);
-  const threshold = Math.max(2, Math.ceil(tokens.length * 0.5));
-  return scored
-    .filter((x) => x.score >= threshold)
-    .sort((a, b) => b.score - a.score || a.e.name.localeCompare(b.e.name))
-    .map((x) => x.e);
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.e.name.localeCompare(b.e.name));
+  return scored.map((x) => x.e);
 }
 
 export interface ApiEntry {
@@ -556,10 +563,7 @@ export const CONSTRAINT_CAPABILITY: ConstraintCapability = {
 };
 
 export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutput> {
-  const tokens = (typeof input.query === 'string' ? input.query : '')
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
+  const tokens = queryTokens(typeof input.query === 'string' ? input.query : '');
   const p = (entries: ApiEntry[]): ApiEntry[] => projectEntries(entries, tokens);
   // The big token cost is the prose descriptions of the ApiEntry items, so
   // those are compacted by default and shown in full only for query matches.

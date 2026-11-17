@@ -29,6 +29,14 @@ describe('list_api MCP tool', () => {
     expect(methodNames).toContain('translate');
   });
 
+  it('finds the named constructor and Shape method when query terms span entries', async () => {
+    const result = await listApiTool({ query: 'box with a through hole' });
+    expect(result.globals?.map((entry) => entry.name)).toContain('box');
+    expect(result.shapeMethods?.map((entry) => entry.name)).toContain('hole');
+    expect(result.globals?.[0]?.name).toBe('box');
+    expect(result.shapeMethods?.[0]?.name).toBe('hole');
+  });
+
   it('returns sketchMethods including extrude, revolve, sweep', async () => {
     const r = await listApiTool({});
     const sketchMethodNames = r.sketchMethods!.map(m => m.name);
