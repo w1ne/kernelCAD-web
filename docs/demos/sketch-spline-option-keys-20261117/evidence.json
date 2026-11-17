@@ -1,0 +1,79 @@
+{
+  "generatedAt": "2026-11-17T18:24:05.614Z",
+  "replay": "Local CaptureSession + createModelingApi. This exercises script API capture only.",
+  "baseline": {
+    "baseRevision": "origin/develop f5036ee1466284b43d69b690a0fe3ef65726aee0",
+    "reproduction": "npx vitest run src/modeling/capture/sketchSplineTangent.test.ts -t \"rejects a misspelled endpoint tangent\"",
+    "result": "Failed before the fix: expected KernelError but caught undefined; the misspelled key was ignored and a spline command was recorded without endTangent."
+  },
+  "fixedReplay": {
+    "invalidOptions": {
+      "code": "feature.invalid-args",
+      "path": "opts.endTanget",
+      "message": "path().spline(points, opts): opts.endTanget — got an unknown option 'endTanget'; requires one of tension, startTangent, endTangent. Example: path().moveTo(0, 0).spline([[0, 0], [10, 10]], { endTangent: [1, 0] })",
+      "recordedSpline": false
+    },
+    "correctedOptions": {
+      "startTangent": [
+        1,
+        0
+      ],
+      "endTangent": [
+        0,
+        1
+      ]
+    }
+  },
+  "source": {
+    "path": "docs/demos/sketch-spline-option-keys-20261117/capture-demo.mts",
+    "sha256": "f0acdf5699324478d5e6daa61c115412f51f14c3c3f2eec773ef1977aca639e3"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 2,
+    "encoder": "libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/sketch-spline-option-keys-20261117/demo.mp4",
+    "sha256": "55dc2fe3cb1846d6e2a72b6b502903dfb148eda271e773c3cd3162c0083a2ac0",
+    "bytes": 59823
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/sketchSplineTangent.test.ts",
+      "result": "1 file passed; 6 tests passed"
+    },
+    "lowererRegression": {
+      "command": "npx vitest run src/kernel/backends/occt/pathNurbsLowerer.test.ts",
+      "result": "1 file passed; 8 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/splinePhases.ts src/modeling/capture/sketch.ts src/modeling/capture/sketchSplineTangent.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    "docs": {
+      "command": "npm run skill:references -- --check",
+      "result": "passed"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

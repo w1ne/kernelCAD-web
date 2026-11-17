@@ -29,6 +29,7 @@ import {
   toNurbsWeights,
 } from './nurbsSegmentPhases';
 import {
+  assertSplineOptionKeys,
   checkSplineConsecutiveDistinct,
   checkSplinePenMatch,
   toSplineTangent,
@@ -880,6 +881,7 @@ export class PathBuilder {
       endTangent?: [Editable<number>, Editable<number>];
     },
   ): PathBuilder {
+    assertSplineOptionKeys(opts);
     const now = (p: Param): number => this.#now(p);
     const paramPoints = toSplineWaypoints(points, now);
     checkSplineConsecutiveDistinct(paramPoints, now);

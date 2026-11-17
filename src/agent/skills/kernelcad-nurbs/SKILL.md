@@ -340,7 +340,7 @@ const profile = path()
   .close();
 ```
 
-The tangent magnitudes do not matter (normalised internally); only the directions. `[1, 0]` and `[100, 0]` produce the same curve.
+The tangent magnitudes do not matter (normalised internally); only the directions. `[1, 0]` and `[100, 0]` produce the same curve. The only accepted options are `tension`, `startTangent`, and `endTangent`; an unknown key such as `endTanget` throws `feature.invalid-args` at capture instead of silently dropping the endpoint constraint.
 
 ### Performance characteristics
 
