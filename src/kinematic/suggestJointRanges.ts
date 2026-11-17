@@ -35,7 +35,7 @@ import { currentValue } from '../shared/runtime/editableHelpers';
 import type { Editable } from '../shared/runtime/paramRef';
 import { minDistanceBetweenShapes, wrappedShape } from '../modeling/runtime/brepDistance';
 import { pairKey } from '../modeling/runtime/detectInterferences';
-import { bboxGap, transformScenePart } from '../modeling/runtime/dfm/clearance';
+import { bboxGap, transformScenePart, type TransformedPart } from '../modeling/runtime/dfm/clearance';
 import { BREP_SWEEP_BUDGET } from '../modeling/runtime/mechanismTruth';
 import { buildSweepProxies, relativePoseKey } from '../modeling/runtime/sweepCollisionProxy';
 
@@ -174,6 +174,115 @@ type PoseReading =
   | { readonly kind: 'close'; readonly pair: JointRangePair }
   | { readonly kind: 'unknown'; readonly reason: 'budget' | 'unmeasured' | 'solve-failed' };
 
+function isUsableClearance(clearance: number): boolean {
+  return Number.isFinite(clearance) && clearance >= 0;
+}
+
+function isUsableBudget(budgetLimit: number): boolean {
+  return budgetLimit === Infinity || (Number.isFinite(budgetLimit) && budgetLimit >= 0);
+}
+
+function isUsableWindow(search: readonly [number, number] | undefined): boolean {
+  return search === undefined || isFiniteWindow(search);
+}
+
+/** An omitted step or resolution keeps the default. A provided one must be a finite number above zero. */
+function isPositiveOverride(value: number | undefined): boolean {
+  return value === undefined || (Number.isFinite(value) && value > 0);
+}
+
+function requestError(
+  opts: SuggestJointRangesOpts | undefined,
+  clearance: number,
+  budgetLimit: number,
+): string | undefined {
+  if (!isUsableClearance(clearance)) {
+    return 'suggestJointRanges: clearanceMm must be a finite number >= 0.';
+  }
+  if (!isUsableBudget(budgetLimit)) {
+    return 'suggestJointRanges: sweepBudget must be a finite number >= 0, or Infinity.';
+  }
+  if (!isUsableWindow(opts?.search)) {
+    return 'suggestJointRanges: search must be a finite [min, max] with min <= max.';
+  }
+  if (!isPositiveOverride(opts?.step)) {
+    return 'suggestJointRanges: step must be a finite number > 0.';
+  }
+  if (!isPositiveOverride(opts?.resolution)) {
+    return 'suggestJointRanges: resolution must be a finite number > 0.';
+  }
+  return undefined;
+}
+
+function namedJoints(
+  scalars: readonly ScalarJoint[],
+  name: string | undefined,
+): readonly ScalarJoint[] | undefined {
+  if (name === undefined) return scalars;
+  const selected = scalars.filter((joint) => joint.name === name);
+  if (selected.length === 0) return undefined;
+  return selected;
+}
+
+function failedResult(clearance: number, budgetLimit: number, error: string): SuggestJointRangesResult {
+  return {
+    ok: false,
+    source: 'local',
+    clearanceMm: clearance,
+    sweepBudget: budgetLimit,
+    workUsed: 0,
+    joints: [],
+    patch: [],
+    limitsSnippet: '',
+    samplingNote: SAMPLING_NOTE,
+    error,
+  };
+}
+
+function jointWindowIsKnown(joint: JointRangeSuggestion): boolean {
+  return joint.lower.status !== 'unknown'
+    && joint.upper.status !== 'unknown'
+    && !joint.restWithinClearance;
+}
+
+function measuredResult(
+  joints: readonly JointRangeSuggestion[],
+  clearance: number,
+  budgetLimit: number,
+  workUsed: number,
+): SuggestJointRangesResult {
+  const patch = joints.flatMap(patchFor);
+  return {
+    ok: joints.every(jointWindowIsKnown),
+    source: 'local',
+    clearanceMm: clearance,
+    sweepBudget: budgetLimit,
+    workUsed,
+    joints,
+    patch,
+    limitsSnippet: formatSnippet(patch),
+    samplingNote: SAMPLING_NOTE,
+  };
+}
+
+function sessionFor(
+  prepared: readonly PreparedJoint[],
+  arm: Assembly,
+  clearance: number,
+  budget: Budget,
+): MeasureSession | undefined {
+  if (!prepared.some((joint) => joint.measure)) return undefined;
+  return new MeasureSession(arm, clearance, budget);
+}
+
+async function readAnchor(
+  session: MeasureSession | undefined,
+  anchor: ScalarJoint | undefined,
+): Promise<PoseReading | undefined> {
+  if (session === undefined || anchor === undefined) return undefined;
+  return session.read(anchor.name, anchor.rest);
+}
+
 /**
  * Suggest revolute and prismatic limits from geometry. Does not modify
  * the assembly. Other mates stay at their resolved authored poses while
@@ -185,68 +294,28 @@ export async function suggestJointRanges(
 ): Promise<SuggestJointRangesResult> {
   const clearance = opts?.clearanceMm ?? DEFAULT_JOINT_RANGE_CLEARANCE_MM;
   const budgetLimit = opts?.sweepBudget === undefined ? BREP_SWEEP_BUDGET : opts.sweepBudget;
-  const empty = (error: string): SuggestJointRangesResult => ({
-    ok: false,
-    source: 'local',
-    clearanceMm: clearance,
-    sweepBudget: budgetLimit,
-    workUsed: 0,
-    joints: [],
-    patch: [],
-    limitsSnippet: '',
-    samplingNote: SAMPLING_NOTE,
-    error,
-  });
+  const problem = requestError(opts, clearance, budgetLimit);
+  if (problem !== undefined) return failedResult(clearance, budgetLimit, problem);
 
-  if (!Number.isFinite(clearance) || clearance < 0) {
-    return empty('suggestJointRanges: clearanceMm must be a finite number >= 0.');
-  }
-  if (!(budgetLimit === Infinity || (Number.isFinite(budgetLimit) && budgetLimit >= 0))) {
-    return empty('suggestJointRanges: sweepBudget must be a finite number >= 0, or Infinity.');
-  }
-  if (opts?.search !== undefined && !isFiniteWindow(opts.search)) {
-    return empty('suggestJointRanges: search must be a finite [min, max] with min <= max.');
-  }
-  if (opts?.step !== undefined && !(Number.isFinite(opts.step) && opts.step > 0)) {
-    return empty('suggestJointRanges: step must be a finite number > 0.');
-  }
-  if (opts?.resolution !== undefined && !(Number.isFinite(opts.resolution) && opts.resolution > 0)) {
-    return empty('suggestJointRanges: resolution must be a finite number > 0.');
-  }
-
-  const scalars = listScalarJoints(arm);
-  const selected = opts?.joint === undefined ? scalars : scalars.filter((joint) => joint.name === opts.joint);
-  if (opts?.joint !== undefined && selected.length === 0) {
-    return empty(
-      `suggestJointRanges: unknown joint '${opts.joint}' — not a revolute or prismatic mate or joint on this assembly.`,
+  const requested = opts?.joint;
+  const selected = namedJoints(listScalarJoints(arm), requested);
+  if (selected === undefined) {
+    return failedResult(
+      clearance,
+      budgetLimit,
+      `suggestJointRanges: unknown joint '${requested}' — not a revolute or prismatic mate or joint on this assembly.`,
     );
   }
 
   const budget: Budget = { used: 0, limit: budgetLimit };
   const prepared = selected.map((joint) => prepareJoint(joint, opts, budgetLimit));
-  const needsGeometry = prepared.some((joint) => joint.measure);
-  const session = needsGeometry ? new MeasureSession(arm, clearance, budget) : undefined;
-  const anchor = selected[0];
-  const restReading = session !== undefined && anchor !== undefined
-    ? await session.read(anchor.name, anchor.rest)
-    : undefined;
+  const session = sessionFor(prepared, arm, clearance, budget);
+  const restReading = await readAnchor(session, selected[0]);
   const joints: JointRangeSuggestion[] = [];
   for (const joint of prepared) {
     joints.push(await suggestOne(joint, restReading, session, opts));
   }
-
-  const patch = joints.flatMap(patchFor);
-  return {
-    ok: joints.every((joint) => joint.lower.status !== 'unknown' && joint.upper.status !== 'unknown' && !joint.restWithinClearance),
-    source: 'local',
-    clearanceMm: clearance,
-    sweepBudget: budgetLimit,
-    workUsed: budget.used,
-    joints,
-    patch,
-    limitsSnippet: formatSnippet(patch),
-    samplingNote: SAMPLING_NOTE,
-  };
+  return measuredResult(joints, clearance, budgetLimit, budget.used);
 }
 
 interface PreparedJoint extends ScalarJoint {
@@ -257,23 +326,38 @@ interface PreparedJoint extends ScalarJoint {
   readonly resolution: number;
 }
 
+function jointStep(kind: ScalarJoint['kind'], opts: SuggestJointRangesOpts | undefined): number {
+  return opts?.step ?? (kind === 'revolute' ? DEFAULT_REVOLUTE_STEP_DEG : DEFAULT_PRISMATIC_STEP_MM);
+}
+
+function jointResolution(kind: ScalarJoint['kind'], opts: SuggestJointRangesOpts | undefined): number {
+  return opts?.resolution ?? (kind === 'revolute' ? DEFAULT_REVOLUTE_RESOLUTION_DEG : DEFAULT_PRISMATIC_RESOLUTION_MM);
+}
+
+function searchWindow(joint: ScalarJoint, opts: SuggestJointRangesOpts | undefined): readonly [number, number] | null {
+  return opts?.search ?? joint.limits ?? null;
+}
+
+function blockedReason(
+  joint: ScalarJoint,
+  search: readonly [number, number] | null,
+  budgetLimit: number,
+): JointRangeUnknownReason | undefined {
+  if (search === null) return 'unbounded';
+  if (!isFiniteWindow(search)) return 'invalid-bounds';
+  if (joint.rest < search[0] || joint.rest > search[1]) return 'rest-outside-bounds';
+  if (budgetLimit <= 0) return 'budget';
+  return undefined;
+}
+
 function prepareJoint(joint: ScalarJoint, opts: SuggestJointRangesOpts | undefined, budgetLimit: number): PreparedJoint {
-  const step = opts?.step ?? (joint.kind === 'revolute' ? DEFAULT_REVOLUTE_STEP_DEG : DEFAULT_PRISMATIC_STEP_MM);
-  const resolution = opts?.resolution ?? (joint.kind === 'revolute' ? DEFAULT_REVOLUTE_RESOLUTION_DEG : DEFAULT_PRISMATIC_RESOLUTION_MM);
-  const search = opts?.search ?? joint.limits;
-  const base = { ...joint, step, resolution, search: search ?? null, measure: false };
-  if (search === null || search === undefined) {
-    return { ...base, blocked: unknownSide('unbounded') };
-  }
-  if (!isFiniteWindow(search)) {
-    return { ...base, search: null, blocked: unknownSide('invalid-bounds') };
-  }
-  if (joint.rest < search[0] || joint.rest > search[1]) {
-    return { ...base, blocked: unknownSide('rest-outside-bounds') };
-  }
-  if (budgetLimit <= 0) {
-    return { ...base, blocked: unknownSide('budget') };
-  }
+  const step = jointStep(joint.kind, opts);
+  const resolution = jointResolution(joint.kind, opts);
+  const search = searchWindow(joint, opts);
+  const reason = blockedReason(joint, search, budgetLimit);
+  const window = reason === 'invalid-bounds' ? null : search;
+  const base = { ...joint, step, resolution, search: window, measure: false };
+  if (reason !== undefined) return { ...base, blocked: unknownSide(reason) };
   return { ...base, measure: true };
 }
 
@@ -387,6 +471,53 @@ async function bisect(
   };
 }
 
+type MeasuredPart = TransformedPart & {
+  readonly shape: NonNullable<TransformedPart['shape']>;
+  readonly bbox: NonNullable<TransformedPart['bbox']>;
+};
+
+type PairDistance =
+  | { readonly kind: 'stop'; readonly reading: PoseReading }
+  | { readonly kind: 'distance'; readonly distance: number; readonly pair: JointRangePair };
+
+function isMeasuredPart(part: TransformedPart): part is MeasuredPart {
+  return part.shape !== undefined && part.bbox !== undefined;
+}
+
+function stoppedReading(reason: 'budget' | 'unmeasured'): PairDistance {
+  return { kind: 'stop', reading: { kind: 'unknown', reason } };
+}
+
+function poseMemoKey(
+  a: string,
+  b: string,
+  ta: Transform | undefined,
+  tb: Transform | undefined,
+): string | undefined {
+  if (ta === undefined || tb === undefined) return undefined;
+  return `${pairKey(a, b)}|${relativePoseKey(ta, tb)}`;
+}
+
+function finiteDistance(a: MeasuredPart, b: MeasuredPart): number | undefined {
+  try {
+    const distance = minDistanceBetweenShapes(wrappedShape(a.shape), wrappedShape(b.shape));
+    if (distance === undefined || !Number.isFinite(distance)) return undefined;
+    return distance;
+  } catch {
+    return undefined;
+  }
+}
+
+function closestReading(
+  closest: { readonly pair: JointRangePair; readonly distance: number } | undefined,
+  clearance: number,
+): PoseReading {
+  if (closest !== undefined && closest.distance <= clearance + CLEARANCE_COMPARE_EPSILON_MM) {
+    return { kind: 'close', pair: closest.pair };
+  }
+  return { kind: 'clear' };
+}
+
 class MeasureSession {
   private cache: SceneBackend | undefined;
   private faces = new Map<string, number>();
@@ -425,51 +556,57 @@ class MeasureSession {
 
     for (let i = 0; i < posed.length; i++) {
       for (let j = i + 1; j < posed.length; j++) {
-        const a = posed[i]!;
-        const b = posed[j]!;
-        if (this.exempt.has(pairKey(a.name, b.name))) continue;
-        if (a.shape === undefined || a.bbox === undefined || b.shape === undefined || b.bbox === undefined) {
-          return { kind: 'unknown', reason: 'unmeasured' };
-        }
-        const gap = bboxGap(a.bbox, b.bbox);
-        if (gap > this.clearance + CLEARANCE_COMPARE_EPSILON_MM) continue;
-
-        const ta = transforms.get(a.name);
-        const tb = transforms.get(b.name);
-        const memoKey = ta !== undefined && tb !== undefined
-          ? `${pairKey(a.name, b.name)}|${relativePoseKey(ta, tb)}`
-          : undefined;
-        const cached = memoKey === undefined ? undefined : this.distances.get(memoKey);
-        let distance: number | undefined;
-        if (cached === 'fail') return { kind: 'unknown', reason: 'unmeasured' };
-        if (typeof cached === 'number') {
-          distance = cached;
-        } else {
-          const weight = faceWeight(this.faces, a.name, b.name);
-          if (!(this.budget.used + weight <= this.budget.limit)) {
-            return { kind: 'unknown', reason: 'budget' };
-          }
-          this.budget.used += weight;
-          try {
-            distance = minDistanceBetweenShapes(wrappedShape(a.shape), wrappedShape(b.shape));
-          } catch {
-            distance = undefined;
-          }
-          if (memoKey !== undefined) this.distances.set(memoKey, distance === undefined || !Number.isFinite(distance) ? 'fail' : distance);
-          if (distance === undefined || !Number.isFinite(distance)) {
-            return { kind: 'unknown', reason: 'unmeasured' };
-          }
-        }
-        if (closest === undefined || distance < closest.distance) {
-          closest = { pair: orderedPair(a.name, b.name), distance };
+        const pair = this.scanPair(posed[i]!, posed[j]!, transforms);
+        if (pair === undefined) continue;
+        if (pair.kind === 'stop') return pair.reading;
+        if (closest === undefined || pair.distance < closest.distance) {
+          closest = { pair: pair.pair, distance: pair.distance };
         }
       }
     }
+    return closestReading(closest, this.clearance);
+  }
 
-    if (closest !== undefined && closest.distance <= this.clearance + CLEARANCE_COMPARE_EPSILON_MM) {
-      return { kind: 'close', pair: closest.pair };
+  private scanPair(
+    a: TransformedPart,
+    b: TransformedPart,
+    transforms: ReadonlyMap<string, Transform>,
+  ): PairDistance | undefined {
+    if (this.exempt.has(pairKey(a.name, b.name))) return undefined;
+    if (!isMeasuredPart(a) || !isMeasuredPart(b)) return stoppedReading('unmeasured');
+    if (bboxGap(a.bbox, b.bbox) > this.clearance + CLEARANCE_COMPARE_EPSILON_MM) return undefined;
+    return this.measuredPair(a, b, transforms);
+  }
+
+  private measuredPair(
+    a: MeasuredPart,
+    b: MeasuredPart,
+    transforms: ReadonlyMap<string, Transform>,
+  ): PairDistance {
+    const memoKey = poseMemoKey(a.name, b.name, transforms.get(a.name), transforms.get(b.name));
+    if (memoKey !== undefined) {
+      const cached = this.distances.get(memoKey);
+      if (cached === 'fail') return stoppedReading('unmeasured');
+      if (typeof cached === 'number') {
+        return { kind: 'distance', distance: cached, pair: orderedPair(a.name, b.name) };
+      }
     }
-    return { kind: 'clear' };
+    return this.spendDistance(a, b, memoKey);
+  }
+
+  private spendDistance(a: MeasuredPart, b: MeasuredPart, memoKey: string | undefined): PairDistance {
+    const weight = faceWeight(this.faces, a.name, b.name);
+    if (!(this.budget.used + weight <= this.budget.limit)) return stoppedReading('budget');
+    this.budget.used += weight;
+    const distance = finiteDistance(a, b);
+    this.rememberDistance(memoKey, distance);
+    if (distance === undefined) return stoppedReading('unmeasured');
+    return { kind: 'distance', distance, pair: orderedPair(a.name, b.name) };
+  }
+
+  private rememberDistance(memoKey: string | undefined, distance: number | undefined): void {
+    if (memoKey === undefined) return;
+    this.distances.set(memoKey, distance === undefined ? 'fail' : distance);
   }
 }
 
