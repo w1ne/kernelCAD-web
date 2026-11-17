@@ -185,6 +185,9 @@ export type FeatureKind =
   // Capture-only steady CFD study declaration (shape.cfdStudy), no OCCT
   // output. Report-only: run by run_cfd, never by evaluate.
   | 'cfdStudy'
+  // Capture-only rocket flight study (shape/arm.flightStudy), no OCCT output.
+  // Run by run_flight; minStabilityCal makes it an evaluate-time gate.
+  | 'flightStudy'
   // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
   // output. Read by the svg-drawing exporter.
   | 'drawingDatum'

@@ -39,10 +39,10 @@ p.part("canopy-frame-rear", b(0, 700, 0, 1400, 65, 90).color(steel));
 p.part("canopy-left-beam", b(-670, 0, 0, 65, 1400, 90).color(steel));
 p.part("canopy-right-beam", b(670, 0, 0, 65, 1400, 90).color(steel));
 p.part("roof-panel-0", b(-500, 0, 90, 235, 1320, 28).color(polymer));
-p.part("roof-panel-1", b(-250, 0, 90, 235, 1320, 28).color(steel));
-p.part("roof-panel-2", b(0, 0, 90, 235, 1320, 28).color(steel));
-p.part("roof-panel-3", b(250, 0, 90, 235, 1320, 28).color(steel));
-p.part("roof-panel-4", b(500, 0, 90, 235, 1320, 28).color(steel));
+p.part("roof-panel-1", b(-250, 0, 90, 235, 1320, 28).color(polymer));
+p.part("roof-panel-2", b(0, 0, 90, 235, 1320, 28).color(polymer));
+p.part("roof-panel-3", b(250, 0, 90, 235, 1320, 28).color(polymer));
+p.part("roof-panel-4", b(500, 0, 90, 235, 1320, 28).color(polymer));
 p.part("support-post-front", c(-650, -680, 0, 2200, 26, 8).color(steel));
 p.part("support-post-rear", c(650, 680, 0, 2200, 26, 8).color(steel));
 

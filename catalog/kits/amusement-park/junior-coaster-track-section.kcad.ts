@@ -78,11 +78,11 @@ for (const x of [X0, X1]) {
 }
 
 // Triangular cross ties: a plate frame from each rail down to the spine.
-const tieOutline = extrudePolygon([[-GAUGE - 45, 30], [GAUGE + 45, 30], [GAUGE + 45, -20], [70, -SPINE_DROP - 10], [-70, -SPINE_DROP - 10], [-GAUGE - 45, -20]], 28)
+const tieOutline = () => extrudePolygon([[-GAUGE - 45, 30], [GAUGE + 45, 30], [GAUGE + 45, -20], [70, -SPINE_DROP - 10], [-70, -SPINE_DROP - 10], [-GAUGE - 45, -20]], 28)
   .subtract(extrudePolygon([[-GAUGE + 70, -40], [GAUGE - 70, -40], [40, -SPINE_DROP + 120], [-40, -SPINE_DROP + 120]], 40).translate(0, 0, -6));
 for (let i = 0; i <= 20; i++) {
   const x = X0 + 150 + ((X1 - X0 - 300) * i) / 20;
-  add(`tie-${i}`, tieOutline.rotateX(90).rotateZ(90).rotateY(-slopeDeg(x)).translate(x, 0, railZ(x)).color(trackPaint));
+  add(`tie-${i}`, tieOutline().rotateX(90).rotateZ(90).rotateY(-slopeDeg(x)).translate(x, 0, railZ(x)).color(trackPaint));
 }
 
 // Chain trough with anti-rollback teeth along the climb.

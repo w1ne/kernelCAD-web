@@ -50,7 +50,24 @@ function assertOperand(session: CaptureSession, path: string, shape: Shape): voi
   }
 }
 
+// `split(other, { kep: 'a_only' })` used to drop the misspelled key and
+// return all three fragments instead of the one body asked for.
+function assertOptionKeys(opts: unknown): void {
+  if (opts === undefined) return;
+  const isObject = opts !== null && typeof opts === 'object' && !Array.isArray(opts);
+  const unknownKeys = isObject ? Object.keys(opts).filter((key) => key !== 'keep') : [];
+  if (isObject && unknownKeys.length === 0) return;
+  invalidArgs({
+    api: 'shape.split(other, opts)',
+    path: 'opts',
+    ...(isObject ? { gotText: `unknown keys: ${unknownKeys.join(', ')}` } : { got: opts, showType: true }),
+    requires: 'an object with only keep',
+    example: SINGLE_EXAMPLE,
+  });
+}
+
 function resolveKeep(opts: { keep?: SplitKeep } | undefined): SplitKeep {
+  assertOptionKeys(opts);
   const keep = opts?.keep ?? 'parts';
   if (isSplitKeep(keep)) return keep;
   invalidArgs({

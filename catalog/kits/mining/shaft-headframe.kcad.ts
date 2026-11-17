@@ -155,7 +155,9 @@ const cx = sx - sr + 60;
 add('cage-body', blk(cx - 900, -1900, collarZ + 300, cx + 900, -300, cageTop - 400).color(cladding));
 add('cage-mesh-front', blk(cx - 920, -1700, collarZ + 600, cx - 900, -500, cageTop - 700).color(dark));
 add('cage-crosshead', blk(cx - 950, -1950, cageTop - 400, cx + 950, -250, cageTop).color(structuralSteel));
-add('skip-body', blk(cx - 800, 400, skipTop - 4200, cx + 800, 1800, skipTop - 300).color(cladding));
+// The skip is a welded steel ore bucket, painted like the headframe steel,
+// not clad like the cage and the winder house.
+add('skip-body', blk(cx - 800, 400, skipTop - 4200, cx + 800, 1800, skipTop - 300).color(structuralSteel));
 add('skip-bail', blk(cx - 850, 350, skipTop - 300, cx + 850, 1850, skipTop).color(structuralSteel));
 for (const y of [-2000, 2000]) add(`guide-rail-${y}`, blk(cx - 60, y - 60, collarZ, cx + 60, y + 60, H).color(structuralSteel));
 

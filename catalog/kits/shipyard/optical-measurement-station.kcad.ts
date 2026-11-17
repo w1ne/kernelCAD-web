@@ -74,14 +74,14 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
   return shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
 };
 
-p.part("tripod-leg-0", b("tripod-leg-0", [120, 120, 980], [-420, -320, 450]).color(structuralSteel));
-p.part("tripod-leg-1", b("tripod-leg-1", [120, 120, 980], [420, -320, 450]).color(structuralSteel));
-p.part("tripod-leg-2", b("tripod-leg-2", [120, 120, 980], [0, 420, 450]).color(structuralSteel));
+p.part("tripod-leg-0", b("tripod-leg-0", [120, 120, 980], [-200, -200, 450]).color(structuralSteel));
+p.part("tripod-leg-1", b("tripod-leg-1", [120, 120, 980], [200, -200, 450]).color(structuralSteel));
+p.part("tripod-leg-2", b("tripod-leg-2", [120, 120, 980], [0, 200, 450]).color(structuralSteel));
 p.part("instrument-base", b("instrument-base", [580, 580, 180], [0, 0, 970]).color(yardPaint));
 p.part("instrument-head", b("instrument-head", [720, 610, 540], [0, 0, 1330]).color(yardPaint));
 p.part("optical-hood", b("optical-hood", [480, 440, 300], [0, -350, 1470]).color(yardPaint));
 p.part("lens-ring", c("lens-ring", 100, 180, 14, [0, -520, 1470], [90, 0, 0], 90).color(safetyMarking));
-p.part("side-handle", b("side-handle", [100, 540, 100], [440, 100, 1350]).color(structuralSteel));
-p.part("target-mast", b("target-mast", [80, 80, 780], [0, 430, 1420]).color(safetyMarking));
+p.part("side-handle", b("side-handle", [100, 540, 100], [410, 100, 1350]).color(structuralSteel));
+p.part("target-mast", b("target-mast", [80, 80, 780], [250, 200, 1420]).color(safetyMarking));
 
 return p.model();

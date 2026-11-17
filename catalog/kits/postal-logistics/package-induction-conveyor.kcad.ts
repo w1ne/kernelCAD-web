@@ -5,7 +5,7 @@ meta({
   name: "package-induction-conveyor",
   license: 'CC0-1.0',
   title: "Package induction conveyor",
-  description: "Parcel induction belt with side rails, support legs and raised roller rows. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
+  description: "Parcel induction belt with side rails, support legs and raised roller rows. Scale, belt rubber, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
   tags: ['postal logistics', 'mail', 'parcel', 'package processing', 'low poly', 'scene prop'],
   kit: 'postal-logistics',
   category: 'prop',
@@ -15,12 +15,13 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const paintedSteel = param('paintedSteel', '#52758b', { label: 'Painted steel' });
+// An induction belt is a dark PVC/rubber carcass running over the rollers, not a painted steel sheet.
+const beltRubber = param('beltRubber', '#2c3134', { label: 'Belt rubber' });
 const structuralSteel = param('structuralSteel', '#58656c', { label: 'Structural steel' });
 const stainlessSteel = param('stainlessSteel', '#bbc4c4', { label: 'Stainless steel' });
 presets({
-  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
-  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', stainlessSteel: '#d9e0de' },
+  weathered: { beltRubber: '#3d4140', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6' },
+  highVisibility: { structuralSteel: '#e36d32', stainlessSteel: '#d9e0de' },
 });
 const octRect = (w:number,d:number,cut:number) => path()
   .moveTo(-w/2+cut,-d/2).lineTo(w/2-cut,-d/2).lineTo(w/2,-d/2+cut)
@@ -58,7 +59,7 @@ const loftCylinder = (height:number,radius:number,sides:number) => {
 const rollerX=(x:number,y:number,z:number,w:number,d:number,h:number)=>loftCylinder(w,Math.min(d,h)*0.48,10).rotateY(90).translate(x-w/2,y,z+h/2).scale(scale);
 
 const p = assembly("package-induction-conveyor");
-p.part("belt", b(0,0,735,580,1050,55).color(paintedSteel));
+p.part("belt", b(0,0,735,580,1050,55).color(beltRubber));
 p.part("side-rail-left", b(-280,0,790,20,1050,65).color(structuralSteel));
 p.part("side-rail-right", b(280,0,790,20,1050,65).color(structuralSteel));
 p.part("leg-front-left", b(-220,-410,0,55,55,720).color(structuralSteel));

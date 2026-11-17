@@ -99,8 +99,8 @@ Turn a profile into a solid, or grow one along a path.
 
 | Call | What it does |
 |---|---|
-| `Sketch.extrude(depth: Editable<number>, opts?: { faceLabels?, twistAngle? }) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
-| `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
+| `Sketch.extrude(depth: Editable<number>, opts?: { faceLabels?, twistAngle?, taperDeg?, symmetric? }) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
+| `Sketch.revolve(opts?: { angleDeg?: Editable<number>, faceLabels?, symmetric? }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, section?: 'axial' \| 'transverse' }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
@@ -144,11 +144,11 @@ Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet 
 
 | Call | What it does |
 |---|---|
-| `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2' }) => Shape` | Round edges. |
-| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body. |
+| `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2'; endRadius?: Editable<number> }) => Shape` | Round edges. |
+| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body; unknown option keys throw `feature.invalid-args`. |
 | `Shape.chamfer(distance, edges?: EdgeSelector, opts?: { distance2?: Editable<number>; angleDeg?: Editable<number>; face?: FaceSelector \| string }) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
-| `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
+| `Shape.shell(thickness, { face: FaceSelector \| FaceSelector[] }) => Shape` | Hollow the solid removing the named face, or every face in an array. |
 | `Shape.lattice(opts: { type?: 'gyroid' \| 'schwarzP' \| 'diamond' \| 'neovius'; variant?: 'sheet' \| 'network'; cell: Editable<number>; wall?: Editable<number>; density?: Editable<number>; skin?: Editable<number>; grade?: { from: 'surface' \| 'holes' \| 'fea'; near?: number; far?: number; over?: number; study?: string; bands?: { name, fromYield, densityPercent }[] }; frame?: 'part' \| 'world' \| 'cylindrical'; axis?: { origin, direction }; resolution?: number; tolerance?: number }) => Shape` | Fill the body with a triply periodic minimal surface lattice inside a solid skin. |
 | `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar faces along their outward normals. |
 | `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
@@ -267,6 +267,7 @@ Ask the kernel what you actually built, and check it before shipping. After dfm_
 | `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm' \| 'moulding'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string; pullDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; minDraftDeg?: number; minWallMm?: number; maxWallMm?: number; minRadiusMm?: number }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
 | `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads?: Array<{ faces: FaceQuery \| string; force: [number, number, number]; pointMm?: [number, number, number]; momentNmm?: [number, number, number]; name?: string }>; loadsFrom?: { motion: { partLoads: MotionPartLoadSample[] }; part: string; joint?: string; pose?: Record<string, number>; faces?: FaceQuery \| string }; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces, or `loadsFrom` to take the worst sampled wrench from `kinematic.motionLoad`), and what it is made of. |
 | `Shape.cfdStudy(spec: { flow: 'internal' \| 'external'; fluid?: 'water' \| 'air' \| { rho: number; nu: number }; fluidVolume?: 'interior' \| 'solid'; inlet?: FaceQuery \| string; outlet?: FaceQuery \| string \| Array<FaceQuery \| string>; velocity?: number; flowRateLpm?: number; outletPressurePa?: number; direction?: '+X' \| '-X' \| '+Y' \| '-Y' \| '+Z' \| '-Z'; meshSize?: number \| 'coarse' \| 'medium' \| 'fine'; iterations?: number; residualTarget?: number; turbulence?: 'auto' \| 'laminar' \| 'kOmegaSST'; referenceAreaMm2?: number; name?: string }) => CfdStudyHandle` | Declare a steady incompressible CFD study on this shape, run by the `run_cfd` MCP tool / `kernelcad cfd run` with OpenFOAM (snappyHexMesh + simpleFoam). |
+| `Shape.flightStudy(spec: { motor: { thrustCurve?: [number, number][]; engFile?: string; totalMassKg?: number; propellantKg?: number; part?: string; cgFromNoseMm?: number }; aero?: { cd?: 'auto' \| number; refDiameterMm?: number; axis?: '+X' \| '-X' \| '+Y' \| '-Y' \| '+Z' \| '-Z'; nose?: { shape?: 'ogive' \| 'cone'; part?: string; lengthMm?: number }; fins?: { count: number; part?: string; rootChordMm?: number; tipChordMm?: number; spanMm?: number; sweepMm?: number; leadingEdgeFromNoseMm?: number; thicknessMm?: number }; lengthMm?: number }; launch?: { railM?: number; angleDeg?: number; siteAltitudeM?: number; windMs?: number }; recovery?: Array<{ cd: number; diameterMm: number; deploy?: 'apogee' \| `apogee+${number}` \| { atS: number }; inflateS?: number; part?: string; separates?: string[] }>; dryMassKg?: number; cgFromNoseMm?: number; minStabilityCal?: number; maxTimeS?: number; dtS?: number; name?: string }) => FlightStudyHandle` | Declare a model-rocket flight study, on a solid (`shape.flightStudy`) or, preferably, on an assembly (`arm.flightStudy`, the script must `return arm.model()`). |
 | `tube(name, { from, to, via?, od?, wall, bendRadius, system?, material?, density?, flow? }) => Shape` | Bent tube between two ends: straight legs joined by constant-radius bends, built as one hollow solid in assembly space. |
 | `tubeSpec({ minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle?, clearance?: { default?, pairs? }, systems?: { [system]: { minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle? } } }) => { id, metadata }` | Declare the rules every tube() in the script must meet. |
 | `require(name: string, predicate: RequirementPredicate) => void` | Declare a named, kernel-measured requirement, reported in the `requirements` ledger every evaluation returns. |
@@ -333,7 +334,10 @@ limits are offset by the captured pose, so ranges are relative to the exported
 rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).
 Cylindrical entries identify both degrees of freedom with
 `degreesOfFreedom: ['rotate', 'slide']`; the current solver poses its
-secondary axial degree of freedom at zero. Loop-closing mates have
+secondary axial degree of freedom at zero. A mate driven by `coupleMates`
+carries `coupling: { source, ratio }`, where `source` is the driving mate's rig
+key; relative to the rest pose, its motion is `ratio` times the source motion,
+so do not animate it independently. Loop-closing mates have
 `closed: true`, are not nested, and generate a warning. Ball, planar, and
 pin-slot mates are held fixed with a warning; GLB animation clips and IK are
 not emitted. When a solved assembly is active, `asset_manifest` includes the

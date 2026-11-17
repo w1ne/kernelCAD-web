@@ -38,12 +38,12 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
 for (const side of [-1, 1]) {
-  p.part('side-rail-' + side, b(0, side * 195, 705, 28, 22, 570).color(anodizedAluminum).scale(overallScale));
-  p.part('rear-leg-' + side, b(-230, side * 195, 350, 24, 22, 700).color(anodizedAluminum).scale(overallScale));
-  p.part('front-leg-' + side, b(230, side * 195, 350, 24, 22, 700).color(anodizedAluminum).scale(overallScale));
-  p.part('grip-' + side, b(0, side * 195, 1010, 180, 42, 24).color(silicone).scale(overallScale));
+  p.part('side-rail-' + side, b(0, side * 195, 948, 484, 22, 24).color(anodizedAluminum).scale(overallScale));
+  p.part('rear-leg-' + side, b(-230, side * 195, 480, 24, 22, 960).color(anodizedAluminum).scale(overallScale));
+  p.part('front-leg-' + side, b(230, side * 195, 480, 24, 22, 960).color(anodizedAluminum).scale(overallScale));
+  p.part('grip-' + side, b(140, side * 195, 972, 180, 42, 24).color(silicone).scale(overallScale));
   p.part('glide-' + side, c(230, side * 195, 0, 24, 18, 8).color(rubber).scale(overallScale));
 }
-p.part('top-bar', b(0, 0, 990, 430, 22, 22).color(anodizedAluminum).scale(overallScale));
+p.part('top-bar', b(230, 0, 600, 22, 412, 22).color(anodizedAluminum).scale(overallScale));
 
 return p.model();

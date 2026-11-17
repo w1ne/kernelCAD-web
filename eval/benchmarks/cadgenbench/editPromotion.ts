@@ -25,7 +25,9 @@ export type EditPromotionClass =
   | 'wrong-magnitude'
   | 'wrong-topology'
   | 'move-check'
-  | 'topology-unknown';
+  | 'topology-unknown'
+  | 'locality-unverified'
+  | 'unintended-move';
 
 export type EditDirection = 'increase' | 'decrease' | 'neutral' | 'any';
 
@@ -44,6 +46,10 @@ export interface EditPromotionResult {
   holeCountBefore: number;
   holeCountAfter: number;
   holeChangeMm: number;
+  /** Set on a failure from a non-local check (#1402): hole-move position,
+   *  unintended translation, remote hole change, extension side or size, and
+   *  blend-removal bounds. The pipeline blocks on it only in `strict` mode. */
+  localityCheck?: true;
 }
 
 export interface EditPromotionInput {
@@ -57,6 +63,8 @@ export interface EditIntent {
   moveOnly: boolean;
   mentionsHoles: boolean;
   mentionsTopology: boolean;
+  /** "bring the pocket walls inward": existing faces move, none are added. */
+  offsetsFaces: boolean;
   expectsHoleDelta: 'more' | 'fewer' | 'same' | 'any';
   /** Exact hole-count change requested ("remove these three holes"). */
   targetHoleCountDelta?: number;
@@ -66,6 +74,14 @@ export interface EditIntent {
   sourceHoleDiameterMm?: number;
   /** Which hole the request names, so a resize cannot be accepted on another. */
   targetHoleSelector?: 'central' | 'horizontal' | 'any';
+  /** "Extend the plate by 5 mm in +X": the bbox side and the maximum growth. */
+  targetExtent?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
+  /** "Move the hole by 10 mm in +X": the signed axis and the distance. */
+  targetMove?: { axis: 0 | 1 | 2; sign: 1 | -1; mm: number };
+  /** "Remove the fillet ...": only a blend goes back to a sharp edge. */
+  removesBlend: boolean;
+  /** The single stated blend size ("the 3mm fillet"), when there is one. */
+  blendSizeMm?: number;
 }
 
 const NUMBER_WORDS: Record<string, number> = {
@@ -106,16 +122,40 @@ const BBOX_TOL = 0.05;
 const MIN_VOLUME_TOL = 2.0;
 const VOLUME_TOL_FRACTION = 0.0002; // 0.02 %
 
+// "the pockets on the +X side of the central bore", "two ribs beside the
+// bore": the hole only locates the edited feature. "of" alone is not
+// locative ("the diameter of the bore"), so only "side(s) of" counts.
+const LOCATING_HOLE =
+  /\b(?:near|beside|around|next to|adjacent to|close to|relative to|away from|sides? of)\s+(?:the\s+|a\s+|an\s+)?(?:[a-z0-9+.-]+\s+){0,2}?(?:hole|holes|bore|bores|counterbore|counterbores)\b/g;
+
+// The face or wall must be the object of the move verb. A preposition in
+// between ("the slot on the top face") makes the face only a location.
+const FACE_MOVE =
+  /\b(?:move|moves|shift|shifts|offset|offsets|push|pushes|pull|pulls)\s+(?:the\s+|a\s+|an\s+)?(?:(?!(?:on|of|in|at|from|to|into|onto|toward|towards|by)\b)[a-z0-9+.-]+\s+){0,3}?(?:face|faces|wall|walls)\b/;
+
+/** The single "N mm" distance of a face move; none when two lengths appear. */
+function faceMoveDistance(text: string): [string, string] | null {
+  const lengths = [...text.matchAll(/(\d+(?:\.\d+)?)\s*mm\b/g)];
+  return lengths.length === 1 ? [lengths[0][0], lengths[0][1]] : null;
+}
+
 /** Infer what the request asks for without looking at the candidate. */
 export function parseEditIntent(request: string): EditIntent {
-  const text = request.toLowerCase();
+  const text = request.toLowerCase().replace(LOCATING_HOLE, ' ');
   const mentionsHoles = /\b(hole|holes|bore|bores|drill|drilled|counterbore|countersink|ream|tapped|thread)\b/.test(text);
+  // "Move the top face up by 3 mm" moves a face, not a feature: the volume
+  // changes by design. "Move the slot on the top face" still moves the slot.
+  const movesFace = FACE_MOVE.test(text);
   const moveOnly =
+    !movesFace &&
     /\b(move|moves|shift|shifts|translate|reposition|relocate|relocated|offset|offsets|space|spacing)\b/.test(text) &&
     !/\b(add|remove|delete|fill|cut|drill|bore|enlarge|increase|decrease|reduce|resize|pattern|array)\b/.test(text);
+  const offsetsFaces =
+    movesFace ||
+    (/\b(walls?|faces?|sides?)\b/.test(text) && /\b(inward|inwards|outward|outwards)\b/.test(text));
   const mentionsTopology =
     mentionsHoles ||
-    /\b(fillet|chamfer|slot|pocket|rib|ribs|boss|bosses|pad|pads|pattern|array|hole|holes)\b/.test(text);
+    /\b(fillets?|chamfers?|slots?|pockets?|ribs?|boss|bosses|pads?|pattern|array|hole|holes)\b/.test(text);
 
   let expectsHoleDelta: EditIntent['expectsHoleDelta'] = 'any';
   if (mentionsHoles) {
@@ -158,10 +198,7 @@ export function parseEditIntent(request: string): EditIntent {
     direction = resizesVoid(text, growVerb) ? 'decrease' : 'increase';
   } else if (shrinkVerb.test(text)) {
     direction = resizesVoid(text, shrinkVerb) ? 'increase' : 'decrease';
-  } else if (
-    /\b(walls?|faces?|sides?)\b/.test(text) &&
-    /\b(inward|inwards|outward|outwards)\b/.test(text)
-  ) {
+  } else if (offsetsFaces) {
     // "bring the pocket walls inward" moves faces; whether that adds or
     // removes material depends on which side of the wall is solid.
     direction = 'any';
@@ -210,16 +247,70 @@ export function parseEditIntent(request: string): EditIntent {
     }
   }
 
+  // Only one signed axis may appear, so "extend +X, shorten -Y" is not read.
+  let targetExtent: EditIntent['targetExtent'];
+  // A face moved N mm toward +X can grow the part on that side by at most N.
+  const extendBy =
+    /\b(?:extend|extends|lengthen|elongate|extrude|thicken)\b[^.]*?\bby\s*(\d+(?:\.\d+)?)\s*mm\b/.exec(text) ??
+    (movesFace ? faceMoveDistance(text) : null);
+  const axes = new Set([...text.matchAll(/(?:^|[\s(])([+-])\s?([xyz])\b/g)].map((m) => m[1] + m[2]));
+  if (!moveOnly && extendBy && axes.size === 1) {
+    const [signed] = axes;
+    const mm = readMm(extendBy[1]);
+    if (mm !== undefined && mm > 0) {
+      targetExtent = { axis: 'xyz'.indexOf(signed[1]) as 0 | 1 | 2, sign: signed[0] === '-' ? -1 : 1, mm };
+    }
+  }
+
+  // "Move the 5 mm hole by 10 mm in +X": the distance follows "by" or comes
+  // before a direction word, so a size such as "5 mm hole" is not read.
+  let targetMove: EditIntent['targetMove'];
+  const moveLengths = moveOnly
+    ? [...text.matchAll(/(?:\bby\s*(\d+(?:\.\d+)?)\s*mm\b|\b(\d+(?:\.\d+)?)\s*mm\s+(?:to|toward|towards|in|along)\b)/g)]
+    : [];
+  if (moveLengths.length === 1 && axes.size === 1) {
+    const [signed] = axes;
+    const mm = readMm(moveLengths[0][1] ?? moveLengths[0][2]);
+    if (mm !== undefined && mm > 0) {
+      targetMove = { axis: 'xyz'.indexOf(signed[1]) as 0 | 1 | 2, sign: signed[0] === '-' ? -1 : 1, mm };
+    }
+  }
+
+  // A plain blend removal, with no other feature named or added. A bore
+  // chamfer removal is left to the hole checks.
+  const removesBlend =
+    !mentionsHoles &&
+    /\b(remove|removes|delete|deletes)\b/.test(text) &&
+    /\b(fillets?|rounds?|chamfers?)\b/.test(text) &&
+    !/\b(add|adds|replace|change|convert|swap|cut|drill|extend|extrude|move|offset|pocket|slot|rib|pattern)\b/.test(text);
+  // "the 3 x 2 mm chamfer" names two legs; filling it back can grow the part
+  // by the longer one. "2 mm x 45°" has one length and an angle.
+  const blendLegs = removesBlend
+    ? [...text.matchAll(/(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×]\s*(\d+(?:\.\d+)?)\s*mm\b/g)]
+    : [];
+  const blendLengths = removesBlend ? [...text.matchAll(/(\d+(?:\.\d+)?)\s*mm\b/g)] : [];
+  const blendSizeMm =
+    blendLegs.length === 1
+      ? Math.max(Number(blendLegs[0][1]), Number(blendLegs[0][2]))
+      : blendLegs.length === 0 && blendLengths.length === 1
+        ? readMm(blendLengths[0][1])
+        : undefined;
+
   return {
     direction,
     moveOnly,
     mentionsHoles,
     mentionsTopology,
+    offsetsFaces,
     expectsHoleDelta,
     ...(targetHoleCountDelta !== undefined ? { targetHoleCountDelta } : {}),
     ...(targetHoleDiameterMm !== undefined ? { targetHoleDiameterMm } : {}),
     ...(sourceHoleDiameterMm !== undefined ? { sourceHoleDiameterMm } : {}),
     ...(targetHoleSelector !== undefined ? { targetHoleSelector } : {}),
+    ...(targetExtent !== undefined ? { targetExtent } : {}),
+    ...(targetMove !== undefined ? { targetMove } : {}),
+    removesBlend,
+    ...(blendSizeMm !== undefined ? { blendSizeMm } : {}),
   };
 }
 
@@ -363,6 +454,24 @@ function holeSubset(small: CylindricalHole[], big: CylindricalHole[]): boolean {
 }
 
 /**
+ * Does every hole in `before` survive in `after` on the same axis line with
+ * the same diameter? Depth and kind are ignored: a pocket or a thinner plate
+ * can shorten a hole, or turn a through hole blind, without touching it.
+ */
+function existingHolesKept(before: CylindricalHole[], after: CylindricalHole[]): boolean {
+  const remaining = [...after];
+  for (const wanted of before) {
+    const index = remaining.findIndex(
+      (candidate) =>
+        sameAxisLine(wanted, candidate) && Math.abs(wanted.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+    );
+    if (index < 0) return false;
+    remaining.splice(index, 1);
+  }
+  return true;
+}
+
+/**
  * Pick the hole the request names. A central bore is the largest coaxial
  * void; a horizontal bore is the one whose axis lies in the XY plane. When
  * the request gives a source diameter, it is the tie-breaker.
@@ -402,6 +511,122 @@ function selectTargetHole(
     candidates.sort((a, b) => bySource(a.hole, b.hole));
   }
   return candidates[0]?.index ?? -1;
+}
+
+/**
+ * The vector by which the whole solid moved, or null. A rigid translation
+ * shifts both bbox corners by the same vector without resizing the box, and
+ * carries the holes with it. A local edit changes material inside the box or
+ * resizes it on one side, so its corners do not move together. When the solid
+ * has holes, more of them must match the shifted position than the original
+ * one; an edit that also resizes or removes a hole is still caught.
+ */
+function rigidTranslation(before: ShapeSummary, after: ShapeSummary): [number, number, number] | null {
+  if (!before.bbox || !after.bbox) return null;
+  const shift: [number, number, number] = [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    const dMin = after.bbox.min[i] - before.bbox.min[i];
+    const dMax = after.bbox.max[i] - before.bbox.max[i];
+    if (Math.abs(dMin - dMax) > BBOX_TOL) return null;
+    shift[i] = (dMin + dMax) / 2;
+  }
+  // Per axis, as in bboxChange: noise inside BBOX_TOL on every axis is not a move.
+  if (Math.max(...shift.map(Math.abs)) <= BBOX_TOL) return null;
+  if (before.holes.length === 0) return shift;
+  const matches = (offset: [number, number, number]): number =>
+    before.holes.filter((hole) => {
+      const moved: CylindricalHole = {
+        ...hole,
+        axisOrigin: [
+          hole.axisOrigin[0] + offset[0],
+          hole.axisOrigin[1] + offset[1],
+          hole.axisOrigin[2] + offset[2],
+        ],
+      };
+      return after.holes.some(
+        (candidate) =>
+          sameAxisLine(moved, candidate) && Math.abs(moved.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+      );
+    }).length;
+  // A shift along the hole axes keeps every axis line, so the in-place match
+  // ties. The bbox shift is then the evidence when every hole agrees with it.
+  const shiftedMatches = matches(shift);
+  return shiftedMatches > matches([0, 0, 0]) || shiftedMatches === before.holes.length ? shift : null;
+}
+
+/**
+ * Check the holes that a move request moved. Each hole that left its axis
+ * line must sit at its start position shifted by the requested distance along
+ * the requested signed axis. Returns null when the holes agree, or when no
+ * hole moved perpendicular to that axis (the move is then not measurable).
+ */
+function holeMoveMismatch(
+  before: CylindricalHole[],
+  after: CylindricalHole[],
+  move: NonNullable<EditIntent['targetMove']>,
+): { classification: 'wrong-direction' | 'wrong-magnitude'; reason: string } | null {
+  const unmatchedAfter = [...after];
+  const moved: CylindricalHole[] = [];
+  for (const hole of before) {
+    const index = unmatchedAfter.findIndex(
+      (candidate) => sameAxisLine(hole, candidate) && Math.abs(hole.diameterMm - candidate.diameterMm) <= HOLE_TOL,
+    );
+    if (index < 0) moved.push(hole);
+    else unmatchedAfter.splice(index, 1);
+  }
+  // A hole whose axis lies along the move axis keeps its axis line.
+  if (moved.length === 0 || moved.some((hole) => Math.abs(hole.axisDirection[move.axis]) > 0.02)) return null;
+  const offset: [number, number, number] = [0, 0, 0];
+  offset[move.axis] = move.sign * move.mm;
+  const label = `${move.sign > 0 ? '+' : '-'}${'XYZ'[move.axis]}`;
+  const tolerance = Math.max(0.1, move.mm * 0.002);
+  const remaining = [...unmatchedAfter];
+  for (const hole of moved) {
+    const expected: CylindricalHole = {
+      ...hole,
+      axisOrigin: [hole.axisOrigin[0] + offset[0], hole.axisOrigin[1] + offset[1], hole.axisOrigin[2] + offset[2]],
+    };
+    const index = remaining.findIndex(
+      (candidate) =>
+        Math.abs(expected.diameterMm - candidate.diameterMm) <= HOLE_TOL &&
+        Math.abs(dot(expected.axisDirection, candidate.axisDirection)) >= 0.9998 &&
+        distanceToAxis(candidate.axisOrigin, expected.axisOrigin, expected.axisDirection) <= tolerance,
+    );
+    if (index >= 0) {
+      remaining.splice(index, 1);
+      continue;
+    }
+    if (moved.length === 1 && unmatchedAfter.length === 1) {
+      // Displacement across the hole axis; a through hole may report its
+      // origin at either end of the bore.
+      const target = unmatchedAfter[0];
+      const raw: [number, number, number] = [
+        target.axisOrigin[0] - hole.axisOrigin[0],
+        target.axisOrigin[1] - hole.axisOrigin[1],
+        target.axisOrigin[2] - hole.axisOrigin[2],
+      ];
+      const axial = dot(raw, hole.axisDirection);
+      const shift = raw.map((v, i) => v - axial * hole.axisDirection[i]);
+      const along = shift[move.axis] * move.sign;
+      const across = Math.hypot(...shift.map((v, i) => (i === move.axis ? 0 : v)));
+      const measured = `(${shift.map((v) => v.toFixed(3)).join(', ')}) mm`;
+      if (along <= tolerance || across > tolerance) {
+        return {
+          classification: 'wrong-direction',
+          reason: `the request moves the hole ${move.mm} mm toward ${label}, but it moved by ${measured}`,
+        };
+      }
+      return {
+        classification: 'wrong-magnitude',
+        reason: `the hole moved ${along.toFixed(3)} mm toward ${label}, but the request moves it ${move.mm} mm (±${tolerance.toFixed(3)} mm)`,
+      };
+    }
+    return {
+      classification: 'wrong-magnitude',
+      reason: `a moved hole does not sit ${move.mm} mm toward ${label} of its start position`,
+    };
+  }
+  return null;
 }
 
 /** Diameter/depth change only; a move must not resize the feature. */
@@ -509,11 +734,29 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         reason: 'a move must preserve volume and face count; the candidate changed the material or topology',
       };
     }
+    const mismatch = intent.targetMove ? holeMoveMismatch(before.holes, after.holes, intent.targetMove) : null;
+    if (mismatch) {
+      return { ...base, status: 'failed', ...mismatch, localityCheck: true };
+    }
     return {
       ...base,
       status: 'accepted',
       classification: 'move-check',
       reason: `the feature moved ${Math.max(bboxDelta, holes).toFixed(3)} mm with the solid volume preserved`,
+    };
+  }
+
+  const translation = rigidTranslation(before, after);
+  if (translation) {
+    // The request edits a feature, not the part position. CADGenBench scores
+    // the answer in the input frame, so a translated part fails every check
+    // even if the requested feature is correct.
+    return {
+      ...base,
+      status: 'failed',
+      classification: 'unintended-move',
+      localityCheck: true,
+      reason: `the whole solid moved by (${translation.map((v) => v.toFixed(3)).join(', ')}) mm; the request does not ask to move the part`,
     };
   }
 
@@ -547,6 +790,19 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
       status: 'failed',
       classification: 'wrong-topology',
       reason: `the request does not mention holes, but the hole count changed (${before.holes.length} → ${after.holes.length})`,
+    };
+  }
+
+  if (!intent.mentionsHoles && !intent.offsetsFaces && !existingHolesKept(before.holes, after.holes)) {
+    // A chamfer, fillet or pocket request does not name a hole, so every
+    // existing hole must stay where it was at its size. A wall offset is
+    // left to the locality check below: a moved wall can meet a hole.
+    return {
+      ...base,
+      status: 'failed',
+      classification: 'wrong-topology',
+      localityCheck: true,
+      reason: `the request did not name a hole, but an existing hole was removed, resized or moved (${before.holes.length} → ${after.holes.length} holes)`,
     };
   }
 
@@ -648,6 +904,91 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
     };
   }
 
+  if (intent.targetExtent && before.bbox && after.bbox) {
+    // Extending a face by N mm toward +X adds material only beyond that face,
+    // so the bbox can grow on the +X side by at most N and never on the -X
+    // side. Less than N is not checked: the extended feature may stop inside
+    // the part's bounds.
+    const { axis, sign, mm } = intent.targetExtent;
+    const side = (box: NonNullable<ShapeSummary['bbox']>, s: 1 | -1): number => (s > 0 ? box.max[axis] : -box.min[axis]);
+    const grew = side(after.bbox, sign) - side(before.bbox, sign);
+    const grewOpposite = side(after.bbox, -sign as 1 | -1) - side(before.bbox, -sign as 1 | -1);
+    const label = `${sign > 0 ? '+' : '-'}${'XYZ'[axis]}`;
+    const opposite = `${sign > 0 ? '-' : '+'}${'XYZ'[axis]}`;
+    if (grewOpposite > BBOX_TOL && grew <= BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-direction',
+        localityCheck: true,
+        reason: `the request extends toward ${label}, but the part grew ${grewOpposite.toFixed(3)} mm on the ${opposite} side and not on the ${label} side`,
+      };
+    }
+    const extentTolerance = Math.max(0.1, mm * 0.002);
+    if (grew > mm + extentTolerance) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-magnitude',
+        localityCheck: true,
+        reason: `the part grew ${grew.toFixed(3)} mm on the ${label} side, but the request extends it by ${mm} mm (±${extentTolerance.toFixed(3)} mm)`,
+      };
+    }
+  }
+
+  if (intent.removesBlend && before.bbox && after.bbox) {
+    // A blend lies inside the hull of the two faces it joins. Removing it
+    // fills a convex corner or clears a concave one, so no bbox side can move
+    // inward, and a side can move outward by at most the blend size.
+    let shrink = 0;
+    let growth = 0;
+    for (let i = 0; i < 3; i++) {
+      shrink = Math.max(shrink, after.bbox.min[i] - before.bbox.min[i], before.bbox.max[i] - after.bbox.max[i]);
+      growth = Math.max(growth, before.bbox.min[i] - after.bbox.min[i], after.bbox.max[i] - before.bbox.max[i]);
+    }
+    if (shrink > BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-topology',
+        localityCheck: true,
+        reason: `a blend removal cannot cut the part bounds, but a bbox side moved inward by ${shrink.toFixed(3)} mm; the edit removed material outside the blend`,
+      };
+    }
+    if (intent.blendSizeMm !== undefined && growth > intent.blendSizeMm + BBOX_TOL) {
+      return {
+        ...base,
+        status: 'failed',
+        classification: 'wrong-magnitude',
+        localityCheck: true,
+        reason: `removing a ${intent.blendSizeMm} mm blend can grow the part by at most ${intent.blendSizeMm} mm, but a bbox side moved outward by ${growth.toFixed(3)} mm`,
+      };
+    }
+    if (faceDelta > 0) {
+      // Removing a blend deletes its faces. New faces mean the edit also cut
+      // or split other geometry; counts alone cannot show where.
+      return {
+        ...base,
+        status: 'unknown',
+        classification: 'locality-unverified',
+        reason: `a blend removal deletes faces, but the face count rose by ${faceDelta}; volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³ does not show that only the blend changed`,
+      };
+    }
+  }
+
+  if (intent.offsetsFaces && (faceDelta !== 0 || after.holes.length !== before.holes.length)) {
+    // Moving existing walls keeps their faces. New faces mean the offset also
+    // caught or split geometry; that can be legitimate where a moved wall meets
+    // another feature, so the verdict is unknown, not a rejection. Volume and
+    // counts alone cannot show that only the named walls moved.
+    return {
+      ...base,
+      status: 'unknown',
+      classification: 'locality-unverified',
+      reason: `wall offset changed the topology (faces ${faceDelta >= 0 ? '+' : ''}${faceDelta}, holes ${before.holes.length} → ${after.holes.length}); volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³ does not show that only the requested walls moved`,
+    };
+  }
+
   return {
     ...base,
     status: 'accepted',
@@ -657,6 +998,16 @@ export function classifyEditPromotion(input: EditPromotionInput): EditPromotionR
         ? 'the solid changed without a requested material direction'
         : `real ${intent.direction === 'any' ? '' : `${intent.direction} `}change: volume ${volumeDelta >= 0 ? '+' : ''}${volumeDelta.toFixed(2)} mm³, faces ${faceDelta >= 0 ? '+' : ''}${faceDelta}`,
   };
+}
+
+/**
+ * Report a non-local failure without blocking the candidate. #1402 enforces
+ * these checks by default only after a held-out evaluation shows a quality
+ * gain; until then the verdict is `unknown` and the reason is kept.
+ */
+export function advisoryLocality(result: EditPromotionResult): EditPromotionResult {
+  if (result.status !== 'failed' || !result.localityCheck) return result;
+  return { ...result, status: 'unknown', reason: `not enforced (locality check): ${result.reason}` };
 }
 
 /** Safe wrapper for callers that could not inspect one of the two shapes. */

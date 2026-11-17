@@ -50,6 +50,7 @@ export const TOOL_TITLES: Record<string, string> = {
   fea_summary: 'Get FEA Summary',
   run_cfd: 'Run CFD Flow Study',
   cfd_summary: 'Get CFD Summary',
+  run_flight: 'Run Rocket Flight Study',
   estimate_cost: 'Estimate Fabrication Cost',
   analyze_tolerance_stack: 'Analyze Tolerance Stack',
   load_scan_reference: 'Load Scan Reference',

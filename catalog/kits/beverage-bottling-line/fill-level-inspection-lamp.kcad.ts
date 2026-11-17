@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // quality-promotion: beverage-bottling-line 2026-11-05
 // Fill-level inspection lamp: backlit inspection panel and bottle guide rails for a manual fill-level check.
+// The diffuser face is opal acrylic lit from behind, so an operator sees each fill line as a dark band against a bright field.
 meta({
   name: "fill-level-inspection-lamp",
   license: 'CC0-1.0',
   title: "Fill-level inspection lamp",
-  description: "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+  description: "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and the opal acrylic diffuser.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'prop',
@@ -18,17 +19,20 @@ const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, s
 const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#397e91', { label: 'Powder-coated steel' });
 const foodPolymer = param('foodPolymer', '#3999a1', { label: 'Food-grade polymer' });
+const diffuserOpal = param('diffuserOpal', '#f4f6f1', { label: 'Opal acrylic diffuser' });
 
 presets({
   sanitaryLine: {
     stainlessSteel: '#d2dfe1',
     powderCoat: '#4b95a4',
     foodPolymer: '#2c828c',
+    diffuserOpal: '#fbfcf8',
   },
   legacyPlant: {
     stainlessSteel: '#858f91',
     powderCoat: '#315b70',
     foodPolymer: '#286c75',
+    diffuserOpal: '#e6e1cb',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -37,6 +41,7 @@ const cylinderPart = (x:number,y:number,z:number,h:number,r:number,n=10) => cyli
 const p = assembly("fill-level-inspection-lamp");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
+  if (/diffuser/i.test(component)) return shape.color(diffuserOpal);
   if (/belt|guide|film|web|label|pad|seal|grip|cap|bottle|liner|tray|hose|cleat|divider|wheel|wrap|tape|suction|sleeve/i.test(component)) return shape.color(foodPolymer);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);

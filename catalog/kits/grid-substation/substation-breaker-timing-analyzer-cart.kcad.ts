@@ -29,10 +29,10 @@ p.part("caster-2", cylinder(195, 150, 10).rotateX(90).translate(-450, 378.30, 15
 p.part("caster-3", cylinder(195, 150, 10).rotateX(90).translate(450, -183.30, 150).scale(scale).color(rubber));
 p.part("caster-4", cylinder(195, 150, 10).rotateX(90).translate(450, 378.30, 150).scale(scale).color(rubber));
 p.part("instrument-case", box(850, 499.20, 690, true).translate(0, 0, 565).scale(scale).color(stainlessSteel));
-p.part("analyzer-face", box(725, 90, 345, true).translate(0, -179.40, 1028.10).scale(scale).color(glass));
-p.part("handle", box(725, 100, 100, true).translate(0, 97.50, 1330).scale(scale).color(stainlessSteel));
-p.part("push-handle-left", box(90, 100, 690, true).translate(-487.50, 117, 565).scale(scale).color(stainlessSteel));
-p.part("push-handle-right", box(90, 100, 690, true).translate(487.50, 117, 565).scale(scale).color(stainlessSteel));
+p.part("analyzer-face", box(725, 90, 345, true).translate(0, -250, 738).scale(scale).color(glass));
+p.part("handle", box(725, 100, 100, true).translate(0, 97.50, 960).scale(scale).color(stainlessSteel));
+p.part("push-handle-left", box(90, 100, 790, true).translate(-487.50, 117, 615).scale(scale).color(stainlessSteel));
+p.part("push-handle-right", box(90, 100, 790, true).translate(487.50, 117, 615).scale(scale).color(stainlessSteel));
 p.part("handle-crossbar", box(900, 100, 100, true).translate(0, 117, 960.80).scale(scale).color(stainlessSteel));
 
 return p.model();

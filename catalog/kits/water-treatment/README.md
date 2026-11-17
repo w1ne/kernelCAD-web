@@ -28,6 +28,12 @@ flanged discharge, motor cooling ribs, fan cowl and terminal box visible in the
 default preview. Its four material controls and `weathered` / `highVisibility`
 presets remain editable; the source triangle budget is 2,800.
 
+The [reverse-osmosis operator display review](../../../artifacts/catalog-demos/water-treatment-ro-operator-display-material-review-20261116/README.md)
+moves the control-cabinet `operator-display` from the `structuralSteel`
+control to a new `displayGlass` ("Operator display glass") control, so the
+screen reads as dark glass on the stainless door instead of a grey steel plate.
+Geometry, dimensions and triangle count are unchanged.
+
 Five signature process units are rebuilt at about real size from turned
 profiles, extruded side sections and oriented members:
 `circular-clarifier` (18 m tank with still water, inboard launder, weir plate

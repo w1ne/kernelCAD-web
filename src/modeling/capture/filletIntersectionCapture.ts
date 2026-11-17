@@ -15,6 +15,38 @@ export interface FilletIntersectionOpts {
   continuity?: FilletContinuity;
 }
 
+const FILLET_INTERSECTION_OPTION_KEYS = ['sides', 'toleranceMm', 'continuity'] as const;
+
+function assertKnownOptionKeys(opts: unknown, featureId: string): void {
+  // Preserve the existing null-as-default behavior while reporting malformed
+  // JavaScript callers and typos before an operation is captured.
+  if (opts === undefined || opts === null) return;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'filletIntersection(cutter, radius, opts?)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an option object with only ${FILLET_INTERSECTION_OPTION_KEYS.join(', ')}`,
+      example: 'body.filletIntersection(cutter, 2, { toleranceMm: 0.05 })',
+      featureId,
+    });
+  }
+
+  const unknown = Object.keys(opts).find((key) =>
+    !(FILLET_INTERSECTION_OPTION_KEYS as readonly string[]).includes(key));
+  if (unknown !== undefined) {
+    invalidArgs({
+      api: 'filletIntersection(cutter, radius, opts?)',
+      path: `opts.${unknown}`,
+      gotText: `an unknown option '${unknown}'`,
+      requires: `one of ${FILLET_INTERSECTION_OPTION_KEYS.join(', ')}`,
+      example: 'body.filletIntersection(cutter, 2, { toleranceMm: 0.05 })',
+      featureId,
+    });
+  }
+}
+
 interface ResolvedFilletIntersection {
   radius: Editable<number>;
   tolerance: Editable<number>;
@@ -79,6 +111,7 @@ function resolveOptions(
   opts: FilletIntersectionOpts | undefined,
   featureId: string,
 ): ResolvedFilletIntersection {
+  assertKnownOptionKeys(opts, featureId);
   validateRadius(radius, featureId);
   const tolerance = opts?.toleranceMm ?? 0.05;
   validateTolerance(tolerance, featureId);

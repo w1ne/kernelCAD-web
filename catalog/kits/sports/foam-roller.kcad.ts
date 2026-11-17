@@ -17,10 +17,11 @@ const evaFoam = param('evaFoam', '#537d78', { label: 'EVA roller foam' });
 const corePolymer = param('corePolymer', '#263135', { label: 'Core polymer' });
 presets({ clubColors: { evaFoam: '#cf7140', corePolymer: '#263135' } });
 const p = assembly('foam-roller');
-p.part('roller', cylinder(220, 50, 12).rotate([1, 0, 0], 90).translate(0, 110, 50).scale(scale).color(evaFoam));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('roller', cylinder(220, 50, 12).rotate([1, 0, 0], 90).translate(0, 110, 50).color(evaFoam));
 
 
 // Contrasting end rings expose the roller's polymer core at each end.
-for (const y of [-106, 106]) p.part(`core-end-ring-${y}`, cylinder(8, 49, 12).subtract(cylinder(10, 46, 12).translate(0, 0, -1)).rotate([1, 0, 0], 90).translate(0, y, 50).color(corePolymer));
+for (const y of [-106, 106]) add(`core-end-ring-${y}`, cylinder(8, 49, 12).subtract(cylinder(10, 46, 12).translate(0, 0, -1)).rotate([1, 0, 0], 90).translate(0, y, 50).color(corePolymer));
 
 return p.model();

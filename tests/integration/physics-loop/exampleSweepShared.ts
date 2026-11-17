@@ -150,10 +150,6 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
     { issue: 346, testFile: 'tests/integration/examples/compactSupportedArm.test.ts' },
   ],
   [
-    'examples/robot-arm/desktop-3axis-mates.kcad.ts',
-    { issue: 347, testFile: 'tests/integration/examples/desktop3axisMates.test.ts' },
-  ],
-  [
     'examples/robot-arm/skill-built-supported-arm.kcad.ts',
     { issue: 352, testFile: 'tests/integration/examples/skillBuiltSupportedArm.test.ts' },
   ],
@@ -180,6 +176,13 @@ export type DedicatedExampleCoverage = {
 };
 
 export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCoverage> = new Map([
+  [
+    'examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/desktop3axisMates.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
   [
     'examples/assemblies/two-link-connector-arm.kcad.ts',
     {
