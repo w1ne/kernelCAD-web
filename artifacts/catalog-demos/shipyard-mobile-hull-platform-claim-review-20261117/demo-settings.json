@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-17",
+  "asset": "shipyard/mobile-hull-access-platform",
+  "claimBefore": "adjustable-height posts",
+  "claimAfter": "fixed-height support posts",
+  "geometryChanged": false,
+  "source": "catalog/kits/shipyard/mobile-hull-access-platform.kcad.ts",
+  "preview": "catalog/kits/shipyard/previews/mobile-hull-access-platform.png",
+  "test": "tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts",
+  "slides": [
+    "01-five-preview-audit.png",
+    "02-platform-before-after.png",
+    "03-catalog-checks.png"
+  ],
+  "video": "shipyard-mobile-hull-platform-claim-review.mp4",
+  "provenance": "Local source, software render, index, and focused regression check; branch not deployed."
+}

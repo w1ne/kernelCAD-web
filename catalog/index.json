@@ -288557,7 +288557,7 @@
       "id": "mobile-hull-access-platform",
       "kit": "shipyard",
       "title": "Mobile hull access platform",
-      "description": "Low rolling work deck with adjustable-height posts, guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Low rolling work deck on fixed-height support posts, with guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -288581,7 +288581,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/mobile-hull-access-platform.kcad.ts",
       "preview": "/assets/shipyard-mobile-hull-access-platform.png",
-      "sourceSha256": "f59ad65d23f8c82da8ad4d9c5346fcd1d0614fff4120064186eda78210bb4d55",
+      "sourceSha256": "f61709ba28d6957256bacda3c7519d7ccc185492789a41417ca1461360988109",
       "triangleBudget": 1800,
       "params": [
         {

@@ -1,0 +1,5 @@
+f59ad65d23f8c82da8ad4d9c5346fcd1d0614fff4120064186eda78210bb4d55  artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/sources/before/mobile-hull-access-platform.kcad.ts
+f61709ba28d6957256bacda3c7519d7ccc185492789a41417ca1461360988109  artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/sources/after/mobile-hull-access-platform.kcad.ts
+89e06228c9019924ba62363cde8d86142178010ce88c741039241b15586649e8  artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/previews/before/mobile-hull-access-platform.png
+735985476104fecb5328dad952c0946cedeaa00bd70b0b7a0c60aa3b5b1e3a7e  artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/previews/after/mobile-hull-access-platform.png
+39cc725557bb4ab7be000fdf43966f4147639f5fc1f8532e6195882e7b659acf  artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/shipyard-mobile-hull-platform-claim-review.mp4
