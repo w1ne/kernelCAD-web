@@ -18,13 +18,14 @@ const headPolymer = param('headPolymer', '#e4e1d8', { label: 'Head polymer' });
 const pocketNylon = param('pocketNylon', '#d5d2c7', { label: 'Pocket nylon' });
 presets({ clubColors: { graphiteShaft: '#3e6b8c', headPolymer: '#d4a02f' } });
 const p = assembly('lacrosse-stick');
-p.part('shaft', cylinder(580, 9, 10).scale(scale).color(graphiteShaft));
-p.part('head', sphere(68).scale([0.72, 1.05, 0.14]).subtract(sphere(53).scale([0.72, 1.05, 0.18])).rotateX(90).translate(0, 0, 618).scale(scale).color(headPolymer));
-p.part('throat', box(16, 16, 42, true).translate(0, 0, 580).scale(scale).color(graphiteShaft));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('shaft', cylinder(580, 9, 10).color(graphiteShaft));
+add('head', sphere(68).scale([0.72, 1.05, 0.14]).subtract(sphere(53).scale([0.72, 1.05, 0.18])).rotateX(90).translate(0, 0, 618).color(headPolymer));
+add('throat', box(16, 16, 42, true).translate(0, 0, 580).color(graphiteShaft));
 
 
 // Crossed nylon cords fill the shallow pocket of the open lacrosse head.
-for (let i = 0; i < 7; i++) p.part(`pocket-longitudinal-${i + 1}`, box(2, 2, 78, true).translate(-30 + i * 10, -10, 618).color(pocketNylon));
-for (let i = 0; i < 5; i++) p.part(`pocket-cross-${i + 1}`, box(52, 2, 2, true).translate(0, -10, 590 + i * 14).color(pocketNylon));
+for (let i = 0; i < 7; i++) add(`pocket-longitudinal-${i + 1}`, box(2, 2, 78, true).translate(-30 + i * 10, -10, 618).color(pocketNylon));
+for (let i = 0; i < 5; i++) add(`pocket-cross-${i + 1}`, box(52, 2, 2, true).translate(0, -10, 590 + i * 14).color(pocketNylon));
 
 return p.model();
