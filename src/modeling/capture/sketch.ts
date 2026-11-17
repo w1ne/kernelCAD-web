@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
-import { isValidAxisSpec, isValidEditableNumber } from '../../shared/intent/types';
+import { isValidAxisSpec } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
@@ -19,6 +19,7 @@ import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
 import { circleCommands } from './pathCircle';
 import { checkSweepSection } from './sweepSection';
+import { assertKnownKeys, assertEditableNumber, assertEditablePair } from './sketchOptionGuards';
 import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
@@ -115,72 +116,6 @@ const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 's
 const ALLOWED_SWEEP_KEYS = new Set(['frenet', 'transitionMode', 'spine', 'section', 'faceLabels']);
 /** Option keys `Sketch.revolve` accepts. */
 const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels', 'symmetric']);
-
-/**
- * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
- * Shared by `extrude`'s and `sweep`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
- * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
- * every message/hint byte-identical to the hand-rolled guards this replaced.
- */
-function assertKnownKeys(
-  opts: object,
-  allowed: ReadonlySet<string>,
-  featureId: FeatureId,
-  unknownMessage: (key: string) => string,
-  accepts: string,
-): void {
-  for (const key of Object.keys(opts)) {
-    if (!allowed.has(key)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        unknownMessage(key),
-        featureId,
-        `${accepts} accepts ${[...allowed].join(', ')}.`,
-      );
-    }
-  }
-}
-
-/**
- * Reject a present-but-invalid `Editable<number>` option. Same
- * "must be a number or ParamRef" message/hint contract across
- * `extrude.twistAngle`, `loft.twistDeg`, and `loft.planes[i].rotationDeg`.
- */
-function assertEditableNumber(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (value !== undefined && !isValidEditableNumber(value)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a number or ParamRef; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
-
-/** Same contract for `[x, y]` Editable pairs (`loft.twistCenter`). */
-function assertEditablePair(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (
-    value !== undefined &&
-    (!Array.isArray(value) || value.length !== 2 || !value.every(isValidEditableNumber))
-  ) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
 
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
