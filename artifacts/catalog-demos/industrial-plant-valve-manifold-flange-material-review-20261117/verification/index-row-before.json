@@ -1,0 +1,103 @@
+{
+  "id": "valve-manifold-station",
+  "kit": "industrial-plant",
+  "title": "Valve manifold station",
+  "description": "Process valve station with parallel pipe runs, isolation wheels, gauges and a support frame. Controls: overall scale, steel, safety paint.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
+  "preview": "/assets/industrial-plant-valve-manifold-station.png",
+  "sourceSha256": "8d3cc6f66761e99ede3f761f0a8d7505f2e16b8d89659724327bb4ca6622cb60",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#6c7e85",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#e4aa43",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 740,
+    "sizeM": [
+      0.73,
+      0.4472,
+      0.38
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "safetyPaint",
+      "color": "#e4aa43",
+      "parts": [
+        "support-frame",
+        "riser-0",
+        "handwheel-0",
+        "flange-0",
+        "riser-1",
+        "handwheel-1",
+        "flange-1",
+        "riser-2",
+        "handwheel-2",
+        "flange-2"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "steel",
+      "color": "#6c7e85",
+      "parts": [
+        "header",
+        "valve-0",
+        "branch-outlet-0",
+        "valve-1",
+        "branch-outlet-1",
+        "valve-2",
+        "branch-outlet-2",
+        "stand--1",
+        "stand-1"
+      ],
+      "param": "steel"
+    }
+  ]
+}

@@ -147528,7 +147528,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
       "preview": "/assets/industrial-plant-valve-manifold-station.png",
-      "sourceSha256": "8d3cc6f66761e99ede3f761f0a8d7505f2e16b8d89659724327bb4ca6622cb60",
+      "sourceSha256": "260375ff4ca05e6b88bc8fc6c4c9f43844cf54a89c0095ef75d578575f2cdb06",
       "triangleBudget": 1400,
       "params": [
         {
@@ -147580,13 +147580,10 @@
             "support-frame",
             "riser-0",
             "handwheel-0",
-            "flange-0",
             "riser-1",
             "handwheel-1",
-            "flange-1",
             "riser-2",
-            "handwheel-2",
-            "flange-2"
+            "handwheel-2"
           ],
           "param": "safetyPaint"
         },
@@ -147597,10 +147594,13 @@
             "header",
             "valve-0",
             "branch-outlet-0",
+            "flange-0",
             "valve-1",
             "branch-outlet-1",
+            "flange-1",
             "valve-2",
             "branch-outlet-2",
+            "flange-2",
             "stand--1",
             "stand-1"
           ],
