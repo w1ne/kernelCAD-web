@@ -110,13 +110,26 @@ listed in `STANDARD_PART_RANGE_REMAINING` instead of being claimed.
 
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
 socket-head (ISO 4762, M2–M20), button-head (ISO 7380, M3–M10), countersunk
-(ISO 10642, M3–M12) and hex-head (ISO 4017, M3–M20) screws and bolts,
+(ISO 10642, M3–M12; the table starts at M3), full-thread hex (ISO 4017,
+M3–M20) and partial-thread hex (ISO 4014, M2–M12) screws and bolts,
 headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
 250/1000), hex nuts (ISO 4032, M2–M20), lock nuts (DIN 985, M3–M12), flat
 washers (ISO 7089, M2–M20) and lock washers (DIN 127B, M3–M12). Screws need
 a stocked length, and the stocked lengths are per thread (the standard's
 preferred series), not one list for every size; an unknown family, thread or
-length fails with a diagnostic that names the stocked values.
+length fails with a diagnostic that names the stocked values. A length below
+the ISO 4014 minimum is refused and the message names ISO 4017
+(`hex-head-bolt` / `lib.standard.boltHex`). `lib.standard.boltHexPartial`
+is the ISO 4014 shortcut.
+
+DIN 912, DIN 7991, DIN 931 and DIN 933 are search names for ISO 4762,
+ISO 10642, ISO 4014 and ISO 4017. The family id and the BOM designation stay
+on the ISO document (`ISO 4762 M5x16 - 8.8`, `ISO 4014 M6x30 - 8.8`,
+`ISO 4032 M6 - 8`, `ISO 7089 M6 - 200 HV`). The class is a nominal callout,
+not a certified property. `find_part` with a DIN or ISO name returns that
+designation. `lib.part` builds the solid even when the committed seed catalog
+has not been regenerated; `fetch_part` of a new id still needs the catalog
+files.
 
 `detail` picks the solid, on `lib.part`, `lib.stack`, `lib.insert` and the
 `lib.standard` fasteners:
@@ -128,7 +141,9 @@ length fails with a diagnostic that names the stocked values.
   ISO 4026 flat point, DIN 127B split. Threads are the ISO 68-1 profile at
   the ISO 261 coarse pitch with a chamfered start; ISO 4762 / ISO 10642
   screws carry the partial thread length b by a rule close to the standard's
-  table. Threads over 100 turns (all DIN 975 rod) are the profile revolved as
+  table. ISO 4014 b, from the tip, is 2d+6 up to 125 mm, 2d+12 through
+  200 mm, and 2d+25 above that; the plain shank under the head is l − b.
+  Threads over 100 turns (all DIN 975 rod) are the profile revolved as
   rings, flagged `threadForm: 'annular'` on the part record.
 - `'envelope'`: nominal head plus a nominal-Ø shank, a nut with a nominal
   bore. Fast; use it for big assemblies.
@@ -231,6 +246,7 @@ the @kc grammar (kebab, alpha-leading) so refs round-trip.
 | socket-head-cap-screw         | `head-bearing`, `thread-tip`, `head-top`                    |
 | button-head-cap-screw         | `head-bearing`, `thread-tip`, `head-top`                    |
 | flat-head-countersunk         | `mating-face`, `thread-tip`                                 |
+| hex-head-bolt / hex-head-bolt-partial | `head-bearing`, `thread-tip`, `head-top`              |
 | hex-nut / lock-nut            | `mating-face`, `top-face`, `inner-bore`                     |
 | flat-washer / lock-washer     | `mating-face`, `top-face`, `inner-bore`                     |
 | heat-set-insert               | `mating-face`, `top-face`, `inner-bore`                     |

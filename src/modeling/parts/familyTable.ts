@@ -7,6 +7,12 @@
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
 import { coarsePitchOf, screwIso, type FastenerIsoDims } from './fastenerIsoDims';
+import {
+  canonicalFastenerFamily,
+  dinAliasTag,
+  fastenerCallout,
+  kindFromFamily,
+} from './fastenerDesignation';
 
 export type { FastenerIsoDims };
 
@@ -45,6 +51,22 @@ export const FLATHEAD_LENGTHS: Readonly<Record<string, readonly number[]>> = {
   M12: [12, 16, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100],
 };
 
+/** ISO 4014:2022 product grade A lengths inside the table's partial-thread
+ *  range and at or under 10d (Clause 4 note e). M2–M4 from Table 1, M5–M12
+ *  from Table 2. Shorter lengths are fully threaded and are ISO 4017, not
+ *  rows invented here. M16 and above are in the standard and are not stocked. */
+export const HEX_BOLT_PARTIAL_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M2: [16, 20],
+  M2_5: [16, 20, 25],
+  M3: [20, 25, 30],
+  M4: [25, 30, 35, 40],
+  M5: [25, 30, 35, 40, 45, 50],
+  M6: [30, 35, 40, 45, 50, 55, 60],
+  M8: [40, 45, 50, 55, 60, 65, 70, 80],
+  M10: [45, 50, 55, 60, 65, 70, 80, 90, 100],
+  M12: [50, 55, 60, 65, 70, 80, 90, 100, 110, 120],
+};
+
 export const HEX_BOLT_LENGTHS: Readonly<Record<string, readonly number[]>> = {
   M3: [8, 10, 12, 16, 20, 25, 30],
   M4: [8, 10, 12, 16, 20, 25, 30, 35, 40],
@@ -78,7 +100,7 @@ export const ROD_LENGTHS: Readonly<Record<string, readonly number[]>> = {
   M12: [250, 1000],
 };
 
-/** Head diameter D and height K. Keys use '_' for the decimal (M2_5). */
+/** Head diameter dk max and height k max. ISO 4762 Table 1. Keys use '_' for the decimal (M2_5). Nominal, not certified. */
 export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M2: { D: 3.8, K: 2.0 },
   M2_5: { D: 4.5, K: 2.5 },
@@ -93,6 +115,7 @@ export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M20: { D: 30.0, K: 20.0 },
 };
 
+/** ISO 7380-1 Table 1, dk max and k max. Stocked M3–M10; the standard continues and those further rows are not in this table. */
 export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 5.7, K: 1.65 },
   M4: { D: 7.6, K: 2.2 },
@@ -102,6 +125,7 @@ export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M10: { D: 17.5, K: 5.5 },
 };
 
+/** ISO 10642 Table 1, 90° head, dk max and k max. The table starts at M3; there is no M2 row. */
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
@@ -112,7 +136,12 @@ export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M12: { D: 26.88, K: 7.44 },
 };
 
-/** ISO 4017 hex head: S is the across-flats width, D the circumscribed circle. */
+/** Across-corners diameter of a hexagon of across-flats width `s`, mm. */
+function hexAcrossCorners(s: number): number {
+  return Math.round((2 * s) / Math.sqrt(3) * 1000) / 1000;
+}
+
+/** ISO 4017 hex head: S is the across-flats width s nom, K is k nom, D the circumscribed circle. Nominal, not certified. */
 export const HEX_BOLT_HEAD: Record<string, { D: number; K: number; S: number }> = {
   M3: { S: 5.5, K: 2.0, D: 6.351 },
   M4: { S: 7.0, K: 2.8, D: 8.083 },
@@ -125,7 +154,22 @@ export const HEX_BOLT_HEAD: Record<string, { D: number; K: number; S: number }> 
   M20: { S: 30.0, K: 12.5, D: 34.641 },
 };
 
-/** ISO 4032 style 1 hex nut: s (across flats) and m max (height). */
+/** ISO 4014:2022 Tables 1 and 2, k nom and s nom. k and s for M3–M12 match
+ *  the ISO 4017 head. M2 and M2.5 are Table 1 only. D is the circumscribed
+ *  circle of s nom. Nominal, not certified. */
+export const HEX_BOLT_PARTIAL_HEAD: Record<string, { D: number; K: number; S: number }> = {
+  M2: { S: 4, K: 1.4, D: hexAcrossCorners(4) },
+  M2_5: { S: 5, K: 1.7, D: hexAcrossCorners(5) },
+  M3: HEX_BOLT_HEAD.M3,
+  M4: HEX_BOLT_HEAD.M4,
+  M5: HEX_BOLT_HEAD.M5,
+  M6: HEX_BOLT_HEAD.M6,
+  M8: HEX_BOLT_HEAD.M8,
+  M10: HEX_BOLT_HEAD.M10,
+  M12: HEX_BOLT_HEAD.M12,
+};
+
+/** ISO 4032 style 1 hex nut: s nominal (across flats) and m max (height). Nominal, not certified. */
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M2: { S: 4, m: 1.6 },
   M2_5: { S: 5, m: 2 },
@@ -150,7 +194,7 @@ export const LOCK_NUT: Record<string, { S: number; m: number }> = {
   M12: { S: 18, m: 12.0 },
 };
 
-/** ISO 7089: d1 (Din), d2 (Dout), h (t). Plain edges; ISO 7090 is the chamfered form. */
+/** ISO 7089 Table 1, product grade A nominal: d1 clearance (Din), d2 outside (Dout), h thickness (t). Nominal, not certified. */
 export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M2: { Dout: 5, Din: 2.2, t: 0.3 },
   M2_5: { Dout: 6, Din: 2.7, t: 0.5 },
@@ -235,6 +279,8 @@ export interface ResolvedPart {
   iso?: FastenerIsoDims;
   tags: string[];
   connectors: ConnectorEntry[];
+  /** Canonical ordering designation, for example `ISO 4762 M5x16 - 8.8`. */
+  designation?: string;
 }
 
 export interface StackRequest {
@@ -367,6 +413,7 @@ const FAMILIES: Record<string, FamilySpec> = {
   'button-head-cap-screw': { standard: 'ISO 7380', idPrefix: 'iso-7380', kind: 'screw', headStyle: 'button', threads: BHCS_HEAD, lengths: BHCS_LENGTHS },
   'flat-head-countersunk': { standard: 'ISO 10642', idPrefix: 'iso-10642', kind: 'screw', headStyle: 'flat', threads: FLATHEAD_HEAD, lengths: FLATHEAD_LENGTHS },
   'hex-head-bolt': { standard: 'ISO 4017', idPrefix: 'iso-4017', kind: 'screw', headStyle: 'hex', threads: HEX_BOLT_HEAD, lengths: HEX_BOLT_LENGTHS },
+  'hex-head-bolt-partial': { standard: 'ISO 4014', idPrefix: 'iso-4014', kind: 'screw', headStyle: 'hex', threads: HEX_BOLT_PARTIAL_HEAD, lengths: HEX_BOLT_PARTIAL_LENGTHS },
   'set-screw': { standard: 'ISO 4026', idPrefix: 'iso-4026', kind: 'screw', headStyle: 'headless', threads: setScrewThreads(), lengths: SET_SCREW_LENGTHS },
   'threaded-rod': { standard: 'DIN 975', idPrefix: 'din-975', kind: 'screw', headStyle: 'headless', threads: rodThreads(), lengths: ROD_LENGTHS },
   'hex-nut': { standard: 'ISO 4032', idPrefix: 'iso-4032', kind: 'nut', threads: HEX_NUT },
@@ -480,20 +527,27 @@ function requireRow<T>(threads: Record<string, T>, thread: string, family: strin
   });
 }
 
-function exactStocked(lengths: readonly number[], requested: number, label: string): number {
+function exactStocked(lengths: readonly number[], requested: number, label: string, why?: string): number {
   if (lengths.some((length) => length === requested)) return requested;
+  const base = `a stocked length for ${label}: ${lengths.join(', ')}`;
   invalidArgs({
     api: 'lib.part({ family, thread, lengthMm })',
     path: 'lengthMm',
     got: requested,
-    requires: `a stocked length for ${label}: ${lengths.join(', ')}`,
+    requires: why === undefined ? base : `${base}. ${why}`,
     unit: 'mm',
     example: PART_EXAMPLE,
   });
 }
 
 function screwLength(lengths: readonly number[], request: PartRequest, thread: string): number {
-  if (request.lengthMm !== undefined) return exactStocked(lengths, request.lengthMm, `${request.family} ${thread}`);
+  if (request.lengthMm !== undefined) {
+    const belowPartial = request.family === 'hex-head-bolt-partial' && request.lengthMm < lengths[0];
+    const why = belowPartial
+      ? `${request.lengthMm} mm is below the shortest partial-thread length in ISO 4014:2022; a fully threaded hexagon head screw of this size is ISO 4017 (family hex-head-bolt)`
+      : undefined;
+    return exactStocked(lengths, request.lengthMm, `${request.family} ${thread}`, why);
+  }
   invalidArgs({
     api: 'lib.part({ family, thread, lengthMm })',
     path: 'lengthMm',
@@ -546,6 +600,20 @@ function partId(spec: FamilySpec, thread: string, lengthMm: number): string {
   return spec.kind === 'screw' ? `${spec.idPrefix}-${slug}x${lengthMm}` : `${spec.idPrefix}-${slug}`;
 }
 
+function fastenerTags(kind: 'screw' | 'nut' | 'washer', standard: string, thread: string): string[] {
+  const din = dinAliasTag(standard);
+  return [kind, 'metric', thread, standard, ...(din === undefined ? [] : [din])];
+}
+
+function calloutFor(standard: string, thread: string, family: string, lengthMm: number): string | undefined {
+  return fastenerCallout({
+    standard,
+    thread,
+    lengthMm: lengthMm > 0 ? lengthMm : undefined,
+    kind: kindFromFamily(family),
+  });
+}
+
 function screwPart(
   request: PartRequest,
   spec: ScrewFamily,
@@ -569,8 +637,9 @@ function screwPart(
     acrossFlatsMm: dims.S ?? 0,
     innerDiameterMm: 0,
     iso: screwIso(request.family, thread, lengthMm, nominalMm),
-    tags: ['screw', 'metric', thread],
+    tags: fastenerTags('screw', spec.standard, thread),
     connectors: screwConnectors(spec.headStyle, dims, lengthMm),
+    designation: calloutFor(spec.standard, thread, request.family, lengthMm),
   };
 }
 
@@ -596,7 +665,8 @@ function nutPart(
     acrossFlatsMm: dims.S,
     innerDiameterMm: nominalMm,
     iso: { pitchMm: coarsePitchOf(thread) },
-    tags: ['nut', 'metric', thread],
+    tags: fastenerTags('nut', spec.standard, thread),
+    designation: calloutFor(spec.standard, thread, request.family, 0),
     connectors: [
       { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
       { name: 'top-face', type: 'frame', origin: [0, 0, dims.m], normal: [0, 0, 1] },
@@ -626,7 +696,8 @@ function washerPart(
     headHeightMm: dims.t,
     acrossFlatsMm: 0,
     innerDiameterMm: dims.Din,
-    tags: ['washer', 'metric', thread],
+    tags: fastenerTags('washer', spec.standard, thread),
+    designation: calloutFor(spec.standard, thread, request.family, 0),
     connectors: [
       { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
       { name: 'top-face', type: 'frame', origin: [0, 0, dims.t], normal: [0, 0, 1] },
@@ -729,17 +800,41 @@ function fixturePart(request: PartRequest, spec: FixtureFamily): ResolvedPart {
 }
 
 export function resolvePart(request: PartRequest): ResolvedPart {
-  const spec = requireFamily(request.family);
-  if (isFixtureSpec(spec)) return fixturePart(request, spec);
-  const thread = requireThread(request, stockedThreads(spec.threads));
+  const requestFamily = canonicalFastenerFamily(request.family);
+  const resolved: PartRequest = requestFamily === request.family ? request : { ...request, family: requestFamily };
+  const spec = requireFamily(resolved.family);
+  if (isFixtureSpec(spec)) return fixturePart(resolved, spec);
+  const thread = requireThread(resolved, stockedThreads(spec.threads));
   const nominalMm = nominalOf(thread);
   if (spec.kind === 'screw') {
-    return screwPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
+    return screwPart(resolved, spec, requireRow(spec.threads, thread, resolved.family), thread, nominalMm);
   }
   if (spec.kind === 'nut') {
-    return nutPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
+    return nutPart(resolved, spec, requireRow(spec.threads, thread, resolved.family), thread, nominalMm);
   }
-  return washerPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
+  return washerPart(resolved, spec, requireRow(spec.threads, thread, resolved.family), thread, nominalMm);
+}
+
+/** A stocked fastener family id, after DIN/ISO aliases. Undefined for fixtures and unknown names. */
+export function libraryFamily(name: string): string | undefined {
+  const canonical = canonicalFastenerFamily(name);
+  const spec = FAMILIES[canonical];
+  if (spec === undefined || isFixtureSpec(spec)) return undefined;
+  return canonical;
+}
+
+/** Every stocked variant of one fastener family. Pure table data, no solids. */
+export function libraryVariants(family: string): ResolvedPart[] {
+  const canonical = libraryFamily(family);
+  if (canonical === undefined) return [];
+  const spec = FAMILIES[canonical];
+  if (spec === undefined || isFixtureSpec(spec)) return [];
+  return Object.keys(spec.threads).flatMap((key) => {
+    const thread = key.replace('_', '.');
+    if (spec.kind !== 'screw') return [resolvePart({ family: canonical, thread })];
+    const lengths = spec.lengths[key] ?? [];
+    return lengths.map((lengthMm) => resolvePart({ family: canonical, thread, lengthMm }));
+  });
 }
 
 function shortestAtLeast(

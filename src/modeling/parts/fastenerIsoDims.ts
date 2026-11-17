@@ -11,7 +11,7 @@ import { isoThreadInfo } from '../threads';
  *  standards' tables (not certified): socket across flats s and depth t
  *  (t min), under-head fillet r (r min) and reference thread length b. */
 export const SHCS_DETAIL: Record<string, { s: number; t: number; r: number; b: number }> = {
-  // ISO 4762
+  // ISO 4762 Table 1: socket s nom, t min, fillet r min, reference thread length b.
   M2: { s: 1.5, t: 1.0, r: 0.1, b: 16 },
   M2_5: { s: 2, t: 1.1, r: 0.1, b: 17 },
   M3: { s: 2.5, t: 1.3, r: 0.1, b: 18 },
@@ -99,6 +99,35 @@ export function partialThreadLength(lengthMm: number, b: number, pitch: number, 
   return lengthMm - b - 5 * pitch >= nominalMm / 2 ? b : lengthMm;
 }
 
+/** ISO 4014:2022 Clause 4, reference thread length b measured from the tip.
+ *  Notes on Tables 1–4: b for lnom ≤ 125 mm, the next band for
+ *  125 mm < lnom ≤ 200 mm, and the last band for lnom > 200 mm.
+ *  The three expressions are 2d+6, 2d+12 and 2d+25. Nominal, not a
+ *  tolerance on the thread runout (the standard also allows u ≤ 2P). */
+export function iso4014ReferenceThreadMm(nominalMm: number, lengthMm: number): number {
+  if (lengthMm <= 125) return 2 * nominalMm + 6;
+  if (lengthMm <= 200) return 2 * nominalMm + 12;
+  return 2 * nominalMm + 25;
+}
+
+/** ISO 4014:2022 Tables 1 and 2, product grade A: washer-face diameter dw min,
+ *  washer-face height c max, under-head fillet r min. The 2022 edition raised
+ *  dw min for d ≤ M5; the ISO 4017 rows above keep their previously stocked
+ *  washer face. Nominal, not certified. */
+export const HEX_BOLT_PARTIAL_DETAIL: Record<string, { dw: number; c: number; r: number }> = {
+  // Table 1, M2–M4
+  M2: { dw: 3.34, c: 0.25, r: 0.1 },
+  M2_5: { dw: 4.34, c: 0.25, r: 0.1 },
+  M3: { dw: 4.84, c: 0.4, r: 0.1 },
+  M4: { dw: 6.2, c: 0.4, r: 0.2 },
+  // Table 2, M5–M12
+  M5: { dw: 7.2, c: 0.5, r: 0.2 },
+  M6: { dw: 8.88, c: 0.5, r: 0.25 },
+  M8: { dw: 11.63, c: 0.6, r: 0.4 },
+  M10: { dw: 14.63, c: 0.6, r: 0.4 },
+  M12: { dw: 16.63, c: 0.6, r: 0.6 },
+};
+
 export function screwIso(family: string, thread: string, lengthMm: number, nominalMm: number): FastenerIsoDims {
   const key = thread.replace('.', '_');
   const pitchMm = coarsePitchOf(thread);
@@ -119,6 +148,13 @@ export function screwIso(family: string, thread: string, lengthMm: number, nomin
   if (family === 'hex-head-bolt') {
     const d = HEX_BOLT_DETAIL[key];
     return d === undefined ? { pitchMm, threadLengthMm: lengthMm } : { pitchMm, threadLengthMm: lengthMm, washerFaceDiameterMm: d.dw, washerFaceHeightMm: d.c, underHeadFilletMm: d.r };
+  }
+  if (family === 'hex-head-bolt-partial') {
+    const d = HEX_BOLT_PARTIAL_DETAIL[key];
+    const threadLengthMm = iso4014ReferenceThreadMm(nominalMm, lengthMm);
+    return d === undefined
+      ? { pitchMm, threadLengthMm }
+      : { pitchMm, threadLengthMm, washerFaceDiameterMm: d.dw, washerFaceHeightMm: d.c, underHeadFilletMm: d.r };
   }
   if (family === 'set-screw') {
     const d = SET_SCREW_DETAIL[key];

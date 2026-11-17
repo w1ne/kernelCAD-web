@@ -6,6 +6,11 @@
 // is configured AND source !== 'local'.
 
 import { loadCatalog, queryCatalog, type QueryOpts } from './catalog';
+import {
+  isFastenerLibraryQuery,
+  searchFastenerLibrary,
+  withFastenerDesignation,
+} from './fastenerSearch';
 import { remoteFindParts, RemoteDisabledError } from './remoteClient';
 import type { LicenseClass, PartRecord } from '../../shared/parts/types';
 
@@ -62,18 +67,6 @@ function remoteFindPartsFor(query: string, opts: FindPartOpts) {
   });
 }
 
-function localOnlyResult(
-  local: PartRecord[],
-  remoteEnabled: boolean,
-): FindPartResult {
-  return {
-    results: local,
-    totalMatches: local.length,
-    source: 'local',
-    remoteEnabled,
-  };
-}
-
 function mergeRemoteResults(
   local: PartRecord[],
   remoteResults: PartRecord[],
@@ -92,20 +85,43 @@ export interface FindPartResult {
   remoteEnabled: boolean;
 }
 
+/** Catalog hits first, then stocked table rows that the catalog does not already carry. */
+function mergeFastenerTable(query: string, opts: FindPartOpts, catalogHits: PartRecord[]): PartRecord[] {
+  const table = searchFastenerLibrary(query, opts);
+  if (table === null) return [];
+  const seen = new Set(catalogHits.map((record) => record.id));
+  return [
+    ...catalogHits.map(withFastenerDesignation),
+    ...table.filter((record) => !seen.has(record.id)),
+  ];
+}
+
 export async function findPartHost(
   query: string,
   opts: FindPartOpts = {},
 ): Promise<FindPartResult> {
   const source = opts.source ?? 'auto';
   const catalog = loadCatalog();
-  const local = filterByLicenseClass(
-    queryCatalog(catalog, query, buildCatalogQueryOpts(opts)),
+  const libraryQuery = isFastenerLibraryQuery(query, opts);
+  const catalogOpts = buildCatalogQueryOpts(opts);
+  if (libraryQuery) catalogOpts.limit = 5000;
+  let local = filterByLicenseClass(
+    queryCatalog(catalog, query, catalogOpts),
     opts.licenseClass,
   );
+  if (libraryQuery) {
+    local = filterByLicenseClass(mergeFastenerTable(query, opts, local), opts.licenseClass);
+  }
+  const limit = opts.limit ?? 10;
   const remoteCandidate = remotePartsConfigured(opts);
 
   if (source === 'local') {
-    return localOnlyResult(local, remoteCandidate);
+    return {
+      results: local.slice(0, limit),
+      totalMatches: local.length,
+      source: 'local',
+      remoteEnabled: remoteCandidate,
+    };
   }
   if (source === 'remote') {
     const remote = await remoteFindPartsFor(query, opts);
@@ -120,7 +136,12 @@ export async function findPartHost(
   }
   // auto
   if (!remoteCandidate) {
-    return localOnlyResult(local, false);
+    return {
+      results: local.slice(0, limit),
+      totalMatches: local.length,
+      source: 'local',
+      remoteEnabled: false,
+    };
   }
   try {
     const remote = await remoteFindPartsFor(query, opts);
@@ -130,16 +151,26 @@ export async function findPartHost(
     );
     const merged = mergeRemoteResults(local, remoteResults);
     return {
-      results: merged.slice(0, opts.limit ?? 10),
+      results: merged.slice(0, limit),
       totalMatches: merged.length,
       source: 'merged',
       remoteEnabled: true,
     };
   } catch (e) {
     if (e instanceof RemoteDisabledError) {
-      return localOnlyResult(local, false);
+      return {
+        results: local.slice(0, limit),
+        totalMatches: local.length,
+        source: 'local',
+        remoteEnabled: false,
+      };
     }
     // Network / 5xx failures: fall back to local.
-    return localOnlyResult(local, true);
+    return {
+      results: local.slice(0, limit),
+      totalMatches: local.length,
+      source: 'local',
+      remoteEnabled: true,
+    };
   }
 }

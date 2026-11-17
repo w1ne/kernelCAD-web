@@ -25,9 +25,16 @@ const bolt  = await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm:
 const rod   = await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 250 });
 ```
 
-Socket head runs M2 to M20 (ISO 4762), hex head bolts M3 to M20 (ISO 4017), countersunk M3 to M12 (ISO 10642), button head M3 to M10 (ISO 7380). Set screws are M3 to M12 (ISO 4026), threaded rod M3 to M12 in 250 and 1000 mm lengths (DIN 975). Hex nuts and flat washers go to M20, lock nuts and lock washers to M12.
+Socket head runs M2 to M20 (ISO 4762), full-thread hex bolts M3 to M20 (ISO 4017), partial-thread hex bolts M2 to M12 (ISO 4014), countersunk M3 to M12 (ISO 10642), button head M3 to M10 (ISO 7380). Set screws are M3 to M12 (ISO 4026), threaded rod M3 to M12 in 250 and 1000 mm lengths (DIN 975). Hex nuts and flat washers go to M20, lock nuts and lock washers to M12. ISO 10642 has no M2 row, and ISO 4014 is not stocked above M12.
 
-An unknown family, thread or length fails with a message that names the stocked values, which keeps an agent from inventing an M2 × 50 that no supplier sells.
+DIN 912 names the same part as ISO 4762, DIN 7991 as ISO 10642, DIN 931 as ISO 4014 and DIN 933 as ISO 4017. Search keeps the DIN name. The BOM designation stays on the ISO document, for example `ISO 4762 M5x16 - 8.8`. The property class on that callout is the nominal ordering grade, not a certified strength.
+
+```ts
+const partial = await lib.part({ family: 'hex-head-bolt-partial', thread: 'M6', lengthMm: 30 });
+// same part: family 'ISO 4014' or 'DIN 931'
+```
+
+An unknown family, thread or length fails with a message that names the stocked values. A hexagon bolt shorter than the ISO 4014 partial-thread minimum is refused and the message names ISO 4017 (`hex-head-bolt`), which is the fully threaded screw of that size.
 
 ## A 12 mm lap joint
 
@@ -78,7 +85,7 @@ Mass and BOM volume come from the drawn solid. At `'full'` that is the threaded 
 
 A threaded part costs time. A socket head screw builds in about 4 to 6 s the first time and is copied after that, so eight M6 bolts with their nuts add about 12 s to a script. Meshing it for display takes about 3 s for an M3 × 10 and up to 27 s for an M20 × 100. Use `'envelope'` for large assemblies.
 
-Two limits are stated on the part record rather than hidden. Threads longer than 100 turns, which covers all DIN 975 rod, are the ISO profile revolved as rings instead of a helix, and the record says `threadForm: 'annular'`. Partial thread length on ISO 4762 and ISO 10642 screws follows a rule close to the standards' tables: a screw keeps the reference length b only when the plain shank left would be at least half the diameter. The DIN 127 B spring washer is drawn flat with its split, without the twist. The bundled catalog STEP files stay at envelope detail, so a threaded STEP is built in memory. All dimensions are nominal table values, not certified geometry.
+Two limits are stated on the part record rather than hidden. Threads longer than 100 turns, which covers all DIN 975 rod, are the ISO profile revolved as rings instead of a helix, and the record says `threadForm: 'annular'`. Partial thread length on ISO 4762 and ISO 10642 screws follows a rule close to the standards' tables: a screw keeps the reference length b only when the plain shank left would be at least half the diameter. ISO 4014 is its own family. Its thread length b, measured from the tip, is 2d+6 for a nominal length up to 125 mm, 2d+12 above 125 mm through 200 mm, and 2d+25 above 200 mm (ISO 4014:2022 Clause 4). The plain shank under the head is l − b. The DIN 127 B spring washer is drawn flat with its split, without the twist. The bundled catalog STEP files stay at envelope detail, so a threaded STEP is built in memory. All dimensions are nominal table values, not certified geometry.
 
 ## Close, normal or loose
 
@@ -102,6 +109,7 @@ value the part happened to be built at:
 | `boltBHCS` | M3–M10 (6) | M8, 8–50 mm (8, 20, 50) | 9 |
 | `boltFlatHead` | M3–M12 (7) | M6, 6–50 mm (6, 18, 50) | 10 |
 | `boltHex` | M3–M20 (9) | M10, 20–100 mm (20, 50, 100) | 12 |
+| `boltHexPartial` | M2–M12 (9) | M6, 30–60 mm (30, 45, 60) | 12 |
 | `setScrew` | M3–M12 (7) | M6, 6–40 mm (6, 16, 40) | 10 |
 | `rodThreaded` | M3–M12 (7) | M8, 250 and 1000 mm | 9 |
 | `nutHex` | M2–M12 (9) | — | 9 |

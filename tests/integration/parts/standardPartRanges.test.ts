@@ -19,10 +19,10 @@ describe('standard-part range declarations (S3)', () => {
   });
 
   it('declares a domain, requirements and catalog attributes for the first slice', () => {
-    expect(STANDARD_PART_RANGES).toHaveLength(10);
+    expect(STANDARD_PART_RANGES).toHaveLength(11);
     const members = STANDARD_PART_RANGES.map((d) => d.member);
     expect(members).toEqual([
-      'boltSHCS', 'boltBHCS', 'boltFlatHead', 'boltHex', 'setScrew', 'rodThreaded',
+      'boltSHCS', 'boltBHCS', 'boltFlatHead', 'boltHex', 'boltHexPartial', 'setScrew', 'rodThreaded',
       'nutHex', 'nutLock', 'washerFlat', 'washerLock',
     ]);
     for (const declaration of STANDARD_PART_RANGES) {
