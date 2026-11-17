@@ -741,7 +741,7 @@ Declare a label on a creating op via the `faceLabels` option. The value map acce
 **Canonical alias** — give a custom name to a canonical face:
 
 ```typescript
-box([10, 10, 5], { faceLabels: { lid: 'top', base: 'bottom' } })
+box(10, 10, 5, false, { faceLabels: { lid: 'top', base: 'bottom' } })
   .fillet(2, { face: 'lid' });
 ```
 
