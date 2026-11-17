@@ -29,6 +29,7 @@ import {
   type ScriptRunner,
   type RunScriptResult,
 } from './runScriptCore';
+import { registerPartSourceRunner } from '../capture/partSourceRunner';
 
 export type { ScriptApiFactory, ScriptRunner, RunScriptResult };
 
@@ -81,3 +82,5 @@ export async function runScript(
     wrapOffset: runner === runIsolated ? ISOLATION_WRAP_OFFSET : undefined,
   });
 }
+
+registerPartSourceRunner((req) => runScript(req));

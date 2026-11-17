@@ -81,6 +81,8 @@ export interface BomRow {
   /** Every `assembly.part(name, ...)` name contributing to this group, in
    *  declaration order. Length always equals `quantity`. */
   instancePaths: string[];
+  /** Set when the group is one named configuration of a part file. */
+  configuration?: { source: string; name: string };
 }
 
 export interface BomTotals {
@@ -244,9 +246,11 @@ async function measurePart(part: AssemblyPartStored, records: readonly FeatureRe
   const bbox = kind === 'fabricated'
     ? (flatSheetMetalBbox(records, part) ?? loweredBbox)
     : loweredBbox;
-  const identityKey = catalogPart !== undefined
-    ? `catalog:${catalogPart.id}`
-    : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
+  const identityKey = part.configuration !== undefined
+    ? `config:${part.configuration.source}|${part.configuration.name}`
+    : catalogPart !== undefined
+      ? `catalog:${catalogPart.id}`
+      : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
   const proc = effectiveProcess(records, part);
   const groupKey = identityKey + declarationKey(part, kind === 'fabricated' ? proc : null);
 
@@ -348,6 +352,9 @@ function createBomRow(
     processSource: kind === 'fabricated' ? (proc.declared ? 'declared' : 'inferred') : null,
     ...(part.stock !== undefined ? { stock: part.stock } : {}),
     ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
+    ...(part.configuration !== undefined
+      ? { configuration: { source: part.configuration.source, name: part.configuration.name } }
+      : {}),
     instancePaths: [part.name],
     __density: density,
   };

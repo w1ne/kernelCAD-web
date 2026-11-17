@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './capture/captureSession';
 import { makeAssembly, type Assembly } from './capture/assembly';
+import { declareConfigurations, definePartShape } from './capture/partDefinition';
 import { Shape } from './capture/proxy';
 import type { Sketch, PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
@@ -399,6 +400,10 @@ export interface KernelCadApi {
   meta(metadata: AssetMetadataInput): void;
   /** Declare named presets as maps of knob overrides. */
   presets(presets: AssetPresets): void;
+  /** Declare named parameter sets. An assembly picks one with `instance`. */
+  configurations(sets: Readonly<Record<string, Readonly<Record<string, number | boolean | string>>>>): void;
+  /** Publish the part solid and its numeric connector frames. Returns `shape`. */
+  definePart(part: { shape: Shape; connectors?: Readonly<Record<string, unknown>> }): Shape;
 
   path(): PathBuilder;
   /**
@@ -921,6 +926,12 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
       return makeAssembly(name, session);
     },
     ...makeParamMethods(session),
+    configurations(sets) {
+      declareConfigurations(session, sets);
+    },
+    definePart(part) {
+      return definePartShape(session, part);
+    },
     ...makePartsLib(ctx),
     ...makeNurbsSurfaceMethods(session),
     ...makeCurveMethods(session),

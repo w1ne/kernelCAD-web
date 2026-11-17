@@ -124,7 +124,25 @@ Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass 
 
 Exploded views reuse that same assembly: `render_preview({ explode: { factor, mode } })` / `kernelcad render --explode` pull parts apart along mate axes (`mate-axis`) or from the centroid (`radial`); `export` svg-drawing with `exploded` + `balloons` + `partsList` numbers those parts from the BOM. In mate-axis mode, an earlier standalone part does not prevent later mated components from following their connector axes. There is no `arm.explode()` hook — render and export consume the poses directly. See `examples/exploded/clamshell-table-first.kcad.ts` for a reproducible case.
 
-`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part. A part created with `assembly.instance` groups by part file plus configuration name (two sizes of one file stay two rows; repeated instances of one configuration share a row and add up in `quantity`). Anything else groups by geometry/catalog identity, never by part name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`. Rows split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`).
+
+### Named configurations
+
+A part file can publish several named parameter sets of one solid. `configurations({ compact: { length: 80 }, wide: { length: 110 } })` checks every set against the `param()` declarations and does not change the live defaults. `definePart({ shape, connectors })` returns that same shape and records numeric connector frames (vec3 origins only). An assembly then instances one set:
+
+```typescript
+await arm.instance('block-a', {
+  source: '../parts/bearing-block.kcad.ts',
+  configuration: 'compact',
+  material: 'aluminum-6061',
+});
+```
+
+Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. A geometry file the part names with a literal path is resolved beside the part file and is part of that evaluation, so replacing the file rebuilds the solid. A path the part computes is read on every instance. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. The failed call also does not record the connector interface. `subAssembly()` copies a configured part's interface onto the parent and rejects a mismatch before any part of that import is recorded. The same import keeps each part's placement and its density, material, process, stock, mass, cross-section, role, and overlay, whether the part is an ordinary `part()` or a configured instance. A part with no density still has no BOM mass. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+
+A part placed with `connect` keeps that link through `subAssembly()`. The import copies the resolved `at` and points the link at the copied parent, so a mate that moves the imported parent moves the connected child with it. A connected child whose parent is not in the same import is rejected before any part is copied.
+
+`arm.variant('open', { suppress: ['cover'] })` names parts to leave out of this assembly. A part connected to a suppressed part is left out too. `arm.useVariant('open')` applies that set to the assembly's own parts, mates, joints, and mate couplings; call it again with another name to restore the parts that name keeps. `parent.subAssembly('nest', child, { variant: 'open' })` copies that named set and does not change which parts the child shows. A plain `subAssembly(name, other)` copies the parts the child currently shows. The import does not copy wrap geoms or collision shapes. A variant does not rewrite tendons, loop-mode pins, planning groups, disabled-collision pairs, or part lineage.
 
 ```typescript
 interface Assembly {
@@ -157,6 +175,9 @@ interface Assembly {
       exposure?: 'exposed' | 'concealed';
     },
   ): AssemblyMateRef;
+  variant(name: string, opts?: { suppress?: string[] }): this;
+  useVariant(name: string): this;
+  subAssembly(name: string, other: Assembly, opts?: { variant?: string }): SubAssemblyHandle;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }

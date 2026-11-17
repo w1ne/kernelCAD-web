@@ -380,6 +380,27 @@ export function recordMate(
   validateMateCapacityOptions(name, type, opts);
   validateFastenerMateMetadata(name, type, aRef, bRef, opts);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
+  stampMateConfiguration(state);
+}
+
+function configurationRef(state: AssemblyState, ref: string): { source: string; name: string } | undefined {
+  const part = state.parts.find((candidate) => candidate.name === parseConnectorRef(ref).partName);
+  if (!part?.configuration) return undefined;
+  return { source: part.configuration.source, name: part.configuration.name };
+}
+
+function stampMateConfiguration(state: AssemblyState): void {
+  const index = state.mates.length - 1;
+  const mate = state.mates[index];
+  if (!mate) return;
+  const aConfiguration = configurationRef(state, mate.a);
+  const bConfiguration = configurationRef(state, mate.b);
+  if (!aConfiguration && !bConfiguration) return;
+  state.mates[index] = {
+    ...mate,
+    ...(aConfiguration ? { aConfiguration } : {}),
+    ...(bConfiguration ? { bConfiguration } : {}),
+  };
 }
 
 function assertMateConnectorPair(

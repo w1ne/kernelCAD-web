@@ -13,7 +13,6 @@ import {
   type Connector,
   type FluidPort,
 } from '../mates/connector';
-import { parseConnectorRef } from '../mates/mate';
 import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
@@ -25,11 +24,15 @@ import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLi
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
 import { assertAssemblyPartOptionKeys } from './assemblyPartOptionKeys';
 import { createPartCollision } from './assemblyPartCollision';
-import { copyMateCapacity } from './assemblyMateCapacity';
+import { assertImportedConnectParents, remapImportedConnects } from './assemblyImportedConnect';
+import { importSubAssemblyMates } from './assemblyImportedMates';
 import type { Assembly } from './assembly';
+import type { PartConfigurationIdentity } from './partConfigurationTypes';
+import { commitImportedInterfaces, preflightImportedInterfaces } from './configurationInterface';
 import type {
   AssemblyConnectorFrame, AssemblyConnectorFrameStored, AssemblyConnectorOpts, AssemblyConnectorRef,
   AssemblyCrossSection, AssemblyPartOpts, AssemblyPartRef, TubeEnd, AssemblyPartStored, SubAssemblyHandle,
+  SubAssemblyImportOpts,
 } from './assemblyTypes';
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
@@ -725,6 +728,7 @@ export function recordPartInternal(
   shape: Shape,
   opts: AssemblyPartOpts,
   promoteCatalogConnectors: boolean,
+  configuration?: PartConfigurationIdentity,
 ): AssemblyPartRef {
   assertTopoRefSafeName(name, 'part-name', shape.id);
   assertAssemblyPartOptionKeys(name, shape, opts);
@@ -792,6 +796,7 @@ export function recordPartInternal(
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
     ...(opts.overlay !== undefined ? { overlay: opts.overlay } : {}),
+    ...storedConfiguration(configuration),
   };
   state.parts.push(stored);
   if (opts.connect) {
@@ -833,11 +838,24 @@ export function recordPartInternal(
  * (per-sub-assembly root selection, sub-assembly instancing for N
  * identical bolts, cross-assembly mates with their own resolution).
  */
-export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: string, other: Assembly): SubAssemblyHandle {
+export function recordSubAssembly(
+  state: AssemblyState,
+  arm: Assembly,
+  name: string,
+  other: Assembly,
+  opts?: SubAssemblyImportOpts,
+): SubAssemblyHandle {
   validateSubAssemblyImport(state, arm, name, other);
+  const plan = other.__importPlan(opts?.variant);
+  assertImportedConnectParents(plan.parts);
+  // Reject a connector-interface mismatch before copying, so a bad import
+  // cannot leave the earlier parts of `other` on this assembly. A suppressed
+  // part is not in the plan, so it does not commit an interface.
+  const interfaceClaims = preflightImportedInterfaces(state, name, plan.parts);
   const prefix = `${name}_`;
-  const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, other);
-  importSubAssemblyMates(state, prefix, other);
+  const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, plan.parts, other);
+  importSubAssemblyMates(state, prefix, plan.mates);
+  commitImportedInterfaces(state, interfaceClaims);
   const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
     const ref = importedByOriginalName.get(origPartName);
     if (ref) return ref;
@@ -883,23 +901,36 @@ function validateSubAssemblyImport(state: AssemblyState, arm: Assembly, name: st
   }
 }
 
-// 1. Copy parts. Use recordPart(...) so the v0.5 record + connectors +
-//    placement validation all run as if the user authored each part
-//    directly — sub-assembly is observationally identical to a flat
-//    authoring (Slice 1 semantics).
+// Placement and the physical declarations travel with the part. `at` is
+// already the resolved translation, including a part placed by `connect`.
+// The import remaps that connect link onto the copied parts instead of
+// recomputing `at`.
+const IMPORTED_PART_FIELDS = ['density', 'material', 'process', 'stock', 'massKg', 'crossSection', 'role', 'overlay'] as const;
+
+function importedPartOpts(part: AssemblyPartStored): AssemblyPartOpts {
+  const opts: AssemblyPartOpts = {
+    at: part.at,
+    ...(Object.keys(part.connectors).length > 0 ? { connectors: part.connectors } : {}),
+  };
+  for (const key of IMPORTED_PART_FIELDS) {
+    const value = part[key];
+    if (value !== undefined) (opts as Record<string, unknown>)[key] = value;
+  }
+  return opts;
+}
+
 function importSubAssemblyParts(
   state: AssemblyState,
   arm: Assembly,
   prefix: string,
+  parts: readonly AssemblyPartStored[],
   other: Assembly,
 ): Map<string, AssemblyPartRef> {
   const importedByOriginalName = new Map<string, AssemblyPartRef>();
-  for (const op of other.__parts()) {
+  const newIdByOldId = new Map<FeatureId, FeatureId>();
+  for (const op of parts) {
     const newName = `${prefix}${op.name}`;
-    const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
-      ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
-      ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
-    }, false);
+    const newRef = recordPartInternal(state, arm, newName, op.originalShape, importedPartOpts(op), false, op.configuration);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an
     // empty mateConnectors array per `part()`; populate it now so post-
@@ -908,42 +939,14 @@ function importSubAssemblyParts(
       newRef.mateConnectors.push(conn);
     }
     importedByOriginalName.set(op.name, newRef);
+    newIdByOldId.set(op.id, newRef.id);
   }
+  remapImportedConnects(state, other.__session(), prefix, parts, newIdByOldId, importedByOriginalName);
   return importedByOriginalName;
 }
 
-// 2. Copy mates. Remap the partName portion of each `a` / `b` ref by
-//    prepending the prefix, leaving the connectorName intact. Mate
-//    names are also prefixed so name-uniqueness within `state` holds.
-function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Assembly): void {
-  const remapRef = (ref: string): string => {
-    const { partName, connectorName } = parseConnectorRef(ref);
-    return `${prefix}${partName}.${connectorName}`;
-  };
-  for (const om of other.__mates()) {
-    state.mates.push({
-      name: `${prefix}${om.name}`,
-      a: remapRef(om.a),
-      b: remapRef(om.b),
-      type: om.type,
-      ...(om.pose !== undefined ? { pose: om.pose } : {}),
-      ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
-      ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
-      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
-      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
-      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
-      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
-      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
-      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
-      ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
-      ...(om.maxLoad !== undefined
-        ? {
-            maxLoad: {
-              ...(om.maxLoad.force !== undefined ? { force: om.maxLoad.force } : {}),
-              ...(om.maxLoad.torque !== undefined ? { torque: om.maxLoad.torque } : {}),
-            },
-          }
-        : {}),
-    });
-  }
+function storedConfiguration(
+  configuration: PartConfigurationIdentity | undefined,
+): { configuration?: PartConfigurationIdentity } {
+  return configuration !== undefined ? { configuration } : {};
 }
