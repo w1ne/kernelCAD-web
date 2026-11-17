@@ -1,0 +1,5 @@
+Command: npx vitest run tests/integration/catalog/electricalControlCabinetMaterials.test.ts
+Source: before/electrical-control-cabinet.kcad.ts
+Result: expected failure before the material correction (exit 1).
+Failure: door-0 resolved to #dfa746 (safety paint); expected #687a83 (steel).
+This confirms the regression test detects the audited mismatch.

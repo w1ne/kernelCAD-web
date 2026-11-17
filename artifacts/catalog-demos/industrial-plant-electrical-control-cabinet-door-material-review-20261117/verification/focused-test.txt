@@ -1,0 +1,3 @@
+Command: npx vitest run tests/integration/catalog/electricalControlCabinetMaterials.test.ts
+Result: passed (1 file, 1 test).
+The evaluated scene resolves door-0 and door-1 to steel (#687a83); the plinth and first vent accent remain safety paint (#dfa746).

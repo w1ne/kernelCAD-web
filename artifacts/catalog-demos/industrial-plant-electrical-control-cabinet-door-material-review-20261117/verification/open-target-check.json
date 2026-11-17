@@ -1,0 +1,43 @@
+{
+  "checkedAtUtc": "2026-11-17",
+  "pr1258": {
+    "state": "MERGED",
+    "mergedAtUtc": "2026-11-14T23:12:38Z",
+    "reviewDecision": "",
+    "reviewCount": 0,
+    "checks": "All 17 reported CI checks concluded SUCCESS before merge"
+  },
+  "relevantOpenPullRequests": [
+    {
+      "number": 1507,
+      "state": "OPEN",
+      "changedIndustrialPlantAssets": [
+        "inline-flow-meter",
+        "packed-scrubber-column",
+        "palletizer-robot-cell",
+        "plc-control-rack",
+        "process-blower",
+        "process-reactor-vessel",
+        "roller-conveyor-line",
+        "rooftop-air-handler",
+        "steam-header-manifold",
+        "valve-manifold-station"
+      ]
+    }
+  ],
+  "sampledAssets": [
+    "electrical-control-cabinet",
+    "gantry-crane",
+    "jib-crane",
+    "machine-guard-enclosure",
+    "pallet-rack-bay"
+  ],
+  "exactIdOpenIssueOrPullRequestSearches": {
+    "electrical-control-cabinet": [],
+    "gantry-crane": [],
+    "jib-crane": [],
+    "machine-guard-enclosure": [],
+    "pallet-rack-bay": []
+  },
+  "result": "None of the five sampled asset IDs is targeted by an open issue or pull request. PR #1507 targets different catalog source IDs."
+}

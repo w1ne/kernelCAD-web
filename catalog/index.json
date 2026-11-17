@@ -143335,7 +143335,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electrical-control-cabinet.kcad.ts",
       "preview": "/assets/industrial-plant-electrical-control-cabinet.png",
-      "sourceSha256": "df37db08ab726175b408ce8d39cdb5549274e26715aa8e7b0db738d15d83d142",
+      "sourceSha256": "801c352d1d34fb4fe314f3d92409341ec53d78b5ac915be6972ab51ed4f81e5c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143392,7 +143392,6 @@
           "color": "#dfa746",
           "parts": [
             "plinth",
-            "door-0",
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
@@ -143405,6 +143404,7 @@
           "color": "#687a83",
           "parts": [
             "enclosure",
+            "door-0",
             "handle-0",
             "door-1",
             "handle-1",
