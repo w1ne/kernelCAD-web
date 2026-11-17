@@ -502,47 +502,84 @@ function circleSegments(body: readonly Pair[], line: number, s: number): ImportS
   ];
 }
 
-function ellipseSegments(b: EntityBlock, scale: number): ImportSegment[][] {
-  const centerX = num(require(b.body, 10, 'ELLIPSE', b.line), 'ELLIPSE', 10);
-  const centerY = num(require(b.body, 20, 'ELLIPSE', b.line), 'ELLIPSE', 20);
-  const majorX = num(require(b.body, 11, 'ELLIPSE', b.line), 'ELLIPSE', 11);
-  const majorY = num(require(b.body, 21, 'ELLIPSE', b.line), 'ELLIPSE', 21);
-  const centerZ = get(b.body, 30) ? num(get(b.body, 30)!, 'ELLIPSE', 30) : 0;
-  const majorZ = get(b.body, 31) ? num(get(b.body, 31)!, 'ELLIPSE', 31) : 0;
-  const ratio = num(require(b.body, 40, 'ELLIPSE', b.line), 'ELLIPSE', 40);
-  const start = num(require(b.body, 41, 'ELLIPSE', b.line), 'ELLIPSE', 41);
-  const end = num(require(b.body, 42, 'ELLIPSE', b.line), 'ELLIPSE', 42);
-  const normalX = get(b.body, 210) ? num(get(b.body, 210)!, 'ELLIPSE', 210) : 0;
-  const normalY = get(b.body, 220) ? num(get(b.body, 220)!, 'ELLIPSE', 220) : 0;
-  const normalZ = get(b.body, 230) ? num(get(b.body, 230)!, 'ELLIPSE', 230) : 1;
+interface DxfEllipseParameters {
+  centerX: number;
+  centerY: number;
+  majorX: number;
+  majorY: number;
+  centerZ: number;
+  majorZ: number;
+  ratio: number;
+  start: number;
+  end: number;
+  normalX: number;
+  normalY: number;
+  normalZ: number;
+}
 
-  if (Math.hypot(majorX, majorY) <= 1e-12 || ratio <= 0 || ratio > 1) {
+function optionalEllipseNumber(body: readonly Pair[], code: number, fallback: number): number {
+  const pair = get(body, code);
+  return pair ? num(pair, 'ELLIPSE', code) : fallback;
+}
+
+function ellipseParameters(b: EntityBlock): DxfEllipseParameters {
+  return {
+    centerX: num(require(b.body, 10, 'ELLIPSE', b.line), 'ELLIPSE', 10),
+    centerY: num(require(b.body, 20, 'ELLIPSE', b.line), 'ELLIPSE', 20),
+    majorX: num(require(b.body, 11, 'ELLIPSE', b.line), 'ELLIPSE', 11),
+    majorY: num(require(b.body, 21, 'ELLIPSE', b.line), 'ELLIPSE', 21),
+    centerZ: optionalEllipseNumber(b.body, 30, 0),
+    majorZ: optionalEllipseNumber(b.body, 31, 0),
+    ratio: num(require(b.body, 40, 'ELLIPSE', b.line), 'ELLIPSE', 40),
+    start: num(require(b.body, 41, 'ELLIPSE', b.line), 'ELLIPSE', 41),
+    end: num(require(b.body, 42, 'ELLIPSE', b.line), 'ELLIPSE', 42),
+    normalX: optionalEllipseNumber(b.body, 210, 0),
+    normalY: optionalEllipseNumber(b.body, 220, 0),
+    normalZ: optionalEllipseNumber(b.body, 230, 1),
+  };
+}
+
+function validateEllipseAxes(b: EntityBlock, p: DxfEllipseParameters): void {
+  if (Math.hypot(p.majorX, p.majorY) <= 1e-12 || p.ratio <= 0 || p.ratio > 1) {
     throw new DxfParseError(
       'malformed-entity',
       `ELLIPSE at line ${b.line}: major-axis length must be > 0 and group code 40 (minor/major ratio) must be in (0, 1].`,
     );
   }
-  if (Math.abs(centerZ) > 1e-9 || Math.abs(majorZ) > 1e-9 || Math.abs(normalX) > 1e-9 ||
-      Math.abs(normalY) > 1e-9 || Math.abs(Math.abs(normalZ) - 1) > 1e-9) {
+}
+
+function validateEllipsePlane(b: EntityBlock, p: DxfEllipseParameters): void {
+  const inXYPlane = Math.abs(p.centerZ) <= 1e-9 && Math.abs(p.majorZ) <= 1e-9 &&
+    Math.abs(p.normalX) <= 1e-9 && Math.abs(p.normalY) <= 1e-9 && Math.abs(Math.abs(p.normalZ) - 1) <= 1e-9;
+  if (!inXYPlane) {
     throw new DxfParseError(
       'unsupported-entity',
       `ELLIPSE at line ${b.line}: only ellipses in the XY plane are supported; flatten this entity in the source tool.`,
     );
   }
-  if (Math.abs(Math.abs(end - start) - 2 * Math.PI) > 1e-9) {
+}
+
+function validateFullEllipse(b: EntityBlock, p: DxfEllipseParameters): void {
+  if (Math.abs(Math.abs(p.end - p.start) - 2 * Math.PI) > 1e-9) {
     throw new DxfParseError(
       'unsupported-entity',
       `ELLIPSE at line ${b.line}: only full ellipses are supported; elliptical arcs must be converted to a full profile in the source tool.`,
     );
   }
+}
 
+function ellipseSegments(b: EntityBlock, scale: number): ImportSegment[][] {
+  const p = ellipseParameters(b);
+  validateEllipseAxes(b, p);
+  validateEllipsePlane(b, p);
+  validateFullEllipse(b, p);
   return [fullEllipseSegments({
-    center: [centerX, centerY],
-    majorAxis: [majorX, majorY],
-    axisRatio: ratio,
-    startParameter: start,
-    endParameter: end,
-    normalZ: normalZ < 0 ? -1 : 1,
+    center: [p.centerX, p.centerY],
+    majorAxis: [p.majorX, p.majorY],
+    axisRatio: p.ratio,
+    startParameter: p.start,
+    endParameter: p.end,
+    normalZ: p.normalZ < 0 ? -1 : 1,
     scale,
     source: `ELLIPSE (line ${b.line})`,
   })];
