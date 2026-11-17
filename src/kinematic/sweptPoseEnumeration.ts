@@ -8,7 +8,8 @@
 //   2. opts.joint + opts.range    → walk a single joint across [lo, hi].
 //   3. neither                    → walk every declared joint at the default
 //                                    step (1° revolute / 1 mm prismatic) over
-//                                    each joint's declared limits.
+//                                    each joint's declared limits. A mate that
+//                                    coupleMates drives is not walked alone.
 //
 // Reports a `sparseJoints` list — joint names for which the (range, step)
 // product fell below the D3 safe floor (< 36 samples for revolute, < 25
@@ -80,11 +81,18 @@ export function enumeratePoses(
 
   const all = sweepables(arm);
   const jointNames = new Set(arm.__joints().map((j) => j.name));
+  // A coupleMates driven mate follows its source, so walking it alone holds
+  // the source still: a pose the mechanism cannot reach. The source walk
+  // moves it.
+  const driven = new Set((arm.__mateCouplings?.() ?? []).map((c) => c.driven));
   // Branch 2/3: pick which joints we walk. The default walk covers every
-  // joint-graph joint and every articulated mate that declares limits.
+  // joint-graph joint and every independent articulated mate that declares
+  // limits.
   const targets: string[] = opts?.joint
     ? [opts.joint]
-    : all.filter((j) => jointNames.has(j.name) || j.limits !== undefined).map((j) => j.name);
+    : all
+        .filter((j) => !driven.has(j.name) && (jointNames.has(j.name) || j.limits !== undefined))
+        .map((j) => j.name);
 
   const walks: NumericPoses[][] = [];
   const sparseJoints: string[] = [];

@@ -65,7 +65,7 @@ add("counter-top", plan(rect(-W / 2 - 40, FRONT - 60, W / 2 + 40, FRONT + 300), 
 add("floor", plan(rect(-W / 2 + 20, FRONT + 40, W / 2 - 20, BACK), 0, 60).color(timber));
 
 // Stepped three-tier bottle bed packed with bottles.
-const bottle = turned([[0, 0], [44, 0], [44, 170], [15, 235], [15, 300], [0, 300]]);
+const bottle = () => turned([[0, 0], [44, 0], [44, 170], [15, 235], [15, 300], [0, 300]]);
 const TIERS = [{ y: -200, z: 760 }, { y: 70, z: 900 }, { y: 340, z: 1040 }];
 TIERS.forEach(({ y, z }, t) => {
   add(`tier-${t}`, plan(rect(-900, y - 135, 900, BACK - 120), 60, z - 60).color(timber));
@@ -74,7 +74,7 @@ TIERS.forEach(({ y, z }, t) => {
     for (let r = 0; r < 2; r++) {
       const x = -780 + c * 250 + (r ? 125 : 0);
       if (r && c === 6) continue;
-      add(`bottle-${t}-${c}-${r}`, bottle.translate(x, y - 60 + r * 105, z).color(glass));
+      add(`bottle-${t}-${c}-${r}`, bottle().translate(x, y - 60 + r * 105, z).color(glass));
     }
   }
 });

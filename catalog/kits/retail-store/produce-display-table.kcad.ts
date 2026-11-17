@@ -62,8 +62,8 @@ for (const [k, s] of [['l', -1], ['r', 1]]) {
 }
 
 // Trays: built with the front lip on y = 0, then raked about that edge.
-const fruitBall = sphere(46);
-const heap = sphere(100).scale([2.8, 1.3, 1.1]);
+const fruitBall = () => sphere(46);
+const heap = () => sphere(100).scale([2.8, 1.3, 1.1]);
 const binColours = [greens, fruitTone, '#7b3d86'];
 tiers.forEach(([y0, z0], t) => {
   const rake = (s: Shape) => s.rotateX(RAKE).translate(0, y0, z0);
@@ -75,11 +75,11 @@ tiers.forEach(([y0, z0], t) => {
   for (let i = 0; i < 3; i++) {
     const x = (i - 1) * 590;
     const tone = binColours[(i + t) % 3];
-    add(`heap-${t}-${i}`, rake(heap.translate(x, TD / 2 + 5, 60)).color(tone));
+    add(`heap-${t}-${i}`, rake(heap().translate(x, TD / 2 + 5, 60)).color(tone));
     for (let k = 0; k < 5; k++) {
       const front = k < 3;
       const px = front ? x - 170 + k * 170 : x - 85 + (k - 3) * 170;
-      add(`produce-${t}-${i}-${k}`, rake(fruitBall.translate(px, front ? TD / 2 - 55 : TD / 2 + 50, front ? 128 : 150)).color(tone));
+      add(`produce-${t}-${i}-${k}`, rake(fruitBall().translate(px, front ? TD / 2 - 55 : TD / 2 + 50, front ? 128 : 150)).color(tone));
     }
     // Chalkboard price card clipped to the front lip.
     add(`card-${t}-${i}`, rake(blk(x - 170, -4, 20, 150, 6, 110)).color('#24292b'));

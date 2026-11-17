@@ -23,20 +23,13 @@ import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
+import { assertAssemblyPartOptionKeys } from './assemblyPartOptionKeys';
 import { createPartCollision } from './assemblyPartCollision';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
-  AssemblyConnectorFrame,
-  AssemblyConnectorFrameStored,
-  AssemblyConnectorOpts,
-  AssemblyConnectorRef,
-  AssemblyCrossSection,
-  AssemblyPartOpts,
-  AssemblyPartRef,
-  TubeEnd,
-  AssemblyPartStored,
-  SubAssemblyHandle,
+  AssemblyConnectorFrame, AssemblyConnectorFrameStored, AssemblyConnectorOpts, AssemblyConnectorRef,
+  AssemblyCrossSection, AssemblyPartOpts, AssemblyPartRef, TubeEnd, AssemblyPartStored, SubAssemblyHandle,
 } from './assemblyTypes';
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
@@ -734,6 +727,7 @@ export function recordPartInternal(
   promoteCatalogConnectors: boolean,
 ): AssemblyPartRef {
   assertTopoRefSafeName(name, 'part-name', shape.id);
+  assertAssemblyPartOptionKeys(name, shape, opts);
   const stock = parseOptionalStockSpec(opts.stock, { partName: name, featureId: shape.id });
   const { resolvedMaterial, effectiveDensity } = resolvePartMaterialAndValidateOpts(state, name, shape, opts);
   const connectors = normalizeConnectors(name, shape.id, opts.connectors);

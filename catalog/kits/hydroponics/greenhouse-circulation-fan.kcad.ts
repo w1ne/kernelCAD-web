@@ -87,8 +87,8 @@ for (let k = 0; k < 6; k++) {
 
 // Five pitched blades on a hub.
 const s = R / 315;
-const paddle = extrudePolygon([[-45 * s, 55 * s], [45 * s, 55 * s], [110 * s, 230 * s], [95 * s, 298 * s], [-30 * s, 308 * s], [-90 * s, 250 * s]], 6).rotateX(90);
-for (let k = 0; k < 5; k++) add(`blade-${k}`, head(paddle.rotateZ(26).rotateY(k * 72 + 10).translate(0, -10, 0)).color(blades));
+const paddle = () => extrudePolygon([[-45 * s, 55 * s], [45 * s, 55 * s], [110 * s, 230 * s], [95 * s, 298 * s], [-30 * s, 308 * s], [-90 * s, 250 * s]], 6).rotateX(90);
+for (let k = 0; k < 5; k++) add(`blade-${k}`, head(paddle().rotateZ(26).rotateY(k * 72 + 10).translate(0, -10, 0)).color(blades));
 add("hub", head(cylY(0, 30, 0, 80, R * 0.17, 16)).color(blades));
 add("hub-cap", head(cylY(0, -45, 0, 12, R * 0.1, 12)).color('#8c9296'));
 

@@ -1,0 +1,6 @@
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 879373ms
+ Test Files  105 passed (105)
+      Tests  173 passed (173)
+   Duration  894.96s (transform 167.92s, setup 16.59s, import 994.88s, tests 1803.20s, environment 43ms)
+exit 0
+

@@ -18,16 +18,17 @@ const palmLining = param('palmLining', '#6c4632', { label: 'Palm lining' });
 const laceCord = param('laceCord', '#ddb987', { label: 'Lace cord' });
 presets({ clubColors: { gloveLeather: '#73503e', palmLining: '#6c4632' } });
 const p = assembly('baseball-glove');
-p.part('wrist-cuff', box(70, 62, 38, true).translate(0, 0, 19).scale(scale).color(gloveLeather));
-p.part('palm', sphere(66).scale([1.12, 0.85, 0.58]).translate(0, 0, 86).scale(scale).color(palmLining));
-p.part('finger-one', sphere(25).translate(-47, 0, 142).scale(scale).color(gloveLeather));
-p.part('finger-two', sphere(25).translate(-16, 0, 153).scale(scale).color(gloveLeather));
-p.part('finger-three', sphere(25).translate(16, 0, 153).scale(scale).color(gloveLeather));
-p.part('finger-four', sphere(25).translate(47, 0, 142).scale(scale).color(gloveLeather));
-p.part('thumb', sphere(29).scale([0.82, 0.82, 1.35]).translate(73, -4, 100).scale(scale).color(gloveLeather));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('wrist-cuff', box(70, 62, 38, true).translate(0, 0, 19).color(gloveLeather));
+add('palm', sphere(66).scale([1.12, 0.85, 0.58]).translate(0, 0, 86).color(palmLining));
+add('finger-one', sphere(25).translate(-47, 0, 142).color(gloveLeather));
+add('finger-two', sphere(25).translate(-16, 0, 153).color(gloveLeather));
+add('finger-three', sphere(25).translate(16, 0, 153).color(gloveLeather));
+add('finger-four', sphere(25).translate(47, 0, 142).color(gloveLeather));
+add('thumb', sphere(29).scale([0.82, 0.82, 1.35]).translate(73, -4, 100).color(gloveLeather));
 
 
 // Pale leather laces bridge the palm web and outer finger stalls.
-for (let i = 0; i < 5; i++) p.part(`palm-web-lace-${i + 1}`, box(3.5, 3, 38, true).rotate([0, 1, 0], (i - 2) * 8).translate(-31 + i * 15.5, -48, 113).color(laceCord));
+for (let i = 0; i < 5; i++) add(`palm-web-lace-${i + 1}`, box(3.5, 3, 38, true).rotate([0, 1, 0], (i - 2) * 8).translate(-31 + i * 15.5, -48, 113).color(laceCord));
 
 return p.model();

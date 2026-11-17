@@ -312,7 +312,8 @@ describe('mechanical transmission review', () => {
         transmissionName: 'swing-drive',
         fromPartName: 'base',
         toPartName: 'follower',
-        sampleName: 'swing:max',
+        // The driven 'swing' mate is sampled through its source: drive 45 -> swing 45.
+        sampleName: 'drive:max',
       }),
     ]));
   });

@@ -271,6 +271,14 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A revolute mate has no joint-support / mechanical-joint intent declaring which parts carry it (advisory; geometric support is gated separately).',
   },
+  'assembly.joint-topology.coupled-pose-conflict': {
+    hintTemplate:
+      "Remove the pose from the coupleMates driven mate so it follows its source, or set it to ratio × source + offset. Its own pose moves the model geometry, but solve_mates, review and physics check the coupled pose.",
+    nextAction: { kind: 'fix-arg', field: 'pose' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A coupleMates driven mate declares its own pose that differs from ratio × source + offset, so the rendered pose and the checked pose differ.',
+  },
   'assembly.joint-topology.connector-missing': {
     hintTemplate:
       "Register the missing connector on the named part before the mate, using partRef.connector(name, { type, origin: { kind: 'vec3', value: [x,y,z] }, ... }).",
@@ -359,6 +367,14 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
+  },
+  'assembly.joint.load-unverified': {
+    hintTemplate:
+      'This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared legacy joint load rating was not compared because a connector origin or load kind is unsupported.',
   },
   'assembly.joint.not-visible': {
     hintTemplate:

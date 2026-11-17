@@ -1,9 +1,9 @@
-// Welding curtain screen: Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
+// Welding curtain screen: Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. The panels are tinted welding-curtain vinyl that blocks arc flash and spatter; the steel frame and feet carry them. Millimetres, Z up, base origin.
 meta({
   name: "welding-curtain-screen",
   license: 'CC0-1.0',
   title: "Welding curtain screen",
-  description: "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  description: "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Parameters: overall scale, welding curtain vinyl, structural steel and elastomer; includes fresh-coat and weathered-yard presets.",
   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "welding", "curtain", "screen"],
   kit: 'shipyard',
   category: 'prop',
@@ -13,13 +13,14 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const yardPaint = param("yardPaint", "#7e7060", { label: "Yard finish" });
+// The curtain panels are tinted PVC welding-curtain film (transparent orange here), not a painted yard finish.
+const curtainVinyl = param("curtainVinyl", "#f07a1a", { label: "Welding curtain vinyl" });
 const structuralSteel = param("structuralSteel", "#b6c1c4", { label: "Structural steel" });
 const elastomer = param("elastomer", "#30383b", { label: "Elastomer" });
 
 presets({
-  'fresh-coat': {"yardPaint": "#958a7d", "structuralSteel": "#d0d7d8", "elastomer": "#3a4245"},
-  'weathered-yard': {"yardPaint": "#695d50", "structuralSteel": "#828d91", "elastomer": "#252b2d"},
+  'fresh-coat': {"curtainVinyl": "#ff8a24", "structuralSteel": "#d0d7d8", "elastomer": "#3a4245"},
+  'weathered-yard': {"curtainVinyl": "#c06a32", "structuralSteel": "#828d91", "elastomer": "#252b2d"},
 });
 
 const p = assembly("welding-curtain-screen");
@@ -77,8 +78,8 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
 p.part("panel-frame-0", b("panel-frame-0", [80, 105, 1500], [-650, 0, 750]).color(structuralSteel));
 p.part("panel-frame-1", b("panel-frame-1", [80, 105, 1500], [0, 0, 750]).color(structuralSteel));
 p.part("panel-frame-2", b("panel-frame-2", [80, 105, 1500], [650, 0, 750]).color(structuralSteel));
-p.part("curtain-panel-0", b("curtain-panel-0", [600, 55, 1280], [-320, 0, 790]).color(yardPaint));
-p.part("curtain-panel-1", b("curtain-panel-1", [600, 55, 1280], [320, 0, 790]).color(yardPaint));
+p.part("curtain-panel-0", b("curtain-panel-0", [600, 55, 1280], [-320, 0, 790]).color(curtainVinyl));
+p.part("curtain-panel-1", b("curtain-panel-1", [600, 55, 1280], [320, 0, 790]).color(curtainVinyl));
 p.part("base-foot-0", b("base-foot-0", [700, 500, 110], [-650, 0, 55]).color(structuralSteel));
 p.part("base-foot-1", b("base-foot-1", [700, 500, 110], [650, 0, 55]).color(structuralSteel));
 p.part("caster-0", c("caster-0", 90, 65, 8, [-820, -210, 65]).color(elastomer));

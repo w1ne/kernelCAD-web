@@ -31,6 +31,8 @@ export interface InspectRobotJoint {
   child: string;
   limitsRad?: [number, number];
   limitsM?: [number, number];
+  /** Set on a mate driven by `coupleMates`: pose = ratio * source pose + offset. */
+  coupling?: { source: string; ratio: number; offset?: number };
 }
 
 export interface InspectRobotIssue {
@@ -70,6 +72,7 @@ function selectAssembly(
 type CapturedPart = ReturnType<Assembly['__parts']>[number];
 type CapturedJoint = ReturnType<Assembly['__joints']>[number];
 type CapturedMate = ReturnType<Assembly['__mates']>[number];
+type CapturedCoupling = ReturnType<Assembly['__mateCouplings']>[number];
 
 // Build per-link summary: name + extent + declared density. Extent comes
 // from the lowered shape's bounding box (mm).
@@ -107,9 +110,14 @@ function buildLegacyJointSummaries(
   return joints;
 }
 
-function buildMateJointSummaries(mates: readonly CapturedMate[]): InspectRobotJoint[] {
+function buildMateJointSummaries(
+  mates: readonly CapturedMate[],
+  couplings: readonly CapturedCoupling[],
+): InspectRobotJoint[] {
+  const couplingByDriven = new Map(couplings.map((c) => [c.driven, c]));
   const joints: InspectRobotJoint[] = [];
   for (const m of mates) {
+    const c = couplingByDriven.get(m.name);
     const parent = m.a.split('.')[0];
     const child = m.b.split('.')[0];
     joints.push({
@@ -119,6 +127,9 @@ function buildMateJointSummaries(mates: readonly CapturedMate[]): InspectRobotJo
       child,
       ...(m.limitsDeg ? { limitsRad: [m.limitsDeg[0] * DEG_TO_RAD, m.limitsDeg[1] * DEG_TO_RAD] } : {}),
       ...(m.limitsMm ? { limitsM: [m.limitsMm[0] * MM_TO_M, m.limitsMm[1] * MM_TO_M] } : {}),
+      ...(c !== undefined
+        ? { coupling: { source: c.source, ratio: c.ratio, ...(c.offset !== undefined ? { offset: c.offset } : {}) } }
+        : {}),
     });
   }
   return joints;
@@ -171,7 +182,7 @@ export async function inspectRobotTool(input: InspectRobotInput): Promise<Inspec
   const links = await buildLinkSummaries(parts);
   const joints = [
     ...buildLegacyJointSummaries(legacyJoints, parts),
-    ...buildMateJointSummaries(mates),
+    ...buildMateJointSummaries(mates, arm.__mateCouplings()),
   ];
   const planningGroups = buildPlanningGroups(arm);
   const endEffectors = buildEndEffectors(arm);

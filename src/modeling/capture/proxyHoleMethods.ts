@@ -7,7 +7,7 @@
 import type { FeatureId, FeatureRef } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import type { CanonicalFace, FaceSelector } from './faceEditCapture';
-import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
 import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
 import { threadedHoleToHoleOpts, type ThreadedHoleOpts } from './threadedHole';
 import {
@@ -20,6 +20,7 @@ import {
   resolveHoleOpts, resolveHolesOpts,
 } from '../validation/holeValidation';
 import { applyHoleThreadSugar, type HoleCallOpts, type HolesCallOpts } from '../validation/holeThreadSugar';
+import { validateHoleOptionKeys } from '../validation/holeOptionKeys';
 
 export function captureHole(
   session: CaptureSession,
@@ -32,6 +33,7 @@ export function captureHole(
   // serialize from the original Editable opts so symbolic ParamRefs survive
   // into the FeatureRecord for later edit-after-build.
   // `thread: true` fills the coarse pitch first; an explicit pitch is kept.
+  validateHoleOptionKeys('hole', opts, shapeId);
   const prepared = applyHoleThreadSugar(opts, session.paramTable, 'hole');
   const resolved = resolveHoleOpts(prepared.opts, session.paramTable);
   validateHoleOpts(resolved, shapeId);
@@ -48,6 +50,9 @@ export function captureHole(
     target: { kind: 'feature', id: shapeId },
     face: buildFaceInputRef(shapeId, faceSel),
   };
+  if (prepared.opts.upToFace !== undefined) {
+    inputs.upToFace = buildUpToFaceInputRef(shapeId, prepared.opts.upToFace);
+  }
   const holeShape = session.createShape({
     kind: 'hole',
     inputs,
@@ -74,6 +79,7 @@ export function captureHoles(
   face: FaceSelector | CanonicalFace | string,
   opts: HolesCallOpts,
 ): ReturnType<CaptureSession['createShape']> {
+  validateHoleOptionKeys('holes', opts, shapeId);
   const prepared = applyHoleThreadSugar(opts, session.paramTable, 'holes');
   const resolved = resolveHolesOpts(prepared.opts, session.paramTable);
   validateHolesOpts(resolved, shapeId);
@@ -89,6 +95,9 @@ export function captureHoles(
     target: { kind: 'feature', id: shapeId },
     face: buildFaceInputRef(shapeId, faceSel),
   };
+  if (prepared.opts.upToFace !== undefined) {
+    inputs.upToFace = buildUpToFaceInputRef(shapeId, prepared.opts.upToFace);
+  }
   const holesShape = session.createShape({
     kind: 'holes',
     inputs,

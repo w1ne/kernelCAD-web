@@ -25,6 +25,8 @@ import type {
 import type { PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import type { Shape } from './proxy';
+import type { FlightStudyHandle, FlightStudySpec } from '../../shared/intent/flightStudyRecord';
+import { captureFlightStudy } from './flightStudyRecord';
 import {
   ballJoint,
   connectFixed,
@@ -255,6 +257,19 @@ export class Assembly {
   transmission(name: string, opts: TransmissionIntentOpts): this {
     recordTransmission(this.state, name, opts);
     return this;
+  }
+
+  /**
+   * Declare a model-rocket flight study on this assembly. Mass and CG come
+   * from the parts (material / density / massKg), `motor.part` is replaced by
+   * the declared motor (CG shifts as it burns), and the Barrowman CP comes
+   * from `aero.nose.part` / `aero.fins.part` geometry or declared dimensions.
+   * Declaration-only; `run_flight` runs it. A declared `minStabilityCal`
+   * makes evaluate fail with `flight.stability.below-min`. The script must
+   * return `arm.model()` (or `solvedModel()`) so the parts are lowered.
+   */
+  flightStudy(spec: FlightStudySpec): FlightStudyHandle {
+    return captureFlightStudy(this.state.session, spec, { assembly: this.name });
   }
 
   /**

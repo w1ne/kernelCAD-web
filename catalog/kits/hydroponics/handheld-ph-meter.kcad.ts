@@ -41,10 +41,10 @@ const p = assembly("handheld-ph-meter");
 const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
 const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 14) => cylinder(len, r, seg).translate(x, y, z);
-const turned = (pts: [number, number][], seg = 16) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 const rod = (a: [number, number, number], b: [number, number, number], r: number, seg = 6) => {
   const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
@@ -98,18 +98,18 @@ for (let k = 0; k < coils; k++) {
 
 // Sample beaker with the probe standing in it.
 const BX = 80, BY = -10;
-add("beaker", turned([[38, 0], [40, 0], [40, 110], [43, 113], [43, 116], [38, 116], [38, 3], [0, 3], [0, 0]], 20).translate(BX, BY, 0).color('#dfe9ee'));
+add("beaker", turned([[38, 0], [40, 0], [40, 110], [43, 113], [43, 116], [38, 116], [38, 3], [0, 3], [0, 0]]).translate(BX, BY, 0).color('#dfe9ee'));
 add("sample", cylZ(BX, BY, 3, 66, 37.5, 20).color(solution));
 for (let k = 0; k < 4; k++) add(`grad-${k}`, blk(BX - 20, BY - 40.5, 25 + k * 18, 10, 1, 1.5).color('#4a5a66'));
 add("probe-body", cylZ(BX, BY, 30, 160, 7, 12).color('#2a2d30'));
 add("probe-glass", cylZ(BX, BY, 14, 20, 5, 10).color('#cfe3e8'));
 add("probe-bulb", sphere(6).translate(BX, BY, 14).color('#d8ecf0'));
 add("probe-guard", cylZ(BX, BY, 22, 26, 9, 12).subtract(blk(BX, BY - 10, 26, 8, 8, 14)).color('#3a3f44'));
-add("probe-cap", turned([[0, 0], [8, 0], [10, 12], [3, 24], [0, 24]], 12).translate(BX, BY, 190).color('#2a2d30'));
+add("probe-cap", turned([[0, 0], [8, 0], [10, 12], [3, 24], [0, 24]]).translate(BX, BY, 190).color('#2a2d30'));
 
 // Calibration buffer bottles.
 const bottle = (name: string, x: number, y: number, cap: string, label: string) => {
-  add(`${name}-bottle`, turned([[0, 0], [24, 0], [24, 80], [12, 92], [9, 100], [0, 100]], 14).translate(x, y, 0).color('#f2f2ee'));
+  add(`${name}-bottle`, turned([[0, 0], [24, 0], [24, 80], [12, 92], [9, 100], [0, 100]]).translate(x, y, 0).color('#f2f2ee'));
   add(`${name}-cap`, cylZ(x, y, 98, 16, 11, 12).color(cap));
   add(`${name}-label`, cylinder(36, 24.6, 14).subtract(cylinder(40, 20, 14).translate(0, 0, -2)).subtract(blk(0, 20, -4, 60, 30, 44)).translate(x, y, 22).color(label));
 };

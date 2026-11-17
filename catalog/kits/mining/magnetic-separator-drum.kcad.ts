@@ -59,7 +59,7 @@ const arc = (cx, cz, r, a0, a1, n) => Array.from({ length: n + 1 }, (_, i) => {
   return [cx + r * Math.cos(a), cz + r * Math.sin(a)];
 });
 
-const water = '#7fa6b8', rubber = '#25292b', rail = '#e8c21e';
+const rubber = '#25292b', rail = '#e8c21e';
 const L = 1200; // half drum length
 const ZC = 1700; // drum axis height
 const R = 600;
@@ -100,7 +100,7 @@ const unit = (k, dx) => {
   for (let i = 0; i < 6; i++) {
     add(n(`spray-nozzle-${i}`), rod(22, ZC + R + 40, ZC + R + 110, 6).translate(dx - 150, -L + 200 + i * 400, 0).color(drumStainless));
   }
-  add(n('wash-header'), rod(45, ZC + R + 130, ZC + R + 700, 8).translate(dx - 150, -L - 200, 0).color(water));
+  add(n('wash-header'), rod(45, ZC + R + 130, ZC + R + 700, 8).translate(dx - 150, -L - 200, 0).color(frameSteel));
   // Tails spigots with pinch valves under the tank.
   for (const [j, y] of [-600, 600].entries()) {
     add(n(`tails-spigot-${j}`), rod(100, 300, ZC - 760, 10).translate(dx, y, 0).color(rubber));

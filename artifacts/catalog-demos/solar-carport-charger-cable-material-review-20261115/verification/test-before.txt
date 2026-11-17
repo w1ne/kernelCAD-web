@@ -1,0 +1,30 @@
+AssertionError: expected [ 'galvanizedSteel', 'aluminum', …(3) ] to deeply equal [ 'galvanizedSteel', 'aluminum', …(4) ]
+
+- Expected
++ Received
+
+@@ -2,7 +2,6 @@
+    "galvanizedSteel",
+    "aluminum",
+    "solarGlass",
+    "concrete",
+    "chargerPlastic",
+-   "chargerCable",
+  ]
+
+ ❯ tests/integration/catalog/solarCarportChargerCableMaterial.test.ts:22:95
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     23|       'galvanizedSteel', 'aluminum', 'solarGlass', 'concrete', 'charge…
+     24|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:59:30
+   Duration  6.84s (transform 4.39s, setup 120ms, import 5.30s, tests 1.11s, environment 0ms)
+

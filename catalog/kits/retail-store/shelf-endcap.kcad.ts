@@ -97,8 +97,8 @@ for (let i = 0; i < 6; i++) {
   add(`cereal-bowl-${i}`, blk(x, -77, 1020, 80, 4, 90).color('#f4f1ea'));
 }
 // Shelf 2: bottles of oil or sauce.
-const bottle = turned([[0, 0], [36, 0], [36, 170], [12, 250], [0, 250]]);
-for (let i = 0; i < 8; i++) add(`bottle-${i}`, bottle.translate(-350 + i * 100, 40, 1300).color(i % 2 ? '#d9b23a' : '#7a3a2a'));
+const bottle = () => turned([[0, 0], [36, 0], [36, 170], [12, 250], [0, 250]]);
+for (let i = 0; i < 8; i++) add(`bottle-${i}`, bottle().translate(-350 + i * 100, 40, 1300).color(i % 2 ? '#d9b23a' : '#7a3a2a'));
 
 // Wobbler on a stalk from the middle shelf.
 const disc = (r: number, n: number) => Array.from({ length: n }, (_, i) => [r * Math.cos((2 * Math.PI * i) / n), r * Math.sin((2 * Math.PI * i) / n)]);
