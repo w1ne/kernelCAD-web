@@ -39,6 +39,8 @@ export function makePrimitiveMethods(
       assertEditableNumber('box', 'x', x);
       assertEditableNumber('box', 'y', y);
       assertEditableNumber('box', 'z', z);
+      assertNotOptionBag('box', centered);
+      assertFaceLabelOptKeys('box', opts, "box(40, 30, 10, false, { faceLabels: { lid: 'top' } })");
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
         kind: 'box',
@@ -50,6 +52,8 @@ export function makePrimitiveMethods(
     cylinder(h, r, _segments, opts) {
       assertEditableNumber('cylinder', 'h', h);
       assertEditableNumber('cylinder', 'r', r);
+      assertNotOptionBag('cylinder', _segments);
+      assertFaceLabelOptKeys('cylinder', opts, "cylinder(20, 5, undefined, { faceLabels: { cap: 'top' } })");
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'cylinder');
       return session.createShape({
         kind: 'cylinder',
@@ -60,6 +64,7 @@ export function makePrimitiveMethods(
     },
     sphere(r, opts) {
       assertEditableNumber('sphere', 'r', r);
+      assertFaceLabelOptKeys('sphere', opts, 'sphere(5)');
       if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
         throw new KernelError(
           'feature.face-ref.not-applicable',
@@ -115,6 +120,51 @@ export function makePrimitiveMethods(
       return profile.revolve();
     },
   };
+}
+
+/** Reject an option object passed in the positional slot before the option
+ *  bag. In `box`'s `centered` slot `{ centered: false }` or `{ faceLabels }`
+ *  was truthy, so the box came out centred and the labels were dropped; in
+ *  `cylinder`'s `segments` slot `{ centered: true }` was ignored. */
+function assertNotOptionBag(api: 'box' | 'cylinder', value: unknown): void {
+  if (value === null || typeof value !== 'object' || isParamRef(value)) return;
+  invalidArgs(api === 'box'
+    ? {
+        api: 'box(x, y, z, centered, { faceLabels })',
+        path: 'centered',
+        got: value,
+        showType: true,
+        requires: 'a positional boolean; options such as faceLabels go in the fifth argument',
+        example: "box(40, 30, 10, true, { faceLabels: { lid: 'top' } })",
+        featureId: 'box',
+      }
+    : {
+        api: 'cylinder(h, r, segments, { faceLabels })',
+        path: 'segments',
+        got: value,
+        showType: true,
+        requires: 'a number or undefined; options such as faceLabels go in the fourth argument, and there is no centered flag — use .translate(0, 0, -h / 2)',
+        example: "cylinder(20, 5, undefined, { faceLabels: { cap: 'top' } })",
+        featureId: 'cylinder',
+      });
+}
+
+/** Reject a primitive option-bag key other than `faceLabels` instead of
+ *  dropping it (`cylinder(h, r, 32, { centered: true })` was not centred). */
+function assertFaceLabelOptKeys(api: 'box' | 'cylinder' | 'sphere', opts: unknown, example: string): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) return;
+  const unknownKey = Object.keys(opts).find((key) => key !== 'faceLabels');
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: api === 'sphere' ? 'sphere(r)' : `${api}(…, { faceLabels })`,
+    path: `opts.${unknownKey}`,
+    got: (opts as Record<string, unknown>)[unknownKey],
+    requires: api === 'sphere'
+      ? 'no option keys; sphere takes only the radius'
+      : `a known option key; ${api} accepts only faceLabels${api === 'cylinder' ? ' and has no centered flag — use .translate(0, 0, -h / 2)' : ''}`,
+    example,
+    featureId: api,
+  });
 }
 
 const SPRING_KEYS = new Set(['length', 'coilRadius', 'wireRadius', 'turns', 'axis', 'pointsPerTurn', 'endStyle', 'segments']);
