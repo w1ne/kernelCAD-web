@@ -22,6 +22,7 @@ import {
 } from './assemblyTendonRoute';
 import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
+import { assertMateOptionKeys } from './assemblyMateOptionKeys';
 import type {
   AssemblyConnectorRef,
   AssemblyConnectRef,
@@ -270,7 +271,7 @@ export function connectFixed(state: AssemblyState, name: string, a: AssemblyConn
  * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
  * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
  */
-interface MateOptions extends FastenerMateOptionsFields {
+export interface MateOptions extends FastenerMateOptionsFields {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -334,6 +335,7 @@ export function recordMate(
   type: MateType,
   opts?: MateOptions,
 ): void {
+  assertMateOptionKeys(name, opts);
   const a = resolveMateConnector(state, aRef);
   const b = resolveMateConnector(state, bRef);
   assertMateConnectorPair(name, type, aRef, bRef, a, b);
