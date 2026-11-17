@@ -110,6 +110,30 @@ async function lower(session: CaptureSession, id: string): Promise<OcctBackend> 
 }
 
 describe('lib.fromDXF — round trip to a solid', () => {
+  it('imports a full rotated DXF ellipse as an exact closed profile and extrudes it to the analytic volume', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [profile] = await api.lib.fromDXF('examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    expect(profile).toBeDefined();
+    const commands = session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
+      Array<{ kind: string }>;
+    expect(commands.filter(command => command.kind === 'nurbsSegment')).toHaveLength(4);
+
+    const backend = await lower(session, profile.extrude(5).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo(Math.PI * 20 * 10 * 5, 5);
+    const bounds = backend.boundingBox();
+    const xExtent = Math.sqrt(325);
+    const yExtent = Math.sqrt(175);
+    expect(bounds.min[0]).toBeCloseTo(40 - xExtent, 5);
+    expect(bounds.max[0]).toBeCloseTo(40 + xExtent, 5);
+    expect(bounds.min[1]).toBeCloseTo(30 - yExtent, 5);
+    expect(bounds.max[1]).toBeCloseTo(30 + yExtent, 5);
+    expect(bounds.min[2]).toBeCloseTo(0, 6);
+    expect(bounds.max[2]).toBeCloseTo(5, 6);
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
