@@ -5066,7 +5066,7 @@
   },
   {
     "name": "find_part",
-    "description": "Use this when you need to find a part in the catalog. Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass parts_base_url (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.",
+    "description": "Use this when you need to find a part in the catalog. Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. A DIN or ISO fastener name also searches the standard table and returns the canonical ISO designation (DIN 912 and ISO 4762 both yield `ISO 4762 M5x16 - 8.8`; ISO 4014 is the partial-thread hexagon bolt; ISO 10642 yields `ISO 10642 M5x16 - 08.8`). Pass parts_base_url (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.",
     "inputSchema": {
       "type": "object",
       "properties": {
