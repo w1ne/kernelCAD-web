@@ -141699,7 +141699,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cable-tray-bridge.kcad.ts",
       "preview": "/assets/industrial-plant-cable-tray-bridge.png",
-      "sourceSha256": "9b95bfd52a0b606f1ae22f7cd0cbddcdedae6a8b692e1b8f66e54d636a117471",
+      "sourceSha256": "02d071de5a7c93767cc34ff7f5725fcb2c730ab1dc44bacd20bca1164705d318",
       "triangleBudget": 1400,
       "params": [
         {
@@ -141745,21 +141745,12 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#dda743",
-          "parts": [
-            "side-rail--1",
-            "foot--1",
-            "side-rail-1",
-            "foot-1"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "steel",
           "color": "#718087",
           "parts": [
+            "side-rail--1",
             "support-upright--1",
+            "side-rail-1",
             "support-upright-1",
             "tray-rung-0",
             "tray-rung-1",
@@ -141771,6 +141762,15 @@
             "tray-rung-7"
           ],
           "param": "steel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#dda743",
+          "parts": [
+            "foot--1",
+            "foot-1"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },

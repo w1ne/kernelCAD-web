@@ -1,0 +1,5 @@
+Focused baseline regression: 1 test failed before correction at `side-rail--1` using the safety-paint color.
+Focused regression after correction: 1 file / 1 test passed.
+Full catalog integration: 145 files / 215 tests passed, including all 2,402 catalog source exports and committed-index freshness.
+ESLint: catalog/kits/industrial-plant/ and tests/integration/catalog/cableTrayBridgeMaterial.test.ts passed.
+Quality gate: industrial-plant 60/60 (100%); full catalog 2,398/2,402 (99.83%), with four unrelated standard-components failures.
