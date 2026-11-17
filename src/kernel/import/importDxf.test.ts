@@ -38,7 +38,36 @@ const SQUARE_10x5: Array<[number, string | number]> = [
   [10, 0], [20, 5],
 ];
 
+const RATIONAL_QUARTER_CIRCLE: Array<[number, string | number]> = [
+  [0, 'SPLINE'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbSpline'],
+  [210, 0], [220, 0], [230, 1], [70, 12], [71, 2], [72, 6], [73, 3], [74, 0],
+  [40, 0], [40, 0], [40, 0], [40, 1], [40, 1], [40, 1],
+  [10, 0], [20, 10], [30, 0], [41, 1],
+  [10, 10], [20, 10], [30, 0], [41, Math.SQRT1_2],
+  [10, 10], [20, 0], [30, 0], [41, 1],
+];
+
 describe('importDxfText — entities', () => {
+  it('keeps rational clamped DXF SPLINE geometry in the exact NURBS sketch command', () => {
+    const r = importDxfText(entities(
+      ...RATIONAL_QUARTER_CIRCLE,
+      [0, 'LINE'], [10, 10], [20, 0], [11, 0], [21, 0],
+      [0, 'LINE'], [10, 0], [20, 0], [11, 0], [21, 10],
+    ));
+    const nurbs = r.regions[0].commands.find(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    expect(nurbs).toBeDefined();
+    expect(nurbs?.degree.evaluated).toBe(2);
+    expect(nurbs?.controlPoints.map(point => [point.x.evaluated, point.y.evaluated])).toEqual([
+      [10, 0], [10, 10], [0, 10],
+    ]);
+    expect(nurbs?.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+    expect(nurbs?.knots?.map(knot => knot.evaluated)).toEqual([0, 0, 0, 1, 1, 1]);
+    // NURBS area is sampled for region ordering; the sketch retains the exact curve.
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
   it('reads a closed LWPOLYLINE as one region with exact area', () => {
     const r = importDxfText(entities(...SQUARE_10x5));
     expect(r.regions).toHaveLength(1);
@@ -237,12 +266,13 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/no ENTITIES section/);
   });
 
-  it('SPLINE — refused, with the reason it cannot be represented', () => {
-    const e = failure(() => importDxfText(entities([0, 'SPLINE'], [71, 3], [10, 0], [20, 0])));
+  it('rejects periodic SPLINE because its curve form is not represented by the path command', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 10], [71, 2], [72, 0], [73, 0],
+    )));
     expect(e.reason).toBe('unsupported-entity');
     expect(e.message).toMatch(/^SPLINE at line \d+:/);
-    expect(e.message).toMatch(/no 2D NURBS segment/);
-    expect(e.message).toMatch(/will not be silently approximated/);
+    expect(e.message).toMatch(/periodic splines are not supported/);
   });
 
   it('ELLIPSE and INSERT — refused rather than dropped', () => {
