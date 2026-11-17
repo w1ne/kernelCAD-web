@@ -153,6 +153,13 @@ index refresh, local checks, and inspected MP4. The branch is not deployed.
 | `compressed-air-receiver` | Compressed air receiver | Compressed-air receiver tank with saddle feet, drain valve, top port and pressure gauge. | scale · steel · safety paint · gauge glass |
 | `mobile-tool-cart` | Mobile industrial tool cart | Mobile shop-floor tool cart with two trays, drawer cabinet, push handle and caster wheels. | scale · steel · safety paint · rubber |
 
+The Nov 17 semantic preview review changed the rooftop air handler's service
+casing and access doors to the steel finish, with a separate dark fan-hardware
+control; its safety-painted base remains distinct. The [review handoff](../../../artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/README.md)
+contains the five-preview ledger, before/after renders, GLB color regression,
+index verification and inspected local demo. It does not claim simulation,
+deployment or hardware acceptance.
+
 ## Use a catalog asset
 
 Search by object name through the catalog tools, or open a known asset directly in Studio with `?catalog=industrial-plant/<id>`. For example, `?catalog=industrial-plant/bridge-crane` opens the crane source with its scale and palette controls. Exported catalog meshes are low-poly scene props; their geometry is not an engineering specification for real plant equipment.

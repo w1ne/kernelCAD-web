@@ -1,0 +1,19 @@
+{
+  "title": "Rooftop air handler material review",
+  "createdAt": "2026-11-17",
+  "source": "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
+  "beforeRender": "before/rooftop-air-handler.png",
+  "afterRender": "after/rooftop-air-handler.png",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts rooftop-air-handler",
+  "verificationInvocation": "npx vitest run tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts",
+  "videoInvocation": "python3 artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/make_demo.py",
+  "resolution": "1280x720",
+  "fps": 30,
+  "frameDurationSeconds": 3,
+  "codec": "H.264, yuv420p, CRF 22",
+  "captions": [
+    "The default preview before and after the material correction.",
+    "Steel cabinet, dark fanHardware, safety-painted base.",
+    "Local software preview and GLB regression only; no simulation, deployment, or hardware acceptance claimed."
+  ]
+}

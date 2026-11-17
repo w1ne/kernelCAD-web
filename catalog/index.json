@@ -146771,7 +146771,7 @@
       "id": "rooftop-air-handler",
       "kit": "industrial-plant",
       "title": "Rooftop air handler",
-      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint.",
+      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint, fan hardware.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146790,7 +146790,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
       "preview": "/assets/industrial-plant-rooftop-air-handler.png",
-      "sourceSha256": "da0c19e71230fcbab0de32b4f29fd32a5a17bfd239656d7e96ee246234102b12",
+      "sourceSha256": "a73db4bb9f898f22d95aadc176db905fb48ab420f0a2c2324d3c786abc7f6361",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146813,12 +146813,19 @@
           "type": "color",
           "default": "#dfa843",
           "label": "Safety paint"
+        },
+        {
+          "name": "fanHardware",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Fan hardware"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "fanHardware": "#252a2d"
         },
         "highVisibility": {
           "safetyPaint": "#f5c640"
@@ -146840,13 +146847,6 @@
           "color": "#dfa843",
           "parts": [
             "base-frame",
-            "inspection-door-0",
-            "service-section-1",
-            "inspection-door-1",
-            "inspection-door-2",
-            "exhaust-fan-0",
-            "exhaust-fan-1",
-            "exhaust-fan-2",
             "pipe-header"
           ],
           "param": "safetyPaint"
@@ -146857,13 +146857,27 @@
           "parts": [
             "main-casing",
             "service-section-0",
+            "inspection-door-0",
+            "service-section-1",
+            "inspection-door-1",
             "service-section-2",
+            "inspection-door-2",
             "support-foot-0",
             "support-foot-1",
             "support-foot-2",
             "support-foot-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "fanHardware",
+          "color": "#30363a",
+          "parts": [
+            "exhaust-fan-0",
+            "exhaust-fan-1",
+            "exhaust-fan-2"
+          ],
+          "param": "fanHardware"
         }
       ]
     },

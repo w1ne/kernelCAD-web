@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-17",
+  "pages": [
+    "https://kernelcad.com/catalog/industrial-plant/bulk-loading-spout/",
+    "https://kernelcad.com/catalog/industrial-plant/burner-management-skid/",
+    "https://kernelcad.com/catalog/industrial-plant/mobile-tool-cart/",
+    "https://kernelcad.com/catalog/industrial-plant/rooftop-air-handler/",
+    "https://kernelcad.com/catalog/industrial-plant/vacuum-pump-unit/"
+  ],
+  "httpStatus": 200,
+  "rooftopAirHandlerPageTitle": "Rooftop air handler - free low-poly prop model (CC0) | kernelCAD",
+  "previewPath": "/catalog/industrial-plant/rooftop-air-handler/preview.png",
+  "previewSha256MatchesCheckedInBaseline": true,
+  "deploymentStatus": "The PR branch is not deployed; this records the public baseline before the local correction."
+}

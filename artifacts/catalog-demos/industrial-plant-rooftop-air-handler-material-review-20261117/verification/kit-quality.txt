@@ -1,0 +1,3 @@
+Command: python3 scripts/checkCatalogQuality.py --kit industrial-plant
+
+60/60 assets pass (100.00%; 1 rich kit, 0 thin kits)
