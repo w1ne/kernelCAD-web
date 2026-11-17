@@ -21,6 +21,7 @@
 //   POLYLINE    the pre-R13 form: a header entity plus VERTEX children
 //   SPLINE      planar, clamped, continuous, non-periodic control-point B-splines, kept
 //               as exact rational/non-rational NURBS sketch commands
+//   ELLIPSE     full planar ellipses, kept as four exact rational NURBS arcs
 //
 // The bulge on a polyline vertex is `tan(includedAngle / 4)` — the same
 // number, same sign convention, that `SketchCommand.bulgeArc` carries. It is
@@ -29,7 +30,7 @@
 //
 // WHAT WE REFUSE, AND WHY IT IS A REFUSAL
 // ---------------------------------------
-// ELLIPSE and INSERT (block reference), 3DFACE, SOLID and anything
+// Partial/non-XY ELLIPSE, INSERT (block reference), 3DFACE, SOLID and anything
 // unrecognised are refused: each carries profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. SPLINE is
 // accepted only when its planar control points and knots define a clamped,
@@ -45,6 +46,7 @@ import {
   type ImportSegment,
   type ImportedRegion,
 } from './contourAssembly';
+import { fullEllipseSegments } from './dxfEllipse';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
 
 export type DxfParseFailure =
@@ -500,6 +502,52 @@ function circleSegments(body: readonly Pair[], line: number, s: number): ImportS
   ];
 }
 
+function ellipseSegments(b: EntityBlock, scale: number): ImportSegment[][] {
+  const centerX = num(require(b.body, 10, 'ELLIPSE', b.line), 'ELLIPSE', 10);
+  const centerY = num(require(b.body, 20, 'ELLIPSE', b.line), 'ELLIPSE', 20);
+  const majorX = num(require(b.body, 11, 'ELLIPSE', b.line), 'ELLIPSE', 11);
+  const majorY = num(require(b.body, 21, 'ELLIPSE', b.line), 'ELLIPSE', 21);
+  const centerZ = get(b.body, 30) ? num(get(b.body, 30)!, 'ELLIPSE', 30) : 0;
+  const majorZ = get(b.body, 31) ? num(get(b.body, 31)!, 'ELLIPSE', 31) : 0;
+  const ratio = num(require(b.body, 40, 'ELLIPSE', b.line), 'ELLIPSE', 40);
+  const start = num(require(b.body, 41, 'ELLIPSE', b.line), 'ELLIPSE', 41);
+  const end = num(require(b.body, 42, 'ELLIPSE', b.line), 'ELLIPSE', 42);
+  const normalX = get(b.body, 210) ? num(get(b.body, 210)!, 'ELLIPSE', 210) : 0;
+  const normalY = get(b.body, 220) ? num(get(b.body, 220)!, 'ELLIPSE', 220) : 0;
+  const normalZ = get(b.body, 230) ? num(get(b.body, 230)!, 'ELLIPSE', 230) : 1;
+
+  if (Math.hypot(majorX, majorY) <= 1e-12 || ratio <= 0 || ratio > 1) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `ELLIPSE at line ${b.line}: major-axis length must be > 0 and group code 40 (minor/major ratio) must be in (0, 1].`,
+    );
+  }
+  if (Math.abs(centerZ) > 1e-9 || Math.abs(majorZ) > 1e-9 || Math.abs(normalX) > 1e-9 ||
+      Math.abs(normalY) > 1e-9 || Math.abs(Math.abs(normalZ) - 1) > 1e-9) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `ELLIPSE at line ${b.line}: only ellipses in the XY plane are supported; flatten this entity in the source tool.`,
+    );
+  }
+  if (Math.abs(Math.abs(end - start) - 2 * Math.PI) > 1e-9) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `ELLIPSE at line ${b.line}: only full ellipses are supported; elliptical arcs must be converted to a full profile in the source tool.`,
+    );
+  }
+
+  return [fullEllipseSegments({
+    center: [centerX, centerY],
+    majorAxis: [majorX, majorY],
+    axisRatio: ratio,
+    startParameter: start,
+    endParameter: end,
+    normalZ: normalZ < 0 ? -1 : 1,
+    scale,
+    source: `ELLIPSE (line ${b.line})`,
+  })];
+}
+
 interface PolyVertex { x: number; y: number; bulge: number }
 
 function polylineSegments(
@@ -579,6 +627,8 @@ function segmentsForSimpleEntity(
       return { closed: [], open: arcSegments(b.body, b.line, scale) };
     case 'CIRCLE':
       return { closed: [circleSegments(b.body, b.line, scale)], open: [] };
+    case 'ELLIPSE':
+      return { closed: ellipseSegments(b, scale), open: [] };
     case 'LWPOLYLINE': {
       const verts = lwpolylineVertices(b.body, b.line, scale);
       const flags = get(b.body, 70);
@@ -628,12 +678,6 @@ function throwUnsupportedEntity(b: EntityBlock): never {
       `SPLINE at line ${b.line}: its representation is outside the supported clamped, continuous, planar control-point subset. ` +
           'Re-export a continuous clamped XY spline with control points and knots.',
       );
-    case 'ELLIPSE':
-      throw new DxfParseError(
-        'unsupported-entity',
-        `ELLIPSE at line ${b.line}: an elliptical arc has no exact form in the sketch command ` +
-          'set (which carries lines and circular arcs). Convert it to a polyline in the source tool.',
-      );
     case 'INSERT':
       throw new DxfParseError(
         'unsupported-entity',
@@ -644,7 +688,7 @@ function throwUnsupportedEntity(b: EntityBlock): never {
     default:
       throw new DxfParseError(
         'unsupported-entity',
-    `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, ` +
+    `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, full planar ELLIPSE, ` +
           'LWPOLYLINE, POLYLINE and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
           'because a dropped entity leaves a hole in the profile with no indication.',
       );

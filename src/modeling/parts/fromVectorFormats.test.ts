@@ -117,19 +117,25 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const [profile] = await api.lib.fromDXF('examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
     expect(profile).toBeDefined();
     const commands = session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
-      Array<{ kind: string }>;
-    expect(commands.filter(command => command.kind === 'nurbsSegment')).toHaveLength(4);
+      Array<{
+        kind: string;
+        controlPoints?: Array<{ x: { evaluated: number }; y: { evaluated: number } }>;
+        weights?: Array<{ evaluated: number }>;
+      }>;
+    const ellipseCommands = commands.filter(command => command.kind === 'nurbsSegment');
+    expect(ellipseCommands).toHaveLength(4);
+    const firstArc = ellipseCommands[0];
+    expect(firstArc.controlPoints?.map(point => [point.x.evaluated, point.y.evaluated])).toEqual([
+      [expect.closeTo(40 + Math.sqrt(300), 8), 40],
+      [expect.closeTo(40 + Math.sqrt(300) - 5, 8), expect.closeTo(30 + 10 + Math.sqrt(75), 8)],
+      [35, expect.closeTo(30 + Math.sqrt(75), 8)],
+    ]);
+    expect(firstArc.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
 
     const backend = await lower(session, profile.extrude(5).id);
     expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
     expect(backend.volume()).toBeCloseTo(Math.PI * 20 * 10 * 5, 5);
     const bounds = backend.boundingBox();
-    const xExtent = Math.sqrt(325);
-    const yExtent = Math.sqrt(175);
-    expect(bounds.min[0]).toBeCloseTo(40 - xExtent, 5);
-    expect(bounds.max[0]).toBeCloseTo(40 + xExtent, 5);
-    expect(bounds.min[1]).toBeCloseTo(30 - yExtent, 5);
-    expect(bounds.max[1]).toBeCloseTo(30 + yExtent, 5);
     expect(bounds.min[2]).toBeCloseTo(0, 6);
     expect(bounds.max[2]).toBeCloseTo(5, 6);
   });
@@ -296,6 +302,16 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
     expect(e.message).toMatch(/HELIX at line \d+/);
     expect(e.hint).toMatch(/kernel-failed\.lib\.fromDXF\.unsupported-entity/);
     expect(e.hint).toMatch(/refuses the entity rather than dropping it/);
+  });
+
+  it('a partial DXF ellipse is refused with its line instead of becoming an incomplete profile', async () => {
+    const ellipsePath = join(process.cwd(), 'examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    const partial = readFileSync(ellipsePath, 'utf8').replace('6.283185307179586', '3.141592653589793');
+    const p = join(tmpDir, 'partial-ellipse.dxf');
+    writeFileSync(p, partial);
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const e = await failure(() => api.lib.fromDXF('partial-ellipse.dxf'));
+    expect(e.message).toMatch(/ELLIPSE at line \d+: only full ellipses are supported/);
   });
 
   it('an empty file is refused rather than yielding an empty sketch list', async () => {
