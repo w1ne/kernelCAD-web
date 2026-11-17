@@ -11,6 +11,7 @@ import { requireHostFs } from '../../shared/runtime/hostFs';
 import type { Shape } from './proxy';
 import { Shape as ShapeValue } from './proxy';
 import { recordPartInternal } from './assemblyParts';
+import { assertConfigurationInterface, commitConfigurationInterface } from './configurationInterface';
 import type { Assembly } from './assembly';
 import type { AssemblyState } from './assemblyState';
 import type { AssemblyPartOpts, AssemblyPartRef } from './assemblyTypes';
@@ -154,25 +155,6 @@ async function evaluateConfiguredPart(source: LoadedPart, configuration: string)
   return entry;
 }
 
-function assertCompatibleInterface(
-  state: AssemblyState,
-  source: string,
-  configuration: string,
-  signature: string,
-): void {
-  const previous = state.configurationInterfaces.get(source);
-  if (previous !== undefined && previous.signature !== signature) {
-    failInstance(
-      'configuration',
-      configuration,
-      `the same connector interface as configuration '${previous.name}' (${previous.signature || '(none)'}), but '${configuration}' declares ${signature || '(none)'}`,
-      'invalid-args.assembly.configuration-interface-mismatch',
-      `configuration '${configuration}' interface ${signature || '(none)'}`,
-    );
-  }
-  if (previous === undefined) state.configurationInterfaces.set(source, { name: configuration, signature });
-}
-
 function parkClone(session: AssemblyState['session'], master: ParkedSolid): Shape {
   const shape = session.createShape({ kind: 'importedBrep', params: {}, inputs: {} });
   session.importedGeometry.set(shape.id, master.clone());
@@ -207,7 +189,7 @@ export async function instantiateConfiguredPart(
   const request = readInstanceRequest(opts);
   const source = loadPartSource(state.session.scriptDir, request.source);
   const evaluated = await evaluateConfiguredPart(source, request.configuration);
-  assertCompatibleInterface(state, source.absolutePath, request.configuration, evaluated.interfaceSignature);
+  assertConfigurationInterface(state, source.absolutePath, request.configuration, evaluated.interfaceSignature);
   const shape = parkClone(state.session, evaluated.master);
   const identity: PartConfigurationIdentity = {
     source: source.absolutePath,
@@ -218,5 +200,6 @@ export async function instantiateConfiguredPart(
   };
   const part = recordPartInternal(state, arm, name, shape, request.partOpts, false, identity);
   registerConnectors(part, evaluated.connectors, { source: identity.source, name: identity.name });
+  commitConfigurationInterface(state, identity.source, identity.name, identity.interfaceSignature);
   return part;
 }

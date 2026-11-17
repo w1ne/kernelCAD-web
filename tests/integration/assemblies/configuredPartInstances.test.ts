@@ -119,6 +119,172 @@ describe('configured part instances', () => {
     expect(returned.caught.message).toContain('mount:axis');
   });
 
+  it('rejects a mismatched configuration that crosses a subAssembly boundary', async () => {
+    const run = await runScript({
+      code: `
+        const source = ${JSON.stringify(MISMATCH)};
+        const child = assembly('child');
+        await child.instance('plate', { source, configuration: 'plate' });
+        const parent = assembly('parent');
+        parent.subAssembly('nest', child);
+        let caught = null;
+        try {
+          await parent.instance('pin', { source, configuration: 'pin' });
+        } catch (error) {
+          caught = { code: error.code, message: error.message, hint: error.hint };
+        }
+        let again = null;
+        try {
+          await parent.instance('again', { source, configuration: 'plate' });
+        } catch (error) {
+          again = { code: error.code, message: error.message, hint: error.hint };
+        }
+        return {
+          parts: parent.__parts().map((part) => ({
+            name: part.name,
+            configuration: part.configuration && part.configuration.name,
+            interfaceSignature: part.configuration && part.configuration.interfaceSignature,
+            connector: (part.mateConnectors.find((connector) => connector.name === 'mount') || {}).type,
+          })),
+          caught,
+          again,
+        };
+      `,
+      fileName: 'import-mismatch-host.kcad.ts',
+      scriptDir: dirname(MISMATCH),
+    });
+    const returned = run.returnValue as {
+      parts: { name: string; configuration?: string; interfaceSignature?: string; connector?: string }[];
+      caught: { code: string; message: string; hint: string } | null;
+      again: { code: string; message: string; hint: string } | null;
+    };
+    expect(returned.again).toBeNull();
+    expect(returned.parts.map((part) => part.name)).toEqual(['nest_plate', 'again']);
+    expect(returned.parts[0]).toMatchObject({
+      configuration: 'plate',
+      interfaceSignature: 'mount:frame',
+      connector: 'frame',
+    });
+    expect(returned.parts[1]?.interfaceSignature).toBe('mount:frame');
+    expect(returned.caught?.code).toBe('feature.invalid-args');
+    expect(returned.caught?.hint).toContain('invalid-args.assembly.configuration-interface-mismatch');
+    expect(returned.caught?.message).toContain('mount:frame');
+    expect(returned.caught?.message).toContain('mount:axis');
+    const parent = run.session.assemblies.get('parent');
+    expect(parent).toBeInstanceOf(Assembly);
+    const imported = (parent as Assembly).__parts().find((part) => part.name === 'nest_plate');
+    expect(imported?.configuration?.source).toBe(MISMATCH);
+    expect((await imported!.originalShape.lower()).volume()).toBeCloseTo(10 * 10 * 4, 6);
+  });
+
+  it('rejects a mismatched subAssembly import before any of its parts are recorded', async () => {
+    const run = await runScript({
+      code: `
+        const source = ${JSON.stringify(MISMATCH)};
+        const child = assembly('child');
+        child.part('spacer', box(4, 4, 4));
+        await child.instance('plate', { source, configuration: 'plate' });
+        const parent = assembly('parent');
+        await parent.instance('pin', { source, configuration: 'pin' });
+        let caught = null;
+        try {
+          parent.subAssembly('nest', child);
+        } catch (error) {
+          caught = { code: error.code, message: error.message, hint: error.hint };
+        }
+        let later = null;
+        try {
+          await parent.instance('pin-b', { source, configuration: 'pin' });
+        } catch (error) {
+          later = { code: error.code, message: error.message, hint: error.hint };
+        }
+        let blocked = null;
+        try {
+          await parent.instance('plate', { source, configuration: 'plate' });
+        } catch (error) {
+          blocked = { code: error.code, message: error.message, hint: error.hint };
+        }
+        return {
+          parts: parent.__parts().map((part) => part.name),
+          childParts: child.__parts().map((part) => part.name),
+          caught,
+          later,
+          blocked,
+        };
+      `,
+      fileName: 'import-rollback-host.kcad.ts',
+      scriptDir: dirname(MISMATCH),
+    });
+    const returned = run.returnValue as {
+      parts: string[];
+      childParts: string[];
+      caught: { code: string; message: string; hint: string } | null;
+      later: { code: string; message: string; hint: string } | null;
+      blocked: { code: string; message: string; hint: string } | null;
+    };
+    expect(returned.parts).toEqual(['pin', 'pin-b']);
+    expect(returned.childParts).toEqual(['spacer', 'plate']);
+    expect(returned.caught?.code).toBe('feature.invalid-args');
+    expect(returned.caught?.hint).toContain('invalid-args.assembly.configuration-interface-mismatch');
+    expect(returned.caught?.message).toContain('mount:frame');
+    expect(returned.caught?.message).toContain('mount:axis');
+    expect(returned.later).toBeNull();
+    expect(returned.blocked?.hint).toContain('invalid-args.assembly.configuration-interface-mismatch');
+    const parent = run.session.assemblies.get('parent');
+    expect(parent).toBeInstanceOf(Assembly);
+    const pin = (parent as Assembly).__parts().find((part) => part.name === 'pin');
+    expect(pin?.configuration?.interfaceSignature).toBe('mount:axis');
+    expect((await pin!.originalShape.lower()).volume()).toBeCloseTo(10 * 10 * 4, 6);
+  });
+
+  it('does not record a connector interface when the instance fails density validation', async () => {
+    const run = await runScript({
+      code: `
+        const source = ${JSON.stringify(MISMATCH)};
+        const parent = assembly('parent');
+        let failed = null;
+        try {
+          await parent.instance('bad', { source, configuration: 'plate', density: -1 });
+        } catch (error) {
+          failed = { code: error.code, message: error.message, hint: error.hint };
+        }
+        let later = null;
+        try {
+          await parent.instance('pin', { source, configuration: 'pin' });
+        } catch (error) {
+          later = { code: error.code, message: error.message, hint: error.hint };
+        }
+        return {
+          parts: parent.__parts().map((part) => ({
+            name: part.name,
+            configuration: part.configuration && part.configuration.name,
+            interfaceSignature: part.configuration && part.configuration.interfaceSignature,
+          })),
+          failed,
+          later,
+        };
+      `,
+      fileName: 'failed-instance-host.kcad.ts',
+      scriptDir: dirname(MISMATCH),
+    });
+    const returned = run.returnValue as {
+      parts: { name: string; configuration?: string; interfaceSignature?: string }[];
+      failed: { code: string; message: string; hint: string } | null;
+      later: { code: string; message: string; hint: string } | null;
+    };
+    expect(returned.failed?.code).toBe('feature.invalid-args');
+    expect(returned.failed?.message).toContain('density');
+    expect(returned.failed?.message).toContain('bad');
+    expect(returned.later).toBeNull();
+    expect(returned.parts).toEqual([
+      { name: 'pin', configuration: 'pin', interfaceSignature: 'mount:axis' },
+    ]);
+    const parent = run.session.assemblies.get('parent');
+    expect(parent).toBeInstanceOf(Assembly);
+    const pin = (parent as Assembly).__parts().find((part) => part.name === 'pin');
+    expect((await pin!.originalShape.lower()).volume()).toBeCloseTo(10 * 10 * 4, 6);
+  });
+
   it('instances two sizes of the bearing block, repeats compact, and seats the mates', async () => {
     const run = await runScript({
       code: readFileSync(ASSEMBLY, 'utf8'),

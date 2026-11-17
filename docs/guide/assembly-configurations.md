@@ -47,7 +47,14 @@ the configuration of the block it attaches.
 `instance` throws `feature.invalid-args` when the configuration name is not in
 the file, when a value has the wrong type or is outside the parameter's
 bounds, or when two configurations of the same file declare different
-connector names or types. The failed instance is not added.
+connector names or types. The failed instance is not added, and it does not
+record the connector interface, so a later legal configuration of that file
+is still accepted.
+
+`subAssembly()` carries each configured part's connector interface onto the
+parent. A mismatch with a configuration already in the parent, or between
+two configured parts in the import, throws `feature.invalid-args` before any
+part of that import is recorded.
 
 This page is local validation of the script. It is not a claim about a
 printed part or a deployed service.

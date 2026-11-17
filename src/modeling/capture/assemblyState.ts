@@ -59,8 +59,10 @@ export interface AssemblyState {
   /** Per-pair minimum clearances declared on the last `solvedModel`. */
   clearanceTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
   /**
-   * Connector interface of the first configuration instanced from a part
-   * file. Later configurations of that file must declare the same signature.
+   * Connector interface of the first configuration accepted from a part
+   * file, by `instance` or by a sub-assembly import. Later configurations
+   * of that file must declare the same signature. A failed instance or a
+   * rejected import does not write an entry.
    */
   readonly configurationInterfaces: Map<string, { readonly name: string; readonly signature: string }>;
   /**

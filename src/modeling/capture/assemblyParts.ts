@@ -27,6 +27,7 @@ import { createPartCollision } from './assemblyPartCollision';
 import { importSubAssemblyMates } from './assemblyImportedMates';
 import type { Assembly } from './assembly';
 import type { PartConfigurationIdentity } from './partConfigurationTypes';
+import { commitImportedInterfaces, preflightImportedInterfaces } from './configurationInterface';
 import type {
   AssemblyConnectorFrame, AssemblyConnectorFrameStored, AssemblyConnectorOpts, AssemblyConnectorRef,
   AssemblyCrossSection, AssemblyPartOpts, AssemblyPartRef, TubeEnd, AssemblyPartStored, SubAssemblyHandle,
@@ -837,9 +838,13 @@ export function recordPartInternal(
  */
 export function recordSubAssembly(state: AssemblyState, arm: Assembly, name: string, other: Assembly): SubAssemblyHandle {
   validateSubAssemblyImport(state, arm, name, other);
+  // Reject a connector-interface mismatch before copying, so a bad import
+  // cannot leave the earlier parts of `other` on this assembly.
+  const interfaceClaims = preflightImportedInterfaces(state, name, other.__parts());
   const prefix = `${name}_`;
   const importedByOriginalName = importSubAssemblyParts(state, arm, prefix, other);
   importSubAssemblyMates(state, prefix, other);
+  commitImportedInterfaces(state, interfaceClaims);
   const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
     const ref = importedByOriginalName.get(origPartName);
     if (ref) return ref;
