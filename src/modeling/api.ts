@@ -75,6 +75,8 @@ import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
 import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
+import { makeSpurGearPairMethod } from './apiSpurGearPair';
+import type { SpurGearPair, SpurGearPairOptions } from './spurGearPair';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -262,6 +264,27 @@ export interface KernelCadApi {
    * when z2 is even (0 when odd) so a tooth space faces the first gear.
    */
   spurGear(opts: SpurGearOptions): Shape;
+  /**
+   * External spur pair at centre distance (m1·z1 + m2·z2)/2, phased so a
+   * tooth space faces the driver. `ratio` is ω_driven/ω_driver and is
+   * negative. The assembly carries revolute mates, a couple at that ratio,
+   * and a gear-pair transmission. `toothInterference` reports exact BREP
+   * clearance and common volume over sampled poses, refines beside the
+   * minimum, and measures the pitch-circle backlash. A common volume
+   * strictly above `interferenceVolumeFloorMm3` (0.001 mm³) sets
+   * `anyInterference` and sets `minClearanceMm` to 0. A smaller positive
+   * volume does not. Zero-volume contact (common volume 0 and distance 0)
+   * sets `minClearanceMm` to 0 while `anyInterference` stays false. The
+   * 0.001 mm³ floor is a fixed absolute volume for every module and face
+   * width: overlap volume is the transverse area times the face width, and
+   * similar teeth grow that area with the square of the module. Those
+   * clearance aggregates do not prove the gaps
+   * between samples. `withGeneratingCut`
+   * is opt-in: it subtracts a discrete union of the driver over one tooth
+   * and repeats that space at tooth pitch. The default teeth stay the
+   * involute profile. Geometry only — not strength.
+   */
+  spurGearPair(opts: SpurGearPairOptions): SpurGearPair;
   /**
    * Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim
    * disk minus a bore whose flanks are the external spur profile mirrored
@@ -883,6 +906,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     spring: makeSpringMethod(session, () => api),
     pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
+    spurGearPair: makeSpurGearPairMethod(session, () => api),
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
@@ -926,3 +950,9 @@ export type {
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 export type { RibOptions, RibPoint } from './apiRibMethod';
+export type {
+  SpurGearPair,
+  SpurGearPairOptions,
+  SpurGearGeneratingCut,
+  SpurGearToothInterferenceReport,
+} from './spurGearPair';

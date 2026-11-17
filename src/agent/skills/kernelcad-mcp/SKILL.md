@@ -100,7 +100,7 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | NEMA plate + shaft/bearing + spur pair drive stack | `nema-shaft-spur-drive-stack` | Geometric mesh; no USD (cylindrical mate) |
 | T-slot frame corner + gusset + cap screws BOM | `tslot-frame-fastener-bom` | Clearance shanks, not a swept V-thread; T-nuts not modeled |
 | Bracket with fasteners / BOM | `non-overlapping-l-bracket`, `iso-metric-bolt-and-nut`, `bom-ready-assembly` | |
-| Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | |
+| Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | `spurGearPair` places the mesh, mates and gear-pair transmission. `toothInterference` aggregates sampled poses. A common volume above 0.001 mm³ sets `anyInterference` and closes `minClearanceMm`. Zero-volume contact sets `minClearanceMm` to 0 with `anyInterference` false. The 0.001 mm³ floor is a fixed absolute volume for every module and face width. It does not prove the gaps between samples. Geometry only, not strength |
 | Enclosure lid (screw-on cover) | `enclosure-lid-with-screw-bosses` | Hinge alt: `clamshell-hinge-two-part-assembly` |
 | DFM finding with one safe parameter bump | `dfm-fix-recheck` | `dfm_fix_recheck`: one fillet, shell, or draft edit, then the same review. Persist `new_code` |
 | Shaft + bearing seat | `shaft-and-bearing-cylindrical-mate` | 4-arg `cylindrical`; catalog shaft-d8-l50 + bearing608 |
