@@ -23,6 +23,7 @@ import {
 import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
 import { assertMateOptionKeys } from './assemblyMateOptionKeys';
+import { assertCoupleMateOptionKeys } from './assemblyCoupleMateOptionKeys';
 import type {
   AssemblyConnectorRef,
   AssemblyConnectRef,
@@ -43,6 +44,22 @@ function isValidJointLimits(value: [number, number]): boolean {
     value.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
     value[0] < value[1]
   );
+}
+
+const REVOLUTE_JOINT_OPTION_KEYS = ['axis', 'origin', 'limitsDeg', 'actuator'] as const satisfies readonly (keyof RevoluteJointOpts)[];
+
+function assertRevoluteJointOptionKeys(opts: RevoluteJointOpts): void {
+  const unknownKey = Object.keys(opts).find(
+    (key) => !(REVOLUTE_JOINT_OPTION_KEYS as readonly string[]).includes(key),
+  );
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'assembly.revolute(name, parent, child, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${REVOLUTE_JOINT_OPTION_KEYS.join(', ')}`,
+    example: "arm.revolute('hinge', base, link, { axis: [0, 0, 1], origin: [0, 0, 0], limitsDeg: [-90, 90] })",
+  });
 }
 
 function isScalarCouplingMate(type: MateType): boolean {
@@ -73,6 +90,7 @@ function validateConnectorAssembly(assemblyName: string, connector: AssemblyConn
 // gated mechanisms prefer `arm.connector(...)` + `arm.mate(name, a, b,
 // 'revolute', { ... })`; both surfaces coexist.
 export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
+  assertRevoluteJointOptionKeys(opts);
   if (!isValidVec3(opts.axis)) {
     invalidArgs({
       api: 'revoluteJoint(name, parent, child, { axis })',
@@ -482,6 +500,7 @@ export function coupleMateRecords(
   driven: string,
   opts: { source: string; ratio: number; offset?: number },
 ): void {
+  assertCoupleMateOptionKeys(driven, opts);
   const source = state.mates.find((mate) => mate.name === opts.source);
   const drivenMate = state.mates.find((mate) => mate.name === driven);
   if (!source || !drivenMate) {

@@ -120,11 +120,12 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE and clamped continuous planar SPLINE
-   * entities with control points and knots. Spline control points, knots and
-   * rational weights are preserved as NURBS geometry; periodic, fit-point-only,
-   * discontinuous and nonplanar splines, plus ELLIPSE/INSERT, are refused with
-   * an entity and line diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
+   * clamped continuous planar SPLINE entities with control points and knots.
+   * Full and partial planar ellipses and supported splines are exact rational
+   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous and
+   * nonplanar splines, plus INSERT, are refused with an entity and line
+   * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**
@@ -134,8 +135,9 @@ export interface PartsLib {
    * SVG's Y axis points down and is reflected about the viewBox top so the
    * profile lands upright in positive Y. Scale comes from `viewBox` plus a
    * physically-dimensioned `width`; without one a user unit is a CSS pixel
-   * (1/96 in). Béziers and true ellipses are chord-approximated within
-   * `opts.curveTolerance` mm; lines and circular arcs are exact.
+   * (1/96 in). Béziers and SVG `<ellipse>` elements are chord-approximated
+   * within `opts.curveTolerance` mm; lines and circular arcs are exact. DXF
+   * planar ELLIPSE entities use exact rational NURBS geometry.
    */
   fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;

@@ -39,6 +39,9 @@ const HEADER = [
   'A boolean that must keep the scrap is `shape.split(other)`.',
   "Default keep `parts` returns a Scene of `intersection`, `a_only` and `b_only`.",
   'The MCP tool is `split_keep_parts`.',
+  'Labeled views of one STEP import are `inspect_step_views`. Face edits on that',
+  'import use `faces[i].ref` (`{ near: centroid }` when the listing id is positional).',
+  'Those selectors do not survive a later edit.',
   '',
 ];
 

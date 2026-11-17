@@ -110,6 +110,60 @@ async function lower(session: CaptureSession, id: string): Promise<OcctBackend> 
 }
 
 describe('lib.fromDXF — round trip to a solid', () => {
+  it('imports a full rotated DXF ellipse as an exact closed profile and extrudes it to the analytic volume', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [profile] = await api.lib.fromDXF('examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    expect(profile).toBeDefined();
+    const commands = session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
+      Array<{
+        kind: string;
+        controlPoints?: Array<{ x: { evaluated: number }; y: { evaluated: number } }>;
+        weights?: Array<{ evaluated: number }>;
+      }>;
+    const ellipseCommands = commands.filter(command => command.kind === 'nurbsSegment');
+    expect(ellipseCommands).toHaveLength(4);
+    const firstArc = ellipseCommands[0];
+    expect(firstArc.controlPoints?.map(point => [point.x.evaluated, point.y.evaluated])).toEqual([
+      [expect.closeTo(40 + Math.sqrt(300), 8), 40],
+      [expect.closeTo(40 + Math.sqrt(300) - 5, 8), expect.closeTo(30 + 10 + Math.sqrt(75), 8)],
+      [35, expect.closeTo(30 + Math.sqrt(75), 8)],
+    ]);
+    expect(firstArc.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+
+    const backend = await lower(session, profile.extrude(5).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo(Math.PI * 20 * 10 * 5, 5);
+    const bounds = backend.boundingBox();
+    expect(bounds.min[2]).toBeCloseTo(0, 6);
+    expect(bounds.max[2]).toBeCloseTo(5, 6);
+  });
+
+  it('imports a partial planar DXF ellipse as an exact closed profile and extrudes it to the analytic volume', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [profile] = await api.lib.fromDXF('examples/interoperability/dxf-ellipse/partial-ellipse.dxf');
+    expect(profile).toBeDefined();
+    const commands = session.getRecords().find(record => record.id === profile.id)?.metadata?.commands as
+      Array<{
+        kind: string;
+        weights?: Array<{ evaluated: number }>;
+      }>;
+    const ellipseCommands = commands.filter(command => command.kind === 'nurbsSegment');
+    expect(ellipseCommands).toHaveLength(2);
+    expect(ellipseCommands[0].weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+
+    const backend = await lower(session, profile.extrude(3).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo(25 * Math.PI * 3, 5);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(10, 6), expect.closeTo(20, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(30, 6), expect.closeTo(25, 6), expect.closeTo(3, 6)],
+    });
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
@@ -272,6 +326,16 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
     expect(e.message).toMatch(/HELIX at line \d+/);
     expect(e.hint).toMatch(/kernel-failed\.lib\.fromDXF\.unsupported-entity/);
     expect(e.hint).toMatch(/refuses the entity rather than dropping it/);
+  });
+
+  it('a nonplanar DXF ellipse is refused with its line instead of becoming a misleading profile', async () => {
+    const ellipsePath = join(process.cwd(), 'examples/interoperability/dxf-ellipse/ellipse-profile.dxf');
+    const nonplanar = readFileSync(ellipsePath, 'utf8').replace('20\n30\n11', '20\n30\n30\n1\n11');
+    const p = join(tmpDir, 'nonplanar-ellipse.dxf');
+    writeFileSync(p, nonplanar);
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const e = await failure(() => api.lib.fromDXF('nonplanar-ellipse.dxf'));
+    expect(e.message).toMatch(/ELLIPSE at line \d+: only ellipses in the XY plane are supported/);
   });
 
   it('an empty file is refused rather than yielding an empty sketch list', async () => {

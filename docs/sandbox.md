@@ -68,7 +68,7 @@ The check runs at three layers that share one decision
 Scratch locations move into the workspace. `TMPDIR` (and therefore
 `os.tmpdir()`), `KERNELCAD_CACHE_DIR` and `KERNELCAD_CONFIG_HOME` point under
 `<workspace>/.kernelcad-sandbox/`. Default output directories for
-`render_preview`, `import_step`, `run_fea`, `run_cfd` and `diff_geometry` are created
+`render_preview`, `import_step`, `run_fea`, `run_cfd`, `diff_geometry` and `inspect_step_views` are created
 there. You can delete that directory at any time.
 
 ### Network

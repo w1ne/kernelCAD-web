@@ -108,11 +108,12 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE and clamped continuous planar SPLINE
- * entities. Arcs keep their DXF bulge exactly, and supported splines retain
- * their control points, knots and rational weights as NURBS commands.
- * Periodic, fit-point-only, discontinuous and nonplanar SPLINE entities, plus ELLIPSE and
- * INSERT, are REFUSED with an entity and line diagnostic rather than dropped.
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE and
+ * clamped continuous planar SPLINE entities. Arcs keep their DXF bulge exactly;
+ * full and partial planar ellipses and supported splines retain exact rational
+ * NURBS geometry. Nonplanar ellipses, periodic, fit-point-only, discontinuous and
+ * nonplanar SPLINE entities, plus INSERT, are REFUSED with an entity and line
+ * diagnostic rather than dropped.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as
@@ -190,9 +191,10 @@ const DXF_HINTS: Record<string, string> = {
  * the sketch metadata as `unitSource` and can be overridden with
  * `opts.units`.
  *
- * Béziers and true ellipses have no exact form in the sketch command set and
- * are subdivided into chords within `opts.curveTolerance` mm (default 0.01);
- * lines and circular arcs are exact.
+ * Béziers and SVG `<ellipse>` elements have no exact form in the sketch
+ * command set and are subdivided into chords within `opts.curveTolerance` mm
+ * (default 0.01); lines and circular arcs are exact. Full planar DXF ellipses
+ * use exact rational NURBS geometry.
  *
  * Returns `Sketch[]`, largest region first. See the module header.
  */

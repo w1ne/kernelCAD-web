@@ -189,10 +189,12 @@ lib.fromSTL(path: string, opts?: {
 
 // ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
 // area so the caller can choose which regions are outlines, holes or parts.
-// LINE / ARC / CIRCLE / LWPOLYLINE / POLYLINE are supported; clamped, continuous, planar
-// XY SPLINE entities with control points and knots become exact NURBS path
-// commands (rational weights are preserved). Periodic, fit-point-only,
-// discontinuous and nonplanar SPLINE, ELLIPSE and INSERT entities fail with a named diagnostic.
+// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE are supported.
+// Full ellipses use four exact rational NURBS segments; partial elliptical arcs
+// retain exact rational NURBS geometry and can join other profile edges.
+// Clamped, continuous, planar XY SPLINE entities retain their control points,
+// knots and rational weights. Nonplanar ellipses, periodic, fit-point-only,
+// discontinuous and nonplanar SPLINE, plus INSERT entities, fail with a named diagnostic.
 const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
 const [outline, ...holes] = profiles;
 let plate = outline.extrude(3);
