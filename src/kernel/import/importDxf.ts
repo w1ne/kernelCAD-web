@@ -650,8 +650,7 @@ function lwpolylineVertices(body: readonly Pair[], line: number, s: number): Pol
   return verts;
 }
 
-/** Import a HATCH only when its fill boundary is one closed planar polyline. */
-function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } {
+function hatchPathCountIndex(b: EntityBlock): number {
   const pathCountIndex = b.body.findIndex(pair => pair.code === 91);
   const pathCountPair = pathCountIndex < 0 ? undefined : b.body[pathCountIndex];
   if (!pathCountPair) {
@@ -668,24 +667,34 @@ function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportS
         'as a Sketch without losing hole or island relationships.',
     );
   }
+  return pathCountIndex;
+}
 
+function hatchVector(header: readonly Pair[], codes: readonly number[], defaults: readonly number[]): number[] {
+  return codes.map((code, index) => {
+    const pair = get(header, code);
+    return pair ? num(pair, 'HATCH', code) : defaults[index];
+  });
+}
+
+function validateHatchPlane(b: EntityBlock, pathCountIndex: number): void {
   const header = b.body.slice(0, pathCountIndex);
-  const elevationPoint = [10, 20, 30].map(code => {
-    const pair = get(header, code);
-    return pair ? num(pair, 'HATCH', code) : 0;
-  });
-  const extrusion = [210, 220, 230].map((code, index) => {
-    const pair = get(header, code);
-    return pair ? num(pair, 'HATCH', code) : index === 2 ? 1 : 0;
-  });
-  if (Math.abs(elevationPoint[0]) > 1e-9 || Math.abs(elevationPoint[1]) > 1e-9 || Math.abs(elevationPoint[2]) > 1e-9 ||
-      Math.abs(extrusion[0]) > 1e-9 || Math.abs(extrusion[1]) > 1e-9 || Math.abs(extrusion[2] - 1) > 1e-9) {
+  const elevation = hatchVector(header, [10, 20, 30], [0, 0, 0]);
+  const extrusion = hatchVector(header, [210, 220, 230], [0, 0, 1]);
+  const zeroVector = (vector: number[]) => vector.every(value => Math.abs(value) <= 1e-9);
+  const positiveZ = Math.abs(extrusion[0]) <= 1e-9 && Math.abs(extrusion[1]) <= 1e-9 &&
+    Math.abs(extrusion[2] - 1) <= 1e-9;
+  if (!zeroVector(elevation) || !positiveZ) {
     throw new DxfParseError(
       'unsupported-entity',
       `HATCH at line ${b.line}: only a zero-elevation XY boundary with extrusion direction +Z can become a 2D Sketch.`,
     );
   }
+}
 
+type HatchPolylinePath = { pairs: Pair[]; vertexCount: number; hasBulges: number };
+
+function hatchPolylinePath(b: EntityBlock, pathCountIndex: number): HatchPolylinePath {
   const pathFlagPair = b.body[pathCountIndex + 1];
   if (!pathFlagPair || pathFlagPair.code !== 92) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: boundary path data must start with group code 92.`);
@@ -714,7 +723,6 @@ function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportS
       `HATCH at line ${b.line}: a polyline boundary path must have the closed flag (group code 73) set to 1.`,
     );
   }
-
   const bulgePair = get(path, 72);
   const hasBulges = bulgePair ? num(bulgePair, 'HATCH', 72) : Number.NaN;
   if (hasBulges !== 0 && hasBulges !== 1) {
@@ -728,7 +736,10 @@ function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportS
   if (!Number.isInteger(vertexCount) || vertexCount < 2) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 93 must declare at least 2 vertices.`);
   }
+  return { pairs: path, vertexCount, hasBulges };
+}
 
+function hatchPolylineVertices(b: EntityBlock, path: readonly Pair[], scale: number): { vertices: PolyVertex[]; hasBulgeValue: boolean } {
   const vertices: PolyVertex[] = [];
   let hasBulgeValue = false;
   for (let i = 0; i < path.length;) {
@@ -757,6 +768,16 @@ function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportS
     vertices.push({ x, y, bulge });
     i += path[i + 2]?.code === 42 ? 3 : 2;
   }
+  return { vertices, hasBulgeValue };
+}
+
+function validateHatchVertices(
+  b: EntityBlock,
+  vertices: readonly PolyVertex[],
+  vertexCount: number,
+  hasBulges: number,
+  hasBulgeValue: boolean,
+): void {
   if (vertices.length !== vertexCount) {
     throw new DxfParseError(
       'malformed-entity',
@@ -766,7 +787,15 @@ function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportS
   if (hasBulges === 0 && hasBulgeValue) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 72 says there are no bulges, but group code 42 is present.`);
   }
+}
 
+/** Import a HATCH only when its fill boundary is one closed planar polyline. */
+function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } {
+  const pathCountIndex = hatchPathCountIndex(b);
+  validateHatchPlane(b, pathCountIndex);
+  const { pairs, vertexCount, hasBulges } = hatchPolylinePath(b, pathCountIndex);
+  const { vertices, hasBulgeValue } = hatchPolylineVertices(b, pairs, scale);
+  validateHatchVertices(b, vertices, vertexCount, hasBulges, hasBulgeValue);
   return { closed: [polylineSegments(vertices, true, 'HATCH', b.line)], open: [] };
 }
 
