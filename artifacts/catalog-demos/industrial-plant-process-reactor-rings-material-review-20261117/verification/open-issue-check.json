@@ -1,0 +1,24 @@
+{
+  "assets": [
+    {
+      "asset": "industrial-plant/machine-guard-enclosure",
+      "openIssueSearch": []
+    },
+    {
+      "asset": "industrial-plant/electrical-control-cabinet",
+      "openIssueSearch": []
+    },
+    {
+      "asset": "industrial-plant/chemical-metering-skid",
+      "openIssueSearch": []
+    },
+    {
+      "asset": "industrial-plant/process-reactor-vessel",
+      "openIssueSearch": []
+    },
+    {
+      "asset": "industrial-plant/steel-access-gate",
+      "openIssueSearch": []
+    }
+  ]
+}

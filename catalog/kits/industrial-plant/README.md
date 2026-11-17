@@ -68,6 +68,13 @@ records the five-preview ledger, before/after evidence, exported-GLB regression,
 local checks, and inspected MP4. The change retains the existing asset ID and
 does not make an engineering or manufacturing claim.
 
+The Nov 17 reactor-vessel review assigns its roof lip and three shell stiffener
+rings to the existing steel finish; access and safety-painted fittings are
+unchanged. The [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-process-reactor-rings-material-review-20261117/README.md)
+records the five-preview ledger, source and preview snapshots, GLB regression,
+full catalog integration result, index verification, and local MP4. No asset
+IDs, geometry or kit counts changed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |

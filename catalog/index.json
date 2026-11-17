@@ -146417,7 +146417,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts",
       "preview": "/assets/industrial-plant-process-reactor-vessel.png",
-      "sourceSha256": "b80a6a83670cdb4587db403f314a0f5cc01c0938407a112546760d1c40eda571",
+      "sourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146467,7 +146467,11 @@
           "color": "#71848b",
           "parts": [
             "shell",
+            "roof-lip",
             "roof-cap",
+            "stiffener-0",
+            "stiffener-1",
+            "stiffener-2",
             "foot-0",
             "foot-1",
             "foot-2",
@@ -146487,11 +146491,7 @@
           "name": "safetyPaint",
           "color": "#db9e3f",
           "parts": [
-            "roof-lip",
             "top-nozzle",
-            "stiffener-0",
-            "stiffener-1",
-            "stiffener-2",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
