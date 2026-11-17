@@ -33,10 +33,10 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("pedestal-fiber-terminal");
-p.part("base", b(0, 0, 25, 430, 360, 50).color(powderCoat));
-p.part("pedestal", b(0, 0, 390, 350, 280, 730).color(galvanizedSteel));
+p.part("base", b(0, 0, 0, 430, 360, 50).color(powderCoat));
+p.part("pedestal", b(0, 0, 50, 350, 280, 730).color(galvanizedSteel));
 p.part("cap", b(0, 0, 780, 400, 330, 50).color(powderCoat));
-p.part("door", b(0, -145, 390, 240, 18, 520).color(powderCoat));
+p.part("door", b(0, -145, 120, 240, 18, 520).color(powderCoat));
 p.part("conduit-a", c(-100, 0, 0, 220, 34, 8).color(galvanizedSteel));
 p.part("conduit-b", c(100, 0, 0, 220, 34, 8).color(galvanizedSteel));
 

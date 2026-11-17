@@ -24,9 +24,9 @@ presets({
 const p = assembly('solvent-storage-cabinet');
 p.part('cabinet-shell', box(750, 560, 1250, true).translate(0, 0, 625).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(690, 504, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(309.6, 18, 1220, true).translate(-165, -285.6, 1235).scale(scale).color(enamel));
+p.part('door-0', box(309.6, 18, 1220, true).translate(-165, -285.6, 625).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 200, true).translate(-61.8, -308, 750).scale(scale).color(polymer));
-p.part('door-1', box(309.6, 18, 1220, true).translate(165, -285.6, 1235).scale(scale).color(enamel));
+p.part('door-1', box(309.6, 18, 1220, true).translate(165, -285.6, 625).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 200, true).translate(268.2, -308, 750).scale(scale).color(polymer));
 p.part('vent-slot-0', box(240, 10, 9, true).translate(0, -291.2, 979.5).scale(scale).color(polymer));
 p.part('vent-slot-1', box(240, 10, 9, true).translate(0, -291.2, 1005.5).scale(scale).color(polymer));

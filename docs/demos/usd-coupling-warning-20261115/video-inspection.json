@@ -1,0 +1,34 @@
+{
+  "recordedDate": "2026-11-15",
+  "focusedRegression": {
+    "command": "npx vitest run tests/unit/modeling/export/usd/usdCoupledMate.test.ts --reporter=dot",
+    "testFilesPassed": 1,
+    "testsPassed": 2
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "passed": true
+  },
+  "eslint": {
+    "command": "npx eslint src/shared/diagnostics/registry/export.ts src/modeling/export/usd/usdIsaacSerializer.ts tests/unit/modeling/export/usd/usdCoupledMate.test.ts docs/demos/usd-coupling-warning-20261115/capture-demo.ts docs/demos/usd-coupling-warning-20261115/render-demo.mjs",
+    "passed": true
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "e159bcfe0b4a652f68b5c484f7e21b6323fb6f39f60fe419d68d8dbfa9784904",
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "framesPerSecond": 24,
+    "durationSeconds": 9,
+    "sizeBytes": 96564,
+    "visuallyInspectedAtSeconds": [1, 4, 7],
+    "review": "All captions readable; no clipped title. The footer distinguishes local serialization from simulation/replay, deployed behavior, and hardware acceptance."
+  },
+  "acceptanceScope": {
+    "localSerializerRegression": "passed",
+    "isaacSimRuntimeReplay": "not run",
+    "deployedBehavior": "not checked",
+    "hardwareAcceptance": "not checked"
+  }
+}

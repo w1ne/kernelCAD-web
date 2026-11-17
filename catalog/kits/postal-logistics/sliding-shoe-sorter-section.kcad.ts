@@ -47,7 +47,7 @@ const p = assembly("sliding-shoe-sorter-section");
 p.part("sorter-bed", b(0,0,700,680,1200,70).color(paintedSteel));
 p.part("left-guide", b(-330,0,745,28,1200,80).color(stainlessSteel));
 p.part("right-guide", b(330,0,745,28,1200,80).color(stainlessSteel));
-p.part("shoe-rail", b(0,0,790,55,1140,35).color(safetyAmber));
+p.part("shoe-rail", b(0,0,790,55,1140,35).color(stainlessSteel));
 p.part("shoe-a", b(-130,-260,820,70,95,42).color(safetyAmber));
 p.part("shoe-b", b(-60,-60,820,70,95,42).color(safetyAmber));
 p.part("shoe-c", b(20,150,820,70,95,42).color(safetyAmber));

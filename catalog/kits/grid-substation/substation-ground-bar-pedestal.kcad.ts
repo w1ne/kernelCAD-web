@@ -50,10 +50,10 @@ p.part("base", beveledPlate(1440, 620, 200, 37.20).translate(0, 0, 0).scale(scal
 p.part("insulating-support-left", loftedInsulator(667, 110, 10).translate(-496, 0, 200).scale(scale).color(porcelain));
 p.part("insulating-support-right", loftedInsulator(667, 110, 10).translate(496, 0, 200).scale(scale).color(porcelain));
 p.part("ground-bar", box(1600, 180, 180, true).translate(0, 0, 918).scale(scale).color(copper));
-p.part("connection-pad-1", box(150, 280, 110, true).translate(-576, 0, 1044).scale(scale).color(copper));
-p.part("connection-pad-2", box(150, 280, 110, true).translate(0, 0, 1044).scale(scale).color(copper));
-p.part("connection-pad-3", box(150, 280, 110, true).translate(576, 0, 1044).scale(scale).color(copper));
-p.part("connection-pad-4", box(150, 280, 110, true).translate(1152, 0, 1044).scale(scale).color(copper));
-p.part("connection-pad-5", box(150, 280, 110, true).translate(1728, 0, 1044).scale(scale).color(copper));
+p.part("connection-pad-1", box(150, 280, 110, true).translate(-640, 0, 1044).scale(scale).color(copper));
+p.part("connection-pad-2", box(150, 280, 110, true).translate(-320, 0, 1044).scale(scale).color(copper));
+p.part("connection-pad-3", box(150, 280, 110, true).translate(0, 0, 1044).scale(scale).color(copper));
+p.part("connection-pad-4", box(150, 280, 110, true).translate(320, 0, 1044).scale(scale).color(copper));
+p.part("connection-pad-5", box(150, 280, 110, true).translate(640, 0, 1044).scale(scale).color(copper));
 
 return p.model();

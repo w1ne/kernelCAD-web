@@ -109,6 +109,7 @@ for (const [k, s] of [-1, 1].entries()) {
 }
 
 // ---- Spring brackets, coil springs and pedestals ----
+// The spring coils use the same support-steel finish as their pedestals.
 const Hsp = 620;
 for (const [j, xb] of [450, L - 450].entries()) {
   for (const [k, s] of [-1, 1].entries()) {
@@ -118,7 +119,7 @@ for (const [j, xb] of [450, L - 450].entries()) {
     const z0 = bz - Hsp;
     add(`spring-core-${j}-${k}`, rod(95, z0, bz, 10).translate(bx, ym, 0).color(dark));
     for (let c = 0; c < 5; c++) {
-      add(`spring-coil-${j}-${k}-${c}`, rod(165, z0 + 40 + c * 120, z0 + 95 + c * 120, 12).translate(bx, ym, 0).color(warn));
+      add(`spring-coil-${j}-${k}-${c}`, rod(165, z0 + 40 + c * 120, z0 + 95 + c * 120, 12).translate(bx, ym, 0).color(structuralSteel));
     }
     add(`spring-pedestal-${j}-${k}`, blk(bx - 260, ym - 260, 0, bx + 260, ym + 260, z0).color(structuralSteel));
     add(`pedestal-base-${j}-${k}`, blk(bx - 400, ym - 400, 0, bx + 400, ym + 400, 60).color(structuralSteel));

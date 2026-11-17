@@ -9,6 +9,7 @@
 
 export { checkMountingHoleConsistency } from './checkMountingHoleConsistency';
 export { checkSweptCollision } from './checkSweptCollision';
+export { suggestJointRanges, DEFAULT_JOINT_RANGE_CLEARANCE_MM } from './suggestJointRanges';
 export { checkReachable } from './checkReachable';
 export { checkLoadCapacity } from './checkLoadCapacity';
 export { checkStaticHold } from './checkStaticHold';
@@ -60,3 +61,13 @@ export type {
   SweptCollisionOpts,
   SweptCollisionResult,
 } from './types';
+export type {
+  JointLimitPatch,
+  JointRangePair,
+  JointRangeSide,
+  JointRangeSideStatus,
+  JointRangeSuggestion,
+  JointRangeUnknownReason,
+  SuggestJointRangesOpts,
+  SuggestJointRangesResult,
+} from './suggestJointRanges';

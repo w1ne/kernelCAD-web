@@ -17,10 +17,11 @@ const feltCover = param('feltCover', '#b6c84c', { label: 'Felt cover' });
 const seamTape = param('seamTape', '#f0ebdf', { label: 'Seam tape' });
 presets({ clubColors: { feltCover: '#d9a63a', seamTape: '#f0ebdf' } });
 const p = assembly('tennis-ball');
-p.part('ball', sphere(34).translate(0, 0, 34).scale(scale).color(feltCover));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('ball', sphere(34).translate(0, 0, 34).color(feltCover));
 
 
 // A smooth continuous seam traces a curved band around the felt ball.
-p.part("curved-seam", torus(33.8, 0.65, 12).rotateX(58).translate(0, 0, 34).color(seamTape));
+add("curved-seam", torus(33.8, 0.65, 12).rotateX(58).translate(0, 0, 34).color(seamTape));
 
 return p.model();

@@ -11,6 +11,50 @@ const PATTERN_LINEAR_EXAMPLE = 'plate.patternLinear({ count: 4, direction: [1, 0
 const PATTERN_CIRCULAR_EXAMPLE = 'plate.patternCircular({ count: 6, axis: [0, 0, 1], angleDeg: 360 })';
 
 /**
+ * Reject a missing / non-object pattern option bag, or one with a key the
+ * pattern does not read. Unknown keys used to be dropped silently:
+ * `patternCircular({ ..., angle: 90 })` built a full 360° ring and
+ * `patternGrid({ x, y, z })` built a flat grid without the z axis.
+ */
+function assertPatternOpts(
+  api: string,
+  path: string,
+  opts: unknown,
+  allowed: readonly string[],
+  example: string,
+  featureId: FeatureId,
+): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api,
+      path,
+      got: opts,
+      showType: true,
+      requires: `an option object { ${allowed.join(', ')} }`,
+      example,
+      featureId,
+    });
+  }
+  for (const key of Object.keys(opts)) {
+    if (!allowed.includes(key)) {
+      invalidArgs({
+        api,
+        path: `${path}.${key}`,
+        got: (opts as Record<string, unknown>)[key],
+        requires: `no such option — ${api} reads only ${allowed.join(', ')}`,
+        example,
+        featureId,
+      });
+    }
+  }
+}
+
+/** `patternGrid` top-level option bag: only the two in-plane axes. */
+export function validateGridPatternOpts(opts: unknown, featureId: FeatureId): void {
+  assertPatternOpts('patternGrid({ x, y })', 'opts', opts, ['x', 'y'], GRID_EXAMPLE, featureId);
+}
+
+/**
  * Capture-time sign/finiteness guard for the scalar edge features
  * (`fillet` radius, `chamfer` distance, `shell` thickness).
  *
@@ -53,6 +97,25 @@ export function assertScalarEdgeValue(
   });
 }
 
+/**
+ * Capture-time guard for the tapered-fillet `endRadius` option. `undefined`
+ * keeps a constant radius; a `ParamRef` is left to the lowerer.
+ */
+export function assertFilletEndRadius(endRadius: unknown, featureId: FeatureId): void {
+  if (endRadius === undefined || isParamRef(endRadius)) return;
+  if (typeof endRadius === 'number' && Number.isFinite(endRadius) && endRadius > 0) return;
+  invalidArgs({
+    api: 'fillet(radius, edges, { endRadius })',
+    path: 'opts.endRadius',
+    got: endRadius,
+    showType: typeof endRadius !== 'number',
+    unit: 'mm',
+    requires: "a finite number > 0 — the round's radius at each edge's high end; `radius` is at the low end",
+    example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+    featureId,
+  });
+}
+
 const GRID_EXAMPLE =
   'hole.patternGrid({ x: { count: 4, direction: [1, 0, 0], spacing: 20 }, y: { count: 3, direction: [0, 1, 0], spacing: 15 } })';
 
@@ -62,6 +125,7 @@ export function validateGridPatternAxis(
   featureId: FeatureId,
 ): void {
   const api = `patternGrid({ ${label.endsWith('.x') ? 'x' : 'y'} })`;
+  assertPatternOpts(api, label, axis, ['count', 'direction', 'spacing'], GRID_EXAMPLE, featureId);
   if (!Number.isInteger(axis.count) || axis.count < 2) {
     invalidArgs({
       api,
@@ -182,6 +246,14 @@ export function validateLinearPatternOpts(
   opts: { count: number; direction: [number, number, number]; spacing: number },
   featureId: FeatureId,
 ): void {
+    assertPatternOpts(
+      'patternLinear({ count, direction, spacing })',
+      'opts',
+      opts,
+      ['count', 'direction', 'spacing'],
+      PATTERN_LINEAR_EXAMPLE,
+      featureId,
+    );
     if (!Number.isInteger(opts.count) || opts.count < 2) {
       invalidArgs({
         api: 'patternLinear({ count })',
@@ -227,6 +299,14 @@ export function validateCircularPatternOpts(
   opts: { count: number; axis: [number, number, number]; angleDeg?: number },
   featureId: FeatureId,
 ): number {
+    assertPatternOpts(
+      'patternCircular({ count, axis, angleDeg })',
+      'opts',
+      opts,
+      ['count', 'axis', 'angleDeg'],
+      PATTERN_CIRCULAR_EXAMPLE,
+      featureId,
+    );
     if (!Number.isInteger(opts.count) || opts.count < 2) {
       invalidArgs({
         api: 'patternCircular({ count })',
@@ -267,4 +347,40 @@ export function validateCircularPatternOpts(
       });
     }
   return angleDeg;
+}
+
+/**
+ * Validate `shell(thickness, opts)` options and return the faces to open.
+ * Any key other than `face` throws, as does a missing or empty `face`.
+ */
+export function resolveShellFaces(opts: unknown, featureId: FeatureId): (FaceSelector | string)[] {
+  const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
+    ? Object.keys(opts).find((key) => key !== 'face')
+    : undefined;
+  if (unknownKey !== undefined) {
+    // A dropped `faces: ['bottom']` left the bottom closed, and a dropped
+    // `enabled: false` still hollowed the solid.
+    invalidArgs({
+      api: 'shell(thickness, { face })',
+      path: `opts.${unknownKey}`,
+      got: (opts as Record<string, unknown>)[unknownKey],
+      requires: "a known option key; shell accepts only face — pass an array to open several faces: { face: ['top', 'bottom'] }",
+      example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      featureId,
+    });
+  }
+  const face = (opts as { face?: unknown } | undefined | null)?.face;
+  const list = Array.isArray(face) ? [...face] : [face];
+  if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
+    invalidArgs({
+      api: 'shell(thickness, { face })',
+      path: 'opts.face',
+      got: face,
+      requires:
+        "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
+      example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      featureId,
+    });
+  }
+  return list as (FaceSelector | string)[];
 }

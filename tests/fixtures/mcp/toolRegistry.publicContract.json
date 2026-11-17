@@ -490,6 +490,14 @@
               },
               "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
+            "loopMobility": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "description": "Closed-loop solver evidence per assembly and sampled pose: loop names, coordinate count, closure-Jacobian rank, mobility, Grübler count, redundant constraints, driven DOF, and independently drivable joints. Omitted when no loop was solved."
+            },
             "ignoredPairs": {
               "type": "array",
               "items": {
@@ -504,7 +512,7 @@
             },
             "failures": {
               "type": "array",
-              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate, `loop` names its closed loop, and `part` names the part when known.",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
@@ -520,6 +528,9 @@
                     "type": "string"
                   },
                   "joint": {
+                    "type": "string"
+                  },
+                  "loop": {
                     "type": "string"
                   },
                   "part": {
@@ -580,7 +591,7 @@
   },
   {
     "name": "diff_scripts",
-    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ base_file } or { base_code }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part; a `return [a, b]` multi-body script diffs per body as \"body[0]\", \"body[1]\". An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. Use after editing a script to verify exactly what changed physically before re-rendering. On a hosted server pass both versions inline: { base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } (base_code/old_code/before and revised_code/new_code/after are accepted as aliases). Read-only — never touches the active session.",
+    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ base_file } or { base_code }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits, coupleMates coupling), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part; a `return [a, b]` multi-body script diffs per body as \"body[0]\", \"body[1]\". An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. Use after editing a script to verify exactly what changed physically before re-rendering. On a hosted server pass both versions inline: { base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } (base_code/old_code/before and revised_code/new_code/after are accepted as aliases). Read-only — never touches the active session.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -886,7 +897,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions, blocking parts and one of three states (removable / blocked / unknown); sequence peels the directional blocking graph and reverses it into a build sequence with a model stamp. Fastened-mate and fixed-connect clusters become subassemblies: each is planned recursively inside and installed as one unit at the top level (`Step.subassembly`). Remaining valid orders use deterministic heuristics (subassemblies first, outside-in, fewest reorientations, fewest tool changes); stuck sets get a budgeted blocking-reduction partition and a sampling fallback whose paths are labelled found-by-search, never proven. A fastener with a fastened-mate `fastener` declaration (axis, pitch, optional tool envelope) is tested along its helical path and reported `motion: helical`; a press/snap `fit` declaration becomes a `requires-force` step, never simulated. A modelled driver/socket/hex-key envelope swept along the approach axis adds `toolBlocked` { fastener, blockers } and a failing S2 ledger entry; unmodelled tools add nothing. Threaded fasteners without metadata stay unknown: non-straight-path. `stability: true` adds an approximate P3 support check at each build step: each part's mesh centre of mass must project inside the support polygon of its contacts with already-stable parts (declared or inferred base/fixture under `gravity`, default [0,0,-1]); unsupported parts become `needsHold` { part, reason, supports } and their steps carry `stability: 'needs-hold'`, while stable steps may carry `heldBy`. This is a projection, not gravity simulation, friction, tipping or fixture analysis. disassembly_order runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagement_part?, min_engagement_mm?, max_protrusion_mm? }], tolerance_mm?, angle_tolerance_deg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs actuator capacities declared on arm.revolute / arm.prismatic joints ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }). No actuator coverage returns ok:false with assembly.joint.static-hold.no-actuator; unavailable assembly mass properties return ok:false with assembly.joint.static-hold.mass-unavailable; mate-only mechanicalJoint chains are not evaluated; check their torqueNm ratings with 'motion-load' (quasi_static: true).\n- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's own frame, which `feaStudy({ loadsFrom })` consumes) ({ file | code, motion_mode?: 'tracks'|'range'|'poses', motion_poses?: [{ joint: value }], sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, from_ms?, to_ms? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n- 'physics' — mechanism truth: rest-pose continuity, contact and interpenetration; budgeted joint-range collision/DOF sweep; and, when within the physics budget, static equilibrium and drop-on-release under gravity ({ file | code, assembly?, physics? }). Returns { ok, mechanism: 'real'|'broken'|'unverified', failures[], coverage }. A skipped sweep reports warning mechanism.unverified-budget-exceeded with coverage.sweep:false; a skipped physics pass reports warning mechanism.physics-budget-exceeded with coverage.physics:false. A closed-loop mate graph reports warning mechanism.physics-unsupported with coverage.physics:false and stays unverified: that rejection is unsupported topology, not a dynamics failure. Any of these skips leaves a clean mechanism unverified, but a completed rest-pose error still makes it broken. A physics budget skip occurs before MuJoCo runs.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions, blocking parts and one of three states (removable / blocked / unknown); sequence peels the directional blocking graph and reverses it into a build sequence with a model stamp. Fastened-mate and fixed-connect clusters become subassemblies: each is planned recursively inside and installed as one unit at the top level (`Step.subassembly`). Remaining valid orders use deterministic heuristics (subassemblies first, outside-in, fewest reorientations, fewest tool changes); stuck sets get a budgeted blocking-reduction partition and a sampling fallback whose paths are labelled found-by-search, never proven. A fastener with a fastened-mate `fastener` declaration (axis, pitch, optional tool envelope) is tested along its helical path and reported `motion: helical`; a press/snap `fit` declaration becomes a `requires-force` step, never simulated. A modelled driver/socket/hex-key envelope swept along the approach axis adds `toolBlocked` { fastener, blockers } and a failing S2 ledger entry; unmodelled tools add nothing. Threaded fasteners without metadata stay unknown: non-straight-path. `stability: true` adds an approximate P3 support check at each build step: each part's mesh centre of mass must project inside the support polygon of its contacts with already-stable parts (declared or inferred base/fixture under `gravity`, default [0,0,-1]); unsupported parts become `needsHold` { part, reason, supports } and their steps carry `stability: 'needs-hold'`, while stable steps may carry `heldBy`. This is a projection, not gravity simulation, friction, tipping or fixture analysis. disassembly_order runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'joint-range' — suggest revolute and prismatic mate limits from geometry. Each joint is swept alone from its authored pose, other mates held at their authored poses, until a non-exempt pair is within clearance_mm (default 0.3) or the finite search bound is reached. Exact BREP distance brackets the crossing and the reported stop is the clear side of that bracket, so the suggested limit keeps the requested clearance. Returns lower/upper stop, the limiting part pair, resolution, and status stop | no-stop | unknown. no-stop means no crossing was found at the sampled poses, not continuous proof that the interval is clear. Unknown (no finite bound, budget, or a failed measurement) is never reported as no-stop. The result includes a limits snippet to apply explicitly; the script is not rewritten. Mate neighbours and declared contact pairs are not stops.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagement_part?, min_engagement_mm?, max_protrusion_mm? }], tolerance_mm?, angle_tolerance_deg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs actuator capacities declared on arm.revolute / arm.prismatic joints ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }). No actuator coverage returns ok:false with assembly.joint.static-hold.no-actuator; unavailable assembly mass properties return ok:false with assembly.joint.static-hold.mass-unavailable; mate-only mechanicalJoint chains are not evaluated; check their torqueNm ratings with 'motion-load' (quasi_static: true).\n- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's own frame, which `feaStudy({ loadsFrom })` consumes) ({ file | code, motion_mode?: 'tracks'|'range'|'poses', motion_poses?: [{ joint: value }], sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, from_ms?, to_ms? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n- 'physics' — mechanism truth: rest-pose continuity, contact and interpenetration; budgeted joint-range collision/DOF sweep; and, when within the physics budget, static equilibrium and drop-on-release under gravity ({ file | code, assembly?, physics? }). Returns { ok, mechanism: 'real'|'broken'|'unverified', failures[], coverage }. A skipped sweep reports warning mechanism.unverified-budget-exceeded with coverage.sweep:false; a skipped physics pass reports warning mechanism.physics-budget-exceeded with coverage.physics:false. A closed-loop mate graph reports warning mechanism.physics-unsupported with coverage.physics:false and stays unverified: that rejection is unsupported topology, not a dynamics failure. Any of these skips leaves a clean mechanism unverified, but a completed rest-pose error still makes it broken. A physics budget skip occurs before MuJoCo runs.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -898,6 +909,7 @@
             "urdf",
             "dfm",
             "swept-collision",
+            "joint-range",
             "reachable",
             "mounting-holes",
             "load-capacity",
@@ -921,7 +933,7 @@
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/swept-collision/joint-range/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements)."
         },
         "code": {
           "type": "string",
@@ -1140,7 +1152,7 @@
         },
         "joint": {
           "type": "string",
-          "description": "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator."
+          "description": "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'joint-range' — revolute or prismatic joint to measure; omit to measure every one. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator."
         },
         "range": {
           "type": "array",
@@ -1154,6 +1166,35 @@
         "collision_tolerance_mm3": {
           "type": "number",
           "description": "check:'swept-collision' — BREP intersection volume tolerance (mm^3)."
+        },
+        "clearance_mm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'joint-range' — surface clearance the suggested stop protects, mm (default 0.3)."
+        },
+        "search": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "check:'joint-range' — [min, max] search window in the joint's units. Overrides authored limits. A joint with no finite window is unknown, not clear."
+        },
+        "step": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "check:'joint-range' — coarse step in the joint's units (default 5 degrees or 2 mm). A contact thinner than one step can be missed. no-stop means those sampled poses found no crossing, not a continuous proof."
+        },
+        "resolution": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "check:'joint-range' — bisection tolerance in the joint's units (default 0.1 degrees or 0.05 mm). The reported stop is the clear side of the final bracket."
+        },
+        "sweep_budget": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'joint-range' — face-weighted exact BREP distance budget (default 40000). 0, or a probe that would pass the budget, returns unknown. Never a clear range."
         },
         "tip_link": {
           "type": "string",
@@ -5025,7 +5066,7 @@
   },
   {
     "name": "find_part",
-    "description": "Use this when you need to find a part in the catalog. Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass parts_base_url (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.",
+    "description": "Use this when you need to find a part in the catalog. Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. A DIN or ISO fastener name also searches the standard table and returns the canonical ISO designation (DIN 912 and ISO 4762 both yield `ISO 4762 M5x16 - 8.8`; ISO 4014 is the partial-thread hexagon bolt; ISO 10642 yields `ISO 10642 M5x16 - 08.8`). Pass parts_base_url (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -7065,6 +7106,14 @@
               },
               "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
+            "loopMobility": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "description": "Closed-loop solver evidence per assembly and sampled pose: loop names, coordinate count, closure-Jacobian rank, mobility, Grübler count, redundant constraints, driven DOF, and independently drivable joints. Omitted when no loop was solved."
+            },
             "ignoredPairs": {
               "type": "array",
               "items": {
@@ -7079,7 +7128,7 @@
             },
             "failures": {
               "type": "array",
-              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate, `loop` names its closed loop, and `part` names the part when known.",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
@@ -7095,6 +7144,9 @@
                     "type": "string"
                   },
                   "joint": {
+                    "type": "string"
+                  },
+                  "loop": {
                     "type": "string"
                   },
                   "part": {
@@ -13161,6 +13213,507 @@
         "ok",
         "parts",
         "diagnostics"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "run_flight",
+    "description": "Use this when you need to know how high a model rocket goes, whether it is stable, and how fast it comes down under its parachute. Runs a rocket flight study on the model: mass and CG from the parts (material / density / massKg; the motor part is replaced by the declared motor, so the CG shifts as it burns), the Barrowman centre of pressure and static margin in calibers from the nose and fin geometry (or declared dimensions), and an RK4 point-mass trajectory with ISA atmosphere, launch rail, wind and parachute drag. Returns summary { apogeeM, apogeeTimeS, maxSpeedMs, maxAccelMs2, railExitSpeedMs, descentRateMs, landingTimeS, stability { liftoffCal, burnoutCal, cpFromNoseMm, cgLiftoffFromNoseMm }, motor { totalImpulseNs, impulseClass }, cd, massBreakdown, events, assumptions }, a time series (t, x, z, v, vz, a, a_axial, p_static_hpa, temp_c, mass, thrust, chute) as JSON columns or CSV, and an animationView-compatible track (altitude / downrange / chute / separation params with a ready-to-paste script fragment).\nThe study is EITHER declared in the script with `arm.flightStudy({...})` / `shape.flightStudy({...})` OR passed on the call (fields override a declared study): { code, motor: { thrustCurve: [[t, N], ...] | engFile: '<.eng text>', totalMassKg, propellantKg, part? }, aero: { cd: 'auto' | number, refDiameterMm?, nose?: { shape: 'ogive' | 'cone', part? }, fins?: { count, part? } }, launch: { railM, angleDeg, siteAltitudeM, windMs }, recovery: [{ cd, diameterMm, deploy: 'apogee' | 'apogee+1' | { atS }, part?, separates? }], dry_mass_kg?, min_stability_cal? }. ok is false on an error diagnostic (flight.stability.below-min, flight.stability.unresolved, flight.study.part-unresolved, flight.mass.unavailable, flight.sim.no-liftoff); warnings: flight.rail.exit-speed-low, flight.mass.density-defaulted, flight.sim.timeout. Point mass at zero angle of attack, no Mach effects: an engineering estimate, not OpenRocket and not a certification. Runs in seconds, in process.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script (with a flightStudy, or pass the study on the call)."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source (mutually exclusive with file)."
+        },
+        "study": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "Name of a declared flightStudy (default: the last), or an inline study object."
+        },
+        "motor": {
+          "type": "object",
+          "description": "{ thrustCurve: [[t s, N], ...] | engFile: '.eng text', totalMassKg, propellantKg, part?, cgFromNoseMm? }."
+        },
+        "aero": {
+          "type": "object",
+          "description": "{ cd: 'auto' | number, refDiameterMm?, axis?: '+Z', nose?: { shape?: 'ogive' | 'cone', part?, lengthMm? }, fins?: { count, part?, rootChordMm?, tipChordMm?, spanMm?, sweepMm?, leadingEdgeFromNoseMm? }, lengthMm? }."
+        },
+        "launch": {
+          "type": "object",
+          "description": "{ railM (default 1), angleDeg (from vertical), siteAltitudeM, windMs }."
+        },
+        "recovery": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "[{ cd, diameterMm, deploy: 'apogee' | 'apogee+<s>' | { atS }, inflateS?, part?, separates?: [part names] }]."
+        },
+        "dry_mass_kg": {
+          "type": "number",
+          "description": "Vehicle mass without the motor, kg (overrides the part masses)."
+        },
+        "cg_from_nose_mm": {
+          "type": "number",
+          "description": "Dry CG from the nose tip, mm (overrides the part CG)."
+        },
+        "min_stability_cal": {
+          "type": "number",
+          "description": "Minimum static margin, calibers; below it the run reports flight.stability.below-min."
+        },
+        "max_time_s": {
+          "type": "number",
+          "description": "Simulation cut-off, s (default 300)."
+        },
+        "series": {
+          "type": "string",
+          "enum": [
+            "json",
+            "csv",
+            "none"
+          ],
+          "description": "Time series format: 'json' columns + rows (default), 'csv', or 'none'."
+        },
+        "sample_dt_s": {
+          "type": "number",
+          "description": "Series row spacing, s (default 0.1)."
+        },
+        "animation_speed": {
+          "type": "number",
+          "description": "Animation playback speed-up (default 1 = real time)."
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Also write flight.csv (10 ms rows), summary.json and animation.json here."
+        }
+      }
+    },
+    "title": "Run Rocket Flight Study",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Run Rocket Flight Study"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "False when any error diagnostic was raised (stability below minimum or unresolved, unknown part, no mass, no liftoff)."
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "apogeeM (above the site), apogeeAslM, apogeeTimeS, maxSpeedMs, maxMach, maxAccelMs2, maxAccelG, railExitSpeedMs, burnoutTimeS, descentRateMs, landingTimeS, landed, downrangeM, liftoffMassKg, burnoutMassKg, dryMassKg, thrustToWeight, cd, cdSource, cdBreakdown, refDiameterMm, lengthMm, motor { totalImpulseNs, impulseClass, burnTimeS, peakThrustN, averageThrustN }, stability { liftoffCal, burnoutCal, minCal, cpFromNoseMm, cgLiftoffFromNoseMm, cgBurnoutFromNoseMm, cnAlpha, components }, aero { noseShape, noseLengthMm, fins }, massBreakdown, events, assumptions, disclaimer."
+        },
+        "vehicle": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Mass, motor and stability when the trajectory could not run."
+        },
+        "series": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ columns, rows, sample_dt_s } (series 'json') or { csv, sample_dt_s } (series 'csv')."
+        },
+        "animation": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ durationMs, speed, tracks: [{ param, keys: [{ atMs, value, ease? }] }], scriptFragment } for animationView()."
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Paths written under output_dir: csv, summary, animation."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "flight.* diagnostics raised by the run."
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "inspect_step_views",
+    "description": "Use this when you need labeled engineering views of one normalized STEP import. Pass { file } (a .step path). The tool imports it once with lib.fromSTEP and returns four PNGs (front, right, top, iso), a face list, and an edge list. height is the model viewport in pixels (64 to 1024, default 260); each PNG adds a 56 px legend band. width defaults to 360. faces carry id (fN), listRef (the same @kc string inspect faces emits), ref (the selector hole and offsetFaces accept), surfaceType, area, normal, and centroid. A positional fN listRef is not an edit selector. On an unlabeled import, ref is the FaceQuery { near: centroid }. A named face keeps its @kc ref. edges carry id, ref (@kc owner/edge/eN, which edge edits accept), curveType, length, and midpoint. importGeneration is owner@sha256-prefix of the file bytes. refScope says these selectors do not survive healing or a later edit. target_face highlights that face in every view where the face or its boundary is visible. Pass an id, a listRef, or a named ref from this import. A miss returns ok false, errorCode feature.selection.no-match, the face list, and no images. On-image labels are the largest visible faces and longest visible edges. The legend names at most 18 remaining face ids and 18 remaining edge ids, then a +N count. max_labels (default 8) caps on-image face labels. The default reply is compact, including a call that only passes report_id or report_path. detail true returns the saved full report (label placements and edge direction). Images come back as filesystem paths. When KERNELCAD_ARTIFACT_BASE_URL is set, each image also has a url of that base plus the file name.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path of a STEP file to import and draw."
+        },
+        "target_face": {
+          "type": "string",
+          "description": "Face id, listRef, or named ref from this import. Highlighted where it is visible."
+        },
+        "out_dir": {
+          "type": "string",
+          "description": "Directory for the four PNGs and report.json. Default is a new temp directory."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 1024,
+          "description": "Image width in pixels. Default 360."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 1024,
+          "description": "Model viewport height in pixels. Default 260. The PNG is 56 px taller for the legend."
+        },
+        "max_labels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32,
+          "description": "Maximum face labels drawn on each view. Default 8."
+        },
+        "detail": {
+          "type": "boolean",
+          "description": "When true, include the full report in the reply. Default false."
+        },
+        "report_id": {
+          "type": "string",
+          "description": "Return a report kept in this process. Do not pass file."
+        },
+        "report_path": {
+          "type": "string",
+          "description": "Return a report.json written by an earlier call. Do not pass file."
+        }
+      },
+      "required": []
+    },
+    "title": "Inspect STEP Views",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Inspect STEP Views"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "importGeneration": {
+          "type": "string",
+          "description": "owner@sha256 prefix of the STEP bytes. Selectors belong to this import only."
+        },
+        "refScope": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "labeledFaceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "legendFaceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "labeledEdgeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "legendEdgeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "targetVisible": {
+                "type": "boolean"
+              },
+              "targetPixels": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "path",
+              "description",
+              "targetVisible",
+              "targetPixels"
+            ]
+          }
+        },
+        "faces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ref": {
+                "description": "Edit selector: a named @kc ref, or { near: centroid } when the listing id is positional."
+              },
+              "listRef": {
+                "type": "string"
+              },
+              "surfaceType": {
+                "type": "string"
+              },
+              "area": {
+                "type": "number"
+              },
+              "normal": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "centroid": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "id",
+              "ref",
+              "listRef",
+              "surfaceType",
+              "area",
+              "normal",
+              "centroid"
+            ]
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "curveType": {
+                "type": "string"
+              },
+              "length": {
+                "type": "number"
+              },
+              "midpoint": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "id",
+              "ref",
+              "curveType",
+              "length",
+              "midpoint"
+            ]
+          }
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "report_path": {
+          "type": "string"
+        },
+        "full": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorHint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "check_export_health",
+    "description": "Use this when you need to know whether an assembly export is safe to simulate: rest contacts that are not parent/child or explicitly excluded, visual geoms that still collide, and whether each link's mass, centre of mass, and inertia match the CAD solid. Pass file or code. The tool exports MJCF and URDF, compiles the MJCF, and runs forward at qpos0. qpos0 is the authored mate pose: a scalar joint ref converts degrees to radians and millimetres to metres, the child body frame is that pose, and joint coordinate 0 stays the connector-aligned pose. A ball joint has no ref; its qpos0 stays the identity quaternion and the authored extrinsic XYZ Euler triple is the child body quaternion. A coupled driven joint uses ratio times source plus offset from that authored source. A qpos0 outside the joint range fails the check. This is not a posed sweep. Rest-contact rows separate penetration depth from margin-only contacts. Mate neighbours and other excluded body pairs are omitted. Each row includes cadExactOverlapMm3 and cadDistanceMm from the exact CAD solids. A row sets collisionGeomArtefact only when that overlap is at most 0.01 mm³ and cadDistanceMm is finite and greater than 0.01 mm. Zero, missing, or smaller clearance stays a real contact and fails the check. A visual geom (group 2, group 3, or a visual-/wrap- name) with non-zero contype or conaffinity is reported, as is a collision mesh that uses the whole-part visual mesh when solid collision pieces were declared. Inertia rows compare the CAD solid, including a declared mass when the part sets one, with the compiled MJCF body and the URDF inertial. When mass properties throw, both exports substitute unit inertia (1 kg, diagonal 1e-3 kg·m²) and the row is a fallback. A unit-inertia substitution, a regularized tensor, or a mismatch beyond the stated tolerance fails the row. MJCF defaults undeclared density to 2700 kg/m³ and URDF to 1000 kg/m³; each side is compared at the density that export used. ok is true only when every real row is clean. A collision-geometry artefact is reported and does not by itself fail the check. This is an export check at the compiled rest pose. It does not run drop tests, travel sweeps, or hardware acceptance. verify({ check: 'physics' }) remains the mechanism gate.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path of a .kcad.ts script. Mutually exclusive with code."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script. Mutually exclusive with file."
+        },
+        "assembly": {
+          "type": "string",
+          "description": "Assembly name when the script defines more than one. Defaults to the first captured assembly."
+        }
+      }
+    },
+    "title": "Check Export Health",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Check Export Health"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "True only when real rest contacts, visual collision bits, inertia rows, and qpos0 joint ranges are all clean. A collision-geometry artefact does not fail the check."
+        },
+        "source": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "tolerance": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Stated mass, centre-of-mass, inertia, and penetration thresholds."
+        },
+        "restContacts": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "penetrating and marginOnly rows. Parent/child pairs and explicit exclusions are omitted. collisionGeomArtefact is true only when exact CAD overlap is at or below 0.01 mm³ and cadDistanceMm is finite and greater than 0.01 mm. A zero or missing clearance stays a real contact. The row still carries cadExactOverlapMm3 and cadDistanceMm."
+        },
+        "restQpos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Scalar qpos0 for each compiled hinge and slide, in radians or metres."
+        },
+        "qposOutsideLimits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Compiled qpos0 values outside the joint range."
+        },
+        "visualFindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "inertia": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "massKg, comM (metres), inertia6 [ixx, ixy, ixz, iyy, iyz, izz] in kg·m²."
+          }
+        },
+        "geoms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Compiled geoms: contype, conaffinity, group, and role."
+        },
+        "excludedBodyPairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "inertiaNotes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
       ],
       "additionalProperties": true
     }

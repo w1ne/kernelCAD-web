@@ -16,8 +16,6 @@
 // expected to meet those components along its route. Other bodies, including
 // endpoints away from the attachment margin, stay in the clearance check.
 //
-// Spec:  docs/specs/2026-06-03-physics-loop-P11-collision-aware-mujoco.md
-// Plan:  docs/plans/2026-06-03-physics-loop-P11-slice-2-wrap-geom-routing.md
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';

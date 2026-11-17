@@ -11,7 +11,7 @@ meta({
   name: 'solar-carport-canopy',
   license: 'CC0-1.0',
   title: 'Solar carport canopy',
-  description: 'Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing. Structure four-post or cantilever; fieldService and highVisibility presets.',
+  description: 'Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing, charging cable jacket. Structure four-post or cantilever; fieldService and highVisibility presets.',
   tags: ['solar carport', 'carport', 'parking canopy', 'photovoltaic', 'EV charging', 'solar energy', 'low poly', 'scene prop', 'CC0'],
   kit: 'solar-energy',
   category: 'prop',
@@ -27,9 +27,11 @@ const aluminum = param('aluminum', '#b7c1c4', { label: 'Module frame and gutter 
 const solarGlass = param('solarGlass', '#244a68', { label: 'Solar glass' });
 const concrete = param('concrete', '#b3ada2', { label: 'Concrete piers and wheel stops' });
 const chargerPlastic = param('chargerPlastic', '#2f8f6a', { label: 'EV charger housing' });
+// The charging cable is a flexible polymer-jacketed lead, not galvanized structural steel.
+const chargerCable = param('chargerCable', '#202427', { label: 'EV charging cable jacket' });
 presets({
-  fieldService: { galvanizedSteel: '#68787b', aluminum: '#a9b5b9', solarGlass: '#1e4668', concrete: '#a39d92', chargerPlastic: '#3a6f9c' },
-  highVisibility: { galvanizedSteel: '#536367', aluminum: '#d4dcdf', solarGlass: '#183a5b', concrete: '#c4beb2', chargerPlastic: '#e0a31f' },
+  fieldService: { galvanizedSteel: '#68787b', aluminum: '#a9b5b9', solarGlass: '#1e4668', concrete: '#a39d92', chargerPlastic: '#3a6f9c', chargerCable: '#262b2e' },
+  highVisibility: { galvanizedSteel: '#536367', aluminum: '#d4dcdf', solarGlass: '#183a5b', concrete: '#c4beb2', chargerPlastic: '#e0a31f', chargerCable: '#1b1e20' },
 });
 
 const p = assembly("solar-carport-canopy");
@@ -121,7 +123,7 @@ add('ev-charger-holster', box(70, 110, 140, true).translate(CX - 125, CY, 1230).
 // Charging cable hanging in a loop from the housing to the holstered plug.
 const LOOP = [[CX - 60, CY + 110, 1100], [CX - 190, CY + 170, 660], [CX - 190, CY - 70, 650], [CX - 130, CY - 30, 1170]];
 LOOP.slice(1).forEach((q, i) => {
-  add(`ev-charger-cable-${i}`, rod(LOOP[i], q, 20, 6).color(galvanizedSteel));
+  add(`ev-charger-cable-${i}`, rod(LOOP[i], q, 20, 6).color(chargerCable));
 });
 
 return p.model();

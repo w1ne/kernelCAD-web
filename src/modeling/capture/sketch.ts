@@ -19,8 +19,10 @@ import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
 import { circleCommands } from './pathCircle';
 import { checkSweepSection } from './sweepSection';
+import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
+  assertNurbsSegmentOptionKeys,
   checkNurbsPenMatch,
   resolveNurbsDegree,
   toNurbsControlPoints,
@@ -28,91 +30,20 @@ import {
   toNurbsWeights,
 } from './nurbsSegmentPhases';
 import {
+  assertSplineOptionKeys,
   checkSplineConsecutiveDistinct,
   checkSplinePenMatch,
   toSplineTangent,
   toSplineWaypoints,
 } from './splinePhases';
 
-/**
- * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
- * Slice C's `hermiteG2`. All three fields are `[Editable<number>, Editable<number>]`
- * tuples so ParamRef-driven points / tangents / curvatures are supported.
- *
- * `point`     — endpoint in mm.
- * `tangent`   — first derivative of the curve at this endpoint (NOT the
- *               unit tangent: magnitude controls how aggressively the
- *               curve heads out of the endpoint; typical magnitude is in
- *               the order of the chord length between the two endpoints).
- * `curvature` — second derivative at this endpoint. Defaults to [0, 0],
- *               which makes the resulting curve G1-only (still degree 5).
- */
-export interface HermiteEndpoint2D {
-  point: [Editable<number>, Editable<number>];
-  tangent: [Editable<number>, Editable<number>];
-  curvature?: [Editable<number>, Editable<number>];
-}
-
-/**
- * Per-section placement for `Sketch.loft({ planes })`.
- *
- * `plane` / `origin` place the section's sketch plane; `rotationDeg` is an
- * in-plane rotation of this section about the loft's rotation center
- * (default `[0, 0]`, the sketch-local origin in this section's own plane;
- * override with `twistCenter`). When omitted, the section takes the
- * distributed `twistDeg` angle; when present it overrides that angle for
- * this section only.
- */
-export interface LoftPlaneSpec {
-  plane: 'XY' | 'YZ' | 'XZ';
-  origin: [Editable<number>, Editable<number>, Editable<number>];
-  rotationDeg?: Editable<number>;
-}
-
-/** Options accepted by `Sketch.loft`. */
-export interface LoftOptions {
-  spacing?: Editable<number>;
-  planes?: LoftPlaneSpec[];
-  twistDeg?: Editable<number>;
-  twistCenter?: [Editable<number>, Editable<number>];
-  ruled?: boolean;
-  /** With `ruled: true`, matching polyline sections become a triangulated
-   *  frustum (cheap to fuse and tessellate). Default is the NURBS loft. */
-  faceted?: boolean;
-  startPoint?: [Editable<number>, Editable<number>, Editable<number>];
-  endPoint?: [Editable<number>, Editable<number>, Editable<number>];
-  faceLabels?: FaceLabelsMap;
-  rails?: Curve3D[];
-  /** Requested continuity across station joins. Default `'G0'`, which keeps
-   *  the historical single `ThruSections` result. `'G1'`/`'G2'` build one
-   *  multi-span skin so there are no C0 joins to mismatch; `mode` is then
-   *  forced to `'single'` with a warning. */
-  continuity?: 'G0' | 'G1' | 'G2';
-  /** Stations per internal span for the segmented (`mode: 'sewn'`) path.
-   *  Must be an integer >= 2. Ignored by `mode: 'single'`. */
-  spanSize?: Editable<number>;
-  /** `'single'` (default) builds one skin over all stations. `'sewn'` builds
-   *  one solid per span and fuses them — fast, but the joins are C0. */
-  mode?: 'single' | 'sewn';
-}
-
-/** Option keys `Sketch.loft` accepts. Anything else is a likely typo and is
- *  rejected with `feature.invalid-args` instead of being silently dropped. */
-const ALLOWED_LOFT_KEYS = new Set([
-  'spacing', 'planes', 'ruled', 'faceted', 'startPoint', 'endPoint', 'faceLabels',
-  'rails', 'twistDeg', 'twistCenter', 'continuity', 'spanSize', 'mode',
-]);
-
-/** Keys a single `opts.planes[i]` entry accepts. */
-const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
-
-/** Option keys `Sketch.extrude` accepts. Anything else is a likely typo and is
- *  rejected with `feature.invalid-args` instead of being silently dropped. */
-const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
+import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
+import { ALLOWED_LOFT_KEYS, ALLOWED_LOFT_PLANE_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
+export type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
- * Shared by `extrude`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
+ * Shared by `extrude`'s and `sweep`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
  * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
  * every message/hint byte-identical to the hand-rolled guards this replaced.
  */
@@ -219,12 +150,26 @@ export class Sketch {
    *   sweeps, so a profile that does not touch the origin changes its
    *   bounding box. Defaults to 0 (straight extrude). Not supported for
    *   face-bound sketches (throws at lowering time).
+   * @param opts.taperDeg draft angle of the side walls in degrees (number or
+   *   ParamRef), strictly between -90 and 90. The profile stays exact on the
+   *   sketch plane; a positive taper narrows it toward the far end by
+   *   `depth × tan(taperDeg)` per side (the walls lean in), a negative taper
+   *   widens it. Cannot be combined with `twistAngle`.
+   * @param opts.symmetric when `true`, extrude `depth / 2` to each side of the
+   *   sketch plane (a mid-plane extrude: z from `-depth / 2` to `depth / 2`)
+   *   instead of 0..depth along +Z. `depth` stays the total thickness. Cannot
+   *   be combined with `taperDeg`, `twistAngle` or a face-bound sketch.
    *
    * Returns a `Shape` (3D solid).
    */
   extrude(
     depth: Editable<number>,
-    opts?: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } | null,
+    opts?: {
+      faceLabels?: FaceLabelsMap;
+      twistAngle?: Editable<number>;
+      taperDeg?: Editable<number>;
+      symmetric?: boolean;
+    } | null,
   ): Shape {
     // Tolerate an explicit `null` opts: the pre-guard implementation read
     // `opts?.faceLabels`, so JS/agent callers could pass null. Keep that
@@ -243,6 +188,18 @@ export class Sketch {
       this.id,
       'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
     );
+    assertEditableNumber(
+      opts.taperDeg,
+      'Sketch.extrude: opts.taperDeg',
+      this.id,
+      'Pass opts.taperDeg as a draft angle in degrees — a number or a param() reference.',
+    );
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.extrude(depth, { symmetric })',
+      requires: 'true (extrude depth/2 to each side of the sketch plane) or false',
+      example: 'path()...close().extrude(10, { symmetric: true })',
+      featureId: this.id,
+    });
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -258,6 +215,12 @@ export class Sketch {
         // byte-identical to the old literal record for a plain number.
         depth: toParam(depth, 'mm'),
         twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
+        // Recorded only when given, so untapered records stay byte-identical.
+        ...(opts.taperDeg === undefined || opts.taperDeg === 0
+          ? {}
+          : { taperDeg: toParam(opts.taperDeg, 'deg') }),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -279,9 +242,37 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap }): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
-    const angleDeg = opts?.angleDeg ?? 360;
+  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap; symmetric?: boolean } | null): Shape {
+    // Tolerate an explicit `null`, as extrude does. A positional angle,
+    // `revolve(180)`, used to be read as an empty option bag and built a full
+    // 360° solid; reject it with the option-bag form.
+    opts ??= {};
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.revolve({ angleDeg })',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an option object { angleDeg?, faceLabels?, symmetric? } or no argument (360°); the angle is not positional',
+        example: 'path()...close().revolve({ angleDeg: 180 })',
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_REVOLVE_KEYS,
+      this.id,
+      (key) => `Sketch.revolve: unknown option '${key}'.`,
+      'revolve',
+    );
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.revolve({ angleDeg, symmetric })',
+      requires: 'true (revolve angleDeg/2 to each side of the sketch plane) or false',
+      example: 'path()...close().revolve({ angleDeg: 90, symmetric: true })',
+      featureId: this.id,
+    });
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'revolve');
+    const angleDeg = opts.angleDeg ?? 360;
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
@@ -292,6 +283,8 @@ export class Sketch {
         // A ParamRef angle stays symbolic; the lowerer range-checks the
         // resolved value.
         angleDeg: toParam(angleDeg, 'deg'),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -367,7 +360,25 @@ export class Sketch {
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
+    if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.sweep(rail, opts)',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an options object { spine?, transitionMode?, frenet?, section?, faceLabels? }',
+        example: "sketch.sweep(rail, { spine: 'smooth' })",
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_SWEEP_KEYS,
+      this.id,
+      (key) => `Sketch.sweep: unknown option '${key}'.`,
+      'sweep',
+    );
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
     const section = checkSweepSection(opts.section, spine, this.id);
@@ -871,6 +882,7 @@ export class PathBuilder {
       endTangent?: [Editable<number>, Editable<number>];
     },
   ): PathBuilder {
+    assertSplineOptionKeys(opts);
     const now = (p: Param): number => this.#now(p);
     const paramPoints = toSplineWaypoints(points, now);
     checkSplineConsecutiveDistinct(paramPoints, now);
@@ -911,6 +923,7 @@ export class PathBuilder {
    * - `weights` length != controlPoints length;
    * - any weight ≤ 0 (zero collapses the basis; negative is undefined);
    * - `knots` length != controlPoints.length + degree + 1 (when provided).
+   * - any unknown option key, reported at capture as `feature.invalid-args`.
    *
    * Knot vector defaults to a clamped uniform vector
    * (`[0,...,0, ..., 1,...,1]` with multiplicity `degree+1` at each end).
@@ -925,6 +938,7 @@ export class PathBuilder {
     controlPoints: Array<[Editable<number>, Editable<number>]>,
     opts?: { degree?: number; weights?: number[]; knots?: number[] },
   ): PathBuilder {
+    assertNurbsSegmentOptionKeys(opts);
     const degree = resolveNurbsDegree(opts?.degree);
     const now = (p: Param): number => this.#now(p);
     const paramControls = toNurbsControlPoints(controlPoints, degree, now);

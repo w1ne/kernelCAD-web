@@ -50,7 +50,7 @@ describe('evaluateCache', () => {
     const stat = statSync(path);
     const key = await evaluateCacheKey({ file: path, kernel: 'occt' });
     expect(key).toBe(
-      `file:occt:${path}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}:imports:`,
+      `file:occt:${path}:${stat.dev}:${stat.ino}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}:imports::configs:none`,
     );
   });
 
@@ -60,6 +60,25 @@ describe('evaluateCache', () => {
     const ok = { evaluation: { exitCode: 0 }, tag: 'ok' };
     rememberEvaluatedScript('k', ok);
     expect(getEvaluatedScript('k')).toBe(ok);
+  });
+
+  it('misses after a geometry file beside an instanced part changes and the script file does not', async () => {
+    const path = writeScript(
+      'part-asset',
+      "await arm.instance('block', { source: './part.kcad.ts', configuration: 'only' });\nreturn arm;\n",
+      {
+        'part.kcad.ts': "configurations({ only: {} });\nreturn await lib.fromSTEP('block.step');\n",
+        'block.step': 'ISO-10303-21; STEP A;',
+      },
+    );
+    const before = await evaluateCacheKey({ file: path });
+    writeFileSync(join(path, '..', 'block.step'), 'ISO-10303-21; STEP B;');
+    const after = await evaluateCacheKey({ file: path });
+    expect(before).toBeDefined();
+    expect(after).toBeDefined();
+    expect(after).not.toBe(before);
+    const marker = ':configs:';
+    expect(before!.slice(0, before!.indexOf(marker))).toBe(after!.slice(0, after!.indexOf(marker)));
   });
 
   it('misses after an imported asset changes even when the script file does not', async () => {

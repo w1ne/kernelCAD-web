@@ -58,9 +58,9 @@ add('top-bar-groove', b(0, 0, TOP - 1, 2 * HALF - 20, 4, 1.5).color(wax));
 
 // Hoffman side bars: wide self-spacing shoulders on top, narrow below, with
 // the V edge of the shoulder drawn as a bevelled profile.
-const shoulder = extrudePolygon([[-17.5, 0], [17.5, 0], [17.5, 90], [8, 100], [-8, 100], [-17.5, 90]], 9);
+const shoulder = () => extrudePolygon([[-17.5, 0], [17.5, 0], [17.5, 90], [8, 100], [-8, 100], [-17.5, 90]], 9);
 for (const s of [-1, 1]) {
-  add(`side-shoulder-${s}`, shoulder.rotateX(90).rotateZ(90).translate(s * SX - 4.5, 0, TOP - 19 - 100).color(timber));
+  add(`side-shoulder-${s}`, shoulder().rotateX(90).rotateZ(90).translate(s * SX - 4.5, 0, TOP - 19 - 100).color(timber));
   add(`side-bar-${s}`, b(s * SX, 0, 10, 9, 25, TOP - 19 - 100 - 10 + 1).color(timber));
 }
 add('bottom-bar', b(0, 0, 0, 2 * SX + 9, 19, 10).color(timber));

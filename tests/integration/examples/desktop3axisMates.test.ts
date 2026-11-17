@@ -32,6 +32,7 @@ import { Scene } from '../../../src/modeling/validation/scene';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
@@ -51,6 +52,28 @@ function trackedDistanceTravelMm(
   }
   return distances.length === 0 ? 0 : Math.max(...distances) - Math.min(...distances);
 }
+
+describe('desktop-3axis-mates physics-grounded loop', () => {
+  // The P1 physics-loop sweep (2026-06-01, issue #347) flagged the hero as
+  // mechanism: broken. The fork cheeks now carry thrust washers 0.5 mm off
+  // the upper-arm side faces, the elbow servo sits flat on its cheek, and
+  // the finger hinge straps run past the hinge axis 0.5 mm off each finger,
+  // so every mate has bearing material within tolerance at rest. Hosted here
+  // for the sweep gate (HOSTED_IN_DEDICATED_FILE in exampleSweepShared.ts).
+  it('examples/robot-arm/desktop-3axis-mates.kcad.ts passes the physics-grounded loop', async () => {
+    const result = await runValidateCli({
+      file: EXAMPLE_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+
+    expect(result.mechanismFailures ?? [], JSON.stringify(result.mechanismFailures ?? [])).toEqual([]);
+    expect(result.mechanism).toBe('real');
+  }, 600_000);
+});
 
 describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () => {
   it('evaluates end-to-end with zero error diagnostics', async () => {
@@ -137,17 +160,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () =>
     expect(r).toBeLessThan(300);
   }, 120_000);
 
-  // P1 physics-loop discovery (2026-06-01): the desktop-3axis-mates
-  // hero reports `mechanism: broken` under the new physics-grounded
-  // loop with 7 disconnect failures at the base-yaw:-180 pose sample —
-  // every fastened mate uses vec3 connectors that drift under parent
-  // joint rotation. P3 sweep filed the follow-up; until #347 ships the
-  // assertion stays suspended.
-  //
-  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md
-  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
-  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/347
-  it.skip('passes the functional review loop with realized mechanical joint intent — see issues/347', async () => {
+  it('passes the functional review loop with realized mechanical joint intent', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       designGoal: 'Build a compact desktop 3-axis robot arm with physically supported servo joints and a functional gripper.',

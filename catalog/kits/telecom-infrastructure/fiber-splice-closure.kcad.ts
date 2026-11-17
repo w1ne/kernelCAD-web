@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: CC0-1.0
-// Fiber splice closure: Inline fiber splice closure with tapered ends, raised center lid and two cable ports with clearly separated telecom materials and visible component cues.
+// Fiber splice closure: Inline fiber splice closure with tapered ends, raised center lid and two cable ports.
+// The shell and its lid are one moulded thermoplastic housing; the cable ports take the
+// darker engineering polymer and only the mounting feet are powder-coated steel brackets.
 
 meta({
   name: "fiber-splice-closure",
   license: 'CC0-1.0',
   title: "Fiber splice closure",
-  description: "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+  description: "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale; moulded thermoplastic closure shell, engineering polymer and cable jacket, powder-coated steel mounting feet.",
   tags: ['telecom', 'network', 'communications', 'infrastructure', 'low poly'],
   kit: 'telecom-infrastructure',
   category: 'prop',
@@ -16,14 +18,17 @@ meta({
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 
+const closureShell = param('closureShell', '#4f585c', { label: 'Closure shell (moulded thermoplastic)' });
 const polymer = param('polymer', '#315267', { label: 'Engineering polymer and cable jacket' });
 const powderCoat = param('powderCoat', '#318b96', { label: 'Powder-coated steel' });
 presets({
   fieldSite: {
+    closureShell: '#3a4245',
     polymer: '#263a37',
     powderCoat: '#52756b',
   },
   highVisibility: {
+    closureShell: '#e0aa18',
     polymer: '#27363c',
     powderCoat: '#e0aa18',
   },
@@ -33,8 +38,8 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("fiber-splice-closure");
-p.part("shell", c(0, 0, 60, 460, 145, 8).color(powderCoat));
-p.part("lid", c(0, 0, 485, 40, 155, 8).color(powderCoat));
+p.part("shell", c(0, 0, 60, 460, 145, 8).color(closureShell));
+p.part("lid", c(0, 0, 485, 40, 155, 8).color(closureShell));
 p.part("port-left", c(0, -160, 210, 90, 62, 8).color(polymer));
 p.part("port-right", c(0, 160, 210, 90, 62, 8).color(polymer));
 p.part("mount-foot-left", b(-120, 0, 0, 90, 300, 40).color(powderCoat));

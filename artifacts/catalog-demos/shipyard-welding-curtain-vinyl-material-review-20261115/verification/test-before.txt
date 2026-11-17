@@ -1,0 +1,30 @@
+
+ FAIL  tests/integration/catalog/weldingCurtainVinylMaterial.test.ts > shipyard/welding-curtain-screen materials > draws the curtain panels as tinted welding vinyl, not a yard paint finish
+AssertionError: expected [ Array(3) ] to deeply equal [ 'curtainVinyl', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "curtainVinyl",
++   "yardPaint",
+    "structuralSteel",
+    "elastomer",
+  ]
+
+ ❯ tests/integration/catalog/weldingCurtainVinylMaterial.test.ts:22:95
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     23|       'curtainVinyl', 'structuralSteel', 'elastomer',
+     24|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:21:22
+   Duration  5.64s (transform 4.05s, setup 97ms, import 4.93s, tests 483ms, environment 0ms)
+

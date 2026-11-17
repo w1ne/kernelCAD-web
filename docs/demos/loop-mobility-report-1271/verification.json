@@ -1,0 +1,191 @@
+{
+  "scenario": "A four-bar linkage authored at a non-closing start pose.",
+  "invocation": "checkMechanismTruth(arm, { sweepBudget: 0 })",
+  "directSolver": {
+    "status": "did-not-converge",
+    "diagnostics": [
+      {
+        "code": "kinematic.loop.lockup",
+        "severity": "error",
+        "message": "Loop 'coupler_rocker' locks up at the as-built pose: the loop cannot close there. Joint 'rocker_ground' is at a singular configuration (the closure Jacobian loses rank), so the driven joint cannot move further this way. Limit the driven range, or change link lengths so the mechanism can pass this pose.",
+        "loop": "coupler_rocker",
+        "joint": "rocker_ground"
+      }
+    ],
+    "mobility": [
+      {
+        "loops": [
+          "coupler_rocker"
+        ],
+        "coordinates": 3,
+        "rank": 1,
+        "mobility": 2,
+        "gruebler": -2,
+        "redundantConstraints": 4,
+        "drivenDof": 0,
+        "independent": [
+          "crank_ground",
+          "rocker_ground"
+        ]
+      }
+    ]
+  },
+  "mechanismTruth": {
+    "mechanism": "broken",
+    "failures": [
+      {
+        "code": "kinematic.loop.lockup",
+        "severity": "error",
+        "message": "Loop 'coupler_rocker' locks up at the as-built pose: the loop cannot close there. Joint 'rocker_ground' is at a singular configuration (the closure Jacobian loses rank), so the driven joint cannot move further this way. Limit the driven range, or change link lengths so the mechanism can pass this pose.",
+        "hint": "A closed loop cannot close at the reported pose: the closure Jacobian loses rank at the named joint, so the driven joint cannot move further that way (a dead point or a range limit of a non-crank linkage). Limit the driven range to the last closed pose, or change link lengths so the mechanism can pass.",
+        "details": {
+          "sample": "rest",
+          "loop": "coupler_rocker",
+          "joint": "rocker_ground",
+          "pose": "{}",
+          "coordinates": 3,
+          "rank": 1,
+          "mobility": 2,
+          "gruebler": -2,
+          "redundantConstraints": 4,
+          "drivenDof": 0,
+          "independent": "crank_ground, rocker_ground"
+        }
+      },
+      {
+        "code": "kinematic.loop.mobility-mismatch",
+        "severity": "warn",
+        "message": "Loop 'coupler_rocker' is under-driven: 1 driven coordinate(s) for 2 degree(s) of freedom. The other 1 free coordinate(s) stay as close to the seed pose as closure allows; drive them for a unique pose.",
+        "hint": "The driven poses do not match the loop mobility (rank of the closure Jacobian). Over-driven: more driven joints than degrees of freedom, and their values disagree. Under-driven: fewer, so the remaining free joints stay near the seed pose. Drive exactly as many joints of the loop as its mobility reports.",
+        "details": {
+          "sample": "crank_ground:0",
+          "loop": "coupler_rocker",
+          "coordinates": 3,
+          "rank": 1,
+          "mobility": 2,
+          "gruebler": -2,
+          "redundantConstraints": 4,
+          "drivenDof": 1,
+          "independent": "crank_ground, rocker_ground"
+        }
+      },
+      {
+        "code": "kinematic.loop.lockup",
+        "severity": "error",
+        "message": "Loop 'coupler_rocker' locks up at crank_ground=0.00: the loop cannot close there. Joint 'rocker_ground' is at a singular configuration (the closure Jacobian loses rank), so the driven joint cannot move further this way. Limit the driven range, or change link lengths so the mechanism can pass this pose.",
+        "hint": "A closed loop cannot close at the reported pose: the closure Jacobian loses rank at the named joint, so the driven joint cannot move further that way (a dead point or a range limit of a non-crank linkage). Limit the driven range to the last closed pose, or change link lengths so the mechanism can pass.",
+        "details": {
+          "sample": "crank_ground:0",
+          "loop": "coupler_rocker",
+          "joint": "rocker_ground",
+          "pose": "{\"crank_ground\":0}",
+          "coordinates": 3,
+          "rank": 1,
+          "mobility": 2,
+          "gruebler": -2,
+          "redundantConstraints": 4,
+          "drivenDof": 1,
+          "independent": "crank_ground, rocker_ground"
+        }
+      },
+      {
+        "code": "kinematic.loop.mobility-mismatch",
+        "severity": "warn",
+        "message": "Loop 'coupler_rocker' is under-driven: 1 driven coordinate(s) for 2 degree(s) of freedom. The other 1 free coordinate(s) stay as close to the seed pose as closure allows; drive them for a unique pose.",
+        "hint": "The driven poses do not match the loop mobility (rank of the closure Jacobian). Over-driven: more driven joints than degrees of freedom, and their values disagree. Under-driven: fewer, so the remaining free joints stay near the seed pose. Drive exactly as many joints of the loop as its mobility reports.",
+        "details": {
+          "sample": "crank_ground:20",
+          "loop": "coupler_rocker",
+          "coordinates": 3,
+          "rank": 1,
+          "mobility": 2,
+          "gruebler": -2,
+          "redundantConstraints": 4,
+          "drivenDof": 1,
+          "independent": "crank_ground, rocker_ground"
+        }
+      },
+      {
+        "code": "kinematic.loop.lockup",
+        "severity": "error",
+        "message": "Loop 'coupler_rocker' locks up at crank_ground=0.00: the loop cannot close there. Joint 'rocker_ground' is at a singular configuration (the closure Jacobian loses rank), so the driven joint cannot move further this way. Limit the driven range, or change link lengths so the mechanism can pass this pose.",
+        "hint": "A closed loop cannot close at the reported pose: the closure Jacobian loses rank at the named joint, so the driven joint cannot move further that way (a dead point or a range limit of a non-crank linkage). Limit the driven range to the last closed pose, or change link lengths so the mechanism can pass.",
+        "details": {
+          "sample": "crank_ground:20",
+          "loop": "coupler_rocker",
+          "joint": "rocker_ground",
+          "pose": "{\"crank_ground\":0}",
+          "coordinates": 3,
+          "rank": 1,
+          "mobility": 2,
+          "gruebler": -2,
+          "redundantConstraints": 4,
+          "drivenDof": 1,
+          "independent": "crank_ground, rocker_ground"
+        }
+      }
+    ],
+    "loopMobility": [
+      {
+        "assembly": "flat-start-four-bar",
+        "pose": "rest",
+        "loops": [
+          "coupler_rocker"
+        ],
+        "coordinates": 3,
+        "rank": 1,
+        "mobility": 2,
+        "gruebler": -2,
+        "redundantConstraints": 4,
+        "drivenDof": 0,
+        "independent": [
+          "crank_ground",
+          "rocker_ground"
+        ]
+      },
+      {
+        "assembly": "flat-start-four-bar",
+        "pose": "crank_ground:0",
+        "loops": [
+          "coupler_rocker"
+        ],
+        "coordinates": 3,
+        "rank": 1,
+        "mobility": 2,
+        "gruebler": -2,
+        "redundantConstraints": 4,
+        "drivenDof": 1,
+        "independent": [
+          "crank_ground",
+          "rocker_ground"
+        ]
+      },
+      {
+        "assembly": "flat-start-four-bar",
+        "pose": "crank_ground:20",
+        "loops": [
+          "coupler_rocker"
+        ],
+        "coordinates": 3,
+        "rank": 1,
+        "mobility": 2,
+        "gruebler": -2,
+        "redundantConstraints": 4,
+        "drivenDof": 1,
+        "independent": [
+          "crank_ground",
+          "rocker_ground"
+        ]
+      }
+    ],
+    "sweep": false,
+    "physics": false
+  },
+  "scope": {
+    "localCadValidation": true,
+    "brepSweep": "skipped by the forced zero budget",
+    "physicsSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

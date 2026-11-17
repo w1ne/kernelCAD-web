@@ -44,10 +44,10 @@ const b = (x:number,y:number,z:number,w:number,d:number,h:number) => bevelled(w,
 const p = assembly("spiral-parcel-chute");
 p.part("foot", b(0,0,0,800,800,70).color(structuralSteel));
 p.part("mast", b(0,0,60,80,80,1500).color(paintedSteel));
-p.part("level-1", b(280,0,310,640,270,60).color(paintedSteel));
-p.part("level-2", b(0,280,630,270,640,60).color(paintedSteel));
-p.part("level-3", b(-280,0,950,640,270,60).color(paintedSteel));
-p.part("level-4", b(0,-280,1270,270,640,60).color(paintedSteel));
+p.part("level-1", b(260,0,310,640,270,60).color(paintedSteel));
+p.part("level-2", b(0,260,630,270,640,60).color(paintedSteel));
+p.part("level-3", b(-260,0,950,640,270,60).color(paintedSteel));
+p.part("level-4", b(0,-260,1270,270,640,60).color(paintedSteel));
 p.part("guard-a", b(580,0,370,25,270,120).color(structuralSteel));
 p.part("guard-b", b(0,580,690,270,25,120).color(structuralSteel));
 p.part("guard-c", b(-580,0,1010,25,270,120).color(structuralSteel));

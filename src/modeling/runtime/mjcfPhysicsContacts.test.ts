@@ -9,8 +9,6 @@
 // "passed" on geometry that physically intersected. This test fails the
 // moment collision-mesh emission regresses.
 //
-// Spec:  docs/specs/2026-06-03-physics-loop-P11-collision-aware-mujoco.md
-// Plan:  docs/plans/2026-06-03-physics-loop-P11-slice-1-collision-geom-emission.md
 
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';

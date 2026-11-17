@@ -36,11 +36,11 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("fiber-terminal-box");
-p.part("body", b(0, 0, 210, 460, 170, 420).color(powderCoat));
-p.part("hood", b(0, 0, 440, 500, 210, 45).color(powderCoat));
-p.part("door", b(0, -90, 225, 390, 16, 340).color(powderCoat));
+p.part("body", b(0, 0, 75, 460, 170, 420).color(powderCoat));
+p.part("hood", b(0, 0, 495, 500, 210, 45).color(powderCoat));
+p.part("door", b(0, -90, 90, 390, 16, 340).color(powderCoat));
 p.part("gland-left", c(-130, 0, 0, 75, 25, 8).color(polymer));
 p.part("gland-right", c(130, 0, 0, 75, 25, 8).color(polymer));
-p.part("latch", c(150, -108, 270, 24, 14, 8).color(stainlessSteel));
+p.part("latch", c(150, -108, 200, 24, 14, 8).color(stainlessSteel));
 
 return p.model();

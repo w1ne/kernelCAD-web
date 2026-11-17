@@ -15,6 +15,7 @@ export interface RibOptions {
   startZ?: number;
 }
 
+const RIB_KEYS = new Set(['thickness', 'height', 'startZ']);
 const EPS = 1e-9;
 const MAX_MITER_RATIO = 8;
 
@@ -157,6 +158,20 @@ export function makeRibMethod(api: () => KernelCadApi): Pick<KernelCadApi, 'rib'
       if (!opts || typeof opts !== 'object') {
         invalid('rib(base, centerline, opts)', 'opts', opts, 'an options object with thickness and height',
           'rib(base, [[5, 15], [35, 15]], { thickness: 2, height: 20 })');
+      }
+      // A misspelled startZ (`z`, `startz`) used to be dropped, building the
+      // rib from z = 0 with no diagnostic.
+      for (const key of Object.keys(opts)) {
+        if (!RIB_KEYS.has(key)) {
+          invalidArgs({
+            api: 'rib(base, centerline, opts)',
+            path: `opts.${key}`,
+            gotText: `an unknown option '${key}'`,
+            requires: 'only thickness, height and startZ',
+            hintSlug: 'invalid-args.rib',
+            example: 'rib(base, [[5, 15], [35, 15]], { thickness: 2, height: 20, startZ: 9.9 })',
+          });
+        }
       }
       if (!Number.isFinite(opts.thickness) || opts.thickness <= 0) {
         invalid('rib(base, centerline, opts)', 'thickness', opts.thickness, 'a finite positive rib thickness',

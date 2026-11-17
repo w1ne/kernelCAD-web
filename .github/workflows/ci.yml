@@ -31,6 +31,9 @@ on:
       - '!doc/**'
       - '!archive/**'
   pull_request:
+    # ready_for_review: a draft runs light checks only (see `changes`);
+    # marking it ready re-runs everything on the same head SHA.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
       - develop
@@ -71,6 +74,7 @@ jobs:
       reference_parts: ${{ steps.detect.outputs.reference_parts }}
       solidcraft: ${{ steps.detect.outputs.solidcraft }}
       push_gate: ${{ steps.detect.outputs.push_gate }}
+      light: ${{ steps.detect.outputs.light }}
     steps:
       - id: detect
         env:
@@ -78,6 +82,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
           PR: ${{ github.event.pull_request.number }}
+          DRAFT: ${{ github.event.pull_request.draft }}
         run: |
           set -euo pipefail
           docs_only=false
@@ -108,10 +113,20 @@ jobs:
               done <<< "$files"
             fi
           fi
+          # Draft PR: lint, build-and-checks and the tests related to the
+          # changed files only. The `test` gate reports under another name on
+          # a draft, so a light result can never satisfy the required `test`.
+          light=false
+          if [ "$EVENT" = "pull_request" ] && [ "$DRAFT" = "true" ]; then
+            light=true
+            reference_parts=false
+            solidcraft=false
+          fi
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
           echo "reference_parts=$reference_parts" >> "$GITHUB_OUTPUT"
           echo "solidcraft=$solidcraft" >> "$GITHUB_OUTPUT"
           echo "push_gate=$push_gate" >> "$GITHUB_OUTPUT"
+          echo "light=$light" >> "$GITHUB_OUTPUT"
 
   reference-parts:
     runs-on: ubuntu-latest
@@ -159,6 +174,13 @@ jobs:
       - uses: ./.github/actions/setup-cad
       - name: QC — typecheck + build:cli + cookbook + drift check
         run: npm run qc:build
+      # vitest.config.ts excludes eval/**/*.test.ts unless KCAD_CORPUS is set,
+      # so the sharded suite never runs the CADGenBench edit-promotion
+      # regressions (real STEP fixtures 201/206/208/229/247). They take ~5 s.
+      - name: CADGenBench edit-promotion regressions
+        env:
+          KCAD_CORPUS: '1'
+        run: npx vitest run eval/benchmarks/cadgenbench/
 
   # Committed catalog/index.json is kernel-dependent (triangle counts). A PR that
   # bumps OCCT without regenerating it can merge green against a stale base, so
@@ -170,15 +192,25 @@ jobs:
   catalog-index:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true'
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true'
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # HEAD^1 is the base the PR merge commit (or the develop push) is compared with.
+          fetch-depth: 2
       - uses: ./.github/actions/setup-cad
       - name: Catalog index freshness
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
         run: npx vitest run tests/integration/catalog/catalogIndex.test.ts
+      # #1416: re-render only the assets whose source or preview changed and
+      # fail on a stale preview, unless catalog/preview-exceptions.json holds a
+      # reviewed exception for that exact source and preview.
+      - name: Changed-source catalog preview gate
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: npx tsx scripts/checkChangedCatalogPreviews.ts --base HEAD^1
 
   # Slow modeled-thread geometry proofs (full M3–M12 helical sweep, modeled
   # tapped holes, bolt-in-nut clearance and interference on the M6 example).
@@ -189,7 +221,7 @@ jobs:
   geometry-proofs:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true'
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true' && needs.changes.outputs.light != 'true'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -206,7 +238,7 @@ jobs:
   test-shard:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true'
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true' && needs.changes.outputs.light != 'true'
     # Slow example-sweep tests were replaced by fast smoke tests, so each
     # shard now has a 10-minute budget.
     timeout-minutes: 10
@@ -228,18 +260,46 @@ jobs:
         # its own `catalog-index` job (above) so no shard inherits its ~7 min.
         run: npm test -- --shard=${{ matrix.shard }}/8 --exclude 'tests/integration/catalog/catalogIndex.test.ts'
 
+  # Draft PRs only: the tests vitest relates to the files changed against the
+  # base branch, instead of the sharded suite and the slow side jobs.
+  changed-tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.light == 'true' && needs.changes.outputs.docs_only != 'true'
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-cad
+      - name: Build CLI bundle (required by integration tests)
+        run: npm run build:cli
+      - name: QC — vitest, tests related to the changed files
+        run: npm test -- --changed "origin/${{ github.base_ref }}" --passWithNoTests --exclude 'tests/integration/catalog/catalogIndex.test.ts'
+
   # Gate job: carries the required-check name `test` so branch protection is
   # unchanged. if: always() ensures it reports failure (rather than being
-  # skipped) when a shard fails or is cancelled.
+  # skipped) when a shard fails or is cancelled. On a draft it is named
+  # `test (draft-light)`: it has `needs`, so its check run appears only after
+  # the jobs finish, and a light `test` success would stay the latest result
+  # for the head SHA during the whole full run after ready_for_review.
   test:
+    name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.draft) && 'test (draft-light)' || 'test' }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: [changes, test-shard, reference-parts, solidcraft-ledger, catalog-index]
+    needs: [changes, test-shard, reference-parts, solidcraft-ledger, catalog-index, changed-tests]
     if: always()
     steps:
       - name: All test shards green
         run: |
           [ "${{ needs.changes.result }}" = "success" ] || { echo "changes job: ${{ needs.changes.result }}"; exit 1; }
+          if [ "${{ needs.changes.outputs.light }}" = "true" ]; then
+            if [ "${{ needs.changes.outputs.docs_only }}" != "true" ]; then
+              [ "${{ needs.changed-tests.result }}" = "success" ] || { echo "changed-tests result: ${{ needs.changed-tests.result }}"; exit 1; }
+            fi
+            echo "Draft: light checks passed. The full suite runs when the PR is marked ready."
+            exit 0
+          fi
           # catalog-index is its own job on PRs and pushes (never in a shard), so
           # it is required whenever the heavy suite runs at all.
           if [ "${{ needs.changes.outputs.docs_only }}" != "true" ]; then
@@ -273,7 +333,7 @@ jobs:
   external-tools:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true'
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true' && needs.changes.outputs.light != 'true'
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4

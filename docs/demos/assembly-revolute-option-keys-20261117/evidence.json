@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2026-11-17T13:00:24.037Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, simulation, or deployed runtime used.",
+  "baseline": {
+    "baseRevision": "origin/develop e0832c49460d58a49450f61da375555545641172",
+    "reproduction": "The misspelled limitsDg option was accepted and the joint was recorded without limitsDeg.",
+    "focusedRegressionRun": "Before the fix, the new regression suite reported 1 failure: the unknown option did not produce a KernelError."
+  },
+  "fixedReplay": {
+    "invalidOptions": {
+      "code": "feature.invalid-args",
+      "path": "opts.limitsDg",
+      "message": "assembly.revolute(name, parent, child, opts): opts.limitsDg — got an unknown option 'limitsDg'; requires one of axis, origin, limitsDeg, actuator. Example: arm.revolute('hinge', base, link, { axis: [0, 0, 1], origin: [0, 0, 0], limitsDeg: [-90, 90] })",
+      "recordedJoint": false
+    },
+    "validJoint": {
+      "name": "hinge",
+      "kind": "revolute",
+      "limitsDeg": [
+        -45,
+        45
+      ],
+      "actuator": {
+        "torqueNm": 0.2
+      }
+    }
+  },
+  "source": {
+    "path": "docs/demos/assembly-revolute-option-keys-20261117/capture-demo.mts",
+    "sha256": "e32c481d4fca9265f8174c69f6bbadd005fc11530c2b0ade616a6dda7e4d5489"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/assembly-revolute-option-keys-20261117/demo.mp4",
+    "sha256": "b366dc67e6b2440afcd9a99d98e407da33a46ae9c2ec69127ec88d0b4d9b0fd9",
+    "bytes": 84626
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/assemblyRevoluteOptionKeys.test.ts src/modeling/capture/assembly.chaining.test.ts",
+      "result": "2 files passed; 12 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/assemblyJoints.ts src/modeling/capture/assemblyRevoluteOptionKeys.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

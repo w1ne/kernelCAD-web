@@ -51,10 +51,10 @@ const tube = (a: number[], b: number[], r: number, seg = 10) => {
     .rotateZ((Math.atan2(d[1], d[0]) * 180) / Math.PI)
     .translate(a[0], a[1], a[2]);
 };
-const turned = (pts: [number, number][], seg = 18) => {
+const turned = (pts: [number, number][]) => {
   let pb = path().moveTo(pts[0][0], pts[0][1]);
   for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve(360, seg);
+  return pb.close().revolve();
 };
 
 const agentPaint = agent.value === 'sevoflurane' ? '#e0b21e' : '#7a4fa3';
@@ -129,7 +129,7 @@ add('y-piece', cylF(-250, -560, 900, 70, 20, 12).color('#d9d9d2'));
 // ---- Gas cylinders on rear yokes ----
 for (const [k, x] of [-170, 170].entries()) {
   add(`cylinder-yoke-${k}`, blk(x - 70, 250, 860, x + 70, 300, 900).color(trim));
-  add(`oxygen-cylinder-${k}`, turned([[0, 0], [52, 0], [55, 20], [55, 560], [40, 620], [16, 640], [0, 640]], 16).translate(x, 360, 240).color(o2Green));
+  add(`oxygen-cylinder-${k}`, turned([[0, 0], [52, 0], [55, 20], [55, 560], [40, 620], [16, 640], [0, 640]]).translate(x, 360, 240).color(o2Green));
   add(`cylinder-valve-${k}`, cylZ(x, 360, 880, 60, 18, 10).color(trim));
   add(`cylinder-strap-${k}`, blk(x - 62, 296, 620, x + 62, 302, 650).color(rubber));
 }

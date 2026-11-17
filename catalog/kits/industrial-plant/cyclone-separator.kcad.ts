@@ -31,8 +31,8 @@ p.part('cone-step-2', cylinder(69.7, 125, 10).translate(0, 0, 147.6).scale(scale
 p.part('cone-step-3', cylinder(69.7, 85, 10).translate(0, 0, 82).scale(scale).color(steel));
 p.part('outlet-stack', cylinder(369, 60, 10).translate(0, 0, 697).scale(scale).color(steel));
 p.part('tangential-inlet', cylinder(312.5, 45, 10).rotate([0, 1, 0], 90).translate(61.2, 0, 549.4).scale(scale).color(steel));
-p.part('leg-0', box(28, 28, 80, true).translate(200, 0, 40).scale(scale).color(steel));
-p.part('leg-1', box(28, 28, 80, true).translate(-100, 173.2, 40).scale(scale).color(steel));
-p.part('leg-2', box(28, 28, 80, true).translate(-100, -173.2, 40).scale(scale).color(steel));
+p.part('leg-0', box(28, 28, 360, true).translate(200, 0, 180).scale(scale).color(steel));
+p.part('leg-1', box(28, 28, 360, true).translate(-100, 173.2, 180).scale(scale).color(steel));
+p.part('leg-2', box(28, 28, 360, true).translate(-100, -173.2, 180).scale(scale).color(steel));
 
 return p.model();

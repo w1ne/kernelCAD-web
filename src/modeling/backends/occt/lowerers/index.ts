@@ -50,6 +50,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   importedBrep: lowerImported,
   importedStl: lowerImported,
   importedMesh: lowerImported,
+  spurGearCut: lowerImported,
   sdfMaterialize: lowerSdfMaterialize,
   lattice: lowerLattice,
   // 2D to 3D
@@ -103,6 +104,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   dfmSpec: lowerVirtualRecord,
   feaStudy: lowerVirtualRecord,
   cfdStudy: lowerVirtualRecord,
+  flightStudy: lowerVirtualRecord,
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
   drawingDimension: lowerVirtualRecord,

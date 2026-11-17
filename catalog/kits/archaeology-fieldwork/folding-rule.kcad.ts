@@ -32,10 +32,10 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number, rx 
 };
 const c = (x: number, y: number, z: number, h: number, r: number, n = 10) => cylinder(h, r, n).translate(x, y, z - baseZ).scale(scale);
 
-p.part("rule-left", b(-180, 0, 0, 360, 30, 22, 0, 0, -12).color(timber));
-p.part("rule-center", b(180, 38, 0, 360, 30, 22, 0, 0, 0).color(timber));
-p.part("rule-right", b(540, 0, 0, 360, 30, 22, 0, 0, 12).color(timber));
-p.part("hinge-0", c(0, 0, 10, 42, 18, 8).color(brass));
-p.part("hinge-1", c(360, 38, 10, 42, 18, 8).color(brass));
+p.part("rule-left", b(-352, -37.4, 0, 360, 30, 22, 0, 0, 12).color(timber));
+p.part("rule-center", b(0, -37.4, 0, 360, 30, 22, 0, 0, -12).color(timber));
+p.part("rule-right", b(352, -37.4, 0, 360, 30, 22, 0, 0, 12).color(timber));
+p.part("hinge-0", c(-176, 0, 10, 42, 18, 8).color(brass));
+p.part("hinge-1", c(176, -74.9, 10, 42, 18, 8).color(brass));
 
 return p.model();

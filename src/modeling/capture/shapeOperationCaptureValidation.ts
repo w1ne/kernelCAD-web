@@ -3,6 +3,7 @@
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId, Param } from '../../shared/intent/types';
 import type { Editable } from '../../shared/runtime/paramRef';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   buildBendFeatureSpec,
   buildDraftFeatureSpec,
@@ -62,7 +63,39 @@ export function createDraftFeatureCaptureSpec(
   opts: DraftFeatureOpts,
 ): ShapeOperationFeatureSpec {
   requireRecord(records, baseId, `draft: base shape '${baseId}' is not from this CaptureSession`);
+  assertDraftOptions(opts, baseId);
   return buildDraftFeatureSpec(baseId, angleDeg, opts);
+}
+
+/** Option keys `Shape.draft` accepts. `{ face, pullDirection }` used to drop
+ *  the misspelt key and draft along the default pull with no diagnostic. */
+const DRAFT_OPTION_KEYS: ReadonlySet<string> = new Set(['face', 'neutralPlane', 'pullDir']);
+
+const DRAFT_EXAMPLE = "box(40, 30, 10).draft(3, { face: 'front', pullDir: [0, 0, 1] })";
+
+function assertDraftOptions(opts: unknown, featureId: FeatureId): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'draft(angleDeg, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { face, neutralPlane?, pullDir? }',
+      example: DRAFT_EXAMPLE,
+      featureId,
+    });
+  }
+  const unknown = Object.keys(opts).find((key) => !DRAFT_OPTION_KEYS.has(key));
+  if (unknown !== undefined) {
+    invalidArgs({
+      api: 'draft(angleDeg, opts)',
+      path: `opts.${unknown}`,
+      got: (opts as Record<string, unknown>)[unknown],
+      requires: `a known option key; draft accepts ${[...DRAFT_OPTION_KEYS].join(', ')}`,
+      example: DRAFT_EXAMPLE,
+      featureId,
+    });
+  }
 }
 
 export function createVariableEdgeFeatureCaptureSpec(

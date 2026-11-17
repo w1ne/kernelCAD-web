@@ -19,16 +19,16 @@ exports[`cookbook snapshot — top-3 IDs per query > ranks: "fillet the top edge
 exports[`cookbook snapshot — top-3 IDs per query > ranks: "pocket cut into the top face" 1`] = `
 [
   "blind-pocket-from-top",
+  "ledge-height-slot-block",
   "fillet-face-after-subtract",
-  "hex-nut-trap-bolt-clearance",
 ]
 `;
 
 exports[`cookbook snapshot — top-3 IDs per query > ranks: "symmetric part using mirror" 1`] = `
 [
   "mirror-half-part",
-  "loft-body-shell-from-profiles",
-  "bom-ready-assembly",
+  "mid-plane-link",
+  "symmetric-pipe-elbow",
 ]
 `;
 

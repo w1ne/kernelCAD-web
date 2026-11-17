@@ -564,9 +564,10 @@ export function validateHolesOpts(opts: HolesOpts, featureId: FeatureId | undefi
 // evaluated. The serializers here turn HoleOpts / HolesOpts into the flat
 // `Record<string, Param>` shape that FeatureRecord.params expects.
 //
-// The `face` selector and `upToFace` are stored under metadata (not Params) —
-// see serializeHoleParams for the shape. The lowerer in Phase 2 reads these
-// back via the existing FaceSelector resolver.
+// The `face` selector and `upToFace` are stored outside Params. The capture
+// proxy records each as a FeatureRef input so lowering can resolve the
+// selected entry and target faces against the current B-rep. The raw upToFace
+// selector also stays in metadata for round-tripping.
 
 export interface SerializedHoleCapture {
   params: Record<string, Param>;
@@ -594,11 +595,8 @@ function paramUnitless(value: string | number): Param {
   };
 }
 
-// `face` is captured under inputs.face by the proxy via buildFaceInputRef
-// (so pickFace can resolve it the same way shell/fillet/chamfer do); it is
-// intentionally absent from metadata to avoid the two-source-of-truth trap.
-// `upToFace` is only used by the lowerer when 'through' is not the trigger,
-// so it lives under metadata for now.
+// `face` and `upToFace` are captured under FeatureRef inputs by the proxy.
+// Their raw selectors remain in metadata so serialized features round-trip.
 
 export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
   const params: Record<string, Param> = opts.at !== undefined

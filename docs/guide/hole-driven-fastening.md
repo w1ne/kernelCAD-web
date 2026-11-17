@@ -14,6 +14,29 @@ the seat the fastener family needs. No hole feature id and no face frame is
 required: any bore in the lowered model behaves the same, whether it came
 from `hole()`, `holes()`, a pattern or an import.
 
+## End a bore on an existing face
+
+Use `upToFace` instead of `depth` when a bore should stop at the plane of an
+existing planar face. The face can be on a ledge outside the bore's footprint;
+the selected plane is carried through to the bore floor, including when it is
+inclined.
+
+```kcad
+const body = box(40, 20, 20).subtract(box(20, 20, 10).translate(20, 0, 10));
+return body.hole('top', {
+  u: 0,
+  v: 0,
+  diameter: 4,
+  upToFace: { containsPoint: [30, 10, 10] },
+});
+```
+
+`hole()` and `holes()` accept a FaceRef, canonical face name, label or FaceQuery
+as `upToFace`. The target must resolve to a planar face whose plane is ahead of
+the entry face and crosses the bore direction. A non-planar, parallel, or
+behind target fails with `feature.invalid-args`. The [replay bundle](../demos/hole-up-to-face/README.md)
+records exact volume and floor-probe checks for this example.
+
 ## What the holes decide
 
 - **Size.** The bore diameter is matched against ISO 273 clearance, all three
@@ -32,6 +55,9 @@ from `hole()`, `holes()`, a pattern or an import.
   plus hex nut on the back and needs a through bore. `screw` places the
   screw alone and, in a blind hole, picks the longest stocked length that
   still fits.
+- **Partial-thread hex.** `family: 'hex-head-bolt-partial'` (ISO 4014) places
+  that bolt stack. A grip that would leave the nut on the plain shank is
+  refused, and the message names ISO 4017.
 
 ```kcad
 const plate = box(40, 40, 8, true)

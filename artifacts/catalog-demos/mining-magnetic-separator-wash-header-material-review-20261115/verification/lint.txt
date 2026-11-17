@@ -1,0 +1,1 @@
+eslint catalog/kits/mining/ + new test: 0 problems

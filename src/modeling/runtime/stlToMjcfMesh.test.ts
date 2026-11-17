@@ -6,8 +6,6 @@
 // trips known geometry: two-triangle quad → exact vertex string;
 // cube STL (12 triangles) → 8 unique vertices.
 //
-// Spec:  docs/specs/2026-06-03-physics-loop-P11-collision-aware-mujoco.md
-// Plan:  docs/plans/2026-06-03-physics-loop-P11-slice-1-collision-geom-emission.md
 
 import { describe, expect, it } from 'vitest';
 import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';

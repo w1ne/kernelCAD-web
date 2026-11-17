@@ -31,16 +31,16 @@ const sleeve = cylinder(28 * s, 17 * s, 14)
   .subtract(cylinder(30 * s, 12 * s, 14).translate(0, 0, -s));
 a.part('coupling-sleeve', sleeve.color(steel));
 
-const collar = cylinder(4 * s, 19 * s, 14)
+const collar = () => cylinder(4 * s, 19 * s, 14)
   .subtract(cylinder(6 * s, 12 * s, 14).translate(0, 0, -s));
-a.part('entry-collar-a', collar.color(stainless));
-a.part('entry-collar-b', collar.translate(0, 0, 24 * s).color(stainless));
+a.part('entry-collar-a', collar().color(stainless));
+a.part('entry-collar-b', collar().translate(0, 0, 24 * s).color(stainless));
 
 if (sealConfiguration.value === 'two-seals') {
-  const sealRing = cylinder(2 * s, 11.7 * s, 14)
+  const sealRing = () => cylinder(2 * s, 11.7 * s, 14)
     .subtract(cylinder(2.2 * s, 9.5 * s, 14).translate(0, 0, -0.1 * s));
-  a.part('bore-seal-a', sealRing.translate(0, 0, 1 * s).color(seal));
-  a.part('bore-seal-b', sealRing.translate(0, 0, 25 * s).color(seal));
+  a.part('bore-seal-a', sealRing().translate(0, 0, 1 * s).color(seal));
+  a.part('bore-seal-b', sealRing().translate(0, 0, 25 * s).color(seal));
 }
 
 return a.model();

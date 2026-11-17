@@ -38,7 +38,11 @@ p.part('top-port-1', cylinder(78, 25.9, 10).translate(0, 0, 496).translate(0, 0,
 p.part('port-flange-1', cylinder(16, 38.9, 10).translate(0, 0, 553).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('top-port-2', cylinder(78, 25.9, 10).translate(235.2, 0, 496).translate(0, 0, -0.5).scale(scale).color(steel));
 p.part('port-flange-2', cylinder(16, 38.9, 10).translate(235.2, 0, 553).translate(0, 0, -0.5).scale(scale).color(steel));
-p.part('pressure-gauge', cylinder(26, 42, 10).rotate([1, 0, 0], 90).translate(117.6, -138.7, 381.6).translate(0, 0, -0.5).scale(scale).color(gaugeGlass));
+// A dial gauge is a steel case on a threaded stem with glass only over the dial face. The stem
+// clears the shell (surface y = -172.6 mm at this height) so the lens faces the -Y viewer.
+p.part('gauge-stem', cylinder(40, 8, 10).rotate([1, 0, 0], 90).translate(117.6, -165, 381.6).translate(0, 0, -0.5).scale(scale).color(steel));
+p.part('pressure-gauge', cylinder(22, 42, 10).rotate([1, 0, 0], 90).translate(117.6, -205, 381.6).translate(0, 0, -0.5).scale(scale).color(steel));
+p.part('pressure-gauge-lens', cylinder(4, 36, 10).rotate([1, 0, 0], 90).translate(117.6, -227, 381.6).translate(0, 0, -0.5).scale(scale).color(gaugeGlass));
 p.part('drain', cylinder(62, 16.6, 10).translate(0, 0, 18).translate(0, 0, -0.5).scale(scale).color(safetyPaint));
 
 return p.model();
