@@ -34,4 +34,24 @@ describe('linkInertialBlock — Task B3.B', () => {
     const steelMass = parseFloat(steel.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
     expect(steelMass / waterMass).toBeCloseTo(7.85, 2);
   });
+
+  it('scales mass and inertia to a declared massKg', () => {
+    // 10 mm cube in the positive octant. Volume 1e-6 m³.
+    // At 1000 kg/m³ the geometric mass is 0.001 kg. Declared 0.004 kg
+    // scales inertia by 4. About the centre of mass,
+    // Ixx = m (a² + a²) / 12.
+    const cube = OcctBackend.box(10, 10, 10);
+    const declaredKg = 0.004;
+    const side = 0.01;
+    const ixx = declaredKg * (side * side + side * side) / 12;
+    const r = linkInertialBlock(cube, 1000, declaredKg);
+    const mass = parseFloat(r.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
+    const inertia = parseFloat(r.xml.match(/ixx="([\d.e+-]+)"/)![1]);
+    expect(mass).toBeCloseTo(declaredKg, 6);
+    expect(Math.abs(inertia - ixx) / ixx).toBeLessThan(5e-6);
+    expect(r.diagnostics).toEqual([]);
+    const water = linkInertialBlock(cube, undefined, declaredKg);
+    expect(water.diagnostics).toEqual([]);
+    expect(parseFloat(water.xml.match(/<mass value="([\d.e+-]+)"/)![1])).toBeCloseTo(declaredKg, 6);
+  });
 });

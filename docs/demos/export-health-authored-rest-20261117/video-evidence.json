@@ -1,0 +1,37 @@
+{
+  "type": "text replay of a local check_export_health run; not a renderer capture",
+  "recordedAt": "2026-11-17T11:50:03.329Z",
+  "models": [
+    "swing-clear.kcad.ts",
+    "declared-mass.kcad.ts",
+    "limit-rest.kcad.ts"
+  ],
+  "invocation": "TMPDIR=/tmp TMP=/tmp npx tsx docs/demos/export-health-authored-rest-20261117/record-run.mts",
+  "run": {
+    "file": "run.json",
+    "sha256": "d2af5f67f1f118d26936a1491efdf7380b67583d192fc11352e603a3ad0aed3d"
+  },
+  "slides": {
+    "count": 4,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "9b7ad74c8ae3d55d12073e0fa779b3d4d1fadce596dce4dfb4580704e972d949",
+    "durationSeconds": 12,
+    "bytes": 196824,
+    "width": 1920,
+    "height": 1080,
+    "codec": "h264",
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  },
+  "claims": {
+    "authoredRestClear": true,
+    "coordinateZeroPenetrationM": 0.0099999965085333,
+    "declaredMassMatches": true,
+    "outOfLimitFails": true,
+    "deployed": false,
+    "hardwareAcceptance": false
+  }
+}

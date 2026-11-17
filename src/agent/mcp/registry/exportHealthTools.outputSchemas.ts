@@ -14,7 +14,7 @@ export const EXPORT_HEALTH_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   check_export_health: {
     type: 'object',
     properties: {
-      ok: { type: 'boolean', description: 'True only when rest contacts, visual collision bits, and inertia rows are all clean at qpos0.' },
+      ok: { type: 'boolean', description: 'True only when rest contacts, visual collision bits, inertia rows, and qpos0 joint ranges are all clean.' },
       source: { type: 'string' },
       summary: { type: 'string' },
       tolerance: { type: 'object', additionalProperties: true, description: 'Stated mass, centre-of-mass, inertia, and penetration thresholds.' },
@@ -23,6 +23,8 @@ export const EXPORT_HEALTH_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         additionalProperties: true,
         description: 'penetrating and marginOnly rows. Parent/child pairs and explicit exclusions are omitted.',
       },
+      restQpos: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Scalar qpos0 for each compiled hinge and slide, in radians or metres.' },
+      qposOutsideLimits: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Compiled qpos0 values outside the joint range.' },
       visualFindings: { type: 'array', items: { type: 'object', additionalProperties: true } },
       inertia: { type: 'array', items: INERTIA },
       geoms: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Compiled geoms: contype, conaffinity, group, and role.' },

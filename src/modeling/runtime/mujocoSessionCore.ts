@@ -15,7 +15,8 @@
 //   - Session.bodyPosesNow() → ReadonlyMap<bodyName, placement in mm>
 //   - Session.forward() — kinematics and contacts, no integration
 //   - Session.compiledGeoms / compiledContacts / compiledBodies /
-//     excludedBodyPairs — compiled model metadata (not XML text)
+//     compiledJointStates / excludedBodyPairs — compiled model metadata
+//     (not XML text)
 //   - Session.dispose()
 //
 // Coordinate units: MuJoCo SI throughout (radians, metres, kg, seconds).
@@ -56,8 +57,12 @@ const METRES_TO_MM = 1000;
 
 /** mjtObj values from the MuJoCo WASM bindings. */
 const OBJ_BODY = 1;
+const OBJ_JOINT = 3;
 const OBJ_GEOM = 5;
 const OBJ_MESH = 10;
+/** mjtJoint.mjJNT_SLIDE and mjJNT_HINGE. Free and ball are not scalar qpos. */
+const JNT_SLIDE = 2;
+const JNT_HINGE = 3;
 /** mjtGeom.mjGEOM_MESH */
 const GEOM_MESH = 7;
 const GEOM_TYPE_NAME = ['plane', 'hfield', 'sphere', 'capsule', 'ellipsoid', 'cylinder', 'box', 'mesh', 'sdf'] as const;
@@ -73,6 +78,16 @@ export interface CompiledGeom {
     readonly conaffinity: number;
     readonly margin: number;
     readonly mesh?: string;
+}
+
+export interface CompiledJointState {
+    readonly name: string;
+    readonly mate: string;
+    /** Index of this scalar coordinate in `qpos`. */
+    readonly qposAdr: number;
+    readonly qpos: number;
+    readonly limited: boolean;
+    readonly range: readonly [number, number];
 }
 
 export interface CompiledContact {
@@ -378,6 +393,42 @@ export class MujocoSession {
                 conaffinity: modelAt(this.model.geom_conaffinity, id),
                 margin: modelAt(this.model.geom_margin, id),
                 ...(mesh !== undefined && mesh.length > 0 ? { mesh } : {}),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Scalar hinge and slide joints as compiled. `qpos` is the live
+     * coordinate (qpos0 until `setPose`). Range is the compiled limit.
+     * Free and ball joints are omitted: their qpos is not one scalar.
+     *
+     * `jnt_limited` is a bool array this WASM build cannot read. An
+     * unlimited joint keeps the zero range the compiler allocates; a
+     * limited joint stores a real interval. A locked limit of exactly
+     * (0, 0) is indistinguishable from unlimited.
+     */
+    compiledJointStates(): CompiledJointState[] {
+        this.assertAlive();
+        const njnt = modelCount(this.model, 'njnt');
+        const qpos = this.data.qpos as ArrayLike<number>;
+        const mateByJoint = new Map(this.jointOrder.map((joint) => [joint.mjcfName, joint.mateName]));
+        const out: CompiledJointState[] = [];
+        for (let id = 0; id < njnt; id++) {
+            const type = modelAt(this.model.jnt_type, id);
+            if (type !== JNT_SLIDE && type !== JNT_HINGE) continue;
+            const name = this.objectName(OBJ_JOINT, id);
+            const adr = modelAt(this.model.jnt_qposadr, id);
+            const lower = modelAt(this.model.jnt_range, id * 2);
+            const upper = modelAt(this.model.jnt_range, id * 2 + 1);
+            const limited = upper > lower || (lower !== 0 && lower === upper);
+            out.push({
+                name,
+                mate: mateByJoint.get(name) ?? name,
+                qposAdr: adr,
+                qpos: Number(qpos[adr] ?? 0),
+                limited,
+                range: [lower, upper],
             });
         }
         return out;

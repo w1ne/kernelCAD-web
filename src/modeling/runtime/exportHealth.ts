@@ -4,7 +4,8 @@
 //
 // MJCF/URDF export health. Exports the assembly, compiles the MJCF, runs
 // forward at qpos0, and compares the compiled model with the CAD solid.
-// Contacts and geom bits come from the compiled model, not from XML text.
+// qpos0 is the authored mate pose (joint ref). Contacts, geom bits, and
+// joint ranges come from the compiled model, not from XML text.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
@@ -20,6 +21,7 @@ import type {
     CompiledBodyDynamics,
     CompiledContact,
     CompiledGeom,
+    CompiledJointState,
     ExcludedBodyPair,
     MujocoSession,
     MujocoSessionFactory,
@@ -37,6 +39,8 @@ export const EXPORT_HEALTH_TOLERANCE = {
      * contact. More negative than this is penetration. 1e-6 m is 0.001 mm.
      */
     penetrationEpsM: 1e-6,
+    /** A compiled qpos this far past a joint range (radians or metres) is outside. */
+    qposAbs: 1e-8,
 } as const;
 
 export interface InertiaSample {
@@ -86,6 +90,20 @@ export interface InertiaRow {
     readonly urdf: (InertiaSample & { readonly mismatch: boolean; readonly densityKgM3: number }) | { readonly missing: true };
 }
 
+export interface QposLimitFinding {
+    readonly joint: string;
+    readonly mate: string;
+    readonly qpos: number;
+    readonly lower: number;
+    readonly upper: number;
+}
+
+export interface RestQposRow {
+    readonly joint: string;
+    readonly mate: string;
+    readonly qpos: number;
+}
+
 export interface ExportGeomRow {
     readonly name: string;
     readonly body: string;
@@ -122,6 +140,10 @@ export interface ExportHealthReport {
         readonly penetrating: readonly RestContactRow[];
         readonly marginOnly: readonly RestContactRow[];
     };
+    /** Scalar joint coordinates the forward ran at. This is compiled qpos0. */
+    readonly restQpos: readonly RestQposRow[];
+    /** Compiled qpos0 values outside the joint range. */
+    readonly qposOutsideLimits: readonly QposLimitFinding[];
     readonly visualFindings: readonly VisualFinding[];
     readonly inertia: readonly InertiaRow[];
     readonly geoms: readonly ExportGeomRow[];
@@ -138,6 +160,7 @@ export interface AssessCompiledExportInput {
     readonly inertiaNotes: readonly string[];
     readonly urdfLinks: readonly ParsedUrdfLink[];
     readonly cadByBody: ReadonlyMap<string, { mjcf: InertiaReference; urdf: InertiaReference } | null>;
+    readonly joints?: readonly CompiledJointState[];
 }
 
 type Inertia6 = [number, number, number, number, number, number];
@@ -413,21 +436,48 @@ function inertiaRows(input: AssessCompiledExportInput): InertiaRow[] {
     return rows;
 }
 
+function qposRows(joints: readonly CompiledJointState[]): { restQpos: RestQposRow[]; qposOutsideLimits: QposLimitFinding[] } {
+    const eps = EXPORT_HEALTH_TOLERANCE.qposAbs;
+    const restQpos: RestQposRow[] = [];
+    const qposOutsideLimits: QposLimitFinding[] = [];
+    for (const joint of joints) {
+        restQpos.push({ joint: joint.name, mate: joint.mate, qpos: joint.qpos });
+        if (!joint.limited) continue;
+        const [lower, upper] = joint.range;
+        if (joint.qpos < lower - eps || joint.qpos > upper + eps) {
+            qposOutsideLimits.push({
+                joint: joint.name,
+                mate: joint.mate,
+                qpos: joint.qpos,
+                lower,
+                upper,
+            });
+        }
+    }
+    const byMate = (a: { mate: string; joint: string }, b: { mate: string; joint: string }) =>
+        a.mate.localeCompare(b.mate) || a.joint.localeCompare(b.joint);
+    restQpos.sort(byMate);
+    qposOutsideLimits.sort(byMate);
+    return { restQpos, qposOutsideLimits };
+}
+
 function summarize(report: Omit<ExportHealthReport, 'ok' | 'summary'>): { ok: boolean; summary: string } {
     const penetrating = report.restContacts.penetrating.length;
     const margin = report.restContacts.marginOnly.length;
     const visual = report.visualFindings.length;
     const inertia = report.inertia.filter((row) => row.mismatch).length;
-    const ok = penetrating === 0 && margin === 0 && visual === 0 && inertia === 0;
+    const qpos = report.qposOutsideLimits.length;
+    const ok = penetrating === 0 && margin === 0 && visual === 0 && inertia === 0 && qpos === 0;
     const summary = ok
         ? 'Export health passed at qpos0.'
-        : `Export health failed at qpos0: ${penetrating} penetrating rest contact(s), ${margin} margin-only rest contact(s), ${visual} visual-collision finding(s), ${inertia} inertia row(s) outside tolerance or flagged.`;
+        : `Export health failed at qpos0: ${penetrating} penetrating rest contact(s), ${margin} margin-only rest contact(s), ${visual} visual-collision finding(s), ${inertia} inertia row(s) outside tolerance or flagged, ${qpos} qpos0 value(s) outside joint limits.`;
     return { ok, summary };
 }
 
 /** Classify a compiled model. Pure: the session reader supplies the inputs. */
 export function assessCompiledExport(input: AssessCompiledExportInput): ExportHealthReport {
     const restContacts = contactRows(input.contacts, input.bodies, input.excludedBodyPairs, input.geoms);
+    const { restQpos, qposOutsideLimits } = qposRows(input.joints ?? []);
     const visualFindings = visualFindingsOf(input.geoms, input.expectations, input.urdfLinks);
     const inertia = inertiaRows(input);
     const geoms: ExportGeomRow[] = input.geoms.map((geom) => ({
@@ -443,6 +493,8 @@ export function assessCompiledExport(input: AssessCompiledExportInput): ExportHe
     const body = {
         tolerance: EXPORT_HEALTH_TOLERANCE,
         restContacts,
+        restQpos,
+        qposOutsideLimits,
         visualFindings,
         inertia,
         geoms,
@@ -452,8 +504,9 @@ export function assessCompiledExport(input: AssessCompiledExportInput): ExportHe
     return { ...summarize(body), ...body };
 }
 
-async function readCompiled(session: MujocoSession): Promise<Pick<AssessCompiledExportInput, 'geoms' | 'contacts' | 'bodies' | 'excludedBodyPairs'>> {
+async function readCompiled(session: MujocoSession): Promise<Pick<AssessCompiledExportInput, 'geoms' | 'contacts' | 'bodies' | 'excludedBodyPairs' | 'joints'>> {
     const qpos0 = session.getQpos();
+    const joints = session.compiledJointStates();
     session.setPose(qpos0);
     session.forward();
     return {
@@ -461,11 +514,13 @@ async function readCompiled(session: MujocoSession): Promise<Pick<AssessCompiled
         contacts: session.compiledContacts(),
         bodies: session.compiledBodies(),
         excludedBodyPairs: session.excludedBodyPairs(),
+        joints,
     };
 }
 
 /**
  * Export `arm` to MJCF and URDF, compile the MJCF, and run forward at qpos0.
+ * qpos0 is the authored mate pose written as each joint's `ref`.
  * The caller owns the MuJoCo session factory (Node or the browser worker).
  */
 export async function checkExportHealth(

@@ -167,7 +167,7 @@ async function buildPartLinkBlocks(
     const partName = part.name;
     const density = part.density ?? opts.density;
     const lowered = await part.originalShape.lower();
-    const inertial = linkInertialBlock(lowered, density);
+    const inertial = linkInertialBlock(lowered, density, part.massKg);
     diagnostics.push(...inertial.diagnostics);
     const meshRel = `meshes/${partName}.${meshFormat}`;
     const meshFilename = `${meshPrefix}${partName}.${meshFormat}`;

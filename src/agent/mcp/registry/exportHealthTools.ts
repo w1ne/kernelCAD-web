@@ -13,7 +13,8 @@ export const exportHealthToolEntries: ToolRegistryEntry[] = [
       name: 'check_export_health',
       description:
         'Use this when you need to know whether an assembly export is safe to simulate: rest contacts that are not parent/child or explicitly excluded, visual geoms that still collide, and whether each link\'s mass, centre of mass, and inertia match the CAD solid. ' +
-        'Pass file or code. The tool exports MJCF and URDF, compiles the MJCF, and runs forward at qpos0 (joint coordinates at their compiled rest, not a posed sweep). ' +
+        'Pass file or code. The tool exports MJCF and URDF, compiles the MJCF, and runs forward at qpos0. ' +
+        'qpos0 is the authored mate pose: the MJCF joint ref converts degrees to radians and millimetres to metres, the child body frame is that pose, and joint coordinate 0 stays the connector-aligned pose. A coupled driven joint uses ratio times source plus offset from that authored source. A qpos0 outside the joint range fails the check. This is not a posed sweep. ' +
         'Rest-contact rows separate penetration depth from margin-only contacts. Mate neighbours and other excluded body pairs are omitted. ' +
         'A visual geom (group 2, group 3, or a visual-/wrap- name) with non-zero contype or conaffinity is reported, as is a collision mesh that uses the whole-part visual mesh when solid collision pieces were declared. ' +
         'Inertia rows compare the CAD solid, including a declared mass when the part sets one, with the compiled MJCF body and the URDF inertial. A unit-inertia substitution, a regularized tensor, or a mismatch beyond the stated tolerance fails the row. ' +

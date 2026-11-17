@@ -6,7 +6,8 @@
 // inertia from OcctBackend.massProperties(density). Defaults density
 // to 1000 kg/m^3 (water) and emits an export.urdf.inertia-density-declared
 // warning so the agent knows downstream dynamics will be off by ~8x for
-// typical steel parts unless declared.
+// typical steel parts unless declared. A declared massKg replaces that
+// mass and scales the inertia tensor by the same factor.
 
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -25,20 +26,26 @@ export interface LinkInertialResult {
 export function linkInertialBlock(
   shape: OcctBackend,
   density: number | undefined,
+  massKg?: number,
 ): LinkInertialResult {
   const effective = density ?? URDF_DEFAULT_DENSITY_KG_M3;
   const mp = shape.massProperties(effective);
-  const [ixx, ixy, ixz, iyy, iyz, izz] = mp.inertia6;
+  // A declared mass wins over volume × density. CoM stays on the solid.
+  // Inertia scales with the mass, the same rule the MJCF emitter uses.
+  const declared = massKg !== undefined && massKg > 0 && mp.mass > 0 ? massKg : undefined;
+  const k = declared !== undefined ? declared / mp.mass : 1;
+  const mass = mp.mass * k;
+  const [ixx, ixy, ixz, iyy, iyz, izz] = mp.inertia6.map((v) => v * k);
   const xml = [
     `    <inertial>`,
     `      <origin xyz="${mp.com.map(n => (n * MM_TO_M).toFixed(6)).join(' ')}" rpy="0 0 0"/>`,
-    `      <mass value="${mp.mass.toFixed(6)}"/>`,
+    `      <mass value="${mass.toFixed(6)}"/>`,
     `      <inertia ixx="${ixx.toExponential(6)}" ixy="${ixy.toExponential(6)}" ixz="${ixz.toExponential(6)}" iyy="${iyy.toExponential(6)}" iyz="${iyz.toExponential(6)}" izz="${izz.toExponential(6)}"/>`,
     `    </inertial>`,
   ].join('\n');
 
   const diagnostics: CompilerDiagnostic[] = [];
-  if (density === undefined) {
+  if (density === undefined && declared === undefined) {
     diagnostics.push({
       target: 'export-occt',
       code: 'export.urdf.inertia-density-declared',

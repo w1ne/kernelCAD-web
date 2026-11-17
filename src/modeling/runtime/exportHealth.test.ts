@@ -186,8 +186,9 @@ describe('three-box export health at qpos0', () => {
         // Smallest overlap of the two centred boxes is 20 mm along Z.
         // A metre/millimetre slip would report tens of metres.
         for (const row of overlap) {
-            expect(row.penetrationM).toBeGreaterThan(0.005);
-            expect(row.penetrationM).toBeLessThan(0.05);
+            // Analytic minimum translation is the 20 mm Z overlap.
+            // 0.5 mm absolute rejects a 30 mm or 35 mm axis and a unit slip.
+            expect(row.penetrationM).toBeCloseTo(0.02, 3);
             expect(row.penetrationM).toBeCloseTo(-row.distM, 12);
             expect(row.kind).toBe('penetration');
             // Collision geoms are unnamed in the export. The compiled mesh
@@ -217,6 +218,8 @@ describe('three-box export health at qpos0', () => {
         expectSample(spacer!.urdf as InertiaSample, boxSolid(B_MM, URDF_DENSITY));
         expect(report.ok).toBe(false);
         expect(report.summary).toContain('penetrating');
+        expect(report.qposOutsideLimits).toEqual([]);
+        expect(report.restQpos.map((row) => row.qpos)).toEqual([0, 0]);
     }, 60000);
 });
 
@@ -263,5 +266,203 @@ describe('compiled visual geom collision bits', () => {
         } finally {
             session.dispose();
         }
+    }, 30000);
+});
+
+describe('declared mass and unit-inertia flags', () => {
+    it('fails the row when the URDF mass is not the declared mass', () => {
+        const declared = {
+            massKg: 0.055,
+            comM: [0, 0, 0] as const,
+            inertia6: [1e-6, 0, 0, 1e-6, 0, 1e-6] as const,
+        };
+        const body = {
+            id: 1,
+            name: 'servo',
+            parentId: 0,
+            parentName: 'world',
+            massKg: declared.massKg,
+            comM: [0, 0, 0] as const,
+            principalKgM2: [1, 1, 1] as const,
+            iquat: [1, 0, 0, 0] as const,
+            inertia6: declared.inertia6,
+        };
+        const report = assessCompiledExport({
+            geoms: [],
+            contacts: [],
+            bodies: [body],
+            excludedBodyPairs: [],
+            expectations: [],
+            inertiaNotes: [],
+            urdfLinks: [{
+                name: 'servo',
+                massKg: 0.032128,
+                comM: [0, 0, 0],
+                inertia6: declared.inertia6,
+            }],
+            cadByBody: new Map([['servo', {
+                mjcf: { ...declared, densityKgM3: 2700, massSource: 'declared-mass' },
+                urdf: { ...declared, densityKgM3: 1000, massSource: 'declared-mass' },
+            }]]),
+        });
+        const row = report.inertia.find((item) => item.body === 'servo');
+        expect(row?.mjcf).toMatchObject({ mismatch: false, massKg: 0.055 });
+        expect(row?.urdf).toMatchObject({ mismatch: true, massKg: 0.032128 });
+        expect(row?.fallback).toBe(false);
+        expect(row?.mismatch).toBe(true);
+        expect(report.ok).toBe(false);
+    });
+
+    it('compares MJCF and URDF to the declared mass of a centred box', async () => {
+        await initOcct();
+        const size: [number, number, number] = [10, 20, 30];
+        const declaredKg = 0.055;
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('declared-mass');
+        arm.part('servo', kcad.box(size[0], size[1], size[2], true), { massKg: declaredKg });
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+        const row = report.inertia.find((item) => item.body === 'servo');
+        const [sx, sy, sz] = size.map((mm) => mm / 1000);
+        const expected = boxSolid(size, declaredKg / (sx * sy * sz));
+        expect(expected.massKg).toBeCloseTo(declaredKg, 12);
+        expect(expected.massKg).not.toBeCloseTo(MJCF_DENSITY * sx * sy * sz, 4);
+        expect(row?.cad?.mjcf.massSource).toBe('declared-mass');
+        expect(row?.cad?.urdf.massSource).toBe('declared-mass');
+        expect(row?.fallback).toBe(false);
+        expect(row?.regularized).toBe(false);
+        expect(row?.mismatch).toBe(false);
+        expectSample(row!.mjcf!, expected);
+        expectSample(row!.urdf as InertiaSample, expected);
+        expect(report.ok).toBe(true);
+    }, 30000);
+
+    it('marks the health row fallback and mismatched when mass properties throw', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('unit-inertia-health');
+        arm.part('slug', kcad.box(10, 10, 10, true));
+        const spy = vi.spyOn(OcctBackend.prototype, 'massProperties').mockImplementation(() => {
+            throw new Error('mass properties unavailable');
+        });
+        try {
+            const exported = await assemblyToMjcf(arm);
+            const session = await loadMujocoSession(exported.mjcf, exported.bodyOrder, exported.jointOrder);
+            try {
+                session.forward();
+                const report = assessCompiledExport({
+                    geoms: session.compiledGeoms(),
+                    contacts: session.compiledContacts(),
+                    bodies: session.compiledBodies(),
+                    excludedBodyPairs: session.excludedBodyPairs(),
+                    joints: session.compiledJointStates(),
+                    expectations: [],
+                    inertiaNotes: exported.inertiaNotes,
+                    urdfLinks: [],
+                    cadByBody: new Map([['slug', null]]),
+                });
+                const row = report.inertia.find((item) => item.body === 'slug');
+                expect(exported.inertiaNotes).toContain(unitInertiaNote('slug'));
+                expect(row?.fallback).toBe(true);
+                expect(row?.mismatch).toBe(true);
+                expect(row?.notes.join('\n')).toContain('substituted unit inertia');
+                expect(row?.mjcf?.massKg).toBeCloseTo(1, 6);
+                expect(report.ok).toBe(false);
+            } finally {
+                session.dispose();
+            }
+        } finally {
+            spy.mockRestore();
+        }
+    }, 30000);
+});
+
+describe('authored rest pose versus coordinate zero', () => {
+    const axisAt = (origin: [number, number, number]) => ({
+        type: 'axis' as const,
+        origin: { kind: 'vec3' as const, value: origin },
+        axis: [0, 0, 1] as [number, number, number],
+    });
+
+    it('clears the stop at the authored 90° and overlaps it at coordinate 0', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('swing-clear');
+        // Link at coordinate 0 occupies x=[20,60]. The stop is a free root,
+        // not a fastened neighbour: a stop fixed to the base is in the base
+        // rigid group and the swing exclusion would hide the overlap.
+        // The stop occupies x=[30,50]. Minimum overlap at coordinate 0 is
+        // 10 mm. At 90° about Z through x=20 the link occupies x=[15,25]
+        // and the stop is clear by 5 mm.
+        arm.part('base', kcad.box(40, 40, 10, true)).connector('hinge', axisAt([20, 0, 0]));
+        arm.part('link', kcad.box(40, 10, 10, true)).connector('hinge', axisAt([-20, 0, 0]));
+        arm.part('stop', kcad.box(20, 10, 10, true), { at: [40, 0, 0] });
+        arm.mate('swing', 'base.hinge', 'link.hinge', 'revolute', { pose: 90, limitsDeg: [-20, 120] });
+
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+        const swing = report.restQpos.find((row) => row.mate === 'swing');
+        expect(swing?.qpos).toBeCloseTo(Math.PI / 2, 6);
+        expect(report.qposOutsideLimits).toEqual([]);
+        const pairs = [...report.restContacts.penetrating, ...report.restContacts.marginOnly]
+            .map((row) => `${row.bodyA}:${row.bodyB}`);
+        expect(pairs).not.toContain('link:stop');
+        expect(report.restContacts.penetrating).toEqual([]);
+        expect(report.ok).toBe(true);
+
+        const exported = await assemblyToMjcf(arm);
+        expect(exported.mjcf).toContain(`ref="${(Math.PI / 2).toFixed(6)}"`);
+        const session = await loadMujocoSession(exported.mjcf, exported.bodyOrder, exported.jointOrder);
+        try {
+            session.setPose(new Array(session.nq).fill(0));
+            session.forward();
+            const hits = session.compiledContacts().filter((contact) => {
+                const pair = [contact.bodyA, contact.bodyB].sort().join(':');
+                return pair === 'link:stop' && contact.distM < -1e-6;
+            });
+            expect(hits.length).toBeGreaterThan(0);
+            for (const hit of hits) expect(-hit.distM).toBeCloseTo(0.01, 3);
+        } finally {
+            session.dispose();
+        }
+    }, 30000);
+
+    it('reports qpos0 outside the joint range when the authored pose is 0', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('limit-rest');
+        arm.part('base', kcad.box(10, 10, 10, true)).connector('hinge', axisAt([20, 0, 0]));
+        arm.part('link', kcad.box(10, 10, 10, true)).connector('hinge', axisAt([0, 0, 0]));
+        arm.mate('shoulder', 'base.hinge', 'link.hinge', 'revolute', { pose: 0, limitsDeg: [12, 40] });
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+        expect(report.restContacts.penetrating).toEqual([]);
+        expect(report.restQpos).toEqual([expect.objectContaining({ mate: 'shoulder' })]);
+        expect(report.restQpos[0]?.qpos).toBeCloseTo(0, 8);
+        expect(report.qposOutsideLimits).toEqual([expect.objectContaining({
+            mate: 'shoulder',
+            qpos: expect.any(Number),
+        })]);
+        expect(report.qposOutsideLimits[0]?.lower).toBeCloseTo(12 * Math.PI / 180, 6);
+        expect(report.qposOutsideLimits[0]?.upper).toBeCloseTo(40 * Math.PI / 180, 6);
+        expect(report.ok).toBe(false);
+        expect(report.summary).toContain('outside joint limits');
+    }, 30000);
+
+    it('emits the coupling-consistent ref, not a conflicting driven pose', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('coupled-ref');
+        arm.part('base', kcad.box(20, 10, 10, true))
+            .connector('src', axisAt([5, 0, 0]))
+            .connector('drv', axisAt([-5, 0, 0]));
+        arm.part('source', kcad.box(10, 10, 10, true)).connector('hinge', axisAt([0, 0, 0]));
+        arm.part('driven', kcad.box(10, 10, 10, true)).connector('hinge', axisAt([0, 0, 0]));
+        arm.mate('src', 'base.src', 'source.hinge', 'revolute', { pose: 20, limitsDeg: [-40, 40] });
+        arm.mate('drv', 'base.drv', 'driven.hinge', 'revolute', { pose: 5, limitsDeg: [-40, 40] });
+        arm.coupleMates('drv', { source: 'src', ratio: -1, offset: 3 });
+        const { mjcf } = await assemblyToMjcf(arm);
+        const rad = (deg: number) => (deg * Math.PI / 180).toFixed(6);
+        expect(mjcf).toContain(`ref="${rad(20)}"`);
+        expect(mjcf).toContain(`ref="${rad(-17)}"`);
+        expect(mjcf).not.toContain(`ref="${rad(5)}"`);
+        expect(mjcf).toMatch(/polycoef="0 -1\.000000 0 0 0"/);
     }, 30000);
 });

@@ -59,6 +59,7 @@
 //     fixes via closed-loop tendons.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { NumericPoses } from '../capture/forwardKinematics';
 import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
@@ -72,6 +73,7 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
 import { emitContactBlock, emitMateCouplingBlock } from './mjcfMateConstraints';
+import { authoredRestPoses, mjcfJointRefAttribute, restBodyPlacement, type RestBodyPlacement } from './mjcfRestPose';
 import { escapeXml, fmtNum, sanitizeJointName } from './mjcfXmlFormat';
 
 const MM_TO_M = 1e-3;
@@ -129,7 +131,8 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     const tendons = arm.__tendons();
     const couplings = arm.__mateCouplings();
     const transmissions = arm.__transmissionIntents();
-    const couplingBlockLines = emitMateCouplingBlock(mates, couplings);
+    const restPoses = authoredRestPoses(arm);
+    const couplingBlockLines = emitMateCouplingBlock(mates, couplings, restPoses);
     if (parts.length === 0) {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
@@ -164,6 +167,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         paramTable,
         jointOrder,
         bodyOrder,
+        restPoses,
     );
 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
@@ -526,10 +530,19 @@ async function resolveTendonSites(
 
 /** A mated child body's position in its parent: the parent-local connector
  *  origin minus the child-local one (they coincide at rest). */
-function childBodyPos(frame: ResolvedMateFrame | undefined): Vec3 {
-    if (frame === undefined) return [0, 0, 0];
-    const o = frame.origin, c = frame.childOrigin;
-    return [o[0] - c[0], o[1] - c[1], o[2] - c[2]];
+function bodyAttrsFor(
+    partName: string,
+    mate: MateRecord | undefined,
+    rootPosMm: Vec3,
+    frame: ResolvedMateFrame | undefined,
+    restPoses: NumericPoses,
+): string {
+    const placed: RestBodyPlacement = mate === undefined
+        ? { posMm: [rootPosMm[0], rootPosMm[1], rootPosMm[2]] }
+        : restBodyPlacement(mate, frame, restPoses);
+    const posM = placed.posMm.map((v) => fmtNum(v * MM_TO_M)).join(' ');
+    const quat = placed.quat === undefined ? '' : ` quat="${placed.quat.map((v) => fmtNum(v)).join(' ')}"`;
+    return `name="${escapeXml(partName)}" pos="${posM}"${quat}`;
 }
 
 // Emit MJCF by recursive body-tree walk.
@@ -544,6 +557,7 @@ function emitWorldbodyBlocks(
     paramTable: ParamTable,
     jointOrder: { mjcfName: string; mateName: string }[],
     bodyOrder: string[],
+    restPoses: NumericPoses,
 ): string[] {
     function partAttachPos(part: AssemblyPartStored): Vec3 {
         // Root bodies use the part's `at` placement (mm → m). Non-root
@@ -563,13 +577,15 @@ function emitWorldbodyBlocks(
         if (part === undefined) return '';
         const inertial = inertials.get(partName)!;
 
-        // Body position: root uses part.at; non-root sits where its mate
-        // connector lands on the parent's. Both in mm; convert to m.
-        const posMm: Vec3 = mateFromParent === undefined
-            ? partAttachPos(part)
-            : childBodyPos(resolvedMateAxes.get(mateFromParent.name));
-        const posM = posMm.map((v) => v * MM_TO_M);
-        const bodyAttrs = `name="${escapeXml(partName)}" pos="${posM.map(fmtNum).join(' ')}"`;
+        // Root uses part.at. A mated child is placed at its authored rest:
+        // MuJoCo shows this frame at qpos0 and applies (qpos - qpos0).
+        const bodyAttrs = bodyAttrsFor(
+            partName,
+            mateFromParent,
+            partAttachPos(part),
+            mateFromParent === undefined ? undefined : resolvedMateAxes.get(mateFromParent.name),
+            restPoses,
+        );
 
         const lines: string[] = [];
         lines.push(`${indent}<body ${bodyAttrs}>`);
@@ -588,7 +604,7 @@ function emitWorldbodyBlocks(
         // child body, not on the parent — that's a key MJCF vs URDF
         // difference.
         if (mateFromParent !== undefined) {
-            const jointXml = mateToMjcfJoint(mateFromParent, resolvedMateAxes, jointOrder);
+            const jointXml = mateToMjcfJoint(mateFromParent, resolvedMateAxes, jointOrder, restPoses);
             for (const j of jointXml) lines.push(`${indent}  ${j}`);
         }
 
@@ -845,6 +861,7 @@ function mateToMjcfJoint(
     mate: MateRecord,
     resolved: Map<string, ResolvedMateFrame>,
     jointOrder: { mjcfName: string; mateName: string }[],
+    restPoses: NumericPoses,
 ): string[] {
     const frame = resolved.get(mate.name) ?? { origin: [0, 0, 0] as Vec3, axis: [0, 0, 1] as Vec3, childOrigin: [0, 0, 0] as Vec3 };
     const axis = frame.axis;
@@ -866,8 +883,9 @@ function mateToMjcfJoint(
             const limitedAttrs = limits !== undefined
                 ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
+            const refAttr = mjcfJointRefAttribute(mate, restPoses);
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${refAttr}${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'prismatic': {
@@ -876,8 +894,9 @@ function mateToMjcfJoint(
             const limitedAttrs = limits !== undefined
                 ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
+            const refAttr = mjcfJointRefAttribute(mate, restPoses);
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${refAttr}${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'planar': {

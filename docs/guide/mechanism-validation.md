@@ -36,13 +36,17 @@ The [12:48 coupled-gear release demo and evidence bundle](../demos/issue-1321-co
 
 ## MJCF and URDF export health
 
-`check_export_health` is separate from `verify({ check: 'physics' })`. It exports the assembly to MJCF and URDF, compiles the MJCF, and runs forward at `qpos0` (the compiled rest coordinates, not a posed sweep). The report is local export validation. It is not a drop test, a travel sweep, or hardware acceptance.
+`check_export_health` is separate from `verify({ check: 'physics' })`. It exports the assembly to MJCF and URDF, compiles the MJCF, and runs forward at `qpos0`. The report is local export validation. It is not a drop test, a travel sweep, or hardware acceptance.
 
-- Rest contacts are read from the compiled model. A row is a penetration when the signed distance is more negative than 0.001 mm, and a margin-only contact otherwise. Parent/child body pairs and explicit contact exclusions are left out of both lists.
+`qpos0` is the authored mate pose. The MJCF joint `ref` uses the same coordinate as the physics model: degrees become radians and millimetres become metres. The child body frame is that authored pose, because the compiled model shows the body frame at `qpos0` and then applies `qpos - qpos0`. Joint coordinate 0 stays the connector-aligned pose. A coupled driven joint takes `ratio × source + offset` from that authored source, which is the CAD rest coordinate. A compiled `qpos0` outside the joint range fails the check. `verify({ check: 'physics' })` still starts each mate that a sample does not name at coordinate 0, and that coordinate is still the connector-aligned pose.
+
+The [authored-rest export health demo and evidence bundle](../demos/export-health-authored-rest-20261117/README.md) records a hinge whose solids overlap at coordinate 0 and are clear at the authored pose, plus a declared-mass URDF inertial.
+
+- Rest contacts are read from the compiled model at that `qpos0`. A row is a penetration when the signed distance is more negative than 0.001 mm, and a margin-only contact otherwise. Parent/child body pairs and explicit contact exclusions are left out of both lists.
 - A visual geom (group 2, group 3, or a `visual-` / `wrap-` name) with a non-zero `contype` or `conaffinity` is reported. A collision mesh that uses the whole-part visual mesh while solid collision pieces were declared is reported too.
-- Each inertia row compares the CAD solid with the compiled MJCF body and the URDF inertial. A declared part mass replaces volume times density on that comparison. Undeclared density is 2700 kg/m³ on the MJCF side and 1000 kg/m³ on the URDF side. A unit-inertia substitution, a regularized tensor, or a component past the stated tolerance fails the row.
+- Each inertia row compares the CAD solid with the compiled MJCF body and the URDF inertial. A declared part mass replaces volume times density on both exports, and the inertia tensor is scaled by the same factor. Undeclared density is 2700 kg/m³ on the MJCF side and 1000 kg/m³ on the URDF side. A unit-inertia substitution, a regularized tensor, or a component past the stated tolerance fails the row.
 
-`ok` is true only when all three groups are clean.
+`ok` is true only when rest contacts, visual findings, inertia rows, and `qpos0` ranges are clean.
 
 ## Notes in the broken-mechanism banner
 

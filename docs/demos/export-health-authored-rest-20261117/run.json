@@ -1,0 +1,109 @@
+{
+  "recordedAt": "2026-11-17T11:50:03.329Z",
+  "command": "TMPDIR=/tmp TMP=/tmp npx tsx docs/demos/export-health-authored-rest-20261117/record-run.mts",
+  "swing": {
+    "file": "swing-clear.kcad.ts",
+    "ms": 280.852,
+    "ok": true,
+    "summary": "Export health passed at qpos0.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [
+      {
+        "joint": "swing",
+        "mate": "swing",
+        "qpos": 1.570796
+      }
+    ],
+    "visualCount": 0,
+    "inertiaCount": 3,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "coordinateZero": {
+      "qpos0": [
+        1.570796
+      ],
+      "hits": [
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        },
+        {
+          "bodyA": "link",
+          "bodyB": "stop",
+          "distM": -0.0099999965085333,
+          "penetrationM": 0.0099999965085333
+        }
+      ]
+    }
+  },
+  "declaredMass": {
+    "file": "declared-mass.kcad.ts",
+    "ms": 10.619709000000057,
+    "ok": true,
+    "summary": "Export health passed at qpos0.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [],
+    "restQpos": [],
+    "visualCount": 0,
+    "inertiaCount": 1,
+    "inertiaMismatch": [],
+    "noteCount": 0,
+    "block": {
+      "body": "block",
+      "cadMassKg": 0.05500000000000001,
+      "massSource": "declared-mass",
+      "mjcfMassKg": 0.055,
+      "urdfMassKg": 0.055,
+      "mjcfMismatch": false,
+      "urdfMismatch": false
+    }
+  },
+  "limitRest": {
+    "file": "limit-rest.kcad.ts",
+    "ms": 17.10450000000003,
+    "ok": false,
+    "summary": "Export health failed at qpos0: 0 penetrating rest contact(s), 0 margin-only rest contact(s), 0 visual-collision finding(s), 0 inertia row(s) outside tolerance or flagged, 1 qpos0 value(s) outside joint limits.",
+    "error": null,
+    "penetrating": [],
+    "marginOnly": [],
+    "qposOutsideLimits": [
+      {
+        "joint": "shoulder",
+        "mate": "shoulder",
+        "qpos": 0,
+        "lower": 0.20944,
+        "upper": 0.698132
+      }
+    ],
+    "restQpos": [
+      {
+        "joint": "shoulder",
+        "mate": "shoulder",
+        "qpos": 0
+      }
+    ],
+    "visualCount": 0,
+    "inertiaCount": 2,
+    "inertiaMismatch": [],
+    "noteCount": 0
+  }
+}
