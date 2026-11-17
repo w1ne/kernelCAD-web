@@ -21,7 +21,7 @@ export const EXPORT_HEALTH_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       restContacts: {
         type: 'object',
         additionalProperties: true,
-        description: 'penetrating and marginOnly rows. Parent/child pairs and explicit exclusions are omitted. A row whose exact CAD overlap is at or below 0.01 mm³ has collisionGeomArtefact true plus cadExactOverlapMm3 and cadDistanceMm.',
+        description: 'penetrating and marginOnly rows. Parent/child pairs and explicit exclusions are omitted. collisionGeomArtefact is true only when exact CAD overlap is at or below 0.01 mm³ and cadDistanceMm is finite and greater than 0.01 mm. A zero or missing clearance stays a real contact. The row still carries cadExactOverlapMm3 and cadDistanceMm.',
       },
       restQpos: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Scalar qpos0 for each compiled hinge and slide, in radians or metres.' },
       qposOutsideLimits: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Compiled qpos0 values outside the joint range.' },

@@ -32,7 +32,9 @@ false.
 `hull-corner.kcad.ts` seats an 8 mm cube in the inner corner of an L, 4 mm
 clear of both faces. The compiled hull penetration is 14.000 mm.
 `cadExactOverlapMm3` is 0, `cadDistanceMm` is 4, and
-`collisionGeomArtefact` is true. The report stays `ok: true`.
+`collisionGeomArtefact` is true. The report stays `ok: true`. Suppression
+needs that positive clearance. A pair that only touches, or whose overlap
+is at or below 0.01 mm³ with no measured gap past 0.01 mm, stays a finding.
 
 `verify({ check: 'physics' })` still starts a mate that a sample does not name
 at coordinate 0. That coordinate is the connector-aligned pose. Export `qpos0`
@@ -54,5 +56,6 @@ on the swing export. The committed `run.json` is that local run.
 `src/modeling/runtime/exportHealth.test.ts` covers the same behaviours:
 the 90° clearance against the 10 mm overlap at coordinate 0, the declared-mass
 row, the out-of-limit `qpos0`, the ball Euler clearance against the 10 mm
-zero-triple overlap, and the L-corner hull artefact. The non-adjacent negative
-control is the three-box assembly in that file (analytic overlap 20 mm).
+zero-triple overlap, the L-corner hull artefact at 4 mm clearance, and the
+touching cube in that same corner. The non-adjacent negative control is the
+three-box assembly in that file (analytic overlap 20 mm).

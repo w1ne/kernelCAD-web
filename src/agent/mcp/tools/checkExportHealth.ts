@@ -25,8 +25,10 @@ export type CheckExportHealthOutput =
  * `ok` is true only when there is no unexpected real rest contact, no visual
  * geom with collision bits, no visual mesh used as a collision solid,
  * and every inertia row matches the CAD solid within the stated tolerance.
- * A compiled contact whose exact CAD overlap is at or below 0.01 mm³ is a
- * collision-geometry artefact and does not fail the check. A compiled qpos0
+ * A compiled contact is a collision-geometry artefact only when the exact
+ * CAD overlap is at or below 0.01 mm³ and the CAD clearance is finite and
+ * greater than 0.01 mm. That artefact does not fail the check. Zero,
+ * missing, or smaller clearance stays a real contact. A compiled qpos0
  * outside its joint range also fails the check.
  */
 export async function checkExportHealthTool(input: CheckExportHealthInput): Promise<CheckExportHealthOutput> {

@@ -33,9 +33,11 @@ description: Export a kernelCAD model to STEP, STL, 3MF, GLB, OBJ, PLY, USD, DXF
   `ratio × source + offset`). It reports unexpected rest contacts, visual
   geoms that still collide, mass / centre of mass / inertia against the CAD
   solid for both the MJCF body and the URDF inertial, and any `qpos0` outside
-  its joint range. A contact whose exact CAD overlap is at or below 0.01 mm³
-  is a collision-geometry artefact (`collisionGeomArtefact`, with
-  `cadExactOverlapMm3` and `cadDistanceMm`) and does not fail the check. A
+  its joint range. A contact is a collision-geometry artefact
+  (`collisionGeomArtefact`, with `cadExactOverlapMm3` and `cadDistanceMm`)
+  only when the exact CAD overlap is at or below 0.01 mm³ and the CAD
+  clearance is finite and greater than 0.01 mm. That artefact does not fail
+  the check. Zero, missing, or smaller clearance stays a real contact. A
   declared `massKg` is the mass on both exports. When mass properties throw,
   both exports substitute unit inertia and the row is a fallback. It does not replace
   `verify({ check: "physics" })`, which still starts unnamed sample mates at

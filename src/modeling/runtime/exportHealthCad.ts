@@ -110,7 +110,7 @@ function interferenceReadout(
     explicit: readonly (readonly [number, number])[],
 ): { unconfirmed: Set<string>; volumeOf: Map<string, number> } {
     // Epsilon 0 keeps the measured volume. The caller applies the shared
-    // 0.01 mm³ floor when it decides a hull artefact.
+    // 0.01 mm³ floor and requires clearance past 0.01 mm before a hull artefact.
     const detected = explicit.length === 0
         ? undefined
         : detectInterferences(scene, 0, new Set<string>(), [], undefined, explicit);

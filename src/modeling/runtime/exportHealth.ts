@@ -7,8 +7,9 @@
 // qpos0 is the authored mate pose: scalar joints use `ref`, and a ball
 // joint's Euler triple is the child body quaternion. Contacts, geom bits,
 // and joint ranges come from the compiled model, not from XML text. A
-// compiled contact whose CAD solids do not overlap is a collision-geometry
-// artefact.
+// compiled contact is a collision-geometry artefact only when the CAD
+// solids are clear: overlap at or below 0.01 mm³ and clearance greater
+// than 0.01 mm. Zero or missing clearance stays a finding.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
@@ -21,7 +22,7 @@ import {
     MJCF_DEFAULT_DENSITY_KG_M3,
     mjcfMeshAssetName,
 } from './mjcfExport';
-import { INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { CONTACT_THICKNESS_MM, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { measureCadExactPairs, type CadExactMeasurement } from './exportHealthCad';
 import type {
     CompiledBodyDynamics,
@@ -80,9 +81,12 @@ export interface RestContactRow {
     /** Minimum distance between the CAD solids, mm. Zero when they overlap. */
     readonly cadDistanceMm?: number;
     /**
-     * The compiled geom overlaps, and the CAD solids do not (volume at or
-     * below the shared 0.01 mm³ floor). A convex hull or mesh decomposition
-     * can do that. The row stays visible and does not fail the check.
+     * The compiled geom overlaps, and the CAD solids are clear of each
+     * other. Overlap must be at or below the shared 0.01 mm³ floor, and
+     * the measured clearance must be finite and greater than the 0.01 mm
+     * face-contact floor. A convex hull can do that. Zero, missing, or
+     * smaller clearance stays a real contact. The row stays visible either
+     * way and an artefact does not fail the check.
      */
     readonly collisionGeomArtefact?: boolean;
 }
@@ -633,7 +637,7 @@ function summarize(report: Omit<ExportHealthReport, 'ok' | 'summary'>): { ok: bo
     const ok = penetrating === 0 && margin === 0 && visual === 0 && inertia === 0 && qpos === 0;
     const artefactNote = artefacts === 0
         ? ''
-        : ` ${artefacts} rest contact(s) are collision-geometry artefacts; exact CAD overlap is at or below ${INTERPENETRATION_EPSILON_MM3} mm³.`;
+        : ` ${artefacts} rest contact(s) are collision-geometry artefacts; exact CAD overlap is at or below ${INTERPENETRATION_EPSILON_MM3} mm³ and CAD clearance is greater than ${CONTACT_THICKNESS_MM} mm.`;
     const summary = ok
         ? `Export health passed at qpos0.${artefactNote}`
         : `Export health failed at qpos0: ${penetrating} penetrating rest contact(s), ${margin} margin-only rest contact(s), ${visual} visual-collision finding(s), ${inertia} inertia row(s) outside tolerance or flagged, ${qpos} qpos0 value(s) outside joint limits.${artefactNote}`;
@@ -696,16 +700,32 @@ function inertiaNotesFrom(mjcfNotes: readonly string[], diagnostics: readonly Co
     return notes;
 }
 
+/**
+ * A compiled contact is a hull artefact only when the CAD probe finished
+ * and the solids are apart. Volume at or below 0.01 mm³ is not enough: a
+ * touching pair and a sliver overlap both sit on that floor, and a missing
+ * distance is not clearance. Clearance must be finite and greater than
+ * CONTACT_THICKNESS_MM (0.01 mm), the same linear floor the mechanism rule
+ * uses to tell face contact from a gap.
+ */
+export function collisionGeomArtefactOf(hit: CadExactMeasurement): boolean {
+    const clearanceMm = hit.distanceMm;
+    return hit.confirmed
+        && hit.volumeMm3 <= INTERPENETRATION_EPSILON_MM3
+        && clearanceMm !== undefined
+        && Number.isFinite(clearanceMm)
+        && clearanceMm > CONTACT_THICKNESS_MM;
+}
+
 function withCadExact(report: ExportHealthReport, measured: ReadonlyMap<string, CadExactMeasurement>): ExportHealthReport {
     const apply = (row: RestContactRow): RestContactRow => {
         const hit = measured.get(pairKey(row.bodyA, row.bodyB));
         if (hit === undefined || !hit.confirmed) return row;
-        const artefact = hit.volumeMm3 <= INTERPENETRATION_EPSILON_MM3;
         return {
             ...row,
             cadExactOverlapMm3: hit.volumeMm3,
             ...(hit.distanceMm !== undefined ? { cadDistanceMm: hit.distanceMm } : {}),
-            collisionGeomArtefact: artefact,
+            collisionGeomArtefact: collisionGeomArtefactOf(hit),
         };
     };
     const body = {

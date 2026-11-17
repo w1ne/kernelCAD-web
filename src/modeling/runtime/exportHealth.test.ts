@@ -14,9 +14,11 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { assemblyToMjcf, unitInertiaNote } from './mjcfExport';
 import { fmtNum } from './mjcfXmlFormat';
 import { loadMujocoSession } from './mujocoSession';
+import { CONTACT_THICKNESS_MM, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import {
     assessCompiledExport,
     checkExportHealth,
+    collisionGeomArtefactOf,
     type InertiaSample,
 } from './exportHealth';
 import type { CompiledBodyDynamics, CompiledContact, CompiledGeom } from './mujocoSessionCore';
@@ -69,6 +71,24 @@ function geom(partial: Partial<CompiledGeom> & Pick<CompiledGeom, 'name' | 'body
 }
 
 describe('export health classification', () => {
+    it('suppresses a hull contact only when CAD clearance is past the face-contact floor', () => {
+        expect(INTERPENETRATION_EPSILON_MM3).toBe(0.01);
+        expect(CONTACT_THICKNESS_MM).toBe(0.01);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: 4 })).toBe(true);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0.01, distanceMm: 4 })).toBe(true);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: 0.02 })).toBe(true);
+        // Touching, a sliver overlap, clearance at the floor, and a missing
+        // distance are real contacts. The volume floor alone does not suppress.
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: 0 })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0.008, distanceMm: 0 })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: 0.01 })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0 })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: Number.NaN })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0, distanceMm: Number.POSITIVE_INFINITY })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: false, volumeMm3: 0, distanceMm: 4 })).toBe(false);
+        expect(collisionGeomArtefactOf({ confirmed: true, volumeMm3: 0.010001, distanceMm: 4 })).toBe(false);
+    });
+
     it('splits penetration from margin contacts and drops parent/child and explicit excludes', () => {
         const bodies = [
             { id: 1, name: 'a', parentId: 0, parentName: 'world', massKg: 1, comM: [0, 0, 0], principalKgM2: [1, 1, 1], iquat: [1, 0, 0, 0], inertia6: [1, 0, 0, 1, 0, 1] },
@@ -549,5 +569,54 @@ describe('collision geometry that the CAD solid does not share', () => {
         expect(report.restContacts.marginOnly.filter((item) => item.collisionGeomArtefact !== true)).toEqual([]);
         expect(report.ok).toBe(true);
         expect(report.summary).toContain('collision-geometry artefacts');
+        expect(report.summary).toContain('CAD clearance is greater than 0.01 mm');
+    }, 30000);
+
+    it('keeps a touching pair inside the convex hull as a real contact', async () => {
+        await initOcct();
+        const kcad = createModelingApi({ session: new CaptureSession() });
+        const arm = kcad.assembly('hull-touch');
+        const axis = (origin: [number, number, number]) => ({
+            type: 'axis' as const,
+            origin: { kind: 'vec3' as const, value: origin },
+            axis: [0, 1, 0] as [number, number, number],
+        });
+        // Same L as the 4 mm artefact. The cube centre is at world
+        // (14, 0, 14) mm, so the 8 mm cube occupies x=[10,18], z=[10,18]
+        // and shares the wall face and the slab face. Exact volume and
+        // distance are 0. The hull still contains the cube. This build
+        // reports a 14 mm penetration, and the zero clearance keeps every
+        // row a real contact. The anchor stays clear of both solids.
+        const slab = kcad.box(40, 20, 10, true).translate(20, 0, 5);
+        const wall = kcad.box(10, 20, 40, true).translate(5, 0, 20);
+        arm.part('ell', kcad.union(slab, wall)).connector('pin', axis([-30, 0, 0]));
+        arm.part('anchor', kcad.box(20, 20, 20, true))
+            .connector('pin', axis([0, 0, 0]))
+            .connector('seat', axis([44, 0, 14]));
+        arm.part('cube', kcad.box(8, 8, 8, true)).connector('seat', axis([0, 0, 0]));
+        arm.mate('pin', 'ell.pin', 'anchor.pin', 'revolute', { pose: 0, limitsDeg: [-90, 90] });
+        arm.mate('seat', 'anchor.seat', 'cube.seat', 'revolute', { pose: 0, limitsDeg: [-90, 90] });
+
+        const report = await checkExportHealth(arm, { sessionFactory: loadMujocoSession });
+        const exported = await assemblyToMjcf(arm);
+        expect(exported.mjcf).toContain('<body name="anchor" pos="-0.030000 0 0">');
+        expect(exported.mjcf).toContain('<body name="cube" pos="0.044000 0 0.014000">');
+        const rows = [...report.restContacts.penetrating, ...report.restContacts.marginOnly]
+            .filter((item) => item.bodyA === 'cube' && item.bodyB === 'ell');
+        expect(rows.length).toBeGreaterThan(0);
+        for (const row of rows) {
+            expect(row.kind).toBe('penetration');
+            expect(row.penetrationM).toBeCloseTo(0.014, 3);
+            expect(row.collisionGeomArtefact).toBe(false);
+            expect(row.cadExactOverlapMm3).toBeCloseTo(0, 3);
+            expect(row.cadExactOverlapMm3).toBeLessThanOrEqual(INTERPENETRATION_EPSILON_MM3);
+            expect(row.cadDistanceMm).toBeCloseTo(0, 3);
+            expect(row.cadDistanceMm ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(CONTACT_THICKNESS_MM);
+        }
+        expect(report.inertia.filter((row) => row.mismatch)).toEqual([]);
+        expect(report.visualFindings).toEqual([]);
+        expect(report.qposOutsideLimits).toEqual([]);
+        expect(report.ok).toBe(false);
+        expect(report.summary).toContain('penetrating');
     }, 30000);
 });
