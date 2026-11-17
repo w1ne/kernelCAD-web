@@ -65,10 +65,50 @@ const rod = (p0, p1, r, n = 6) => {
   const d = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
   return orient(extrudePolygon(circle(r, n), Math.hypot(d[0], d[1], d[2])), d, p0);
 };
+// Eight-sided ruled sections. The long radome taper is a cone, and a coarser
+// mesher splits that cone into far more triangles than this budget allows.
+const FACETS = 8;
+const ring = (r) => {
+  const radius = Math.max(r, 0.05);
+  let pb = path().moveTo(radius, 0);
+  for (let k = 1; k < FACETS; k++) {
+    const a = (2 * Math.PI * k) / FACETS;
+    pb = pb.lineTo(radius * Math.cos(a), radius * Math.sin(a));
+  }
+  return pb.close();
+};
+const frustum = (r0, z0, r1, z1) => ring(r0).loft(ring(Math.max(r1, 0.05)), {
+  planes: [
+    { plane: 'XY', origin: [0, 0, z0] },
+    { plane: 'XY', origin: [0, 0, z1] },
+  ],
+  ruled: true,
+});
 const turned = (pts) => {
-  let pb = path().moveTo(pts[0][0], pts[0][1]);
-  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
-  return pb.close().revolve();
+  const radii = pts.map((p) => p[0]);
+  const minR = Math.min(...radii);
+  if (minR > 0.2) {
+    const zs = pts.map((p) => p[1]);
+    const z0 = Math.min(...zs);
+    const z1 = Math.max(...zs);
+    return frustum(Math.max(...radii), z0, Math.max(...radii), z1)
+      .subtract(frustum(minR, z0 - 0.3, minR, z1 + 0.3));
+  }
+  const positive = pts.filter((p) => p[0] > 0.05);
+  const end = pts[pts.length - 1];
+  if (end[0] <= 0.05 && end[1] > positive[positive.length - 1][1] + 0.2) positive.push([0.4, end[1]]);
+  const spans = [];
+  for (let i = 0; i < positive.length - 1; i++) {
+    const [r0, z0] = positive[i];
+    const [r1, z1] = positive[i + 1];
+    if (z1 - z0 > 0.05) spans.push([r0, z0, r1, z1]);
+  }
+  let solid = null;
+  for (const [r0, z0, r1, z1] of spans) {
+    const piece = frustum(r0, solid === null ? z0 : z0 - 0.2, r1, z1);
+    solid = solid === null ? piece : solid.union(piece);
+  }
+  return solid;
 };
 
 const AX = 260; // antenna axis offset from the mast
