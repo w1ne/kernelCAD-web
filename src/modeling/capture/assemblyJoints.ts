@@ -62,6 +62,22 @@ function assertRevoluteJointOptionKeys(opts: RevoluteJointOpts): void {
   });
 }
 
+const PRISMATIC_JOINT_OPTION_KEYS = ['axis', 'origin', 'limitsMm', 'actuator'] as const satisfies readonly (keyof PrismaticJointOpts)[];
+
+function assertPrismaticJointOptionKeys(opts: PrismaticJointOpts): void {
+  const unknownKey = Object.keys(opts).find(
+    (key) => !(PRISMATIC_JOINT_OPTION_KEYS as readonly string[]).includes(key),
+  );
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'assembly.prismatic(name, parent, child, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${PRISMATIC_JOINT_OPTION_KEYS.join(', ')}`,
+    example: "arm.prismatic('slide', base, carriage, { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+  });
+}
+
 function isScalarCouplingMate(type: MateType): boolean {
   return type === 'revolute'
     || type === 'prismatic'
@@ -146,6 +162,7 @@ export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPar
 }
 
 export function prismaticJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
+  assertPrismaticJointOptionKeys(opts);
   if (!isValidVec3(opts.axis)) {
     invalidArgs({
       api: 'prismaticJoint(name, parent, child, { axis })',

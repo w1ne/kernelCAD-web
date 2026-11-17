@@ -89,11 +89,12 @@ arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90
 return arm.model();
 ```
 
-The body-tree forward-kinematics API `arm.revolute(name, parent, child, opts)`
-accepts `axis`, `origin`, optional `limitsDeg`, and optional `actuator`. It
-rejects unknown option keys during capture. A typo such as `limitsDg` reports
-`feature.invalid-args` at `opts.limitsDg` instead of silently creating an
-unbounded joint.
+The body-tree forward-kinematics APIs `arm.revolute(name, parent, child, opts)`
+and `arm.prismatic(name, parent, child, opts)` accept `axis`, `origin`, their
+optional kind-specific limit (`limitsDeg` or `limitsMm`), and optional
+`actuator`. They reject unknown option keys during capture. Typos such as
+`limitsDg` or `limitsMM` report `feature.invalid-args` at the supplied option
+path instead of silently creating an unbounded joint.
 
 ### Per-part material and density
 
