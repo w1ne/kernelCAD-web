@@ -1,0 +1,4 @@
+Command: bash artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/make_demo.sh
+
+Exit status: 0. The 16.8-second H.264 video was decoded and visually checked;
+metadata and extracted-frame hashes are in video-inspection.txt.

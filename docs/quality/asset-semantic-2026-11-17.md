@@ -50,3 +50,20 @@ review.
 
 The handoff bundle records the full catalog integration result for this
 revision.
+
+## Mining follow-up audit
+
+After rechecking the PR and open target list, five mining previews were reviewed:
+`cone-crusher-module`, `jaw-crusher-module`, `ball-mill`, `mine-locomotive`,
+and `mine-ventilation-fan`. One mismatch was corrected: the jaw crusher's
+eccentric shaft used the manganese jaw-liner control. It now uses the existing
+structural-steel control, while both wear liners remain manganese. Geometry and
+the 3,616-triangle count are unchanged.
+
+The [five-preview ledger, before/after renders, GLB regression, generated-index
+check, and inspected MP4](../../artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/README.md)
+record this follow-up. The public material-role description stays native to the
+kernelCAD asset; no vendor product identity is claimed. The branch is not
+deployed, and the local preview/regression do not imply simulation or hardware
+acceptance. The full catalog integration suite passed 137 files and 207 tests,
+including the complete source/export/index-freshness check.

@@ -181856,7 +181856,7 @@
       "id": "jaw-crusher-module",
       "kit": "mining",
       "title": "Jaw crusher module",
-      "description": "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, stand and drive steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
+      "description": "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, forged-steel eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, structural steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -181878,7 +181878,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/jaw-crusher-module.kcad.ts",
       "preview": "/assets/mining-jaw-crusher-module.png",
-      "sourceSha256": "792128892ba550ebe55451d890f90d9a97e7793fe9c664246b7600d3ca341df5",
+      "sourceSha256": "326fbd9459b9dbc1dd5a0e681cc43230752863a4cc67bb8fd161aa7fcc96efe1",
       "triangleBudget": 4500,
       "params": [
         {
@@ -181969,6 +181969,7 @@
             "motor-platform",
             "stand-brace--1",
             "stand-brace-1",
+            "eccentric-shaft",
             "pillow-block--1",
             "pillow-block-1",
             "motor-base-plate",
@@ -182067,7 +182068,6 @@
             "swing-jaw-ridge-3",
             "swing-jaw-ridge-4",
             "swing-jaw-ridge-5",
-            "eccentric-shaft",
             "belt-tension-screw",
             "toggle-rod--500",
             "toggle-rod-500",
