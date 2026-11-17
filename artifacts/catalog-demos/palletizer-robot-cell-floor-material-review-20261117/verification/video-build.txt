@@ -1,0 +1,4 @@
+bash -n artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/make_demo.sh: exit 0.
+artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/make_demo.sh: exit 0.
+ffprobe reports a 14-second, 1280x720, 25 fps H.264 MP4; details are in
+video-review/ffprobe.json.

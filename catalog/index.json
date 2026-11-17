@@ -145645,7 +145645,7 @@
       "id": "palletizer-robot-cell",
       "kit": "industrial-plant",
       "title": "Palletizer robot cell",
-      "description": "Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, steel, safety paint.",
+      "description": "Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, concrete, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -145664,7 +145664,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
       "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
-      "sourceSha256": "7a7a33dd0ecc04f58ddad77029a7ed00a38200c760bdfbc0aaea632437e5eb18",
+      "sourceSha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145687,14 +145687,22 @@
           "type": "color",
           "default": "#e9a43b",
           "label": "Safety paint"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8a8e89",
+          "label": "Concrete floor"
         }
       ],
       "presets": {
         "weathered": {
+          "concrete": "#777a75",
           "steel": "#575851",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
+          "concrete": "#b5b8b3",
           "safetyPaint": "#f5c640"
         }
       },
@@ -145710,18 +145718,12 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e9a43b",
+          "name": "concrete",
+          "color": "#8a8e89",
           "parts": [
-            "cell-floor",
-            "fence-post--1",
-            "fence-post-1",
-            "robot-pedestal",
-            "robot-upper-arm",
-            "robot-forearm",
-            "gate-leaf"
+            "cell-floor"
           ],
-          "param": "safetyPaint"
+          "param": "concrete"
         },
         {
           "name": "steel",
@@ -145735,6 +145737,19 @@
             "gripper"
           ],
           "param": "steel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e9a43b",
+          "parts": [
+            "fence-post--1",
+            "fence-post-1",
+            "robot-pedestal",
+            "robot-upper-arm",
+            "robot-forearm",
+            "gate-leaf"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },

@@ -83,6 +83,13 @@ records the five-preview ledger, before/after source and preview, GLB regression
 catalog index refresh, local checks, and inspected MP4. No geometry or asset
 count changed, and the branch is not deployed.
 
+The Nov 17 palletizer-cell review gives the floor slab its own concrete color
+control; structural steel and safety paint remain separate. Geometry is
+unchanged at 254 triangles under a 1,400-triangle budget. The
+[palletizer-cell handoff](../../../artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/README.md)
+records the five-preview ledger, before/after images, GLB regression, catalog
+index refresh, local checks, and inspected MP4. The branch is not deployed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -124,7 +131,7 @@ count changed, and the branch is not deployed.
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |
 | `weigh-hopper` | Weigh hopper | Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. | scale · steel · safety paint · wear liner |
 | `bulk-loading-spout` | Bulk loading spout | Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. | scale · steel · safety paint |
-| `palletizer-robot-cell` | Palletizer robot cell | Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. | scale · steel · safety paint |
+| `palletizer-robot-cell` | Palletizer robot cell | Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. | scale · concrete · steel · safety paint |
 | `bridge-crane` | Bridge crane | Double-girder top-running bridge crane in one runway bay at about real size: columns with corbels, runway beams and rails, end trucks, box girders, walkway, crab trolley with hoist drum, rope falls, hook block and pendant. | scale · girder · building · hoist · hook |
 | `gantry-crane` | Gantry crane | Mobile gantry crane with paired portal frames, caster trucks, crossbeam and chain hoist. | scale · steel · safety paint · rubber |
 | `jib-crane` | Jib crane | Floor-mounted jib crane with a base plate, mast, cantilevered boom, brace and chain block. | scale · steel · safety paint |

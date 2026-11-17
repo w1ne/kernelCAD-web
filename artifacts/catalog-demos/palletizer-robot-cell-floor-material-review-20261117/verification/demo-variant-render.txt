@@ -1,0 +1,3 @@
+npx tsx artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/make-demo-variants.ts
+Result: exit 0. Produced from-source.png and edited-concrete.png via the source
+param edit and a low-poly GLB software render.
