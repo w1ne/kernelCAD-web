@@ -98,6 +98,21 @@ assembly(name?: string): Assembly;
 // pair from overlap and rest-interpenetration diagnostics at the returned pose.
 // Mate-gap, joint-continuity and sampled joint-travel checks remain active.
 
+// External spur pair. Centre distance defaults to (m1·z1 + m2·z2)/2. `ratio`
+// is ω_driven/ω_driver and must be negative. The driven gear is turned so a
+// tooth space faces the driver. The assembly has revolute mates, a couple at
+// −z1/z2, and a gear-pair transmission. Default teeth are the involute from
+// spurGear. `await pair.toothInterference({ cycleSamples })` reports exact
+// BREP distance, common volume and measured pitch-circle backlash over one
+// driver tooth — geometry only, not strength. `await pair.withGeneratingCut({
+// samples })` is opt-in: a discrete union of the driver over one tooth,
+// repeated at tooth pitch. Its scallopMm is a chordal sagitta bound, not a
+// continuous generating cut. Example: examples/cookbook-parity/involute-spur-gear-pair.kcad.ts
+spurGearPair({
+  module, teeth, drivenTeeth?, ratio?, drivenModule?, pressureAngle?, faceWidth,
+  backlash?, phase?, centerDistance?, driverBore?, drivenBore?, name?,
+}): SpurGearPair;
+
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.

@@ -147,6 +147,8 @@ export type FeatureKind =
   | 'mirror'
   // imports (v0.3+)
   | 'importedMesh' | 'importedStep' | 'importedBrep' | 'importedStl'
+  // Driven tooth spaces cut by discrete poses of the mating spur. Parked solid, not an import.
+  | 'spurGearCut'
   // sketch (v0.2+)
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)

@@ -53,6 +53,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
 | `metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' \| 'tap_drill' \| 'auto', toleranceMm?: number }) => IsoThreadInfo` | Resolve the ISO 261 coarse metric thread for a diameter in millimetres. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
+| `spurGearPair({ module, teeth, drivenTeeth?, ratio?, drivenModule?, pressureAngle?, faceWidth, backlash?, phase?, centerDistance?, driverBore?, drivenBore?, name? }) => SpurGearPair` | External spur pair at centre distance (m1·z1 + m2·z2)/2, phased so a tooth space faces the driver. |
 | `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
 | `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
 | `internalGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal gear. |
