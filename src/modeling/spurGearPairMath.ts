@@ -10,8 +10,12 @@
 /**
  * Common volume (mm³) strictly above which a sampled pose is tooth
  * interference. `anyInterference` is that test over the aggregated poses,
- * and only then is `minClearanceMm` 0. A positive volume at or below this
- * floor is not interference and does not close the reported gap.
+ * and that case sets `minClearanceMm` to 0. Zero-volume contact (volume 0
+ * and distance 0) also reports clearance 0 with `anyInterference` false.
+ * A positive volume at or below this floor is not interference and does not
+ * close the reported gap. The floor is a fixed absolute volume for every
+ * module and face width: overlap volume is the transverse area times the
+ * face width, and similar teeth grow that area with the square of the module.
  */
 export const SPUR_GEAR_INTERFERENCE_VOLUME_MM3 = 1e-3;
 

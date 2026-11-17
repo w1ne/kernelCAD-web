@@ -100,7 +100,8 @@ export interface SpurGearToothInterferenceReport {
   aggregateNote: string;
   /**
    * Common volume, mm³, strictly above which a pose is tooth interference.
-   * Same value as `SPUR_GEAR_INTERFERENCE_VOLUME_MM3`.
+   * Same value as `SPUR_GEAR_INTERFERENCE_VOLUME_MM3`. A fixed absolute
+   * volume for every module and face width.
    */
   interferenceVolumeFloorMm3: number;
   /** True when any aggregated pose is above `interferenceVolumeFloorMm3`. */
@@ -108,9 +109,11 @@ export interface SpurGearToothInterferenceReport {
   /** Largest common volume, mm³, including volumes at or below the floor. */
   maxInterferenceVolumeMm3: number;
   /**
-   * 0 when `anyInterference` is true. Otherwise the minimum BREP distance
-   * among poses that are not a positive common volume at or below the floor.
-   * Null when every aggregated pose is in that band.
+   * 0 when `anyInterference` is true. Also 0 for zero-volume contact
+   * (distance 0 and common volume 0) while `anyInterference` stays false.
+   * Otherwise the minimum BREP distance among poses that are not a positive
+   * common volume at or below the floor. Null when every aggregated pose is
+   * in that band.
    */
   minClearanceMm: number | null;
   /**
@@ -153,8 +156,19 @@ export interface SpurGearPairMeasureSpec {
   backlashMm: number;
 }
 
+/** Distance 0 and common volume 0: clearance closes, the interference flag stays false. */
+const EXACT_CONTACT_CLEARANCE_TEXT =
+  'Zero-volume contact (common volume 0 and distance 0) sets minClearanceMm to 0 while anyInterference stays false.';
+
+/**
+ * The cutoff is absolute mm³. Similar teeth grow transverse overlap area
+ * with the square of the module, and volume is that area times face width.
+ */
+const VOLUME_FLOOR_SCALE_TEXT =
+  `The ${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³ floor is a fixed absolute volume for every module and face width. Overlap volume is the transverse overlap area times the face width, and similar teeth grow that area with the square of the module, so this floor is a larger share of a tooth on a fine module and a smaller share on a coarse module or a wide face.`;
+
 const GEOMETRY_NOTE =
-  `Geometry only. anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate the listed sampled poses, including poses refined beside the minimum. They do not prove clearance between those poses. A common volume strictly above interferenceVolumeFloorMm3 (${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³) is tooth interference: anyInterference is then true and minClearanceMm is 0. A positive common volume at or below that floor is not interference and does not set minClearanceMm to 0. When every sampled pose is in that band, minClearanceMm is null. Clearance on each pose is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result, and it is not a continuous no-interference certificate.`;
+  `Geometry only. anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate the listed sampled poses, including poses refined beside the minimum. They do not prove clearance between those poses. A common volume strictly above interferenceVolumeFloorMm3 (${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³) is tooth interference: anyInterference is then true and minClearanceMm is 0. A positive common volume at or below that floor is not interference and does not set minClearanceMm to 0. When every sampled pose is in that band, minClearanceMm is null. ${EXACT_CONTACT_CLEARANCE_TEXT} ${VOLUME_FLOOR_SCALE_TEXT} Clearance on each pose is the exact BREP distance and interference volume is the exact common solid at each sampled pose. This is not a tooth-strength, stress, or load-capacity result, and it is not a continuous no-interference certificate.`;
 
 interface PoseHit {
   distanceMm: number;
@@ -375,7 +389,7 @@ function aggregateNoteOf(
   const refined = refinementSteps === 0
     ? 'Refinement was skipped because a sampled pose already interferes.'
     : `Refinement added ${refinementSteps * 2} poses beside the minimum, ${refinementSteps} steps on each side.`;
-  return `anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate ${poseCount} sampled poses. The largest driver-angle gap still touching the minimum-clearance pose is ${unresolvedStepDeg.toFixed(4)}°. ${refined} These fields do not prove clearance between samples. anyInterference is a common volume strictly above ${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³, and that is the only case that sets minClearanceMm to 0. A smaller positive volume does not.`;
+  return `anyInterference, maxInterferenceVolumeMm3 and minClearanceMm aggregate ${poseCount} sampled poses. The largest driver-angle gap still touching the minimum-clearance pose is ${unresolvedStepDeg.toFixed(4)}°. ${refined} These fields do not prove clearance between samples. anyInterference is a common volume strictly above ${SPUR_GEAR_INTERFERENCE_VOLUME_MM3} mm³, and that case sets minClearanceMm to 0. A smaller positive volume does not set minClearanceMm to 0. ${EXACT_CONTACT_CLEARANCE_TEXT} ${VOLUME_FLOOR_SCALE_TEXT}`;
 }
 
 interface FlankSearch {

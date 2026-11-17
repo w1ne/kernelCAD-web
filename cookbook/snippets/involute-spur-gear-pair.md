@@ -20,7 +20,12 @@ when_to_use: >-
   `toothInterference` aggregates exact BREP distance over sampled poses
   and refines beside the minimum. A common volume strictly above 0.001 mm³
   sets `anyInterference` and closes `minClearanceMm`. A smaller positive
-  volume does not. It does not certify the gaps between samples. `withGeneratingCut` is an opt-in discrete union, not a
+  volume does not. Zero-volume contact (common volume 0 and distance 0)
+  sets `minClearanceMm` to 0 while `anyInterference` stays false. The
+  0.001 mm³ floor is a fixed absolute volume for every module and face
+  width: overlap volume is the transverse area times the face width, and
+  similar teeth grow that area with the square of the module. It does not
+  certify the gaps between samples. `withGeneratingCut` is an opt-in discrete union, not a
   continuous envelope.
 ---
 

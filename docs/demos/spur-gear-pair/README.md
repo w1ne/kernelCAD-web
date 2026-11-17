@@ -35,8 +35,14 @@ OK
 
 The report samples one driver tooth with exact BREP distance and common
 volume, then refines beside the lowest-clearance pose. `interferenceVolumeFloorMm3`
-is 0.001 mm³. A common volume strictly above that floor sets `anyInterference`
-and sets `minClearanceMm` to 0. A smaller positive volume does not.
+is 0.001 mm³, a fixed absolute volume for every module and face width. Overlap
+volume is the transverse overlap area times the face width, and similar teeth
+grow that area with the square of the module, so this floor is a larger share
+of a tooth on a fine module and a smaller share on a coarse module or a wide
+face. This pair is module 1 mm with a 6 mm face. A common volume strictly above
+that floor sets `anyInterference` and sets `minClearanceMm` to 0. A smaller
+positive volume does not. Zero-volume contact (common volume 0 and distance 0)
+sets `minClearanceMm` to 0 while `anyInterference` stays false.
 `anyInterference` and `minClearanceMm` aggregate those sampled poses. They do
 not prove the gaps between samples. Backlash is the driven pitch-circle arc. Geometry only.
 Not tooth strength or load capacity. The physics check is

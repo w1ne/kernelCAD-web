@@ -9,7 +9,10 @@
 // anyInterference and minClearanceMm aggregate those poses. A common
 // volume strictly above interferenceVolumeFloorMm3 (0.001 mm³) is
 // interference and closes minClearanceMm. A smaller positive volume does
-// not. They do not prove the gaps between samples. It is not a motion
+// not. Zero-volume contact (common volume 0 and distance 0) sets
+// minClearanceMm to 0 while anyInterference stays false. The 0.001 mm³
+// floor is a fixed absolute volume for every module and face width.
+// They do not prove the gaps between samples. It is not a motion
 // simulation and not a strength result.
 //
 // Run with:

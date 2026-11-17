@@ -62,6 +62,12 @@ function expectVolumeFloor(report: SpurGearToothInterferenceReport): void {
   expect(report.interferenceVolumeFloorMm3).toBe(SPUR_GEAR_INTERFERENCE_VOLUME_MM3);
   expect(report.note).toMatch(/0\.001 mm³/);
   expect(report.aggregateNote).toMatch(/0\.001 mm³/);
+  const exactContact =
+    'Zero-volume contact (common volume 0 and distance 0) sets minClearanceMm to 0 while anyInterference stays false.';
+  expect(report.aggregateNote).toContain(exactContact);
+  expect(report.note).toContain(exactContact);
+  expect(report.aggregateNote).toContain('fixed absolute volume for every module and face width');
+  expect(report.aggregateNote).not.toMatch(/only case/);
   const sum = aggregateSpurClearance(aggregatedSamples(report));
   expect(report.anyInterference).toBe(sum.anyInterference);
   expect(report.maxInterferenceVolumeMm3).toBe(sum.maxInterferenceVolumeMm3);

@@ -106,9 +106,15 @@ assembly(name?: string): Assembly;
 // spurGear. `await pair.toothInterference({ cycleSamples })` reports exact
 // BREP distance and common volume over sampled poses, refines beside the
 // minimum, and measures pitch-circle backlash. interferenceVolumeFloorMm3
-// is 0.001 mm³. A common volume strictly above that floor sets
+// is 0.001 mm³, a fixed absolute volume for every module and face width.
+// Overlap volume is the transverse area times the face width, and similar
+// teeth grow that area with the square of the module, so the same floor is
+// a larger share of a tooth on a fine module and a smaller share on a coarse
+// module or a wide face. A common volume strictly above that floor sets
 // anyInterference and sets minClearanceMm to 0. A smaller positive volume
-// does not. anyInterference and minClearanceMm aggregate those poses only
+// does not. Zero-volume contact (common volume 0 and distance 0) sets
+// minClearanceMm to 0 while anyInterference stays false. anyInterference
+// and minClearanceMm aggregate those poses only
 // — they do not prove the gaps between samples. Geometry only, not strength. `await pair.withGeneratingCut({
 // samples })` is opt-in: a discrete union of the driver over one tooth,
 // repeated at tooth pitch. Its scallopMm is a chordal sagitta bound, not a

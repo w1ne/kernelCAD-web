@@ -27,7 +27,7 @@ function rotateZ(deg: number, x: number, y: number): [number, number] {
 describe('spur gear interference volume floor', () => {
   const floor = SPUR_GEAR_INTERFERENCE_VOLUME_MM3;
 
-  it('closes the gap only for a common volume strictly above the floor', () => {
+  it('closes clearance above the floor, withholds a sub-floor volume, and reports zero-volume contact as clearance 0', () => {
     expect(floor).toBe(1e-3);
     const above = aggregateSpurClearance([
       { clearanceMm: 0, interferenceVolumeMm3: floor + 1e-9 },

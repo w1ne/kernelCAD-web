@@ -271,7 +271,12 @@ export interface KernelCadApi {
    * minimum, and measures the pitch-circle backlash. A common volume
    * strictly above `interferenceVolumeFloorMm3` (0.001 mm³) sets
    * `anyInterference` and sets `minClearanceMm` to 0. A smaller positive
-   * volume does not. Those clearance aggregates do not prove the gaps
+   * volume does not. Zero-volume contact (common volume 0 and distance 0)
+   * sets `minClearanceMm` to 0 while `anyInterference` stays false. The
+   * 0.001 mm³ floor is a fixed absolute volume for every module and face
+   * width: overlap volume is the transverse area times the face width, and
+   * similar teeth grow that area with the square of the module. Those
+   * clearance aggregates do not prove the gaps
    * between samples. `withGeneratingCut`
    * is opt-in: it subtracts a discrete union of the driver over one tooth
    * and repeats that space at tooth pitch. The default teeth stay the
