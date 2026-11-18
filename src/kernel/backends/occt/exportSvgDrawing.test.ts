@@ -98,6 +98,20 @@ describe('exportSvgDrawing', () => {
     expect(r.report?.renderedText?.issues.some(i => i.kind === 'text-outside-page')).toBe(true);
   });
 
+  it.each([
+    ['top', 80, 50, 12],
+    ['left', 50, 12, 80],
+  ] as const)('draws only the %s view with the corresponding overall dimensions', (view, w, h, hidden) => {
+    const result = renderSvgDrawing([{ name: 'panel', shape: OcctBackend.box(80, 50, 12) }],
+      { format: 'svg-drawing', sheet: 'a3', views: [view], hiddenLines: false });
+    const svg = decode(result.bytes);
+    expect(svg).toContain(`>${view.toUpperCase()}</text>`);
+    expect(svg).toContain(`>${w}</text>`);
+    expect(svg).toContain(`>${h}</text>`);
+    expect(svg).not.toContain(`>${hidden}</text>`);
+    expect(svg).not.toContain('>FRONT</text>');
+  });
+
   it('rejects isometric overlays on a front-only sheet', () => {
     const parts = [{ name: 'box', shape: OcctBackend.box(40, 30, 20) }];
     for (const overlay of [{ balloons: true }, { exploded: { factor: 2, mode: 'radial' as const } }, { explodedParts: parts }]) {
