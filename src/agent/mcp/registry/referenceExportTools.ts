@@ -62,7 +62,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ' +
         'ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet "auto" / "auto-ansi" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; ' +
         'projection "third" (default) or "first" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, ' +
-        'settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). ' +
+        'settable through options.title / partName / material / revision / date; overall dimensions are the default; request inferred callouts and tolerances explicitly with options.autoAnnotate). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
