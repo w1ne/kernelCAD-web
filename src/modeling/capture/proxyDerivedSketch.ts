@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isValidVec3, formatScalarForError } from '../../shared/intent/types';
+import type { Vec3 } from '../../shared/intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { ProjectCurveSource, ProjectCurveSourcePlane } from '../../shared/intent/projectCurveRecord';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import { normalizeFaceSelector } from './proxyFeatureChain';
 import type { Shape, FaceSelector } from './proxy';
 import type { CaptureSession } from './captureSession';
 import type { Sketch } from './sketch';
+import type { Curve3D } from './curveProxy';
+import { resolveFaceRefFaces } from '../../kernel/backends/occt/edgeSelection';
 
 /**
  * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
@@ -80,6 +86,72 @@ function resolveSectionFrame(
     );
   }
   return makePlaneFrame(plane.origin, plane.normal, [1, 0, 0]);
+}
+
+/** Lower an open projected path now and return every projected edge as a
+ * Curve3D. Like sectionSketch/surfaceIntersection, this is an async geometry
+ * query that creates ordinary virtual Curve3D records for downstream use. */
+export async function projectOpenCurveOf(
+  shape: Shape,
+  session: CaptureSession,
+  opts: {
+    source: Extract<ProjectCurveSource, { kind: 'sketchCommands' }>;
+    face: FaceSelector | string;
+    sourcePlane: ProjectCurveSourcePlane;
+    direction: Vec3;
+  },
+): Promise<Curve3D[]> {
+  const backend = await shape.lower();
+  const { records } = shape.resolutionInputs();
+  const faceInput = buildFaceInputRef(shape.id, normalizeFaceSelector(opts.face) as never);
+  const syntheticRecord: FeatureRecord = {
+    id: `${shape.id}_openProjection`,
+    kind: 'projectCurve',
+    params: {},
+    inputs: {
+      parent: { kind: 'feature', id: shape.id },
+      face: faceInput,
+    },
+    transforms: [],
+    suppressed: false,
+    metadata: {
+      source: opts.source,
+      scaleMode: 'original',
+      asEdge: true,
+      sourcePlane: opts.sourcePlane,
+      direction: opts.direction,
+      faceRef: faceInput.kind === 'face' ? faceInput.ref : { kind: 'canonical', face: 'top' },
+    },
+  };
+  const resolvedFaces = resolveFaceRefFaces(syntheticRecord, backend, records);
+  if ('error' in resolvedFaces) {
+    const error = resolvedFaces.error;
+    throw new KernelError(error.code, error.message, shape.id, error.hint);
+  }
+  if (resolvedFaces.length !== 1) {
+    invalidArgs({
+      api: 'projectCurve(opts)',
+      path: 'opts.face',
+      gotText: `a selector resolving to ${resolvedFaces.length} B-rep faces`,
+      requires: 'exactly one selected B-rep face',
+      example: "await body.projectCurve({ ..., face: 'top', asEdge: true, sourcePlane, direction })",
+      featureId: shape.id,
+    });
+  }
+
+  const { lowerProjectCurveEdges } = await import('../backends/occt/projectCurveLowerer');
+  const lowered = lowerProjectCurveEdges(
+    opts.source.commands,
+    resolvedFaces[0],
+    opts.sourcePlane,
+    opts.direction,
+    syntheticRecord.id,
+  );
+  if (!lowered.ok) {
+    const error = lowered.diagnostics[0];
+    throw new KernelError(error.code, error.message, shape.id, error.hint);
+  }
+  return lowered.curves.map((metadata) => session.addCurve3D({ metadata }));
 }
 
 /** Signed chord area of a projected loop, used only to rank outer vs holes. */

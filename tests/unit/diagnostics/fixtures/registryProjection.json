@@ -444,10 +444,10 @@
       }
     },
     "feature.project-curve.no-intersection": {
-      "template": "projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.",
+      "template": "projectCurve could not intersect the source curve with the target face. For open mode, move the source plane or reverse/adjust the world-space direction so the path reaches the selected face. For closed mode, ensure the curve overlaps the face bounds.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "use closed-curve projection or shift the curve into the face bounds"
+        "guidance": "move the open source plane or adjust its direction; for closed projection, shift the curve into the face bounds"
       }
     },
     "feature.project-curve.curve-empty": {
@@ -2447,7 +2447,7 @@
     },
     "feature.project-curve.no-intersection": {
       "kind": "rewrite-feature",
-      "guidance": "use closed-curve projection or shift the curve into the face bounds"
+      "guidance": "move the open source plane or adjust its direction; for closed projection, shift the curve into the face bounds"
     },
     "feature.project-curve.curve-empty": {
       "kind": "fix-arg",

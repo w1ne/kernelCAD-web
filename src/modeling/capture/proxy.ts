@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Vec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
@@ -10,6 +10,9 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
+import type { Sketch } from './sketch';
+import type { Curve3D } from './curveProxy';
+import type { ProjectCurveSource, ProjectCurveSourcePlane } from '../../shared/intent/projectCurveRecord';
 import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
 import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
@@ -68,6 +71,21 @@ export type EdgeSelector =
 
 export type { FaceSelector };
 
+export interface ProjectCurveClosedOptions {
+  source: ProjectCurveSource;
+  face: FaceSelector | CanonicalFace | string;
+  scaleMode?: 'original' | 'native' | 'bounds';
+  asEdge?: false;
+}
+
+export interface ProjectCurveOpenOptions {
+  source: Extract<ProjectCurveSource, { kind: 'sketchCommands' }>;
+  face: FaceSelector | CanonicalFace | string;
+  asEdge: true;
+  sourcePlane: ProjectCurveSourcePlane;
+  direction: Vec3;
+}
+
 /**
  * IMPORTANT — drift sentinel contract:
  * Adding a public method to `Sketch`, `PathBuilder`, or `Shape` requires
@@ -92,7 +110,7 @@ import {
   existingMaterialBaseColor,
   attachTextureProjection,
 } from './proxyMaterial';
-import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
+import { sectionSketchOf, faceSketchOf, silhouetteOf, projectOpenCurveOf } from './proxyDerivedSketch';
 import type { ThreadedHoleOpts } from './threadedHole';
 import type { HoleCallOpts, HolesCallOpts } from '../validation/holeThreadSugar';
 import { captureHole, captureHoles, captureThreadedHole } from './proxyHoleMethods';
@@ -1199,30 +1217,27 @@ export class Shape {
     return new Shape(id, this.session);
   }
 
-  /**
-   * W3: Wrap a 2D closed curve onto a 3D face. Returns a `Sketch` — chain
-   * `.extrude(depth)` to land an engraved logo or label insert on a curved
-   * body. The Sketch's underlying OcctBackend is a face-bound sketch, so the
-   * extrude direction follows the face normal.
-   *
-   * `asEdge: true` is captured but rejected at lower time — open-wire
-   * projection is not implemented (the OCCT binding is available; see
-   * `projectCurveLowerer.ts` for why the return type is the open question).
-   * An unknown `opts` key (`scale`, `edge`, `curve`) throws
-   * `feature.invalid-args`.
-   */
-  projectCurve(opts: {
-    source: import('../../shared/intent/projectCurveRecord').ProjectCurveSource;
-    face: FaceSelector | CanonicalFace | string;
-    scaleMode?: 'original' | 'native' | 'bounds';
-    asEdge?: boolean;
-  }): import('./sketch').Sketch {
+  /** Wrap a closed 2D curve onto a 3D face, returning a face-bound Sketch. */
+  projectCurve(opts: ProjectCurveClosedOptions): Sketch;
+  /** Project an open 2D path from an explicit world-space source plane along
+   * `direction` onto one selected face. Await the result; every resulting
+   * projected edge is returned as a Curve3D. */
+  projectCurve(opts: ProjectCurveOpenOptions): Promise<Curve3D[]>;
+  projectCurve(opts: ProjectCurveClosedOptions | ProjectCurveOpenOptions): Sketch | Promise<Curve3D[]> {
     assertProjectCurveOptions(opts, this.id);
+    if (opts.asEdge === true) {
+      return projectOpenCurveOf(this, this.session, {
+        source: opts.source,
+        face: opts.face,
+        sourcePlane: opts.sourcePlane,
+        direction: opts.direction,
+      });
+    }
     const id = this.session.addProjectCurve(this.id, {
       source: opts.source,
       face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,
       scaleMode: opts.scaleMode,
-      asEdge: opts.asEdge,
+      asEdge: false,
     });
     return this.session.sketchFromId(id);
   }

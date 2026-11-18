@@ -207,10 +207,9 @@ export type FeatureKind =
   | 'surfaceFromBoundary'
   | 'hermiteG2'
   // W3 — face authoring: emboss text onto a target face (raise or recess
-  // via signed depth) and project a 2D closed curve onto a 3D face for
-  // engraved logos / brand silhouettes. Open-wire projection (`asEdge:true`)
-  // is captured but deferred at lower time pending OCCT binding for
-  // `BRepProj_Projection`.
+  // via signed depth) and wrap a closed 2D curve onto a 3D face. Open-wire
+  // projection runs as an async capture-time geometry query and returns
+  // virtual Curve3D records, rather than a projectCurve Shape feature.
   | 'embossText'
   | 'projectCurve'
   // NURBS Slice E (2) — sew N surfaces into a solid Shell/Solid via
