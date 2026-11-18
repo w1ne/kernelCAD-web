@@ -18,7 +18,7 @@ describe('declared viewer dimensions', () => {
     const r = computeViewerDimensions({ parts: broken, auto: true, declared: [] });
     expect(r.dimensions).toEqual([]);
     expect(r.diagnostics).toHaveLength(1);
-    expect(r.diagnostics[0]).toMatchObject({ code: 'viewer.dimensions.budget-exceeded', severity: 'warn' });
+    expect(r.diagnostics[0]).toMatchObject({ code: 'viewer.dimensions.failed', severity: 'warn' });
     expect(r.diagnostics[0].message).toContain('bbox exploded');
   });
   it('declared linear between two hole rims measures centre distance', async () => {

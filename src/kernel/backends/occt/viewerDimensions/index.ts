@@ -37,14 +37,17 @@ export interface ViewerDimensionsResult {
 
 class BudgetExceeded extends Error {}
 
-function budgetWarning(message: string): CompilerDiagnostic {
+function dimensionWarning(
+  code: 'viewer.dimensions.budget-exceeded' | 'viewer.dimensions.failed',
+  message: string,
+): CompilerDiagnostic {
   return {
     target: 'export-occt',
-    code: 'viewer.dimensions.budget-exceeded',
+    code,
     severity: 'warn',
     message,
-    hint: HINT_TEMPLATES['viewer.dimensions.budget-exceeded'].template,
-    nextAction: NEXT_ACTIONS['viewer.dimensions.budget-exceeded'],
+    hint: HINT_TEMPLATES[code].template,
+    nextAction: NEXT_ACTIONS[code],
   };
 }
 
@@ -83,10 +86,10 @@ export function computeViewerDimensions(input: ViewerDimensionsInput): ViewerDim
     if (err instanceof BudgetExceeded) {
       return {
         dimensions: all(),
-        diagnostics: [...declared.diagnostics, budgetWarning(`Viewer dimensions incomplete: ${err.message}; showing the dimensions computed before the cut-off.`)],
+        diagnostics: [...declared.diagnostics, dimensionWarning('viewer.dimensions.budget-exceeded', `Viewer dimensions incomplete: ${err.message}; showing the dimensions computed before the cut-off.`)],
       };
     }
     const why = err instanceof Error ? err.message : String(err);
-    return { dimensions: [], diagnostics: [budgetWarning(`Viewer dimensions failed: ${why}`)] };
+    return { dimensions: [], diagnostics: [dimensionWarning('viewer.dimensions.failed', `Viewer dimensions failed: ${why}`)] };
   }
 }
