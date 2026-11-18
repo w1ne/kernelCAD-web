@@ -65,3 +65,38 @@ retains the sources, rendered sample PNGs, site baseline, verification, and
 inspected MP4. This is a local software-preview and GLB-material check; it does
 not establish rated lifting capacity, safety, simulation, deployment, or
 hardware acceptance.
+
+## Construction-equipment audit: road-reclaimer cutting teeth
+
+PR #1258 was checked first: it is merged with all 17 reported CI checks
+successful and no submitted review. Current PR #1507 was open with its
+applicable build, changed-test and lint checks successful and no submitted
+review. Five construction-equipment preview IDs were searched against the open
+issue and PR lists; none was a named target, none is changed by #1507, and the
+merged fixes #1298, #1305, #1307 and #1308 touch different kits.
+
+The audit opened `articulated-dump-truck`, `asphalt-transfer-conveyor`,
+`ride-on-concrete-saw`, `road-reclaimer` and `water-tanker-truck`. The detailed
+ledger records their visible object features, material zones, dimensions,
+triangle counts and unresolved silhouette/scale concerns. In
+`road-reclaimer`, seven modeled cutting teeth were colored as equipment enamel
+while the cutter drum was structural steel. All seven parts now use the
+asset's existing `structuralSteelColor` control. No new color controls or
+presets were added; geometry, dimensions and the 816-triangle mesh are
+unchanged. The default preview remains byte-identical because the hood occludes
+the teeth; the focused paired software renders and exported-GLB regression make
+the source-level material correction reviewable.
+
+The kit ESLint and material/preset quality gate passed; the construction
+equipment gate reports 60/60 assets (100%). The current global gate reports
+2,398/2,402 (99.83%), with four unchanged thin assets in `standard-components`.
+The regenerated index records the current source SHA-256 and the existing
+preview path. The full catalog integration suite passed 151/151 files and
+221/221 tests, including index freshness. Exact verification logs and the
+inspected MP4 are retained in the [road-reclaimer handoff
+bundle](../../artifacts/catalog-demos/construction-road-reclaimer-cutting-tooth-material-review-20261118/README.md).
+
+The indexed envelope and simplified machine silhouette remain unresolved
+semantic concerns; this material correction does not address them. The public
+page was checked before the branch change. The source is not deployed, and the
+software preview is not an equipment simulation or hardware-acceptance result.

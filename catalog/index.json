@@ -67395,7 +67395,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
       "preview": "/assets/construction-equipment-road-reclaimer.png",
-      "sourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+      "sourceSha256": "336a4a1d5269c0fe9417bbb9408156dc6f3cc0b49a1c973768578ba660db946e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -67475,7 +67475,14 @@
             "main-frame",
             "cutter-drum",
             "cutter-drum-hub--1",
-            "cutter-drum-hub-1"
+            "cutter-drum-hub-1",
+            "cutting-tooth-0",
+            "cutting-tooth-1",
+            "cutting-tooth-2",
+            "cutting-tooth-3",
+            "cutting-tooth-4",
+            "cutting-tooth-5",
+            "cutting-tooth-6"
           ],
           "param": "structuralSteelColor"
         },
@@ -67487,14 +67494,7 @@
             "operator-deck",
             "canopy-posts",
             "canopy",
-            "milling-hood",
-            "cutting-tooth-0",
-            "cutting-tooth-1",
-            "cutting-tooth-2",
-            "cutting-tooth-3",
-            "cutting-tooth-4",
-            "cutting-tooth-5",
-            "cutting-tooth-6"
+            "milling-hood"
           ],
           "param": "equipmentPaintColor"
         }
