@@ -12,15 +12,15 @@
 // contact relation are the distinct physical objects, and any component that
 // is not the largest is floating/disconnected geometry.
 //
-// Reuses the exact OCCT surface-distance sweep in `checkClearance`
+// Reuses the exact OCCT surface-distance sweep in `iterateClearance`
 // (dfm/clearance.ts) rather than approximating with bounding boxes. Mated and
 // ignored pair-lists are deliberately NOT passed in: a part that is
 // mate-connected in the assembly graph but geometrically floating (an air gap)
-// is exactly the defect this gate exists to catch, so every pair is measured
-// on pure geometry.
+// is exactly the defect this gate exists to catch. Only measured geometric
+// contact can join components.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { checkClearance } from './dfm/clearance';
+import { iterateClearance } from './dfm/clearance';
 
 /** Default contact gap (mm). Surfaces within this of each other count as
  *  touching. Small enough to reject real air gaps, loose enough to absorb
@@ -44,47 +44,31 @@ export function analyzeContactGraph(
   opts: { gapMm?: number } = {},
 ): ContactGraphResult {
   const gapMm = opts.gapMm ?? DEFAULT_CONTACT_GAP_MM;
-  const names = scene.parts.map((p) => p.name);
+  const parents = new Map(scene.parts.map(({ name }) => [name, name]));
+  const root = (name: string): string => {
+    while (parents.get(name) !== name) name = parents.get(name)!;
+    return name;
+  };
 
-  const reports = checkClearance(scene, gapMm, new Set(), new Set(), [], { distanceOnly: true });
-  const adj = new Map<string, Set<string>>();
-  for (const name of names) adj.set(name, new Set());
-  for (const r of reports) {
-    // Distance-only clearance records contact and overlap as the same edge.
-    if (r.status !== 'violated') continue;
-    adj.get(r.a)?.add(r.b);
-    adj.get(r.b)?.add(r.a);
+  const reports = iterateClearance(
+    scene, gapMm, new Set(), new Set(), [], { distanceOnly: true },
+    (a, b) => root(a) !== root(b),
+  );
+  for (const report of reports) {
+    if (report.status === 'violated') parents.set(root(report.b), root(report.a));
   }
 
-  const components = connectedComponents(names, adj)
-    .map((set) => [...set].sort())
+  const groups = new Map<string, string[]>();
+  for (const name of parents.keys()) {
+    const representative = root(name);
+    const group = groups.get(representative);
+    if (group) group.push(name);
+    else groups.set(representative, [name]);
+  }
+  const components = [...groups.values()]
+    .map(group => group.sort())
     .sort((a, b) => b.length - a.length || (a[0] < b[0] ? -1 : 1));
 
   const floatingParts = components.slice(1).flat();
-
   return { objectCount: components.length, components, floatingParts, gapMm };
-}
-
-function connectedComponents(
-  nodes: readonly string[],
-  adj: Map<string, Set<string>>,
-): Set<string>[] {
-  const visited = new Set<string>();
-  const out: Set<string>[] = [];
-  for (const start of nodes) {
-    if (visited.has(start)) continue;
-    const component = new Set<string>();
-    const stack = [start];
-    while (stack.length > 0) {
-      const n = stack.pop()!;
-      if (visited.has(n)) continue;
-      visited.add(n);
-      component.add(n);
-      for (const nb of adj.get(n) ?? []) {
-        if (!visited.has(nb)) stack.push(nb);
-      }
-    }
-    out.push(component);
-  }
-  return out;
 }

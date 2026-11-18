@@ -17,6 +17,7 @@ import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { Transform } from '../../shared/runtime/se3';
 import { analyzeContactGraph } from './contactGraph';
+import * as distance from './brepDistance';
 
 async function box(sx: number, sy: number, sz: number): Promise<OcctBackend> {
   const session = new CaptureSession();
@@ -65,6 +66,24 @@ describe('analyzeContactGraph — deterministic object count + floating detectio
       expect(volume.mock.calls.length).toBe(0);
     } finally {
       volume.mockRestore();
+      shape.dispose();
+    }
+  });
+
+  it('skips a distance query when measured edges already connect the pair', async () => {
+    const shape = await box(20, 20, 20);
+    const probe = vi.spyOn(distance, 'brepExtremaDistance');
+    try {
+      const result = analyzeContactGraph(scene({
+        a: { shape, at: Transform.identity() },
+        b: { shape, at: Transform.translation(19, 0, 0) },
+        c: { shape, at: Transform.translation(19, 19, 0) },
+        island: { shape, at: Transform.translation(200, 0, 0) },
+      }));
+      expect(result.components).toEqual([['a', 'b', 'c'], ['island']]);
+      expect(probe.mock.calls.length).toBe(2);
+    } finally {
+      probe.mockRestore();
       shape.dispose();
     }
   });
