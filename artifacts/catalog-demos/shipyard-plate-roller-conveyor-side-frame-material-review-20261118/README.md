@@ -47,6 +47,11 @@ shipyard quality gate and full catalog-index regeneration passed locally; CI's
 catalog-index freshness and changed-source preview gates also passed. The full
 CI result and failure excerpt are retained under [`verification/`](verification/).
 
+The refreshed global asset-quality report is 2,398/2,402 passing (99.83%),
+with four thin assets in `standard-components`; the kit-specific shipyard gate
+is 70/70 (100%). Exact output and status are in
+[`verification/quality-global.txt`](verification/quality-global.txt).
+
 ## Demo
 
 [Watch the 14.97-second MP4](shipyard-plate-roller-conveyor-side-frame-material-review.mp4).

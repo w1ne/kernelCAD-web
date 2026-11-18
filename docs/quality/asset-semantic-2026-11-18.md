@@ -144,9 +144,11 @@ or presets changed.
 
 The exported-GLB regression failed on the baseline and passed after the fix.
 The shipyard ESLint and asset-quality gate passed; the gate reports 70/70
-assets (100%). The targeted default preview was regenerated and the catalog
-index rebuilt. Its source SHA-256 matches the edited source and the preview
-path exists. All five public pages and preview PNGs returned HTTP 200; current
+assets (100%). The refreshed global gate reports 2,398/2,402 assets (99.83%);
+four thin assets remain in `standard-components`. Its exact output is retained
+in the handoff bundle. The targeted default preview was regenerated and the
+catalog index rebuilt. Its source SHA-256 matches the edited source and the
+preview path exists. All five public pages and preview PNGs returned HTTP 200; current
 public preview hashes match the retained pre-edit baseline. The [five-item
 ledger and inspected demo bundle](../../artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/README.md)
 retain source snapshots, PNGs, public checks, target scans and verification

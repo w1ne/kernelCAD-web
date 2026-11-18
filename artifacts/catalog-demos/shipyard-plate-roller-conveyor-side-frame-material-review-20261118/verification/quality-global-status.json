@@ -1,0 +1,13 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py",
+  "exit_code": 1,
+  "passing_assets": 2398,
+  "total_assets": 2402,
+  "pass_rate": "99.83%",
+  "thin_assets": 4,
+  "thin_kits": 0,
+  "rich_kits": 49,
+  "nonpassing_group": "standard-components",
+  "nonpassing_assets": 4,
+  "metric": "material-controls/asset=2.44"
+}
