@@ -1,0 +1,506 @@
+{
+  "checkedAt": "2026-11-18T04:00:39.816759+00:00",
+  "mode": "public baseline before local branch change; no deployment performed",
+  "manifestHttp": 200,
+  "selectedManifestRows": [
+    {
+      "id": "belt-magnet-separator",
+      "kit": "mining",
+      "title": "Overband belt magnet separator",
+      "tags": [
+        "mining",
+        "mineral processing",
+        "ore handling",
+        "overband magnet",
+        "tramp iron",
+        "belt conveyor",
+        "crusher protection"
+      ],
+      "preview": "/assets/mining-belt-magnet-separator.png",
+      "sourceUrl": "/assets/mining-belt-magnet-separator.kcad.ts",
+      "studioUrl": "/studio?catalog=mining/belt-magnet-separator",
+      "triangles": 2060,
+      "license": "CC0",
+      "category": "kit",
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "magnetPaint",
+          "type": "color",
+          "default": "#2f6db3",
+          "label": "Magnet paint"
+        },
+        {
+          "name": "structureSteel",
+          "type": "color",
+          "default": "#d9a227",
+          "label": "Gantry and conveyor steel"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#26292b",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#7d6f5e",
+          "label": "Ore on the belt"
+        },
+        {
+          "name": "magnetType",
+          "type": "choice",
+          "default": "selfCleaning",
+          "label": "Magnet type",
+          "choices": [
+            "selfCleaning",
+            "plateMagnet"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "magnetPaint": "#4f6577",
+          "structureSteel": "#8a7c5e",
+          "beltRubber": "#3a3a38",
+          "ore": "#6d6458"
+        },
+        "safetyOrange": {
+          "magnetPaint": "#e6761e",
+          "structureSteel": "#4b5459",
+          "beltRubber": "#222527",
+          "ore": "#8a7a66"
+        },
+        "highVisibility": {
+          "magnetPaint": "#f0b81c",
+          "structureSteel": "#465159",
+          "beltRubber": "#24282a",
+          "ore": "#9a8a74"
+        }
+      }
+    },
+    {
+      "id": "crusher-discharge-conveyor",
+      "kit": "mining",
+      "title": "Crusher discharge conveyor",
+      "tags": [
+        "mining",
+        "conveyor",
+        "belt conveyor",
+        "crusher",
+        "idler",
+        "materials handling",
+        "mineral processing"
+      ],
+      "preview": "/assets/mining-crusher-discharge-conveyor.png",
+      "sourceUrl": "/assets/mining-crusher-discharge-conveyor.kcad.ts",
+      "studioUrl": "/studio?catalog=mining/crusher-discharge-conveyor",
+      "triangles": 3456,
+      "license": "CC0",
+      "category": "kit",
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "cover",
+          "type": "choice",
+          "default": "covered",
+          "label": "Belt covers",
+          "choices": [
+            "covered",
+            "open"
+          ]
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Belt load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#58646c",
+          "label": "Frame steel"
+        },
+        {
+          "name": "drivePaint",
+          "type": "color",
+          "default": "#2f6f4a",
+          "label": "Drive and chute paint"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#25282a",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#7a6552",
+          "label": "Ore"
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "frameSteel": "#6a645c",
+          "drivePaint": "#5d6152",
+          "beltRubber": "#34322f",
+          "ore": "#8a7462"
+        },
+        "coalHandling": {
+          "frameSteel": "#3f4a52",
+          "drivePaint": "#d39a22",
+          "beltRubber": "#1f2123",
+          "ore": "#1c1c1e"
+        },
+        "highVisibility": {
+          "frameSteel": "#e48a1e",
+          "drivePaint": "#2d3a45",
+          "beltRubber": "#26292b",
+          "ore": "#9c6a48"
+        }
+      }
+    },
+    {
+      "id": "flotation-cell-bank",
+      "kit": "mining",
+      "title": "Flotation cell bank",
+      "tags": [
+        "mining",
+        "mineral processing",
+        "flotation",
+        "flotation cell",
+        "tank cell",
+        "froth",
+        "concentrator",
+        "launder"
+      ],
+      "preview": "/assets/mining-flotation-cell-bank.png",
+      "sourceUrl": "/assets/mining-flotation-cell-bank.kcad.ts",
+      "studioUrl": "/studio?catalog=mining/flotation-cell-bank",
+      "triangles": 5712,
+      "license": "CC0",
+      "category": "kit",
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "coatedSteel",
+          "type": "color",
+          "default": "#3f7f9e",
+          "label": "Tank coating"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#4f5b62",
+          "label": "Walkway and drive steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Rubber-lined launders and hoses"
+        },
+        {
+          "name": "froth",
+          "type": "color",
+          "default": "#b7b29a",
+          "label": "Mineral froth"
+        },
+        {
+          "name": "cells",
+          "type": "choice",
+          "default": "4",
+          "label": "Cells in the bank",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#5d6f73",
+          "structuralSteel": "#666a66",
+          "rubber": "#333332",
+          "froth": "#a49d86"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#26292b",
+          "froth": "#c4c0ac"
+        },
+        "copperFroth": {
+          "coatedSteel": "#5f7b4a",
+          "structuralSteel": "#3e4549",
+          "rubber": "#2a2c2e",
+          "froth": "#8f7a4a"
+        }
+      }
+    },
+    {
+      "id": "mine-sump-pump",
+      "kit": "mining",
+      "title": "Mine sump pump",
+      "tags": [
+        "mining",
+        "underground",
+        "dewatering",
+        "sump pump",
+        "vertical spindle pump",
+        "submersible pump",
+        "mine water"
+      ],
+      "preview": "/assets/mining-mine-sump-pump.png",
+      "sourceUrl": "/assets/mining-mine-sump-pump.kcad.ts",
+      "studioUrl": "/studio?catalog=mining/mine-sump-pump",
+      "triangles": 1556,
+      "license": "CC0",
+      "category": "kit",
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "pumpPaint",
+          "type": "color",
+          "default": "#c8452e",
+          "label": "Pump paint"
+        },
+        {
+          "name": "pipeSteel",
+          "type": "color",
+          "default": "#5b6469",
+          "label": "Pipe steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#9f9a90",
+          "label": "Concrete"
+        },
+        {
+          "name": "mineWater",
+          "type": "color",
+          "default": "#5a5d4a",
+          "label": "Mine water"
+        },
+        {
+          "name": "pumpType",
+          "type": "choice",
+          "default": "verticalSpindle",
+          "label": "Pump type",
+          "choices": [
+            "verticalSpindle",
+            "submersible"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "pumpPaint": "#7f5a48",
+          "pipeSteel": "#6a625a",
+          "concrete": "#85807a",
+          "mineWater": "#4e4a3c"
+        },
+        "mineGreen": {
+          "pumpPaint": "#3f7a4a",
+          "pipeSteel": "#4b5459",
+          "concrete": "#a8a398",
+          "mineWater": "#4f5a50"
+        },
+        "highVisibility": {
+          "pumpPaint": "#f08a1c",
+          "pipeSteel": "#465159",
+          "concrete": "#b8b3a8",
+          "mineWater": "#5f6a5c"
+        }
+      }
+    },
+    {
+      "id": "radial-stacker",
+      "kit": "mining",
+      "title": "Radial stacker conveyor",
+      "tags": [
+        "mining",
+        "mineral processing",
+        "ore handling",
+        "radial stacker",
+        "conveyor",
+        "stockpile",
+        "bulk materials",
+        "aggregate"
+      ],
+      "preview": "/assets/mining-radial-stacker.png",
+      "sourceUrl": "/assets/mining-radial-stacker.kcad.ts",
+      "studioUrl": "/studio?catalog=mining/radial-stacker",
+      "triangles": 2324,
+      "license": "CC0",
+      "category": "kit",
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "coatedSteel",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Boom truss coating"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Undercarriage and walkway steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Belt and tyre rubber"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#9a8a78",
+          "label": "Stockpile ore"
+        },
+        {
+          "name": "boomAngle",
+          "type": "choice",
+          "default": "14",
+          "label": "Boom angle (degrees)",
+          "choices": [
+            "10",
+            "14",
+            "18"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#8d7d58",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38",
+          "ore": "#857868"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a",
+          "ore": "#a99b88"
+        },
+        "ironOre": {
+          "coatedSteel": "#2f6f9e",
+          "structuralSteel": "#4f5b62",
+          "rubber": "#1f2224",
+          "ore": "#7a4532"
+        }
+      }
+    }
+  ],
+  "assets": {
+    "belt-magnet-separator": {
+      "pageUrl": "https://kernelcad.com/catalog/mining/belt-magnet-separator/",
+      "pageHttp": 200,
+      "previewUrl": "https://kernelcad.com/assets/mining-belt-magnet-separator.png",
+      "previewHttp": 200,
+      "previewBytes": 55431,
+      "publicPreviewSha256": "ffe72e38a4fe0ded558b5884987429db78f619d79cca14dcbb62058b3c812b02",
+      "checkedInPreviewSha256": "ffe72e38a4fe0ded558b5884987429db78f619d79cca14dcbb62058b3c812b02",
+      "publicMatchesCheckedInPreview": true
+    },
+    "crusher-discharge-conveyor": {
+      "pageUrl": "https://kernelcad.com/catalog/mining/crusher-discharge-conveyor/",
+      "pageHttp": 200,
+      "previewUrl": "https://kernelcad.com/assets/mining-crusher-discharge-conveyor.png",
+      "previewHttp": 200,
+      "previewBytes": 51849,
+      "publicPreviewSha256": "ae1a15586c242a14886d6caaa37d48d037c692908bef309288c98ec00adabb9e",
+      "checkedInPreviewSha256": "ae1a15586c242a14886d6caaa37d48d037c692908bef309288c98ec00adabb9e",
+      "publicMatchesCheckedInPreview": true
+    },
+    "flotation-cell-bank": {
+      "pageUrl": "https://kernelcad.com/catalog/mining/flotation-cell-bank/",
+      "pageHttp": 200,
+      "previewUrl": "https://kernelcad.com/assets/mining-flotation-cell-bank.png",
+      "previewHttp": 200,
+      "previewBytes": 57868,
+      "publicPreviewSha256": "a4e6ee5c7cb84c70d4e8b08257d01597d41fc353bf8ec660d123619686996ea5",
+      "checkedInPreviewSha256": "a4e6ee5c7cb84c70d4e8b08257d01597d41fc353bf8ec660d123619686996ea5",
+      "publicMatchesCheckedInPreview": true
+    },
+    "mine-sump-pump": {
+      "pageUrl": "https://kernelcad.com/catalog/mining/mine-sump-pump/",
+      "pageHttp": 200,
+      "previewUrl": "https://kernelcad.com/assets/mining-mine-sump-pump.png",
+      "previewHttp": 200,
+      "previewBytes": 42846,
+      "publicPreviewSha256": "5703a6dabf01e977537c0bb5f811f99e4e0757f5789d5f60649892a7275b4bdd",
+      "checkedInPreviewSha256": "5703a6dabf01e977537c0bb5f811f99e4e0757f5789d5f60649892a7275b4bdd",
+      "publicMatchesCheckedInPreview": true
+    },
+    "radial-stacker": {
+      "pageUrl": "https://kernelcad.com/catalog/mining/radial-stacker/",
+      "pageHttp": 200,
+      "previewUrl": "https://kernelcad.com/assets/mining-radial-stacker.png",
+      "previewHttp": 200,
+      "previewBytes": 42193,
+      "publicPreviewSha256": "349ba7d17eb5fbd5f634310bf0cc01354c52db3c849724fa8718830397ed32ca",
+      "checkedInPreviewSha256": "349ba7d17eb5fbd5f634310bf0cc01354c52db3c849724fa8718830397ed32ca",
+      "publicMatchesCheckedInPreview": true
+    }
+  },
+  "publicSource": {
+    "url": "https://kernelcad.com/assets/mining-crusher-discharge-conveyor.kcad.ts",
+    "http": 200,
+    "bytes": 11173,
+    "sha256": "f79c676a04604d2b7bdbb53bb3d60dd2575d5bac190cc948970db0fedbbdd280",
+    "matchesLocalBefore": true
+  },
+  "manifestUrl": "https://kernelcad.com/assets.json"
+}

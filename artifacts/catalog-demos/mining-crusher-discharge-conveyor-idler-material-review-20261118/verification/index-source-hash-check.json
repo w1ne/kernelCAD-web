@@ -1,0 +1,12 @@
+{
+  "catalogAssetsChecked": 2402,
+  "sourceShaMismatches": [],
+  "selectedAsset": {
+    "sourceShaMatches": true,
+    "previewPath": "/assets/mining-crusher-discharge-conveyor.png",
+    "previewExists": true,
+    "triangleCount": 3456,
+    "triangleBudget": 4200
+  },
+  "result": "PASS"
+}

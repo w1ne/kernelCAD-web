@@ -1,0 +1,12 @@
+{
+  "before": "artifacts/catalog-demos/mining-crusher-discharge-conveyor-idler-material-review-20261118/before/crusher-discharge-conveyor.png",
+  "after": "catalog/kits/mining/previews/crusher-discharge-conveyor.png",
+  "sizePx": [
+    512,
+    512
+  ],
+  "changedPixelFraction": 0.002719879150390625,
+  "meanAbsoluteChannelDifference255": 0.014939626057942709,
+  "maxAbsoluteChannelDifference255": 41,
+  "assessment": "wide default view remains visually similar because the covered belt conceals most carry idlers; use the focused part render to compare the roller finish"
+}
