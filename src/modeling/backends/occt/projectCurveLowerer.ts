@@ -36,6 +36,7 @@ import { drawingFromCommands, drawingFromOpenCommands } from '../../../kernel/ba
 import { edgeToCurve3DMetadata } from './surfaceIntersection';
 import type { Curve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 
 export interface LowerProjectCurveOk { ok: true; backend: OcctBackend; }
 export interface LowerProjectCurveErr { ok: false; diagnostics: CompilerDiagnostic[]; }
@@ -65,8 +66,14 @@ export async function lowerProjectCurve(
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: 'projectCurve: open projection returns Curve3D[] and must be awaited at capture time; it cannot be lowered as a Shape feature.',
-      hint: "Write `const curves = await shape.projectCurve({ ..., asEdge: true, sourcePlane, direction })`; use a returned Curve3D as a sweep spine.",
+      ...invalidArgsText({
+        api: 'projectCurve(opts)',
+        path: 'opts.asEdge',
+        got: true,
+        requires: 'open projection returns Curve3D[] and must be awaited at capture time; it cannot be lowered as a Shape feature',
+        example: 'const curves = await shape.projectCurve({ ..., asEdge: true, sourcePlane, direction })',
+        hint: 'Use a returned Curve3D as a sweep spine after awaiting the capture-time projection.',
+      }),
     });
     return { ok: false, diagnostics };
   }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isValidVec3, formatScalarForError } from '../../shared/intent/types';
 import type { Vec3 } from '../../shared/intent/types';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -128,12 +129,14 @@ export async function projectOpenCurveOf(
     throw new KernelError(error.code, error.message, shape.id, error.hint);
   }
   if (resolvedFaces.length !== 1) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `projectCurve: open projection requires exactly one selected face; the selector resolved to ${resolvedFaces.length}.`,
-      shape.id,
-      'Use a canonical face name, label, or query that resolves to exactly one face.',
-    );
+    invalidArgs({
+      api: 'projectCurve(opts)',
+      path: 'opts.face',
+      gotText: `a selector resolving to ${resolvedFaces.length} B-rep faces`,
+      requires: 'exactly one selected B-rep face',
+      example: "await body.projectCurve({ ..., face: 'top', asEdge: true, sourcePlane, direction })",
+      featureId: shape.id,
+    });
   }
 
   const { lowerProjectCurveEdges } = await import('../backends/occt/projectCurveLowerer');
