@@ -55,38 +55,45 @@ export interface ProjectCurveMetadata {
 }
 
 export function isProjectCurveMetadata(value: unknown): value is ProjectCurveMetadata {
-  if (value === null || typeof value !== 'object') return false;
+  if (!isRecord(value)) return false;
   const m = value as Partial<ProjectCurveMetadata>;
-  if (m.source === null || typeof m.source !== 'object') return false;
-  const src = m.source as { kind?: unknown };
-  if (src.kind === 'sketchCommands') {
-    const sc = m.source as { commands?: unknown };
-    if (!Array.isArray(sc.commands)) return false;
-  } else if (src.kind === 'drawing') {
-    const sd = m.source as { drawingJson?: unknown };
-    if (typeof sd.drawingJson !== 'string') return false;
-  } else {
-    return false;
-  }
-  if (m.scaleMode !== 'original' && m.scaleMode !== 'native' && m.scaleMode !== 'bounds') return false;
+  if (!isProjectCurveSource(m.source)) return false;
+  if (!isProjectCurveScaleMode(m.scaleMode)) return false;
   if (typeof m.asEdge !== 'boolean') return false;
-  if (m.asEdge) {
-    const plane = m.sourcePlane as ProjectCurveSourcePlane | null | undefined;
-    if (
-      src.kind !== 'sketchCommands' ||
-      plane === null || plane === undefined || typeof plane !== 'object' || Array.isArray(plane) ||
-      !isVec3Array(plane.origin) ||
-      !isVec3Array(plane.normal) || !isVec3Array(plane.xAxis) ||
-      !isVec3Array(m.direction)
-    ) return false;
-    const commands = (m.source as { commands?: unknown }).commands;
-    if (
-      !Array.isArray(commands) || commands.length < 2 || commands[0]?.kind !== 'moveTo' ||
-      commands.slice(1).some((command) => command?.kind === 'moveTo' || command?.kind === 'close')
-    ) return false;
-  }
-  if (m.faceRef === null || m.faceRef === undefined || typeof m.faceRef !== 'object' || Array.isArray(m.faceRef)) return false;
-  return true;
+  if (m.asEdge && !hasValidOpenProjectionMetadata(m)) return false;
+  return isRecord(m.faceRef);
+}
+
+function isProjectCurveSource(value: unknown): value is ProjectCurveSource {
+  if (!isRecord(value)) return false;
+  if (value.kind === 'sketchCommands') return Array.isArray(value.commands);
+  if (value.kind === 'drawing') return typeof value.drawingJson === 'string';
+  return false;
+}
+
+function isProjectCurveScaleMode(value: unknown): value is ProjectCurveScaleMode {
+  return value === 'original' || value === 'native' || value === 'bounds';
+}
+
+function hasValidOpenProjectionMetadata(value: Partial<ProjectCurveMetadata>): boolean {
+  if (!isRecord(value.source) || value.source.kind !== 'sketchCommands') return false;
+  if (!isSourcePlane(value.sourcePlane) || !isVec3Array(value.direction)) return false;
+  return isOpenCommandSequence(value.source.commands);
+}
+
+function isOpenCommandSequence(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length < 2) return false;
+  if (value[0]?.kind !== 'moveTo') return false;
+  return !value.slice(1).some((command) => command?.kind === 'moveTo' || command?.kind === 'close');
+}
+
+function isSourcePlane(value: unknown): value is ProjectCurveSourcePlane {
+  if (!isRecord(value)) return false;
+  return isVec3Array(value.origin) && isVec3Array(value.normal) && isVec3Array(value.xAxis);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isVec3Array(value: unknown): value is Vec3 {

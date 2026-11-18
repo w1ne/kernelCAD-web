@@ -16,7 +16,7 @@ const PROJECT_CURVE_EXAMPLE =
   "body.projectCurve({ source: { kind: 'sketchCommands', commands }, face: 'top', asEdge: true, sourcePlane: { origin: [0, 0, 50], normal: [0, 0, 1], xAxis: [1, 0, 0] }, direction: [0, 0, -1] })";
 
 export function assertProjectCurveOptions(opts: unknown, featureId: FeatureId): void {
-  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+  if (!isRecord(opts)) {
     invalidArgs({
       api: PROJECT_CURVE_API,
       path: 'opts',
@@ -27,19 +27,31 @@ export function assertProjectCurveOptions(opts: unknown, featureId: FeatureId): 
       featureId,
     });
   }
-  const unknown = Object.keys(opts).find((key) => !PROJECT_CURVE_OPTION_KEYS.has(key));
+  const record = opts as Record<string, unknown>;
+  assertKnownProjectCurveOptions(record, featureId);
+  assertProjectCurveEdgeFlag(record, featureId);
+  if (record.asEdge === true) {
+    assertOpenProjectCurveOptions(record, featureId);
+  } else {
+    assertClosedProjectCurveOptions(record, featureId);
+  }
+}
+
+function assertKnownProjectCurveOptions(record: Record<string, unknown>, featureId: FeatureId): void {
+  const unknown = Object.keys(record).find((key) => !PROJECT_CURVE_OPTION_KEYS.has(key));
   if (unknown !== undefined) {
     invalidArgs({
       api: PROJECT_CURVE_API,
       path: `opts.${unknown}`,
-      got: (opts as Record<string, unknown>)[unknown],
+      got: record[unknown],
       requires: `a known option key; projectCurve accepts ${[...PROJECT_CURVE_OPTION_KEYS].join(', ')}`,
       example: PROJECT_CURVE_EXAMPLE,
       featureId,
     });
   }
+}
 
-  const record = opts as Record<string, unknown>;
+function assertProjectCurveEdgeFlag(record: Record<string, unknown>, featureId: FeatureId): void {
   if (record.asEdge !== undefined && typeof record.asEdge !== 'boolean') {
     invalidArgs({
       api: PROJECT_CURVE_API,
@@ -50,50 +62,54 @@ export function assertProjectCurveOptions(opts: unknown, featureId: FeatureId): 
       featureId,
     });
   }
-  const hasPlacement = record.sourcePlane !== undefined || record.direction !== undefined;
-  if (record.asEdge === true) {
-    if (record.sourcePlane === undefined || record.direction === undefined) {
-      invalidArgs({
-        api: PROJECT_CURVE_API,
-        path: 'opts',
-        gotText: 'open projection without both sourcePlane and direction',
-        requires: 'asEdge: true with an explicit sourcePlane and world-space direction',
-        example: PROJECT_CURVE_EXAMPLE,
-        featureId,
-      });
-    }
-    if (!isSourcePlane(record.sourcePlane)) {
-      invalidArgs({
-        api: PROJECT_CURVE_API,
-        path: 'opts.sourcePlane',
-        got: record.sourcePlane,
-        requires: 'an object with finite Vec3 origin, normal, and xAxis values',
-        example: PROJECT_CURVE_EXAMPLE,
-        featureId,
-      });
-    }
-    if (!isFiniteVec3(record.direction)) {
-      invalidArgs({
-        api: PROJECT_CURVE_API,
-        path: 'opts.direction',
-        got: record.direction,
-        requires: 'a finite world-space Vec3 value',
-        example: PROJECT_CURVE_EXAMPLE,
-        featureId,
-      });
-    }
-    const source = record.source as { kind?: unknown } | undefined;
-    if (source?.kind !== 'sketchCommands') {
-      invalidArgs({
-        api: PROJECT_CURVE_API,
-        path: 'opts.source',
-        gotText: 'a non-sketch source for open projection',
-        requires: "{ kind: 'sketchCommands', commands: [...] }",
-        example: PROJECT_CURVE_EXAMPLE,
-        featureId,
-      });
-    }
-  } else if (hasPlacement) {
+}
+
+function assertOpenProjectCurveOptions(record: Record<string, unknown>, featureId: FeatureId): void {
+  if (record.sourcePlane === undefined || record.direction === undefined) {
+    invalidArgs({
+      api: PROJECT_CURVE_API,
+      path: 'opts',
+      gotText: 'open projection without both sourcePlane and direction',
+      requires: 'asEdge: true with an explicit sourcePlane and world-space direction',
+      example: PROJECT_CURVE_EXAMPLE,
+      featureId,
+    });
+  }
+  if (!isSourcePlane(record.sourcePlane)) {
+    invalidArgs({
+      api: PROJECT_CURVE_API,
+      path: 'opts.sourcePlane',
+      got: record.sourcePlane,
+      requires: 'an object with finite Vec3 origin, normal, and xAxis values',
+      example: PROJECT_CURVE_EXAMPLE,
+      featureId,
+    });
+  }
+  if (!isFiniteVec3(record.direction)) {
+    invalidArgs({
+      api: PROJECT_CURVE_API,
+      path: 'opts.direction',
+      got: record.direction,
+      requires: 'a finite world-space Vec3 value',
+      example: PROJECT_CURVE_EXAMPLE,
+      featureId,
+    });
+  }
+  const source = record.source as { kind?: unknown } | undefined;
+  if (source?.kind !== 'sketchCommands') {
+    invalidArgs({
+      api: PROJECT_CURVE_API,
+      path: 'opts.source',
+      gotText: 'a non-sketch source for open projection',
+      requires: "{ kind: 'sketchCommands', commands: [...] }",
+      example: PROJECT_CURVE_EXAMPLE,
+      featureId,
+    });
+  }
+}
+
+function assertClosedProjectCurveOptions(record: Record<string, unknown>, featureId: FeatureId): void {
+  if (record.sourcePlane !== undefined || record.direction !== undefined) {
     invalidArgs({
       api: PROJECT_CURVE_API,
       path: 'opts.sourcePlane/direction',
@@ -103,6 +119,10 @@ export function assertProjectCurveOptions(opts: unknown, featureId: FeatureId): 
       featureId,
     });
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isSourcePlane(value: unknown): boolean {

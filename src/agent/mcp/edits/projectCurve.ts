@@ -77,46 +77,8 @@ function serializeOpts(input: AddProjectCurveInput): string {
 }
 
 export function addProjectCurve(input: AddProjectCurveInput): AddFeatureResult {
-  if (typeof input.target !== 'string' || input.target.length === 0) {
-    return { ok: false, error: 'add_project_curve: target Shape variable name is required.' };
-  }
-  if (!Array.isArray(input.commands) || input.commands.length === 0) {
-    return {
-      ok: false,
-      error: 'add_project_curve: commands must be a non-empty 2D path (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},...,{kind:"close"}]).',
-    };
-  }
-  if (input.commands[0]?.kind !== 'moveTo') {
-    return { ok: false, error: 'add_project_curve: commands must start with a moveTo.' };
-  }
-  if (input.asEdge === true) {
-    if (input.commands.some((command) => command.kind === 'close')) {
-      return { ok: false, error: 'add_project_curve: open projection commands must not include close.' };
-    }
-    if (input.commands.length < 2 || input.commands.slice(1).some((command) => command.kind === 'moveTo')) {
-      return { ok: false, error: 'add_project_curve: open projection needs one moveTo followed by at least one segment.' };
-    }
-    if (input.sourcePlane === undefined || input.direction === undefined) {
-      return { ok: false, error: 'add_project_curve: asEdge:true requires sourcePlane and direction.' };
-    }
-    if (input.scaleMode !== undefined) {
-      return { ok: false, error: 'add_project_curve: scaleMode applies only to closed projection.' };
-    }
-    if (!isSourcePlane(input.sourcePlane) || !isFiniteVec3(input.direction)) {
-      return { ok: false, error: 'add_project_curve: sourcePlane vectors and direction must be finite Vec3 values.' };
-    }
-    if (Math.hypot(...input.sourcePlane.normal) < 1e-12 ||
-      Math.hypot(...input.sourcePlane.xAxis) < 1e-12 || Math.hypot(...input.direction) < 1e-12) {
-      return { ok: false, error: 'add_project_curve: sourcePlane.normal, sourcePlane.xAxis and direction must be non-zero.' };
-    }
-  } else if (input.commands[input.commands.length - 1]?.kind !== 'close') {
-    return { ok: false, error: 'add_project_curve: closed projection commands must end with close.' };
-  } else if (input.sourcePlane !== undefined || input.direction !== undefined) {
-    return { ok: false, error: 'add_project_curve: sourcePlane and direction are only valid with asEdge:true.' };
-  }
-  if (typeof input.face !== 'string' || input.face.length === 0) {
-    return { ok: false, error: 'add_project_curve: face name is required.' };
-  }
+  const validationError = validateProjectCurveInput(input);
+  if (validationError !== undefined) return { ok: false, error: validationError };
   const optsLiteral = serializeOpts(input);
   const callExpr = `${input.target}.projectCurve(${optsLiteral})`;
   const awaitedCall = input.asEdge === true ? `await ${callExpr}` : callExpr;
@@ -124,6 +86,69 @@ export function addProjectCurve(input: AddProjectCurveInput): AddFeatureResult {
     ? `const ${input.bindAs} = ${awaitedCall};`
     : `${awaitedCall};`;
   return addFeature(input.code, featureLine);
+}
+
+function validateProjectCurveInput(input: AddProjectCurveInput): string | undefined {
+  if (typeof input.target !== 'string' || input.target.length === 0) {
+    return 'add_project_curve: target Shape variable name is required.';
+  }
+  if (!Array.isArray(input.commands) || input.commands.length === 0) {
+    return 'add_project_curve: commands must be a non-empty 2D path (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},...,{kind:"close"}]).';
+  }
+  if (input.commands[0]?.kind !== 'moveTo') {
+    return 'add_project_curve: commands must start with a moveTo.';
+  }
+  const modeError = input.asEdge === true
+    ? validateOpenProjectCurveInput(input)
+    : validateClosedProjectCurveInput(input);
+  if (modeError !== undefined) return modeError;
+  if (typeof input.face !== 'string' || input.face.length === 0) {
+    return 'add_project_curve: face name is required.';
+  }
+  return undefined;
+}
+
+function validateOpenProjectCurveInput(input: AddProjectCurveInput): string | undefined {
+  const commandError = validateOpenProjectCurveCommands(input.commands);
+  if (commandError !== undefined) return commandError;
+  if (input.sourcePlane === undefined || input.direction === undefined) {
+    return 'add_project_curve: asEdge:true requires sourcePlane and direction.';
+  }
+  if (input.scaleMode !== undefined) {
+    return 'add_project_curve: scaleMode applies only to closed projection.';
+  }
+  if (!isSourcePlane(input.sourcePlane) || !isFiniteVec3(input.direction)) {
+    return 'add_project_curve: sourcePlane vectors and direction must be finite Vec3 values.';
+  }
+  if (hasZeroProjectionAxis(input.sourcePlane, input.direction)) {
+    return 'add_project_curve: sourcePlane.normal, sourcePlane.xAxis and direction must be non-zero.';
+  }
+  return undefined;
+}
+
+function validateOpenProjectCurveCommands(commands: readonly ProjectCurveCommand[]): string | undefined {
+  if (commands.some((command) => command.kind === 'close')) {
+    return 'add_project_curve: open projection commands must not include close.';
+  }
+  if (commands.length < 2 || commands.slice(1).some((command) => command.kind === 'moveTo')) {
+    return 'add_project_curve: open projection needs one moveTo followed by at least one segment.';
+  }
+  return undefined;
+}
+
+function validateClosedProjectCurveInput(input: AddProjectCurveInput): string | undefined {
+  if (input.commands[input.commands.length - 1]?.kind !== 'close') {
+    return 'add_project_curve: closed projection commands must end with close.';
+  }
+  if (input.sourcePlane !== undefined || input.direction !== undefined) {
+    return 'add_project_curve: sourcePlane and direction are only valid with asEdge:true.';
+  }
+  return undefined;
+}
+
+function hasZeroProjectionAxis(sourcePlane: ProjectCurveSourcePlane, direction: Vec3): boolean {
+  return Math.hypot(...sourcePlane.normal) < 1e-12 ||
+    Math.hypot(...sourcePlane.xAxis) < 1e-12 || Math.hypot(...direction) < 1e-12;
 }
 
 function isSourcePlane(value: unknown): value is ProjectCurveSourcePlane {

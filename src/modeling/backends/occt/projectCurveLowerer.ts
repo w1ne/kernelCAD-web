@@ -168,14 +168,26 @@ export function lowerProjectCurveEdges(
   }
 
   const plane = new replicad.Plane(sourcePlane.origin, xAxis, normal);
+  try {
+    return projectOpenDrawingToFace(drawing, face, plane, projectDirection, featureId);
+  } finally {
+    plane.delete();
+  }
+}
+
+/** Run the OCCT directed projection and convert every edge in its compound. */
+function projectOpenDrawingToFace(
+  drawing: Drawing,
+  face: Face,
+  plane: replicad.Plane,
+  projectDirection: Vec3,
+  featureId: string,
+): LowerProjectCurveEdgesOk | LowerProjectCurveEdgesErr {
+  const diagnostic = (code: DiagnosticCode, message: string, hint: string): LowerProjectCurveEdgesErr => ({
+    ok: false,
+    diagnostics: [{ target: 'export-occt', code, featureId, severity: 'error', message, hint }],
+  });
   let sourceSketch: (replicad.SketchInterface & { delete?: () => void }) | undefined;
-  // OCCT's generated wasm bindings are dynamically typed.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let projection: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let directionObject: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let projectedShape: any;
   try {
     sourceSketch = drawing.sketchOnPlane(plane) as unknown as replicad.SketchInterface & { delete?: () => void };
     const sourceWire = (sourceSketch as unknown as { wire?: { wrapped?: unknown } }).wire?.wrapped;
@@ -187,7 +199,37 @@ export function lowerProjectCurveEdges(
         'Check that the source path is a single open wire and that the face selector resolves to one B-rep face.',
       );
     }
+    return projectOpenWireToFace(sourceWire, targetFace, projectDirection, featureId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return diagnostic(
+      'feature.kernel-failed',
+      `projectCurve: open-wire projection failed: ${message}`,
+      'Check the source path, sourcePlane frame, selected face and projection direction.',
+    );
+  } finally {
+    sourceSketch?.delete?.();
+  }
+}
 
+function projectOpenWireToFace(
+  sourceWire: unknown,
+  targetFace: unknown,
+  projectDirection: Vec3,
+  featureId: string,
+): LowerProjectCurveEdgesOk | LowerProjectCurveEdgesErr {
+  const diagnostic = (code: DiagnosticCode, message: string, hint: string): LowerProjectCurveEdgesErr => ({
+    ok: false,
+    diagnostics: [{ target: 'export-occt', code, featureId, severity: 'error', message, hint }],
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let projection: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let directionObject: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let projectedShape: any;
+  try {
+    // OCCT's generated wasm bindings are dynamically typed.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     directionObject = new oc.gp_Dir_4(...projectDirection);
@@ -199,28 +241,8 @@ export function lowerProjectCurveEdges(
         'Check the selected face, source-plane placement and projection direction.',
       );
     }
-
-    const curves: Curve3DMetadata[] = [];
     projectedShape = projection.Shape();
-    const explorer = new oc.TopExp_Explorer_2(
-      projectedShape,
-      oc.TopAbs_ShapeEnum.TopAbs_EDGE,
-      oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-    );
-    try {
-      for (; explorer.More(); explorer.Next()) {
-        const current = explorer.Current();
-        const edge = oc.TopoDS.Edge_1(current);
-        try {
-          curves.push(edgeToCurve3DMetadata(edge));
-        } finally {
-          edge.delete?.();
-          current.delete?.();
-        }
-      }
-    } finally {
-      explorer.delete();
-    }
+    const curves = projectedEdgesAsCurves(oc, projectedShape);
     if (curves.length === 0) {
       return diagnostic(
         'feature.project-curve.no-intersection',
@@ -240,8 +262,31 @@ export function lowerProjectCurveEdges(
     projectedShape?.delete?.();
     projection?.delete?.();
     directionObject?.delete?.();
-    sourceSketch?.delete?.();
-    plane.delete();
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function projectedEdgesAsCurves(oc: any, projectedShape: any): Curve3DMetadata[] {
+  const curves: Curve3DMetadata[] = [];
+  const explorer = new oc.TopExp_Explorer_2(
+    projectedShape,
+    oc.TopAbs_ShapeEnum.TopAbs_EDGE,
+    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  try {
+    for (; explorer.More(); explorer.Next()) {
+      const current = explorer.Current();
+      const edge = oc.TopoDS.Edge_1(current);
+      try {
+        curves.push(edgeToCurve3DMetadata(edge));
+      } finally {
+        edge.delete?.();
+        current.delete?.();
+      }
+    }
+    return curves;
+  } finally {
+    explorer.delete();
   }
 }
 
