@@ -48,7 +48,7 @@ export function resolveSheet(
     const r = resolve(size);
     const frontOnly = isFrontOnlyDrawing(options.views);
     const layout = selectedDrawingLayout(frontOnly, boxes, r.sheet, projection);
-    if (layout.scale >= 1) return r;
+    if (layout.scale >= (options.scale ?? 1)) return r;
   }
   return resolve(series[series.length - 1]!);
 }

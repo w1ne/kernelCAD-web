@@ -52,6 +52,16 @@ describe('exportSvgDrawing', () => {
     expect(checked.diagnostics.map(d => d.code)).not.toContain('drawing.view.placement');
   });
 
+  it('renders an explicitly requested scale and retains true dimension labels', () => {
+    const part = { name: 'panel', shape: OcctBackend.box(100, 30, 60) };
+    const svg = decode(exportSvgDrawing([part], {
+      format: 'svg-drawing', sheet: 'a3', views: ['front'], scale: 0.2,
+    }));
+    expect(svg).toContain('>1:5</text>');
+    expect(svg).toContain('>100</text>');
+    expect(svg).toContain('>60</text>');
+  });
+
   it('repairs a clipped rendered annotation by growing A4 to A3, without touching geometry', () => {
     const opts = { format: 'svg-drawing' as const, sheet: 'a4' as const,
       autoAnnotate: false, titleBlock: {},

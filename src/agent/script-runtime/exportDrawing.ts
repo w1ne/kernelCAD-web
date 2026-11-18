@@ -143,6 +143,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
     ...definedOnly({
       modelName: pdf.modelName,
       views: pdf.views,
+      scale: pdf.scale,
       draftingProfile: pdf.draftingProfile,
       annotationOverrides: pdf.annotationOverrides,
       layoutRepair: pdf.layoutRepair,

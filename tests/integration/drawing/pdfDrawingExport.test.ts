@@ -218,6 +218,16 @@ describe('pdf-drawing: views and annotations', () => {
     expect(bracket.diagnostics.filter(d => d.code === 'drawing.annotation.overlap')).toEqual([]);
   });
 
+  it('draws 90 model millimetres as 18 paper millimetres at 1:5', async () => {
+    const { page } = await exportPdf(BRACKET, { views: ['front'], scale: 0.2 });
+    expect(textsOf(page)).toContain('1:5');
+    const label = textAt(page, '90');
+    const dimensionLines = page.paths.filter(p => p.points.length === 2
+      && Math.abs(p.points[0][1] - p.points[1][1]) < 1e-6
+      && Math.abs(p.points[0][1] - label.y) < 3);
+    expect(dimensionLines.some(p => Math.abs(Math.abs(p.points[1][0] - p.points[0][0]) - 18) < 0.1)).toBe(true);
+  });
+
   it('prints the scale the views were drawn at: the 90 mm base is 90 mm long on a 1:1 sheet', () => {
     const label = textAt(bracket.page, '90');
     const dimLine = bracket.page.paths
