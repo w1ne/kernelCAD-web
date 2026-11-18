@@ -287606,7 +287606,7 @@
       "id": "hull-block-spreader-beam",
       "kit": "shipyard",
       "title": "Hull block spreader beam",
-      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and soft-contact end shoes. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and end shoes with elastomer contact pads. Material controls: yard paint, structural steel, and elastomer pads; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -287630,7 +287630,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-block-spreader-beam.kcad.ts",
       "preview": "/assets/shipyard-hull-block-spreader-beam.png",
-      "sourceSha256": "afd3f0e89e0f1eb7c0b320b1547616d04e2c910a6a663036978975129cfd21c2",
+      "sourceSha256": "fc3d0e795c81616872e29d6a6d9b2c2496cbc8702cf1f25de03389a3a1f0c264",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287653,16 +287653,24 @@
           "type": "color",
           "default": "#b6c1c4",
           "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Soft-contact pads (elastomer)"
         }
       ],
       "presets": {
         "fresh-coat": {
           "yardPaint": "#909892",
-          "structuralSteel": "#d0d7d8"
+          "structuralSteel": "#d0d7d8",
+          "elastomer": "#3a4245"
         },
         "weathered-yard": {
           "yardPaint": "#646c65",
-          "structuralSteel": "#828d91"
+          "structuralSteel": "#828d91",
+          "elastomer": "#252b2d"
         }
       },
       "stats": {
@@ -287686,13 +287694,20 @@
             "drop-link-0",
             "drop-link-1",
             "drop-link-2",
-            "drop-link-3",
+            "drop-link-3"
+          ],
+          "param": "yardPaint"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383b",
+          "parts": [
             "contact-shoe-0",
             "contact-shoe-1",
             "contact-shoe-2",
             "contact-shoe-3"
           ],
-          "param": "yardPaint"
+          "param": "elastomer"
         },
         {
           "name": "structuralSteel",

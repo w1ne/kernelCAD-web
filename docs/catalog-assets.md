@@ -747,3 +747,14 @@ those exposed parts metallic. The [material review handoff](../artifacts/catalog
 contains before/after previews, the five-item audit ledger, the exported-GLB
 regression and the inspected local demo. The branch is not deployed. The asset
 is a generic scene prop, not a pressure-rated design or physical acceptance.
+
+## Shipyard spreader contact-pad materials
+
+The existing `shipyard/hull-block-spreader-beam` now exposes a separate
+`elastomer` color control for its four soft-contact end pads; the beam and drop
+links remain yard-painted, and the shackle pins remain structural steel. The
+`fresh-coat` and `weathered-yard` presets include the pad finish. The
+[semantic-review handoff](../artifacts/catalog-demos/shipyard-hull-block-spreader-beam-elastomer-pad-material-review-20261118/README.md)
+contains the five-preview ledger, baseline/final previews, exported-GLB
+regression, and inspected local demo. This generic scene asset has no rated
+lifting capacity or lifting-safety acceptance claim.

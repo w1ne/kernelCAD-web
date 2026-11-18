@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Focused GLB regression: 1/1 passed; baseline failed at contact-shoe-0",
+    "Catalog integration: 150 files and 220 tests passed, index freshness included",
+    "ESLint passed; shipyard quality gate: 70/70 assets pass",
+    "Catalog quality gate: 2,398/2,402 pass (99.83%); four thin assets remain in standard-components"
+  ]
+}

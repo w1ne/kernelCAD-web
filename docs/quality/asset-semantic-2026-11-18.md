@@ -37,3 +37,31 @@ render settings, and verification evidence.
 No asset, test, preview, or generated index row changed. This was a local
 software-preview review and a public-baseline check; it does not claim
 simulation, deployment of a change, or hardware acceptance.
+
+## Shipyard audit: spreader contact pads
+
+After confirming PR #1258 was merged with all reported checks successful and
+no submitted review, five shipyard previews were checked: `hull-block-spreader-beam`,
+`plate-pack-transfer-cart`, `pipe-rack-fork-pocket`,
+`weld-consumable-issue-cage`, and `shipfitter-tool-cabinet`. Paginated changed
+file lists and title/body scans for all six open PRs, all eight open issues,
+and tracked fixes #1298/#1305/#1307/#1308 found no target overlap. The five
+public detail pages, source files, and previews returned HTTP 200; the live
+source hashes matched their local pre-edit copies.
+
+The `hull-block-spreader-beam` source described four end shoes as soft-contact
+but assigned them the same `yardPaint` control as the beam and drop links. The
+shoes now use a separate `elastomer` control, with values in both existing
+presets. Dimensions, geometry, and the 380-triangle mesh are unchanged. The
+baseline-failing exported-GLB regression checks all four shoes against the
+default elastomer color.
+
+The audit also recorded two geometry/label concerns without changing them in
+this material-focused pass: `plate-pack-transfer-cart` shows a disconnected
+push bar, and `weld-consumable-issue-cage` has no mesh infill despite its
+mesh-style description. The other two unchanged previews read as a pipe rack
+and a shipfitter's cabinet. The [handoff bundle](../../artifacts/catalog-demos/shipyard-hull-block-spreader-beam-elastomer-pad-material-review-20261118/README.md)
+retains the sources, rendered sample PNGs, site baseline, verification, and
+inspected MP4. This is a local software-preview and GLB-material check; it does
+not establish rated lifting capacity, safety, simulation, deployment, or
+hardware acceptance.
