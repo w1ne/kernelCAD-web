@@ -290347,7 +290347,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/plate-roller-conveyor.kcad.ts",
       "preview": "/assets/shipyard-plate-roller-conveyor.png",
-      "sourceSha256": "4a4f4ab9755c23b5f98c4bef43e797995aee5c5b917aad5eb7edf74ffd5b0f1f",
+      "sourceSha256": "94b253163ea5ad023865617f53c52832892e15c2b0f3b02f1000be5aa7c6d615",
       "triangleBudget": 1800,
       "params": [
         {
@@ -290397,7 +290397,8 @@
           "name": "yardPaint",
           "color": "#78847e",
           "parts": [
-            "side-frame-0"
+            "side-frame-0",
+            "side-frame-1"
           ],
           "param": "yardPaint"
         },
@@ -290405,7 +290406,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "side-frame-1",
             "feed-roller-0",
             "feed-roller-1",
             "feed-roller-2",

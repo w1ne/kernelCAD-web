@@ -1,0 +1,23 @@
+Review inputs
+  gh pr view 1258 -R w1ne/kernelCAD-web --json number,title,state,reviewDecision,statusCheckRollup,url
+  gh pr checks 1258 -R w1ne/kernelCAD-web
+  gh pr view 1258 -R w1ne/kernelCAD-web --json reviews
+  python3 artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/check_open_targets.py
+  python3 artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/capture_public_baseline.py
+
+Focused regression
+  npx vitest run tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts --reporter=verbose
+  The baseline failure is recorded in verification/test-before.txt; the final passing run is verification/test-focused-final.txt.
+
+Asset and index verification
+  npx eslint catalog/kits/shipyard/ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts
+  python3 scripts/checkCatalogQuality.py --kit shipyard
+  npx tsx scripts/renderCatalogPreviews.ts plate-roller-conveyor
+  npx tsx scripts/buildAssetCatalog.ts
+  The generated index row/source hash and preview path are checked in verification/index-row-check.json.
+
+Demo generation and inspection
+  python3 artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/make_demo.py
+  python3 artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/inspect_video.py
+
+The complete catalog integration suite was not rerun locally. The targeted exported-GLB regression passed after the change; PR CI is expected to validate the pushed branch.

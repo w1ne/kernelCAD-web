@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-18",
+  "kit": "shipyard",
+  "assets": [
+    "coating-mix-cabinet",
+    "optical-measurement-station",
+    "pipe-spool-saddle-stand",
+    "plate-roller-conveyor",
+    "temporary-work-light-mast"
+  ],
+  "sourceSha256": {
+    "coating-mix-cabinet": "49846b39d7177032ccddaca304f1ab6fd89d609594547b852a2f9ad5a469fc62",
+    "optical-measurement-station": "0405d45106a0c8860a482988e8a00bc698a7e9d06adc4d87a40f79f2f9e3ef78",
+    "pipe-spool-saddle-stand": "aec340db4d7bac78433b4974516dc0ead8989965a48f0a87e4cce739ad01aab6",
+    "plate-roller-conveyor": "4a4f4ab9755c23b5f98c4bef43e797995aee5c5b917aad5eb7edf74ffd5b0f1f",
+    "temporary-work-light-mast": "317881a4cb4c4fbf662fc2edd59d9f6dfa8a564a731a067ff018521dfa98d123"
+  },
+  "triangles": {
+    "coating-mix-cabinet": 224,
+    "optical-measurement-station": 276,
+    "pipe-spool-saddle-stand": 224,
+    "plate-roller-conveyor": 440,
+    "temporary-work-light-mast": 364
+  },
+  "sizeM": {
+    "coating-mix-cabinet": [
+      2.03,
+      2.36,
+      0.96
+    ],
+    "optical-measurement-station": [
+      0.82,
+      1.85,
+      0.99
+    ],
+    "pipe-spool-saddle-stand": [
+      1.6,
+      1.45,
+      0.715
+    ],
+    "plate-roller-conveyor": [
+      2.55,
+      0.575,
+      1.54
+    ],
+    "temporary-work-light-mast": [
+      1.74,
+      3.32,
+      1.16
+    ]
+  }
+}

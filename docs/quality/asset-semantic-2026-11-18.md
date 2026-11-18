@@ -123,3 +123,32 @@ comparison is retained in `kernelCAD-private`.
 The public detail page, source and preview matched the pre-edit branch baseline
 before the change. The feature branch is not deployed; this is a local
 software-render and GLB material check, not simulation or hardware acceptance.
+
+## Shipyard: plate roller conveyor side-frame finish
+
+After checking PR #1258 (merged, all 17 reported checks successful, no submitted
+review), five unreviewed shipyard manufacturing previews were opened:
+`coating-mix-cabinet`, `optical-measurement-station`,
+`pipe-spool-saddle-stand`, `plate-roller-conveyor`, and
+`temporary-work-light-mast`. Seven open issues, six open PRs, the full 1,622-file
+current PR #1507 diff, and fixes #1298/#1305/#1307/#1308 had no selected-ID or
+source-path overlap.
+
+The `plate-roller-conveyor` preview shows six transverse rollers between two
+side frames. The frames have matching 2,550 × 140 × 280 mm geometry and the
+same structural role, but `side-frame-0` used `yardPaint` while
+`side-frame-1` used `structuralSteel`. The latter now uses `yardPaint`; all
+rollers, guide rails and feet retain structural steel. The asset remains at 440
+triangles against its 1,800-triangle budget. No geometry, dimensions, controls
+or presets changed.
+
+The exported-GLB regression failed on the baseline and passed after the fix.
+The shipyard ESLint and asset-quality gate passed; the gate reports 70/70
+assets (100%). The targeted default preview was regenerated and the catalog
+index rebuilt. Its source SHA-256 matches the edited source and the preview
+path exists. All five public pages and preview PNGs returned HTTP 200; current
+public preview hashes match the retained pre-edit baseline. The [five-item
+ledger and inspected demo bundle](../../artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/README.md)
+retain source snapshots, PNGs, public checks, target scans and verification
+logs. The full catalog integration suite was not rerun locally; the pushed PR
+CI result will be recorded after it completes.
