@@ -105,58 +105,11 @@ export async function updateModelParams(
  * refreshed in place (callers hold it) and left untouched on failure.
  */
 async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]): Promise<BuiltModelParamUpdate> {
-  const coerced = edits.filter((edit) => model.session.coercedParams.has(edit.name)).map((edit) => edit.name);
-  if (model.code === undefined || !model.rebuildFromSource) {
-    invalidArgs({
-      api: 'params.update(edits)',
-      path: 'edits[].name',
-      got: coerced.join(', '),
-      requires: 'a model built from script source, because these params are used as plain numbers and an edit re-runs the script',
-      example: "const model = await buildModel({ code, fileName: 'part.kcad.ts' }); await updateModelParams(model, [{ name: 'w', value: 80 }]);",
-      hintSlug: 'invalid-args.param.js-arithmetic',
-    });
-  }
-  let code = model.code;
-
-  // A previous symbolic edit can live only in the session ParamTable: its
-  // source default is still the original value. Carry those current values
-  // into the rewritten source before applying this edit, or rebuilding a
-  // plain-math param would silently reset unrelated controls to their old
-  // defaults. Keep this conservative: if a changed value cannot be written
-  // back into source, fail instead of returning a model with lost edits.
-  const editedNames = new Set(edits.map((edit) => edit.name));
-  for (const entry of model.session.paramTable.list()) {
-    if (editedNames.has(entry.name) || Object.is(entry.value, entry.defaultValue)) continue;
-    const rewritten = setParamValue(code, entry.name, entry.value);
-    if (!rewritten.ok || rewritten.new_code === undefined) {
-      invalidArgs({
-        api: 'params.update(edits)',
-        path: 'edits[].name',
-        got: entry.name,
-        requires: `a source param declaration that can be rewritten so the current value is preserved (${rewritten.error ?? 'not found'})`,
-        example: "const thickness = param('thickness', 5);",
-        hintSlug: 'invalid-args.param.not-found',
-      });
-    }
-    code = rewritten.new_code;
-  }
-
-  for (const edit of edits) {
-    const rewritten = setParamValue(code, edit.name, edit.value);
-    if (!rewritten.ok || rewritten.new_code === undefined) {
-      invalidArgs({
-        api: 'params.update(edits)',
-        path: 'edits[].name',
-        got: edit.name,
-        requires: `a param declared with a literal default that the source can be rewritten at (${rewritten.error ?? 'not found'})`,
-        example: "const w = param('w', 60);",
-        hintSlug: 'invalid-args.param.not-found',
-      });
-    }
-    code = rewritten.new_code;
-  }
+  assertSourceRewriteAvailable(model, edits);
+  const sourceWithCurrentValues = preserveCurrentParamValues(model.code, model, edits);
+  const sourceWithEdits = rewriteEditedParamValues(sourceWithCurrentValues, edits);
   const previousShapes = new Map(model.shapes);
-  const next = await model.rebuildFromSource(code);
+  const next = await model.rebuildFromSource(sourceWithEdits);
   const failure = next.diagnostics.find((d) => d.severity === 'error');
   if (failure) {
     throw new KernelError(failure.code, `params.update: ${failure.message}`, undefined, failure.hint);
@@ -179,6 +132,78 @@ async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]
   }
   Object.assign(model, next);
   return { model, result: { shape, relowered, skipped, warnings: next.warnings, rigidReused: [] } };
+}
+
+type SourceRewriteModel = BuiltModel & {
+  code: string;
+  rebuildFromSource: NonNullable<BuiltModel['rebuildFromSource']>;
+};
+
+function assertSourceRewriteAvailable(
+  model: BuiltModel,
+  edits: ParamUpdateEdit[],
+): asserts model is SourceRewriteModel {
+  const coerced = edits.filter((edit) => model.session.coercedParams.has(edit.name)).map((edit) => edit.name);
+  if (model.code === undefined || !model.rebuildFromSource) {
+    invalidArgs({
+      api: 'params.update(edits)',
+      path: 'edits[].name',
+      got: coerced.join(', '),
+      requires: 'a model built from script source, because these params are used as plain numbers and an edit re-runs the script',
+      example: "const model = await buildModel({ code, fileName: 'part.kcad.ts' }); await updateModelParams(model, [{ name: 'w', value: 80 }]);",
+      hintSlug: 'invalid-args.param.js-arithmetic',
+    });
+  }
+}
+
+function preserveCurrentParamValues(
+  initialCode: string,
+  model: BuiltModel,
+  edits: ParamUpdateEdit[],
+): string {
+  let code = initialCode;
+  // A previous symbolic edit can live only in the session ParamTable: its
+  // source default is still the original value. Carry those current values
+  // into the rewritten source before applying this edit, or rebuilding a
+  // plain-math param would silently reset unrelated controls to their old
+  // defaults. Keep this conservative: if a changed value cannot be written
+  // back into source, fail instead of returning a model with lost edits.
+  const editedNames = new Set(edits.map((edit) => edit.name));
+  for (const entry of model.session.paramTable.list()) {
+    if (editedNames.has(entry.name) || Object.is(entry.value, entry.defaultValue)) continue;
+    const rewritten = setParamValue(code, entry.name, entry.value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      invalidArgs({
+        api: 'params.update(edits)',
+        path: 'edits[].name',
+        got: entry.name,
+        requires: `a source param declaration that can be rewritten so the current value is preserved (${rewritten.error ?? 'not found'})`,
+        example: "const thickness = param('thickness', 5);",
+        hintSlug: 'invalid-args.param.not-found',
+      });
+    }
+    code = rewritten.new_code;
+  }
+  return code;
+}
+
+function rewriteEditedParamValues(initialCode: string, edits: ParamUpdateEdit[]): string {
+  let code = initialCode;
+  for (const edit of edits) {
+    const rewritten = setParamValue(code, edit.name, edit.value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      invalidArgs({
+        api: 'params.update(edits)',
+        path: 'edits[].name',
+        got: edit.name,
+        requires: `a param declared with a literal default that the source can be rewritten at (${rewritten.error ?? 'not found'})`,
+        example: "const w = param('w', 60);",
+        hintSlug: 'invalid-args.param.not-found',
+      });
+    }
+    code = rewritten.new_code;
+  }
+  return code;
 }
 
 async function applyParamEdits(
