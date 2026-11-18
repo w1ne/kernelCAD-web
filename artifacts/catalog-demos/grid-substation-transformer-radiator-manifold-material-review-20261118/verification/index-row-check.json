@@ -1,0 +1,20 @@
+{
+  "asset": "substation-transformer-radiator-bank",
+  "sourceSha256": "011932316644e8ff0a0ebfb40b8f81de0661bb600a12ced2b50ca43a2ec53eec",
+  "indexSourceSha256": "011932316644e8ff0a0ebfb40b8f81de0661bb600a12ced2b50ca43a2ec53eec",
+  "sourceHashMatches": true,
+  "preview": "/assets/grid-substation-substation-transformer-radiator-bank.png",
+  "previewFileExists": true,
+  "triangleCount": 200,
+  "triangleBudget": 1800,
+  "colorParams": [
+    "transformerEnamel",
+    "stainlessSteel"
+  ],
+  "presets": [
+    "maintenance",
+    "weathered"
+  ],
+  "beforeRowSourceSha256": "b51f82efbc8bb27b3f8096920873976bdee55c948868f1f47229effa05321e62",
+  "beforeRowPreview": "/assets/grid-substation-substation-transformer-radiator-bank.png"
+}
