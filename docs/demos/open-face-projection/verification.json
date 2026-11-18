@@ -1,0 +1,99 @@
+{
+  "recordedDate": "2026-11-18",
+  "kernel": "Local OCCT model geometry",
+  "input": {
+    "plate": {
+      "sizeMm": [
+        30,
+        10,
+        4
+      ],
+      "boundsMm": [
+        [
+          -15,
+          -5,
+          0
+        ],
+        [
+          15,
+          5,
+          4
+        ]
+      ],
+      "throughHoleDiameterMm": 6
+    },
+    "sourceCommands": [
+      {
+        "kind": "moveTo",
+        "x": -12,
+        "y": 0
+      },
+      {
+        "kind": "lineTo",
+        "x": 12,
+        "y": 0
+      }
+    ],
+    "face": "top",
+    "sourcePlane": {
+      "origin": [
+        0,
+        0,
+        50
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "xAxis": [
+        1,
+        0,
+        0
+      ]
+    },
+    "direction": [
+      0,
+      0,
+      -1
+    ]
+  },
+  "result": [
+    {
+      "lengthMm": 8.999999999999998,
+      "start": [
+        -3,
+        0,
+        4
+      ],
+      "end": [
+        -12,
+        0,
+        4
+      ]
+    },
+    {
+      "lengthMm": 9,
+      "start": [
+        12,
+        0,
+        4
+      ],
+      "end": [
+        3,
+        0,
+        4
+      ]
+    }
+  ],
+  "checks": {
+    "fragmentCount": 2,
+    "eachFragmentLengthMm": [
+      8.999999999999998,
+      9
+    ],
+    "allSamplesOnTopFaceZ4Mm": true,
+    "downstreamVariableSweep": "verified in tests/integration/modeling/projectCurveOpen.test.ts"
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}

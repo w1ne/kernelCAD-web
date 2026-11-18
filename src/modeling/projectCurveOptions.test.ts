@@ -21,6 +21,8 @@ const SQUARE: SketchCommand[] = [
   { kind: 'close' },
 ];
 const SOURCE = { kind: 'sketchCommands' as const, commands: SQUARE };
+const OPEN_SOURCE = { kind: 'sketchCommands' as const, commands: SQUARE.slice(0, 2) };
+const SOURCE_PLANE = { origin: [0, 0, 10], normal: [0, 0, 1], xAxis: [1, 0, 0] };
 
 function cylinder() {
   const session = new CaptureSession();
@@ -78,5 +80,25 @@ describe('Shape.projectCurve option keys', () => {
     expect(meta.scaleMode).toBe('bounds');
     expect(meta.asEdge).toBe(false);
     expect(meta.faceRef).toEqual({ kind: 'canonical', face: 'top' });
+  });
+
+  it.each([
+    ['sourcePlane', null],
+    ['sourcePlane', { origin: null, normal: [0, 0, 1], xAxis: [1, 0, 0] }],
+    ['direction', null],
+    ['direction', [0, Number.NaN, -1]],
+  ])('rejects malformed open projection %s values through capture diagnostics', (key, value) => {
+    const { shape } = cylinder();
+    const opts = {
+      source: OPEN_SOURCE,
+      face: 'top',
+      asEdge: true,
+      sourcePlane: SOURCE_PLANE,
+      direction: [0, 0, -1],
+      [key]: value,
+    };
+    const err = caught(() => shape.projectCurve(opts as unknown as ProjectOpts));
+    expect(err.code).toBe('feature.invalid-args');
+    expect(err.message).toContain(key === 'sourcePlane' ? 'opts.sourcePlane' : 'opts.direction');
   });
 });

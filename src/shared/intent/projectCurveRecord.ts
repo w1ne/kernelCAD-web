@@ -8,21 +8,19 @@
 // produces a face-bound `replicad.Sketch` consumed downstream by `.extrude(d)`
 // / `.cut(...)` for engraved logos and label inserts.
 //
-// Open-curve mode (`asEdge: true`) is NOT IMPLEMENTED. Note this is a
-// kernelCAD gap, not an OCCT one: `kcad-v0.25.0` bundles `BRepProj_Projection`
-// and it is verified callable. The lowerer rejects `asEdge` because the result
-// of an open-wire projection is N wires, which `projectCurve`'s `=> Sketch`
-// signature cannot honestly express.
+// Open-curve mode (`asEdge: true`) uses an explicit source-plane frame and
+// projection direction. It returns Curve3D values, one for every resulting
+// edge, rather than representing open edges as a closed Sketch.
 
-import type { FaceRef } from './types';
+import type { FaceRef, Vec3 } from './types';
 import type { SketchCommand } from '../capture/sketchCommand';
 
 /**
  * Source for the 2D curve to be projected onto a face.
  *
- * - `kind: 'sketchCommands'` — the same wire format produced by
- *    `path()...close()`; the lowerer rebuilds a `replicad.Drawing` and
- *    pipes it through `sketchOnFace`. Closed loops only at this slice.
+ * - `kind: 'sketchCommands'` — the path command wire format. Closed mode
+ *    rebuilds a Drawing and wraps it with `sketchOnFace`; open mode accepts
+ *    one unclosed path and projects it from an explicit world-space plane.
  * - `kind: 'drawing'` — a serialized `replicad.Drawing` JSON snapshot.
  *    The lowerer currently emits `feature.kernel-failed` for this branch
  *    (round-trip drawing deserialization is a follow-up).
@@ -33,16 +31,25 @@ export type ProjectCurveSource =
 
 export type ProjectCurveScaleMode = 'original' | 'native' | 'bounds';
 
+/** Placement of an open 2D source path in world space. Coordinates and origin
+ * are millimetres; xAxis and normal define the source frame. */
+export interface ProjectCurveSourcePlane {
+  origin: Vec3;
+  normal: Vec3;
+  xAxis: Vec3;
+}
+
 export interface ProjectCurveMetadata {
   /** 2D curve to wrap onto the face. */
   source: ProjectCurveSource;
   /** `Drawing.sketchOnFace` scaling mode. */
   scaleMode: ProjectCurveScaleMode;
-  /** When `true`, project as an open wire (TopoDS_Edge) instead of as a
-   *  face-bound closed sketch. CURRENTLY DEFERRED — lowerer emits a
-   *  deferred-feature diagnostic until OCCT bindings ship
-   *  `BRepProj_Projection`. */
+  /** When `true`, project as an open wire and return Curve3D values. */
   asEdge: boolean;
+  /** Required for open projection: placement of the 2D source path. */
+  sourcePlane?: ProjectCurveSourcePlane;
+  /** Required for open projection: world-space projection direction. */
+  direction?: Vec3;
   /** Target face on the parent shape. */
   faceRef: FaceRef;
 }
@@ -63,6 +70,26 @@ export function isProjectCurveMetadata(value: unknown): value is ProjectCurveMet
   }
   if (m.scaleMode !== 'original' && m.scaleMode !== 'native' && m.scaleMode !== 'bounds') return false;
   if (typeof m.asEdge !== 'boolean') return false;
-  if (m.faceRef === undefined || typeof m.faceRef !== 'object') return false;
+  if (m.asEdge) {
+    const plane = m.sourcePlane as ProjectCurveSourcePlane | null | undefined;
+    if (
+      src.kind !== 'sketchCommands' ||
+      plane === null || plane === undefined || typeof plane !== 'object' || Array.isArray(plane) ||
+      !isVec3Array(plane.origin) ||
+      !isVec3Array(plane.normal) || !isVec3Array(plane.xAxis) ||
+      !isVec3Array(m.direction)
+    ) return false;
+    const commands = (m.source as { commands?: unknown }).commands;
+    if (
+      !Array.isArray(commands) || commands.length < 2 || commands[0]?.kind !== 'moveTo' ||
+      commands.slice(1).some((command) => command?.kind === 'moveTo' || command?.kind === 'close')
+    ) return false;
+  }
+  if (m.faceRef === null || m.faceRef === undefined || typeof m.faceRef !== 'object' || Array.isArray(m.faceRef)) return false;
   return true;
+}
+
+function isVec3Array(value: unknown): value is Vec3 {
+  return Array.isArray(value) && value.length === 3 &&
+    value.every((component) => typeof component === 'number' && Number.isFinite(component));
 }

@@ -492,7 +492,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. Pass `scale_mode` for that option. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`as_edge: true`) is not implemented and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Insert `<shape>.projectCurve(...)` into a kernelCAD script. Closed mode wraps a 2D path onto a face and returns a Sketch. Open mode (`as_edge: true`) takes an explicit `source_plane` and world-space `direction`, awaits the projection, and binds every resulting edge as a Curve3D array for downstream curve operations. The source is `{ kind: "sketchCommands", commands: [...] }`. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -500,7 +500,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           target:    { type: 'string', description: 'Variable name of the Shape to chain onto.' },
           commands:  {
             type: 'array',
-            description: 'Closed 2D path to wrap onto the face, as plain-number commands. Must start with a `moveTo` and end with a `close` (e.g. [{kind:"moveTo",x:0,y:0},{kind:"lineTo",x:2,y:0},{kind:"lineTo",x:2,y:2},{kind:"close"}]).',
+            description: '2D path as plain-number commands. Closed mode starts with moveTo and ends with close; open mode starts with moveTo, has one or more segments, and has no close.',
             items: {
               type: 'object',
               properties: {
@@ -512,11 +512,26 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             },
           },
           face:      { type: 'string', description: 'Target face — canonical name or label.' },
-          scale_mode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          as_edge:    { type: 'boolean', description: 'Open-wire (edge) projection. NOT IMPLEMENTED — rejected at edit time. Use a closed-curve projection (omit as_edge).' },
-          bind_as:    { type: 'string', description: 'Optional local variable name; emits `const <bind_as> = <target>.projectCurve(...);`.' },
+          scale_mode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Closed projection Drawing.sketchOnFace scaling mode. Default original.' },
+          as_edge:    { type: 'boolean', description: 'Open-wire projection. When true, commands must be open, source_plane and direction are required, and bind_as receives an awaited Curve3D[] result.' },
+          source_plane: {
+            type: 'object',
+            description: 'Required with as_edge:true. Places the 2D source path in world space; origin is in mm and x_axis/normal define its frame.',
+            properties: {
+              origin: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              normal: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              x_axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            },
+            required: ['origin', 'normal', 'x_axis'],
+          },
+          direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Required with as_edge:true. Non-zero world-space projection direction.' },
+          bind_as:    { type: 'string', description: 'Optional local variable name; emits a const binding (awaited when as_edge is true).' },
         },
         required: ['code', 'target', 'commands', 'face'],
+        allOf: [
+          { if: { properties: { as_edge: { const: true } }, required: ['as_edge'] }, then: { required: ['source_plane', 'direction'], not: { required: ['scale_mode'] } } },
+          { if: { anyOf: [{ required: ['source_plane'] }, { required: ['direction'] }] }, then: { properties: { as_edge: { const: true } }, required: ['as_edge'] } },
+        ],
       },
     },
     handler: input => projectCurveTool(input as unknown as Parameters<typeof projectCurveTool>[0]),
