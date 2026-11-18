@@ -3854,7 +3854,7 @@
   },
   {
     "name": "project_curve",
-    "description": "Insert `<shape>.projectCurve(...)` into a kernelCAD script. Closed mode wraps a 2D path onto a face and returns a Sketch. Open mode (`as_edge: true`) takes an explicit `source_plane` and world-space `direction`, awaits the projection, and binds every resulting edge as a Curve3D array for downstream curve operations. The source is `{ kind: \"sketchCommands\", commands: [...] }`. Side-effect-free; returns modified code plus diagnostics.",
+    "description": "Use this when you need to project a 2D path onto a selected face. Insert `<shape>.projectCurve(...)` into a kernelCAD script. Closed mode wraps a path and returns a Sketch. Open mode (`as_edge: true`) takes an explicit `source_plane` and world-space `direction`, awaits the projection, and binds every resulting edge as a Curve3D array for downstream curve operations. The source is `{ kind: \"sketchCommands\", commands: [...] }`. Side-effect-free; returns modified code plus diagnostics.",
     "inputSchema": {
       "type": "object",
       "properties": {
