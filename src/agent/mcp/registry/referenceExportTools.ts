@@ -119,7 +119,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'obj: { tolerance?: mm (finite, >= 0.001), angularToleranceDeg?: degrees }; usd writes ASCII USDA (millimeter, Z-up). ' +
               'ply: { encoding?: "binary"|"ascii" (default "binary" = binary_little_endian), normals?: boolean (default true; vertices split at creases over 30°), colors?: "vertex"|"face"|"none" (default "vertex": uchar red/green/blue per vertex; "face" puts them on the face element) }; any other key or value fails with export.ply.invalid-options. ' +
               'svg-drawing: { views?: ["front"], sheet?: "a4"|"a3" (or any pdf-drawing sheet), layoutRepair?: boolean, projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
-              'views:["front"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. ' +
+              'Pass views:["front"], ["top"], or ["left"] for one centred orthographic view in SVG or PDF; omit views for four views. Single-view sheets require annotations on the selected view and reject isometric balloons and exploded overlays. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '

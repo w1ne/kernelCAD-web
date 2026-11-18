@@ -52,6 +52,13 @@ describe('functional review exports', () => {
     expect(streams).toContain(textHex('FRONT'));
     for(const caption of ['TOP','LEFT','ISOMETRIC']) expect(streams).not.toContain(textHex(caption));
   });
+  it('includes both planar extents in a default top-only PDF drawing', async () => {
+    const result = await runAndExport({ code: 'return box(400,232,8);', fileName: 'panel.kcad.ts',
+      format: 'pdf-drawing', options: { format: 'pdf-drawing', views: ['top'] } });
+    const overall = result.drawingReport?.annotations.filter(a => a.kind === 'overall');
+    expect(overall?.map(a => [a.view, a.text])).toEqual([['top', '400'], ['top', '232']]);
+  });
+
   it('preserves stable IDs in unresolved conversion fallbacks for every kind', () => {
     for (const d of [{ id: 'linear', kind: 'linear', from: {edge:{}}, to:[1,0,0] }, { id: 'angular', kind: 'angular', from:{},to:{} }, { id:'diameter',kind:'diameter',edge:{} }, {id:'radius',kind:'radius',edge:{}}]) {
       expect(declaredDrawingAnnotation([], d as never)).toHaveProperty('id', d.id);

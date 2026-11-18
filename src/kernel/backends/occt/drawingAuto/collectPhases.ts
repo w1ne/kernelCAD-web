@@ -192,25 +192,42 @@ function holeDimensionFromPoint(
     : [side === 'left' ? box.x : box.x + box.w, from[1]];
 }
 
+function overallDimensions(ctx: RenderCtx, bb: { min: V3; max: V3 }): LinearItem[] {
+  const { views } = ctx;
+  const singleView = ctx.input.visibleViews?.length === 1 ? ctx.input.visibleViews[0] : undefined;
+  const primary = singleView === 'top' || singleView === 'left' ? singleView : 'front';
+  const f = views[primary].placement.box;
+  const sides = dimensionSides(ctx.input.projection);
+  const fw = sides.front.horizontal, fh = sides.front.vertical;
+  const fy = fw === 'top' ? f.y : f.y + f.h;
+  const fx = fh === 'left' ? f.x : f.x + f.w;
+  const widthAxis = primary === 'left' ? 1 : 0;
+  const heightAxis = primary === 'top' ? 1 : 2;
+  const extent = (axis: 0 | 1 | 2) => formatDimValue(bb.max[axis] - bb.min[axis]);
+  const end = (axis: 0 | 1 | 2): V3 => {
+    const point: V3 = [...bb.min];
+    point[axis] = bb.max[axis];
+    return point;
+  };
+  const linear: LinearItem[] = [
+    { id: annotationId('overall', widthAxis === 0 ? 'x' : 'y'), modelFrom: [...bb.min], modelTo: end(widthAxis), kind: 'overall', view: primary, side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: extent(widthAxis), order: Infinity },
+    { id: annotationId('overall', heightAxis === 2 ? 'z' : 'y'), modelFrom: [...bb.min], modelTo: end(heightAxis), kind: 'overall', view: primary, side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: extent(heightAxis), order: Infinity },
+  ];
+  if (singleView === undefined) {
+    const t = views.top.placement.box;
+    const td = sides.top.vertical;
+    const tx = td === 'left' ? t.x : t.x + t.w;
+    linear.push({ id: annotationId('overall', 'y'), modelFrom: [...bb.min], modelTo: end(1), kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: extent(1), order: Infinity });
+  }
+  return linear;
+}
+
 export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
   const { opts, include, views } = ctx;
   const { compound } = ctx.input;
   const bb = optimalBoundsOf(compound.getReplicadShape().wrapped) ?? compound.boundingBox();
   const linear = collectHolePositionDimensions(ctx, bb);
-  if (opts.enabled && include.has('overall')) {
-    const f = views.front.placement.box;
-    const t = views.top.placement.box;
-    const sides = dimensionSides(ctx.input.projection);
-    const fw = sides.front.horizontal, fh = sides.front.vertical, td = sides.top.vertical;
-    const fy = fw === 'top' ? f.y : f.y + f.h;
-    const fx = fh === 'left' ? f.x : f.x + f.w;
-    const tx = td === 'left' ? t.x : t.x + t.w;
-    linear.push(
-      { id: annotationId('overall', 'x'), modelFrom: [...bb.min] as V3, modelTo: [bb.max[0], bb.min[1], bb.min[2]], kind: 'overall', view: 'front', side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
-      { id: annotationId('overall', 'z'), modelFrom: [...bb.min] as V3, modelTo: [bb.min[0], bb.min[1], bb.max[2]], kind: 'overall', view: 'front', side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
-      { id: annotationId('overall', 'y'), modelFrom: [...bb.min] as V3, modelTo: [bb.min[0], bb.max[1], bb.min[2]], kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
-    );
-  }
+  if (opts.enabled && include.has('overall')) linear.push(...overallDimensions(ctx, bb));
   const buckets = new Map<string, LinearItem[]>();
   const reviews = new Map<string, NonNullable<ReturnType<typeof beginAnnotation>>>();
   for (const item of linear) {

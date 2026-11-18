@@ -13,39 +13,37 @@ interface ViewSelectionOptions {
   explodedParts?: unknown;
 }
 
-export function isFrontOnlyDrawing(views?: readonly DrawingViewName[]): boolean {
-  return views?.length === 1 && views[0] === 'front';
+export type OrthographicView = Exclude<DrawingViewName, 'iso'>;
+
+export function singleOrthographicView(views?: readonly DrawingViewName[]): OrthographicView | undefined {
+  if (views?.length !== 1) return undefined;
+  const view = views[0];
+  return view === 'front' || view === 'top' || view === 'left' ? view : undefined;
 }
 
-function validateRequestedViews(views: readonly DrawingViewName[] | undefined, frontOnly: boolean): void {
-  if (views === undefined || frontOnly) return;
-  const complete = views.length === 4 && new Set(views).size === 4
-    && views.every(v => DRAWING_VIEW_NAMES.includes(v));
-  if (!complete) throw new Error('Drawing views must be ["front"] or the complete front/top/left/iso set.');
-}
-
-function validateFrontOnlyOptions(options: ViewSelectionOptions): void {
-  if (options.annotations?.some(a => a.view !== undefined && a.view !== 'front')) {
-    throw new Error('Front-only drawings require annotations on the front view.');
+export function validateDrawingViewSelection(options: ViewSelectionOptions): OrthographicView | undefined {
+  const view = singleOrthographicView(options.views);
+  if (view !== undefined) {
+    if (options.annotations?.some(a => a.view !== undefined && a.view !== view)) {
+      throw new Error(`Single-view drawings require annotations on the ${view} view.`);
+    }
+    if (options.balloons === true || options.exploded !== undefined || options.explodedParts !== undefined) {
+      throw new Error('Balloons and exploded overlays require an isometric view.');
+    }
+  } else if (options.views !== undefined) {
+    const complete = options.views.length === 4 && new Set(options.views).size === 4
+      && options.views.every(v => DRAWING_VIEW_NAMES.includes(v));
+    if (!complete) throw new Error('Select a single orthographic view or the complete front/top/left/iso set.');
   }
-  if (options.balloons === true || options.exploded !== undefined || options.explodedParts !== undefined) {
-    throw new Error('Balloons and exploded overlays require an isometric view.');
-  }
-}
-
-export function validateDrawingViewSelection(options: ViewSelectionOptions): boolean {
-  const frontOnly = isFrontOnlyDrawing(options.views);
-  validateRequestedViews(options.views, frontOnly);
-  if (frontOnly) validateFrontOnlyOptions(options);
-  return frontOnly;
+  return view;
 }
 
 export function selectedDrawingLayout(
-  frontOnly: boolean,
+  view: OrthographicView | undefined,
   boxes: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
   projection: ProjectionAngle,
   scale?: number,
 ): SheetLayout {
-  return frontOnly ? computeFrontSheetLayout(boxes.front, sheet, scale) : computeSheetLayout(boxes, sheet, projection, scale);
+  return view === undefined ? computeSheetLayout(boxes, sheet, projection, scale) : computeFrontSheetLayout(boxes[view], sheet, scale);
 }
