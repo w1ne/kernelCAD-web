@@ -45,6 +45,7 @@ export function selectedDrawingLayout(
   boxes: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
   projection: ProjectionAngle,
+  scale?: number,
 ): SheetLayout {
-  return frontOnly ? computeFrontSheetLayout(boxes.front, sheet) : computeSheetLayout(boxes, sheet, projection);
+  return frontOnly ? computeFrontSheetLayout(boxes.front, sheet, scale) : computeSheetLayout(boxes, sheet, projection, scale);
 }
