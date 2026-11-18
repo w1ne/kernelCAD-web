@@ -8,6 +8,7 @@ import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
+import { kernelErrorToDiagnostic } from '../../shared/diagnostics/kernelErrorToDiagnostic';
 import * as stlImport from '../../kernel/backends/occt/importStl';
 import { fromSTL, meshFromSTL } from './fromMeshFormats';
 
@@ -37,6 +38,17 @@ describe('lib.meshFromSTL file limits', () => {
 });
 
 describe('lib.fromSTL error reporting', () => {
+
+  it('points open-shell recovery at the STL input', async () => {
+    writeFileSync(join(tmpDir, 'open.stl'), 'solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t');
+    const diagnostic = await fromSTL({ session: new CaptureSession(), scriptDir: tmpDir }, 'open.stl')
+      .catch(error => kernelErrorToDiagnostic(error));
+    expect(diagnostic).toMatchObject({
+      hint: expect.stringContaining('fromSTL.open-mesh'),
+      nextAction: { kind: 'fix-arg', field: 'path' },
+    });
+  });
+
   it('distinguishes a numeric OCCT failure from invalid input', async () => {
     writeFileSync(join(tmpDir, 'kernel-failure.stl'), 'fixture');
     const importer = vi.spyOn(stlImport, 'importStlBytes').mockImplementationOnce(() => { throw 24; });

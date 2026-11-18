@@ -7,6 +7,7 @@
 // with the same code that the catalogue registers a hint for, instead of
 // the generic `cli.script-exception` fallback.
 
+import type { NextAction } from '../diagnostics/nextAction';
 import type { DiagnosticCode } from '../diagnostics/registry';
 
 export class KernelError extends Error {
@@ -14,12 +15,14 @@ export class KernelError extends Error {
   readonly featureId?: string;
   /** Optional hint override; if absent, conversion falls back to HINT_TEMPLATES[code]. */
   readonly hint?: string;
+  readonly nextAction?: NextAction;
 
-  constructor(code: DiagnosticCode, message: string, featureId?: string, hint?: string) {
+  constructor(code: DiagnosticCode, message: string, featureId?: string, hint?: string, nextAction?: NextAction) {
     super(message);
     this.code = code;
     this.featureId = featureId;
     this.hint = hint;
+    this.nextAction = nextAction;
     this.name = 'KernelError';
   }
 }
