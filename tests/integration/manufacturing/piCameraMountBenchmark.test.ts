@@ -16,9 +16,10 @@
 //   5. a PatternHeight edit through set_param's source rewrite raises the
 //      pattern and the board together and stays clash-free;
 //   6. seeded defects (M2 tap-drill holes, a bracket pattern off the board
-//      holes, a board pushed into the standoffs) fail. The last two are
-//      caught by the build itself: the fastened mate rejects off-axis holes
-//      and overlapping parts at the contact face.
+//      holes, a board pushed into the standoffs, and a 1 mm assembly placement
+//      drift) fail. The fastened mate rejects off-axis holes and overlapping
+//      parts; the independent pose oracle catches a structurally valid but
+//      misplaced assembly.
 // Tolerances are this fixture's own: 0.1 % on volume (exact B-rep faces),
 // 0.01 mm on positions and diameters, and 1e-6 mm / 1e-6 degrees on solver
 // poses.
@@ -181,6 +182,24 @@ describe('manufacturing benchmark 04: Pi camera extrusion mount (#1227)', () => 
   it('puts the mount and the camera board at their expected poses', async () => {
     expect(await poseFailures(SOURCE, DEFAULT_HEIGHT)).toEqual([]);
   }, 120_000);
+
+  it('catches a mated assembly shifted 1 mm from its authored world pose', async () => {
+    const code = inject(SOURCE,
+      "{ at: [20, -2, patternHeight] }",
+      "{ at: [21, -2, patternHeight] }");
+
+    // The parts still mate and the generic mechanism check has no authored
+    // world datum to reject this translation. The fixture's independent pose
+    // oracle must catch that both parts moved away from the specified seat.
+    const evaluated = await evaluateScriptTool({ code });
+    expect(evaluated.ok).toBe(true);
+    expect(evaluated.mechanism).toBe('real');
+
+    const failures = await poseFailures(code, DEFAULT_HEIGHT);
+    expect(failures).toHaveLength(2);
+    expect(failures).toContain('mount translation[0]: 21 != 20');
+    expect(failures).toContain('camera translation[0]: 21 != 20');
+  }, 180_000);
 
   it('seats the board on the standoffs with no clash', async () => {
     expect(await clashFailures(SOURCE)).toEqual([]);
