@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-18",
+  "purpose": "Record the five-preview material audit and compare the glass-breaker rotor before and after the material-control correction.",
+  "images": {
+    "audit": "preview-review-five-assets.png",
+    "targetBefore": "previews/before/glass-breaker-screen.png",
+    "targetAfter": "previews/after/glass-breaker-screen.png",
+    "rotorBefore": "previews/rotor-detail/before-former-dark-flails.png",
+    "rotorAfter": "previews/rotor-detail/after-editable-wear-steel.png"
+  },
+  "video": {
+    "size": "1280x720",
+    "fps": 25,
+    "codec": "H.264 / yuv420p",
+    "slideSeconds": 2.8,
+    "audio": false
+  },
+  "renderScope": "Local catalog previews and software-rendered exported-GLB rotor comparison. Not deployment, process simulation or hardware acceptance."
+}

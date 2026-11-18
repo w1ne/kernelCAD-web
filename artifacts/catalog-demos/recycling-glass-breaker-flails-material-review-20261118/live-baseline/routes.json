@@ -1,0 +1,125 @@
+{
+  "capturedAt": "2026-11-18",
+  "routes": [
+    {
+      "asset": "recycling-facility/bale-ejector",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/recycling-facility/bale-ejector/",
+      "status": 200,
+      "bytes": 29593,
+      "sha256": "24d3864e3965ec58d18adc6cd97cfa1c8ffa1b1a2e413c4aed28cf93dc5b2ea4"
+    },
+    {
+      "asset": "recycling-facility/bale-ejector",
+      "kind": "preview",
+      "url": "https://kernelcad.com/assets/recycling-facility-bale-ejector.png",
+      "status": 200,
+      "bytes": 42596,
+      "sha256": "1d3df7103fddf5baf54f4c1111dab995453c5392173abb85c8f65c3f48fd1d95"
+    },
+    {
+      "asset": "recycling-facility/bale-ejector",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/recycling-facility-bale-ejector.kcad.ts",
+      "status": 200,
+      "bytes": 7269,
+      "sha256": "7a6f6eb8f00214325ea2a0957f8455180d62eb440ef8db439db139909bc443d5"
+    },
+    {
+      "asset": "recycling-facility/belt-conveyor-head",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/recycling-facility/belt-conveyor-head/",
+      "status": 200,
+      "bytes": 29844,
+      "sha256": "840d0f1b54cd58b5e34582c1cb53a9a503e311af7567f408c5e39d53b9f53a9c"
+    },
+    {
+      "asset": "recycling-facility/belt-conveyor-head",
+      "kind": "preview",
+      "url": "https://kernelcad.com/assets/recycling-facility-belt-conveyor-head.png",
+      "status": 200,
+      "bytes": 53953,
+      "sha256": "eb86a5f63f2fe91c93d686ce5f6289d2860943518a95ea16494a42cba4ce55b7"
+    },
+    {
+      "asset": "recycling-facility/belt-conveyor-head",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/recycling-facility-belt-conveyor-head.kcad.ts",
+      "status": 200,
+      "bytes": 8157,
+      "sha256": "70f0a26df0c19b848fef66b30542d24093d2c90fef22d319fa25d4c41d1269be"
+    },
+    {
+      "asset": "recycling-facility/biofilter-bed",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/recycling-facility/biofilter-bed/",
+      "status": 200,
+      "bytes": 29627,
+      "sha256": "1c9ff478df149a729cf5bc1cce46ba5dba8d3c3a7b1cd5d75c9addf30de4f855"
+    },
+    {
+      "asset": "recycling-facility/biofilter-bed",
+      "kind": "preview",
+      "url": "https://kernelcad.com/assets/recycling-facility-biofilter-bed.png",
+      "status": 200,
+      "bytes": 42235,
+      "sha256": "6bd04db34f2b76dc3677c2b662b0a628000a55b73698365af4cc3bbaf6372686"
+    },
+    {
+      "asset": "recycling-facility/biofilter-bed",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/recycling-facility-biofilter-bed.kcad.ts",
+      "status": 200,
+      "bytes": 7730,
+      "sha256": "e012f55fbb862d29c459be989b88bb40eac3e483e67fab86c4764a75727eb369"
+    },
+    {
+      "asset": "recycling-facility/glass-breaker-screen",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/recycling-facility/glass-breaker-screen/",
+      "status": 200,
+      "bytes": 29637,
+      "sha256": "63e0857f19d34bf10e819e1190e361e6ad00cf5fb871bbde938adae827301131"
+    },
+    {
+      "asset": "recycling-facility/glass-breaker-screen",
+      "kind": "preview",
+      "url": "https://kernelcad.com/assets/recycling-facility-glass-breaker-screen.png",
+      "status": 200,
+      "bytes": 41182,
+      "sha256": "5d0974c0eed52d8d476729842418c35549161b7d08221a574dab97361b296d48"
+    },
+    {
+      "asset": "recycling-facility/glass-breaker-screen",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/recycling-facility-glass-breaker-screen.kcad.ts",
+      "status": 200,
+      "bytes": 10527,
+      "sha256": "e87fc5ce20949b4eee3e26cdd9f2da70ed0c4584f8a0179493fc935b2c834cc2"
+    },
+    {
+      "asset": "recycling-facility/mobile-compactor",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/recycling-facility/mobile-compactor/",
+      "status": 200,
+      "bytes": 29858,
+      "sha256": "42ed6857086ef4bd8f02f5df6689e9aa1c0381a7ebfd51216448389a606016be"
+    },
+    {
+      "asset": "recycling-facility/mobile-compactor",
+      "kind": "preview",
+      "url": "https://kernelcad.com/assets/recycling-facility-mobile-compactor.png",
+      "status": 200,
+      "bytes": 32663,
+      "sha256": "472e400f52b6bddb4d3949bc9d35da3c65ffb4963c31223ffd2c8493e211fca7"
+    },
+    {
+      "asset": "recycling-facility/mobile-compactor",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/recycling-facility-mobile-compactor.kcad.ts",
+      "status": 200,
+      "bytes": 7950,
+      "sha256": "5cfcbe196a7be3fefae679651d4f413f1f3a244e957f22100742366ff16182f0"
+    }
+  ]
+}

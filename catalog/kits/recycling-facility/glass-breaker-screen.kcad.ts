@@ -68,7 +68,7 @@ for (let k = 0; k < 4; k++) {
   add(`rotor-disc-${k}`, cylinder(40, 260, 10).rotateX(90).translate(0, y + 20, RZ).color(wearSteel));
   for (let j = 0; j < 4; j++) {
     const a = j * 90 + k * 45;
-    add(`flail-${k}-${j}`, blk(0, 0, 0, 70, 50, 300).translate(0, 0, 200).rotateY(a).translate(0, y, RZ).color(dark));
+    add(`flail-${k}-${j}`, blk(0, 0, 0, 70, 50, 300).translate(0, 0, 200).rotateY(a).translate(0, y, RZ).color(wearSteel));
   }
 }
 // Belt drive on the +Y side.
