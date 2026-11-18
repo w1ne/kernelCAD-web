@@ -470,7 +470,7 @@ export function renderSvgDrawing(
     h: bounds.max[2] - bounds.min[2],
   };
 
-  const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false);
+  const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false, singleView ? [singleView] : VIEW_NAMES);
   const viewBoxes = {
     front: styled.front.box,
     top: styled.top.box,
@@ -560,12 +560,15 @@ function projectSheetViews(
   shape: AnyShape,
   explodedShape: AnyShape | undefined,
   hiddenLines: boolean,
+  names: readonly DrawingViewName[],
 ): Record<DrawingViewName, StyledView> {
-  const styled = {} as Record<DrawingViewName, StyledView>;
+  // Downstream sheets keep four layout slots, even when only one is drawn.
+  const empty: StyledView = { visible: [], tangent: [], hidden: [], box: { x: 0, y: 0, w: 1, h: 1 } };
+  const styled = { front: empty, top: empty, left: empty, iso: empty };
   // One preparation serves every view of the assembled shape.
   const assembled = prepareShapeForDrawing(shape);
   try {
-    for (const name of VIEW_NAMES) {
+    for (const name of names) {
       const camera = makeDrawingCamera(name);
       const options = { withHidden: hiddenLines && name !== 'iso' };
       const raw = name === 'iso' && explodedShape !== undefined
