@@ -3,6 +3,7 @@
 // src/kernel/backends/occt/drawingAuto/collectPhases.ts
 
 import { DIM_BASE, DIM_STEP, extractTextBoxes, fcfCells } from '../drawingAnnotations';
+import { optimalBoundsOf } from '../backendBounds';
 import { principalAxis } from '../drawingFeatures';
 import type { HoleComposite, V3 } from '../drawingFeatures';
 import { dimensionToSvg, formatDimValue } from '../drawingLayout';
@@ -86,10 +87,9 @@ export function collectHoleGroups(ctx: RenderCtx): void {
   }
 }
 
-export function collectHolePositionDimensions(ctx: RenderCtx): LinearItem[] {
+function collectHolePositionDimensions(ctx: RenderCtx, bb: { min: V3; max: V3 }): LinearItem[] {
   const { opts, include, holeGroups } = ctx;
   const linear: LinearItem[] = [];
-  const bb = ctx.input.compound.boundingBox();
   if (!(opts.enabled && include.has('hole-positions'))) return linear;
   const byView = groupHolesByDimensionView(holeGroups);
   for (const [view, holes] of byView) {
@@ -194,8 +194,9 @@ function holeDimensionFromPoint(
 
 export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
   const { opts, include, views } = ctx;
-  const linear: LinearItem[] = collectHolePositionDimensions(ctx);
-  const bb = ctx.input.compound.boundingBox();
+  const { compound } = ctx.input;
+  const bb = optimalBoundsOf(compound.getReplicadShape().wrapped) ?? compound.boundingBox();
+  const linear = collectHolePositionDimensions(ctx, bb);
   if (opts.enabled && include.has('overall')) {
     const f = views.front.placement.box;
     const t = views.top.placement.box;
