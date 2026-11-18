@@ -83,6 +83,20 @@ describe('Shape.projectCurve open-face mode (#1568)', () => {
     } as never)).toThrow(/sourcePlane and direction/i);
   });
 
+  it('rejects a face selector that resolves to multiple B-rep faces', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const plate = api.box(20, 20, 4);
+
+    await expect(plate.projectCurve({
+      source: { kind: 'sketchCommands', commands: OPEN_LINE },
+      face: api.q.face(),
+      asEdge: true,
+      sourcePlane: { origin: [0, 0, 50], normal: [0, 0, 1], xAxis: [1, 0, 0] },
+      direction: [0, 0, -1],
+    })).rejects.toThrow(/exactly one selected B-rep face/);
+  });
+
   it('rebuilds the linked demo bundle from measured OCCT curves', async () => {
     const demo = await captureOpenFaceProjectionDemo();
     expect(demo.frameCount).toBe(3);
