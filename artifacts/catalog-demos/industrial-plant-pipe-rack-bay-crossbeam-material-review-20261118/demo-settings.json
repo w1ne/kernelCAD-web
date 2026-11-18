@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-18",
+  "video": "review-demo.mp4",
+  "durationSeconds": 15,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts pipe-rack-bay",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "testInvocation": "npx vitest run tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts --reporter=verbose",
+  "reviewSamples": [
+    "industrial-plant/pipe-rack-bay",
+    "industrial-plant/jib-crane",
+    "industrial-plant/electric-pallet-jack",
+    "industrial-plant/steel-access-gate",
+    "industrial-plant/machine-guard-enclosure"
+  ],
+  "claims": "Local software-rendered catalog previews and exported-GLB material regression only. No simulation, deployment, or hardware acceptance is shown."
+}

@@ -145791,7 +145791,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts",
       "preview": "/assets/industrial-plant-pipe-rack-bay.png",
-      "sourceSha256": "d52709db84181ed4d8ee563bb15bdf5cb79d1b967cbc1466e56b2c8da7cf21cc",
+      "sourceSha256": "707c86165fd48eff9fb8dd1ce9fbb9e8882f6128ef47b868c4f409a918f892cc",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145841,8 +145841,12 @@
           "color": "#707d84",
           "parts": [
             "support-column--1",
+            "baseplate--1",
+            "crossbeam--1",
             "brace--1",
             "support-column-1",
+            "baseplate-1",
+            "crossbeam-1",
             "brace-1",
             "pipe-run-0",
             "pipe-run-2"
@@ -145853,10 +145857,6 @@
           "name": "safetyPaint",
           "color": "#e2a844",
           "parts": [
-            "baseplate--1",
-            "crossbeam--1",
-            "baseplate-1",
-            "crossbeam-1",
             "pipe-flange-0",
             "pipe-run-1",
             "pipe-flange-1",

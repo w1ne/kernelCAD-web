@@ -1,0 +1,2 @@
+d52709db84181ed4d8ee563bb15bdf5cb79d1b967cbc1466e56b2c8da7cf21cc  artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/before/pipe-rack-bay.kcad.ts
+707c86165fd48eff9fb8dd1ce9fbb9e8882f6128ef47b868c4f409a918f892cc  artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/after/pipe-rack-bay.kcad.ts

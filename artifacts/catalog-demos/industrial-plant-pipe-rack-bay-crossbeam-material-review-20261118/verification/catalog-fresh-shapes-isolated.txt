@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/catalogFreshShapes.test.ts > no catalogue model derives several copies from one shape handle 164737ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  18:11:46
+   Duration  184.64s (transform 16.28s, setup 378ms, import 18.82s, tests 164.74s, environment 0ms)

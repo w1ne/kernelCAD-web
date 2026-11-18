@@ -1,0 +1,1 @@
+707c86165fd48eff9fb8dd1ce9fbb9e8882f6128ef47b868c4f409a918f892cc  catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts
