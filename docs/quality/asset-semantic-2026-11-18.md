@@ -150,5 +150,14 @@ path exists. All five public pages and preview PNGs returned HTTP 200; current
 public preview hashes match the retained pre-edit baseline. The [five-item
 ledger and inspected demo bundle](../../artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/README.md)
 retain source snapshots, PNGs, public checks, target scans and verification
-logs. The full catalog integration suite was not rerun locally; the pushed PR
-CI result will be recorded after it completes.
+logs. The full catalog integration suite was not rerun locally. After the push,
+workflow dispatch `44417158008` ran against the exact head
+`5c42a991c28bf41b6c811af739187ee904f551b6`. Catalog-index freshness,
+changed-source preview validation, lint, build/typecheck and seven of eight
+test shards passed. The overall run failed on one quality-ratchet finding in
+`src/modeling/capture/proxy.ts` (`max-lines=820`): the file is 1,576 lines in
+this branch and 1,498 on current `develop`, and this catalog commit does not
+change it. The [CI result and failure excerpt](../../artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/verification/ci-after-push.md)
+are retained with the handoff bundle. The focused GLB regression, ESLint,
+shipyard asset-quality gate and local index build passed; the full CI suite is
+not claimed green.

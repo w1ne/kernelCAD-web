@@ -25,18 +25,27 @@ index source hash matches the source file and the preview path exists.
 PR [#1258](https://github.com/w1ne/kernelCAD-web/pull/1258) was checked first:
 it is merged with all 17 reported checks successful and no submitted review.
 At the time of this review, current catalog PR
-[#1507](https://github.com/w1ne/kernelCAD-web/pull/1507) was open, with its
-applicable checks successful and no submitted review. Seven open issues, six
-open PRs, and the named fixes #1298, #1305, #1307 and #1308 were checked for
-overlap; none targets these selected asset IDs or source paths. The exact scan
-is retained in [`verification/`](verification/).
+[#1507](https://github.com/w1ne/kernelCAD-web/pull/1507) was open with no
+submitted review. After pushing this commit, the draft PR did not receive an
+automatic run, so full CI was dispatched against the exact pushed SHA. The
+[run passed catalog-index freshness, changed-source preview validation,
+build/typecheck, lint, and seven test shards](verification/ci-after-push.md),
+but the overall workflow failed one test shard: `qualityRatchet.test.ts`
+reported `src/modeling/capture/proxy.ts` over its 820-line limit. That file is
+1,576 lines in this branch and 1,498 lines on current `develop`; it was not
+changed by this catalog commit. The quality test and baseline are identical
+between branch and `develop`. The failure does not implicate this asset fix.
+Seven open issues, six open PRs, and the named fixes #1298, #1305, #1307 and
+#1308 were checked for overlap; none targets these selected asset IDs or source
+paths. The exact scan is retained in [`verification/`](verification/).
 
 All five public detail pages and preview images returned HTTP 200. Their current
 preview hashes still match the retained pre-edit local PNGs. This branch is not
 deployed, so no post-deploy claim is made. The full catalog integration suite
-was not rerun locally; the changed asset's exported-GLB regression,
-shipyard ESLint, shipyard quality gate and full catalog-index regeneration
-were run. PR CI will provide the pushed-branch integration result.
+was not rerun locally. The focused exported-GLB regression, shipyard ESLint,
+shipyard quality gate and full catalog-index regeneration passed locally; CI's
+catalog-index freshness and changed-source preview gates also passed. The full
+CI result and failure excerpt are retained under [`verification/`](verification/).
 
 ## Demo
 
