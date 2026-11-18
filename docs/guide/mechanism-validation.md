@@ -8,6 +8,12 @@
 
 The result is local CAD validation of the model's declared mates and geometry. It does not claim a physical simulation, a deployed result, or hardware acceptance.
 
+## Pose overrides on fastened mates
+
+`solve_mates({ poses })` accepts overrides for mate types with solver-supported pose coordinates, such as revolute or prismatic joints. A fastened mate has zero articulation degrees of freedom, so an override for it returns `feature.invalid-args`; the solver does not silently return the unchanged pose as a successful solve. Planar mates also reject overrides because this solver has no planar pose coordinate. Change the mate to a supported articulated type if it is meant to move.
+
+The [fastened-mate pose rejection demo and evidence bundle](../demos/fastened-mate-pose-rejection-1227-20261118/README.md) records the local MCP result and its negative regression test.
+
 ## Pair exclusions at rest
 
 At the returned pose, `solvedModel({}, { ignore: [['a', 'b']] })` exempts that symmetric named pair from overlap and rest-pose penetration diagnostics. Mate-gap and joint-continuity checks still run, and the motion sweep still checks the pair at sampled poses. If the excluded pair actually overlaps, `mechanism.ignored-rest-overlap` warns and the mechanism remains `unverified`, even if the sweep completes. The exception alone does not establish physical compatibility.
