@@ -1,0 +1,7 @@
+# Environment: repo root; local checked-in catalog sources and previews.
+python3 artifacts/catalog-demos/mining-five-preview-audit-20261118/check_open_targets.py
+python3 artifacts/catalog-demos/mining-five-preview-audit-20261118/make_demo.py
+
+# Source/index correspondence was checked from catalog/index.json sourceSha256.
+# No catalog source or test changed, so catalog lint/tests and preview rendering were not run.
+# No valid asset defect was established, so the catalog index was not regenerated.

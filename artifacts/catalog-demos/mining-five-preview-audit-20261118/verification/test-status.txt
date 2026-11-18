@@ -1,0 +1,1 @@
+No catalog source or test changed. Tests, asset lint, preview rendering, and catalog index rebuild were not run. The source SHA-256 values match catalog/index.json for all five reviewed assets. No quality-count claim is made.
