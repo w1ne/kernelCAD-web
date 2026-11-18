@@ -61,7 +61,7 @@ The check runs at three layers that share one decision
   `node:fs/promises` (sync, callback, promise and stream forms) is wrapped
   once, and the ESM named exports are re-synced, so
   `import { writeFileSync } from 'node:fs'` is guarded too. Script asset
-  paths (`lib.fromSTEP`, `fromSTL`, `fromDXF`, `referenceImage`, fonts and
+  paths (`lib.fromSTEP`, `fromSTL`, `from3MF`, `fromDXF`, `referenceImage`, fonts and
   textures) are also refused earlier, at the script path resolver, so the
   author gets a clear diagnostic and not a generic "cannot read file".
 

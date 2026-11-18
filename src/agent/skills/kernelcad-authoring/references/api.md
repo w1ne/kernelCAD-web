@@ -187,6 +187,16 @@ lib.fromSTL(path: string, opts?: {
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
 
+// Core 3MF triangle mesh objects placed in the build — imported as validated
+// faceted B-rep solids. Applies build-item transforms and converts the declared
+// model unit to mm. Faces remain planar facets; analytic surfaces and feature
+// history are not present. Required extensions, component assemblies,
+// multi-shell objects, open meshes and non-manifold meshes are refused.
+lib.from3MF(path: string, opts?: {
+  tolerance?: number;     // vertex-merge distance, mm (default 1e-6)
+  maxTriangles?: number;  // import cost cap (default 200000)
+}): Promise<Shape>;
+
 // ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
 // area so the caller can choose which regions are outlines, holes or parts.
 // LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and one closed,

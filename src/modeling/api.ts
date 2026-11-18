@@ -34,7 +34,7 @@ import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
 import type { FontPath } from '../shared/fonts/fontPath';
 import type { FromStepOptions } from './parts/fromSTEP';
-import type { FromSTLOptions } from './parts/fromMeshFormats';
+import type { From3MFOptions, FromSTLOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
@@ -111,6 +111,14 @@ export interface PartsLib {
    * A non-watertight mesh is refused unless `opts.allowOpen` is set.
    */
   fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
+  /**
+   * Import 3MF core mesh objects placed in the build. Applies build-item
+   * transforms and converts declared units to mm, then builds shared
+   * triangle topology as validated faceted B-rep solids. Component assemblies,
+   * required extensions, multi-shell objects, and open or non-manifold meshes
+   * are refused.
+   */
+  from3MF(path: string, opts?: From3MFOptions): Promise<Shape>;
   /** Import full-detail STL triangles as a display-only body, without BRep sewing. */
   meshFromSTL(path: string): Promise<Shape>;
   /**

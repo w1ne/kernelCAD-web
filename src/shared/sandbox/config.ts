@@ -66,7 +66,7 @@ export function sandboxRequestedByEnv(env: Record<string, string | undefined>): 
 }
 
 /**
- * Script asset-path check (`lib.fromSTEP/fromSTL/fromDXF…`, reference images,
+ * Script asset-path check (`lib.fromSTEP/fromSTL/from3MF/fromDXF…`, reference images,
  * textures). Registered by `enableSandbox()` so the PURE resolver in
  * shared/runtime/scriptRelativePath.ts can refuse a path without importing
  * node:fs into browser bundles. Throws a `cli.sandbox-path-denied` KernelError.

@@ -2,8 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/fromMeshFormats.ts
 //
-// Host-side loaders for the two non-STEP import formats: `lib.fromBREP(path)`
-// and `lib.fromSTL(path)`.
+// Host-side loaders for BREP and mesh import formats.
 //
 // Same shape as `fromSTEP.ts` and deliberately so: read the file on the host
 // at capture time, produce an `OcctBackend`, park it on
@@ -12,7 +11,7 @@
 // because OCCT shapes carry circular references that trip the ParamRef
 // metadata walker.
 //
-// Both live in one module because everything except the decode step — arg
+// These loaders share one module because everything except the decode step — arg
 // validation, script-relative path resolution, file read, KernelError
 // shaping — is identical. `fromSTEP` predates this and keeps its own file.
 
@@ -22,6 +21,7 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { BrepParseError } from '../../kernel/backends/occt/importBrep';
 import { importBrepCached } from './brepParseCache';
 import { importStlBytes, StlParseError } from '../../kernel/backends/occt/importStl';
+import { import3mfBytes, ThreeMfImportError, type Import3mfOptions } from '../../kernel/backends/occt/import3mf';
 import { Shape } from '../capture/proxy';
 import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -34,7 +34,7 @@ const DISPLAY_STL_MAX_BYTES = DISPLAY_STL_MAX_MIB * 1024 * 1024;
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
 
-function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL', ext: string): void {
+function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL', ext: string): void {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -48,7 +48,7 @@ function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL', e
 async function readOrThrow(
   absPath: string,
   path: string,
-  fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL',
+  fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL',
 ): Promise<Buffer> {
   try {
     return await readFile(absPath);
@@ -129,6 +129,63 @@ export interface FromSTLOptions {
   allowOpen?: boolean;
   /** Raise the triangle-count budget. See DEFAULT_MAX_TRIANGLES. */
   maxTriangles?: number;
+}
+
+/** Options for `lib.from3MF`. */
+export type From3MFOptions = Import3mfOptions;
+
+/**
+ * `lib.from3MF(path, opts?)` — import core 3MF mesh objects as validated
+ * faceted B-rep solids. The importer applies build-item transforms and the
+ * model's declared unit (converted to mm). The resulting faces are planar
+ * triangles; analytic CAD surfaces and feature history are not present.
+ *
+ * Core mesh objects placed in `<build>` are supported. Component assemblies,
+ * required extensions, and multi-shell objects are refused so geometry is
+ * never silently omitted or reinterpreted. Every imported shell must close
+ * into a BRepCheck-valid solid.
+ */
+export async function from3MF(
+  ctx: FromFileContext,
+  path: string,
+  opts: From3MFOptions = {},
+): Promise<Shape> {
+  requirePath(path, 'from3MF', '.3mf');
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
+  const buf = await readOrThrow(absPath, path, 'from3MF');
+  await initOcct();
+
+  let result: ReturnType<typeof import3mfBytes>;
+  try {
+    result = import3mfBytes(buf, opts);
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    const hint = e instanceof ThreeMfImportError && /import budget/.test(e.message)
+      ? 'kernel-failed.lib.from3MF.too-many-triangles — decimate the mesh or pass { maxTriangles } to permit a slower import.'
+      : 'kernel-failed.lib.from3MF — provide a valid core 3MF file with closed, consistently oriented single-shell mesh objects; required extensions, component assemblies, multi-shell objects, open meshes and non-manifold meshes are not supported.';
+    throw new KernelError(
+      'feature.kernel-failed',
+      `lib.from3MF: could not import ${absPath}: ${detail}`,
+      undefined,
+      hint,
+    );
+  }
+
+  const shape = ctx.session.createShape({
+    kind: 'importedStl',
+    params: {},
+    inputs: {},
+    metadata: {
+      sourcePath: absPath,
+      sourceFormat: '3mf',
+      geometryKind: 'mesh',
+      triangleCount: result.triangleCount,
+      isSolid: result.isSolid,
+      unit: result.unit,
+    },
+  });
+  ctx.session.importedGeometry.set(shape.id, result.backend);
+  return shape;
 }
 
 /** Fast display-only STL import. Preserves every triangle without building BRep topology. */
