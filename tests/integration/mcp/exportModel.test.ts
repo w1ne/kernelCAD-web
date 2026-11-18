@@ -9,6 +9,7 @@ import { mkdtempSync, rmSync, existsSync, statSync, readFileSync, realpathSync }
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { NodeIO } from '@gltf-transform/core';
+import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
 
 const NAMED_GLB_ASSEMBLY = `
@@ -59,6 +60,30 @@ afterEach(() => {
 });
 
 describe('export_model MCP tool', () => {
+
+  it('uses the outer format for an options bag without a discriminator', async () => {
+    const output = join(tmpDir, 'box.pdf');
+    const result = await callMcpTool('export', {
+      target: 'model', code: 'return box(10, 10, 10);',
+      output_path: output, format: 'pdf-drawing', options: { sheet: 'a3' },
+    });
+    expect(result).toMatchObject({ ok: true, format: 'pdf-drawing' });
+    expect(readFileSync(output).subarray(0, 5).toString()).toBe('%PDF-');
+  });
+
+  it('reports conflicting explicitly supplied formats', async () => {
+    const output = join(tmpDir, 'conflict.step');
+    const result = await callMcpTool('export', {
+      target: 'model', code: 'return box(10, 10, 10);',
+      output_path: output, format: 'step', options: { format: 'stl' }, no_verify: true,
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      diagnostics: expect.arrayContaining([expect.objectContaining({ code: 'export.options-format-mismatch' })]),
+    });
+    expect(existsSync(output)).toBe(false);
+  });
+
   it('writes STL with format: "stl"', async () => {
     const out = join(tmpDir, 'box.stl');
     const r = await exportModelTool({

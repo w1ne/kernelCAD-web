@@ -36,14 +36,18 @@ import type { StressInfillReport } from '../../script-runtime/stressInfillExport
 import type { MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
+type ModelExportOptions<T = ExportOptions> = T extends ExportOptions
+  ? Omit<T, 'format'> & { format?: T['format'] }
+  : never;
+
 export interface ExportModelInput {
   file?: string;
   code?: string;
   output_path: string;
   format: ExportFormat;
   feature_id?: string;
-  /** Per-format options bag; discriminator `options.format` must match `format`. */
-  options?: ExportOptions;
+  /** Per-format options. An optional discriminator must match the outer format. */
+  options?: ModelExportOptions;
   /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
   /** Geometry-quality gate for stl/step/3mf/obj/ply/gcode: 'warn' (default), 'block' or 'off'. */
@@ -209,9 +213,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
   // options bag (the runtime gate is default-on for both formats).
-  let effectiveOptions: ExportOptions | undefined = (format === 'stl' || format === 'step') && input.no_verify
-    ? { ...(options ?? {}), format, verify: false } as ExportOptions
-    : options;
+  const skipVerification = (format === 'stl' || format === 'step') && input.no_verify;
+  let effectiveOptions = options || skipVerification
+    ? { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions
+    : undefined;
   effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 
   let result;

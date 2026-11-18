@@ -107,7 +107,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           options: {
             type: 'object',
             description:
-              "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
+              "target:'model' — optional per-format options bag. The top-level format selects these options. If supplied, options.format must match it. " +
               'step: { unit?: "mm"|"cm"|"in", verify?: boolean } (verify defaults to true and checks B-rep validity plus mesh watertightness; false skips both). ' +
               'stl: { verify?: boolean, tolerance?: mm (finite, >= 0.001; absolute sampled chord-deviation target), angularToleranceDeg?: degrees }. ' +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance?, section?: { axis: "x"|"y"|"z", at: mm }, layout?: "per-part"|"sheet" }. ' +
