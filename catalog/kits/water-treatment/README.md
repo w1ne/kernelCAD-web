@@ -34,6 +34,11 @@ control to a new `displayGlass` ("Operator display glass") control, so the
 screen reads as dark glass on the stainless door instead of a grey steel plate.
 Geometry, dimensions and triangle count are unchanged.
 
+The [equalization basin material review](../../../artifacts/catalog-demos/water-treatment-equalization-basin-material-review-20261118/README.md)
+assigns the basin floor with its concrete walls and gives the mixer assembly
+the stainless-steel finish. Its bundle contains the five-preview audit, before
+and after renders, a GLB material regression and the inspected MP4.
+
 Five signature process units are rebuilt at about real size from turned
 profiles, extruded side sections and oriented members:
 `circular-clarifier` (18 m tank with still water, inboard launder, weir plate

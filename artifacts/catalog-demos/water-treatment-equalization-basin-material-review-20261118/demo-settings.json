@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-18",
+  "subject": "Local material-mapping correction for water-treatment/equalization-basin",
+  "workflow": "Five-preview audit, source material reassignment, local software preview render, exported-GLB material regression",
+  "frames": [
+    "Five sampled water-treatment previews and selected basin material mapping",
+    "Baseline preview and its incorrect floor/mixer assignments",
+    "Corrected preview with concrete structure and stainless-steel mixer",
+    "Exported-GLB material regression result",
+    "Scope: local render and regression only"
+  ],
+  "video": {
+    "file": "water-treatment-equalization-basin-material-review.mp4",
+    "size": "1280x720",
+    "fps": 25,
+    "codec": "H.264",
+    "durationSeconds": 14
+  },
+  "softwareRender": {
+    "command": "npx tsx scripts/renderCatalogPreviews.ts equalization-basin",
+    "preview": "catalog/kits/water-treatment/previews/equalization-basin.png"
+  },
+  "verification": {
+    "before": "npx vitest run tests/integration/catalog/equalizationBasinFloorMaterial.test.ts (expected to fail on baseline source)",
+    "after": "npx vitest run tests/integration/catalog/equalizationBasinFloorMaterial.test.ts (passes after correction)",
+    "scope": "Exported GLB part color attributes and material factors; proves appearance assignment only"
+  },
+  "videoBuild": "bash artifacts/catalog-demos/water-treatment-equalization-basin-material-review-20261118/make_demo.sh",
+  "provenance": "All preview images are local software renders from checked-in .kcad.ts source. This bundle does not claim simulation, deployment, treatment performance, or hardware acceptance."
+}

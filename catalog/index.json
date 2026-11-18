@@ -349864,7 +349864,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/equalization-basin.kcad.ts",
       "preview": "/assets/water-treatment-equalization-basin.png",
-      "sourceSha256": "87ee2cf5410f7ac8acb1d75e0153ac4c4891ab01f379f7c2601ea00042321a09",
+      "sourceSha256": "741aeb1461b0870311bd23bdead0b49c599ad7291627c827b87d466ffcbd5a2f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -349911,26 +349911,26 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
-          "parts": [
-            "floor"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "concrete",
           "color": "#b8b1a1",
           "parts": [
+            "floor",
             "wall-front",
             "wall-back",
             "wall-left",
-            "wall-right",
+            "wall-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "mixer-pedestal",
             "mixer-arm",
             "mixer-hub"
           ],
-          "param": "concrete"
+          "param": "stainlessSteel"
         }
       ]
     },
