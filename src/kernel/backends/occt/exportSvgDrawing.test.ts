@@ -7,8 +7,9 @@
 // groups, hidden/tangent styling, dedup behaviour, dimensions, title block,
 // viewBox sanity — without pinning exact pixel geometry.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import * as replicad from 'replicad';
+import * as drawingProjection from './drawingProjection';
 import { initOcct, OcctBackend } from './occtBackend';
 import { exportSvgDrawing, renderSvgDrawing } from './exportSvgDrawing';
 
@@ -110,6 +111,25 @@ describe('exportSvgDrawing', () => {
     expect(svg).toContain(`>${h}</text>`);
     expect(svg).not.toContain(`>${hidden}</text>`);
     expect(svg).not.toContain('>FRONT</text>');
+  });
+
+  it('projects only the requested single view', () => {
+    const prepare = drawingProjection.prepareShapeForDrawing;
+    const projections = vi.fn();
+    const spy = vi.spyOn(drawingProjection, 'prepareShapeForDrawing').mockImplementation(shape => {
+      const prepared = prepare(shape);
+      return { ...prepared, project: (camera, options) => {
+        projections();
+        return prepared.project(camera, options);
+      } };
+    });
+    try {
+      renderSvgDrawing([{ name: 'panel', shape: OcctBackend.box(80, 50, 12) }],
+        { format: 'svg-drawing', views: ['top'] });
+      expect(projections).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('rejects isometric overlays on a front-only sheet', () => {
