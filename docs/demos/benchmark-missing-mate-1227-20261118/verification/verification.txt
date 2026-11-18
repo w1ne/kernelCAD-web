@@ -1,0 +1,22 @@
+Local verification — 2026-11-18 UTC
+Branch base: origin/develop at c643f6aca50a4687e1c6642062f67e33e40a93a2
+
+Focused mutation:
+  npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts --reporter=dot -t 'catches a missing revolute mate'
+  Result: 1 passed, 11 skipped.
+
+Lint:
+  npx eslint tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts
+  Result: exit 0.
+
+Typecheck:
+  npm run typecheck
+  Result: exit 0 (`tsc -b --noEmit` and CLI TypeScript check).
+
+Demo:
+  python3 docs/demos/benchmark-missing-mate-1227-20261118/capture_demo.py
+  Result: 1280x720, H.264, yuv420p, 24 fps, 12 seconds, 108007 bytes.
+  SHA-256: 3c9162405615927c492e11ebb30fa0fdab16f4214ff0d7a56990c4d40acfb750.
+  Inspection: representative frames at 1 s, 5 s, and 9 s saved to video-contact-sheet.png; the full 5 s frame was reviewed.
+
+Scope: local evaluation of the SG90 fixture and its mate graph only. No deployed behavior, animation render, supplier fit, or hardware acceptance was tested.

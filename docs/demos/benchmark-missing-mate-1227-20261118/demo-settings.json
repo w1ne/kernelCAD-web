@@ -1,0 +1,14 @@
+{
+  "workflow": "case-08 SG90 lever assembly missing-revolute-mate regression",
+  "fixture": "tests/fixtures/manufacturing/sg90-lever-mount.kcad.ts",
+  "test": "tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts",
+  "mutation": "remove mount.mate('swing', 'servo.shaft', 'arm.hub', 'revolute', { limitsDeg: [0, 180] })",
+  "result": "evaluateScriptTool rejects the detached arm with mechanism.orphan-part",
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-missing-mate-1227-20261118/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts --reporter=dot -t 'catches a missing revolute mate'"
+}

@@ -1,0 +1,23 @@
+{
+  "video": "demo.mp4",
+  "video_sha256": "3c9162405615927c492e11ebb30fa0fdab16f4214ff0d7a56990c4d40acfb750",
+  "fixture_sha256": "4339a782346d23de5b224ffe33860c2095d5c8591fa098ee7b93b932ecdb8c9a",
+  "test_sha256": "7e529b61a4c0117e330425dc757f28fc09c7043a7b512d6b9eed375d878c8f19",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "12.000000",
+      "size": "108007"
+    }
+  },
+  "inspection": "Frames at 1 s, 5 s and 9 s are collected in video-contact-sheet.png; checked for legible text, connected/disconnected mate distinction, and unclipped labels."
+}
