@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: CC0-1.0
-// Sludge thickener tank: Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Low-poly visualization geometry in millimetres, Z up.
+// Sludge thickener tank: Circular concrete basin with a steel bridge and rake,
+// plus a cast-iron center drive over the feed well. Low-poly visualization
+// geometry in millimetres, Z up.
 
 meta({
   name: "sludge-thickener-tank",
   license: 'CC0-1.0',
   title: "Sludge thickener tank",
-  description: "Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Parameters: overall scale and concrete, structural steel; weathered and highVisibility presets.",
+  description: "Circular concrete thickener basin with a center feed well, structural-steel bridge and scraper arm, and a cast-iron center drive. Parameters: overall scale, concrete, structural steel, and cast iron; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -17,9 +19,10 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const concrete = param('concrete', '#b8b1a1', { label: 'Concrete' });
 const structuralSteel = param('structuralSteel', '#68777b', { label: 'Structural steel' });
+const castIron = param('castIron', '#343a3d', { label: 'Center drive cast iron' });
 presets({
-  weathered: { concrete: '#9b9587', structuralSteel: '#6e6b63' },
-  highVisibility: { concrete: '#c6bdac', structuralSteel: '#505b60' },
+  weathered: { concrete: '#9b9587', structuralSteel: '#6e6b63', castIron: '#292d2f' },
+  highVisibility: { concrete: '#c6bdac', structuralSteel: '#505b60', castIron: '#3a4145' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const section = (radius:number, sides:number) => {
@@ -46,8 +49,8 @@ p.part("tank",c(0,0,0,480,500,16).color(concrete));
 p.part("rim",c(0,0,460,60,535,16).color(concrete));
 p.part("feed-well",c(0,0,520,220,150,12).color(concrete));
 p.part("bridge",b(0,0,555,990,60,50).color(structuralSteel));
-p.part("drive",b(0,0,605,190,160,110).color(concrete));
-p.part("scraper-arm",b(0,0,230,760,45,45).color(concrete));
+p.part("drive",b(0,0,740,190,160,110).color(castIron));
+p.part("scraper-arm",b(0,0,230,760,45,45).color(structuralSteel));
 p.part("skirt",c(0,0,0,160,520,16).color(concrete));
 
 return p.model();

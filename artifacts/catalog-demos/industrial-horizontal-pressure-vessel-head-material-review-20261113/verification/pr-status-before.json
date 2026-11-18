@@ -1,0 +1,10 @@
+{
+  "pullRequest": 1258,
+  "head": "4b39a82495a83a508c4d1689d1423242c1c9b040",
+  "reviewDecision": "",
+  "reviews": [],
+  "mergeStateStatus": "CLEAN",
+  "ciRun": "https://github.com/w1ne/kernelCAD-web/actions/runs/43405217971",
+  "ciConclusion": "success",
+  "checks": 17
+}

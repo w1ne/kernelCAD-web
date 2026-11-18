@@ -14,7 +14,8 @@ import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../ca
 import type { MateRecord } from '../../mates/mate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec } from './mateToJoint';
+import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec, type UrdfMimic } from './mateToJoint';
+import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import { linkInertialBlock } from './linkInertial';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { xmlAttributionComment } from '../../../shared/links/attribution';
@@ -79,7 +80,7 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
   appendLegacyJointBlocks(jointBlocks, legacyJoints, parts, allDummyLinks, diagnostics);
 
   // Mate records via mateToUrdfJoint.
-  appendMateJointBlocks(jointBlocks, mates, parts, allDummyLinks, diagnostics);
+  appendMateJointBlocks(jointBlocks, mates, arm.__mateCouplings(), parts, allDummyLinks, diagnostics);
 
   // Synthesised dummy links from ball decomposition.
   appendDummyLinkBlocks(linkBlocks, allDummyLinks);
@@ -167,7 +168,7 @@ async function buildPartLinkBlocks(
     const partName = part.name;
     const density = part.density ?? opts.density;
     const lowered = await part.originalShape.lower();
-    const inertial = linkInertialBlock(lowered, density);
+    const inertial = linkInertialBlock(lowered, density, part.massKg, partName);
     diagnostics.push(...inertial.diagnostics);
     const meshRel = `meshes/${partName}.${meshFormat}`;
     const meshFilename = `${meshPrefix}${partName}.${meshFormat}`;
@@ -222,17 +223,57 @@ function appendLegacyJointBlocks(
 function appendMateJointBlocks(
   jointBlocks: string[],
   mates: readonly MateRecord[],
+  couplings: readonly MateCouplingRecord[],
   parts: readonly AssemblyPartStored[],
   allDummyLinks: DummyLinkSpec[],
   diagnostics: CompilerDiagnostic[],
 ): void {
   const resolver = makeConnectorResolver(parts);
+  const mimics = mateMimics(mates, couplings);
   for (const m of mates) {
-    const r = mateToUrdfJoint(m, resolver);
+    const r = mateToUrdfJoint(m, resolver, mimics.get(m.name));
     jointBlocks.push(...r.jointBlocks);
     diagnostics.push(...r.diagnostics);
     if (r.dummyLinks) allDummyLinks.push(...r.dummyLinks);
   }
+}
+
+/** coupleMates(driven, { source, ratio, offset }) means
+ *  driven = ratio * source + offset in mm/deg. URDF <mimic> uses the joint
+ *  units (m/rad), so convert the multiplier and offset. coupleMates accepts
+ *  only scalar mates, and each lowers to one URDF joint: cylindrical and
+ *  pin_slot keep their angle. A chained coupling (output <- idler <- input)
+ *  mimics the chain's uncoupled root, because consumers such as the
+ *  ros2_control mock hardware update mimic joints in one pass and would read
+ *  a stale idler value. */
+function mateMimics(
+  mates: readonly MateRecord[],
+  couplings: readonly MateCouplingRecord[],
+): Map<string, UrdfMimic> {
+  const toSi = (m: MateRecord | undefined) => (m?.type === 'prismatic' ? MM_TO_M : DEG_TO_RAD);
+  const byName = new Map(mates.map((m) => [m.name, m]));
+  const byDriven = new Map(couplings.map((c) => [c.driven, c]));
+  const out = new Map<string, UrdfMimic>();
+  for (const c of couplings) {
+    // Compose driven = ratio * root + offset in authored units of the driven mate.
+    let root = c.source;
+    let ratio = c.ratio;
+    let offset = c.offset ?? 0;
+    const seen = new Set([c.driven]);
+    for (let up = byDriven.get(root); up !== undefined && !seen.has(up.driven); up = byDriven.get(root)) {
+      seen.add(up.driven);
+      offset += ratio * (up.offset ?? 0);
+      ratio *= up.ratio;
+      root = up.source;
+    }
+    const driven = toSi(byName.get(c.driven));
+    out.set(c.driven, {
+      joint: root,
+      multiplier: (ratio * driven) / toSi(byName.get(root)),
+      offset: offset * driven,
+    });
+  }
+  return out;
 }
 
 /** Append synthesised dummy links from ball decomposition. */

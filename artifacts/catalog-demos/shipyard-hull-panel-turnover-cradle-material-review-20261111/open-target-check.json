@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-11-11",
+  "repository": "w1ne/kernelCAD-web",
+  "results": {
+    "plate-rolling-machine": {
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "plasma-cutting-gantry-head": {
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "pipe-spool-rotator": {
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "hull-panel-cutting-table": {
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "openPrChangedSourceMatches": []
+    },
+    "hull-panel-turnover-cradle": {
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "openPrChangedSourceMatches": []
+    }
+  }
+}

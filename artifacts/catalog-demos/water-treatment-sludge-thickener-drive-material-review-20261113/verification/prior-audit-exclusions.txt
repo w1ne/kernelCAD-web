@@ -1,0 +1,11 @@
+Historical target scan — 2026-11-13
+
+Excluded during selection to avoid repeating recent water-treatment work:
+- `grit-classifier`: semantic geometry correction reviewed on 2026-11-11.
+- `backwash-pump-skid`: geometry promotion reviewed on 2026-11-10.
+- `chlorine-dosing-skid`: day-tank material correction reviewed on 2026-11-11.
+- `high-lift-pump-skid`: geometry promotion in the 2026-11-06 pump follow-up.
+- `bar-screen-channel`: included in the 2026-11-11 five-preview audit.
+
+The final five sample paths are listed in `../preview-ledger.md`. Their exact
+open issue/PR search output is retained in `open-target-check.txt`.

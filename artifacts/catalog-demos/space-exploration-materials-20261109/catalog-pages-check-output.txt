@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-space-materials-pages",
+  "kitPages": 52,
+  "assetsInIndex": 2402,
+  "pageAndPreviewPairs": 52,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

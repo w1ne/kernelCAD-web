@@ -1,0 +1,4 @@
+{"step":"build","ms":3140,"records":52,"coerced":["tabAngle"],"heightMm":15.547}
+{"step":"tabAngle=45","ms":204,"relowered":2,"reused":50,"heightMm":24}
+{"step":"tabAngle=60","ms":152,"relowered":2,"reused":50,"heightMm":38.641}
+{"step":"full rebuild at tabAngle=60","ms":2226}

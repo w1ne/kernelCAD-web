@@ -28,6 +28,8 @@ import {
   FLAT_WASHER,
   HEX_BOLT_HEAD,
   HEX_BOLT_LENGTHS,
+  HEX_BOLT_PARTIAL_HEAD,
+  HEX_BOLT_PARTIAL_LENGTHS,
   HEX_NUT,
   LOCK_NUT,
   LOCK_WASHER,
@@ -43,6 +45,7 @@ import {
 } from '../src/modeling/parts/familyTable';
 import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
 import { standardPartVerificationAttributes } from '../src/modeling/parts/standardPartRanges';
+import { fastenerCallout, kindFromFamily } from '../src/modeling/parts/fastenerDesignation';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -439,7 +442,7 @@ function flatHeadCountersunk(): SeedFamily {
           category: 'fastener',
           family: 'flat-head-countersunk',
           standard: 'ISO 10642',
-          tags: ['screw', 'countersunk', 'metric', String(thread)],
+          tags: ['screw', 'countersunk', 'metric', 'DIN 7991', String(thread)],
           attributes: {
             thread: String(thread),
             lengthMm: Number(lengthMm),
@@ -931,6 +934,49 @@ function jstXh(): SeedFamily {
 }
 
 
+function hexHeadBoltPartial(): SeedFamily {
+  const threads = threadsOf(HEX_BOLT_PARTIAL_HEAD);
+  const variants = threadLengthVariants(threads, HEX_BOLT_PARTIAL_LENGTHS);
+  return {
+    id: 'hex-head-bolt-partial',
+    category: 'fastener',
+    standard: 'ISO 4014',
+    variants,
+    async generate({ thread, lengthMm }) {
+      const head = HEX_BOLT_PARTIAL_HEAD[(thread as string).replace('.', '_')];
+      const tNum = parseFloat(String(thread).slice(1));
+      const bytes = await catalogFastenerStep({ family: 'hex-head-bolt-partial', thread: String(thread), lengthMm: Number(lengthMm) });
+      const id = `iso-4014-${threadSlug(String(thread))}x${lengthMm}`;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `${thread} × ${lengthMm} hexagon head bolt, partial thread (ISO 4014)`,
+          category: 'fastener',
+          family: 'hex-head-bolt-partial',
+          standard: 'ISO 4014',
+          tags: ['bolt', 'hex', 'metric', 'DIN 931', String(thread)],
+          attributes: {
+            thread: String(thread),
+            lengthMm: Number(lengthMm),
+            headDiameterMm: head.D,
+            acrossFlatsMm: head.S,
+            headHeightMm: head.K,
+            shankDiameterMm: tNum,
+          },
+          license: 'MIT',
+          connectors: ['head-bearing', 'thread-tip', 'head-top'],
+        },
+        connectors: [
+          { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'thread-tip', type: 'axis', origin: [0, 0, -Number(lengthMm)], axis: [0, 0, 1] },
+          { name: 'head-top', type: 'frame', origin: [0, 0, head.K], normal: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
 function hexHeadBolt(): SeedFamily {
   const threads = threadsOf(HEX_BOLT_HEAD);
   const variants = threadLengthVariants(threads, HEX_BOLT_LENGTHS);
@@ -1031,6 +1077,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   buttonHeadCapScrew(),
   flatHeadCountersunk(),
   hexHeadBolt(),
+  hexHeadBoltPartial(),
   headlessFamily({
     family: 'set-screw',
     standard: 'ISO 4026',
@@ -1077,11 +1124,23 @@ export async function generateSeedCatalog(
       const id = built.record.id;
       const sha256 = createHash('sha256').update(built.stepBytes).digest('hex');
       const verification = standardPartVerificationAttributes(family.id);
+      const thread = built.record.attributes.thread;
+      const lengthMm = built.record.attributes.lengthMm;
+      const designation = built.record.standard !== undefined && typeof thread === 'string'
+        ? fastenerCallout({
+          standard: built.record.standard,
+          thread,
+          ...(typeof lengthMm === 'number' ? { lengthMm } : {}),
+          kind: kindFromFamily(built.record.family),
+        })
+        : undefined;
       const record: PartRecord = {
         ...built.record,
-        ...(verification === undefined
-          ? {}
-          : { attributes: { ...built.record.attributes, ...verification } }),
+        attributes: {
+          ...built.record.attributes,
+          ...(designation !== undefined ? { designation } : {}),
+          ...(verification ?? {}),
+        },
         sha256,
         source: 'local-catalog',
       };

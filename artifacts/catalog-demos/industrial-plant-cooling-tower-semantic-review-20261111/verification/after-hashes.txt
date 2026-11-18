@@ -1,0 +1,3 @@
+ebdc1480e5a871d242a0712000552719754b9c7a73284f84d8f3834b7bf1c472  catalog/kits/industrial-plant/evaporative-cooling-tower.kcad.ts
+f5afe48a5a8b81b2aa5a8bebed9d0760ad928371c58046eab91e2008b0e38dce  catalog/kits/industrial-plant/previews/evaporative-cooling-tower.png
+a086dc0c2967e930e1d54dcdb5c1949d883b0b1b27347d652e7046979f0249b1  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/demo.mp4

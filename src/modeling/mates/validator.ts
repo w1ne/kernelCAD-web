@@ -47,6 +47,7 @@ import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
 import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
+import { validateAdhesiveMates } from './adhesiveMate';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import { validateMountingHoleAlignment } from './mountingHoleAlignment';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
@@ -102,12 +103,14 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.pose-envelope.clearance-violated'
   | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
+  | 'assembly.mate.adhesive-contact'
   | 'assembly.mate.limit-missing'
   | 'assembly.connectivity.floating-moving-part'
   | 'assembly.connectivity.assumed-root'
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.missing-limit'
   | 'assembly.joint-topology.unsupported-axis'
+  | 'assembly.joint-topology.coupled-pose-conflict'
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
   | 'assembly.mounting-hole.mismatch'
@@ -116,6 +119,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.child-modeled-in-place'
   | 'assembly.joint.load-exceeded'
+  | 'assembly.joint.load-unverified'
   | 'assembly.joint.not-visible'
   | 'assembly.mate.not-physically-realized'
   | 'assembly.workspace.unreachable'
@@ -763,6 +767,7 @@ export async function validateAssemblyWithMates(
   if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
     diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses, axisBindingResult.localShapes));
   }
+  diagnostics.push(...await validateAdhesiveMates(arm, axisBindingResult.worldTransforms));
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,

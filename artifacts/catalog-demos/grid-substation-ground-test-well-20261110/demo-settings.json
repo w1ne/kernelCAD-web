@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-10",
+  "scope": "Refine the existing substation-ground-grid-test-well silhouette and add a real depth choice; no asset IDs or kits added.",
+  "asset": "substation-ground-grid-test-well",
+  "variants": [
+    { "id": "depth-360", "choices": { "wellDepth": "360" } },
+    { "id": "depth-480", "choices": { "wellDepth": "480" } },
+    { "id": "depth-620", "choices": { "wellDepth": "620" } },
+    { "id": "depth-480-maintenance", "choices": { "wellDepth": "480" }, "preset": "maintenance" }
+  ],
+  "previewInvocation": "mapfile -t asset_ids < artifacts/catalog-demos/grid-substation-ground-test-well-20261110/kit-preview-asset-ids.txt && npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/grid-substation-ground-test-well-20261110/render_variants.ts",
+  "catalogBuildInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "indexVerificationInvocation": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-ground-test-well-20261110/verify_asset_index.py",
+  "qualityInvocation": "python3 scripts/checkCatalogQuality.py --kit grid-substation && python3 scripts/checkCatalogQuality.py",
+  "lintInvocation": "npx eslint catalog/kits/grid-substation/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "localPageBuildInvocation": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-grid-substation-ground-test-well-20261110",
+  "localPageVerificationInvocation": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-ground-test-well-20261110/verify_local_page.py /tmp/kernelcad-grid-substation-ground-test-well-20261110",
+  "geometryChecks": {
+    "wellDepthChoicesMm": [360, 480, 620],
+    "triangleBudget": 1800,
+    "materialControls": ["concrete", "stainlessSteel", "copper"],
+    "presets": ["weathered", "maintenance"]
+  },
+  "colors": {
+    "default": { "concrete": "#92938b", "stainlessSteel": "#b5c0c0", "copper": "#b87545" },
+    "weathered": { "concrete": "#88887f", "stainlessSteel": "#858f90", "copper": "#9f704a" },
+    "maintenance": { "concrete": "#c5c8bc", "stainlessSteel": "#eef2ef", "copper": "#e99a32" }
+  },
+  "canvas": { "width": 1280, "height": 720, "frameRate": 24, "durationSeconds": 12 },
+  "captureInvocation": "python3 artifacts/catalog-demos/grid-substation-ground-test-well-20261110/capture_demo.py",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/grid-substation-ground-test-well-20261110/inspect_video.py",
+  "caption": "Local source-driven geometry and material variants, regenerated catalog preview/index and local checks. Branch is not deployed; no electrical safety or field acceptance is claimed.",
+  "provenance": "Frames use the checked-in substation-ground-grid-test-well.kcad.ts source, its actual wellDepth choices, named maintenance preset and locally rendered catalog previews."
+}

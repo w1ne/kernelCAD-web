@@ -1,0 +1,52 @@
+{
+  "auditDate": "2026-11-11",
+  "baselineHead": "da8dad80d47526d03557b959405797c7f5e43d0a",
+  "assets": [
+    {
+      "id": "beverage-bottling-line/pet-blow-molder",
+      "triangles": 364,
+      "sizeM": [1.515, 1.51, 0.72],
+      "sourceSha256": "b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb",
+      "previewSha256": "d6f5019c87ce4b80e9e781befbbd453866da78bea38969192d533c613d6813a8",
+      "observation": "Guarded machine enclosure, side module, service doors, base and mold supports are visible; no clear material mismatch found in this preview."
+    },
+    {
+      "id": "beverage-bottling-line/rotary-filler",
+      "triangles": 5404,
+      "sizeM": [3, 1.84, 1.49668],
+      "sourceSha256": "05e6214ab84cc8e9cf18fa95ec05b9f24ca857d4064b872fe5e4e1fe72c8c1af",
+      "previewSha256": "153302383773399caf0a1553ae14e08058d1b82b6a7a084d0031c21a8b51e8d0",
+      "observation": "Filling carousel, ring bowl, valves over bottles, infeed/outfeed belts and guard frame are visible; material zones are plausible."
+    },
+    {
+      "id": "beverage-bottling-line/bottle-rinser-carousel",
+      "triangles": 568,
+      "sizeM": [1.42, 1.05, 0.96],
+      "sourceSha256": "dc00c4af37bea6206eb023d88cd963867559388fa327a92fba44082cb7fe26e5",
+      "previewSha256": "5eb1b35219f05a1afced551ed9825ffe9a088b969e55cfea830d64af23edb810",
+      "observation": "Rotary table, rinse turret, spray nozzles, catch basin and two lanes are visible; no clear material mismatch found."
+    },
+    {
+      "id": "beverage-bottling-line/case-layer-palletizer",
+      "triangles": 132,
+      "sizeM": [2.39, 2.025, 1.1875],
+      "sourceSha256": "24d6e63d5f67fc6d5ae0f2f231bcfc9e39a2eb879d32a54bb12c7ed5c3d85b4b",
+      "previewSha256": "fce331bee93a711dbdf2878ba482436a7fd26ed44b04be2c87146807c2e866ad",
+      "observation": "Gantry and layer plate are recognizable; the outfeed pallet deck was assigned to the corrugatedBoard control, while the asset contains no corrugated layer pad. Corrected to palletTimber."
+    },
+    {
+      "id": "beverage-bottling-line/bottle-unscrambler",
+      "triangles": 328,
+      "sizeM": [1.255, 0.85, 0.94],
+      "sourceSha256": "d38fdb9af117adf2779eba2e14b993a7f955494e04216f66d8277245a77028f4",
+      "previewSha256": "a4dd4876e3f3b1b98203a06d7599cc70d9ec75bd7e64583fafd64888e87597c5",
+      "observation": "Circular bowl, center column, motor and discharge lane read as an unscrambler; material zones are plausible."
+    }
+  ],
+  "after": {
+    "sourceSha256": "f7040c36ccab96af3997f0dee2e7be6480ed6f2a44706aee3c41d99b672ffafd",
+    "previewSha256": "fbc36f859a6b468803604680e8e219b2f3f991e048c447e161c80e7c034b3734",
+    "triangles": 132,
+    "sizeM": [2.39, 2.025, 1.1875]
+  }
+}

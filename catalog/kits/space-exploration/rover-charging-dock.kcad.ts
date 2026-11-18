@@ -5,7 +5,7 @@ meta({
   name: "rover-charging-dock",
   license: 'CC0-1.0',
   title: "Rover charging dock",
-  description: "Low charging dock with guide rails, raised connector post and two anchor pads. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Low charging dock with guide rails, raised connector post and two anchor pads. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#58676b", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer connector insulator" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -45,7 +47,7 @@ p.part("base",b(0,0,60,1150,700,120).color(paint));
 p.part("guide-left",b(0,-280,130,1050,70,90).color(paint));
 p.part("guide-right",b(0,280,130,1050,70,90).color(paint));
 p.part("post",c(0,250,180,540,95,8).color(aluminum));
-p.part("connector",b(0,180,650,180,160,120).color(aluminum));
+p.part("connector",b(0,180,650,180,160,120).color(polymer));
 p.part("anchor--460",b(-460,0,0,120,180,60).color(paint));
 p.part("anchor-460",b(460,0,0,120,180,60).color(paint));
 

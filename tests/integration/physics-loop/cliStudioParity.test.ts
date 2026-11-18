@@ -1,7 +1,5 @@
 // Physics-loop CLI / Studio parity sentinel.
 //
-// Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P1)
-// Plan: docs/plans/2026-06-01-physics-loop-P1-surface-convergence.md
 //
 // PR #341's failure mode was a surface split: the legacy CLI
 // `kernelcad validate` returned "clean" while the Studio runtime

@@ -1,0 +1,5 @@
+e1df99631d4b6de96e4e5531d02a93f197c9520aa43aedcc31f0812da61b5658  catalog/kits/mining/previews/gyratory-crusher-station.png
+2bbcf8a35d71c2700d885dc171c83ec366bce5798d492478d121b12025fd57e0  catalog/kits/mining/previews/apron-feeder.png
+5b3c578bef1052cbe80fe9eafe4a645c826b5c4741c8bba9f5d0d16d456dab48  catalog/kits/mining/previews/grizzly-scalping-deck.png
+ec79f939270e520e5728e219e5521c8c6d298abf96fb0ccb023759e3881fc76f  catalog/kits/mining/previews/mine-locomotive.png
+6902b2c5a0524eeec0db6e90dbc0aff0d93a09dc0a47787e120bd0216e91270a  catalog/kits/mining/previews/rotary-blasthole-drill.png

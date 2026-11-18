@@ -1,0 +1,2 @@
+$ npx eslint catalog/kits/grid-substation/ tests/integration/catalog/substationCvtInsulationMaterials.test.ts
+exit code: 0; no diagnostics

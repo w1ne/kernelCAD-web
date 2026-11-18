@@ -1,0 +1,6 @@
+Current destination PR #1258 is excluded from competing-target checks. It is the active catalog feature PR under review.
+
+Exact open issue searches returned no rows for: twin-shaft-shredder, optical-sorter-arch, overband-magnet-separator, glass-washer-trommel, granulator.
+
+Fetched the public .diff for each of the 20 other open PRs below (HTTP 200) and searched for each sample's catalog/kits/recycling-facility/<id>.kcad.ts and preview path. No sample paths matched.
+1339 1338 1337 1336 1334 1329 1328 1327 1326 1325 1324 1309 1276 1260 1253 1215 1211 1195 1187 1094

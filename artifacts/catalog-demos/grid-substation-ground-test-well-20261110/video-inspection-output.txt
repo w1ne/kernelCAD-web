@@ -1,0 +1,40 @@
+{
+  "video": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/grid-substation-ground-test-well.mp4",
+  "bytes": 159427,
+  "sha256": "3c39b1ec85717c7747467d51d7fa57782d3f95f649c0ef1b067f95c56c43dbc7",
+  "durationSeconds": 12.041667,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "sampleTimesSeconds": [
+    0.5,
+    3.5,
+    6.5,
+    9.5
+  ],
+  "samples": [
+    {
+      "seconds": 0.5,
+      "path": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/video-review/sample-01.png",
+      "sha256": "e501130f1542e7bfb9a10468a9a4517d4fc8daaabdd5448dfb4cac0be2848516"
+    },
+    {
+      "seconds": 3.5,
+      "path": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/video-review/sample-02.png",
+      "sha256": "e4df04874d3441dda4641fdb24344756f2114390e6316c759825a7bbc38bb1ea"
+    },
+    {
+      "seconds": 6.5,
+      "path": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/video-review/sample-03.png",
+      "sha256": "fe5fd18e48a749dee28120828cadfda509143daee0d1a719b3d491a968b4b57e"
+    },
+    {
+      "seconds": 9.5,
+      "path": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/video-review/sample-04.png",
+      "sha256": "c4b91a8893ec7a8f313cc74070a3f509204f6a2d62e5fc00c27116e36ce67b89"
+    }
+  ],
+  "contactSheet": "artifacts/catalog-demos/grid-substation-ground-test-well-20261110/video-review/contact-sheet.png",
+  "decodedSamples": true,
+  "scope": "Offline preview-based demo; local source and checks only; not deployed or hardware accepted."
+}

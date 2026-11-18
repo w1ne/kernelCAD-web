@@ -89,6 +89,13 @@ arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90
 return arm.model();
 ```
 
+The body-tree forward-kinematics APIs `arm.revolute(name, parent, child, opts)`
+and `arm.prismatic(name, parent, child, opts)` accept `axis`, `origin`, their
+optional kind-specific limit (`limitsDeg` or `limitsMm`), and optional
+`actuator`. They reject unknown option keys during capture. Typos such as
+`limitsDg` or `limitsMM` report `feature.invalid-args` at the supplied option
+path instead of silently creating an unbounded joint.
+
 ### Per-part material and density
 
 Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
@@ -117,7 +124,25 @@ Typical raw densities: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass 
 
 Exploded views reuse that same assembly: `render_preview({ explode: { factor, mode } })` / `kernelcad render --explode` pull parts apart along mate axes (`mate-axis`) or from the centroid (`radial`); `export` svg-drawing with `exploded` + `balloons` + `partsList` numbers those parts from the BOM. In mate-axis mode, an earlier standalone part does not prevent later mated components from following their connector axes. There is no `arm.explode()` hook — render and export consume the poses directly. See `examples/exploded/clamshell-table-first.kcad.ts` for a reproducible case.
 
-`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part (grouped by geometry/catalog identity, never by name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`), split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`). A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+`inspect({ of: 'bom' })` / `export({ format: 'bom-csv' | 'bom-json' })` read this same `material`/`density` declaration to build a real bill of materials: one row per DISTINCT part. A part created with `assembly.instance` groups by part file plus configuration name (two sizes of one file stay two rows; repeated instances of one configuration share a row and add up in `quantity`). Anything else groups by geometry/catalog identity, never by part name — a `for` loop that places the same source shape under `N` distinct names collapses to one row with `quantity: N`. Rows split into `kind: 'fabricated'` vs `kind: 'purchased'` (purchased = came from `lib.fetchPart`/`fetch_part`, carries `catalog: { id, vendor, partNumber, source, license }`).
+
+### Named configurations
+
+A part file can publish several named parameter sets of one solid. `configurations({ compact: { length: 80 }, wide: { length: 110 } })` checks every set against the `param()` declarations and does not change the live defaults. `definePart({ shape, connectors })` returns that same shape and records numeric connector frames (vec3 origins only). An assembly then instances one set:
+
+```typescript
+await arm.instance('block-a', {
+  source: '../parts/bearing-block.kcad.ts',
+  configuration: 'compact',
+  material: 'aluminum-6061',
+});
+```
+
+Each instance evaluates in its own parameter table, so a parameter of the same name on the assembly does not resize the part. A geometry file the part names with a literal path is resolved beside the part file and is part of that evaluation, so replacing the file rebuilds the solid. A path the part computes is read on every instance. The part, its connectors, and any mate that references it record the source file and configuration name. A missing name lists the configurations the file declares. A value of the wrong type, or a second configuration whose connector names or types differ, throws `feature.invalid-args` and does not record that instance. The failed call also does not record the connector interface. `subAssembly()` copies a configured part's interface onto the parent and rejects a mismatch before any part of that import is recorded. The same import keeps each part's placement and its density, material, process, stock, mass, cross-section, role, and overlay, whether the part is an ordinary `part()` or a configured instance. A part with no density still has no BOM mass. A part with no `material`/`density` gets `massGPerUnit: null` and a `bom.material.unassigned` diagnostic — never a silently guessed water-density mass. See the `kernelcad-mcp` skill for the full row shape.
+
+A part placed with `connect` keeps that link through `subAssembly()`. The import copies the resolved `at` and points the link at the copied parent, so a mate that moves the imported parent moves the connected child with it. A connected child whose parent is not in the same import is rejected before any part is copied.
+
+`arm.variant('open', { suppress: ['cover'] })` names parts to leave out of this assembly. A part connected to a suppressed part is left out too. `arm.useVariant('open')` applies that set to the assembly's own parts, mates, joints, and mate couplings; call it again with another name to restore the parts that name keeps. `parent.subAssembly('nest', child, { variant: 'open' })` copies that named set and does not change which parts the child shows. A plain `subAssembly(name, other)` copies the parts the child currently shows. The import does not copy wrap geoms or collision shapes. A variant does not rewrite tendons, loop-mode pins, planning groups, disabled-collision pairs, or part lineage.
 
 ```typescript
 interface Assembly {
@@ -150,10 +175,15 @@ interface Assembly {
       exposure?: 'exposed' | 'concealed';
     },
   ): AssemblyMateRef;
+  variant(name: string, opts?: { suppress?: string[] }): this;
+  useVariant(name: string): this;
+  subAssembly(name: string, other: Assembly, opts?: { variant?: string }): SubAssemblyHandle;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }
 ```
+
+`assembly.part` also accepts `process`, `stock`, `massKg`, `crossSection`, `role`, and `overlay`. Unknown option keys fail with `feature.invalid-args` and name the offending `opts.<key>` path. For example, `{ att: [120, 0, 0] }` is rejected instead of leaving the part at the default origin; use `{ at: [120, 0, 0] }` for an explicit placement.
 
 ## Scene API
 
@@ -395,12 +425,16 @@ arm.coupleMates('follow-a', { source: 'drive', ratio: 1 });
 arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 ```
 
-Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
+Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`. Each driven mate takes one coupling. A chain (`output` <- `idler` <- `input`) is allowed. A mate coupled to itself, a second coupling for a driven mate, or a coupling that closes a loop throws `feature.invalid-args` at declaration.
+
+Do not give a driven mate its own `pose`. `model()` and `solvedModel()` place the part at that authored pose, but `solve_mates`, `review_cad` and physics use `sourcePose * ratio + offset`. When the two values differ, `review_cad` and `verify({ check: 'assembly' })` report the warning `assembly.joint-topology.coupled-pose-conflict` with both values.
 
 **Joint compliance** (next to `limitsDeg` / `limitsMm`): a spring and viscous damping on a scalar joint. Revolute: `{ stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg }` (N·mm/deg, deg, N·mm·s/deg); prismatic: `{ stiffnessNPerMm, springRefMm, dampingNsPerMm }` (N/mm, mm, N·s/mm). Restoring load is `-stiffness * (q - springRef)`, zero at the reference (default 0). The reference uses the same sign as `pose` / the limits and may lie OUTSIDE them: `springRefDeg: -10` with `limitsDeg: [0, 90]` preloads the joint against its 0 degree stop. Negative stiffness or damping, a non-finite value, or a revolute option on a prismatic mate (and vice versa) throws an invalid-args error naming the option. The physics gate emits them on the `<joint>` in SI, and a stiffened joint counts as a declared hold requirement.
 
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
+- When supplied, the fifth `arm.mate(..., opts)` argument must be a plain options object; `null`, arrays, primitives, and built-in objects such as `Date` are rejected at capture time. Unknown keys are rejected with the path `opts.<key>`. This also covers object variables and JavaScript callers, where malformed options or a typo such as `limtsDeg` could otherwise silently create an unbounded mate.
+- `arm.coupleMates(driven, opts)` requires a plain options object with only `source`, `ratio`, and optional `offset`. Unknown keys fail at `opts.<key>` before the coupling is recorded, so a typo such as `offest` cannot be silently ignored.
 - `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery: pick a compatible mate type or change the connector types.
 - `invalid-args.assembly.mate-connector-not-found` — the `"part.connector"` ref is malformed, the part is undeclared, or the connector wasn't registered. Recovery: declare the part / register the connector before calling `arm.mate(...)`.
 
@@ -480,7 +514,7 @@ The MCP server exposes assembly-specific tools for runtime introspection:
 - `add_part({ code, assembly_binding, part_name, shape_expression, binding_name?, at? })` — insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)`. Returns the part binding used by `add_connector`.
 - `add_connector({ code, part_binding, name, type, origin, axis?, normal? })` — insert `<partBinding>.connector(name, { type, origin, axis?, normal? })`. `type` is one of `frame`/`axis`/`planar`/`ball`; `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`. Use the part binding returned by `add_part`.
 - `add_mate({ relation, code, assembly_binding, ... })` — author a mate-graph relationship into source. `relation: 'mate'` → `{ name, a, b, type, pose?, limitsDeg?, limitsMm? }` (refs `"<partName>.<connectorName>"`); `relation: 'coupling'` → `{ driven, source, ratio, offset? }`; `relation: 'transmission'` → `{ name, kind, sourceMate, drivenMates, path, ... }`.
-- `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
+- `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm?, coupling? }, ...] }`; `coupling: { source, ratio, offset? }` marks a mate driven by `coupleMates`. Read-only.
 - `verify({ check: 'assembly', assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['output.tool-point']` to focus workspace output on an output point; connector workspace is only computed when pose-envelope sampling is enabled. Tracked connector poses are returned per sample in `connectorPoses`; track two connectors to measure their separation across the sweep.
@@ -777,6 +811,7 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
 | `assembly.joint-axis.unbound` | solvedModel — advisory (`info`): revolute/prismatic/cylindrical axis floats outside both bound parts' BREP. Merge gate: `mechanism.dof-mismatch`. |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared legacy `maxLoad` exceeded by external force/torque; torque uses the solved connector and part frames when available (manual-load sanity check, not reaction propagation) |
+| `assembly.joint.load-unverified` | A declared legacy `maxLoad` check could not resolve a connector synchronously, or its load kind is unsupported (ball-mate torque); that comparison did not run |
 | `assembly.mounting-hole.mismatch` | solvedModel — advisory (`info`): `fastened` mate's two bound faces lack compatible hole features. Merge gate: `mechanism.disconnect`. |
 | `assembly.joint.not-visible` | solvedModel({validate:'error'}), only for mates declaring `exposure: 'exposed'` — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen the fork gap / thin the tongue / extend the pin directly. A warning-severity variant reports that the pin radius could not be measured. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |

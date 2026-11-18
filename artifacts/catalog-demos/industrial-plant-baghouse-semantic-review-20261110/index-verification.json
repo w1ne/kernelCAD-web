@@ -1,0 +1,27 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-baghouse-semantic-review-20261110/verify_asset_index.py",
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "assetIdsUnchanged": true,
+  "sourceShaMismatches": [],
+  "badPreviewRows": [],
+  "missingPreviewFiles": [],
+  "changedAsset": {
+    "id": "industrial-plant/baghouse-dust-collector",
+    "sourceSha256": "a54575dda8981eb2aeb208056a1618a5150d81df5f2edd79f1c926f66f65d02d",
+    "previewSha256": "956d0c484d17243faebba04d8590a9e14b75cad46fb7406c755e8f1c5367689f",
+    "preview": "/assets/industrial-plant-baghouse-dust-collector.png",
+    "triangles": 552,
+    "triangleBudget": 1400,
+    "params": [
+      "scale",
+      "steel",
+      "safetyPaint"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ]
+  },
+  "pass": true
+}

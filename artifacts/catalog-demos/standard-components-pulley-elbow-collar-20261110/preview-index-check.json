@@ -1,0 +1,408 @@
+{
+  "kit": "standard-components",
+  "assetCount": 50,
+  "allSourceHashesMatch": true,
+  "allPreviewPathsIndexed": true,
+  "assets": [
+    {
+      "id": "angle-bracket",
+      "sourceSha256": "bfa233e87b62be5c5e279f4790bbdf011b6ebafaf391019f9eab731af7a45b28",
+      "preview": "/assets/standard-components-angle-bracket.png",
+      "previewSha256": "b1924bb5c8547fc10d0276a55bb6cdba7f9a70e86ed62606074dde84df4cc8d3",
+      "triangles": 232,
+      "triangleBudget": 360
+    },
+    {
+      "id": "base-mounting-plate",
+      "sourceSha256": "9b0ffee21e8a9c61e3e378d8229c326ee5a7cc09ae96e0c540de79537021303c",
+      "preview": "/assets/standard-components-base-mounting-plate.png",
+      "previewSha256": "7807d68a20392e90dcdfb497e2aac22bc52fe1b22f751730b78d82ba7e4fb25f",
+      "triangles": 264,
+      "triangleBudget": 1300
+    },
+    {
+      "id": "beam-coupling",
+      "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
+      "preview": "/assets/standard-components-beam-coupling.png",
+      "previewSha256": "2637c7c734214e971be10ee29507335e433542bd707b1c86ff124496ca69c3b6",
+      "triangles": 428,
+      "triangleBudget": 480
+    },
+    {
+      "id": "blind-flange",
+      "sourceSha256": "f3d6d70823b6d4c33352185acfe7b485b93574d31948145c8c4adc2b9ebbf05f",
+      "preview": "/assets/standard-components-blind-flange.png",
+      "previewSha256": "408b772cc734358f5c207f77224d8117136162b5faf9a455b99823146b5edffd",
+      "triangles": 296,
+      "triangleBudget": 1500
+    },
+    {
+      "id": "bulkhead-adapter",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5",
+      "preview": "/assets/standard-components-bulkhead-adapter.png",
+      "previewSha256": "a58d0202fe6e3a220f0198392ebd9b7327f5436f783439df455a63ff35e62ea7",
+      "triangles": 456,
+      "triangleBudget": 620
+    },
+    {
+      "id": "cable-clamp",
+      "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
+      "preview": "/assets/standard-components-cable-clamp.png",
+      "previewSha256": "1bf58a83c0b2d486b6d6e094f277be6e36876fffaaddc7e1f7209cda1d020f36",
+      "triangles": 132,
+      "triangleBudget": 300
+    },
+    {
+      "id": "cable-gland",
+      "sourceSha256": "169ab289279c7e9a85f7b0643eee2a5f096e5cbb8b87436acc00b7de3afdfae6",
+      "preview": "/assets/standard-components-cable-gland.png",
+      "previewSha256": "509c795a27038185877e6c92e1683043e14e502121e44da9cc8515e4ae6ae207",
+      "triangles": 384,
+      "triangleBudget": 420
+    },
+    {
+      "id": "caster-wheel",
+      "sourceSha256": "397b85d05eb1b036eafdd54a2696da5c222404e223b75920110cc7745d6bd73c",
+      "preview": "/assets/standard-components-caster-wheel.png",
+      "previewSha256": "14486637cdbe9daa27b837f57364a02b04d5f0c981fac6306268b8d7a60f7a17",
+      "triangles": 200,
+      "triangleBudget": 380
+    },
+    {
+      "id": "clevis-pin",
+      "sourceSha256": "70b2e15e74a916cf23ae0aea672fe7232ffee5539d07e54baac02599960647d9",
+      "preview": "/assets/standard-components-clevis-pin.png",
+      "previewSha256": "14f73410cfa8f962a8fd7ed4137938295f073f2f00dcaa3136008d694e68c3cd",
+      "triangles": 156,
+      "triangleBudget": 280
+    },
+    {
+      "id": "din-rail-end-stop",
+      "sourceSha256": "db50b7840d511e370a08ca14943c75607a846839f201bc1a13bd0248a80a6d2d",
+      "preview": "/assets/standard-components-din-rail-end-stop.png",
+      "previewSha256": "3b6308dca4463ee0d890e2579152aadf7c03fc9d6d59df33aeea135b1498febd",
+      "triangles": 80,
+      "triangleBudget": 300
+    },
+    {
+      "id": "din-rail-terminal-block",
+      "sourceSha256": "3e57448c2ed3c278aa0a402d8f2fc3445b2c215e428fbde8782017ff681f9dc1",
+      "preview": "/assets/standard-components-din-rail-terminal-block.png",
+      "previewSha256": "27b08af2176b40631a5044a119b03849a40ab8e1f406e515809e277311009774",
+      "triangles": 444,
+      "triangleBudget": 500
+    },
+    {
+      "id": "din-rail",
+      "sourceSha256": "ba0de3b93354ce866a8edd169afe498483f420fd930878b8f62254d8fc7bd174",
+      "preview": "/assets/standard-components-din-rail.png",
+      "previewSha256": "796cd4ee3b0a12a76b68cfd23adbae5ba05357f814326e8740ae534abec14e4f",
+      "triangles": 48,
+      "triangleBudget": 300
+    },
+    {
+      "id": "door-hinge",
+      "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
+      "preview": "/assets/standard-components-door-hinge.png",
+      "previewSha256": "ddb5fc13f47af7bf2b42ba9c042d66fc6353bc0d835e337dad64c0da4e4468b5",
+      "triangles": 1440,
+      "triangleBudget": 1600
+    },
+    {
+      "id": "drawer-slide-channel",
+      "sourceSha256": "15596208b5f12660793a5113698ec5723efe278b7fa4c5cac8062b7f0da30f99",
+      "preview": "/assets/standard-components-drawer-slide-channel.png",
+      "previewSha256": "019b3df5c572f02a27b121c2cc91319be10a66518de60ced4195ea115605734a",
+      "triangles": 60,
+      "triangleBudget": 340
+    },
+    {
+      "id": "flange-bearing-housing",
+      "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255",
+      "preview": "/assets/standard-components-flange-bearing-housing.png",
+      "previewSha256": "b35df1b392c6c2d4fe0f055b5ea152b29a29ac6f911fc926941944c7d7b0f278",
+      "triangles": 456,
+      "triangleBudget": 500
+    },
+    {
+      "id": "flat-joining-plate",
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280",
+      "preview": "/assets/standard-components-flat-joining-plate.png",
+      "previewSha256": "e099b0164d071da4b0ba5c50ce767429f09245ecfa21ce01ef7c27d379078968",
+      "triangles": 572,
+      "triangleBudget": 800
+    },
+    {
+      "id": "gusset-bracket",
+      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+      "preview": "/assets/standard-components-gusset-bracket.png",
+      "previewSha256": "53bdaa573cbbac43365f91fd2dc1282de18894643a61086cf9114fe7009684c6",
+      "triangles": 32,
+      "triangleBudget": 380
+    },
+    {
+      "id": "handle-pull",
+      "sourceSha256": "fb55eaeb7b8b8a89e583e6f7c23b472b3ee798a9639ad6a1b8b35a018648c96b",
+      "preview": "/assets/standard-components-handle-pull.png",
+      "previewSha256": "edfaab85368c79ac0e99af31acf154369dcd16a6929766da7d5efbce52d65c4b",
+      "triangles": 220,
+      "triangleBudget": 320
+    },
+    {
+      "id": "handwheel",
+      "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
+      "preview": "/assets/standard-components-handwheel.png",
+      "previewSha256": "8193d025ac349ee8b93a0eb8b1b6c62f511850a9a1fe0e8b3691f8ece8280391",
+      "triangles": 176,
+      "triangleBudget": 340
+    },
+    {
+      "id": "hose-barb-adapter",
+      "sourceSha256": "ee842872ed1e12b7beb0b97803f3fa0a7633958e57a61575b04dfe9ff2703f14",
+      "preview": "/assets/standard-components-hose-barb-adapter.png",
+      "previewSha256": "f2f8c3a015362a1b4c6bf75cb1c95ddb753e346d90ccb5200b8261fc97dfa198",
+      "triangles": 448,
+      "triangleBudget": 500
+    },
+    {
+      "id": "jaw-coupling",
+      "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5",
+      "preview": "/assets/standard-components-jaw-coupling.png",
+      "previewSha256": "ca5025b840aef5573fc510db596935bf250948f94febac0ad621586216008b7e",
+      "triangles": 574,
+      "triangleBudget": 640
+    },
+    {
+      "id": "knurled-knob",
+      "sourceSha256": "765c46070da9d853a7aa961551c6011cac086c44b9647e343160300d00a117ee",
+      "preview": "/assets/standard-components-knurled-knob.png",
+      "previewSha256": "47f495902503e7a4b4f3c1a20fade1526bb305704061d48666756603abf69aae",
+      "triangles": 228,
+      "triangleBudget": 300
+    },
+    {
+      "id": "leveling-foot",
+      "sourceSha256": "34d05ad6742e62fb515c865b2763cf7a503d171b4c0c8305d8d301f6c0d761de",
+      "preview": "/assets/standard-components-leveling-foot.png",
+      "previewSha256": "489209d5f3a644b34d2162897da02ce4bbcd1846b631283d7c7378d06612a504",
+      "triangles": 132,
+      "triangleBudget": 280
+    },
+    {
+      "id": "linear-guide-carriage",
+      "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+      "preview": "/assets/standard-components-linear-guide-carriage.png",
+      "previewSha256": "d7432936a7c84165a7966a92a0ed8579a785da5bc2b796c7f25b0b36fa8ef805",
+      "triangles": 408,
+      "triangleBudget": 460
+    },
+    {
+      "id": "linear-guide-rail",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5",
+      "preview": "/assets/standard-components-linear-guide-rail.png",
+      "previewSha256": "2db48ab4c33392d2b8b1b27cfff166ca446eb314effeeb714b46aef10f4f8c0a",
+      "triangles": 540,
+      "triangleBudget": 760
+    },
+    {
+      "id": "panel-clamp",
+      "sourceSha256": "871b45d97cafd067a9783869c007484729ec700bb3eedb391ab20cf8f1b239e1",
+      "preview": "/assets/standard-components-panel-clamp.png",
+      "previewSha256": "9cf9577adb030c5cb99ae944dbbd5ecd59164b4dfdd196d1a236f08bff0732fc",
+      "triangles": 80,
+      "triangleBudget": 320
+    },
+    {
+      "id": "piano-hinge",
+      "sourceSha256": "0e7016ba2fca89baf51a1c6cb782d1bcfe7e5592012dcd13d3bbf7675d14efb6",
+      "preview": "/assets/standard-components-piano-hinge.png",
+      "previewSha256": "4433e5cd3072547146ee3b31dbce619a156e3512d2027f5ab762722303202842",
+      "triangles": 332,
+      "triangleBudget": 380
+    },
+    {
+      "id": "pillow-block-housing",
+      "sourceSha256": "c3120ac5119ea007b16b811b5f6dab3924aa48a077b2500c76a8382dca05d6b8",
+      "preview": "/assets/standard-components-pillow-block-housing.png",
+      "previewSha256": "bc39c0c88e6656c61ecc9443b37ffc054c1d767ab6bdb02648197e94c99241da",
+      "triangles": 132,
+      "triangleBudget": 360
+    },
+    {
+      "id": "pipe-coupling",
+      "sourceSha256": "b3aed7920c6ea10f85da857cf6be173b34a5254d04d9e623d4f0399e0d1fbf39",
+      "preview": "/assets/standard-components-pipe-coupling.png",
+      "previewSha256": "07748ac44aa980c814af1a4537b39461283a9386799202e32ade9bf1b6a2f347",
+      "triangles": 480,
+      "triangleBudget": 640
+    },
+    {
+      "id": "pipe-elbow-45",
+      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
+      "preview": "/assets/standard-components-pipe-elbow-45.png",
+      "previewSha256": "783b4a4627b6945c15fc3cdca0b4c8bc9a7d4d955e8c6e0117df98a715a562af",
+      "triangles": 236,
+      "triangleBudget": 360
+    },
+    {
+      "id": "pipe-elbow-90",
+      "sourceSha256": "d912d977c0d241d660268ae7a8f85238df4c81a9242b27204364bcef04c19282",
+      "preview": "/assets/standard-components-pipe-elbow-90.png",
+      "previewSha256": "20af96806763a6a48fbacd95131d4dc48568d72d193025327b5c87964885f523",
+      "triangles": 1528,
+      "triangleBudget": 2000
+    },
+    {
+      "id": "pipe-flange",
+      "sourceSha256": "e8b1d432e4a8d8d3c61b860c784b0143cd9e46ea8adc77de4f6899dd0f44e026",
+      "preview": "/assets/standard-components-pipe-flange.png",
+      "previewSha256": "8f5d633610fd05970a1055830d7c4ace231c7309d45363c32c77b2505e622b0e",
+      "triangles": 400,
+      "triangleBudget": 1500
+    },
+    {
+      "id": "pipe-reducer",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1",
+      "preview": "/assets/standard-components-pipe-reducer.png",
+      "previewSha256": "3671e281fec7466e8a8914c7e3d8dc99dee14bcf8d786c0a1e2b7c47dbcc55d8",
+      "triangles": 474,
+      "triangleBudget": 620
+    },
+    {
+      "id": "pipe-saddle-clamp",
+      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
+      "preview": "/assets/standard-components-pipe-saddle-clamp.png",
+      "previewSha256": "7d5f677e5d19698bde3369db6f919ca7c1206f3468bdfd553c03a814c1384516",
+      "triangles": 132,
+      "triangleBudget": 360
+    },
+    {
+      "id": "pipe-tee",
+      "sourceSha256": "35d13e50e8ed799ae1ccafecb6a666ed2b59d9f0e7fd0d13f4d86b424d5370a7",
+      "preview": "/assets/standard-components-pipe-tee.png",
+      "previewSha256": "9e74c33c05721247ce9063dd02f77475074ae0d6b78cbbb5b80874aaf79d14f0",
+      "triangles": 192,
+      "triangleBudget": 360
+    },
+    {
+      "id": "pipe-union",
+      "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544",
+      "preview": "/assets/standard-components-pipe-union.png",
+      "previewSha256": "7b88c08af9b4a592f77aaf66ea898024fd2eb7b0ce67082db9c506677460cca5",
+      "triangles": 360,
+      "triangleBudget": 440
+    },
+    {
+      "id": "retaining-ring",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15",
+      "preview": "/assets/standard-components-retaining-ring.png",
+      "previewSha256": "476ba8f59bfd5513006aa2140bc1e9ef16257d8e2a48711fb907a905a07bcdbb",
+      "triangles": 228,
+      "triangleBudget": 420
+    },
+    {
+      "id": "rubber-bumper",
+      "sourceSha256": "ca5fe840fc64788e8586450c2b34b6eba192e2fc884b7da6dc242bd799d89d20",
+      "preview": "/assets/standard-components-rubber-bumper.png",
+      "previewSha256": "f096e45ffe4d61db82e43870d760099fb6135c6679e4524161cdbd1c4aadcb4e",
+      "triangles": 332,
+      "triangleBudget": 420
+    },
+    {
+      "id": "shaft-collar",
+      "sourceSha256": "b40c92ffee910652f277ce10f3b8583e0c3bf0c6250ecf77ea4656fe6cbd87d6",
+      "preview": "/assets/standard-components-shaft-collar.png",
+      "previewSha256": "5fa389a03cefda69033822f3076a29f85672bd32b07646d6f7ed4af954360c29",
+      "triangles": 416,
+      "triangleBudget": 560
+    },
+    {
+      "id": "shaft-coupling",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845",
+      "preview": "/assets/standard-components-shaft-coupling.png",
+      "previewSha256": "dd2cb91e7e85946a2bd702e55d7ac0270fb148c45fb637b16b31e09c0cf28857",
+      "triangles": 536,
+      "triangleBudget": 620
+    },
+    {
+      "id": "shim-pack",
+      "sourceSha256": "fcba8cf93a1f7b655e475458ee14348de501e2443dcac6c0861dcc35464bcbdf",
+      "preview": "/assets/standard-components-shim-pack.png",
+      "previewSha256": "2793342780c8c1630894219510827724ca12525c8258013fdfcd24cf64bd903f",
+      "triangles": 60,
+      "triangleBudget": 280
+    },
+    {
+      "id": "split-shaft-collar",
+      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
+      "preview": "/assets/standard-components-split-shaft-collar.png",
+      "previewSha256": "261a1b1d29a46393d9d1441c6ee97daf263e8b438fcce08d2bbf965e099e2774",
+      "triangles": 112,
+      "triangleBudget": 300
+    },
+    {
+      "id": "square-mounting-flange",
+      "sourceSha256": "1e8988a11a7a8e2ab7e76131cbc5aa167eb1fbb55bb3695e9ea1d13405900a19",
+      "preview": "/assets/standard-components-square-mounting-flange.png",
+      "previewSha256": "18105ca6c38dcc2ebcdc91882493af00094423ea1d76a1d2ba340cc689ec53ce",
+      "triangles": 316,
+      "triangleBudget": 360
+    },
+    {
+      "id": "t-slot-angle-bracket",
+      "sourceSha256": "6ee080db9d9f64127456609f385510057c6083ab19c28e7b5dded18021f76462",
+      "preview": "/assets/standard-components-t-slot-angle-bracket.png",
+      "previewSha256": "24d62d8379ef958d5417a0e0bf81e58b9f5fdb4d464b7373284499f760ff6f87",
+      "triangles": 40,
+      "triangleBudget": 380
+    },
+    {
+      "id": "t-slot-end-cap",
+      "sourceSha256": "cafa5c749eb25ebbbe8c5bc33a50106b2d933ea95fa23268522765cdc407d179",
+      "preview": "/assets/standard-components-t-slot-end-cap.png",
+      "previewSha256": "7913e31bd2c792eb9de6bd6e1b95792ea5695d54ba77384407976f03e05b46cf",
+      "triangles": 156,
+      "triangleBudget": 300
+    },
+    {
+      "id": "timing-belt-pulley",
+      "sourceSha256": "fe95e0c69268bb962747fab7870f653f044dddc6d7da9510befdc9da6a984815",
+      "preview": "/assets/standard-components-timing-belt-pulley.png",
+      "previewSha256": "ee540c5c61375975824ba6673d8295cf18a6fd08470b553f77ed30f0954b0a09",
+      "triangles": 1236,
+      "triangleBudget": 1380
+    },
+    {
+      "id": "tube-clamp",
+      "sourceSha256": "0c3bcf45c5f72b1b375e577271d2d321a4c10ac1a0b94f256316bf4430bbe23d",
+      "preview": "/assets/standard-components-tube-clamp.png",
+      "previewSha256": "7aaa6dae43551bc5ff135b6171bccf4dba8bc09342da3efb64ecca0a098e2970",
+      "triangles": 164,
+      "triangleBudget": 340
+    },
+    {
+      "id": "tubular-spacer",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491",
+      "preview": "/assets/standard-components-tubular-spacer.png",
+      "previewSha256": "35aa559c2261af787d4f902074fccb6428b48e66bf913d531a4868c13b4c06a4",
+      "triangles": 432,
+      "triangleBudget": 520
+    },
+    {
+      "id": "u-bracket",
+      "sourceSha256": "f6facc17f2fcffed341214f578f950ca7bddf338251647668df7f566869f3a4b",
+      "preview": "/assets/standard-components-u-bracket.png",
+      "previewSha256": "77be51418712a5bdb033d2abe40101f0d9211f5cb3dbcfb5f630dffadc72cb20",
+      "triangles": 80,
+      "triangleBudget": 320
+    },
+    {
+      "id": "v-belt-pulley",
+      "sourceSha256": "0e27f707c2eebad7fce236517c8118009128984bdcf1fb5e97586b7fce03a141",
+      "preview": "/assets/standard-components-v-belt-pulley.png",
+      "previewSha256": "d28a4344272e5b8bed27710ce71bf1d35c435b3f950a5b7ab2e0b8a905e0d48e",
+      "triangles": 518,
+      "triangleBudget": 700
+    }
+  ]
+}

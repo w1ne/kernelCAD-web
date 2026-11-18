@@ -4,6 +4,13 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const EXPORT_CODES = {
+  'export.scene.requires-brep': {
+    hintTemplate: 'Select B-rep parts explicitly or replace the named mesh parts with B-rep geometry, then export again.',
+    nextAction: { kind: 'fix-arg', field: 'feature_id' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The requested scene export needs B-rep geometry for all selected parts.',
+  },
   // Export (19)
   'export.feature-not-found': {
     hintTemplate:
@@ -195,6 +202,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
   },
+  'export.urdf.inertia-fallback': {
+    hintTemplate:
+      'Mass properties failed for this link, so the URDF inertial is the unit substitute (mass 1 kg, diagonal 1e-3 kg·m², centre of mass at the origin). Repair the solid and export again.',
+    nextAction: { kind: 'fix-arg', field: 'shape' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A URDF link substituted unit inertia because mass properties could not be computed.',
+  },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:
       'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export({ target: \'model\', format: \'srdf\', ... }) or set combinatorial: true.',
@@ -226,6 +241,14 @@ export const EXPORT_CODES = {
     defaultSeverity: 'warn',
     group: 'export',
     description: 'A pin_slot mate was lowered to an SDFormat revolute joint; the slot translation DOF was lost.',
+  },
+  'export.sdf-gazebo.coupling-dropped': {
+    hintTemplate:
+      'SDFormat 1.10 has no <mimic> joint; a coupleMates coupling was not carried, so the driven joint moves freely in the simulator. Enforce the ratio in the simulator controller, or export a format that carries joint couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A coupleMates coupling could not be represented in SDFormat 1.10; the driven joint was emitted as an independent joint.',
   },
   'export.sdf-gazebo.invalid-version': {
     hintTemplate:
@@ -275,6 +298,14 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
+  },
+  'export.usd.coupling-dropped': {
+    hintTemplate:
+      'This usd-isaac export leaves the driven joint independent; the serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The usd-isaac serializer does not author a backend-specific mimic relation for a coupleMates coupling; the driven mate was emitted as an independent physics joint.',
   },
   'export.usd.pose-unsolved': {
     hintTemplate:

@@ -6,8 +6,6 @@
 // that satisfies all four mechanism-truth criteria at every sampled
 // pose.
 //
-// Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan: docs/plans/2026-06-01-physics-loop-P1-surface-convergence.md
 
 const arm = assembly('clevis-hinge-real');
 

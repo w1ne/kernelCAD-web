@@ -27,6 +27,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   BHCS_HEAD,
   FLATHEAD_HEAD,
+  HEX_BOLT_PARTIAL_HEAD,
   SHCS_HEAD,
   planStackFor,
   resolveDetail,
@@ -38,7 +39,8 @@ import { placeStackFor } from './placePart';
 export type InsertFamily =
   | 'socket-head-cap-screw'
   | 'button-head-cap-screw'
-  | 'flat-head-countersunk';
+  | 'flat-head-countersunk'
+  | 'hex-head-bolt-partial';
 export type InsertMode = 'screw' | 'bolt';
 export type InsertSeat = 'auto' | 'none' | 'counterbore';
 
@@ -336,6 +338,7 @@ export function resolveInsert(request: InsertRequest): ResolvedInsert {
     'socket-head-cap-screw',
     'button-head-cap-screw',
     'flat-head-countersunk',
+    'hex-head-bolt-partial',
   ];
   if (!families.includes(request.family)) {
     invalidArgs({
@@ -522,13 +525,21 @@ export function planInserts(
     .sort(byCenter);
 }
 
+/** Counterbore diameter and depth for a cap head or an ISO 4014 hex head. */
+function counterboreHead(family: InsertFamily, thread: string): { D: number; K: number } | undefined {
+  if (family === 'button-head-cap-screw') return BHCS_HEAD[thread];
+  if (family === 'hex-head-bolt-partial') return HEX_BOLT_PARTIAL_HEAD[thread];
+  if (family === 'socket-head-cap-screw') return SHCS_HEAD[thread];
+  return undefined;
+}
+
 /** Seat tool for one planned hole, in canonical orientation: +Z points out of
  *  the material and the tool is centered on the origin. Subtract it from the
  *  mouth to cut the seat. */
 export function seatToolBackend(plan: PlannedInsert): OcctBackend | undefined {
   if (plan.seat === 'none') return undefined;
   if (plan.seat === 'counterbore') {
-    const head = plan.family === 'button-head-cap-screw' ? BHCS_HEAD[plan.thread] : SHCS_HEAD[plan.thread];
+    const head = counterboreHead(plan.family, plan.thread);
     if (head === undefined) return undefined;
     return OcctBackend.cylinder(head.K + SEAT_OVERSHOOT_MM, head.D / 2).translate(
       0,

@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-11-10T03:47:03+00:00",
+  "scope": "Generated local static catalog pages; public deployment not checked.",
+  "hub": "site-build/catalog/index.html",
+  "hubContainsAffectedAssets": true,
+  "pages": [
+    {
+      "asset": "bulkhead-adapter",
+      "page": "site-build/catalog/standard-components/bulkhead-adapter/index.html",
+      "preview": "site-build/catalog/standard-components/bulkhead-adapter/preview.png",
+      "previewBytes": 31516,
+      "triangleCount": 456,
+      "params": [
+        "stainless",
+        "brass",
+        "sealRubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    },
+    {
+      "asset": "linear-guide-rail",
+      "page": "site-build/catalog/standard-components/linear-guide-rail/index.html",
+      "preview": "site-build/catalog/standard-components/linear-guide-rail/preview.png",
+      "previewBytes": 19265,
+      "triangleCount": 540,
+      "params": [
+        "steel",
+        "aluminum",
+        "polymer",
+        "carriagePosition"
+      ],
+      "presets": [
+        "dark",
+        "highVisibility",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    },
+    {
+      "asset": "shaft-coupling",
+      "page": "site-build/catalog/standard-components/shaft-coupling/index.html",
+      "preview": "site-build/catalog/standard-components/shaft-coupling/preview.png",
+      "previewBytes": 27766,
+      "triangleCount": 536,
+      "params": [
+        "steel",
+        "bronze",
+        "setScrewSteel",
+        "retention"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ],
+      "hasStudioLink": true
+    }
+  ]
+}

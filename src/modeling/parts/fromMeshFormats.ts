@@ -28,7 +28,8 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FromSTEPContext } from './fromSTEP';
 
-const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
+const DISPLAY_STL_MAX_MIB = 80;
+const DISPLAY_STL_MAX_BYTES = DISPLAY_STL_MAX_MIB * 1024 * 1024;
 
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
@@ -135,12 +136,12 @@ export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<S
   requirePath(path, 'meshFromSTL', '.stl');
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
   const buf = await readOrThrow(absPath, path, 'meshFromSTL');
-  if (buf.byteLength > IMPORT_MAX_BYTES) {
+  if (buf.byteLength > DISPLAY_STL_MAX_BYTES) {
     invalidArgs({
       api: 'lib.meshFromSTL(path)',
       path: 'path',
       gotText: `${absPath} (${buf.byteLength} bytes)`,
-      requires: 'an STL file no larger than 50 MiB (the per-file limit is 50 MiB)',
+      requires: `an STL file no larger than ${DISPLAY_STL_MAX_MIB} MiB (the per-file limit is ${DISPLAY_STL_MAX_MIB} MiB)`,
       example: "lib.meshFromSTL('./parts/bracket.stl')",
       hintSlug: 'invalid-args.lib.meshFromSTL.file-too-large',
     });
@@ -193,12 +194,20 @@ export async function fromSTL(
         'kernel-failed.lib.fromSTL.too-many-triangles — decimate the mesh in the source tool, or pass { maxTriangles } to opt into a slow import.',
       );
     }
-    const msg = e instanceof Error ? e.message : String(e);
+    if (e instanceof StlParseError) {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTL: could not read STL at ${absPath}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fromSTL.parse — file is not a valid ASCII or binary STL.',
+      );
+    }
+    const detail = typeof e === 'number' ? `OCCT exception ${e}` : e instanceof Error ? e.message : String(e);
     throw new KernelError(
       'feature.kernel-failed',
-      `lib.fromSTL: could not read STL at ${absPath}: ${msg}`,
+      `lib.fromSTL: kernel failed while importing ${absPath}: ${detail}`,
       undefined,
-      'kernel-failed.lib.fromSTL.parse — file is not a valid ASCII or binary STL.',
+      'kernel-failed.lib.fromSTL.kernel — BRep import failed inside the geometry kernel. For a faceted solid, try reducing triangle count in the source tool. For display only, use lib.meshFromSTL where the asset fits its file limit.',
     );
   }
 
@@ -210,6 +219,7 @@ export async function fromSTL(
         'sewed into an open shell, not a closed solid. Volume and booleans would be undefined.',
       undefined,
       'kernel-failed.lib.fromSTL.open-mesh — repair the mesh (close holes, fix flipped normals) in the source tool, raise { tolerance } if shared vertices are not bit-identical, pass { allowOpen: true } to accept the open shell deliberately, or use lib.meshFromSTL(path) for a display-only part (no BRep, fast, any mesh).',
+      { kind: 'fix-arg', field: 'path' },
     );
   }
 

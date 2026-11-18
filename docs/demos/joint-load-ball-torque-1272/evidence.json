@@ -1,0 +1,50 @@
+{
+  "scenario": "resolved ball mate with an unsupported declared torque rating",
+  "invocation": "npx tsx docs/demos/joint-load-ball-torque-1272/capture-demo.ts",
+  "fixture": "ball-load.kcad.ts",
+  "fixtureSha256": "77b5763508d3c05a654a95ef8475d28346539f66b8779fa15acbac5a470d5104",
+  "localValidatorReplay": true,
+  "physicsSimulationRun": false,
+  "feaRun": false,
+  "deployedBehaviorVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "input": {
+    "mode": "stub",
+    "externalLoads": {
+      "housing": {
+        "force": [
+          0,
+          0,
+          -500
+        ],
+        "torque": [
+          0,
+          0,
+          75
+        ]
+      }
+    },
+    "maxLoad": {
+      "forceN": 1000,
+      "torqueNm": 50
+    }
+  },
+  "result": {
+    "ok": true,
+    "failures": [],
+    "diagnostics": [
+      {
+        "code": "assembly.joint.load-unverified",
+        "severity": "warn",
+        "message": "Joint torque capacity for ball mate 'socket' was not checked because the legacy checker does not evaluate torque for ball mates. No torque comparison ran for this mate.",
+        "hint": "This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.",
+        "nextAction": {
+          "kind": "inspect-message"
+        },
+        "source": "local",
+        "element": "socket"
+      }
+    ]
+  },
+  "limitations": "The legacy checker compares the ball-joint force rating only. The declared torque rating is unverified; this is not a torque-capacity pass, reaction propagation, FEA, deployed behavior, or hardware acceptance."
+}

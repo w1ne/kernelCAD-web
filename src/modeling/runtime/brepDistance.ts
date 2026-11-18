@@ -19,6 +19,7 @@ export function wrappedShape(backend: OcctBackend): any {
 /** Re-exported from the kernel layer (one implementation for every caller). */
 export {
   brepExtremaContact,
+  brepExtremaClosestBetween,
   brepExtremaDistance,
   brepExtremaDistanceBetween,
   brepExtremaClosest,

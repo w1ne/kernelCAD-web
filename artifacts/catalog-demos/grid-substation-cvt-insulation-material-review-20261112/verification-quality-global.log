@@ -1,0 +1,6 @@
+$ PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py
+  MIXED  standard-components          49/50   material-controls/asset=2.62
+
+  2401/2402 assets pass (99.96%; 49 rich kits, 0 thin kits)
+  1 thin assets = 0.04% of the catalog
+exit code: 1 due to the existing standard-components/beam-coupling outlier; grid-substation is 80/80.

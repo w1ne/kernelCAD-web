@@ -6,6 +6,14 @@ The 2026-11-06 silhouette refinement improved three existing defaults without ch
 
 The earlier [kit creation bundle](../../../artifacts/catalog-demos/construction-equipment-wave-20261102/README.md) retains the original wave generator.
 
+The Nov 11 transit-mixer review moves all six steel wheel rims from the
+equipment-enamel control to `structuralSteelColor`. The cab and drum bands keep
+their equipment paint; tyre rubber and the model's geometry are unchanged. The
+[wheel-material handoff](../../../artifacts/catalog-demos/construction-transit-mixer-wheel-material-review-20261111/README.md)
+records the five-preview ledger, before/after preview, regression test, local
+checks and inspected MP4. The branch is not deployed; this color assignment
+does not make the scene prop an OEM or roadworthiness model.
+
 | id | asset | description | material controls and presets |
 | --- | --- | --- | --- |
 | `track-asphalt-paver` | Tracked asphalt paver | Tracked paving machine with front material hopper, operator canopy, feeder deck and rear screed. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
@@ -35,24 +43,24 @@ The earlier [kit creation bundle](../../../artifacts/catalog-demos/construction-
 | `trailer-concrete-line-pump` | Trailer concrete line pump | Towable concrete pump with hopper, motor enclosure, hose connections and road wheels. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `tracked-concrete-buggy` | Tracked concrete buggy | Compact powered buggy with tracked undercarriage, skip hopper and operator handles. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `ride-on-power-trowel` | Ride-on power trowel | Rider finisher with twin open rotor guards, visible radial blade shoes, engine, bucket seat and paired steering controls. | scale · blade count · rotor diameter · equipment enamel · structural steel · rubber grips · seat vinyl · weathered · highVisibility |
-| `walk-behind-power-trowel` | Walk-behind power trowel | Concrete finishing tool with circular blade guard, engine block and long control handle. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `walk-behind-power-trowel` | Walk-behind power trowel | Concrete finisher with an open circular safety ring, four pitched blades, compact engine and two-rail operator handle; compact, standard or wide guard. | scale · guard diameter · equipment enamel · structural steel · engine metal · grip rubber · weathered · highVisibility |
 | `walk-behind-concrete-saw` | Walk-behind concrete saw | Push saw with guarded cutting blade, compact motor and adjustable handlebar. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `ride-on-concrete-saw` | Ride-on concrete saw | Self-propelled slab saw with operator seat, blade guard and water tank. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `concrete-vibrator-needle` | Concrete vibrator and needle | Portable concrete vibrator with motor case, flexible shaft and immersion head. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
-| `vibrating-concrete-screed` | Vibrating concrete screed | Finishing beam with engine housing, end handles and a straight leveling blade. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `vibrating-concrete-screed` | Vibrating concrete screed | Faceted extruded leveling profile, central eccentric exciter and paired damped handle frame; short, standard or wide profile with working or folded handles. | scale · profile length · handle position · extruded aluminum · equipment enamel · structural steel · grip rubber · weathered · highVisibility |
 | `concrete-placement-bucket` | Concrete placement bucket | Crane-suspended concrete bucket with tapered hopper, discharge gate and lifting frame. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `concrete-formwork-panel` | Concrete formwork panel | Reusable wall-form panel with framed face, stiffeners and corner clamps. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `adjustable-formwork-prop` | Adjustable formwork prop | Telescoping floor support prop with top plate, screw collar and broad base plate. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `modular-shoring-frame` | Modular shoring frame | Stackable shoring frame with paired standards, cross braces and foot plates. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `concrete-form-tie` | Concrete form tie | Reusable form tie assembly with threaded rod, bearing plates and wing nuts. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
-| `rebar-bending-machine` | Rebar bending machine | Portable rebar bender with flat work table, rotary pin plate and control pedal. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `rebar-bending-machine` | Rebar bending machine | Table bender with roller-pin disc, geared drive, feed rollers and separate foot pedal; compact or extended feed table with hook or stirrup bar form. | scale · table reach · bar form · equipment enamel · structural steel · rebar steel · pedal rubber · highVisibility · siteBlue |
 | `rebar-cutting-machine` | Rebar cutting machine | Jobsite bar cutter with reinforced base, cutting head, guard and foot control. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `rebar-straightener-coil` | Rebar straightener and coil stand | Portable rebar straightening unit with feed rollers, guide wheels and coil stand. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `rebar-cage` | Reinforcing bar cage | Short reinforcing cage assembled from longitudinal bars and repeating ties. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `slab-edge-form` | Slab edge form system | Straight slab edge form with steel stakes, brackets and adjustable clamps. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `concrete-column-form` | Concrete column form | Square column shutter with corner walers, vertical stiffeners and base shoes. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `concrete-beam-form` | Concrete beam form | Raised beam shutter with paired supports, side panels and bottom soffit. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
-| `portable-material-hoist` | Portable material hoist | Compact construction hoist with mast, carriage platform, winch and stabilizing feet. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `portable-material-hoist` | Portable material hoist | Braced twin-rail mast, guided carriage, rack, drive, overhead sheave, guarded platform, transport wheels and outriggers; short or standard mast with open or guarded platform. | scale · mast height · platform style · equipment enamel · structural steel · hoist cable steel · tire rubber · weathered · highVisibility |
 | `construction-personnel-elevator` | Construction personnel elevator | Temporary mast elevator cage with guide rails, mesh walls and ground frame. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `mast-climbing-work-platform` | Mast-climbing work platform | Twin-mast access platform with guardrails, deck and ground outriggers. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `drywall-panel-lift` | Drywall panel lift | Foldable panel lift with telescoping mast, tilting cradle, tripod legs and casters. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
@@ -72,6 +80,16 @@ The earlier [kit creation bundle](../../../artifacts/catalog-demos/construction-
 ## Open an asset
 
 Search for construction or paving equipment in the catalog, or open an asset in Studio with `?catalog=construction-equipment/<id>`. For example, `?catalog=construction-equipment/track-asphalt-paver` opens its editable source and controls.
+
+## Nov 9 machine silhouette follow-up
+
+The existing `walk-behind-power-trowel`, `vibrating-concrete-screed`,
+`rebar-bending-machine`, and `portable-material-hoist` now have recognizable
+multi-part machine shapes and real shape choices. Each exposes four
+material-named color controls and two named finish presets. No asset IDs or kit
+counts changed. The [machine silhouette handoff](../../../artifacts/catalog-demos/construction-equipment-machines-20261109/README.md)
+contains the source-render variants, preview/index checks, local tests and
+inspected MP4. This is a local branch update; it has not been deployed.
 
 ## Rebuild and verify
 

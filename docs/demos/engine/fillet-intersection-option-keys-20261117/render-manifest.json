@@ -1,0 +1,18 @@
+{
+  "renderer": "Blender 4.0.2 / Cycles CPU",
+  "source_stl": "demo.stl",
+  "triangles": 64528,
+  "size_mm": [
+    40.0,
+    30.0,
+    20.0
+  ],
+  "frame_size_px": [
+    720,
+    720
+  ],
+  "fps": 15,
+  "frames": 60,
+  "duration_seconds": 4,
+  "camera_elevation_deg": 31.43
+}

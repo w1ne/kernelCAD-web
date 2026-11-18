@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/microwaveDishElevationNutMaterial.test.ts (1 test) 1049ms
+     ✓ keeps the elevation nut with the galvanized mount, not the radio-unit powder coat  625ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:58:37
+   Duration  11.20s (transform 7.94s, setup 212ms, import 9.64s, tests 1.05s, environment 0ms)
+

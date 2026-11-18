@@ -4,8 +4,6 @@
 //
 // Physics-grounded loop — P8 slice (criterion 7 — joint-mesh-continuity).
 //
-// Spec:  docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
-// Plan:  docs/plans/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 //
 // For every mate in an assembly, at REST pose, the joint's knuckle solid
 // must be PRESENT around the pivot (the world-space connector origin on

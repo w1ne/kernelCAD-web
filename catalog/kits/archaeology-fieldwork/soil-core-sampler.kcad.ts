@@ -40,9 +40,9 @@ const ring = (x: number, y: number, z: number, h: number, r: number, wall: numbe
 };
 
 p.part("sample-tube", ring(0, 0, 0, 460, 50, 13, 10, "z").color(stainlessSteel));
-p.part("mouth-rim", ring(0, 0, 440, 28, 58, 12, 10, "z").color(stainlessSteel));
-p.part("handle-crossbar", b(0, 0, 470, 190, 28, 28, 0, 0, 0).color(stainlessSteel));
-p.part("top-cap", c(0, 0, 455, 35, 54, 10).color(rubber));
-p.part("depth-window", b(0, -27, 145, 18, 5, 155, 0, 0, 0).color(paintedSteel));
+p.part("mouth-rim", ring(0, 0, 216, 28, 58, 12, 10, "z").color(stainlessSteel));
+p.part("handle-crossbar", b(0, 0, 265, 190, 28, 28, 0, 0, 0).color(stainlessSteel));
+p.part("top-cap", c(0, 0, 230, 35, 54, 10).color(rubber));
+p.part("depth-window", b(0, -49, -85, 18, 5, 155, 0, 0, 0).color(paintedSteel));
 
 return p.model();

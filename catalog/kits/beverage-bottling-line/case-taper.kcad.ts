@@ -5,7 +5,7 @@ meta({
   name: "case-taper",
   license: 'CC0-1.0',
   title: "Case taper",
-  description: "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+  description: "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and packing tape.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'structure',
@@ -18,17 +18,20 @@ const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, s
 const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#397e91', { label: 'Powder-coated steel' });
 const foodPolymer = param('foodPolymer', '#3999a1', { label: 'Food-grade polymer' });
+const packingTape = param('packingTape', '#c39058', { label: 'Polypropylene packing tape' });
 
 presets({
   sanitaryLine: {
     stainlessSteel: '#d2dfe1',
     powderCoat: '#4b95a4',
     foodPolymer: '#2c828c',
+    packingTape: '#cf9e66',
   },
   legacyPlant: {
     stainlessSteel: '#858f91',
     powderCoat: '#315b70',
     foodPolymer: '#286c75',
+    packingTape: '#a87a48',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -37,6 +40,8 @@ const cylinderPart = (x:number,y:number,z:number,h:number,r:number,n=10) => cyli
 const p = assembly("case-taper");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
+  // The tape roll is wound tan polypropylene carton-sealing tape, not a polymer machine part.
+  if (/roll$/i.test(component)) return shape.color(packingTape);
   if (/belt|guide|film|web|label|pad|seal|grip|cap|bottle|liner|tray|hose|cleat|divider|wheel|wrap|tape|suction|sleeve/i.test(component)) return shape.color(foodPolymer);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);

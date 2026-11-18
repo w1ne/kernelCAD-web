@@ -47,4 +47,8 @@ Each has four material-named controls and three presets; triangle budgets are
 
 The [shipyard quality-promotion bundle](../../../artifacts/catalog-demos/shipyard-quality-20261104/README.md) contains the source generator, catalog and preview checks, material variant, and inspected MP4 walkthrough.
 
+The [turnover-cradle material review](../../../artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/README.md)
+records why both matching end frames use the editable yard-finish control and
+includes before/after previews, a GLB regression, and a short local workflow demo.
+
 These are generic visualization props. They do not specify vessel structure, lift capacity, welding procedures, drydock certification, occupational-safety compliance, or repair instructions. Catalog validation does not establish shipyard or vessel safety, regulatory compliance, or operational acceptance.

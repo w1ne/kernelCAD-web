@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-11-11T08:13:39Z",
+  "url": "https://kernelcad.com/assets/recycling-facility-eddy-current-separator.png",
+  "httpStatus": 200,
+  "contentType": "image/png",
+  "sha256": "92bc47aa2be048b7db0784c02e952800e0878af1b5e425c695288dbcf939454c",
+  "dimensions": "512x512",
+  "observedCaption": "Eddy-current separator · 540 tris",
+  "observation": "The public asset preview still shows the earlier box-like model. The current source branch is not deployed; this change is local-only until the branch is reviewed and deployed."
+}

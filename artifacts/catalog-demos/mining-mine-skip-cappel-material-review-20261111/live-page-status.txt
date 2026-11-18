@@ -1,0 +1,3 @@
+Current live asset library: 200 https://kernelcad.com/asset-library/
+Current live preview: 200 https://kernelcad.com/assets/mining-mine-skip.png
+Current detail route: 404 https://kernelcad.com/asset-library/mining/mine-skip/

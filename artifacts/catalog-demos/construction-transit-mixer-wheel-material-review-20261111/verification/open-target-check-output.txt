@@ -1,0 +1,8 @@
+PR #1258 status before sampling
+https://github.com/w1ne/kernelCAD-web/pull/1258
+head d6f9b782a637789a9d1a58f9ffa4cab0967f7b49; OPEN; no submitted review.
+Reported check runs: 16 success, 1 cancelled (external-tools).
+
+Five selected assets: backhoe-loader, crawler-dozer, motor-grader, skid-steer-loader, transit-mixer-truck
+Exact open issue and PR title/body search results: no matches for each selected ID.
+Inspected 18 open PR changed-file lists; no selected source or preview paths matched.

@@ -4,8 +4,6 @@
 //
 // P8 unit tests for the joint-mesh-continuity helper.
 //
-// Spec:  docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
-// Plan:  docs/plans/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 
 import { describe, expect, it, vi } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';

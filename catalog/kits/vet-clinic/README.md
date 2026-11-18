@@ -7,7 +7,13 @@ assets use a base origin at z = 0; the dental X-ray arm and kennel feeding rail
 use wall origins. Every asset keeps its editable overall scale and now exposes
 two to four material-named color controls, with `clinicClean` and `softTeal`
 presets. Frames, housings, contact surfaces, glass, and upholstery receive
-separate controls where present. Triangle ceilings remain unchanged at 1,800.
+separate controls where present.
+
+The kit is being rebuilt from box stacks into modelled equipment. Rebuilt so
+far: `anesthesia-machine` (agent choice), `veterinary-surgery-table` (V or flat
+top), `mobile-surgical-light` (single or dual head), `grooming-bath-tub`
+(walk-up ramp) and `stainless-kennel-bank` (stacked tiers, open door). Each
+rebuilt asset carries its own triangle budget; the others keep 1,800.
 All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Reception and examination

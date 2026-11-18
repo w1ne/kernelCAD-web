@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-11-12T23:49:23.792168+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "sampleIds": [
+    "rotary-filler",
+    "sanitary-lobe-pump",
+    "pet-blow-molder",
+    "case-checkweigher",
+    "flash-pasteurizer"
+  ],
+  "openIssueCount": 13,
+  "openPullRequestCount": 10,
+  "openIssueSlugMatches": [],
+  "openPullRequestSourcePathMatches": [],
+  "checkedOpenPullRequests": [
+    {
+      "number": 1358,
+      "title": "test(animation): pin per-frame coupled gear bake for #1321",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1358"
+    },
+    {
+      "number": 1356,
+      "title": "docs(kinematics): add Gate 3 solved-frame replay bundle",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1356"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1309"
+    },
+    {
+      "number": 1258,
+      "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1253"
+    },
+    {
+      "number": 1215,
+      "title": "feat(catalog): industrial-plant wave \u2014 60 assets",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1215"
+    },
+    {
+      "number": 1211,
+      "title": "feat(catalog): sports wave \u2014 40 assets",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1211"
+    },
+    {
+      "number": 1195,
+      "title": "spike(b2b): ECAD-to-enclosure and headless API contract",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1195"
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1187"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1094"
+    }
+  ]
+}

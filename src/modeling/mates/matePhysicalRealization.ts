@@ -4,9 +4,7 @@
 //
 // G2 — Gate 6 mate physical realization.
 //
-// Spec: `docs/specs/2026-05-30-kinematic-grounding-mechanism-delivery-design.md`
 //        slice G2.
-// Plan: `docs/plans/2026-05-31-mechanism-delivery-G2-gate-6-mate-physical-realization.md`.
 //
 // For every declared revolute / prismatic mate, the gate asks: *can this mate
 // be physically realized — is there an actual pin/shaft feature constraining

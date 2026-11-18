@@ -1,0 +1,5 @@
+{
+  "video": "artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/standard-components-cable-gland-flange.mp4",
+  "frames": 6,
+  "durationSeconds": 18
+}

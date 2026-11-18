@@ -1,0 +1,67 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1858ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  1297ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 2187ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1572ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2426ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1922ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 2603ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1992ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2665ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1220ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  827ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 2850ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  2336ms
+ ✓ tests/integration/catalog/mineSkipCappelMaterials.test.ts (1 test) 2854ms
+     ✓ assigns the steel rope termination to the structural-steel control  2391ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 2945ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  891ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 3429ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  2677ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 3962ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  3403ms
+ ✓ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts (1 test) 3957ms
+     ✓ seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap  3269ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 4444ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  2021ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1748ms
+ ✓ tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts (1 test) 1190ms
+     ✓ uses a pallet-timber control for the pallet deck and preserves the model envelope  730ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 1452ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  669ms
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 1518ms
+     ✓ keeps the matching end frames on the same yard-finish control  912ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 2015ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 2187ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  1737ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 2101ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  1231ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 2114ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  1163ms
+ ✓ tests/integration/catalog/gritClassifierFidelity.test.ts (1 test) 1984ms
+     ✓ renders the inclined extraction screw between the trough and raised outlet  1083ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 1365ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  619ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 1262ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  444ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 9366ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  5688ms
+     ✓ has a material-removing helix and two real radial hub bores  3018ms
+ ✓ tests/integration/catalog/transitMixerWheelMaterial.test.ts (1 test) 4107ms
+     ✓ keeps the six steel wheel rims on the structural-steel control  3174ms
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 671ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 602ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  407ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 21173ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  1018ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  18244ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  426ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 510572ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  509576ms
+
+ Test Files  28 passed (28)
+      Tests  43 passed (43)
+   Start at  15:57:47
+   Duration  516.20s (transform 58.35s, setup 2.33s, import 125.82s, tests 599.86s, environment 3ms)

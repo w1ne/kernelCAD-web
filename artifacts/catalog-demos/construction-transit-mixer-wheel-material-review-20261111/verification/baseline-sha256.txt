@@ -1,0 +1,5 @@
+Captured before the local correction; live files matched these baseline hashes.
+49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937  catalog/kits/construction-equipment/transit-mixer-truck.kcad.ts
+63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5  catalog/kits/construction-equipment/previews/transit-mixer-truck.png
+49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937  /tmp/live-transit-mixer.kcad.ts
+63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5  /tmp/live-transit-mixer.png

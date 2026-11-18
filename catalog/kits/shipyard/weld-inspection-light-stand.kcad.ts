@@ -1,9 +1,9 @@
-// Weld inspection light stand: Portable inspection light with a weighted base, height mast, twin lamp heads, and a cable hook. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
+// Weld inspection light stand: Portable inspection light with a weighted base, height mast, twin lamp heads with pale diffuser lenses, and a cable hook. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
 meta({
   name: "weld-inspection-light-stand",
   license: 'CC0-1.0',
   title: "Weld inspection light stand",
-  description: "Portable inspection light with a weighted base, height mast, twin lamp heads, and a cable hook. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  description: "Portable inspection light with a weighted base, height mast, twin lamp heads with separate lenses, and a cable hook. Editable yard-finish, steel, safety-marking and lamp-lens colors; includes fresh-coat and weathered-yard presets.",
   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "weld", "inspection", "light", "stand"],
   kit: 'shipyard',
   category: 'prop',
@@ -16,10 +16,11 @@ const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, 
 const yardPaint = param("yardPaint", "#d2a64c", { label: "Yard finish" });
 const structuralSteel = param("structuralSteel", "#b6c1c4", { label: "Structural steel" });
 const safetyMarking = param("safetyMarking", "#efb934", { label: "Safety marking" });
+const lampLens = param("lampLens", "#f3f0d8", { label: "Lamp lens" });
 
 presets({
-  'fresh-coat': {"yardPaint": "#dab66c", "structuralSteel": "#d0d7d8", "safetyMarking": "#ffd44d"},
-  'weathered-yard': {"yardPaint": "#ae8a3f", "structuralSteel": "#828d91", "safetyMarking": "#bd8528"},
+  'fresh-coat': {"yardPaint": "#dab66c", "structuralSteel": "#d0d7d8", "safetyMarking": "#ffd44d", "lampLens": "#fbf8e6"},
+  'weathered-yard': {"yardPaint": "#ae8a3f", "structuralSteel": "#828d91", "safetyMarking": "#bd8528", "lampLens": "#cfc9ac"},
 });
 
 const p = assembly("weld-inspection-light-stand");
@@ -57,8 +58,8 @@ p.part("mast", b("mast", [100, 100, 1560], [0, 0, 950]).color(structuralSteel));
 p.part("crossbar", b("crossbar", [900, 120, 100], [0, 0, 1750]).color(structuralSteel));
 p.part("lamp-head-0", b("lamp-head-0", [320, 230, 280], [-280, 0, 1620]).color(safetyMarking));
 p.part("lamp-head-1", b("lamp-head-1", [320, 230, 280], [280, 0, 1620]).color(safetyMarking));
-p.part("lamp-lens-0", b("lamp-lens-0", [220, 50, 190], [-280, -130, 1620]).color(safetyMarking));
-p.part("lamp-lens-1", b("lamp-lens-1", [220, 50, 190], [280, -130, 1620]).color(safetyMarking));
+p.part("lamp-lens-0", b("lamp-lens-0", [220, 50, 190], [-280, -130, 1620]).color(lampLens));
+p.part("lamp-lens-1", b("lamp-lens-1", [220, 50, 190], [280, -130, 1620]).color(lampLens));
 p.part("cable-hook", b("cable-hook", [90, 330, 80], [120, 140, 1240]).color(structuralSteel));
 p.part("carry-handle", b("carry-handle", [320, 80, 100], [0, 0, 1860]).color(structuralSteel));
 

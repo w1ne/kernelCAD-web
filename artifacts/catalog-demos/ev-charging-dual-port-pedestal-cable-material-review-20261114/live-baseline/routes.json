@@ -1,0 +1,52 @@
+[
+  {
+    "id": "dual-port-ac-pedestal",
+    "kit": "ev-charging-infrastructure",
+    "page": "https://kernelcad.com/catalog/ev-charging-infrastructure/dual-port-ac-pedestal/",
+    "preview": "https://kernelcad.com/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "31731df79fc27b20d6aff11d7b8fc004d66e5c13cd610c2300511adf380cf318",
+    "previewBytes": 22632
+  },
+  {
+    "id": "ev-metering-pedestal",
+    "kit": "ev-charging-infrastructure",
+    "page": "https://kernelcad.com/catalog/ev-charging-infrastructure/ev-metering-pedestal/",
+    "preview": "https://kernelcad.com/assets/ev-charging-infrastructure-ev-metering-pedestal.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "27b2a69edcb8fc714a7b8b4aab454e2e2d6527b387c67a2a35c98557ac9334d6",
+    "previewBytes": 16618
+  },
+  {
+    "id": "home-ac-wallbox",
+    "kit": "ev-charging-infrastructure",
+    "page": "https://kernelcad.com/catalog/ev-charging-infrastructure/home-ac-wallbox/",
+    "preview": "https://kernelcad.com/assets/ev-charging-infrastructure-home-ac-wallbox.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "e5d3349f887d7a16e7c1e063002bf5c1e50c1493e1079a0efd895f3eaade9134",
+    "previewBytes": 18508
+  },
+  {
+    "id": "mobile-fast-charge-cart",
+    "kit": "ev-charging-infrastructure",
+    "page": "https://kernelcad.com/catalog/ev-charging-infrastructure/mobile-fast-charge-cart/",
+    "preview": "https://kernelcad.com/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "85369d64dafe4adbc1f472c5565260b77f067632661cce7a972392cf7aa69bd0",
+    "previewBytes": 23246
+  },
+  {
+    "id": "coiled-charging-cable-reel",
+    "kit": "ev-charging-infrastructure",
+    "page": "https://kernelcad.com/catalog/ev-charging-infrastructure/coiled-charging-cable-reel/",
+    "preview": "https://kernelcad.com/assets/ev-charging-infrastructure-coiled-charging-cable-reel.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "b506dcfb2f8e6cf8752e470ad321bef310fa98d5adc8b53690946e167e993b1a",
+    "previewBytes": 25057
+  }
+]

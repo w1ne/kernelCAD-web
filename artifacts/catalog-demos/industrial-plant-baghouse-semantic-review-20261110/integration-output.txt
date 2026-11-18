@@ -1,0 +1,26 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 1814ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  812ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 2370ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  1278ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 2925ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 3162ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1974ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 3302ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  1935ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 833ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  564ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 22931ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  633ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index  642ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  20075ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  556ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 511786ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  510391ms
+
+ Test Files  8 passed (8)
+      Tests  19 passed (19)
+   Start at  23:02:03
+   Duration  522.94s (transform 66.22s, setup 1.72s, import 92.99s, tests 549.12s, environment 1ms)

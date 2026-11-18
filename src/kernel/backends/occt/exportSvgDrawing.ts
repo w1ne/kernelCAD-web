@@ -30,9 +30,10 @@
 import { validateDrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import type { DrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import type { AnyShape } from 'replicad';
+import { optimalBoundsOf } from './backendBounds';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import type { ArchitecturalPlanOptions } from './drawingArchitectural';
-import { DRAWING_VIEW_NAMES as VIEW_NAMES, selectedDrawingLayout, validateDrawingViewSelection } from './drawingViewSelection';
+import { DRAWING_VIEW_NAMES as VIEW_NAMES, selectedDrawingLayout, singleOrthographicView, validateDrawingViewSelection, type OrthographicView } from './drawingViewSelection';
 import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
@@ -121,6 +122,10 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
   visualQa?: DrawingVisualQaOptions;
   /** Single front elevation, or the complete default four-view sheet. */
   views?: readonly DrawingViewName[];
+  /** Show hidden edges in orthographic views. Defaults to true. */
+  hiddenLines?: boolean;
+  /** Explicit paper-to-model scale ratio, such as 0.2 for 1:5. */
+  scale?: number;
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
   pdfSheet?: boolean;
   draftingProfile?: DraftingProfileId | DraftingProfile;
@@ -326,7 +331,7 @@ interface DrawingStageInput {
   styled: Record<DrawingViewName, StyledView>;
   viewBoxes: Record<DrawingViewName, ViewBox2>;
   projection: ProjectionAngle;
-  frontOnly: boolean;
+  singleView: OrthographicView | undefined;
   explodedShape: AnyShape | undefined;
   assembledCentroids: Map<string, [number, number, number]>;
   explodedCentroids: Map<string, [number, number, number]>;
@@ -351,17 +356,17 @@ interface DrawingPageCandidate {
 
 function scoreDrawingPage(ctx: DrawingStageInput, candidate: Omit<DrawingPageCandidate, 'score'>, checkText: boolean) {
   const { pass, page, s, sheetSize } = candidate;
-  const { options, frontOnly, styled, explodedShape, assembledCentroids, explodedCentroids,
+  const { options, singleView, styled, explodedShape, assembledCentroids, explodedCentroids,
     explodedParts, projection } = ctx;
   const placement = reviewSheetViewPlacement(pass.layout, page,
-    frontOnly ? ['front'] : VIEW_NAMES, pass.autoStage.generalTolerance !== undefined);
+    singleView ? [singleView] : VIEW_NAMES, pass.autoStage.generalTolerance !== undefined);
   let textIssueCount = 0;
   if (checkText) {
     const diagnostics: CompilerDiagnostic[] = [];
     const preview = buildSheetSvg({
       effSheet: page, usesHatchPattern: pass.sectionStage.usesHatchPattern,
       viewGroups: renderViewGroups(styled, pass.layout, pass.autoStage.bottomReserve, s,
-        explodedShape !== undefined, frontOnly ? ['front'] : VIEW_NAMES),
+        explodedShape !== undefined, singleView ? [singleView] : VIEW_NAMES),
       dimBodies: pass.autoStage.dimBodies, sectionsSvg: pass.sectionStage.svg,
       explodeSvg: renderExplodeOverlays({
         options, assembledCentroids, explodedCentroids, explodedParts,
@@ -384,10 +389,10 @@ function scoreDrawingPage(ctx: DrawingStageInput, candidate: Omit<DrawingPageCan
 
 function computeDrawingPage(ctx: DrawingStageInput,
   size: SvgDrawingOptions['sheet'], checkText: boolean): DrawingPageCandidate {
-  const { parts, options, dims, sectionSpecs, shape, styled, viewBoxes, projection, frontOnly } = ctx;
+  const { parts, options, dims, sectionSpecs, shape, styled, viewBoxes, projection, singleView } = ctx;
   const hasSections = sectionSpecs.length > 0;
   const { sheet, page, size: sheetSize } = resolveSheet({ ...options, sheet: size }, viewBoxes, projection, hasSections);
-  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection);
+  const gridLayout = selectedDrawingLayout(singleView, viewBoxes, sheet, projection, options.scale);
   const s = gridLayout.scale;
   const annotate = (layout: SheetLayout): DrawingPagePass => {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -444,7 +449,10 @@ export function renderSvgDrawing(
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
   options = applyDraftingProfile(options);
-  const frontOnly = validateDrawingViewSelection(options);
+  if (options.scale !== undefined && (!Number.isFinite(options.scale) || options.scale <= 0)) {
+    throw new Error('Drawing scale must be a finite positive paper-to-model ratio.');
+  }
+  const singleView = validateDrawingViewSelection(options);
   const reviewPlans = validateDrawingReviewOptions(options, options.declarations?.reviewPlans);
   options = { ...options, reviewPlans };
   const diagnosticsOut: CompilerDiagnostic[] = [];
@@ -454,14 +462,15 @@ export function renderSvgDrawing(
   const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape } =
     resolveDrawingBodies(parts, options);
 
-  const [bbMin, bbMax] = shape.boundingBox.bounds;
+  const bounds = optimalBoundsOf(shape.wrapped)
+    ?? new OcctBackend(shape as import('replicad').Shape3D).boundingBox();
   const dims = {
-    w: bbMax[0] - bbMin[0],
-    d: bbMax[1] - bbMin[1],
-    h: bbMax[2] - bbMin[2],
+    w: bounds.max[0] - bounds.min[0],
+    d: bounds.max[1] - bounds.min[1],
+    h: bounds.max[2] - bounds.min[2],
   };
 
-  const styled = projectSheetViews(shape, explodedShape);
+  const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false, singleView ? [singleView] : VIEW_NAMES);
   const viewBoxes = {
     front: styled.front.box,
     top: styled.top.box,
@@ -471,7 +480,7 @@ export function renderSvgDrawing(
   const projection = options.projection ?? 'third';
   const selection = selectDrawingPage({
     parts, options, dims, sectionSpecs: options.sections ?? [], shape, styled, viewBoxes,
-    projection, frontOnly, explodedShape, assembledCentroids, explodedCentroids, explodedParts,
+    projection, singleView, explodedShape, assembledCentroids, explodedCentroids, explodedParts,
   });
   const { pass, page, sheetSize, s, repairEnabled, initialSize, attempts } = selection;
   const resultScore = selection.score;
@@ -483,7 +492,7 @@ export function renderSvgDrawing(
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
   const generalTolerance = pass.autoStage.generalTolerance;
-  const visibleViews = frontOnly ? (['front'] as const) : VIEW_NAMES;
+  const visibleViews = singleView ? [singleView] : VIEW_NAMES;
   const sheetPlacement = reviewSheetViewPlacement(layout, effSheet, visibleViews, generalTolerance !== undefined);
   warnAboutSheetPlacement(sheetPlacement, diagnosticsOut);
   const report = pass.autoStage.report ?? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
@@ -550,14 +559,18 @@ export function renderSvgDrawing(
 function projectSheetViews(
   shape: AnyShape,
   explodedShape: AnyShape | undefined,
+  hiddenLines: boolean,
+  names: readonly DrawingViewName[],
 ): Record<DrawingViewName, StyledView> {
-  const styled = {} as Record<DrawingViewName, StyledView>;
+  // Downstream sheets keep four layout slots, even when only one is drawn.
+  const empty: StyledView = { visible: [], tangent: [], hidden: [], box: { x: 0, y: 0, w: 1, h: 1 } };
+  const styled = { front: empty, top: empty, left: empty, iso: empty };
   // One preparation serves every view of the assembled shape.
   const assembled = prepareShapeForDrawing(shape);
   try {
-    for (const name of VIEW_NAMES) {
+    for (const name of names) {
       const camera = makeDrawingCamera(name);
-      const options = { withHidden: name !== 'iso' };
+      const options = { withHidden: hiddenLines && name !== 'iso' };
       const raw = name === 'iso' && explodedShape !== undefined
         ? projectShapeForDrawing(explodedShape, camera, options)
         : assembled.project(camera, options);
@@ -590,7 +603,10 @@ function renderDimensionStage(
 } {
   if (options.annotations?.length) return renderAuthoredDimensionStage(parts, options, layout, s, diagnosticsOut);
   const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
-  const f = layout.views.front.box;
+  const singleView = singleOrthographicView(options.views);
+  const f = layout.views[singleView ?? 'front'].box;
+  const primaryWidth = singleView === 'left' ? dims.d : dims.w;
+  const primaryHeight = singleView === 'top' ? dims.d : dims.h;
   const t = layout.views.top.box;
   let dimBodies: string[];
   let bottomReserve: Record<DrawingViewName, number>;
@@ -604,11 +620,11 @@ function renderDimensionStage(
     // First-angle grid: the front view's free sides are above and left, the
     // top view's free vertical side is its right (see computeSheetLayout).
     const firstAngleDims: LinearDimension[] = [
-      { kind: 'horizontal', from: [f.x, f.y], to: [f.x + f.w, f.y], linePos: f.y - DIM_BASE, label: formatDimValue(dims.w) },
-      { kind: 'vertical', from: [f.x, f.y], to: [f.x, f.y + f.h], linePos: f.x - DIM_BASE, label: formatDimValue(dims.h) },
+      { kind: 'horizontal', from: [f.x, f.y], to: [f.x + f.w, f.y], linePos: f.y - DIM_BASE, label: formatDimValue(primaryWidth) },
+      { kind: 'vertical', from: [f.x, f.y], to: [f.x, f.y + f.h], linePos: f.x - DIM_BASE, label: formatDimValue(primaryHeight) },
       { kind: 'vertical', from: [t.x + t.w, t.y], to: [t.x + t.w, t.y + t.h], linePos: t.x + t.w + DIM_BASE, label: formatDimValue(dims.d) },
     ];
-    dimBodies = (options.views?.length === 1 ? firstAngleDims.slice(0, 2) : firstAngleDims).map(d => dimensionToSvg(d));
+    dimBodies = (singleView !== undefined ? firstAngleDims.slice(0, 2) : firstAngleDims).map(d => dimensionToSvg(d));
     bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else {
     const dimSpecs: LinearDimension[] = [
@@ -617,14 +633,14 @@ function renderDimensionStage(
         from: [f.x, f.y + f.h],
         to: [f.x + f.w, f.y + f.h],
         linePos: f.y + f.h + DIM_BASE,
-        label: formatDimValue(dims.w),
+        label: formatDimValue(primaryWidth),
       },
       {
         kind: 'vertical',
         from: [f.x + f.w, f.y],
         to: [f.x + f.w, f.y + f.h],
         linePos: f.x + f.w + DIM_BASE,
-        label: formatDimValue(dims.h),
+        label: formatDimValue(primaryHeight),
       },
       {
         kind: 'vertical',
@@ -634,9 +650,9 @@ function renderDimensionStage(
         label: formatDimValue(dims.d),
       },
     ];
-    dimBodies = (options.views?.length === 1 ? dimSpecs.slice(0, 2) : dimSpecs).map(d => dimensionToSvg(d));
-    // Only the front view carries a bottom-stacked (width) dimension.
-    bottomReserve = { front: DIM_BASE, top: 0, left: 0, iso: 0 };
+    dimBodies = (singleView !== undefined ? dimSpecs.slice(0, 2) : dimSpecs).map(d => dimensionToSvg(d));
+    bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
+    bottomReserve[singleView ?? 'front'] = DIM_BASE;
   }
 
   return { dimBodies, bottomReserve, rightReserve, report };
@@ -667,7 +683,7 @@ function renderAuthoredDimensionStage(parts: WorldFramePart[], options: SvgDrawi
   const ids = authoredAnnotationIds(original);
   const authored = original.map((a, i) => reviewedAuthoredAnnotation(a, ids[i], options));
   if (options.views && authored.some(a => !options.views!.includes(a.view ?? 'front'))) {
-    throw new Error('An authored annotation override targets a hidden view; use the front view for a front-only drawing.');
+    throw new Error('An authored annotation override targets a hidden view; select a visible view.');
   }
   const visible = authored.flatMap((a, i) => options.annotationOverrides?.[ids[i]]?.suppress ? [] : [{ a, i }]);
   const rendered = renderAnnotations({ parts, annotations: visible.map(({ a }) => a),

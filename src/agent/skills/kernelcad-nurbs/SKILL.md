@@ -204,7 +204,7 @@ const grip = s0.loft(s1, {
 
 ## G1/G2 fillet continuity (Slice C)
 
-`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default, tangent) and `'G2'` (curvature-continuous). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
+`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default, tangent) and `'G2'` (curvature-continuous). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary. The supported `opts` keys are `continuity` and `endRadius` (for a tapered fillet); any other key throws `feature.invalid-args` (e.g. `continuty` is not `continuity`).
 
 ```ts
 const panel = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
@@ -233,6 +233,8 @@ const brow = path()
 
 // .nurbsSegment(controlPoints, opts?) — explicit B-spline control polygon.
 // controlPoints[0] must match current pen position; opts.degree default 3.
+// Supported opts are degree, weights, and knots; unknown keys throw
+// feature.invalid-args at capture instead of silently dropping curve settings.
 const explicit = path()
   .moveTo(0, 0)
   .nurbsSegment([[0, 0], [5, 10], [15, 10], [20, 0]], { degree: 3 })
@@ -340,7 +342,7 @@ const profile = path()
   .close();
 ```
 
-The tangent magnitudes do not matter (normalised internally); only the directions. `[1, 0]` and `[100, 0]` produce the same curve.
+The tangent magnitudes do not matter (normalised internally); only the directions. `[1, 0]` and `[100, 0]` produce the same curve. The only accepted options are `tension`, `startTangent`, and `endTangent`; an unknown key such as `endTanget` throws `feature.invalid-args` at capture instead of silently dropping the endpoint constraint.
 
 ### Performance characteristics
 

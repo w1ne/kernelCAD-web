@@ -5,6 +5,8 @@ import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { TransmissionIntentRecord } from '../capture/assembly';
+import type { NumericPoses } from '../capture/forwardKinematics';
+import { scalarRestSi } from './mjcfRestPose';
 import { escapeXml, fmtNum, sanitizeJointName } from './mjcfXmlFormat';
 
 const MM_TO_M = 1e-3;
@@ -27,6 +29,7 @@ export class UnsupportedMjcfCouplingError extends Error {
 export function emitMateCouplingBlock(
   mates: readonly MateRecord[],
   couplings: readonly MateCouplingRecord[],
+  restPoses: NumericPoses = {},
 ): string[] {
   if (couplings.length === 0) return [];
   const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
@@ -48,12 +51,18 @@ export function emitMateCouplingBlock(
       );
     }
 
-    // MuJoCo equality joint uses qDriven - qDriven0 = a0 + a1 *
-    // (qSource - qSource0). Both emitted joints have qpos0 = 0.
+    // MuJoCo: (qDriven - qDriven0) = a0 + a1 (qSource - qSource0), with
+    // q0 taken from each joint's ref. The absolute relation we keep is
+    // qDriven = ratioSi * qSource + offsetSi. When both refs are 0, a0 is
+    // the offset. When the refs are the coupling-consistent authored pose,
+    // a0 is 0 and the offset lives in qpos0.
     const ratioSi = coupling.ratio * drivenCoordinate.toSi / sourceCoordinate.toSi;
     const offsetSi = (coupling.offset ?? 0) * drivenCoordinate.toSi;
+    const qSource0 = scalarRestSi(source, restPoses);
+    const qDriven0 = scalarRestSi(driven, restPoses);
+    const a0 = offsetSi - qDriven0 + ratioSi * qSource0;
     lines.push(
-      `    <joint name="${escapeXml(`kc-coupling-${coupling.driven}`)}" joint1="${escapeXml(sanitizeJointName(driven.name))}" joint2="${escapeXml(sanitizeJointName(source.name))}" polycoef="${fmtNum(offsetSi)} ${fmtNum(ratioSi)} 0 0 0" solref="0.001 1" solimp="0.9999 0.9999 0.001"/>`,
+      `    <joint name="${escapeXml(`kc-coupling-${coupling.driven}`)}" joint1="${escapeXml(sanitizeJointName(driven.name))}" joint2="${escapeXml(sanitizeJointName(source.name))}" polycoef="${fmtNum(a0)} ${fmtNum(ratioSi)} 0 0 0" solref="0.001 1" solimp="0.9999 0.9999 0.001"/>`,
     );
   }
   lines.push('  </equality>');

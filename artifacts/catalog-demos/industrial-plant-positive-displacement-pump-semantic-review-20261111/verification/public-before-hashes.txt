@@ -1,0 +1,11 @@
+Checked 2026-11-11; both responses were HTTP 200.
+
+Public source:
+https://kernelcad.com/assets/industrial-plant-positive-displacement-pump.kcad.ts
+sha256 c62f78bb4afaa190769854bdaec77fd2cbcc4f7e93b1ed91124a39346867792c
+local pre-edit source SHA-256 c62f78bb4afaa190769854bdaec77fd2cbcc4f7e93b1ed91124a39346867792c
+
+Public preview:
+https://kernelcad.com/assets/industrial-plant-positive-displacement-pump.png
+sha256 8ff3be7278b4d24754fac5975a590d823b18f3ce51d4fc11fa271f824ce1db89
+local pre-edit preview SHA-256 8ff3be7278b4d24754fac5975a590d823b18f3ce51d4fc11fa271f824ce1db89

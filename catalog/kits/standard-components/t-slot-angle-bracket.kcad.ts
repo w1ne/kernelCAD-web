@@ -34,8 +34,8 @@ a.part('horizontal-mount',base.color(aluminum));
 a.part('vertical-mount',upright.color(aluminum));
 // Each triangular web lies in a YZ plane and spans from the horizontal
 // foot to the upright. Keep it outside the mounting-hole columns.
-const web=extrudePolygon([[-18*s,5*s],[15*s,5*s],[15*s,35*s]],4*s)
+const web=()=>extrudePolygon([[-18*s,5*s],[15*s,5*s],[15*s,35*s]],4*s)
   .rotateX(90).rotateZ(90);
-a.part('web-a',web.translate(-24*s,0,0).color(steel));
-a.part('web-b',web.translate(20*s,0,0).color(steel));
+a.part('web-a',web().translate(-24*s,0,0).color(steel));
+a.part('web-b',web().translate(20*s,0,0).color(steel));
 return a.model();

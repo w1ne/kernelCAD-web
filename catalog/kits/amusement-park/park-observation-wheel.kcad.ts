@@ -34,7 +34,7 @@ const p = assembly("park-observation-wheel");
 
 const gondolaLower = path().moveTo(-175, -150).lineTo(175, -150).lineTo(175, 150).lineTo(-175, 150).close();
 const gondolaUpper = path().moveTo(-150, -130).lineTo(150, -130).lineTo(150, 130).lineTo(-150, 130).close();
-const gondolaBody = gondolaLower.loft(gondolaUpper, { spacing: 330, ruled: true });
+const gondolaBody = () => gondolaLower.loft(gondolaUpper, { spacing: 330, ruled: true });
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
   const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
@@ -85,16 +85,16 @@ B("gondola-hanger-6", [65, 70, 380], [0, -999.2349288972041, 2154.671109562589])
 B("gondola-hanger-7", [65, 70, 380], [0, -1616.796077701761, 3004.671109562589]);
 B("gondola-hanger-8", [65, 70, 380], [0, -1616.796077701761, 4055.3288904374103]);
 B("gondola-hanger-9", [65, 70, 380], [0, -999.2349288972047, 4905.32889043741]);
-place("gondola-0", gondolaBody, [0, 0.0, 4785.000000]);
-place("gondola-1", gondolaBody, [0, 999.2349288972043, 4460.328890]);
-place("gondola-2", gondolaBody, [0, 1616.796077701761, 3610.328890]);
-place("gondola-3", gondolaBody, [0, 1616.796077701761, 2559.671110]);
-place("gondola-4", gondolaBody, [0, 999.2349288972046, 1709.671110]);
-place("gondola-5", gondolaBody, [0, 2.0818995585505005e-13, 1385.000000]);
-place("gondola-6", gondolaBody, [0, -999.2349288972041, 1709.671110]);
-place("gondola-7", gondolaBody, [0, -1616.796077701761, 2559.671110]);
-place("gondola-8", gondolaBody, [0, -1616.796077701761, 3610.328890]);
-place("gondola-9", gondolaBody, [0, -999.2349288972047, 4460.328890]);
+place("gondola-0", gondolaBody(), [0, 0.0, 4785.000000]);
+place("gondola-1", gondolaBody(), [0, 999.2349288972043, 4460.328890]);
+place("gondola-2", gondolaBody(), [0, 1616.796077701761, 3610.328890]);
+place("gondola-3", gondolaBody(), [0, 1616.796077701761, 2559.671110]);
+place("gondola-4", gondolaBody(), [0, 999.2349288972046, 1709.671110]);
+place("gondola-5", gondolaBody(), [0, 2.0818995585505005e-13, 1385.000000]);
+place("gondola-6", gondolaBody(), [0, -999.2349288972041, 1709.671110]);
+place("gondola-7", gondolaBody(), [0, -1616.796077701761, 2559.671110]);
+place("gondola-8", gondolaBody(), [0, -1616.796077701761, 3610.328890]);
+place("gondola-9", gondolaBody(), [0, -999.2349288972047, 4460.328890]);
 
 place("wheel-rim", cylinder(115, 1880, 32).subtract(cylinder(117, 1760, 32).translate(0, 0, -1)).rotate([0, 1, 0], 90), [-57.5, 0, 3720]);
 

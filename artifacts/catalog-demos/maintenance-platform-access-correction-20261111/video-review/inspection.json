@@ -1,0 +1,10 @@
+{
+  "file": "../maintenance-platform-access-correction.mp4",
+  "format": "H.264, yuv420p, 512x512, 24 fps, 9 seconds",
+  "decodedFrames": [
+    { "timeSeconds": 1, "file": "frame-before.png", "inspection": "before caption readable; legacy preview visible" },
+    { "timeSeconds": 4, "file": "frame-after.png", "inspection": "after caption readable; stair, rails and deck visible" },
+    { "timeSeconds": 7, "file": "frame-alternate.png", "inspection": "alternate angle label readable; same model visible" }
+  ],
+  "result": "Three decoded representative frames were visually inspected after the final MP4 render."
+}

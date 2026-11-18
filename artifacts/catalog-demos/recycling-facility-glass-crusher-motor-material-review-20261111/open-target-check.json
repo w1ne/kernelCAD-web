@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-11-11",
+  "sampleAssetIds": [
+    "primary-shredder",
+    "glass-crusher",
+    "food-waste-depackager",
+    "eddy-current-separator",
+    "recycling-trommel-screen"
+  ],
+  "openIssueTitleOrBodyMatches": [],
+  "openPrTitleOrBodyMatches": [],
+  "openPrChangedSourcePathMatches": [],
+  "destinationPullRequest": {
+    "number": 1258,
+    "head": "20eef047461206ae733d0c2e7362903d83471c08",
+    "checksRun": "https://github.com/w1ne/kernelCAD-web/actions/runs/43078454085",
+    "successfulJobs": 17,
+    "failedJobs": 0,
+    "submittedReviews": 0,
+    "mergeableState": "dirty",
+    "sampleSourcePathsChanged": false
+  }
+}

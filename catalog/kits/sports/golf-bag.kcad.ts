@@ -19,16 +19,17 @@ const clubSteel = param('clubSteel', '#8b969a', { label: 'Club steel' });
 const strapWebbing = param('strapWebbing', '#c2b9a3', { label: 'Strap webbing' });
 presets({ clubColors: { nylonFabric: '#bd5e40', rimAluminium: '#aab4b5' } });
 const p = assembly('golf-bag');
-p.part('bag-body', cylinder(380, 65, 12).translate(0, 0, 0).scale(scale).color(nylonFabric));
-p.part('base', cylinder(24, 76, 12).translate(0, 0, 0).scale(scale).color(nylonFabric));
-p.part('rim', cylinder(14, 72, 12).translate(0, 0, 380).scale(scale).color(rimAluminium));
-p.part('club-a', cylinder(180, 5, 8).translate(-28, -15, 392).scale(scale).color(clubSteel));
-p.part('club-b', cylinder(195, 5, 8).translate(0, 0, 392).scale(scale).color(clubSteel));
-p.part('club-c', cylinder(170, 5, 8).translate(28, 15, 392).scale(scale).color(clubSteel));
-p.part('strap', box(14, 40, 260, true).translate(68, 0, 190).scale(scale).color(strapWebbing));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('bag-body', cylinder(380, 65, 12).translate(0, 0, 0).color(nylonFabric));
+add('base', cylinder(24, 76, 12).translate(0, 0, 0).color(nylonFabric));
+add('rim', cylinder(14, 72, 12).translate(0, 0, 380).color(rimAluminium));
+add('club-a', cylinder(180, 5, 8).translate(-28, -15, 392).color(clubSteel));
+add('club-b', cylinder(195, 5, 8).translate(0, 0, 392).color(clubSteel));
+add('club-c', cylinder(170, 5, 8).translate(28, 15, 392).color(clubSteel));
+add('strap', box(14, 40, 260, true).translate(68, 0, 190).color(strapWebbing));
 
 
 // Three low-profile clubs remain visible above the bag rim as distinct metal heads.
-for (let i = 0; i < 3; i++) p.part(`club-head-${i + 1}`, box(18, 10, 8, true).translate(-28 + i * 28, -15 + i * 15, 570 + i * 6).color(clubSteel));
+for (let i = 0; i < 3; i++) add(`club-head-${i + 1}`, box(18, 10, 8, true).translate(-28 + i * 28, -15 + i * 15, 570 + i * 6).color(clubSteel));
 
 return p.model();

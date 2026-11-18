@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/construction-equipment/ tests/integration/catalog/transitMixerWheelMaterial.test.ts
+Result: exit 0, no lint output.

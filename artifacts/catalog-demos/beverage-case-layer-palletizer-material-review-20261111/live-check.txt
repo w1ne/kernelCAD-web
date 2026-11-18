@@ -1,0 +1,4 @@
+Checked 11 November 2026 before the local correction.
+GET https://kernelcad.com/assets/beverage-bottling-line-case-layer-palletizer.png: succeeded; SHA-256 matches the checked-in before preview.
+GET https://kernelcad.com/assets/beverage-bottling-line-case-layer-palletizer.kcad.ts: succeeded; SHA-256 matches the checked-in before source.
+The local correction has not been deployed; the live asset remains at the before state.

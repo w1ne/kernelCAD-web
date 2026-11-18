@@ -218,6 +218,13 @@ export const ASSEMBLY_CODES = {
     description: 'A connector ref tracked by the pose envelope could not be resolved at a sampled pose.',
   },
   // Assembly validator — v0.6.2 limit-missing warning (1)
+  'assembly.mate.adhesive-contact': {
+    hintTemplate: 'Select opposing planar faces that share a positive contact area in the solved assembly.',
+    nextAction: { kind: 'fix-arg', field: 'adhesive' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'The declared adhesive interface could not be verified on the solved geometry.',
+  },
   'assembly.mate.limit-missing': {
     hintTemplate:
       "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",
@@ -270,6 +277,14 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'warn',
     group: 'assembly',
     description: 'A revolute mate has no joint-support / mechanical-joint intent declaring which parts carry it (advisory; geometric support is gated separately).',
+  },
+  'assembly.joint-topology.coupled-pose-conflict': {
+    hintTemplate:
+      "Remove the pose from the coupleMates driven mate so it follows its source, or set it to ratio × source + offset. Its own pose moves the model geometry, but solve_mates, review and physics check the coupled pose.",
+    nextAction: { kind: 'fix-arg', field: 'pose' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A coupleMates driven mate declares its own pose that differs from ratio × source + offset, so the rendered pose and the checked pose differ.',
   },
   'assembly.joint-topology.connector-missing': {
     hintTemplate:
@@ -359,6 +374,14 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
+  },
+  'assembly.joint.load-unverified': {
+    hintTemplate:
+      'This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared legacy joint load rating was not compared because a connector origin or load kind is unsupported.',
   },
   'assembly.joint.not-visible': {
     hintTemplate:

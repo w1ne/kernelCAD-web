@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-11",
+  "asset": "industrial-plant/bucket-elevator",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts bucket-elevator",
+  "catalogIndexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "testCommand": "npx vitest run tests/integration/catalog/bucketElevatorSemantic.test.ts",
+  "previewRenderer": "scripts/lib/glbSoftwareRender.ts",
+  "defaultTriangleCount": 780,
+  "triangleBudget": 1400,
+  "video": {
+    "file": "demo.mp4",
+    "resolution": "720x640",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "codec": "H.264 / yuv420p",
+    "scenes": [
+      "Before: six bucket blocks protrude outside the opaque casing",
+      "After: six bucket cups sit inside the casing and show through the inspection opening"
+    ]
+  },
+  "provenance": "Local source software-rendered catalog previews and exported-GLB geometry test; branch not deployed; physical acceptance not assessed"
+}

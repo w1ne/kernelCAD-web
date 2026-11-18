@@ -1,0 +1,23 @@
+$ npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/pipe-reducer.kcad.ts
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/pipe-reducer.kcad.ts
+(node:1910620) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"pipe-reducer","triangles":474,"budget":620,"sizeM":[0.044,0.042,0.044],"minUpM":0,"materials":1,"knobs":["size:choice","reduction:choice","barrel:color","collars:color","gasket:color"],"palette":["barrel=#3f6e8c","collars=#c5ccd0","gasket=#c95836"]}
+exit=0
+
+$ npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/retaining-ring.kcad.ts
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/retaining-ring.kcad.ts
+(node:1911005) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"retaining-ring","triangles":228,"budget":420,"sizeM":[0.039899,0.003,0.043475],"minUpM":0,"materials":1,"knobs":["size:choice","gap:choice","springSteel:color","stainless:color"],"palette":["springSteel=#4f6874","stainless=#cbd3d7"]}
+exit=0
+
+$ npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/tubular-spacer.kcad.ts
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/tubular-spacer.kcad.ts
+(node:1911392) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"tubular-spacer","triangles":432,"budget":520,"sizeM":[0.0307,0.036,0.0307],"minUpM":0,"materials":1,"knobs":["size:choice","length:choice","steel:color","polymer:color","endRims:color"],"palette":["steel=#426a83","polymer=#e46b3c","endRims=#cbd1d5"]}
+exit=0

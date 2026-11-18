@@ -36,8 +36,8 @@ const p = assembly('combine-harvester');
 const groundOffset = 0;
 const add = (name, shape, finish = paintedSteelColor) => p.part(name, shape.translate(0, 0, -groundOffset).scale(scale).color(finish));
 add('combine-chassis', box(1900, 1911, 210, true).translate(0, 0, 465), paintedSteelColor);
-add('engine-compartment', box(1102, 1837.5, 1364, true).translate(-380, 0, 2480), paintedSteelColor);
-add('grain-body', slopedPrism(1064, 1739.5, 1085).translate(-323, 147, 3022.5), paintedSteelColor);
+add('engine-compartment', box(1102, 1837.5, 1364, true).translate(-380, 0, 1252), paintedSteelColor);
+add('grain-body', slopedPrism(1064, 1739.5, 1085).translate(-323, 147, 1794.5), paintedSteelColor);
 add('drive-tire--1', cylinder(125, 350, 12).rotate([0, 1, 0], 90).translate(-594.5, -1053.5, 350), rubberColor);
 add('drive-tire--1-hub', cylinder(137.5, 119, 10).translate(-600.75, -1053.5, 350), steelColor);
 add('steer-tire--1', cylinder(100, 220, 12).rotate([0, 1, 0], 90).translate(615, -1078, 220), rubberColor);
@@ -46,10 +46,10 @@ add('drive-tire-1', cylinder(125, 350, 12).rotate([0, 1, 0], 90).translate(-594.
 add('drive-tire-1-hub', cylinder(137.5, 119, 10).translate(-600.75, 1053.5, 350), steelColor);
 add('steer-tire-1', cylinder(100, 220, 12).rotate([0, 1, 0], 90).translate(615, 1078, 220), rubberColor);
 add('steer-tire-1-hub', cylinder(110, 74.8, 10).translate(610, 1078, 220), steelColor);
-add('cab', box(570, 1127, 1550, true).translate(456, -294, 2945), paintedSteelColor);
-add('cab-roof', box(665, 1274, 55, true).translate(456, -294, 3003.5), paintedSteelColor);
-add('header-feeder', box(475, 1592.5, 190, true).translate(1026, 0, 963), paintedSteelColor);
-add('unloading-auger', box(1577, 65, 65, true).translate(-133, 1323, 2450.5), steelColor);
-add('auger-discharge', box(120, 72, 145, true).translate(627, 1323, 2769.5), steelColor);
+add('cab', box(570, 1127, 1550, true).translate(456, -294, 1345), paintedSteelColor);
+add('cab-roof', box(665, 1274, 55, true).translate(456, -294, 2147.5), paintedSteelColor);
+add('header-feeder', box(475, 1592.5, 190, true).translate(1026, 0, 455), paintedSteelColor);
+add('unloading-auger', box(1577, 65, 65, true).translate(-133, 950, 1750), steelColor);
+add('auger-discharge', box(120, 72, 145, true).translate(627, 950, 1650), steelColor);
 
 return p.model();

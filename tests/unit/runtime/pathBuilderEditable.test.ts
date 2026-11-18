@@ -11,7 +11,6 @@
 //   3. Parametric reactivity: editing the param via session.params.update
 //      changes the lowered shape's volume.
 //
-// Spec: kernelCAD-private/docs/specs/2026-05-08-revolverect-demotion-and-pathbuilder-editable-design.md
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';

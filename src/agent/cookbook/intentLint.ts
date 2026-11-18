@@ -65,7 +65,7 @@ const LIB_PART = /\blib\.\w+/;
 const FASTENER_R_MIN = 0.7;
 const FASTENER_R_MAX = 7.5;
 
-const GEAR_API = /\b(?:spurGear|ringGear|internalSpurGear|internalGear)\s*\(/;
+const GEAR_API = /\b(?:spurGearPair|spurGear|ringGear|internalSpurGear|internalGear)\s*\(/;
 const GEAR_WORDS = /\bgears?\b|\binvolute\b|\bgear[- ]?module\b|\bmodule(?:Mm)?\s*[:=]\s*\d/i;
 const TEETH = /\bteeth\b/i;
 /** Pulleys, combs, saws and knurls have teeth too; spurGear is not their API. */

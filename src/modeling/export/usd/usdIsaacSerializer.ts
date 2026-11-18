@@ -43,10 +43,14 @@
 // its DOF count (planar / cylindrical / pin_slot / ball) raises
 // export.usd.joint-unsupported, and a link with non-finite / non-positive
 // mass raises export.usd.mass-missing. A physics stage silently missing a DOF
-// or a mass is worse than a refused export.
+// or a mass is worse than a refused export. A `coupleMates` coupling is not
+// authored by this serializer; it raises export.usd.coupling-dropped (warn),
+// because the stage itself is still valid. Backend-specific mimic APIs are
+// intentionally outside this generic usd-isaac export contract.
 
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import type { MateRecord } from '../../mates/mate';
+import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
@@ -779,6 +783,11 @@ export async function usdIsaacSerialize(
   }
 
   const jointBlocks = buildJointBlocks(legacyJoints, mates, parts, poses, opts, rootPath, linkName, jointName);
+  // This serializer does not author coupled-joint relations, so warn when a
+  // coupled mate ships as an independent joint instead of dropping it silently.
+  for (const coupling of arm.__mateCouplings()) {
+    diagnostics.push(couplingDropped(coupling));
+  }
 
   const usda = assembleUsda(rootName, linkBlocks, jointBlocks, materialBlocks);
 
@@ -821,6 +830,18 @@ function poseUnsolved(reason: string): CompilerDiagnostic {
     message: `Could not solve the mate graph to per-link poses (${reason}); every link was placed at the stage origin.`,
     hint: 'The simulator will spawn overlapping links and the joints will snap them apart. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
     nextAction: NEXT_ACTIONS['export.usd.pose-unsolved'],
+  };
+}
+
+function couplingDropped(coupling: MateCouplingRecord): CompilerDiagnostic {
+  const offset = coupling.offset ? ` + ${coupling.offset}` : '';
+  return {
+    target: 'export-occt',
+    code: 'export.usd.coupling-dropped',
+    severity: 'warn',
+    message: `Mate '${coupling.driven}' is coupled to '${coupling.source}' (${coupling.driven} = ${coupling.ratio} * ${coupling.source}${offset}, authored units), but the usd-isaac serializer does not author a coupling API; '${coupling.driven}' was emitted as an independent joint.`,
+    hint: 'The emitted stage will not enforce this coupling. This serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
+    nextAction: NEXT_ACTIONS['export.usd.coupling-dropped'],
   };
 }
 

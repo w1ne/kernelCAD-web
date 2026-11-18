@@ -85,7 +85,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'spurGearPair', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
@@ -158,14 +158,14 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'cfdStudy', 'tube', 'tubeSpec',
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'cfdStudy', 'flightStudy', 'tube', 'tubeSpec',
       'require', 'clearance', 'distance', 'mass', 'volume', 'centerOfMass', 'count', 'innerLoops',
       'angle', 'concentric', 'coplanar'],
   },
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'meta', 'presets', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
+    names: ['param', 'params', 'meta', 'presets', 'configurations', 'definePart', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

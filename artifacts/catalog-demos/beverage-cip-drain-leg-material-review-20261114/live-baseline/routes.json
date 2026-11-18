@@ -1,0 +1,52 @@
+[
+  {
+    "id": "cip-valve-manifold",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/cip-valve-manifold/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-cip-valve-manifold.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "b8fe3975db06af0cd23959f4bce6fd32c194929596e6f13e23472af01eb6f3c9",
+    "previewBytes": 24052
+  },
+  {
+    "id": "carbonation-vessel",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/carbonation-vessel/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-carbonation-vessel.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "994d1d2e63aa288bccd465df0f95ed89af64577a877cfeba6603a479b7691ae6",
+    "previewBytes": 44312
+  },
+  {
+    "id": "sleeve-shrink-tunnel",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/sleeve-shrink-tunnel/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-sleeve-shrink-tunnel.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "4997d74d62454d8b7112e4bbf335dadf57a2452ebe1a9a9e1ac3d9659be3e22f",
+    "previewBytes": 26145
+  },
+  {
+    "id": "case-taper",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/case-taper/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-case-taper.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "842bfd801346abe5f61505fb9111f88443f9c648de6ff3414124688de6dc835c",
+    "previewBytes": 28277
+  },
+  {
+    "id": "preform-elevator",
+    "kit": "beverage-bottling-line",
+    "page": "https://kernelcad.com/catalog/beverage-bottling-line/preform-elevator/",
+    "preview": "https://kernelcad.com/assets/beverage-bottling-line-preform-elevator.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "4bf918e59606ecaea7d9e092777e84feac8e7b27f076f08fd30a364dfc109cf1",
+    "previewBytes": 20116
+  }
+]

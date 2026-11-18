@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-09",
+  "scope": "in-place geometry and material refinement for five existing standard-components assets; no new asset IDs",
+  "baselineCommit": "f63ab5697",
+  "sources": [
+    "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
+    "catalog/kits/standard-components/blind-flange.kcad.ts",
+    "catalog/kits/standard-components/pipe-coupling.kcad.ts",
+    "catalog/kits/standard-components/pipe-flange.kcad.ts",
+    "catalog/kits/standard-components/rubber-bumper.kcad.ts"
+  ],
+  "catalogPreviewRenderer": "scripts/renderCatalogPreviews.ts; deterministic low-poly software-rendered three-quarter defaults",
+  "previewAssetIDs": [
+    "angle-bracket", "base-mounting-plate", "beam-coupling", "blind-flange", "bulkhead-adapter",
+    "cable-clamp", "cable-gland", "caster-wheel", "clevis-pin", "din-rail", "din-rail-end-stop",
+    "din-rail-terminal-block", "door-hinge", "drawer-slide-channel", "flange-bearing-housing",
+    "flat-joining-plate", "gusset-bracket", "handle-pull", "handwheel", "hose-barb-adapter", "jaw-coupling",
+    "knurled-knob", "leveling-foot", "linear-guide-carriage", "linear-guide-rail", "panel-clamp", "piano-hinge",
+    "pillow-block-housing", "pipe-coupling", "pipe-elbow-45", "pipe-elbow-90", "pipe-flange", "pipe-reducer",
+    "pipe-saddle-clamp", "pipe-tee", "pipe-union", "retaining-ring", "rubber-bumper", "shaft-collar",
+    "shaft-coupling", "shim-pack", "split-shaft-collar", "square-mounting-flange", "t-slot-angle-bracket",
+    "t-slot-end-cap", "timing-belt-pulley", "tube-clamp", "tubular-spacer", "u-bracket", "v-belt-pulley"
+  ],
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts <all previewAssetIDs above>",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/standard-components-installation-quality-20261109/render_variants.ts",
+  "variantRenderer": "runAndExport(format=glb, lowpoly maxTriangles=source triangleBudget) + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    { "id": "plate-four-open", "asset": "base-mounting-plate", "choices": { "holePattern": "4-corner", "fasteners": "open" } },
+    { "id": "plate-eight-installed", "asset": "base-mounting-plate", "choices": { "holePattern": "8-perimeter", "fasteners": "installed" }, "preset": "galvanized" },
+    { "id": "blind-four-open", "asset": "blind-flange", "choices": { "boltCount": "4", "fasteners": "open" } },
+    { "id": "blind-eight-installed", "asset": "blind-flange", "choices": { "boltCount": "8", "fasteners": "installed" }, "preset": "clean" },
+    { "id": "coupling-two-seals", "asset": "pipe-coupling", "choices": { "sealConfiguration": "two-seals" } },
+    { "id": "coupling-bare-clean-service", "asset": "pipe-coupling", "choices": { "sealConfiguration": "bare-sleeve" }, "preset": "cleanService" },
+    { "id": "flange-four-open", "asset": "pipe-flange", "choices": { "boltCount": "4", "fasteners": "open" } },
+    { "id": "flange-eight-installed", "asset": "pipe-flange", "choices": { "boltCount": "8", "fasteners": "installed" }, "preset": "clean" },
+    { "id": "bumper-male-stud", "asset": "rubber-bumper", "choices": { "mounting": "male-stud" } },
+    { "id": "bumper-threaded-insert", "asset": "rubber-bumper", "choices": { "mounting": "threaded-insert" }, "preset": "clean" }
+  ],
+  "kitQualityInvocation": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+  "globalQualityInvocation": "python3 scripts/checkCatalogQuality.py",
+  "lintInvocation": "npx eslint catalog/kits/standard-components/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "pageInvocation": "npm run catalog:pages",
+  "caption": "Local source models, software-rendered catalog previews, generated index and local verification only. Not deployed; no manufacturing or physical acceptance is claimed.",
+  "privateComparison": "/home/andrii/worktrees-legacy-20261109/kernelCAD-private/catalog-standard-components-parametric-installation-20261109/COMPARISON.md"
+}

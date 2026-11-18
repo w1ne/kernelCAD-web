@@ -74,7 +74,7 @@ return section(20, 14).loft([section(46, 30), section(30, 20)], { spacing: 55 })
     expect(viewerDimensionsForRoot({ records: [], rootShape: exploding }, { auto: false })).toEqual({ dimensions: [], diagnostics: [] });
     const r = viewerDimensionsForRoot({ records: [], rootShape: exploding });
     expect(r.dimensions).toEqual([]);
-    expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
+    expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.failed']);
     expect(r.diagnostics[0].message).toContain('scene exploded');
   });
 

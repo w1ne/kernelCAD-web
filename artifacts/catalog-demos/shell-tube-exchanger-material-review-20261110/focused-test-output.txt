@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 486ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:12:32
+   Duration  7.78s (transform 5.61s, setup 170ms, import 6.92s, tests 486ms, environment 0ms)
+

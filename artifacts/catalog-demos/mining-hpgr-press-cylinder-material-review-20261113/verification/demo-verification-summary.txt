@@ -1,0 +1,6 @@
+Focused GLB material test: passes new source, fails old source
+ESLint catalog/kits/mining + test: clean
+Catalog integration: 66 files / 111 tests passed
+Quality gate: mining 50/50; catalog 2,400/2,402 (99.92%)
+Index: regenerated; only the HPGR row changed
+Triangles: 5,142 before and after (budget 5,800)

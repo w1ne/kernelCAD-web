@@ -53,8 +53,10 @@ p.part("rail-left", b(-440,0,1275,45,500,45).color(structuralSteel));
 p.part("rail-right", b(440,0,1275,45,500,45).color(structuralSteel));
 p.part("leg-left", b(-380,180,0,55,55,760).color(structuralSteel));
 p.part("leg-right", b(380,180,0,55,55,760).color(structuralSteel));
-p.part("step-a", b(0,-450,220,390,130,60).color(paintedSteel));
-p.part("step-b", b(0,-450,400,390,130,60).color(paintedSteel));
-p.part("step-c", b(0,-450,580,390,130,60).color(paintedSteel));
+p.part("stringer-left", b(-195,-360,0,40,140,760).color(structuralSteel));
+p.part("stringer-right", b(195,-360,0,40,140,760).color(structuralSteel));
+p.part("step-a", b(0,-365,220,390,130,60).color(paintedSteel));
+p.part("step-b", b(0,-365,400,390,130,60).color(paintedSteel));
+p.part("step-c", b(0,-365,580,390,130,60).color(paintedSteel));
 
 return p.model();

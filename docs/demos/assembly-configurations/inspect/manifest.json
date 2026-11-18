@@ -1,0 +1,48 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/Volumes/LabWired/kc-work/kcw-wb-asm-config/examples/assemblies/configured-bearing-blocks.kcad.ts",
+  "generatedAt": "2026-11-17T11:16:18.142Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "views": [
+    "iso"
+  ],
+  "bounds": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      400,
+      100,
+      30
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "iso"
+    ],
+    "screenshotTimeoutMs": 60000
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "iso": "channels/rgb/iso.png"
+    }
+  }
+}

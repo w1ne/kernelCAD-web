@@ -1,7 +1,5 @@
 // Physics-loop example-sweep gate — FAST structural classification checks only.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P3)
-// Plan:  docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md (Task 5)
 //
 // This file keeps only the FAST structural classification checks (no validate):
 //   - every discovered example is classified into exactly one bucket

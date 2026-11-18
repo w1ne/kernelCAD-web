@@ -1,0 +1,231 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-guide-retention-details-20261110/render_variants.ts",
+  "renderer": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget) + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "checks": {
+    "adapterLargeToStandardWidthRatio": 1.2499999999999998,
+    "carriagePositionChangesRenderedGeometry": true,
+    "retentionChoiceChangesRenderedGeometry": true,
+    "namedPresetHashesDifferFromDefault": true
+  },
+  "sources": [
+    {
+      "asset": "bulkhead-adapter",
+      "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5"
+    },
+    {
+      "asset": "linear-guide-rail",
+      "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5"
+    },
+    {
+      "asset": "shaft-coupling",
+      "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845"
+    }
+  ],
+  "renders": [
+    {
+      "id": "adapter-default",
+      "asset": "bulkhead-adapter",
+      "choices": {
+        "size": "standard"
+      },
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.042,
+          0.0365,
+          0.042
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "49f5de4c6ddf6427e3c51309e2b9a95cc1472c85b91a2b4a1d8fe65864194d4a",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5"
+    },
+    {
+      "id": "adapter-brass",
+      "asset": "bulkhead-adapter",
+      "preset": "brass",
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.042,
+          0.0365,
+          0.042
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "607b67f9fef7a237083df3b1c217d32e6347dc3b4ca82ab3eaed7943ce3b44e2",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5"
+    },
+    {
+      "id": "adapter-large",
+      "asset": "bulkhead-adapter",
+      "choices": {
+        "size": "large"
+      },
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.0525,
+          0.045625,
+          0.0525
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "244ae1fd7bbe45be1ca688b666b94ba24c45cd853333f3f4314aa07b52230db5",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5"
+    },
+    {
+      "id": "guide-center",
+      "asset": "linear-guide-rail",
+      "choices": {
+        "size": "standard",
+        "carriagePosition": "center"
+      },
+      "stats": {
+        "triangles": 540,
+        "sizeM": [
+          0.12,
+          0.028,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 7,
+        "parts": 7,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "4ee76603b6ad023f10b9d79fba8b7e9ed183fca4d3d9deb033e77928ff67c002",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5"
+    },
+    {
+      "id": "guide-right",
+      "asset": "linear-guide-rail",
+      "choices": {
+        "carriagePosition": "right"
+      },
+      "stats": {
+        "triangles": 540,
+        "sizeM": [
+          0.12,
+          0.028,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 7,
+        "parts": 7,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "9d4c607e11258f30c362a5731c1fdf21c76985b294f4bb98b77325cf3de0daff",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5"
+    },
+    {
+      "id": "guide-high-visibility",
+      "asset": "linear-guide-rail",
+      "preset": "highVisibility",
+      "stats": {
+        "triangles": 540,
+        "sizeM": [
+          0.12,
+          0.028,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 7,
+        "parts": 7,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "4a8b1711ed1aaf0402ab407c4120c516b6b94de82123f8f4c4fc5720516bf620",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5"
+    },
+    {
+      "id": "coupling-set-screws",
+      "asset": "shaft-coupling",
+      "choices": {
+        "retention": "setScrews"
+      },
+      "stats": {
+        "triangles": 536,
+        "sizeM": [
+          0.038,
+          0.038,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "a0efae0973b5849dcff8f056268963086614b076fcd973e77b9db93a5de33593",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845"
+    },
+    {
+      "id": "coupling-split-clamp",
+      "asset": "shaft-coupling",
+      "choices": {
+        "retention": "splitClamp"
+      },
+      "stats": {
+        "triangles": 472,
+        "sizeM": [
+          0.038,
+          0.038,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 7,
+        "parts": 7,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "c71bb8ee618b3320488d1d82657e4f5d4b23bad9909e925d3d26c1b7fd037476",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845"
+    },
+    {
+      "id": "coupling-weathered",
+      "asset": "shaft-coupling",
+      "preset": "weathered",
+      "stats": {
+        "triangles": 536,
+        "sizeM": [
+          0.038,
+          0.038,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 5,
+        "parts": 5,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "2fe526dbd968da449691a3e5e8064f21ecc8ab28e5339654c4710b37c74fd2a2",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845"
+    }
+  ]
+}

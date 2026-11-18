@@ -44,3 +44,10 @@ import, simulation or hardware acceptance.
 All 12 assets are original kernelCAD source dedicated to the public domain
 under CC0 1.0. Their geometry is modeled from common object knowledge; no
 downloaded, traced or converted meshes, textures or palettes are used.
+
+## Later rebuild
+
+On 2026-11-07 all 12 sources were rebuilt with more detailed geometry,
+material-named colour knobs and presets. The recording, preview sheet and
+`verification.json` in this folder show the original release. Their knob
+names, triangle counts and GLB hashes are older than the current sources.

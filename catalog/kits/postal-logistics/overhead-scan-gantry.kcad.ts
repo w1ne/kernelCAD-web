@@ -44,16 +44,17 @@ const b = (x:number,y:number,z:number,w:number,d:number,h:number) => bevelled(w,
 
 const p = assembly("overhead-scan-gantry");
 p.part("base-bed", b(0,0,650,720,980,65).color(structuralSteel));
-p.part("post-left", b(-330,-160,0,50,50,650).color(structuralSteel));
-p.part("post-right", b(330,-160,0,50,50,650).color(structuralSteel));
-p.part("post-left-back", b(-330,160,0,50,50,650).color(structuralSteel));
-p.part("post-right-back", b(330,160,0,50,50,650).color(structuralSteel));
-p.part("gantry-front", b(0,-160,620,720,60,70).color(paintedSteel));
-p.part("gantry-back", b(0,160,620,720,60,70).color(paintedSteel));
+p.part("post-left", b(-330,-400,0,50,50,650).color(structuralSteel));
+p.part("post-right", b(330,-400,0,50,50,650).color(structuralSteel));
+p.part("post-left-back", b(-330,400,0,50,50,650).color(structuralSteel));
+p.part("post-right-back", b(330,400,0,50,50,650).color(structuralSteel));
+p.part("gantry-front", b(-330,0,715,50,60,730).color(paintedSteel));
+p.part("gantry-back", b(330,0,715,50,60,730).color(paintedSteel));
+p.part("gantry-beam", b(0,0,1385,710,80,60).color(paintedSteel));
 p.part("camera-a", b(-155,0,1260,170,170,125).color(instrumentGlass));
 p.part("camera-b", b(155,0,1260,170,170,125).color(instrumentGlass));
 p.part("side-camera-left", b(-290,0,930,55,130,150).color(instrumentGlass));
 p.part("side-camera-right", b(290,0,930,55,130,150).color(instrumentGlass));
-p.part("status-box", b(390,0,430,100,150,190).color(paintedSteel));
+p.part("status-box", b(410,0,0,100,150,650).color(paintedSteel));
 
 return p.model();

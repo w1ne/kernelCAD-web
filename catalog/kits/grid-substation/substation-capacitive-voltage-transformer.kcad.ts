@@ -3,7 +3,7 @@ meta({
   name: "substation-capacitive-voltage-transformer",
   license: "CC0-1.0",
   title: "Capacitive voltage transformer",
-  description: "Capacitive voltage transformer with stacked divider sections and an upper terminal. Material controls: stainless steel, powder-coated steel; finish presets: weathered and maintenance.",
+  description: "Capacitive voltage transformer with a porcelain-insulated divider stack, stainless-steel base, and powder-coated secondary box. Material controls: porcelain, stainless steel, powder-coated steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "primary switching equipment"],
   kit: "grid-substation",
   category: "prop",
@@ -15,9 +15,10 @@ meta({
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
 const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#526f68', { label: 'Powder-coated steel' });
+const porcelain = param('porcelain', '#7b4632', { label: 'Porcelain insulation' });
 presets({
-  weathered: { stainlessSteel: '#9da4a0', powderCoat: '#586b63' },
-  maintenance: { powderCoat: '#cf7736' },
+  weathered: { stainlessSteel: '#9da4a0', powderCoat: '#586b63', porcelain: '#684537' },
+  maintenance: { powderCoat: '#cf7736', porcelain: '#7b4632' },
 });
 const p = assembly("substation-capacitive-voltage-transformer");
 
@@ -46,10 +47,10 @@ const beveledPlate = (width: number, depth: number, thickness: number, cut: numb
 
 p.part("base-plate", beveledPlate(1250, 950, 180, 57).translate(0, 0, 0).scale(scale).color(stainlessSteel));
 p.part("pedestal", taperedColumn(1276, 175, 10).translate(0, 0, 180).scale(scale).color(stainlessSteel));
-p.part("divider-section-1", cylinder(348, 425, 10).translate(0, 0, 1276).scale(scale).color(powderCoat));
-p.part("divider-section-2", cylinder(348, 381.25, 10).translate(0, 0, 1653).scale(scale).color(powderCoat));
-p.part("divider-section-3", cylinder(348, 337.50, 10).translate(0, 0, 2030).scale(scale).color(powderCoat));
-p.part("divider-section-4", cylinder(348, 293.75, 10).translate(0, 0, 2407).scale(scale).color(powderCoat));
+p.part("divider-section-1", cylinder(348, 425, 10).translate(0, 0, 1276).scale(scale).color(porcelain));
+p.part("divider-section-2", cylinder(348, 381.25, 10).translate(0, 0, 1653).scale(scale).color(porcelain));
+p.part("divider-section-3", cylinder(348, 337.50, 10).translate(0, 0, 2030).scale(scale).color(porcelain));
+p.part("divider-section-4", cylinder(348, 293.75, 10).translate(0, 0, 2407).scale(scale).color(porcelain));
 p.part("secondary-box", box(525, 361, 464, true).translate(300, 213.75, 580).scale(scale).color(powderCoat));
 
 return p.model();

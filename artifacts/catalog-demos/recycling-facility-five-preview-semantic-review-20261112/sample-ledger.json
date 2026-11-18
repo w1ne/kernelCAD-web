@@ -1,0 +1,117 @@
+[
+  {
+    "id": "twin-shaft-shredder",
+    "kit": "recycling-facility",
+    "title": "Twin-shaft shredder",
+    "source": "catalog/kits/recycling-facility/twin-shaft-shredder.kcad.ts",
+    "preview": "/assets/recycling-facility-twin-shaft-shredder.png",
+    "triangles": 6112,
+    "triangleBudget": 7000,
+    "sizeM": [
+      4.18,
+      2.45,
+      2.24
+    ],
+    "localSourceSha256": "6b7d377dbd818a14887d4eee6f1d028a2ee9aac1d3b6e268139bed8e240299ca",
+    "indexSourceSha256": "6b7d377dbd818a14887d4eee6f1d028a2ee9aac1d3b6e268139bed8e240299ca",
+    "localPreviewSha256": "a2ad0b921aa7db84004d3779e6db74a19bc1f389003613d9cdd06733a341d548",
+    "liveSourceSha256": "6b7d377dbd818a14887d4eee6f1d028a2ee9aac1d3b6e268139bed8e240299ca",
+    "livePreviewSha256": "a2ad0b921aa7db84004d3779e6db74a19bc1f389003613d9cdd06733a341d548",
+    "localSourceMatchesIndex": true,
+    "localPreviewMatchesLive": true,
+    "liveSourceMatchesLocal": true,
+    "result": "No confirmed material mismatch in the rendered branch preview."
+  },
+  {
+    "id": "optical-sorter-arch",
+    "kit": "recycling-facility",
+    "title": "Optical sorter arch",
+    "source": "catalog/kits/recycling-facility/optical-sorter-arch.kcad.ts",
+    "preview": "/assets/recycling-facility-optical-sorter-arch.png",
+    "triangles": 1420,
+    "triangleBudget": 3600,
+    "sizeM": [
+      2.82,
+      2.89,
+      7.03
+    ],
+    "localSourceSha256": "5bdfe8327e187d66b1fda9fd3f32093a3a71061d3c412338d9ffb5c7b74594ae",
+    "indexSourceSha256": "5bdfe8327e187d66b1fda9fd3f32093a3a71061d3c412338d9ffb5c7b74594ae",
+    "localPreviewSha256": "703cbadeebaf3f7bf03db86e48ea21e5c6ad44400934352d83dff26031e9068e",
+    "liveSourceSha256": "686db344b31f43f78dc11819b6707b1890483f2e74a199f867e3cf1c3a0eb96a",
+    "livePreviewSha256": "7c144265e41b8b79048546d50c47d0aa956843687db21cffa605a7dcffc0fad0",
+    "localSourceMatchesIndex": true,
+    "localPreviewMatchesLive": false,
+    "liveSourceMatchesLocal": false,
+    "result": "No confirmed material mismatch in the rendered branch preview."
+  },
+  {
+    "id": "overband-magnet-separator",
+    "kit": "recycling-facility",
+    "title": "Overband magnet separator",
+    "source": "catalog/kits/recycling-facility/overband-magnet-separator.kcad.ts",
+    "preview": "/assets/recycling-facility-overband-magnet-separator.png",
+    "triangles": 3536,
+    "triangleBudget": 4500,
+    "sizeM": [
+      6.54,
+      3.88,
+      7.6
+    ],
+    "localSourceSha256": "9b5d3910890468918367650c7e16f701b917b65c936ed6a1ab629f898b32b6eb",
+    "indexSourceSha256": "9b5d3910890468918367650c7e16f701b917b65c936ed6a1ab629f898b32b6eb",
+    "localPreviewSha256": "68e821915bb31a1eb3b16b2f930e72dea545f7a268a8179b646c0e60f2756278",
+    "liveSourceSha256": "9b5d3910890468918367650c7e16f701b917b65c936ed6a1ab629f898b32b6eb",
+    "livePreviewSha256": "68e821915bb31a1eb3b16b2f930e72dea545f7a268a8179b646c0e60f2756278",
+    "localSourceMatchesIndex": true,
+    "localPreviewMatchesLive": true,
+    "liveSourceMatchesLocal": true,
+    "result": "No confirmed material mismatch in the rendered branch preview."
+  },
+  {
+    "id": "glass-washer-trommel",
+    "kit": "recycling-facility",
+    "title": "Glass washer trommel",
+    "source": "catalog/kits/recycling-facility/glass-washer-trommel.kcad.ts",
+    "preview": "/assets/recycling-facility-glass-washer-trommel.png",
+    "triangles": 3122,
+    "triangleBudget": 3800,
+    "sizeM": [
+      8.45,
+      3,
+      2.33
+    ],
+    "localSourceSha256": "cfc727d50daf6ed63cb39738155f4b34e924d766596fdfc572d69bcf222c5e62",
+    "indexSourceSha256": "cfc727d50daf6ed63cb39738155f4b34e924d766596fdfc572d69bcf222c5e62",
+    "localPreviewSha256": "a2834cc2de70a7f41cd07e480820950d94eb9fae0c1335d9155e526cfa6cf087",
+    "liveSourceSha256": "705d78699ceec65167d1ef4b830377f3744420409012f3b4ffe90d9bef7eb249",
+    "livePreviewSha256": "ec5704deb2112ad8c4212707a6528314bcbf0c04055f5780b0f4d52d80a4174a",
+    "localSourceMatchesIndex": true,
+    "localPreviewMatchesLive": false,
+    "liveSourceMatchesLocal": false,
+    "result": "No confirmed material mismatch in the rendered branch preview."
+  },
+  {
+    "id": "granulator",
+    "kit": "recycling-facility",
+    "title": "Granulator",
+    "source": "catalog/kits/recycling-facility/granulator.kcad.ts",
+    "preview": "/assets/recycling-facility-granulator.png",
+    "triangles": 1478,
+    "triangleBudget": 3200,
+    "sizeM": [
+      1.83,
+      1.918218,
+      2.753778
+    ],
+    "localSourceSha256": "a3350e78d8a07f52e52beb323ac69bef0556a60c051f432f971a5806e8c8665a",
+    "indexSourceSha256": "a3350e78d8a07f52e52beb323ac69bef0556a60c051f432f971a5806e8c8665a",
+    "localPreviewSha256": "172f599d91a1ab2671eeaec7a9fceea067738ba0016302fe0c5e7b3413892025",
+    "liveSourceSha256": "9cd0dee3d4ea89e23f4788b9a6d46f75634874623943835473e3eb443723b195",
+    "livePreviewSha256": "43f4c970e38be75fb0f6c969789c0445400d6e6ce7070be95f28349e15a734db",
+    "localSourceMatchesIndex": true,
+    "localPreviewMatchesLive": false,
+    "liveSourceMatchesLocal": false,
+    "result": "No confirmed material mismatch in the rendered branch preview."
+  }
+]

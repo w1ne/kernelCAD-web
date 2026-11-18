@@ -1,0 +1,65 @@
+{
+  "queriedUtc": "2026-11-11",
+  "prCount": 18,
+  "sampleIds": [
+    "backhoe-loader",
+    "crawler-dozer",
+    "motor-grader",
+    "skid-steer-loader",
+    "transit-mixer-truck"
+  ],
+  "exactTitleBodySearches": [
+    {
+      "asset": "backhoe-loader",
+      "kind": "issue",
+      "matches": []
+    },
+    {
+      "asset": "backhoe-loader",
+      "kind": "pr",
+      "matches": []
+    },
+    {
+      "asset": "crawler-dozer",
+      "kind": "issue",
+      "matches": []
+    },
+    {
+      "asset": "crawler-dozer",
+      "kind": "pr",
+      "matches": []
+    },
+    {
+      "asset": "motor-grader",
+      "kind": "issue",
+      "matches": []
+    },
+    {
+      "asset": "motor-grader",
+      "kind": "pr",
+      "matches": []
+    },
+    {
+      "asset": "skid-steer-loader",
+      "kind": "issue",
+      "matches": []
+    },
+    {
+      "asset": "skid-steer-loader",
+      "kind": "pr",
+      "matches": []
+    },
+    {
+      "asset": "transit-mixer-truck",
+      "kind": "issue",
+      "matches": []
+    },
+    {
+      "asset": "transit-mixer-truck",
+      "kind": "pr",
+      "matches": []
+    }
+  ],
+  "changedPathMatches": [],
+  "fileQueryErrors": []
+}

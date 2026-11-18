@@ -10,6 +10,10 @@ import {
   standardPartVerificationAttributes,
 } from '../../../src/modeling/parts/standardPartRanges';
 import { loadCatalog, resolveById } from '../../../src/modeling/parts/catalog';
+import {
+  HEX_BOLT_PARTIAL_HEAD,
+  HEX_BOLT_PARTIAL_LENGTHS,
+} from '../../../src/modeling/parts/familyTable';
 
 const NO_GATES = { interference: false, mountingHoles: false, jointAxis: false } as const;
 
@@ -19,10 +23,10 @@ describe('standard-part range declarations (S3)', () => {
   });
 
   it('declares a domain, requirements and catalog attributes for the first slice', () => {
-    expect(STANDARD_PART_RANGES).toHaveLength(10);
+    expect(STANDARD_PART_RANGES).toHaveLength(11);
     const members = STANDARD_PART_RANGES.map((d) => d.member);
     expect(members).toEqual([
-      'boltSHCS', 'boltBHCS', 'boltFlatHead', 'boltHex', 'setScrew', 'rodThreaded',
+      'boltSHCS', 'boltBHCS', 'boltFlatHead', 'boltHex', 'boltHexPartial', 'setScrew', 'rodThreaded',
       'nutHex', 'nutLock', 'washerFlat', 'washerLock',
     ]);
     for (const declaration of STANDARD_PART_RANGES) {
@@ -96,5 +100,60 @@ describe('standard-part range declarations (S3)', () => {
     for (const row of result.results) {
       expect(row.requirements.every((r) => r.status === 'pass')).toBe(true);
     }
+  });
+
+  it('sweeps boltHexPartial across every stocked thread and length', async () => {
+    const declaration = STANDARD_PART_RANGES.find((d) => d.member === 'boltHexPartial')!;
+    const threads = Object.keys(HEX_BOLT_PARTIAL_LENGTHS).map((key) => key.replace('_', '.'));
+    expect(declaration.parameters.find((p) => p.name === 'Thread')!.values).toEqual(threads);
+
+    let points = 0;
+    for (const thread of threads) {
+      const key = thread.replace('.', '_');
+      const stocked = HEX_BOLT_PARTIAL_LENGTHS[key]!;
+      const head = HEX_BOLT_PARTIAL_HEAD[key]!;
+      const nominal = Number.parseFloat(thread.slice(1));
+      const xMax = Math.ceil(Math.max(head.D, nominal)) + 1;
+      const headExtra = Math.ceil(head.K + 1);
+      const choices = stocked.map(String);
+      const script = `
+const Length = param('Length', ${JSON.stringify(choices[0])}, { choices: ${JSON.stringify(choices)} });
+const L = Number(Length.value);
+const part = await lib.standard.boltHexPartial({ thread: ${JSON.stringify(thread)}, lengthMm: L, detail: 'envelope' });
+require('boltHexPartial.length-envelope', bbox(part).within({ x: [0, ${xMax}], y: [0, ${xMax}], z: [0, L + ${headExtra}] }));
+require('boltHexPartial.material', volume(part).gte(1));
+return part;
+`;
+      const result = await sweepTolerance({
+        code: script,
+        params: { Length: { values: choices } },
+        gates: NO_GATES,
+        boundaryBudget: 0,
+      }, defaultSweepEvaluator);
+
+      expect(result.ok, thread).toBe(true);
+      expect(result.combosEvaluated).toBe(stocked.length);
+      expect(result.boundaries).toHaveLength(0);
+      for (const row of result.results) {
+        expect(row.requirements.map((r) => r.status)).toEqual(['pass', 'pass']);
+      }
+      points += result.combosEvaluated;
+    }
+    // M2 2, M2.5 3, M3 3, M4 4, M5 6, M6 7, M8 8, M10 9, M12 10.
+    expect(points).toBe(52);
+
+    const refused = await sweepTolerance({
+      code: `
+const Length = param('Length', '16', { choices: ['16'] });
+const part = await lib.standard.boltHexPartial({ thread: 'M6', lengthMm: Number(Length.value), detail: 'envelope' });
+require('boltHexPartial.material', volume(part).gte(1));
+return part;
+`,
+      params: { Length: { values: ['16'] } },
+      gates: NO_GATES,
+      boundaryBudget: 0,
+    }, defaultSweepEvaluator);
+    expect(refused.ok).toBe(false);
+    expect(refused.results[0]?.diagnostics.map((d) => d.message).join('\n')).toMatch(/ISO 4017/);
   });
 });

@@ -24,9 +24,9 @@ presets({
 const p = assembly('laboratory-sink-base-cabinet');
 p.part('cabinet-shell', box(800, 600, 860, true).translate(0, 0, 430).scale(scale).color(enamel));
 p.part('cabinet-plinth', box(736, 540, 22, true).translate(0, 0, 11).scale(scale).color(steel));
-p.part('door-0', box(330.24, 18, 830, true).translate(-176, -306, 845).scale(scale).color(enamel));
+p.part('door-0', box(330.24, 18, 830, true).translate(-176, -306, 430).scale(scale).color(enamel));
 p.part('door-pull-0', box(14, 14, 137.6, true).translate(-65.92, -330, 516).scale(scale).color(polymer));
-p.part('door-1', box(330.24, 18, 830, true).translate(176, -306, 845).scale(scale).color(enamel));
+p.part('door-1', box(330.24, 18, 830, true).translate(176, -306, 430).scale(scale).color(enamel));
 p.part('door-pull-1', box(14, 14, 137.6, true).translate(286.08, -330, 516).scale(scale).color(polymer));
 p.part('plumbing-clearance', box(496, 18, 430, true).translate(0, 210, 627.8).scale(scale).color(enamel));
 

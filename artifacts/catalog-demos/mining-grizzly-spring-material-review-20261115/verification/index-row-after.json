@@ -1,0 +1,268 @@
+{
+  "id": "grizzly-scalping-deck",
+  "kit": "mining",
+  "title": "Grizzly scalping deck",
+  "description": "Vibrating grizzly feeder at about real size: sloping tray with shaped side plates, stiffeners and top flanges, a manganese liner pan under the feed end, two stepped decks of heavy grizzly bars on cross beams, twin unbalanced vibrator motors on the side plates, four coil-spring sets on spring brackets and steel pedestals, a fines chute under the bars, ore on the feed pan and oversize boulders on the bars. Material controls: tray coating, support steel, manganese bars and liners, and ore, plus a bar gap choice (75, 100 or 150 mm) that sets the number of grizzly bars. weathered, highVisibility and orangePlant presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "mining",
+    "mineral processing",
+    "screening",
+    "grizzly",
+    "vibrating grizzly feeder",
+    "scalping",
+    "crusher feed",
+    "crushing plant"
+  ],
+  "compat": [
+    "mining",
+    "mineral-processing",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/mining/grizzly-scalping-deck.kcad.ts",
+  "preview": "/assets/mining-grizzly-scalping-deck.png",
+  "sourceSha256": "21d958484970ce1149d13bfdf7f9bdb9fd1eac7dfd2d914aa017b045e608bd1e",
+  "triangleBudget": 3200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#3a78a8",
+      "label": "Tray coating"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#4b5459",
+      "label": "Support steel"
+    },
+    {
+      "name": "manganeseSteel",
+      "type": "color",
+      "default": "#8d918e",
+      "label": "Manganese bars and liners"
+    },
+    {
+      "name": "ore",
+      "type": "color",
+      "default": "#8a7d6c",
+      "label": "Ore"
+    },
+    {
+      "name": "barGap",
+      "type": "choice",
+      "default": "100 mm",
+      "label": "Grizzly bar gap",
+      "choices": [
+        "75 mm",
+        "100 mm",
+        "150 mm"
+      ]
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#56707f",
+      "structuralSteel": "#666a66",
+      "manganeseSteel": "#77706a",
+      "ore": "#7d7062"
+    },
+    "highVisibility": {
+      "coatedSteel": "#f0a81c",
+      "structuralSteel": "#465159",
+      "manganeseSteel": "#a2a7a4",
+      "ore": "#9a8b78"
+    },
+    "orangePlant": {
+      "coatedSteel": "#d9831f",
+      "structuralSteel": "#2d3134",
+      "manganeseSteel": "#9a9f9c",
+      "ore": "#6f4a3a"
+    }
+  },
+  "stats": {
+    "triangles": 2746,
+    "sizeM": [
+      6.539639,
+      3.713499,
+      3.24
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "coatedSteel",
+      "color": "#3a78a8",
+      "parts": [
+        "side-plate-0",
+        "top-flange-0",
+        "stiffener-0-0",
+        "stiffener-0-1",
+        "stiffener-0-2",
+        "stiffener-0-3",
+        "stiffener-0-4",
+        "bottom-flange-0",
+        "side-plate-1",
+        "top-flange-1",
+        "stiffener-1-0",
+        "stiffener-1-1",
+        "stiffener-1-2",
+        "stiffener-1-3",
+        "stiffener-1-4",
+        "bottom-flange-1",
+        "back-plate",
+        "feed-pan",
+        "deck-0-cross-beam-0",
+        "deck-0-cross-beam-1",
+        "deck-1-cross-beam-0",
+        "deck-1-cross-beam-1",
+        "vibrator-mount-0",
+        "vibrator-mount-1",
+        "spring-bracket-0-0",
+        "spring-bracket-0-1",
+        "spring-bracket-1-0",
+        "spring-bracket-1-1"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "manganeseSteel",
+      "color": "#8d918e",
+      "parts": [
+        "pan-liner-0",
+        "pan-liner-1",
+        "pan-liner-2",
+        "pan-liner-3",
+        "deck-0-bar-0",
+        "deck-0-bar-1",
+        "deck-0-bar-2",
+        "deck-0-bar-3",
+        "deck-0-bar-4",
+        "deck-0-bar-5",
+        "deck-0-bar-6",
+        "deck-0-bar-7",
+        "deck-0-bar-8",
+        "deck-0-bar-9",
+        "deck-0-bar-10",
+        "deck-0-step-lip",
+        "deck-1-bar-0",
+        "deck-1-bar-1",
+        "deck-1-bar-2",
+        "deck-1-bar-3",
+        "deck-1-bar-4",
+        "deck-1-bar-5",
+        "deck-1-bar-6",
+        "deck-1-bar-7",
+        "deck-1-bar-8",
+        "deck-1-bar-9",
+        "deck-1-bar-10",
+        "deck-1-step-lip"
+      ],
+      "param": "manganeseSteel"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#4b5459",
+      "parts": [
+        "vibrator-motor-0",
+        "vibrator-feet-0",
+        "vibrator-terminal-box-0",
+        "vibrator-motor-1",
+        "vibrator-feet-1",
+        "vibrator-terminal-box-1",
+        "spring-coil-0-0-0",
+        "spring-coil-0-0-1",
+        "spring-coil-0-0-2",
+        "spring-coil-0-0-3",
+        "spring-coil-0-0-4",
+        "spring-pedestal-0-0",
+        "pedestal-base-0-0",
+        "spring-coil-0-1-0",
+        "spring-coil-0-1-1",
+        "spring-coil-0-1-2",
+        "spring-coil-0-1-3",
+        "spring-coil-0-1-4",
+        "spring-pedestal-0-1",
+        "pedestal-base-0-1",
+        "pedestal-tie-0",
+        "spring-coil-1-0-0",
+        "spring-coil-1-0-1",
+        "spring-coil-1-0-2",
+        "spring-coil-1-0-3",
+        "spring-coil-1-0-4",
+        "spring-pedestal-1-0",
+        "pedestal-base-1-0",
+        "spring-coil-1-1-0",
+        "spring-coil-1-1-1",
+        "spring-coil-1-1-2",
+        "spring-coil-1-1-3",
+        "spring-coil-1-1-4",
+        "spring-pedestal-1-1",
+        "pedestal-base-1-1",
+        "pedestal-tie-1",
+        "fines-chute",
+        "chute-leg-0",
+        "chute-leg-1",
+        "chute-leg-2",
+        "chute-leg-3"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "vibrator-weight-cover-0",
+      "color": "#e8c21e",
+      "parts": [
+        "vibrator-weight-cover-0",
+        "vibrator-weight-cover-1"
+      ]
+    },
+    {
+      "name": "spring-core-0-0",
+      "color": "#1e2123",
+      "parts": [
+        "spring-core-0-0",
+        "spring-core-0-1",
+        "spring-core-1-0",
+        "spring-core-1-1"
+      ]
+    },
+    {
+      "name": "fines-in-chute",
+      "color": "#6f6457",
+      "parts": [
+        "fines-in-chute",
+        "oversize-1",
+        "oversize-3",
+        "fines-0",
+        "fines-1",
+        "fines-2",
+        "fines-3",
+        "fines-4"
+      ]
+    },
+    {
+      "name": "ore",
+      "color": "#8a7d6c",
+      "parts": [
+        "ore-on-pan",
+        "oversize-0",
+        "oversize-2",
+        "oversize-4"
+      ],
+      "param": "ore"
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import {
   chainSegments,
   edgeToSegments,
   extractLoops,
+  projectToFrame,
   segLength,
   segmentsSignedArea,
   type ExtractedLoops,
@@ -64,7 +65,18 @@ export function sectionLoops(
   ) || 1;
   const half = diag * 1.5 + 100;
 
-  const origin = new oc.gp_Pnt_3(frame.origin[0], frame.origin[1], frame.origin[2]);
+  // Center only the bounded cutter face on the part. The caller's frame
+  // stays unchanged when projecting the resulting edges.
+  const [u, v] = projectToFrame(frame, [
+    (bb.min[0] + bb.max[0]) / 2,
+    (bb.min[1] + bb.max[1]) / 2,
+    (bb.min[2] + bb.max[2]) / 2,
+  ]);
+  const origin = new oc.gp_Pnt_3(
+    frame.origin[0] + u * frame.u[0] + v * frame.v[0],
+    frame.origin[1] + u * frame.u[1] + v * frame.v[1],
+    frame.origin[2] + u * frame.u[2] + v * frame.v[2],
+  );
   const normal = new oc.gp_Dir_4(frame.normal[0], frame.normal[1], frame.normal[2]);
   const xDir = new oc.gp_Dir_4(frame.u[0], frame.u[1], frame.u[2]);
   const ax3 = new oc.gp_Ax3_3(origin, normal, xDir);

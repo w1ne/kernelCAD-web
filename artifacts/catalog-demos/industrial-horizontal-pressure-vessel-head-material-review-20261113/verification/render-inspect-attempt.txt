@@ -1,0 +1,4 @@
+Command used the already-running CDP browser selected from the local process/session inventory:
+PW_CDP_URL=http://127.0.0.1:9223 npx tsx src/agent/cli/index.ts render inspect catalog/kits/industrial-plant/horizontal-pressure-vessel.kcad.ts <bundle>/render-inspection --width 512 --height 512 --channels rgb --screenshot-timeout 60000
+
+The CDP endpoint returned HTTP 200 and Chrome/156.0.8078.79. Playwright connected its WebSocket but timed out after 30 seconds while attaching; the command exited 1 before writing an inspection bundle. PW_CDP_URL required CDP attachment, so no fresh browser fallback was launched. The existing Chrome process remained running. The checked-in catalog preview PNGs and the demo MP4 were opened and visually reviewed instead.

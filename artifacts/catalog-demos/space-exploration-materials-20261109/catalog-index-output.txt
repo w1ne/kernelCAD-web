@@ -1,0 +1,5 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/buildAssetCatalog.ts
+(node:3714257) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+wrote /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/catalog/index.json

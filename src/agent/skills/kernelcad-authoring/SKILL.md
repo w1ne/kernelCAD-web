@@ -24,7 +24,7 @@ This file is the core: units, the rules that prevent most failures, which API se
 
 The rules that prevent most failed evaluations (from the diagnostics catalogue and repair telemetry). Fix the cause, not the symptom.
 
-1. **ParamRef arithmetic uses methods.** `param('w', 60) + 4` throws `feature.invalid-args`; write `w.add(4)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`; also `.min/.max/.abs/.clamp`. Declare params at the top with units; every numeric argument must be finite (`NaN`/`undefined` fails capture).
+1. **Params work in plain JS math.** `w + 4`, `Math.sin(a)` use the current value; an edit re-runs only what changed. `.add/.multiply/.clamp` keep it symbolic. Declare params at the top with units; every numeric argument must be finite (`NaN`/`undefined` fails capture).
 2. **Holes are features, not cylinders.** Use `hole` / `holes` / `cutout` instead of `subtract(cylinder(...))`: they drill the right size (threads, counterbores, countersinks), name their faces (`'wall'`, `'floor'`, `'counterbore-*'`, `'countersink-cone'`) and reach drawings, BOM and DFM. Hole `u`/`v` are mm offsets from the CENTRE of the entry face (`top`/`bottom`: u=+X, v=+Y; `front`/`back`: u=+X, v=+Z; `left`/`right`: u=+Y, v=+Z), not world coordinates.
 3. **Booleans need real overlap.** Give unions ≥ 0.1 mm of overlap and cut tools ≥ 0.1 mm of run-out past the faces; never rely on coincident or tangent faces. A cut that misses the body is `feature.subtractive-noop` — check the tool's position and axis.
 4. **One union, one connected body.** `union.disconnected` = an operand floats; move it until it touches. `union.member-overlap` = two separately finished pieces of the same stock overlap; fuse first and `.finish()` once, or butt the members (`span - 2 * railWidth`).
@@ -57,7 +57,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | pocket, recess | blind `cutout` or blind `hole` (`depth: n`) | blind-pocket-from-top |
 | enclosure, box, case, hollow, wall thickness | `.shell(wall, { face: 'top' })` on the outer body, or subtract the inner box; lid = second part | enclosure-lid-with-screw-bosses |
 | standoffs, bosses, PCB / Raspberry Pi mount | union `cylinder` bosses on the floor, then `holes(..., { thread })` or insert pilots through them | enclosure-lid-with-screw-bosses |
-| gear, involute, module, pinion | `spurGear({ module, teeth, faceWidth, bore, backlash })`, `ringGear`; centre distance m(z1+z2)/2 | involute-spur-gear-pair |
+| gear, involute, module, pinion | `spurGear({ module, teeth, faceWidth, bore, backlash })`, `spurGearPair`, `ringGear`; centre distance m(z1+z2)/2 | involute-spur-gear-pair |
 | sheet metal, bend, flange, flat pattern | `sheetMetal(profile, { thickness, kFactor }).bend({ atX }, angle, radius)` — lines in blank coordinates, the shorter side folds, chain bends for U / Z; drill the blank before bending; MCP `flatten_pattern` | sheet-metal-l-bracket-bend |
 | fit, clearance, tolerance, printer | clearance param (per side: press 0.05 · snap 0.15 · slip 0.2 · running 0.3) + `dfmSpec({ process: 'fdm', printer, minClearance })` | fdm-fit-clearance-by-fit-type |
 | hinge, pivot, rotating joint | two `assembly().part`s, axis `connector`s, `mate(name, a, b, 'revolute', { limitsDeg })` | clamshell-hinge-two-part-assembly |

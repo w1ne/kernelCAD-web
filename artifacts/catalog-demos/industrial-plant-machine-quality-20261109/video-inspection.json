@@ -1,0 +1,47 @@
+{
+  "video": "industrial-plant-machine-refinement.mp4",
+  "format": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1",
+        "nb_frames": "541"
+      }
+    ],
+    "format": {
+      "duration": "18.033333",
+      "size": "252461"
+    }
+  },
+  "sampledFrames": [
+    {
+      "timeSeconds": 0.5,
+      "frame": "decoded-01.png"
+    },
+    {
+      "timeSeconds": 3.5,
+      "frame": "decoded-02.png"
+    },
+    {
+      "timeSeconds": 6.5,
+      "frame": "decoded-03.png"
+    },
+    {
+      "timeSeconds": 9.5,
+      "frame": "decoded-04.png"
+    },
+    {
+      "timeSeconds": 12.5,
+      "frame": "decoded-05.png"
+    },
+    {
+      "timeSeconds": 15.5,
+      "frame": "decoded-06.png"
+    }
+  ],
+  "contactSheet": "contact-sheet.png",
+  "inspection": "MP4 decoded at six points from opening through final verification frame; images retained for visual review."
+}

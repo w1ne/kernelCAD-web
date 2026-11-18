@@ -26,11 +26,11 @@ const groundOffset = 60;
 const add = (name, shape, finish = paintedSteelColor) => p.part(name, shape.translate(0, 0, -groundOffset).scale(scale).color(finish));
 add('mounting-frame', box(623.2, 100, 475.6, true).translate(0, 170, 297.8), paintedSteelColor);
 add('crossbar', box(760, 95, 80, true).translate(0, 115, 548.4), paintedSteelColor);
-add('spear-socket-0', box(75, 100, 80, true).translate(-228, -80, 409), steelColor);
-add('bale-spear-0', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(-228, -260, 369), steelColor);
-add('spear-socket-1', box(75, 100, 80, true).translate(0, -80, 409), steelColor);
-add('bale-spear-1', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(0, -260, 369), steelColor);
-add('spear-socket-2', box(75, 100, 80, true).translate(228, -80, 409), steelColor);
-add('bale-spear-2', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(228, -260, 369), steelColor);
+add('spear-socket-0', box(75, 100, 80, true).translate(-228, 70, 409), steelColor);
+add('bale-spear-0', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(-228, 100, 409), steelColor);
+add('spear-socket-1', box(75, 100, 80, true).translate(0, 70, 409), steelColor);
+add('bale-spear-1', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(0, 100, 409), steelColor);
+add('spear-socket-2', box(75, 100, 80, true).translate(228, 70, 409), steelColor);
+add('bale-spear-2', cylinder(450, 16, 8).rotate([1, 0, 0], 90).translate(228, 100, 409), steelColor);
 
 return p.model();

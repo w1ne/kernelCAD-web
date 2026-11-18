@@ -1,0 +1,43 @@
+{
+  "type": "text replay of a local check_export_health run; not a renderer capture",
+  "recordedAt": "2026-11-17T12:50:05.800Z",
+  "models": [
+    "swing-clear.kcad.ts",
+    "declared-mass.kcad.ts",
+    "limit-rest.kcad.ts",
+    "ball-clear.kcad.ts",
+    "ball-overlap.kcad.ts",
+    "hull-corner.kcad.ts"
+  ],
+  "invocation": "TMPDIR=/tmp TMP=/tmp npx tsx docs/demos/export-health-authored-rest-20261117/record-run.mts",
+  "run": {
+    "file": "run.json",
+    "sha256": "198da6eb4a4252d5c9732511b37c6db47cf0d07a811fae70bd5066cb9b6900e4"
+  },
+  "slides": {
+    "count": 6,
+    "secondsEach": 3,
+    "tracked": false
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "4ccbf211590b8f64954e291c3d5c4c048e77aa911d42d6ebfd96d67a97603766",
+    "durationSeconds": 18,
+    "bytes": 302481,
+    "width": 1920,
+    "height": 1080,
+    "codec": "h264",
+    "encoder": "libx264, CRF 25, 24 fps, yuv420p"
+  },
+  "claims": {
+    "authoredRestClear": true,
+    "coordinateZeroPenetrationM": 0.0099999965085333,
+    "declaredMassMatches": true,
+    "outOfLimitFails": true,
+    "ballClear": true,
+    "ballOverlapIsReal": true,
+    "hullArtefactDoesNotFail": true,
+    "deployed": false,
+    "hardwareAcceptance": false
+  }
+}

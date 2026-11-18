@@ -5,7 +5,7 @@ meta({
   name: "case-layer-palletizer",
   license: 'CC0-1.0',
   title: "Case layer palletizer",
-  description: "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and corrugated board.",
+  description: "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and pallet timber.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'structure',
@@ -18,20 +18,20 @@ const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, s
 const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#397e91', { label: 'Powder-coated steel' });
 const safetyPaint = param('safetyPaint', '#e3a331', { label: 'Safety paint' });
-const corrugatedBoard = param('corrugatedBoard', '#b18a5d', { label: 'Corrugated board' });
+const palletTimber = param('palletTimber', '#95683f', { label: 'Pallet timber' });
 
 presets({
   sanitaryLine: {
     stainlessSteel: '#d2dfe1',
     powderCoat: '#4b95a4',
     safetyPaint: '#f0b336',
-    corrugatedBoard: '#c49b6b',
+    palletTimber: '#a9794c',
   },
   legacyPlant: {
     stainlessSteel: '#858f91',
     powderCoat: '#315b70',
     safetyPaint: '#bd7b24',
-    corrugatedBoard: '#886342',
+    palletTimber: '#704d31',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -39,7 +39,7 @@ const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w
 const p = assembly("case-layer-palletizer");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
-  if (/carton|paper|sheet|stack|pallet|cardboard|corrugated|case[-_ ]?(?:blank|wall|stack|pack|lift)/i.test(component)) return shape.color(corrugatedBoard);
+  if (/pallet/i.test(component)) return shape.color(palletTimber);
   if (/operator|stop|emergency|beacon|signal|status|warning|access/i.test(component)) return shape.color(safetyPaint);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);

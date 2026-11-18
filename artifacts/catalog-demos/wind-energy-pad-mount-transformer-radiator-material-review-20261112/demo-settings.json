@@ -1,0 +1,17 @@
+{
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "secondsPerSlide": 4.5,
+  "slides": 4,
+  "encoding": "H.264, yuv420p, CRF 20, faststart",
+  "inputs": [
+    "sample/*.png",
+    "before/wind-farm-pad-mount-transformer.png",
+    "after/wind-farm-pad-mount-transformer.png",
+    "focused-test-output.txt",
+    "eslint-output.txt",
+    "index-verification.json",
+    "public-route-check.json"
+  ],
+  "captions": "Local branch source/software-render/index checks; not deployed, simulated, or hardware accepted."
+}

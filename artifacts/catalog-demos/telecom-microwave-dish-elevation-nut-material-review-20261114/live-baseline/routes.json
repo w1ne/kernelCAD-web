@@ -1,0 +1,52 @@
+[
+  {
+    "id": "microwave-dish-antenna",
+    "kit": "telecom-infrastructure",
+    "page": "https://kernelcad.com/catalog/telecom-infrastructure/microwave-dish-antenna/",
+    "preview": "https://kernelcad.com/assets/telecom-infrastructure-microwave-dish-antenna.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "415437c45785b7bb7e41bee7bec00fc7ff5891ca6407aaf9f9cced311ceb0b7d",
+    "previewBytes": 28442
+  },
+  {
+    "id": "remote-radio-unit",
+    "kit": "telecom-infrastructure",
+    "page": "https://kernelcad.com/catalog/telecom-infrastructure/remote-radio-unit/",
+    "preview": "https://kernelcad.com/assets/telecom-infrastructure-remote-radio-unit.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "22f957a835699f652d46c2f952d4f432fd5016f2d250173685edd3c6b0d12ee8",
+    "previewBytes": 23893
+  },
+  {
+    "id": "yagi-radio-antenna",
+    "kit": "telecom-infrastructure",
+    "page": "https://kernelcad.com/catalog/telecom-infrastructure/yagi-radio-antenna/",
+    "preview": "https://kernelcad.com/assets/telecom-infrastructure-yagi-radio-antenna.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "283cda2a23a0181b2530b0b846bbf429ecd95b106474cfa3e055735887667e69",
+    "previewBytes": 27225
+  },
+  {
+    "id": "lightning-air-terminal",
+    "kit": "telecom-infrastructure",
+    "page": "https://kernelcad.com/catalog/telecom-infrastructure/lightning-air-terminal/",
+    "preview": "https://kernelcad.com/assets/telecom-infrastructure-lightning-air-terminal.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "8dc3df06b032cd2c9cf74cc2518da95305e4c1f40ff0c878cfc126530ab15f2c",
+    "previewBytes": 14109
+  },
+  {
+    "id": "roof-penetration-seal",
+    "kit": "telecom-infrastructure",
+    "page": "https://kernelcad.com/catalog/telecom-infrastructure/roof-penetration-seal/",
+    "preview": "https://kernelcad.com/assets/telecom-infrastructure-roof-penetration-seal.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "812997a3227671938c6564e844e1fd11d057849cd802952b7a12525fcccdacb1",
+    "previewBytes": 20839
+  }
+]

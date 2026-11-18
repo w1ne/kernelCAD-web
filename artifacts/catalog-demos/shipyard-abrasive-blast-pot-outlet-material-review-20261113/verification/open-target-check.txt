@@ -1,0 +1,15 @@
+PR #1258 checks completed green before this audit; `gh pr view` reported no
+submitted reviews, `mergeable: MERGEABLE`, and `mergeStateStatus: BLOCKED`.
+
+At audit start, shipyard had two changed asset sources in the current branch diff
+for #1258 (`blast-dust-collector` and `hull-panel-turnover-cradle`). The five
+reviewed asset source paths (`abrasive-blast-pot`, `plate-rolling-machine`,
+`plasma-cutting-gantry-head`, `pipe-spool-rotator`, `hull-block-paint-booth`) had
+no pre-existing change in that PR. This audit adds the abrasive-blast-pot source
+change to #1258. The other open catalog PR #1215 targets `industrial-plant`, not
+these shipyard assets. Open issue search for `shipyard` and `abrasive blast pot`
+returned no results.
+
+Previously merged fixes #1298, #1305, #1307 and #1308 were checked by number; they
+cover substation cable ladder, sanitary lobe pump, storage-array identity, and
+split collar clamp assets, respectively. None overlaps this review.

@@ -34,13 +34,20 @@ presets({
   vintage: { brass: '#a56c2b' },
 });
 const p = assembly("trombone");
-p.part("bell", sphere(58).scale([1, 1, 0.38]).translate(130, 0, 58).scale(scale).color(brass));
-p.part("bell-pipe", cylinder(100, 14, 10).rotate([1, 0, 0], 90).translate(46, 0, 58).scale(scale).color(brass));
-p.part("inner-slide-left", cylinder(310, 7, 8).translate(-42, -10, 16).scale(scale).color(nickel));
-p.part("inner-slide-right", cylinder(310, 7, 8).translate(-4, -10, 16).scale(scale).color(nickel));
-p.part("outer-slide-left", cylinder(322, 5, 8).translate(-48, 10, 0).scale(scale).color(nickel));
-p.part("outer-slide-right", cylinder(322, 5, 8).translate(2, 10, 0).scale(scale).color(nickel));
-p.part("slide-crossbar", box(74, 22, 14, true).translate(-23, 0, 28).scale(scale).color(nickel));
-p.part("mouthpiece", cylinder(25, 8, 8).translate(-54, 0, 310).scale(scale).color(ebonite));
+const Z = 58;
+const tx = (len: number, r: number, x0: number, y: number) => cylinder(len, r, 8).rotate([0, 1, 0], 90).translate(x0, y, Z);
+const ty = (len: number, r: number, y0: number, x: number) => cylinder(len, r, 8).rotate([1, 0, 0], -90).translate(x, y0, Z);
+p.part("inner-slide-left", tx(440, 6, -240, -18).scale(scale).color(nickel));
+p.part("inner-slide-right", tx(440, 6, -240, 18).scale(scale).color(nickel));
+p.part("outer-slide-left", tx(120, 8, 160, -18).scale(scale).color(nickel));
+p.part("outer-slide-right", tx(120, 8, 160, 18).scale(scale).color(nickel));
+p.part("slide-crossbar", box(14, 52, 12, true).translate(-240, 0, Z).scale(scale).color(nickel));
+p.part("slide-bow", ty(104, 8, -18, 280).scale(scale).color(brass));
+p.part("bell-pipe", tx(380, 8, -100, 86).scale(scale).color(brass));
+p.part("bell-flare-a", tx(40, 14, -140, 86).scale(scale).color(brass));
+p.part("bell-flare-b", tx(40, 26, -180, 86).scale(scale).color(brass));
+p.part("bell-flare-c", tx(40, 42, -220, 86).scale(scale).color(brass));
+p.part("bell-flare-d", tx(30, 58, -250, 86).scale(scale).color(brass));
+p.part("mouthpiece", tx(40, 8, -280, -18).scale(scale).color(ebonite));
 
 return p.model();

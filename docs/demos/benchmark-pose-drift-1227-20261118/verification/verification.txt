@@ -1,0 +1,26 @@
+Local verification — 2026-11-18 UTC
+Branch base: origin/develop at 1897d1023681ccb5026358d486ac55a9d1f55b48
+
+Focused mutation:
+  npx vitest run tests/integration/manufacturing/piCameraMountBenchmark.test.ts --reporter=dot -t 'catches a mated assembly shifted 1 mm from its authored world pose'
+  Result: 1 passed, 8 skipped.
+
+Full case:
+  npx vitest run tests/integration/manufacturing/piCameraMountBenchmark.test.ts --reporter=dot
+  Result: 1 test file passed; 9 tests passed.
+
+Lint:
+  npx eslint tests/integration/manufacturing/piCameraMountBenchmark.test.ts
+  Result: exit 0.
+
+Typecheck:
+  npm run typecheck
+  Result: exit 0 (`tsc -b --noEmit` and CLI TypeScript check).
+
+Demo:
+  python3 docs/demos/benchmark-pose-drift-1227-20261118/capture_demo.py
+  Result: 1280x720, H.264, yuv420p, 24 fps, 12 seconds, 118207 bytes.
+  SHA-256: 57a3053b4055758783a700afc78300c39d6593d8bc29654dec22a5324ac70252.
+  Inspection: representative frames captured at 1 s, 5 s, and 9 s; contact sheet reviewed.
+
+Scope: local kernelCAD evaluation and fixture pose checks only. No deployment, physical fit, or hardware acceptance was tested.

@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: CC0-1.0
-// Power converter cabinet. Tall converter cabinet with top lip, twin front panels and side cooling louvres. Stylized catalog geometry, millimetres, Z up.
+// Power converter cabinet. Tall powder-coated enclosure with twin service doors,
+// side cooling louvres, and small electrical warning labels. Stylized catalog
+// geometry, millimetres, Z up.
 
 meta({
   name: "converter-cabinet",
   license: 'CC0-1.0',
   title: "Power converter cabinet",
-  description: "Tall converter cabinet with top lip, twin front panels and side cooling louvres. Controls: scale and powder-coated steel, safety paint; weathered and high-visibility presets.",
+  description: "Tall converter cabinet with top lip, twin service doors and side cooling louvres. Controls: scale, powder-coated steel and yellow electrical warning labels; weathered and high-visibility presets.",
   tags: ['wind', 'energy', 'renewable', 'low poly', 'scene prop'],
   kit: 'wind-energy',
   category: 'prop',
@@ -28,8 +30,10 @@ const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true)
 const p=assembly("converter-cabinet");
 p.part("body",b(0,0,0,920,650,1450).color(powderCoatedSteel));
 p.part("top",b(0,0,1450,980,700,60).color(powderCoatedSteel));
-p.part("panel-left",b(-220,-330,80,400,20,1180).color(safetyPaint));
-p.part("panel-right",b(220,-330,80,400,20,1180).color(safetyPaint));
+p.part("panel-left",b(-220,-330,80,400,20,1180).color(powderCoatedSteel));
+p.part("panel-right",b(220,-330,80,400,20,1180).color(powderCoatedSteel));
+p.part("warning-label-left",b(-220,-343,1050,110,6,90).color(safetyPaint));
+p.part("warning-label-right",b(220,-343,1050,110,6,90).color(safetyPaint));
 p.part("louver-0",b(-470,0,200,18,340,90).color(powderCoatedSteel));
 p.part("louver-1",b(-470,0,380,18,340,90).color(powderCoatedSteel));
 p.part("louver-2",b(-470,0,560,18,340,90).color(powderCoatedSteel));

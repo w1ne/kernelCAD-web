@@ -40,7 +40,7 @@ p.part("cab-side-window-left", box(82.94, 5, 28.22, true).translate(130.75, -117
 p.part("cab-side-window-right", box(82.94, 5, 28.22, true).translate(130.75, 117.05, 147.54).scale(scale).color(windshieldGlass));
 p.part("rear-body", box(177.6, 235.2, 75.6, true).translate(-110.4, 0, 112.8).scale(scale).color(vehiclePaint));
 p.part("tow-bar", box(129.6, 18, 16, true).translate(-230.4, 0, 49).scale(scale).color(stainlessSteel));
-p.part("nose-wheel-cradle", box(105.6, 173.6, 24, true).translate(230.4, 0, 74).scale(scale).color(rubber));
+p.part("nose-wheel-cradle", box(105.6, 173.6, 24, true).translate(230.4, 0, 74).scale(scale).color(stainlessSteel));
 p.part("wheel-1-left", cylinder(16, 31, 8).rotate([1, 0, 0], 90).translate(-148.8, -129.6, 31).scale(scale).color(rubber));
 p.part("wheel-1-right", cylinder(16, 31, 8).rotate([1, 0, 0], 90).translate(-148.8, 161.6, 31).scale(scale).color(rubber));
 p.part("wheel-2-left", cylinder(16, 31, 8).rotate([1, 0, 0], 90).translate(148.8, -129.6, 31).scale(scale).color(rubber));

@@ -1,0 +1,7 @@
+npm notice run kernelcad@0.17.4 catalog:pages
+npm notice run npx tsx scripts/buildCatalogPages.ts
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/buildCatalogPages.ts
+wrote 2402 asset page(s) + hub, sitemap.xml and robots.txt to /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/site-build
+(node:1957127) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

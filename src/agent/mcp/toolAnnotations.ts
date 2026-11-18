@@ -167,6 +167,9 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // inputs returns the stored run, but the first call writes files.
   run_cfd: WRITES_FILE,
   cfd_summary: READ,
+  // run_flight evaluates and simulates in process; it writes files only
+  // when output_dir is given.
+  run_flight: WRITES_FILE,
   // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
   estimate_cost: READ,
   analyze_tolerance_stack: READ,
@@ -175,6 +178,10 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   resolve_metric_thread: READ,
   // Evaluates a split and returns part measures. Writes nothing.
   split_keep_parts: READ,
+  // Draws four labeled PNGs plus report.json. Does not change the design.
+  inspect_step_views: WRITES_FILE,
+  // Compiles MJCF and compares URDF inertials. Writes nothing.
+  check_export_health: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.

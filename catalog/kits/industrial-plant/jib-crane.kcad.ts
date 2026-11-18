@@ -23,11 +23,12 @@ presets({
 const p = assembly('jib-crane');
 p.part('base-rail-left', box(610, 42, 34, true).translate(0, -136.4, 17).scale(scale).color(safetyPaint));
 p.part('base-rail-right', box(610, 42, 34, true).translate(0, 136.4, 17).scale(scale).color(safetyPaint));
-p.part('mast', cylinder(688.8, 38, 10).translate(-183, 0, 36).scale(scale).color(steel));
+p.part('base-plate', box(140, 316, 34, true).translate(-183, 0, 17).scale(scale).color(safetyPaint));
+p.part('mast', cylinder(695, 38, 10).translate(-183, 0, 30).scale(scale).color(steel));
 p.part('boom', box(610, 44, 42, true).translate(0, 0, 672.4).scale(scale).color(safetyPaint));
-p.part('brace', box(427, 24, 22, true).rotate([0, 1, 0], -24).translate(-42.7, 0, 475.6).scale(scale).color(steel));
+p.part('brace', box(422, 24, 22, true).rotate([0, 1, 0], -38).translate(-16.5, 0, 530).scale(scale).color(steel));
 p.part('hoist', box(120, 110, 88, true).translate(195.2, 0, 639.6).scale(scale).color(safetyPaint));
-p.part('chain', cylinder(254.2, 10, 8).translate(195.2, 0, 393.6).scale(scale).color(steel));
+p.part('chain', cylinder(490, 10, 8).translate(195.2, 0, 150).scale(scale).color(steel));
 p.part('hook', box(38, 24, 45, true).translate(195.2, 0, 131.2).scale(scale).color(safetyPaint));
 
 return p.model();

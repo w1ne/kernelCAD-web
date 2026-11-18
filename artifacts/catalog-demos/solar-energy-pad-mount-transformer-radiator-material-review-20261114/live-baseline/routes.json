@@ -1,0 +1,52 @@
+[
+  {
+    "id": "pad-mount-transformer",
+    "kit": "solar-energy",
+    "page": "https://kernelcad.com/catalog/solar-energy/pad-mount-transformer/",
+    "preview": "https://kernelcad.com/assets/solar-energy-pad-mount-transformer.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "f3501aa58a3e1cfccb5d878263974a81029a3cc5c9f9a8006d0b61fc3d34851b",
+    "previewBytes": 34695
+  },
+  {
+    "id": "utility-inverter-station",
+    "kit": "solar-energy",
+    "page": "https://kernelcad.com/catalog/solar-energy/utility-inverter-station/",
+    "preview": "https://kernelcad.com/assets/solar-energy-utility-inverter-station.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "2e22e09a80bd6dc91b7c924da077d533ea769db3ad892b4d89c8f31531a38897",
+    "previewBytes": 15514
+  },
+  {
+    "id": "pv-module-transport-cart",
+    "kit": "solar-energy",
+    "page": "https://kernelcad.com/catalog/solar-energy/pv-module-transport-cart/",
+    "preview": "https://kernelcad.com/assets/solar-energy-pv-module-transport-cart.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "97f05034631d309382876417866567474b5b81631ea478c76d03381dde8403cd",
+    "previewBytes": 26861
+  },
+  {
+    "id": "pv-combiner-box",
+    "kit": "solar-energy",
+    "page": "https://kernelcad.com/catalog/solar-energy/pv-combiner-box/",
+    "preview": "https://kernelcad.com/assets/solar-energy-pv-combiner-box.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "277263db124d19950d7ad9524df6f867103bfad29316aa9e7623046863383c6a",
+    "previewBytes": 18161
+  },
+  {
+    "id": "solar-electric-meter",
+    "kit": "solar-energy",
+    "page": "https://kernelcad.com/catalog/solar-energy/solar-electric-meter/",
+    "preview": "https://kernelcad.com/assets/solar-energy-solar-electric-meter.png",
+    "pageStatus": 200,
+    "previewStatus": 200,
+    "previewSha256": "a158073a580efd3a1b1ef9c88dfe25070d873a9027f448f5428cbe58d3490317",
+    "previewBytes": 13181
+  }
+]

@@ -602,8 +602,9 @@ function jointOrderToQpos(
   for (const j of jointOrder) {
     const type = mateByName.get(j.mateName)?.type;
     if (type === 'ball') {
-      // Ball poses currently use identity; reserve all four quaternion slots
-      // even when the mate has no authored pose, so following scalars align.
+      // qpos0 is the identity quaternion. The authored Euler pose is already
+      // the child body frame, so these four slots stay identity. A
+      // non-identity quaternion here would rotate on top of that frame.
       out.push(1, 0, 0, 0);
       continue;
     }

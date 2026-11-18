@@ -1,0 +1,11 @@
+file '01-five-preview-audit.png'
+duration 3
+file '02-before.png'
+duration 3
+file '03-source-material.png'
+duration 3
+file '04-after.png'
+duration 4
+file '05-verification.png'
+duration 3
+file '05-verification.png'
