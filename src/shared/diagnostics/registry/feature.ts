@@ -156,11 +156,11 @@ export const FEATURE_CODES = {
   },
   'feature.project-curve.no-intersection': {
     hintTemplate:
-      'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
-    nextAction: { kind: 'rewrite-feature', guidance: 'use closed-curve projection or shift the curve into the face bounds' },
+      'projectCurve could not intersect the source curve with the target face. For open mode, move the source plane or reverse/adjust the world-space direction so the path reaches the selected face. For closed mode, ensure the curve overlaps the face bounds.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the open source plane or adjust its direction; for closed projection, shift the curve into the face bounds' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'projectCurve found no intersection between the supplied 2D curve and the target face, or the asEdge:true path was requested (not implemented).',
+    description: 'projectCurve found no intersection between the supplied source path and the selected face in the requested projection direction.',
   },
   'feature.project-curve.curve-empty': {
     hintTemplate:

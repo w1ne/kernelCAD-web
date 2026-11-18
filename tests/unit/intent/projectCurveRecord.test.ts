@@ -27,4 +27,24 @@ describe('isProjectCurveMetadata', () => {
     void _drop;
     expect(isProjectCurveMetadata(rest)).toBe(false);
   });
+
+  it('accepts open metadata only with one open command chain and an explicit frame', () => {
+    const openCommands = sampleCommands.slice(0, 2);
+    const openMeta = {
+      ...validMeta,
+      source: { kind: 'sketchCommands' as const, commands: openCommands },
+      asEdge: true,
+      sourcePlane: { origin: [0, 0, 10], normal: [0, 0, 1], xAxis: [1, 0, 0] },
+      direction: [0, 0, -1],
+    };
+    expect(isProjectCurveMetadata(openMeta)).toBe(true);
+    expect(isProjectCurveMetadata({ ...openMeta, direction: undefined })).toBe(false);
+    expect(isProjectCurveMetadata({ ...openMeta, source: validMeta.source })).toBe(false);
+    expect(isProjectCurveMetadata({ ...openMeta, sourcePlane: null })).toBe(false);
+    expect(isProjectCurveMetadata({
+      ...openMeta,
+      sourcePlane: { origin: null, normal: [0, 0, 1], xAxis: [1, 0, 0] },
+    })).toBe(false);
+    expect(isProjectCurveMetadata({ ...openMeta, direction: null })).toBe(false);
+  });
 });
