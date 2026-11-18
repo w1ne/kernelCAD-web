@@ -26,10 +26,11 @@
     "ci": "all reported checks successful",
     "review": "no review submitted"
   },
-  "currentBranchPullRequest": {
+  "branchPullRequestAtSelection": {
     "number": 1507,
     "state": "open draft",
     "ci": "applicable checks successful",
-    "selectedKitOverlap": false
+    "selectedKitOverlap": false,
+    "note": "At selection time this existing draft PR did not change recycling-facility; this review was subsequently pushed to that same PR."
   }
 }

@@ -13,6 +13,9 @@ a source-to-control inconsistency: its 16 flails were hard-coded charcoal
 while the existing `wearSteel` control explicitly covered the rotor, flails
 and screen mesh.
 
+When the five samples were selected, the then-current draft PR #1507 had no
+changes in this kit. This review is now pushed to that same draft PR.
+
 The flails now use `wearSteel`. Geometry, controls, presets, asset ID, triangle
 budget and kit membership are unchanged. The 2,988-triangle GLB remains under
 the 3,600-triangle budget. A new integration regression fails against the
