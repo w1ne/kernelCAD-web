@@ -30,6 +30,7 @@
 import { validateDrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import type { DrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import type { AnyShape } from 'replicad';
+import { optimalBoundsOf } from './backendBounds';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import type { ArchitecturalPlanOptions } from './drawingArchitectural';
 import { DRAWING_VIEW_NAMES as VIEW_NAMES, selectedDrawingLayout, validateDrawingViewSelection } from './drawingViewSelection';
@@ -454,11 +455,12 @@ export function renderSvgDrawing(
   const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape } =
     resolveDrawingBodies(parts, options);
 
-  const [bbMin, bbMax] = shape.boundingBox.bounds;
+  const bounds = optimalBoundsOf(shape.wrapped)
+    ?? new OcctBackend(shape as import('replicad').Shape3D).boundingBox();
   const dims = {
-    w: bbMax[0] - bbMin[0],
-    d: bbMax[1] - bbMin[1],
-    h: bbMax[2] - bbMin[2],
+    w: bounds.max[0] - bounds.min[0],
+    d: bounds.max[1] - bounds.min[1],
+    h: bounds.max[2] - bounds.min[2],
   };
 
   const styled = projectSheetViews(shape, explodedShape);
