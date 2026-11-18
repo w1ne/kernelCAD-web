@@ -46,13 +46,12 @@ export function analyzeContactGraph(
   const gapMm = opts.gapMm ?? DEFAULT_CONTACT_GAP_MM;
   const names = scene.parts.map((p) => p.name);
 
-  const reports = checkClearance(scene, gapMm, new Set(), new Set());
+  const reports = checkClearance(scene, gapMm, new Set(), new Set(), [], { distanceOnly: true });
   const adj = new Map<string, Set<string>>();
   for (const name of names) adj.set(name, new Set());
   for (const r of reports) {
-    // 'violated' = measured surface distance below the gap (incl. contact);
-    // 'interfering' = overlapping volume. Both mean the bodies touch.
-    if (r.status !== 'violated' && r.status !== 'interfering') continue;
+    // Distance-only clearance records contact and overlap as the same edge.
+    if (r.status !== 'violated') continue;
     adj.get(r.a)?.add(r.b);
     adj.get(r.b)?.add(r.a);
   }

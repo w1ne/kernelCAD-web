@@ -71,6 +71,8 @@ export interface ClearanceCheckOptions {
    *  bbox lower bound already clears the threshold. Rest-pose DFM keeps the
    *  default false; sampled pose envelopes require exact distances. */
   forceExact?: boolean;
+  /** Omit overlap volume when the caller only needs contact edges. */
+  distanceOnly?: boolean;
 }
 
 /** One scene part, cloned into the world frame for measurement. `shape` and
@@ -153,7 +155,7 @@ export function checkClearance(
         continue;
       }
 
-      reports.push(classifyMeasuredPair(a, b, minClearance, options.forceExact, oc, diagnostics));
+      reports.push(classifyMeasuredPair(a, b, minClearance, options, oc, diagnostics));
     }
   }
   return reports;
@@ -201,12 +203,12 @@ function classifyMeasuredPair(
   a: MeasuredPart,
   b: MeasuredPart,
   minClearance: number,
-  forceExact: boolean | undefined,
+  options: ClearanceCheckOptions,
   oc: unknown,
   diagnostics: CompilerDiagnostic[],
 ): ClearancePairReport {
   const lowerBound = bboxGap(a.bbox, b.bbox);
-  if (!forceExact && lowerBound >= minClearance) {
+  if (!options.forceExact && lowerBound >= minClearance) {
     return { a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false };
   }
 
@@ -230,6 +232,7 @@ function classifyMeasuredPair(
   }
 
   if (d < CONTACT_EPS_MM) {
+    if (options.distanceOnly) return { a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true };
     // Touching or crossing: a boolean-intersection volume probe decides
     // which (volume-only; neither operand is consumed).
     let volume: number | undefined;
