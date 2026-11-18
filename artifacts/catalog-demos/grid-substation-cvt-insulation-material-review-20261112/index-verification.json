@@ -1,0 +1,24 @@
+{
+  "onlyChangedIndexRow": [
+    "grid-substation",
+    "substation-capacitive-voltage-transformer"
+  ],
+  "assetCount": 2402,
+  "kitCount": 50,
+  "sourceSha256Matches": "109268ee135c1a909592388f4ae6d92c6c9401979adc95a460a84e187a144e91",
+  "previewSha256": "8982ae35aee405d927c629f553e8340e234e18871fbd38d134790b5c77fd50e4",
+  "previewExists": true,
+  "previewPath": "/assets/grid-substation-substation-capacitive-voltage-transformer.png",
+  "triangleCount": 252,
+  "triangleBudget": 1800,
+  "sizeM": [
+    1.25,
+    2.755,
+    0.95
+  ],
+  "colorParams": [
+    "stainlessSteel",
+    "powderCoat",
+    "porcelain"
+  ]
+}

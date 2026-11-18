@@ -1,0 +1,2 @@
+npx eslint catalog/kits/office/
+exit 0; no diagnostics

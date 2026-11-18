@@ -222,6 +222,49 @@ describe('runTask with an LLM', () => {
     expect(agent.calls[2].messages[0].content).not.toContain('## Output contract');
     expect(agent.calls[2].messages[0].content).toContain('Reproduce it.');
   });
+  it('promotes two geometry-gated visual corrections and keeps each checkpoint', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-rounds-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([
+      reply('return box(1,1,1);'),
+      reply('return box(2,2,2);'), { text: 'B', tokens_in: 2, tokens_out: 1 },
+      reply('return box(3,3,3);'), { text: 'B', tokens_in: 2, tokens_out: 1 },
+    ]);
+    const result = await runTask(tasks(root).gen, cfg(runDir, {
+      agent, visualReviewRounds: 2,
+      visualRender: async () => [{ mediaType: 'image/png', data: 'render' }],
+      visualComparison: async () => [[{ mediaType: 'image/png', data: 'a' }], [{ mediaType: 'image/png', data: 'b' }]],
+    }));
+    expect(result.status).toBe('valid');
+    expect(result.attempts).toBe(3);
+    expect(agent.calls).toHaveLength(5);
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(3,3,3);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint.step'), 'utf8')).toBe('return box(1,1,1);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint-2.step'), 'utf8')).toBe('return box(2,2,2);');
+    expect(JSON.parse(readFileSync(join(runDir, 'tasks/101/visual-review-2.json'), 'utf8'))).toMatchObject({ outcome: 'accepted' });
+  });
+
+  it('stops after a rejected revision and submits the last validated improvement', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-rounds-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([
+      reply('return box(1,1,1);'),
+      reply('return box(2,2,2);'), { text: 'B', tokens_in: 2, tokens_out: 1 },
+      reply('OPEN'),
+    ]);
+    const result = await runTask(tasks(root).gen, cfg(runDir, {
+      agent, visualReviewRounds: 3,
+      visualRender: async () => [{ mediaType: 'image/png', data: 'render' }],
+      visualComparison: async () => [[{ mediaType: 'image/png', data: 'a' }], [{ mediaType: 'image/png', data: 'b' }]],
+    }));
+    expect(result.status).toBe('valid');
+    expect(agent.calls).toHaveLength(4); // Did not spend a third correction round.
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2,2,2);');
+    expect(JSON.parse(readFileSync(join(runDir, 'tasks/101/visual-review-2.json'), 'utf8'))).toMatchObject({ outcome: 'rejected' });
+    expect(existsSync(join(runDir, 'tasks/101/visual-review-3.json'))).toBe(false);
+    expect(result.precheck?.valid).toBe(true);
+  });
+
   it('feeds a validity failure back as a repair prompt and accepts the fixed candidate', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
@@ -342,6 +385,82 @@ describe('runTask with an LLM', () => {
     expect(s).toMatchObject({ status: 'valid', attempts: 2 });
     expect(agent.calls[1].messages[2].content).toMatch(/cadgenbench\.edit\.wrong-direction/);
     expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return forwards;');
+  });
+
+  it('tells the repair loop to keep the part in place after an unintended move in strict mode', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return shifted;'), reply('return inPlace;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        enforceLocality: true,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('shifted')
+            ? { ...promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm'), localityCheck: true }
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    const repair = agent.calls[1].messages[2].content;
+    expect(repair).toMatch(/cadgenbench\.edit\.unintended-move/);
+    expect(repair).toMatch(/apply the edit in place/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return inPlace;');
+  });
+
+  it('does not block on a locality check by default (#1402)', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return shifted;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async () => ({
+          ...promo('failed', 'unintended-move', 'the whole part moved by (5, 0, 0) mm'),
+          localityCheck: true,
+        }),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 1 });
+    expect(agent.calls).toHaveLength(1);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return shifted;');
+  });
+
+  it('still blocks a failure that is not a locality check by default', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return backwards;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 1,
+        editPromotion: async () => promo('failed', 'wrong-direction', 'volume moved the wrong way'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'failed' });
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
+  });
+
+  it('keeps a locality-unverified candidate without a repair attempt', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return walls;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async () => promo('unknown', 'locality-unverified', 'faces were added; locality is not measurable'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 1 });
+    expect(agent.calls).toHaveLength(1);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return walls;');
   });
 
   it('submits nothing when every attempt is a no-op', async () => {

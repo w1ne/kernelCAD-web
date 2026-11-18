@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-12",
+  "items": [
+    {
+      "number": 1298,
+      "title": "Fix substation cable ladder floating rungs and misleading proportions",
+      "target": "grid-substation/substation-cable-ladder-section"
+    },
+    {
+      "number": 1305,
+      "title": "Fix sanitary lobe pump missing cover fasteners and verify both orientations",
+      "target": "beverage-bottling-line/sanitary-lobe-pump"
+    },
+    {
+      "number": 1307,
+      "title": "Fix duplicated storage array geometry with distinct 24-bay scene prop",
+      "target": "data-center-infrastructure/storage-array-chassis"
+    },
+    {
+      "number": 1308,
+      "title": "Repair missing split shaft collar clamp screw and opposed lugs",
+      "target": "standard-components/split-shaft-collar"
+    }
+  ]
+}

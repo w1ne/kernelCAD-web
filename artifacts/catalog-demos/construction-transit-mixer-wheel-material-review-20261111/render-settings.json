@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-11",
+  "asset": "construction-equipment/transit-mixer-truck",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts transit-mixer-truck",
+  "renderer": "scripts/lib/glbSoftwareRender.ts via scripts/renderCatalogPreviews.ts",
+  "parameters": "Catalog defaults; no overrides",
+  "geometry": {
+    "triangleCount": 4296,
+    "triangleBudget": 6000,
+    "sizeM": [8.269668, 3.6, 2.72]
+  },
+  "materialChange": {
+    "partPattern": "*-wheel-*-rim",
+    "partCount": 6,
+    "beforeParameter": "equipmentPaintColor",
+    "afterParameter": "structuralSteelColor"
+  },
+  "previewBefore": {
+    "path": "previews/before.png",
+    "sha256": "63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5"
+  },
+  "previewAfter": {
+    "path": "previews/after.png",
+    "sha256": "716154169343616e9ed2907d6cc692798f7a7bbc607055db1b4a85d9bc471095"
+  },
+  "sourceBeforeSha256": "49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937",
+  "sourceAfterSha256": "f491239865e81de5af9a2e1ffb82c5cb068369bf619dc08c1e33cc1a1755c5e1",
+  "video": {
+    "command": "bash artifacts/catalog-demos/construction-transit-mixer-wheel-material-review-20261111/create-demo.sh",
+    "canvas": "1280x720",
+    "fps": 24,
+    "durationSeconds": 12,
+    "format": "MP4 / H.264 / yuv420p",
+    "segmentsSeconds": [3, 4, 5]
+  },
+  "scope": "Local source and software-rendered catalog preview. Not simulation, deployment, roadworthiness, or physical acceptance."
+}

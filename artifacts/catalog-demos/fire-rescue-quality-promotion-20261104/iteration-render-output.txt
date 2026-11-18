@@ -1,0 +1,5 @@
+fire-rescue/aerial-ladder-fire-engine: 1068 tris
+fire-rescue/firefighter-turnout-coat: 164 tris
+fire-rescue/municipal-fire-engine: 940 tris
+fire-rescue/structural-fire-helmet: 208 tris
+fire-rescue/wildland-fire-helmet: 220 tris

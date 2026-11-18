@@ -1,0 +1,5 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/buildCatalogPages.ts /tmp/kcad-industrial-air-compressor-pages.bYzL3L
+wrote 2402 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/kcad-industrial-air-compressor-pages.bYzL3L
+(node:256258) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

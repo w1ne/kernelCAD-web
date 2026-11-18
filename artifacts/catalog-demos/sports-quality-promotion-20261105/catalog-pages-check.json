@@ -1,0 +1,15 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-sports-catalog-pages",
+  "generatedOutput": "/tmp/kernelcad-sports-catalog-pages",
+  "catalogAssets": 2390,
+  "sportsRows": 40,
+  "sportsPagesChecked": 40,
+  "previewCopiesChecked": 40,
+  "parameterCountIncludingScale": [
+    3,
+    5
+  ],
+  "hubContainsCurrentCatalogCount": true,
+  "failures": [],
+  "passed": true
+}

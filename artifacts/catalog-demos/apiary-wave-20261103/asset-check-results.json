@@ -1,0 +1,36 @@
+{
+  "kit": "apiary",
+  "total": 50,
+  "passed": 50,
+  "triangleRange": [
+    60,
+    280
+  ],
+  "triangleBudget": 1800,
+  "materialsPerAsset": 1,
+  "indexedKnobs": [
+    "scale",
+    "color"
+  ],
+  "renderedPreviewFiles": 50,
+  "runningTotal": 1691,
+  "runningTotalWithPreviews": 1691,
+  "runningTotalPreviewFiles": 1691,
+  "missingRunningPreviewFiles": 0,
+  "integration": {
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "command": "npx vitest run tests/integration/catalog/"
+  },
+  "lint": {
+    "passed": true,
+    "command": "npx eslint catalog/"
+  },
+  "localPages": {
+    "scope": "local generated static pages",
+    "kit": "apiary",
+    "kitPagesAndPreviews": 50,
+    "assetsInIndex": 1691,
+    "hubExists": true
+  }
+}

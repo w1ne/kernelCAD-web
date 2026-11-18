@@ -8,6 +8,7 @@ import { parseTopoRef } from '../../kernel/naming/topoRef';
 import { parseQuery } from '../../kernel/naming/parseQuery';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
+import { CHAMFER_LEGS_API, type ChamferLegOptions } from './chamferLegOptions';
 
 export interface ShapeOperationFeatureSpec {
   kind: FeatureKind;
@@ -56,6 +57,12 @@ export type VariableEdgeValueKey = 'radius' | 'distance';
 
 export interface ScalarEdgeFeatureOpts {
   continuity?: FilletContinuity;
+  /** Fillet only: radius at each edge's high end; `radius` is at the low end. */
+  endRadius?: Editable<number>;
+  /** Chamfer only: validated asymmetric-leg options. */
+  chamferLegs?: ChamferLegOptions;
+  /** Shell only: further faces to open, recorded as `face_2`, `face_3`, … */
+  extraFaces?: readonly (ShapeOperationFaceSelector | string)[];
 }
 
 export interface DraftFeatureOpts {
@@ -101,6 +108,22 @@ export function buildFaceInputRef(
     featureId: baseId,
     ref: { kind: 'query', query: face as never },
   };
+}
+
+const FACE_REF_KINDS: ReadonlySet<string> = new Set([
+  'canonical', 'tracked', 'created', 'propagated', 'label', 'query', 'queryDsl',
+]);
+
+/** Build an `inputs.upToFace` FeatureRef. Accepts the documented FaceRef
+ *  (`{ kind: 'canonical', face: 'bottom' }`) and every form `face` accepts. */
+export function buildUpToFaceInputRef(baseId: FeatureId, upToFace: unknown): FeatureRef {
+  if (typeof upToFace === 'object' && upToFace !== null && !isQueryValue(upToFace)) {
+    const kind = (upToFace as { kind?: unknown }).kind;
+    if (typeof kind === 'string' && FACE_REF_KINDS.has(kind)) {
+      return { kind: 'face', featureId: baseId, ref: upToFace as never };
+    }
+  }
+  return buildFaceInputRef(baseId, upToFace as ShapeOperationFaceSelector);
 }
 
 function queryDslFaceRef(baseId: FeatureId, q: ShapeOperationQueryValue): FeatureRef {
@@ -272,12 +295,47 @@ export function buildScalarEdgeFeatureSpec(
       ? { continuity: opts.continuity }
       : undefined;
 
+  const params: Record<string, Param> = { [valueParamName]: toParam(value, 'mm') };
+  if (kind === 'fillet' && opts?.endRadius !== undefined) params.endRadius = toParam(opts.endRadius, 'mm');
+  if (kind === 'chamfer' && opts?.chamferLegs !== undefined) {
+    applyChamferLegs(baseId, opts.chamferLegs, params, inputs);
+  }
+  if (kind === 'shell' && opts?.extraFaces !== undefined) {
+    opts.extraFaces.forEach((face, index) => {
+      inputs[`face_${index + 2}`] = buildFaceInputRef(baseId, face as ShapeOperationFaceSelector);
+    });
+  }
   return {
     kind,
-    params: { [valueParamName]: toParam(value, 'mm') },
+    params,
     inputs,
     ...(metadata !== undefined ? { metadata } : {}),
   };
+}
+
+/** Record the second chamfer leg and its reference face. Without an explicit
+ *  `face`, the face that selected the edges is the reference. */
+function applyChamferLegs(
+  baseId: FeatureId,
+  legs: ChamferLegOptions,
+  params: Record<string, Param>,
+  inputs: Record<string, FeatureRef>,
+): void {
+  if (legs.distance2 !== undefined) params.distance2 = toParam(legs.distance2, 'mm');
+  if (legs.angleDeg !== undefined) params.angle = toParam(legs.angleDeg, 'deg');
+  if (legs.face !== undefined) {
+    inputs.referenceFace = buildFaceInputRef(baseId, legs.face as ShapeOperationFaceSelector);
+  } else if (inputs.face !== undefined) {
+    inputs.referenceFace = inputs.face;
+  } else {
+    invalidArgs({
+      api: CHAMFER_LEGS_API,
+      path: 'opts.face',
+      gotText: 'nothing, and the edges were not selected by a face',
+      requires: 'the reference face that `distance` is measured on, adjacent to every chamfered edge',
+      example: "box(40, 30, 10).chamfer(2, { parallel: 'Z' }, { distance2: 5, face: 'front' })",
+    });
+  }
 }
 
 export function buildBendFeatureSpec(

@@ -1,0 +1,64 @@
+{
+  "workflow": "three existing nature .kcad.ts sources -> named material controls and existing looks -> source-driven preset exports -> rendered previews -> local catalog and page checks",
+  "video": "artifacts/catalog-demos/nature-quality-20261106/nature-quality-demo.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 6,
+  "durationSeconds": 18,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/nature-quality-20261106/capture_nature_demo.py",
+  "presetInvocation": "npx tsx artifacts/catalog-demos/nature-quality-20261106/render_nature_presets.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts <all 66 nature asset ids>",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "checks": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <all 66 nature asset ids>",
+      "exitCode": 0,
+      "output": "preview-render-output.txt",
+      "assets": 66
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "output": "catalog-build-output.txt"
+    },
+    "kitQuality": {
+      "command": "python scripts/checkCatalogQuality.py --kit nature --top 8",
+      "exitCode": 0,
+      "output": "nature-quality-output.txt"
+    },
+    "wholeCatalogQuality": {
+      "command": "python scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "output": "catalog-quality-output.txt",
+      "note": "Audit ran and reports one remaining failing asset outside this round: props/sandbags."
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/nature/",
+      "exitCode": 0,
+      "output": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "output": "integration-output.txt"
+    },
+    "localPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-nature-pages-20261106",
+      "exitCode": 0,
+      "pages": 2390,
+      "output": "local-pages-output.txt"
+    },
+    "presetVariants": {
+      "command": "npx tsx artifacts/catalog-demos/nature-quality-20261106/render_nature_presets.ts",
+      "exitCode": 0,
+      "variants": 6,
+      "output": "preset-render-output.txt"
+    }
+  },
+  "provenance": "Local renders from checked-in source and exact named presets, with generated catalog previews and local verification. No live Studio session or deployment is shown."
+}

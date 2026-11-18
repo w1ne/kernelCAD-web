@@ -4,7 +4,7 @@
 //
 // MCP `dfm_check` tool — W3 Task 8. Runs the print-readiness gates declared
 // by the script's dfmSpec(...) and returns the flattened report payload
-// `{ ok, clearance, walls, voids, fdm?, timings, diagnostics }` (the
+// `{ ok, clearance, walls, voids, fdm?, moulding?, timings, diagnostics }` (the
 // get_bend_table / list_part_stats sibling convention). Accepts `{ file }`
 // or `{ code }` via the evaluateAndBuildScript resolution idiom, which also
 // hosts the gate hook — this tool surfaces the report struct the
@@ -33,6 +33,10 @@ export interface DfmCheckOutput {
    *  nozzle, small features, bed contact, fit, orientation ranking);
    *  present only when the spec declares `process: 'fdm'`. */
   fdm?: DfmCheckReport['fdm'];
+  /** Injection-moulding check per moulded part (draft, undercuts, thin and
+   *  thick walls, sharp internal corners, unmeasured quantities and stated
+   *  limitations); present only when the spec declares `process: 'moulding'`. */
+  moulding?: DfmCheckReport['moulding'];
   /** Per-phase wall time (ms); present when the gates ran. */
   timings?: DfmCheckReport['timings'];
   diagnostics: CompilerDiagnostic[];
@@ -64,6 +68,7 @@ export async function dfmCheckTool(input: DfmCheckInput): Promise<DfmCheckOutput
     walls: dfmReport.walls,
     voids: dfmReport.voids,
     ...(dfmReport.fdm !== undefined ? { fdm: dfmReport.fdm } : {}),
+    ...(dfmReport.moulding !== undefined ? { moulding: dfmReport.moulding } : {}),
     timings: dfmReport.timings,
     diagnostics: evaluation.diagnostics,
   };

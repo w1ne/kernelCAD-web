@@ -1,0 +1,2 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'eslint' catalog/ --fix

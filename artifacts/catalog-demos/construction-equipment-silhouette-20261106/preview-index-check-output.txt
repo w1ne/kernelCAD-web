@@ -1,0 +1,11 @@
+EXIT CODE: 0
+{
+  "status": "passed",
+  "kit": "construction-equipment",
+  "verifiedAssets": 60,
+  "refinedAssets": [
+    "towable-light-tower",
+    "ride-on-power-trowel",
+    "concrete-batch-plant"
+  ]
+}

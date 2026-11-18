@@ -1,0 +1,289 @@
+{
+  "invocation": {
+    "tool": "diff_geometry",
+    "arguments": {
+      "baseFile": "before.kcad.ts",
+      "file": "after.kcad.ts",
+      "render": true
+    }
+  },
+  "verdict": "topology-changed",
+  "volumeMm3": {
+    "base": 11874.33629385641,
+    "revised": 9940.293316490192,
+    "delta": -1934.042977366218
+  },
+  "addedMm3": 0,
+  "removedMm3": 1934.0429773662167,
+  "faceCount": {
+    "base": 8,
+    "revised": 9,
+    "delta": 1
+  },
+  "holeCount": {
+    "base": 2,
+    "revised": 3,
+    "delta": 1
+  },
+  "faces": {
+    "added": [
+      {
+        "surfaceType": "cylinder",
+        "areaMm2": 345.5752,
+        "center": [
+          30,
+          20,
+          2.5
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "radiusMm": 11
+      }
+    ],
+    "removed": [],
+    "modified": [
+      {
+        "surfaceType": "cylinder",
+        "areaMm2": 70.6858,
+        "center": [
+          10,
+          20,
+          2.5
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "radiusMm": 2.25,
+        "change": "resized",
+        "matchedBy": "geometry",
+        "before": {
+          "surfaceType": "cylinder",
+          "areaMm2": 62.8319,
+          "center": [
+            10,
+            20,
+            2.5
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "radiusMm": 2
+        },
+        "after": {
+          "surfaceType": "cylinder",
+          "areaMm2": 70.6858,
+          "center": [
+            10,
+            20,
+            2.5
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "radiusMm": 2.25
+        },
+        "offsetMm": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "surfaceType": "cylinder",
+        "areaMm2": 70.6858,
+        "center": [
+          50,
+          20,
+          2.5
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "radiusMm": 2.25,
+        "change": "resized",
+        "matchedBy": "geometry",
+        "before": {
+          "surfaceType": "cylinder",
+          "areaMm2": 62.8319,
+          "center": [
+            50,
+            20,
+            2.5
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "radiusMm": 2
+        },
+        "after": {
+          "surfaceType": "cylinder",
+          "areaMm2": 70.6858,
+          "center": [
+            50,
+            20,
+            2.5
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "radiusMm": 2.25
+        },
+        "offsetMm": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "surfaceType": "plane",
+        "areaMm2": 1988.0587,
+        "center": [
+          30,
+          20,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "ref": "@kc[boolean_3/face/bottom]",
+        "change": "resized",
+        "matchedBy": "lineage",
+        "before": {
+          "surfaceType": "plane",
+          "areaMm2": 2374.8673,
+          "center": [
+            30,
+            20,
+            0
+          ],
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        },
+        "after": {
+          "surfaceType": "plane",
+          "areaMm2": 1988.0587,
+          "center": [
+            30,
+            20,
+            0
+          ],
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        },
+        "offsetMm": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "surfaceType": "plane",
+        "areaMm2": 1988.0587,
+        "center": [
+          30,
+          20,
+          5
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "ref": "@kc[boolean_3/face/top]",
+        "change": "resized",
+        "matchedBy": "lineage",
+        "before": {
+          "surfaceType": "plane",
+          "areaMm2": 2374.8673,
+          "center": [
+            30,
+            20,
+            5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        },
+        "after": {
+          "surfaceType": "plane",
+          "areaMm2": 1988.0587,
+          "center": [
+            30,
+            20,
+            5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        },
+        "offsetMm": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "unchangedCount": 4,
+    "addedCount": 1,
+    "removedCount": 0,
+    "modifiedCount": 4,
+    "matchedByLineage": 6,
+    "truncated": false
+  },
+  "summary": {
+    "identical": 0,
+    "moved": 0,
+    "resized": 0,
+    "topologyChanged": 1,
+    "unmatched": 0,
+    "totalAddedMm3": 0,
+    "totalRemovedMm3": 1934.0429773662167,
+    "maxDeviationMm": 4.97556058329728,
+    "faces": {
+      "added": 1,
+      "removed": 0,
+      "modified": 4,
+      "unchanged": 4
+    },
+    "text": "Body '(root)' topology-changed: 1 face added (cylinder r=11 at (30, 20, 2.5)), 4 faces resized (cylinder r=2 -> 2.25 at (10, 20, 2.5); cylinder r=2 -> 2.25 at (50, 20, 2.5); plane 'bottom' area 2374.87 -> 1988.06 mm² at (30, 20, 0); …1 more), 4 unchanged."
+  },
+  "render": {
+    "ok": true,
+    "out_dir": "overlay",
+    "script_path": "overlay/diff-overlay.kcad.ts",
+    "images": [
+      "overlay/iso.png"
+    ],
+    "addedBodies": [],
+    "removedBodies": [
+      "(root)"
+    ]
+  }
+}

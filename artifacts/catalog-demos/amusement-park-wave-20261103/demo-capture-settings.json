@@ -1,0 +1,17 @@
+{
+  "capture": "Chrome DevTools screencast of local generated catalog preview",
+  "browser": "already-running Chrome/CDP session; same profile; no duplicate browser process",
+  "viewport": "1440x900",
+  "resolution": "1440x900",
+  "sequence": "demo_capture_sequence.js",
+  "durationTargetSeconds": 20,
+  "finalDurationSeconds": 19.458333,
+  "encoding": "H.264 AVC, yuv420p, 24 fps, fast-start MP4",
+  "featuresShown": [
+    "filter by park zone",
+    "open generated asset preview and mesh stats",
+    "compare default and scale-1.25 generated mesh bounds",
+    "browse midway game and concession props"
+  ],
+  "provenanceCaption": "Local preview and software validation on this branch; not a deployed website, hardware test, or ride acceptance."
+}

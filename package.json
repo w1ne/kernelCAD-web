@@ -15,7 +15,7 @@
     "url": "https://github.com/w1ne/kernelCAD-web/issues"
   },
   "engines": {
-    "node": ">=22.12.0",
+    "node": ">=24.0.0",
     "npm": ">=10.0.0"
   },
   "bin": {
@@ -55,7 +55,9 @@
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "catalog:build": "npx tsx scripts/buildAssetCatalog.ts",
     "catalog:check": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "benchmark:tokens": "tsx scripts/tokenBenchmark.ts",
     "catalog:previews": "npx tsx scripts/renderCatalogPreviews.ts",
+    "catalog:pages": "npx tsx scripts/buildCatalogPages.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts && npx tsx scripts/buildAuthoringReferences.ts",
     "skill:references": "npx tsx scripts/buildAuthoringReferences.ts",
@@ -144,7 +146,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "replicad": "^0.23.1",
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#96f1a3d347c4f407f9efbab6473513a0b2705b4a",
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#583431c032e015fa3b0eb509bf0009a5b6820a9a",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
     "sucrase": "^3.35.1",
@@ -156,7 +158,7 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#96f1a3d347c4f407f9efbab6473513a0b2705b4a"
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#583431c032e015fa3b0eb509bf0009a5b6820a9a"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",
@@ -182,6 +184,7 @@
     "fast-check": "^4.5.3",
     "globals": "^16.5.0",
     "happy-dom": "^20.4.0",
+    "js-tiktoken": "1.0.21",
     "jsdom": "^27.4.0",
     "madge": "^8.0.0",
     "meshoptimizer": "^0.22.0",

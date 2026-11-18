@@ -30,8 +30,8 @@ describe('fastener installation MCP adapter', () => {
     const properties = definition.inputSchema.properties as Record<string, { enum?: string[]; items?: { required?: string[] } }>;
     expect(properties.check.enum).toContain('fastener-installation');
     expect(properties.fasteners.items!.required).toEqual(['part','against']);
-    expect(properties).toHaveProperty('toleranceMm');
-    expect(properties).toHaveProperty('angleToleranceDeg');
+    expect(properties).toHaveProperty('tolerance_mm');
+    expect(properties).toHaveProperty('angle_tolerance_deg');
     expect(definition.description).toMatch(/zero coverage cannot pass/);
   });
 });

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './capture/captureSession';
 import { makeAssembly, type Assembly } from './capture/assembly';
+import { declareConfigurations, definePartShape } from './capture/partDefinition';
 import { Shape } from './capture/proxy';
 import type { Sketch, PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
@@ -73,6 +74,10 @@ import { makeRequirementMethods } from './apiRequirementMethods';
 import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
+import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
+import { makeSpurGearPairMethod } from './apiSpurGearPair';
+import type { SpurGearPair, SpurGearPairOptions } from './spurGearPair';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -116,9 +121,15 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, LWPOLYLINE, POLYLINE. SPLINE/ELLIPSE/INSERT are
-   * refused with a diagnostic naming the entity and line number rather than
-   * dropped. `$INSUNITS` sets the scale; absent or Unitless means mm.
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
+   * planar polyline HATCH boundary, and clamped continuous planar SPLINE
+   * entities with control points and knots. HATCH bulges map to exact arcs;
+   * multi-path, edge-based, and out-of-plane hatches are refused so holes and
+   * islands are not flattened.
+   * Full and partial planar ellipses and supported splines are exact rational
+   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous
+   * and nonplanar splines, plus INSERT, are refused with an entity and line
+   * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**
@@ -128,8 +139,9 @@ export interface PartsLib {
    * SVG's Y axis points down and is reflected about the viewBox top so the
    * profile lands upright in positive Y. Scale comes from `viewBox` plus a
    * physically-dimensioned `width`; without one a user unit is a CSS pixel
-   * (1/96 in). Béziers and true ellipses are chord-approximated within
-   * `opts.curveTolerance` mm; lines and circular arcs are exact.
+   * (1/96 in). Béziers and SVG `<ellipse>` elements are chord-approximated
+   * within `opts.curveTolerance` mm; lines and circular arcs are exact. DXF
+   * planar ELLIPSE entities use exact rational NURBS geometry.
    */
   fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
@@ -230,6 +242,22 @@ export interface KernelCadApi {
    */
   spring(opts: SpringOptions): Shape;
   /**
+   * Solid circular pipe along a polyline. Corners become tangent circular
+   * bends (`opts.bendRadius` defaults to 1.5 × `radius`). Built with OCCT
+   * `BRepOffsetAPI_MakePipe` on exact line and arc edges — cylinders and
+   * torus segments, few faces, cheap to boolean. Use this for dressed
+   * cables and hose runs instead of `circle().sweep(points, { spine: 'smooth' })`
+   * (a B-spline pipe-shell that is expensive to evaluate) or a chain of
+   * overlapping cylinders.
+   *
+   * This is not `tube()`: no name, no wall/bore, no `tubeSpec` manufacturing
+   * rules, and no ports. `bendRadius` is the centreline radius and must
+   * exceed `radius`; every straight between corners must be long enough
+   * for the bends (same centreline geometry as `tube()` paths). A
+   * non-object `opts` or an unknown option key throws `feature.invalid-args`.
+   */
+  pipe(points: Vec3[], radius: number, opts?: PipeOptions): Shape;
+  /**
    * Build an involute spur gear as ONE manifold solid: the tooth is generated
    * by the standard basic rack (true involute above the base circle, trochoid
    * root fillet, correct undercut below ~17 teeth at 20°). Axis +Z, face from
@@ -240,6 +268,27 @@ export interface KernelCadApi {
    * when z2 is even (0 when odd) so a tooth space faces the first gear.
    */
   spurGear(opts: SpurGearOptions): Shape;
+  /**
+   * External spur pair at centre distance (m1·z1 + m2·z2)/2, phased so a
+   * tooth space faces the driver. `ratio` is ω_driven/ω_driver and is
+   * negative. The assembly carries revolute mates, a couple at that ratio,
+   * and a gear-pair transmission. `toothInterference` reports exact BREP
+   * clearance and common volume over sampled poses, refines beside the
+   * minimum, and measures the pitch-circle backlash. A common volume
+   * strictly above `interferenceVolumeFloorMm3` (0.001 mm³) sets
+   * `anyInterference` and sets `minClearanceMm` to 0. A smaller positive
+   * volume does not. Zero-volume contact (common volume 0 and distance 0)
+   * sets `minClearanceMm` to 0 while `anyInterference` stays false. The
+   * 0.001 mm³ floor is a fixed absolute volume for every module and face
+   * width: overlap volume is the transverse area times the face width, and
+   * similar teeth grow that area with the square of the module. Those
+   * clearance aggregates do not prove the gaps
+   * between samples. `withGeneratingCut`
+   * is opt-in: it subtracts a discrete union of the driver over one tooth
+   * and repeats that space at tooth pitch. The default teeth stay the
+   * involute profile. Geometry only — not strength.
+   */
+  spurGearPair(opts: SpurGearPairOptions): SpurGearPair;
   /**
    * Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim
    * disk minus a bore whose flanks are the external spur profile mirrored
@@ -270,6 +319,15 @@ export interface KernelCadApi {
    */
   isoThread(spec: string): IsoThreadInfo;
   /**
+   * ISO 261 coarse thread for a diameter in mm. `12` → M12×1.75.
+   * `kind: 'tap_drill'` matches D − P (`5` → M6). `kind: 'auto'` tries
+   * nominal (0.05 mm) then tap drill (0.1 mm). A clearance bore is refused.
+   */
+  metricThreadFromDiameter(
+    diameterMm: number,
+    opts?: { kind?: 'nominal' | 'tap_drill' | 'auto'; toleranceMm?: number },
+  ): IsoThreadInfo;
+  /**
    * A real ISO metric EXTERNAL thread: 60° basic profile, right-hand, axis
    * +Z from z = 0 to z = `length`, ridge centre crossing +X at every
    * z = k·pitch (so a `threadedHole` whose entry face sits at a whole number
@@ -297,6 +355,8 @@ export interface KernelCadApi {
    * Round every corner of a closed 2D polygon with tangent arcs. Returns
    * points for `extrudePolygon` / the prism helpers. Radius is clamped per
    * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   * `segments` is the only option; a positional count, an unknown key or a
+   * non-finite `segments` raises `feature.invalid-args`.
    */
   filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
   /**
@@ -311,6 +371,8 @@ export interface KernelCadApi {
   prismFront(points: readonly PolygonPoint[], x0: number, x1: number): Shape;
   /** Plan-view mask prism: points are (X, Y), extruded along Z from z0..z1. */
   prismPlan(points: readonly PolygonPoint[], z0: number, z1: number): Shape;
+  /** Build a constant-thickness vertical rib from an open XY centerline and fuse it to a base shape. */
+  rib(base: Shape, centerline: readonly RibPoint[], opts: RibOptions): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -338,6 +400,10 @@ export interface KernelCadApi {
   meta(metadata: AssetMetadataInput): void;
   /** Declare named presets as maps of knob overrides. */
   presets(presets: AssetPresets): void;
+  /** Declare named parameter sets. An assembly picks one with `instance`. */
+  configurations(sets: Readonly<Record<string, Readonly<Record<string, number | boolean | string>>>>): void;
+  /** Publish the part solid and its numeric connector frames. Returns `shape`. */
+  definePart(part: { shape: Shape; connectors?: Readonly<Record<string, unknown>> }): Shape;
 
   path(): PathBuilder;
   /**
@@ -505,9 +571,11 @@ export interface KernelCadApi {
    * If `opts.requireClosed` is true and the result is still an open shell
    * at lower time, the lowerer emits `feature.surface-sew.open-shell`
    * (severity 'error') instead of returning a partial solid.
+   * Unknown option keys and non-object option bags throw
+   * `feature.invalid-args` instead of silently using the defaults.
    *
    * @throws KernelError('feature.invalid-args') if `surfaces` is not an
-   *  array of at least 1 Surface.
+   *  array of at least 1 Surface or `opts` is malformed.
    */
   sew(
     surfaces: SurfaceProxy[],
@@ -658,6 +726,14 @@ export interface KernelCadApi {
    * `nozzleMm`, bed contact, bed fit on `printer`, and the six-orientation
    * ranking); the gcode export slices in the declared `buildDirection`.
    *
+   * `process: 'moulding'` adds the injection-moulding check against the
+   * mould `pullDirection` (default '+z'; the halves separate along ±it):
+   * faces with less than `minDraftDeg` of draft (default 1°), faces material
+   * blocks from releasing (undercuts), walls under `minWallMm` (default 1),
+   * the thickest section over `maxWallMm` (default 4, sink / warp), and
+   * inside corners sharper than `minRadiusMm` (default 0.5). Quantities it
+   * cannot measure are reported as `dfm.moulding.unmeasured`, never passed.
+   *
    * At least one of `minWall`, `minClearance`, `channels`, or `process` is
    * required.
    * `includeArticulatedMates: true` also measures non-fastened mate pairs at
@@ -784,41 +860,41 @@ export interface SpringOptions {
 
 export interface SpurGearOptions {
   /** Module m in mm (pitch diameter = m · teeth). */
-  module: number;
+  module: Editable<number>;
   /** Tooth count, integer in [6, 400]. */
-  teeth: number;
+  teeth: Editable<number>;
   /** Face width (extrude depth) in mm. */
-  faceWidth: number;
+  faceWidth: Editable<number>;
   /** Pressure angle in degrees, default 20. */
-  pressureAngle?: number;
+  pressureAngle?: Editable<number>;
   /** Optional through-bore diameter in mm. */
-  bore?: number;
+  bore?: Editable<number>;
   /** Circular backlash in mm at the pitch circle of a pair built with the
    *  same value (each gear thins its tooth by half). Default 0.05 · module. */
-  backlash?: number;
+  backlash?: Editable<number>;
 }
 
 export interface InternalSpurGearOptions {
   /** Module m in mm (pitch diameter = m · teeth). */
-  module: number;
+  module: Editable<number>;
   /** Tooth count, integer in [6, 400]. */
-  teeth: number;
+  teeth: Editable<number>;
   /** Face width (extrude depth) in mm. */
-  faceWidth: number;
+  faceWidth: Editable<number>;
   /** Pressure angle in degrees, default 20. */
-  pressureAngle?: number;
+  pressureAngle?: Editable<number>;
   /** Circular backlash in mm at the pitch circle. Default 0.05 · module. */
-  backlash?: number;
+  backlash?: Editable<number>;
   /** Radial rim stock outside the internal root circle. Default 2.5 · module. */
-  rimThickness?: number;
+  rimThickness?: Editable<number>;
   /** Profile shift coefficient x. v1 only accepts 0 / omitted. */
-  profileShift?: number;
+  profileShift?: Editable<number>;
 }
 
 export interface PlanetaryToothCompatibilityOpts {
-  sunTeeth: number;
-  planetTeeth: number;
-  ringTeeth: number;
+  sunTeeth: Editable<number>;
+  planetTeeth: Editable<number>;
+  ringTeeth: Editable<number>;
 }
 
 /** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
@@ -836,11 +912,13 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
   const api: KernelCadApi = {
     ...makePrimitiveMethods(session),
     spring: makeSpringMethod(session, () => api),
+    pipe: makePipeMethod(session),
     spurGear: makeSpurGearMethod(session, () => api),
+    spurGearPair: makeSpurGearPairMethod(session, () => api),
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
-    planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
+    planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(session),
     ...makeThreadMethods(session, () => api),
     ...makeExtrudeMethods(session),
     ...makePolygonMethods(() => api),
@@ -848,6 +926,12 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
       return makeAssembly(name, session);
     },
     ...makeParamMethods(session),
+    configurations(sets) {
+      declareConfigurations(session, sets);
+    },
+    definePart(part) {
+      return definePartShape(session, part);
+    },
     ...makePartsLib(ctx),
     ...makeNurbsSurfaceMethods(session),
     ...makeCurveMethods(session),
@@ -855,6 +939,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
     ...makeRequirementMethods(session),
+    ...makeRibMethod(() => api),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
@@ -878,3 +963,10 @@ export type {
   CurveSurfaceIntersection,
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
+export type { RibOptions, RibPoint } from './apiRibMethod';
+export type {
+  SpurGearPair,
+  SpurGearPairOptions,
+  SpurGearGeneratingCut,
+  SpurGearToothInterferenceReport,
+} from './spurGearPair';

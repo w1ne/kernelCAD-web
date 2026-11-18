@@ -1,0 +1,17 @@
+{
+  "video": "grid-substation-demo.mp4",
+  "bytes": 160248,
+  "durationSeconds": 15.0,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "30/1",
+  "hasAudio": false,
+  "representativeFrames": [
+    "2s hub search",
+    "7s asset detail",
+    "12s scale variant"
+  ],
+  "visualInspectionSheet": "preview-review/demo-frame-contact-sheet.png",
+  "passed": true
+}

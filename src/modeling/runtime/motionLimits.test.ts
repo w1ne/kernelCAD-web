@@ -6,16 +6,25 @@
 // limit coverage (ClassCAD-style per-DOF limits).
 
 import { describe, expect, it } from 'vitest';
+import type { AnimationKey } from '../../shared/intent/animationViewRecord';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { checkMotionLimits } from './motionLimits';
 
 const AXIS = { type: 'axis' as const, origin: { kind: 'vec3' as const, value: [0, 0, 10] as [number, number, number] }, axis: [0, 0, 1] as [number, number, number] };
 
-function arm(opts: { type?: 'revolute' | 'cylindrical'; limits?: [number, number]; from: number; to: number }) {
+function arm(opts: {
+  type?: 'revolute' | 'cylindrical';
+  limits?: [number, number];
+  paramLimits?: [number, number];
+  from?: number;
+  to?: number;
+  keys?: AnimationKey[];
+}) {
   const session = new CaptureSession();
   const k = createModelingApi({ session });
-  const elbowDeg = k.param('elbowDeg', 0, { min: -90, max: 90 });
+  const [min, max] = opts.paramLimits ?? [-90, 90];
+  const elbowDeg = k.param('elbowDeg', 0, { min, max });
   const a = k.assembly('arm');
   const base = a.part('base', k.box(40, 40, 10));
   const link = a.part('link', k.box(60, 8, 4));
@@ -25,7 +34,11 @@ function arm(opts: { type?: 'revolute' | 'cylindrical'; limits?: [number, number
     pose: elbowDeg,
     ...(opts.limits ? { limitsDeg: opts.limits } : {}),
   });
-  k.animationView({ param: 'elbowDeg', from: opts.from, to: opts.to, durationMs: 1000 });
+  if (opts.keys) {
+    k.animationView({ tracks: [{ param: 'elbowDeg', keys: opts.keys }] });
+  } else {
+    k.animationView({ param: 'elbowDeg', from: opts.from ?? 0, to: opts.to ?? 0, durationMs: 1000 });
+  }
   return a;
 }
 
@@ -47,6 +60,40 @@ describe('checkMotionLimits', () => {
     expect(r.failures).toEqual([]);
     expect(r.checked).toBe(1);
     expect(r.skipped).toEqual([]);
+  });
+
+  it('reports an authored key outside joint limits even when param bounds clamp it', () => {
+    const assembly = arm({
+      limits: [-65, 65],
+      paramLimits: [-65, 65],
+      keys: [
+        { atMs: 0, value: 897, ease: 'easeInOut' },
+        { atMs: 1000, value: 0, ease: 'easeInOut' },
+      ],
+    });
+    const animation = assembly.__session().getRecords().find((record) => record.kind === 'animationView');
+    expect(animation?.metadata).toMatchObject({
+      tracks: [{ param: 'elbowDeg', keys: [{ atMs: 0, value: 65, authoredValue: 897 }, { atMs: 1000, value: 0 }] }],
+    });
+
+    const r = checkMotionLimits(assembly);
+
+    expect(r.failures).toHaveLength(1);
+    expect(r.failures[0].code).toBe('kinematic.pose.out-of-limits');
+    expect(r.failures[0].message).toContain("param 'elbowDeg' to 897 at 0 ms");
+    expect(r.failures[0].message).toContain("joint 'elbow' at 897°");
+  });
+
+  it('keeps an in-range key clean when param bounds match joint limits', () => {
+    const r = checkMotionLimits(arm({
+      limits: [-65, 65],
+      paramLimits: [-65, 65],
+      from: 0,
+      to: 65,
+    }));
+
+    expect(r.failures).toEqual([]);
+    expect(r.checked).toBe(1);
   });
 
   it('reports a moving joint with no limits as skipped, not broken', () => {

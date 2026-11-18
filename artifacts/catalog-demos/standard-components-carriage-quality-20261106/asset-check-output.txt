@@ -1,0 +1,6 @@
+COMMAND: npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/linear-guide-carriage.kcad.ts --png /tmp/linear-guide-carriage-final.png
+EXIT CODE: 0
+{"id":"linear-guide-carriage","triangles":408,"budget":460,"sizeM":[0.046,0.0292,0.04],"minUpM":0,"materials":1,"knobs":["size:choice","steel:color","polymer:color","brass:color"],"palette":["steel=#85929a","polymer=#34393d","brass=#b28a4d"]}
+wrote /tmp/linear-guide-carriage-final.png
+(node:3118599) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

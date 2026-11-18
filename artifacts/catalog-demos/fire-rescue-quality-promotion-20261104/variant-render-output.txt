@@ -1,0 +1,3 @@
+rendered fire-rescue/municipal-fire-engine from indexed highVisibility preset (4 color controls)
+rendered fire-rescue/firefighter-turnout-coat from indexed highVisibility preset (4 color controls)
+rendered fire-rescue/structural-fire-helmet from indexed highVisibility preset (3 color controls)

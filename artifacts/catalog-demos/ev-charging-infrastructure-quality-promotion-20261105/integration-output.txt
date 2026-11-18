@@ -1,0 +1,15 @@
+$ npx vitest run tests/integration/catalog/
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 711ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 308ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 162004ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  160902ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  319ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 235125ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  234732ms
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Duration  239.34s (transform 12.76s, setup 315ms, import 17.57s, tests 398.15s, environment 1ms)

@@ -1,0 +1,1292 @@
+{
+  "date": "2026-11-06",
+  "kit": "office",
+  "assetsPromoted": 40,
+  "assetIdsAdded": 0,
+  "materialControlCount": 120,
+  "presetEntryCount": 80,
+  "silhouetteEnhancements": [
+    "scissors: open tapered blade profiles and two finger loops behind the brass pivot",
+    "paper-shredder: visible front casters",
+    "laminator: exposed feed rollers"
+  ],
+  "previewCount": 40,
+  "quality": {
+    "before": {
+      "passing": 2331,
+      "total": 2390,
+      "passRate": "97.5%",
+      "thin": 59
+    },
+    "after": {
+      "passing": 2371,
+      "total": 2390,
+      "passRate": "99.2%",
+      "thin": 19
+    },
+    "office": {
+      "passing": 40,
+      "total": 40
+    }
+  },
+  "localCatalogPages": {
+    "workspacePageCount": 2390,
+    "pageCount": 40,
+    "hubBuilt": true
+  },
+  "index": {
+    "officeRows": 40,
+    "sourceHashPreviewBudgetErrors": []
+  },
+  "checks": {
+    "date": "2026-11-06",
+    "commands": {
+      "previewRender": {
+        "command": "npx tsx scripts/renderCatalogPreviews.ts <40 office asset IDs>",
+        "exitCode": 0,
+        "assets": 40
+      },
+      "catalogBuild": {
+        "command": "npx tsx scripts/buildAssetCatalog.ts",
+        "exitCode": 0
+      },
+      "officeQuality": {
+        "command": "python3 scripts/checkCatalogQuality.py --kit office",
+        "exitCode": 0,
+        "passRate": "40/40"
+      },
+      "wholeCatalogQuality": {
+        "command": "python3 scripts/checkCatalogQuality.py",
+        "exitCode": 1,
+        "passRate": "2371/2390 (99.2%)",
+        "remainingThin": 19,
+        "note": "The remaining 19 thin assets are in other kits; this office round promotes one kit only."
+      },
+      "eslint": {
+        "command": "npx eslint catalog/kits/office/",
+        "exitCode": 0
+      },
+      "catalogIntegration": {
+        "command": "npx vitest run tests/integration/catalog/",
+        "exitCode": 0,
+        "files": 4,
+        "tests": 15,
+        "durationSeconds": 249.01
+      },
+      "catalogPages": {
+        "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-office-pages-20261106",
+        "exitCode": 0,
+        "workspacePages": 2390,
+        "officePagesChecked": 40,
+        "deployed": false
+      },
+      "presetRenders": {
+        "command": "npx tsx artifacts/catalog-demos/office-quality-20261106/render_office_presets.ts",
+        "exitCode": 0,
+        "variants": 4
+      }
+    }
+  },
+  "assets": [
+    {
+      "id": "archive-box",
+      "sourceSha256": "db9f26cb62b251d112dcd85a44a796f44800d9fabec62f5fc2436f80f0163250",
+      "preview": "/assets/office-archive-box.png",
+      "previewFile": "catalog/kits/office/previews/archive-box.png",
+      "triangleCount": 60,
+      "triangleBudget": 150,
+      "colorParams": [
+        {
+          "name": "paperboard",
+          "label": "Paperboard",
+          "default": "#b8945b"
+        },
+        {
+          "name": "coverStock",
+          "label": "Cover stock",
+          "default": "#e7ddc7"
+        },
+        {
+          "name": "ink",
+          "label": "Label ink",
+          "default": "#427895"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/archive-box/index.html"
+    },
+    {
+      "id": "business-card-holder",
+      "sourceSha256": "d6a79f1fd98302496529eea94279ad5394782529df7a96c2b079762c793e2c1d",
+      "preview": "/assets/office-business-card-holder.png",
+      "previewFile": "catalog/kits/office/previews/business-card-holder.png",
+      "triangleCount": 60,
+      "triangleBudget": 130,
+      "colorParams": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum",
+          "default": "#a6afb2"
+        },
+        {
+          "name": "cardStock",
+          "label": "Card stock",
+          "default": "#f1ece1"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber feet",
+          "default": "#343c40"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/business-card-holder/index.html"
+    },
+    {
+      "id": "calculator",
+      "sourceSha256": "e12ed5308e7eab1c1b03cbea2dbfb571dac27d562ece8b479b3c402465e7939b",
+      "preview": "/assets/office-calculator.png",
+      "previewFile": "catalog/kits/office/previews/calculator.png",
+      "triangleCount": 156,
+      "triangleBudget": 250,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Case polymer",
+          "default": "#3c454b"
+        },
+        {
+          "name": "lcdGlass",
+          "label": "LCD glass",
+          "default": "#7d9e80"
+        },
+        {
+          "name": "keycapPlastic",
+          "label": "Keycap plastic",
+          "default": "#cdd0c6"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/calculator/index.html"
+    },
+    {
+      "id": "clipboard",
+      "sourceSha256": "34e43d9895289325a39e849915a53247acdcf0ba193071295385bc7fd504e5a3",
+      "preview": "/assets/office-clipboard.png",
+      "previewFile": "catalog/kits/office/previews/clipboard.png",
+      "triangleCount": 92,
+      "triangleBudget": 160,
+      "colorParams": [
+        {
+          "name": "polypropylene",
+          "label": "Polypropylene",
+          "default": "#476b7e"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#f2efe6"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5bdc1"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/clipboard/index.html"
+    },
+    {
+      "id": "desk-calendar",
+      "sourceSha256": "a328f7bc021d57fc515cb77ddfaadd4d76d875dd6ebfaa30cf8a2ad3292803cd",
+      "preview": "/assets/office-desk-calendar.png",
+      "previewFile": "catalog/kits/office/previews/desk-calendar.png",
+      "triangleCount": 120,
+      "triangleBudget": 260,
+      "colorParams": [
+        {
+          "name": "paper",
+          "label": "Calendar paper",
+          "default": "#f0eee5"
+        },
+        {
+          "name": "chipboard",
+          "label": "Chipboard stand",
+          "default": "#416f89"
+        },
+        {
+          "name": "steelWire",
+          "label": "Steel wire",
+          "default": "#bbc0c2"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/desk-calendar/index.html"
+    },
+    {
+      "id": "desk-organizer",
+      "sourceSha256": "2eb77b98c4fe25e4d3a0950191ef889c47e791b6df62bd7931bf43a9a677b563",
+      "preview": "/assets/office-desk-organizer.png",
+      "previewFile": "catalog/kits/office/previews/desk-organizer.png",
+      "triangleCount": 84,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#ad8155"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#bfc3c4"
+        },
+        {
+          "name": "labelPaper",
+          "label": "Label paper",
+          "default": "#eae4d3"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/desk-organizer/index.html"
+    },
+    {
+      "id": "dry-erase-board",
+      "sourceSha256": "e1356ecec3c30820f8dee4487f86e0aa4992bd9d17460fa0a1ff236863d80f0f",
+      "preview": "/assets/office-dry-erase-board.png",
+      "previewFile": "catalog/kits/office/previews/dry-erase-board.png",
+      "triangleCount": 144,
+      "triangleBudget": 200,
+      "colorParams": [
+        {
+          "name": "enamelSteel",
+          "label": "Enamel steel",
+          "default": "#f3f3eb"
+        },
+        {
+          "name": "aluminum",
+          "label": "Aluminum frame",
+          "default": "#9da8ab"
+        },
+        {
+          "name": "polymer",
+          "label": "Marker polymer",
+          "default": "#497083"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/dry-erase-board/index.html"
+    },
+    {
+      "id": "envelope-stack",
+      "sourceSha256": "17038c2323547311a000a70c3f50b9ea899e35ad91d5064a697539ab9b789216",
+      "preview": "/assets/office-envelope-stack.png",
+      "previewFile": "catalog/kits/office/previews/envelope-stack.png",
+      "triangleCount": 60,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "kraftPaper",
+          "label": "Kraft paper",
+          "default": "#c8a96d"
+        },
+        {
+          "name": "paper",
+          "label": "Envelope paper",
+          "default": "#f2eee4"
+        },
+        {
+          "name": "ink",
+          "label": "Printed ink",
+          "default": "#4b6681"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/envelope-stack/index.html"
+    },
+    {
+      "id": "file-folder",
+      "sourceSha256": "df2c251652bf456ae820641ec28dcf1857a56bb801ade3dc056fdaabab2415cb",
+      "preview": "/assets/office-file-folder.png",
+      "previewFile": "catalog/kits/office/previews/file-folder.png",
+      "triangleCount": 60,
+      "triangleBudget": 140,
+      "colorParams": [
+        {
+          "name": "manilaCard",
+          "label": "Manila card",
+          "default": "#c8a85a"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#eee9db"
+        },
+        {
+          "name": "steelWire",
+          "label": "Steel wire",
+          "default": "#aab1b3"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/file-folder/index.html"
+    },
+    {
+      "id": "footrest",
+      "sourceSha256": "0450cc68bd5277107b2514d357637ef2f4ee6f73766bfd0ca8cf012c30ef8d8e",
+      "preview": "/assets/office-footrest.png",
+      "previewFile": "catalog/kits/office/previews/footrest.png",
+      "triangleCount": 60,
+      "triangleBudget": 130,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Platform polymer",
+          "default": "#3c484d"
+        },
+        {
+          "name": "rubber",
+          "label": "Grip rubber",
+          "default": "#7c898b"
+        },
+        {
+          "name": "foam",
+          "label": "Cushion foam",
+          "default": "#d0cab9"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/footrest/index.html"
+    },
+    {
+      "id": "fountain-pen",
+      "sourceSha256": "6d303ce198e3759e6f9e879300ac070d816cd8c4a60a5f17e7ccf79d868e5ca6",
+      "preview": "/assets/office-fountain-pen.png",
+      "previewFile": "catalog/kits/office/previews/fountain-pen.png",
+      "triangleCount": 156,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "resin",
+          "label": "Barrel resin",
+          "default": "#254f74"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "ink",
+          "label": "Ink",
+          "default": "#254777"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/fountain-pen/index.html"
+    },
+    {
+      "id": "hanging-file-folder",
+      "sourceSha256": "85edf038f72caaf80d60603077b4cfe3b809eef153fddcb230764277a0283605",
+      "preview": "/assets/office-hanging-file-folder.png",
+      "previewFile": "catalog/kits/office/previews/hanging-file-folder.png",
+      "triangleCount": 72,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "fileCard",
+          "label": "File card",
+          "default": "#88a76a"
+        },
+        {
+          "name": "steel",
+          "label": "Hanging rail steel",
+          "default": "#aeb8bb"
+        },
+        {
+          "name": "paper",
+          "label": "Folder paper",
+          "default": "#f0e8d7"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/hanging-file-folder/index.html"
+    },
+    {
+      "id": "highlighter",
+      "sourceSha256": "e56356c74b1fd845b177ee1682bf867c2c84c6ba1a1acb1dfa140af56a246538",
+      "preview": "/assets/office-highlighter.png",
+      "previewFile": "catalog/kits/office/previews/highlighter.png",
+      "triangleCount": 60,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Barrel polymer",
+          "default": "#eac633"
+        },
+        {
+          "name": "fluorescentInk",
+          "label": "Fluorescent ink",
+          "default": "#f4ed48"
+        },
+        {
+          "name": "felt",
+          "label": "Felt tip",
+          "default": "#c84747"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/highlighter/index.html"
+    },
+    {
+      "id": "hole-punch",
+      "sourceSha256": "a76796defbcb06128e531a0af5e9578141d0e7f57d3ed1cdd203423e74b9553b",
+      "preview": "/assets/office-hole-punch.png",
+      "previewFile": "catalog/kits/office/previews/hole-punch.png",
+      "triangleCount": 136,
+      "triangleBudget": 170,
+      "colorParams": [
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#425e76"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b6bdc0"
+        },
+        {
+          "name": "polymer",
+          "label": "Handle polymer",
+          "default": "#d05b47"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/hole-punch/index.html"
+    },
+    {
+      "id": "ink-pad",
+      "sourceSha256": "066fe287aa830a629b4020637e22be5507e2bf012851e6e0c19f9381ef58eb6d",
+      "preview": "/assets/office-ink-pad.png",
+      "previewFile": "catalog/kits/office/previews/ink-pad.png",
+      "triangleCount": 48,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Case polymer",
+          "default": "#475a69"
+        },
+        {
+          "name": "felt",
+          "label": "Ink felt",
+          "default": "#394a55"
+        },
+        {
+          "name": "ink",
+          "label": "Stamp ink",
+          "default": "#385f86"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/ink-pad/index.html"
+    },
+    {
+      "id": "label-maker",
+      "sourceSha256": "60edb49c1e0c09bbb577cb54b11063ac9938c953f3e3846680d11759ad1b2173",
+      "preview": "/assets/office-label-maker.png",
+      "previewFile": "catalog/kits/office/previews/label-maker.png",
+      "triangleCount": 236,
+      "triangleBudget": 240,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Case polymer",
+          "default": "#d86045"
+        },
+        {
+          "name": "lcdGlass",
+          "label": "LCD glass",
+          "default": "#88a899"
+        },
+        {
+          "name": "rubber",
+          "label": "Grip rubber",
+          "default": "#363c40"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/label-maker/index.html"
+    },
+    {
+      "id": "laminator",
+      "sourceSha256": "7a92f0b3ba4336a1608c90dcd4a9fd1bdc21d6b681cfc69229da189c69c6d398",
+      "preview": "/assets/office-laminator.png",
+      "previewFile": "catalog/kits/office/previews/laminator.png",
+      "triangleCount": 184,
+      "triangleBudget": 230,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Housing polymer",
+          "default": "#48525b"
+        },
+        {
+          "name": "aluminum",
+          "label": "Feed tray aluminum",
+          "default": "#a5adb0"
+        },
+        {
+          "name": "rubber",
+          "label": "Roller rubber",
+          "default": "#31373c"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/laminator/index.html"
+    },
+    {
+      "id": "laptop-stand",
+      "sourceSha256": "ffea6c7aaa8da8920bc7895e4b9f2bc844db301246a271bad0cc4003e8388e81",
+      "preview": "/assets/office-laptop-stand.png",
+      "previewFile": "catalog/kits/office/previews/laptop-stand.png",
+      "triangleCount": 84,
+      "triangleBudget": 150,
+      "colorParams": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum",
+          "default": "#a8afb2"
+        },
+        {
+          "name": "silicone",
+          "label": "Silicone pads",
+          "default": "#353c41"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#8b9498"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/laptop-stand/index.html"
+    },
+    {
+      "id": "letter-sorter",
+      "sourceSha256": "5509590028808f72aeef69da413f7ae5304731c32a55d988b47dc5f440849f57",
+      "preview": "/assets/office-letter-sorter.png",
+      "previewFile": "catalog/kits/office/previews/letter-sorter.png",
+      "triangleCount": 96,
+      "triangleBudget": 260,
+      "colorParams": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#aa7d4f"
+        },
+        {
+          "name": "paper",
+          "label": "Letter paper",
+          "default": "#f0e6d1"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#3f5967"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/letter-sorter/index.html"
+    },
+    {
+      "id": "letter-tray",
+      "sourceSha256": "bf5c5cfcea3b4043885b306bdba7547acbd4ab67f008ab8d9b67bfe2ab292f67",
+      "preview": "/assets/office-letter-tray.png",
+      "previewFile": "catalog/kits/office/previews/letter-tray.png",
+      "triangleCount": 108,
+      "triangleBudget": 280,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Tray polymer",
+          "default": "#405969"
+        },
+        {
+          "name": "rubber",
+          "label": "Grip rubber",
+          "default": "#303c44"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5b8b6"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/letter-tray/index.html"
+    },
+    {
+      "id": "marker",
+      "sourceSha256": "fe493ddfabe38d305aed64f86afcfd50e7e1f080b0eaeaed789fbf0f14d459cf",
+      "preview": "/assets/office-marker.png",
+      "previewFile": "catalog/kits/office/previews/marker.png",
+      "triangleCount": 156,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Barrel polymer",
+          "default": "#5b83a5"
+        },
+        {
+          "name": "ink",
+          "label": "Marker ink",
+          "default": "#276395"
+        },
+        {
+          "name": "felt",
+          "label": "Felt tip",
+          "default": "#c3463d"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/marker/index.html"
+    },
+    {
+      "id": "mechanical-pencil",
+      "sourceSha256": "91c5e4f9b138b2b0142002861c8a200318369d12384cdb2151444b45c0f47243",
+      "preview": "/assets/office-mechanical-pencil.png",
+      "previewFile": "catalog/kits/office/previews/mechanical-pencil.png",
+      "triangleCount": 72,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "aluminum",
+          "label": "Barrel aluminum",
+          "default": "#9aa6aa"
+        },
+        {
+          "name": "polymer",
+          "label": "Grip polymer",
+          "default": "#d85e4d"
+        },
+        {
+          "name": "graphite",
+          "label": "Graphite lead",
+          "default": "#393c3e"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/mechanical-pencil/index.html"
+    },
+    {
+      "id": "memo-pad",
+      "sourceSha256": "4bb8b8e142dde13dcb5de559a116d6095e2623cb49d3d1c0976f7e69e524df41",
+      "preview": "/assets/office-memo-pad.png",
+      "previewFile": "catalog/kits/office/previews/memo-pad.png",
+      "triangleCount": 48,
+      "triangleBudget": 100,
+      "colorParams": [
+        {
+          "name": "paper",
+          "label": "Memo paper",
+          "default": "#f3eee1"
+        },
+        {
+          "name": "chipboard",
+          "label": "Chipboard backing",
+          "default": "#b78a52"
+        },
+        {
+          "name": "ink",
+          "label": "Printed ink",
+          "default": "#3e627e"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/memo-pad/index.html"
+    },
+    {
+      "id": "monitor-riser",
+      "sourceSha256": "64c3c68f611ef27bc248241675da5f5b5e756b96a20f043cf274131fbcac9a64",
+      "preview": "/assets/office-monitor-riser.png",
+      "previewFile": "catalog/kits/office/previews/monitor-riser.png",
+      "triangleCount": 60,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "timber",
+          "label": "Timber shelf",
+          "default": "#ae8153"
+        },
+        {
+          "name": "steel",
+          "label": "Support steel",
+          "default": "#3d484e"
+        },
+        {
+          "name": "rubber",
+          "label": "Edge rubber",
+          "default": "#ddd2bb"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/monitor-riser/index.html"
+    },
+    {
+      "id": "mousepad",
+      "sourceSha256": "d89c6a13e78b94533ad22af44a5a5159d1807120afbf84b4e990d72a2106a63b",
+      "preview": "/assets/office-mousepad.png",
+      "previewFile": "catalog/kits/office/previews/mousepad.png",
+      "triangleCount": 72,
+      "triangleBudget": 150,
+      "colorParams": [
+        {
+          "name": "fabric",
+          "label": "Woven fabric",
+          "default": "#4d6687"
+        },
+        {
+          "name": "rubber",
+          "label": "Non-slip rubber",
+          "default": "#2f3438"
+        },
+        {
+          "name": "foam",
+          "label": "Cushion foam",
+          "default": "#b5aa93"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/mousepad/index.html"
+    },
+    {
+      "id": "notebook",
+      "sourceSha256": "6385dfb1d585c3ba06d9d742d69ac909c63ee27d852f41fb7e0160e24ab0a718",
+      "preview": "/assets/office-notebook.png",
+      "previewFile": "catalog/kits/office/previews/notebook.png",
+      "triangleCount": 72,
+      "triangleBudget": 150,
+      "colorParams": [
+        {
+          "name": "paper",
+          "label": "Page paper",
+          "default": "#eee9db"
+        },
+        {
+          "name": "leatherette",
+          "label": "Cover leatherette",
+          "default": "#385971"
+        },
+        {
+          "name": "ink",
+          "label": "Printed ink",
+          "default": "#3d444b"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/notebook/index.html"
+    },
+    {
+      "id": "office-pinboard",
+      "sourceSha256": "4c57547ed17ce364f8630ae700f370f3b2324e1ea0908f642d8f73acc845a17f",
+      "preview": "/assets/office-office-pinboard.png",
+      "previewFile": "catalog/kits/office/previews/office-pinboard.png",
+      "triangleCount": 120,
+      "triangleBudget": 160,
+      "colorParams": [
+        {
+          "name": "cork",
+          "label": "Cork panel",
+          "default": "#b58b58"
+        },
+        {
+          "name": "timber",
+          "label": "Timber frame",
+          "default": "#765536"
+        },
+        {
+          "name": "steel",
+          "label": "Pin steel",
+          "default": "#5e7c8a"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/office-pinboard/index.html"
+    },
+    {
+      "id": "paper-clip-dish",
+      "sourceSha256": "d4ad0441118d33b2fad06dfcb94c9d142befb236799a646bbd82f8ad83f78adc",
+      "preview": "/assets/office-paper-clip-dish.png",
+      "previewFile": "catalog/kits/office/previews/paper-clip-dish.png",
+      "triangleCount": 96,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Dish polymer",
+          "default": "#527689"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b1b8bb"
+        },
+        {
+          "name": "brass",
+          "label": "Brass clips",
+          "default": "#c79b3e"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-clip-dish/index.html"
+    },
+    {
+      "id": "paper-cutter",
+      "sourceSha256": "ca75daa813719931ea07e7b857352a042d6c857c5a779d664c114dbdb5db5122",
+      "preview": "/assets/office-paper-cutter.png",
+      "previewFile": "catalog/kits/office/previews/paper-cutter.png",
+      "triangleCount": 84,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#59727d"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel blade",
+          "default": "#aeb7ba"
+        },
+        {
+          "name": "polymer",
+          "label": "Handle polymer",
+          "default": "#30383d"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-cutter/index.html"
+    },
+    {
+      "id": "paper-shredder",
+      "sourceSha256": "362c2712ad26a4fadb1ac43bbcb4e1a7ce997cc09e4f0f322fcba41821145994",
+      "preview": "/assets/office-paper-shredder.png",
+      "previewFile": "catalog/kits/office/previews/paper-shredder.png",
+      "triangleCount": 184,
+      "triangleBudget": 240,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Housing polymer",
+          "default": "#b9c4c4"
+        },
+        {
+          "name": "steel",
+          "label": "Cutter steel",
+          "default": "#464b4d"
+        },
+        {
+          "name": "glass",
+          "label": "Bin window glass",
+          "default": "#73948b"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-shredder/index.html"
+    },
+    {
+      "id": "paperweight",
+      "sourceSha256": "69bde41eb90d5042136618600fd52b31d0d04952a993390b6bccddcd0863d565",
+      "preview": "/assets/office-paperweight.png",
+      "previewFile": "catalog/kits/office/previews/paperweight.png",
+      "triangleCount": 48,
+      "triangleBudget": 120,
+      "colorParams": [
+        {
+          "name": "glass",
+          "label": "Glass body",
+          "default": "#5d8791"
+        },
+        {
+          "name": "brass",
+          "label": "Brass foot",
+          "default": "#c29e54"
+        },
+        {
+          "name": "ceramic",
+          "label": "Ceramic inset",
+          "default": "#454d53"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/paperweight/index.html"
+    },
+    {
+      "id": "pencil-cup",
+      "sourceSha256": "6554601697a316a88527c9e274958ead258bd395544df7b82617bb58c5e04503",
+      "preview": "/assets/office-pencil-cup.png",
+      "previewFile": "catalog/kits/office/previews/pencil-cup.png",
+      "triangleCount": 144,
+      "triangleBudget": 180,
+      "colorParams": [
+        {
+          "name": "ceramic",
+          "label": "Ceramic cup",
+          "default": "#546f82"
+        },
+        {
+          "name": "wood",
+          "label": "Pencil wood",
+          "default": "#b69263"
+        },
+        {
+          "name": "graphite",
+          "label": "Graphite",
+          "default": "#484e50"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/pencil-cup/index.html"
+    },
+    {
+      "id": "ring-binder",
+      "sourceSha256": "6114da462591aaa8a76b3bdc7c9f72c35a846053421a03b05017678db343eff6",
+      "preview": "/assets/office-ring-binder.png",
+      "previewFile": "catalog/kits/office/previews/ring-binder.png",
+      "triangleCount": 192,
+      "triangleBudget": 260,
+      "colorParams": [
+        {
+          "name": "polypropylene",
+          "label": "Cover polypropylene",
+          "default": "#4a6c8a"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#eee9db"
+        },
+        {
+          "name": "steel",
+          "label": "Ring steel",
+          "default": "#b0b6b8"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/ring-binder/index.html"
+    },
+    {
+      "id": "rubber-stamp",
+      "sourceSha256": "b4f329e6bfb8bd92d6797c9691e5a8a6cdc6c0fe86055f7acbce7770dd8b7e45",
+      "preview": "/assets/office-rubber-stamp.png",
+      "previewFile": "catalog/kits/office/previews/rubber-stamp.png",
+      "triangleCount": 92,
+      "triangleBudget": 160,
+      "colorParams": [
+        {
+          "name": "timber",
+          "label": "Handle timber",
+          "default": "#9a7247"
+        },
+        {
+          "name": "rubber",
+          "label": "Stamp rubber",
+          "default": "#3d464b"
+        },
+        {
+          "name": "brass",
+          "label": "Cap brass",
+          "default": "#c39b46"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/rubber-stamp/index.html"
+    },
+    {
+      "id": "ruler",
+      "sourceSha256": "30efb2a1cf18bddf18c6c6a35c98a7d72a153fa84c2904319457e1bf8eb48921",
+      "preview": "/assets/office-ruler.png",
+      "previewFile": "catalog/kits/office/previews/ruler.png",
+      "triangleCount": 156,
+      "triangleBudget": 220,
+      "colorParams": [
+        {
+          "name": "acrylic",
+          "label": "Ruler acrylic",
+          "default": "#d4ccad"
+        },
+        {
+          "name": "ink",
+          "label": "Scale ink",
+          "default": "#3d586b"
+        },
+        {
+          "name": "aluminum",
+          "label": "End aluminum",
+          "default": "#b7bec0"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/ruler/index.html"
+    },
+    {
+      "id": "scissors",
+      "sourceSha256": "86e69299570ea238c5096bee287aca369758364c5eed307e6e4faba7bce74694",
+      "preview": "/assets/office-scissors.png",
+      "previewFile": "catalog/kits/office/previews/scissors.png",
+      "triangleCount": 260,
+      "triangleBudget": 280,
+      "colorParams": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aeb7ba"
+        },
+        {
+          "name": "polymer",
+          "label": "Handle polymer",
+          "default": "#c95045"
+        },
+        {
+          "name": "brass",
+          "label": "Pivot brass",
+          "default": "#c19a4b"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/scissors/index.html"
+    },
+    {
+      "id": "stapler",
+      "sourceSha256": "506805b629e5cd9c3fc1a49169a89d4b87abb4ce07019aee560c8b3ee852992e",
+      "preview": "/assets/office-stapler.png",
+      "previewFile": "catalog/kits/office/previews/stapler.png",
+      "triangleCount": 92,
+      "triangleBudget": 130,
+      "colorParams": [
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#506a7d"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#bdc1c1"
+        },
+        {
+          "name": "rubber",
+          "label": "Grip rubber",
+          "default": "#33383a"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/stapler/index.html"
+    },
+    {
+      "id": "sticky-notes",
+      "sourceSha256": "bdba928195bf960417ca4f2852924d15e0d9e15b28d341c5dad0ab14195de1e8",
+      "preview": "/assets/office-sticky-notes.png",
+      "previewFile": "catalog/kits/office/previews/sticky-notes.png",
+      "triangleCount": 36,
+      "triangleBudget": 110,
+      "colorParams": [
+        {
+          "name": "paper",
+          "label": "Sticky-note paper",
+          "default": "#e2e559"
+        },
+        {
+          "name": "adhesive",
+          "label": "Adhesive strip",
+          "default": "#e9dfc1"
+        },
+        {
+          "name": "ink",
+          "label": "Printed ink",
+          "default": "#475a6a"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/sticky-notes/index.html"
+    },
+    {
+      "id": "tape-dispenser",
+      "sourceSha256": "6dfd96fd139f75be3ed9f1d9e36a7976fe20ec85ffb5435b93dd70c216fd3fdc",
+      "preview": "/assets/office-tape-dispenser.png",
+      "previewFile": "catalog/kits/office/previews/tape-dispenser.png",
+      "triangleCount": 124,
+      "triangleBudget": 220,
+      "colorParams": [
+        {
+          "name": "polymer",
+          "label": "Dispenser polymer",
+          "default": "#496b80"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Cutter stainless steel",
+          "default": "#acb4b8"
+        },
+        {
+          "name": "rubber",
+          "label": "Roller rubber",
+          "default": "#343a3c"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/tape-dispenser/index.html"
+    },
+    {
+      "id": "wrist-rest",
+      "sourceSha256": "a46950731533098e2b059a56171c57db445ceb0206b20d00ca5fcabd86ea3499",
+      "preview": "/assets/office-wrist-rest.png",
+      "previewFile": "catalog/kits/office/previews/wrist-rest.png",
+      "triangleCount": 60,
+      "triangleBudget": 100,
+      "colorParams": [
+        {
+          "name": "fabric",
+          "label": "Cover fabric",
+          "default": "#3d617a"
+        },
+        {
+          "name": "foam",
+          "label": "Cushion foam",
+          "default": "#bbab90"
+        },
+        {
+          "name": "rubber",
+          "label": "Non-slip rubber",
+          "default": "#31393e"
+        }
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ],
+      "localPage": "/tmp/kernelcad-office-pages-20261106/catalog/office/wrist-rest/index.html"
+    }
+  ]
+}

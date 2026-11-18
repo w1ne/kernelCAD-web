@@ -1,0 +1,21 @@
+{
+  "capture": "local source and software-render review",
+  "date": "2026-11-13",
+  "video": {
+    "width": 720,
+    "height": 640,
+    "fps": 24,
+    "durationSeconds": 18,
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "crf": 22
+  },
+  "slides": [
+    "five-preview water-treatment audit",
+    "center drive and rake material source mapping",
+    "before software-rendered preview",
+    "after software-rendered preview",
+    "local verification summary"
+  ],
+  "evidenceBoundary": "Local source replay, software renders and tests only. No process simulation, deployment or physical acceptance is shown."
+}

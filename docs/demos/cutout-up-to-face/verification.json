@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-11-16",
+  "source": "examples/cookbook-parity/ledge-height-slot-block.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 30000,
+  "expectedVolumeMm3": 30000,
+  "blockVolumeMm3": 32400,
+  "slotFloorProbe": {
+    "probe": "2 x 2 x 0.02 mm box at x 14..16, y 14..16 inside the slot",
+    "aboveFloorZ": 12.05,
+    "aboveFloorMm3": 0,
+    "belowFloorZ": 11.95,
+    "belowFloorMm3": 0.07999999999999942
+  },
+  "faceCount": 13,
+  "occtBoundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      60,
+      30,
+      24
+    ]
+  },
+  "meshBoundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      60,
+      30,
+      24
+    ]
+  },
+  "meshedFeatureCount": 4,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

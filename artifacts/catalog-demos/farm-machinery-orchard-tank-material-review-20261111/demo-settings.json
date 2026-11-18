@@ -1,0 +1,18 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "secondsPerSlide": 4,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28734b",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "verificationLines": [
+    "Focused exported-GLB regression: passed (1/1)",
+    "Catalog integration suite: passed (28 files / 43 tests)",
+    "Farm-machinery quality gate: 60/60 (100%)",
+    "ESLint and local detail-page checks: passed"
+  ],
+  "caveat": "Local catalog source render only; not simulation, deployment, or equipment acceptance."
+}

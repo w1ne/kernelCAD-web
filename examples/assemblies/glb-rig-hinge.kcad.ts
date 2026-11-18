@@ -1,4 +1,6 @@
 // Original kernelCAD hinge assembly used to demonstrate GLB rig export.
+// A standard GLB export writes metres by default, scaling these mm dimensions
+// for glTF viewers; pass units: 'mm' only for consumers that read kernelCAD extras.
 // The static boxes are intentional simple blockout geometry; no external mesh
 // is used. The lid is positioned from its named connector and revolute mate.
 

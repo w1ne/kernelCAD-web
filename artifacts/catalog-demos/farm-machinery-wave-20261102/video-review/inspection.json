@@ -1,0 +1,77 @@
+{
+  "inspectedAt": "2026-11-02T22:26:50.218425+00:00",
+  "method": "Decoded the committed MP4 with ffmpeg at 0.5 fps into a 3x3 contact sheet, then inspected the full source preview sheet and decoded contact sheet.",
+  "video": {
+    "path": "demo.mp4",
+    "sha256": "dae387330931c371c2b7ad9624c8ae080e0d0e3dd653eacb6fe5f6cdb6583f1c",
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "durationSeconds": 18.0
+  },
+  "previewContactSheetSha256": "f9fb88cb42199d5efdb9e8244bf4cd218bbe089bc1cc4260342011f6751ee188",
+  "decodedContactSheet": {
+    "path": "video-review/decoded-contact-sheet.png",
+    "sha256": "753569319f5d0a09d8b88042ad04d3cb36c81b2b71260ddfd2dd8ac9b4b336f7"
+  },
+  "visualReview": {
+    "allSixtyAssetsShownAcrossThreePanels": true,
+    "titlesAndAssetLabelsMatchFarmMachinery": true,
+    "threeDefaultAndResolvedVariantExportsShown": true,
+    "selectedVariantsReadableAtSharedScale": true,
+    "captionsIdentifyLocalSoftwareRenderAndUnverifiedDeployment": true,
+    "noLiveDeploymentSimulationOrHardwareAcceptanceClaimed": true
+  },
+  "selectedVariantChecks": [
+    {
+      "id": "row-crop-tractor",
+      "unmatched": [],
+      "trianglesDefaultAndResolved": [
+        552,
+        552
+      ],
+      "materialsDefaultAndResolved": [
+        1,
+        1
+      ],
+      "minUpMDefaultAndResolved": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "round-baler",
+      "unmatched": [],
+      "trianglesDefaultAndResolved": [
+        600,
+        600
+      ],
+      "materialsDefaultAndResolved": [
+        1,
+        1
+      ],
+      "minUpMDefaultAndResolved": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "unmatched": [],
+      "trianglesDefaultAndResolved": [
+        748,
+        748
+      ],
+      "materialsDefaultAndResolved": [
+        1,
+        1
+      ],
+      "minUpMDefaultAndResolved": [
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "video": "retail-store-quality-promotion.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1",
+        "nb_frames": "491"
+      }
+    ],
+    "format": {
+      "duration": "20.458333"
+    }
+  },
+  "decodedFrames": 6,
+  "contactSheet": "video-review/contact-sheet.png",
+  "visuallyReviewed": true,
+  "manualReview": "Reviewed the final six-frame contact sheet and frames 02, 05, and 06 at original resolution. Before/after objects, preset differences, corrected 85.82% catalog rate, test result, and local-only scope are readable and match the evidence."
+}

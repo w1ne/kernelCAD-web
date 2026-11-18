@@ -47,6 +47,7 @@ import {
   runRenderMechanismProbe,
   watermarkBrokenMechanism,
 } from '../../cli/commands/render';
+import { mechanismErrors } from '../../cli/lib/mechanismBanner';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 import { loadScriptFeatures } from '../../../modeling/runtime/scriptLoader';
@@ -599,7 +600,8 @@ async function probeMechanismGate(
   const probe = skipProbe
     ? { mechanism: 'unverified' as const, failures: [] }
     : await deps.mechanismProbe(scriptPath);
-  const failureCodes = [...new Set(probe.failures.map(f => f.code))];
+  // Only error-severity entries make the verdict 'broken'; info/warn notes stay in `diagnostics`.
+  const failureCodes = [...new Set(mechanismErrors(probe.failures).map(f => f.code))];
   if (probe.mechanism === 'broken' && isRenderStrictMode()) {
     return {
       refusal: {
@@ -701,7 +703,9 @@ async function runHeadlessRenderPhase(
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    const isModelFault = /failed to compile/.test(message);
+    // Model faults raised while building the scene (an import that will not read, parts that
+    // overlap) are the script's to fix; only the rest points at the browser or render server.
+    const isModelFault = /failed to compile|\blib\.\w+:|\boverlap by\b/.test(message);
     return {
       refusal: {
         sceneSummary,

@@ -1,0 +1,12 @@
+{
+  "source": "catalog/kits/industrial-plant/axial-flow-fan.kcad.ts",
+  "sourceSha256": "4f0f385c1c3032e1f6c697f3617d94fe4cbc4cdb2aae6a9d8928d7f3ed4a240c",
+  "preset": "highVisibility",
+  "appliedOverrides": {
+    "safetyPaint": "#f5c640"
+  },
+  "triangles": 344,
+  "triangleBudget": 1400,
+  "output": "variants/axial-flow-fan-highVisibility.png",
+  "workflow": "evaluate authored preset, export low-poly GLB, and software-render the resolved mesh"
+}

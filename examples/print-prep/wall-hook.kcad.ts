@@ -14,7 +14,7 @@
 //
 //   ERROR [dfm.fdm.overhang-unsupported] <unknown>: dfm.fdm: part 'shape' has
 //   938.2 mm² of unsupported overhang in 1 region(s) printing '+z' up (limit
-//   45° from vertical); largest 938.2 mm² at @kc[fillet_1/face/bottom] (bbox
+//   45° from vertical); largest 938.2 mm² (bbox
 //   (0.0, 6.2, 33.9)–(24.0, 45.0, 35.0)), 90.0° from vertical, reaching
 //   38.8 mm past its nearest support.
 //     Hint: Downward-facing surfaces steeper than maxOverhangDeg have nothing

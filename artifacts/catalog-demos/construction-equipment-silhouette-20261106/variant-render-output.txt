@@ -1,0 +1,192 @@
+EXIT CODE: 0
+(node:4102632) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "invocation": "npx tsx artifacts/catalog-demos/construction-equipment-silhouette-20261106/render_construction_equipment_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
+      "sourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "equipmentPaintColor": "#a87b36",
+          "structuralSteelColor": "#716b61",
+          "tireRubberColor": "#3a3a37",
+          "lampLensColor": "#dbc99a"
+        },
+        "highVisibility": {
+          "equipmentPaintColor": "#f06b26",
+          "structuralSteelColor": "#c1c7c2",
+          "tireRubberColor": "#292e31",
+          "lampLensColor": "#fff1c4"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
+      "sourceSha256": "a74ca976fef37316a3f3888dfac77bf127685402da0b30d8ae0da4ff614ad70e",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "equipmentPaintColor": "#a87b36",
+          "structuralSteelColor": "#716b61",
+          "rubberColor": "#3c403e",
+          "seatVinylColor": "#41403b"
+        },
+        "highVisibility": {
+          "equipmentPaintColor": "#f06b26",
+          "structuralSteelColor": "#c1c7c2",
+          "rubberColor": "#292e31",
+          "seatVinylColor": "#252a2d"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
+      "sourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "equipmentPaintColor": "#a87b36",
+          "structuralSteelColor": "#716b61",
+          "aggregateColor": "#6a7059",
+          "cementSiloColor": "#a8aaa4"
+        },
+        "highVisibility": {
+          "equipmentPaintColor": "#f06b26",
+          "structuralSteelColor": "#c1c7c2",
+          "aggregateColor": "#d2a742",
+          "cementSiloColor": "#e2e5dc"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "towable-light-tower",
+      "variant": "default",
+      "values": {},
+      "triangles": 1328,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/towable-light-tower-default.png"
+    },
+    {
+      "assetId": "towable-light-tower",
+      "variant": "six-lamps-tall-mast",
+      "values": {
+        "lampCount": "6",
+        "mastHeight": "2400"
+      },
+      "triangles": 1424,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/towable-light-tower-six-lamps-tall-mast.png"
+    },
+    {
+      "assetId": "towable-light-tower",
+      "variant": "weathered",
+      "values": {
+        "equipmentPaintColor": "#a87b36",
+        "structuralSteelColor": "#716b61",
+        "tireRubberColor": "#3a3a37",
+        "lampLensColor": "#dbc99a"
+      },
+      "triangles": 1328,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/towable-light-tower-weathered.png"
+    },
+    {
+      "assetId": "towable-light-tower",
+      "variant": "highVisibility",
+      "values": {
+        "equipmentPaintColor": "#f06b26",
+        "structuralSteelColor": "#c1c7c2",
+        "tireRubberColor": "#292e31",
+        "lampLensColor": "#fff1c4"
+      },
+      "triangles": 1328,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/towable-light-tower-highVisibility.png"
+    },
+    {
+      "assetId": "ride-on-power-trowel",
+      "variant": "default",
+      "values": {},
+      "triangles": 1112,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/ride-on-power-trowel-default.png"
+    },
+    {
+      "assetId": "ride-on-power-trowel",
+      "variant": "wide-four-blades-per-rotor",
+      "values": {
+        "rotorSize": "wide",
+        "bladeCount": "4"
+      },
+      "triangles": 1064,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/ride-on-power-trowel-wide-four-blades-per-rotor.png"
+    },
+    {
+      "assetId": "ride-on-power-trowel",
+      "variant": "weathered",
+      "values": {
+        "equipmentPaintColor": "#a87b36",
+        "structuralSteelColor": "#716b61",
+        "rubberColor": "#3c403e",
+        "seatVinylColor": "#41403b"
+      },
+      "triangles": 1112,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/ride-on-power-trowel-weathered.png"
+    },
+    {
+      "assetId": "ride-on-power-trowel",
+      "variant": "highVisibility",
+      "values": {
+        "equipmentPaintColor": "#f06b26",
+        "structuralSteelColor": "#c1c7c2",
+        "rubberColor": "#292e31",
+        "seatVinylColor": "#252a2d"
+      },
+      "triangles": 1112,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/ride-on-power-trowel-highVisibility.png"
+    },
+    {
+      "assetId": "concrete-batch-plant",
+      "variant": "default",
+      "values": {},
+      "triangles": 1500,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/concrete-batch-plant-default.png"
+    },
+    {
+      "assetId": "concrete-batch-plant",
+      "variant": "four-bins-tall-silo",
+      "values": {
+        "aggregateBinCount": "4",
+        "siloHeight": "1900"
+      },
+      "triangles": 1732,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/concrete-batch-plant-four-bins-tall-silo.png"
+    },
+    {
+      "assetId": "concrete-batch-plant",
+      "variant": "weathered",
+      "values": {
+        "equipmentPaintColor": "#a87b36",
+        "structuralSteelColor": "#716b61",
+        "aggregateColor": "#6a7059",
+        "cementSiloColor": "#a8aaa4"
+      },
+      "triangles": 1500,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/concrete-batch-plant-weathered.png"
+    },
+    {
+      "assetId": "concrete-batch-plant",
+      "variant": "highVisibility",
+      "values": {
+        "equipmentPaintColor": "#f06b26",
+        "structuralSteelColor": "#c1c7c2",
+        "aggregateColor": "#d2a742",
+        "cementSiloColor": "#e2e5dc"
+      },
+      "triangles": 1500,
+      "png": "artifacts/catalog-demos/construction-equipment-silhouette-20261106/variants/concrete-batch-plant-highVisibility.png"
+    }
+  ]
+}

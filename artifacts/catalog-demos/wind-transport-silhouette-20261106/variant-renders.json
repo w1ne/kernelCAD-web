@@ -1,0 +1,189 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/wind-transport-silhouette-20261106/render_wind_transport_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/wind-energy/blade-transport-saddle.kcad.ts",
+      "sourceSha256": "d930f9af4a7d913e2fc2019639badb953375e7ef8425c0ea8421a34948e7219e",
+      "triangleBudget": 1800,
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "elastomer": "#343c3f",
+          "strapWebbing": "#a8743a",
+          "bladeComposite": "#cfd0c8"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b",
+          "elastomer": "#1f2426",
+          "strapWebbing": "#e4362b",
+          "bladeComposite": "#f4f5f1"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/wind-energy/nacelle-transport-frame.kcad.ts",
+      "sourceSha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "safetyPaint": "#c99a3a",
+          "galvanizedHardware": "#878f8c",
+          "nacelleComposite": "#c9cbc4"
+        },
+        "highVisibility": {
+          "structuralSteel": "#4b5c63",
+          "safetyPaint": "#f7c331",
+          "galvanizedHardware": "#d2d8d9",
+          "nacelleComposite": "#f5f6f2"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/wind-energy/service-lift-cage.kcad.ts",
+      "sourceSha256": "4ac54f44d49f852949f79ae75163dcd57842d1275c167debb80d66a2867e49d6",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#c99a3a",
+          "driveUnit": "#3c4246",
+          "wireRope": "#6e5e4e"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#a9b6b8",
+          "safetyPaint": "#f7c331",
+          "driveUnit": "#d6402c",
+          "wireRope": "#3e4547"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "blade-transport-saddle",
+      "variant": "default",
+      "values": {},
+      "triangles": 884,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/blade-transport-saddle-default.png"
+    },
+    {
+      "assetId": "blade-transport-saddle",
+      "variant": "root-empty",
+      "values": {
+        "section": "root",
+        "load": "empty"
+      },
+      "triangles": 488,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/blade-transport-saddle-root-empty.png"
+    },
+    {
+      "assetId": "blade-transport-saddle",
+      "variant": "weathered",
+      "values": {
+        "structuralSteel": "#425258",
+        "elastomer": "#343c3f",
+        "strapWebbing": "#a8743a",
+        "bladeComposite": "#cfd0c8"
+      },
+      "triangles": 884,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/blade-transport-saddle-weathered.png"
+    },
+    {
+      "assetId": "blade-transport-saddle",
+      "variant": "highVisibility",
+      "values": {
+        "structuralSteel": "#d8a62b",
+        "elastomer": "#1f2426",
+        "strapWebbing": "#e4362b",
+        "bladeComposite": "#f4f5f1"
+      },
+      "triangles": 884,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/blade-transport-saddle-highVisibility.png"
+    },
+    {
+      "assetId": "nacelle-transport-frame",
+      "variant": "default",
+      "values": {},
+      "triangles": 1968,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/nacelle-transport-frame-default.png"
+    },
+    {
+      "assetId": "nacelle-transport-frame",
+      "variant": "empty-trestle",
+      "values": {
+        "load": "empty",
+        "feet": "trestle"
+      },
+      "triangles": 1812,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/nacelle-transport-frame-empty-trestle.png"
+    },
+    {
+      "assetId": "nacelle-transport-frame",
+      "variant": "weathered",
+      "values": {
+        "structuralSteel": "#425258",
+        "safetyPaint": "#c99a3a",
+        "galvanizedHardware": "#878f8c",
+        "nacelleComposite": "#c9cbc4"
+      },
+      "triangles": 1968,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/nacelle-transport-frame-weathered.png"
+    },
+    {
+      "assetId": "nacelle-transport-frame",
+      "variant": "highVisibility",
+      "values": {
+        "structuralSteel": "#4b5c63",
+        "safetyPaint": "#f7c331",
+        "galvanizedHardware": "#d2d8d9",
+        "nacelleComposite": "#f5f6f2"
+      },
+      "triangles": 1968,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/nacelle-transport-frame-highVisibility.png"
+    },
+    {
+      "assetId": "service-lift-cage",
+      "variant": "default",
+      "values": {},
+      "triangles": 1388,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/service-lift-cage-default.png"
+    },
+    {
+      "assetId": "service-lift-cage",
+      "variant": "ladder-door-open",
+      "values": {
+        "guidance": "ladder",
+        "door": "open"
+      },
+      "triangles": 1896,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/service-lift-cage-ladder-door-open.png"
+    },
+    {
+      "assetId": "service-lift-cage",
+      "variant": "weathered",
+      "values": {
+        "galvanizedSteel": "#6c7a7b",
+        "safetyPaint": "#c99a3a",
+        "driveUnit": "#3c4246",
+        "wireRope": "#6e5e4e"
+      },
+      "triangles": 1388,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/service-lift-cage-weathered.png"
+    },
+    {
+      "assetId": "service-lift-cage",
+      "variant": "highVisibility",
+      "values": {
+        "galvanizedSteel": "#a9b6b8",
+        "safetyPaint": "#f7c331",
+        "driveUnit": "#d6402c",
+        "wireRope": "#3e4547"
+      },
+      "triangles": 1388,
+      "png": "artifacts/catalog-demos/wind-transport-silhouette-20261106/variants/service-lift-cage-highVisibility.png"
+    }
+  ]
+}

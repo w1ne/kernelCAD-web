@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "npx eslint catalog/",
+    "npx eslint catalog/ src/agent/catalog/buildCatalog.ts src/kernel/backends/occt/backendInit.ts src/kernel/backends/occt/occtResetPoison.test.ts"
+  ],
+  "status": "passed",
+  "output": "no diagnostics"
+}

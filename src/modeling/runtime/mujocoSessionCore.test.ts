@@ -2,7 +2,24 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
 import { describe, expect, it, vi } from 'vitest';
-import { createMujocoSession } from './mujocoSessionCore';
+import { createMujocoSession, inertia6FromPrincipal } from './mujocoSessionCore';
+
+describe('inertia6FromPrincipal', () => {
+  it('leaves an identity quaternion on the principal diagonal', () => {
+    expect(inertia6FromPrincipal([1, 2, 3], [1, 0, 0, 0])).toEqual([1, 0, 0, 2, 0, 3]);
+  });
+
+  it('swaps the first two moments for a +90° rotation about Z', () => {
+    const s = Math.SQRT1_2;
+    const [ixx, ixy, ixz, iyy, iyz, izz] = inertia6FromPrincipal([4, 7, 1], [s, 0, 0, s]);
+    expect(ixx).toBeCloseTo(7, 10);
+    expect(iyy).toBeCloseTo(4, 10);
+    expect(izz).toBeCloseTo(1, 10);
+    expect(ixy).toBeCloseTo(0, 10);
+    expect(ixz).toBeCloseTo(0, 10);
+    expect(iyz).toBeCloseTo(0, 10);
+  });
+});
 
 describe('createMujocoSession', () => {
   it('compiles MJCF through an injected module and disposes the owned handles', async () => {
@@ -45,5 +62,56 @@ describe('createMujocoSession', () => {
     session.dispose();
     expect(deleteData).toHaveBeenCalledTimes(1);
     expect(model.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it('packs each named body world frame into a millimetre placement a part can use', async () => {
+    // World body at index 0, then "arm". xpos is metres. xmat is the
+    // body-to-world rotation, row-major. A 90° rotation about Z sends
+    // local +X to world +Y.
+    const xpos = new Float64Array([0, 0, 0, 0.1, 0.02, -0.3]);
+    const xmat = new Float64Array(18);
+    xmat.set([1, 0, 0, 0, 1, 0, 0, 0, 1], 0);
+    xmat.set([0, -1, 0, 1, 0, 0, 0, 0, 1], 9);
+    const model = {
+      nq: 1,
+      nv: 1,
+      nbody: 2,
+      njnt: 1,
+      ntendon: 0,
+      opt: { timestep: 0.002 },
+      delete: vi.fn(),
+    };
+    class FakeData {
+      qpos = new Float64Array([0.4]);
+      qvel = new Float64Array(1);
+      qacc = new Float64Array(1);
+      xpos = xpos;
+      xmat = xmat;
+      qfrc_inverse = new Float64Array(1);
+      delete = vi.fn();
+    }
+    const step = vi.fn();
+    const session = await createMujocoSession(
+      { MjModel: { from_xml_string: () => model }, MjData: FakeData, mj_step: step, mj_forward: vi.fn() },
+      '<mujoco/>',
+      ['arm'],
+      [{ mjcfName: 'hinge', mateName: 'elbow' }],
+    );
+
+    const pose = session.bodyPosesNow().get('arm');
+    expect(pose?.matrix).toEqual([
+      0, 1, 0, 0,
+      -1, 0, 0, 0,
+      0, 0, 1, 0,
+      100, 20, -300, 1,
+    ]);
+
+    xpos[3] = 0.25;
+    const stepped = session.step(0.002, 0.002);
+    expect(step).toHaveBeenCalledOnce();
+    expect(stepped.bodyPoses.get('arm')?.matrix[12]).toBe(250);
+    expect(stepped.xpos.get('arm')).toEqual([0.25, 0.02, -0.3]);
+    session.dispose();
+    expect(() => session.bodyPosesNow()).toThrow(/dispose/);
   });
 });

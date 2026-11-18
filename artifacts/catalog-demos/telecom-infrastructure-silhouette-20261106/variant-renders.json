@@ -1,0 +1,328 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/telecom-infrastructure/microwave-dish-antenna.kcad.ts",
+      "sourceSha256": "3008ad86e2af23c58f708e30bd8806c500cd0c383f1b37b0bda7613718299a67",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldSite": {
+          "aluminum": "#aeb9b9",
+          "radome": "#d9ddd6",
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dada",
+          "radome": "#f4f4f0",
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/telecom-infrastructure/yagi-radio-antenna.kcad.ts",
+      "sourceSha256": "f50abe3f943b9a327af7615a47caa52c4f67ee4770ea717e4deb34b4829897f2",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "boom": "#9aa6a3",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#2a3330"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "boom": "#e0aa18",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#1a1f22"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/telecom-infrastructure/sector-panel-antenna.kcad.ts",
+      "sourceSha256": "7b5d0fd0dc604e326132cef1d240de269317812210fe97dd4bb599bcdc8e739c",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldSite": {
+          "radome": "#c4c9c3",
+          "powderCoat": "#52756b",
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37"
+        },
+        "highVisibility": {
+          "radome": "#eef0ee",
+          "powderCoat": "#e0aa18",
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/telecom-infrastructure/dual-sector-panel-array.kcad.ts",
+      "sourceSha256": "c0ee8582147c49dc42af784f06a9decf054bf19b15fb6408f6b81b80a9877539",
+      "triangleBudget": 2600,
+      "presets": {
+        "fieldSite": {
+          "radome": "#c4c9c3",
+          "powderCoat": "#52756b",
+          "galvanizedSteel": "#8f9b9b",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
+        },
+        "highVisibility": {
+          "radome": "#eef0ee",
+          "powderCoat": "#e0aa18",
+          "galvanizedSteel": "#3a4b51",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#27363c"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/telecom-infrastructure/remote-radio-unit.kcad.ts",
+      "sourceSha256": "e856fc019563b5ad195300fdd09b3485af6647f937d926b3a1d378399a776356",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldSite": {
+          "housing": "#9ea8a6",
+          "powderCoat": "#52756b",
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37"
+        },
+        "highVisibility": {
+          "housing": "#cfd5d6",
+          "powderCoat": "#e0aa18",
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "microwave-dish-antenna",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1486,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/microwave-dish-antenna-default.png"
+    },
+    {
+      "assetId": "microwave-dish-antenna",
+      "variant": "open",
+      "view": "3/4",
+      "values": {
+        "style": "open"
+      },
+      "triangles": 1386,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/microwave-dish-antenna-open.png"
+    },
+    {
+      "assetId": "microwave-dish-antenna",
+      "variant": "fieldSite",
+      "view": "3/4",
+      "values": {
+        "aluminum": "#aeb9b9",
+        "radome": "#d9ddd6",
+        "galvanizedSteel": "#8f9b9b",
+        "powderCoat": "#52756b"
+      },
+      "triangles": 1486,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/microwave-dish-antenna-fieldSite.png"
+    },
+    {
+      "assetId": "microwave-dish-antenna",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "aluminum": "#d4dada",
+        "radome": "#f4f4f0",
+        "galvanizedSteel": "#3a4b51",
+        "powderCoat": "#e0aa18"
+      },
+      "triangles": 1486,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/microwave-dish-antenna-highVisibility.png"
+    },
+    {
+      "assetId": "yagi-radio-antenna",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/yagi-radio-antenna-default.png"
+    },
+    {
+      "assetId": "yagi-radio-antenna",
+      "variant": "vertical",
+      "view": "3/4",
+      "values": {
+        "polarization": "vertical"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/yagi-radio-antenna-vertical.png"
+    },
+    {
+      "assetId": "yagi-radio-antenna",
+      "variant": "fieldSite",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#8f9b9b",
+        "boom": "#9aa6a3",
+        "stainlessSteel": "#d0d9d6",
+        "polymer": "#2a3330"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/yagi-radio-antenna-fieldSite.png"
+    },
+    {
+      "assetId": "yagi-radio-antenna",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#3a4b51",
+        "boom": "#e0aa18",
+        "stainlessSteel": "#e4e9e6",
+        "polymer": "#1a1f22"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/yagi-radio-antenna-highVisibility.png"
+    },
+    {
+      "assetId": "sector-panel-antenna",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/sector-panel-antenna-default.png"
+    },
+    {
+      "assetId": "sector-panel-antenna",
+      "variant": "downtilt",
+      "view": "3/4",
+      "values": {
+        "tilt": "downtilt"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/sector-panel-antenna-downtilt.png"
+    },
+    {
+      "assetId": "sector-panel-antenna",
+      "variant": "fieldSite",
+      "view": "3/4",
+      "values": {
+        "radome": "#c4c9c3",
+        "powderCoat": "#52756b",
+        "galvanizedSteel": "#8f9b9b",
+        "polymer": "#263a37"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/sector-panel-antenna-fieldSite.png"
+    },
+    {
+      "assetId": "sector-panel-antenna",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "radome": "#eef0ee",
+        "powderCoat": "#e0aa18",
+        "galvanizedSteel": "#3a4b51",
+        "polymer": "#27363c"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/sector-panel-antenna-highVisibility.png"
+    },
+    {
+      "assetId": "dual-sector-panel-array",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2036,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/dual-sector-panel-array-default.png"
+    },
+    {
+      "assetId": "dual-sector-panel-array",
+      "variant": "parallel",
+      "view": "3/4",
+      "values": {
+        "azimuth": "parallel"
+      },
+      "triangles": 2036,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/dual-sector-panel-array-parallel.png"
+    },
+    {
+      "assetId": "dual-sector-panel-array",
+      "variant": "fieldSite",
+      "view": "3/4",
+      "values": {
+        "radome": "#c4c9c3",
+        "powderCoat": "#52756b",
+        "galvanizedSteel": "#8f9b9b",
+        "stainlessSteel": "#d0d9d6",
+        "polymer": "#263a37"
+      },
+      "triangles": 2036,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/dual-sector-panel-array-fieldSite.png"
+    },
+    {
+      "assetId": "dual-sector-panel-array",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "radome": "#eef0ee",
+        "powderCoat": "#e0aa18",
+        "galvanizedSteel": "#3a4b51",
+        "stainlessSteel": "#e4e9e6",
+        "polymer": "#27363c"
+      },
+      "triangles": 2036,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/dual-sector-panel-array-highVisibility.png"
+    },
+    {
+      "assetId": "remote-radio-unit",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1616,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/remote-radio-unit-default.png"
+    },
+    {
+      "assetId": "remote-radio-unit",
+      "variant": "no-shield",
+      "view": "3/4",
+      "values": {
+        "sunshield": "none"
+      },
+      "triangles": 1480,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/remote-radio-unit-no-shield.png"
+    },
+    {
+      "assetId": "remote-radio-unit",
+      "variant": "fieldSite",
+      "view": "3/4",
+      "values": {
+        "housing": "#9ea8a6",
+        "powderCoat": "#52756b",
+        "galvanizedSteel": "#8f9b9b",
+        "polymer": "#263a37"
+      },
+      "triangles": 1616,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/remote-radio-unit-fieldSite.png"
+    },
+    {
+      "assetId": "remote-radio-unit",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "housing": "#cfd5d6",
+        "powderCoat": "#e0aa18",
+        "galvanizedSteel": "#3a4b51",
+        "polymer": "#27363c"
+      },
+      "triangles": 1616,
+      "png": "artifacts/catalog-demos/telecom-infrastructure-silhouette-20261106/variants/remote-radio-unit-highVisibility.png"
+    }
+  ]
+}

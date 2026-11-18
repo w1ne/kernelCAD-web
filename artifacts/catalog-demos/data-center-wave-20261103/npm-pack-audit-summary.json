@@ -1,0 +1,25 @@
+{
+  "prepackBuild": {
+    "command": "npm pack --dry-run --json",
+    "status": "passed",
+    "log": "npm-prepack-build-log.txt"
+  },
+  "builtTarballAudit": {
+    "status": "passed",
+    "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-data-center-npm-pack",
+    "tarballBytes": 50055942,
+    "tarballSha256": "dbea3f713a828b5cdb427a62dc33a3ce6949c63369995ff94f5be3558e240762",
+    "packedFileCount": 3373
+  },
+  "package": "kernelcad@0.17.4",
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "catalogIndexIncluded": true,
+  "dataCenterSources": 50,
+  "dataCenterPreviews": 50,
+  "cliEntryIncluded": true,
+  "headlessPlayerIncluded": true,
+  "privateProductPaths": [],
+  "passed": true
+}

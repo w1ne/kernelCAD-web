@@ -1,0 +1,13 @@
+checkedAt=2026-11-12
+homepage=https://kernelcad.com/ HTTP 200; title: kernelCAD — vibe manufacturing from idea to part
+detail=https://kernelcad.com/catalog/shipyard/blast-dust-collector/ HTTP 200; title: Blast dust collector - free low-poly prop model (CC0) | kernelCAD
+liveDetailControls=yardPaint, elastomer (baseline; filterMedia absent)
+liveSource=https://kernelcad.com/assets/shipyard-blast-dust-collector.kcad.ts HTTP 200
+liveSourceSha256=8b2ef45d509fb5ac991254da263bf79da04169d55a8fff7a825f513b1c807525
+localBeforeSourceSha256=8b2ef45d509fb5ac991254da263bf79da04169d55a8fff7a825f513b1c807525
+localAfterSourceSha256=c85643f747d3fe8dbdc140343e18b9f2c89d35979f87a3d7c9f9d5732aab2dae
+livePreview=https://kernelcad.com/assets/shipyard-blast-dust-collector.png HTTP 200
+livePreviewSha256=1ce0a40f846846992db67b5382c8dc5d2e187a31bd7bcd7c8db611f3a655c88b
+localBeforePreviewSha256=1ce0a40f846846992db67b5382c8dc5d2e187a31bd7bcd7c8db611f3a655c88b
+localAfterPreviewSha256=f1d3e8fecd217f1ef4b8a80feebd6fc9579727e8ab4293fb8e50de66355052a0
+result=live source and preview still match the pre-edit local baseline; branch correction is not deployed

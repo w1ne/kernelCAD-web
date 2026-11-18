@@ -16,7 +16,9 @@
 //          connector `base` at local [1, 2, -4] (on the bottom face)
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import type { FeatureLowerer } from '../../../src/kernel/backends/backend';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
@@ -64,8 +66,8 @@ function script(opts: {
 
 /** World bounding box of every part of the built scene, by part name. */
 async function builtBoxes(code: string): Promise<Map<string, Box>> {
-  const { records } = await runScript({ code, fileName: 'mate-at.kcad.ts' });
-  const r = await new RecomputeEngine(new OcctLowerer()).run(records);
+  const { records, paramTable } = await runScript({ code, fileName: 'mate-at.kcad.ts' });
+  const r = await new RecomputeEngine(new OcctLowerer()).run(records, { paramTable });
   expect(r.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   const scene = r.shapes.get(records[records.length - 1].id);
   if (!isSceneBackend(scene)) throw new Error('the model did not build to an assembly scene');
@@ -73,6 +75,32 @@ async function builtBoxes(code: string): Promise<Map<string, Box>> {
   for (const p of scene.parts) {
     const bb = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform).boundingBox();
     out.set(p.name, { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] });
+  }
+  return out;
+}
+
+/** Exercise a lowerer caller that has resolved records but no direct table. */
+async function builtBoxesWithResolverOnly(code: string): Promise<Map<string, Box>> {
+  const { records, paramTable } = await runScript({ code, fileName: 'mate-at-resolver-only.kcad.ts' });
+  const occt = new OcctLowerer();
+  const resolverOnly: FeatureLowerer = {
+    target: occt.target,
+    supports: occt.supports,
+    lower: (record, inputs) => occt.lower(
+      record,
+      record.kind === 'assemblyModel' || record.kind === 'solvedAssembly'
+        ? { ...inputs, paramTable: undefined }
+        : inputs,
+    ),
+  };
+  const r = await new RecomputeEngine(resolverOnly).run(records, { paramTable });
+  expect(r.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+  const scene = r.shapes.get(records[records.length - 1].id);
+  if (!isSceneBackend(scene)) throw new Error('the model did not build to an assembly scene');
+  const out = new Map<string, Box>();
+  for (const part of scene.parts) {
+    const bb = (part.shape as OcctBackend).clone().applyTransform(part.worldTransform).boundingBox();
+    out.set(part.name, { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] });
   }
   return out;
 }
@@ -159,6 +187,92 @@ describe('a mate places a part that has `at` where the mate says', () => {
       expectBox(boxes.get('valve'), { min: add(e.min, [100, 0, 0]), max: add(e.max, [100, 0, 0]) });
     });
   }
+});
+
+describe('connect-placed parts inherit their parent mate motion', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  for (const entry of ['model', 'solvedModel'] as const) {
+    it(`${entry}: connected descendants inherit motion through a connect chain`, async () => {
+      const code = `
+        const arm = assembly('rig');
+        const root = arm.part('root', box(2, 2, 2, true));
+        root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+
+        const parent = arm.part('parent', box(20, 4, 2, false), {
+          at: [100, 0, 0],
+          connectors: { childMount: { origin: [20, 0, 0] } },
+        });
+        parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+        const child = arm.part('child', box(10, 2, 2, false), {
+          connectors: {
+            root: { origin: [0, 0, 0] },
+            tipMount: { origin: [10, 0, 0] },
+          },
+          connect: { connector: 'root', to: parent.connector('childMount') },
+        });
+        arm.part('grandchild', box(2, 2, 2, false), {
+          connectors: { root: { origin: [0, 0, 0] } },
+          connect: { connector: 'root', to: child.connector('tipMount') },
+        });
+        arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+        return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
+      `;
+      const boxes = await builtBoxes(code);
+
+      // The parent rotates around the origin from +X onto +Y. The child was
+      // connector-placed at the parent's far end, so its entire box
+      // must receive the same rigid motion.
+      expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+      expectBox(boxes.get('child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+      expectBox(boxes.get('grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
+
+      if (entry === 'solvedModel') {
+        const { arm, scene, lowered } = await build(code);
+        const solved = await solveMates(arm);
+        near(solved.poses.get('child')!.point([0, 0, 0]), [0, 120, 0]);
+        near(scene.part('child').worldTransform.point([120, 0, 0]), [0, 120, 0]);
+        near(solved.poses.get('grandchild')!.point([0, 0, 0]), [0, 130, 0]);
+        near(scene.part('grandchild').worldTransform.point([130, 0, 0]), [0, 130, 0]);
+        const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses)!;
+        expectBox(boxOf(reposed, 'child'), { min: [-2, 120, 0], max: [0, 130, 2] });
+        expectBox(boxOf(reposed, 'grandchild'), { min: [-2, 130, 0], max: [0, 132, 2] });
+      }
+    });
+  }
+
+  it('keeps a connected descendant at its own solver-selected mate pose', async () => {
+    const code = `
+      const arm = assembly('rig');
+      const root = arm.part('root', box(2, 2, 2, true));
+      root.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      root.connector('fixtureMount', { type: 'frame', origin: { kind: 'vec3', value: [140, 0, 0] } });
+
+      const parent = arm.part('parent', box(20, 4, 2, false), {
+        at: [100, 0, 0],
+        connectors: { childMount: { origin: [20, 0, 0] } },
+      });
+      parent.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [-100, 0, 0] }, axis: [0, 0, 1] });
+      const child = arm.part('child', box(10, 2, 2, false), {
+        connectors: { root: { origin: [0, 0, 0] } },
+        connect: { connector: 'root', to: parent.connector('childMount') },
+      });
+      child.connector('root', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      const fixture = arm.part('fixture', box(2, 2, 2, false));
+      fixture.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      arm.mate('turn', 'root.axis', 'parent.hinge', 'revolute', { pose: 90 });
+      arm.mate('fixtureLock', 'root.fixtureMount', 'fixture.seat', 'fastened');
+      arm.mate('childLock', 'fixture.seat', 'child.root', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const boxes = await builtBoxes(code);
+
+    // The parent turns about the root, but the child is also fastened to the
+    // stationary fixture. Its own mate therefore remains authoritative.
+    expectBox(boxes.get('parent'), { min: [-4, 100, 0], max: [0, 120, 2] });
+    expectBox(boxes.get('fixture'), { min: [140, 0, 0], max: [142, 2, 2] });
+    expectBox(boxes.get('child'), { min: [140, 0, 0], max: [150, 2, 2] });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -340,6 +454,26 @@ describe('every path agrees with the built scene for a part with `at`', () => {
     expectBox(boxOf(after, 'valve'), { min: [57, -8, 5], max: [69, -2, 13] });
   });
 
+  for (const entry of ['model', 'solvedModel'] as const) {
+    it(`${entry}: assembly placement reads param-driven at through the record resolver`, async () => {
+      const code = `
+        const dx = param('dx', 100);
+        const lift = param('lift', 27);
+        const arm = assembly('rig');
+        arm.part('mount', box(20, 20, 10, true), { at: [dx, 0, 0] })
+           .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [4, -3, 5] } });
+        arm.part('valve', box(12, 6, 8, true), { at: [0, 0, lift] })
+           .connector('base', { type: 'frame', origin: { kind: 'vec3', value: [1, 2, -4] } });
+        arm.mate('m', 'mount.seat', 'valve.base', 'fastened');
+        return ${entry === 'model' ? 'arm.model()' : "arm.solvedModel({}, { validate: 'off' })"};
+      `;
+      const expected = await builtBoxes(code);
+      const actual = await builtBoxesWithResolverOnly(code);
+      expectBox(actual.get('mount'), expected.get('mount')!);
+      expectBox(actual.get('valve'), expected.get('valve')!);
+    });
+  }
+
   it('topology connectors on a part with at keep landing where they did', async () => {
     // Same shape as the mounting-hole eval task: plate b authored at z=5 so
     // its bottom face meets the top face of plate a.
@@ -395,8 +529,23 @@ function tendonEnds(vertices: ArrayLike<number>): { from: V3; to: V3 } {
   return { from: ring(0), to: ring(16) };
 }
 
-describe('tendon anchors and fastened-drift boxes of mated parts with `at`', () => {
+describe('tendon anchors and fastened-drift boxes of posed parts with `at`', () => {
   beforeAll(async () => { await initOcct(); });
+
+  it('a tendon on a part joined by a legacy joint includes the part at placement', async () => {
+    const code = readFileSync('examples/kinematic/jointed-tendon-anchor-at.kcad.ts', 'utf8');
+    const { records, paramTable, session } = await runScript({ code, fileName: 'joint-at-tendon.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(records, paramTable, session);
+    const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');
+    expect(tendon).toBeDefined();
+    const { from, to } = tendonEnds(tendon!.faces[0].vertices);
+    expect(from[0]).toBeCloseTo(110, 3);
+    expect(from[1]).toBeCloseTo(0, 3);
+    expect(from[2]).toBeCloseTo(0, 3);
+    expect(to[0]).toBeCloseTo(-10, 3);
+    expect(to[1]).toBeCloseTo(0, 3);
+    expect(to[2]).toBeCloseTo(0, 3);
+  });
 
   it('a tendon between mated parts with at is anchored on their connectors', async () => {
     // The mount (first part) keeps its `at` [100, 0, 0]: hook [-10, 0, 0]

@@ -1,0 +1,3 @@
+(node:3556557) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+rendered station-alerting-control-console at scale 1.15 with the apparatus-red material palette

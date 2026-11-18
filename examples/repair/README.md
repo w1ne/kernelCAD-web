@@ -16,7 +16,7 @@ The broken files are never rewritten, so you can run it as many times as you lik
 
 | fixture | what is wrong | diagnostic | fix derived from |
 |---|---|---|---|
-| `oversized-fillet.kcad.ts` | 16 mm fillet on an 8 mm-thick block | `feature.edge-feature.short-edges-skipped` | shortest adjacent edge (8 mm → ceiling 4 mm) |
+| `oversized-fillet.kcad.ts` | 16 mm fillet on an 8 mm-thick block | `feature.edge-feature.short-edges-skipped` | same-edge kernel probe (builds 3.93 mm; the 4 mm half-edge ceiling does not) |
 | `hole-misses-plate.kcad.ts` | hole anchored 70 mm from the centre of a 60 mm plate | `feature.hole.cut-missing` | plate extent, less the bore radius, less one radius of wall |
 | `cutter-misses-body.kcad.ts` | cutter translated 200 mm away from the body | `feature.subtractive-noop` | both bounding boxes; the fix lands on the cutter's line, which is an input to the failing boolean |
 | `revolve-crosses-axis.kcad.ts` | washer profile with x = −1 mm | `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate to 0 |
@@ -63,11 +63,11 @@ examples/repair/oversized-fillet.kcad.ts
     lines 20-20  failing-feature  fillet_1
   candidateStatus: candidates
     - fillet_1:shrink-radius:3.2: Reduce fillet radius from 16 mm to 3.2 mm.
-      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":4,"currentValueMm":16}
+      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":3.93,"currentValueMm":16}
     - fillet_1:shrink-radius:2: Reduce fillet radius from 16 mm to 2 mm.
-      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":4,"currentValueMm":16}
+      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":3.93,"currentValueMm":16}
     - fillet_1:shrink-radius:0.8: Reduce fillet radius from 16 mm to 0.8 mm.
-      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":4,"currentValueMm":16}
+      evidence {"shortestAdjacentEdgeMm":8,"maxFeasibleValueMm":3.93,"currentValueMm":16}
 
 --- 3. repair_script strategy: dry-run — preview every patch
   @@ -20,1 +20,1 @@
@@ -248,12 +248,12 @@ examples/repair/emboss-over-hole.kcad.ts
   that feeds nothing into the failing feature is never in the region, and
   `repair_script` refuses any patch outside it (`tool.repair.out-of-region`).
 - **Candidates show their numbers.** The fillet candidates carry
-  `shortestAdjacentEdgeMm: 8` and `maxFeasibleValueMm: 4`, so you can check a
-  fix makes sense before you apply it.
-- **Candidates are ordered.** The fillet ladder is 3.2 → 2 → 0.8 mm, largest
-  first, so the repair keeps as much of the intended rounding as the geometry
-  allows. `strategy: 'try-all'` would move on to the next one if the first
-  failed to evaluate clean.
+  `shortestAdjacentEdgeMm: 8` and `maxFeasibleValueMm: 3.93`. The 3.93 mm
+  figure is the radius the kernel probe built on those edges. Half the
+  shortest edge (4 mm) is not.
+- **Candidates are ordered.** The fillet ladder is 3.2 → 2 → 0.8 mm, each
+  under the probed radius, largest first. `strategy: 'try-all'` would move
+  on to the next one if the first failed to evaluate clean.
 - **The hole stays a hole.** Clamping only to "inside the face" would park the
   bore tangent to the plate end and cut a notch. The candidate leaves one bore
   radius of wall (`u: 25` on a plate whose half-length is 30).

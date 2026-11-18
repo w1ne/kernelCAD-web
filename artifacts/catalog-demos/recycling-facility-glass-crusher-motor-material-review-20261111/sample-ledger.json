@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-11-11",
+  "repository": "w1ne/kernelCAD-web",
+  "branch": "feat/catalog-2000",
+  "baselineCommit": "20eef047461206ae733d0c2e7362903d83471c08",
+  "assets": [
+    {
+      "id": "primary-shredder",
+      "sourceSha256": "4d1e6c4381144621b21903bbf3680a8f046191fbaa91be224de45600ff1da31b",
+      "previewSha256": "ef98c653d71f256f3a7988d7020c9ddcf683a95444267e42f4ff1c9955d61baa",
+      "observation": "Twin-shaft cutting box, hopper, dual drives and under-frame discharge conveyor read as a primary shredder; the visible material zones are plausible."
+    },
+    {
+      "id": "glass-crusher",
+      "sourceSha256": "0dcdc9c441a03f0deeeb9d7f25c247a76440e67ecdc8dde7bb53965f44b9a985",
+      "previewSha256": "8fa08d73367b003a8095bfbf1e7d0c34c961c16407000995f5e62f1b95f44d4b",
+      "observation": "Inclined bottle belt feeds a drum mill; the direct-coupled motor, skip and cullet are visible. Before: motor and mill used the same blue housing paint and visually merged. This was the one corrected mismatch."
+    },
+    {
+      "id": "food-waste-depackager",
+      "sourceSha256": "a031d3cd7717f3b7bdf09c2b1ad5b204d51a5fd984ecef6629e707c600b5e6a6",
+      "previewSha256": "673081012e92417dc9c50ed72e5c45a4b7fa09fe2c5dc2092909f3403f638b1a",
+      "observation": "Stainless body, bin lifter, feed hopper, packaging screw, skip, slurry pump and buffer tank are legible; no material mismatch was established."
+    },
+    {
+      "id": "eddy-current-separator",
+      "sourceSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
+      "previewSha256": "db6f85d093c57d912ea43c12696825379e42c339c9943f94e86221d15001ec9b",
+      "observation": "Feeder, short belt, head shell, splitter and separated output bins read as an eddy-current separator; no new material mismatch was established."
+    },
+    {
+      "id": "recycling-trommel-screen",
+      "sourceSha256": "60ea2ddfa957547b4b920bca8b35c013b87e544201f67a97332028fae4224ee6",
+      "previewSha256": "78e74ab493b2895e472e892e702c39dec1df46e6e379d73ddabf550428989da4",
+      "observation": "Inclined screen drum, feed hopper, overs chute, fines conveyor and piles are recognizable; the visible machine paint is coherent."
+    }
+  ],
+  "finding": {
+    "asset": "recycling-facility/glass-crusher",
+    "before": "The named motor part used the same housing paint as the mill drum.",
+    "after": "The motor now uses the existing painted-steel parameter. The mill enamel remains independent.",
+    "geometryChanged": false
+  }
+}

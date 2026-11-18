@@ -1,0 +1,18 @@
+  THIN   airfield                      0/40   colours/asset=1.00
+  THIN   alpine-expedition             0/50   colours/asset=1.00
+  MIXED  apiary                        1/50   colours/asset=1.04
+  MIXED  city-street                  61/65   colours/asset=3.09
+  THIN   marine                        0/40   colours/asset=1.00
+  THIN   music                         0/40   colours/asset=1.00
+  MIXED  nature                       63/66   colours/asset=2.62
+  THIN   office                        0/40   colours/asset=1.00
+  MIXED  outdoor-gear                  1/12   colours/asset=2.92
+  THIN   photo-video-studio            0/40   colours/asset=1.00
+  MIXED  props                        44/45   colours/asset=3.33
+  THIN   railway                       0/40   colours/asset=1.00
+  THIN   retail-store                  0/48   colours/asset=1.00
+  THIN   solar-energy                  0/40   colours/asset=1.00
+  THIN   sports                        0/40   colours/asset=1.00
+
+  1904/2390 assets pass (34 rich kits, 10 thin kits)
+  486 thin assets = 20% of the catalog

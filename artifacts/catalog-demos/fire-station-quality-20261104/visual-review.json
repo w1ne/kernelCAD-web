@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-04",
+  "method": "Opened the final locally rendered catalog PNGs with the image viewer.",
+  "previews": [
+    {
+      "file": "apparatus-bay-bollard.png",
+      "sha256": "11427a7ffac2a0c2ed83adffb84cb877bb82f462dc92d0fe8526494d2506764a",
+      "visualReview": "Vertical orange safety post with a yellow reflective sleeve, capped top, bolted steel base and visible faceting; reads clearly as a station bollard."
+    },
+    {
+      "file": "clean-zone-handwash-sink.png",
+      "sha256": "b060bf405ede9e8584f16b87bdb84d3fb2517dbf1ba6e24e560f91bcafe11182",
+      "visualReview": "Open rectangular basin with backsplash, drain/spout details, separate dispensers and two steel legs; the steel and light polymer zones separate in the preview."
+    },
+    {
+      "file": "station-alerting-control-console.png",
+      "sha256": "7fa26c88c96b04759ee800cdf0a4c21a6a503512a0958c4f61b0cf77530c4efb",
+      "visualReview": "Wide duty console with a distinct dark angled screen, blue powder-coated housing, metal controls and yellow status buttons."
+    }
+  ],
+  "variant": {
+    "file": "quality-variant.png",
+    "visualReview": "The same console shows a red powder-coated finish with dark screen, stainless detail and yellow controls; the label is fully visible."
+  }
+}

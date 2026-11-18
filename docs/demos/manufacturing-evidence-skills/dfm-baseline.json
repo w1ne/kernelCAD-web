@@ -1,0 +1,358 @@
+{
+  "result": {
+    "_meta": {
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"ok\":true,\"verdict\":\"pass\",\"processes\":[\"fdm\",\"cnc\"],\"checks\":[{\"id\":\"fdm.overhangs\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"No unsupported overhang steeper than 45°.\",\"value\":0,\"limit\":45},{\"id\":\"fdm.bridging\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"All bridges within 10 mm.\",\"limit\":10},{\"id\":\"fdm.min-wall\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"Walls are at least 2 × nozzle (0.8 mm).\",\"value\":7.75,\"limit\":0.8},{\"id\":\"fdm.min-hole\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"No holes below the printable minimum diameter.\"},{\"id\":\"fdm.min-pin\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"No pins below the robust minimum diameter.\"},{\"id\":\"fdm.bed-fit\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"Fits the 'bambu-a1-mini' bed (100 x 70 x 8 mm).\"},{\"id\":\"fdm.bed-contact\",\"process\":\"fdm\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"Bed contact is adequate.\"},{\"id\":\"cnc.undercuts\",\"process\":\"cnc\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"No undercuts: every surface is reachable from the allowed approach axes.\",\"value\":0,\"limit\":1},{\"id\":\"cnc.internal-corner-radius\",\"process\":\"cnc\",\"part\":\"shape\",\"status\":\"pass\",\"summary\":\"All internal corners along the approach axes are ≥ R3 mm.\",\"limit\":3}],\"fdm\":[{\"part\":\"shape\",\"result\":{\"settings\":{\"buildDirection\":[0,0,1],\"nozzleMm\":0.4,\"maxOverhangDeg\":45,\"maxBridgeMm\":10,\"printer\":\"bambu-a1-mini\"},\"orientation\":{\"buildDirection\":[0,0,1],\"label\":\"+z\",\"rotation\":{\"axis\":[0,0,1],\"deg\":0,\"apply\":\"\"},\"sizeMm\":{\"x\":100,\"y\":70,\"z\":8},\"fitsBed\":true,\"unsupportedAreaMm2\":0,\"overhangs\":[],\"bedContact\":{\"areaMm2\":6484.046869134709,\"footprintMm2\":7000,\"ratio\":0.926292409876387,\"minBaseMm\":70,\"heightMm\":8,\"tipRatio\":0.11428571428571428},\"bedContactLow\":false,\"tipRisk\":false},\"ranking\":[{\"label\":\"+z\",\"buildDirection\":[0,0,1],\"rotation\":{\"axis\":[0,0,1],\"deg\":0,\"apply\":\"\"},\"sizeMm\":{\"x\":100,\"y\":70,\"z\":8},\"fitsBed\":true,\"unsupportedAreaMm2\":0,\"bedContactAreaMm2\":6484.046869134709,\"bedContactRatio\":0.926292409876387,\"heightMm\":8,\"tipRisk\":false},{\"label\":\"-z\",\"buildDirection\":[0,0,-1],\"rotation\":{\"axis\":[1,0,0],\"deg\":180,\"apply\":\".rotateX(180)\"},\"sizeMm\":{\"x\":100,\"y\":70,\"z\":8},\"fitsBed\":true,\"unsupportedAreaMm2\":0,\"bedContactAreaMm2\":6484.04686913471,\"bedContactRatio\":0.9262924098763871,\"heightMm\":8,\"tipRisk\":false},{\"label\":\"+y\",\"buildDirection\":[0,1,0],\"rotation\":{\"axis\":[1,0,0],\"deg\":90,\"apply\":\".rotateX(90)\"},\"sizeMm\":{\"x\":100,\"y\":8,\"z\":70},\"fitsBed\":true,\"unsupportedAreaMm2\":148.39900894382112,\"bedContactAreaMm2\":800,\"bedContactRatio\":1,\"heightMm\":70,\"tipRisk\":true},{\"label\":\"-y\",\"buildDirection\":[0,-1,0],\"rotation\":{\"axis\":[1,0,0],\"deg\":-90,\"apply\":\".rotateX(-90)\"},\"sizeMm\":{\"x\":100,\"y\":8,\"z\":70},\"fitsBed\":true,\"unsupportedAreaMm2\":148.39900894382106,\"bedContactAreaMm2\":800,\"bedContactRatio\":1,\"heightMm\":70,\"tipRisk\":true},{\"label\":\"+x\",\"buildDirection\":[1,0,0],\"rotation\":{\"axis\":[0,1,0],\"deg\":-90,\"apply\":\".rotateY(-90)\"},\"sizeMm\":{\"x\":8,\"y\":70,\"z\":100},\"fitsBed\":true,\"unsupportedAreaMm2\":148.39900894382123,\"bedContactAreaMm2\":560,\"bedContactRatio\":1,\"heightMm\":100,\"tipRisk\":true},{\"label\":\"-x\",\"buildDirection\":[-1,0,0],\"rotation\":{\"axis\":[0,1,0],\"deg\":90,\"apply\":\".rotateY(90)\"},\"sizeMm\":{\"x\":8,\"y\":70,\"z\":100},\"fitsBed\":true,\"unsupportedAreaMm2\":148.39900894381879,\"bedContactAreaMm2\":560,\"bedContactRatio\":1,\"heightMm\":100,\"tipRisk\":true}],\"walls\":{\"violations\":[],\"truncated\":false,\"sampleCount\":5072,\"thinnestMm\":7.750735411689592},\"smallFeatures\":[],\"verdict\":\"pass\"}}],\"cnc\":[{\"part\":\"shape\",\"result\":{\"settings\":{\"toolDiameterMm\":6,\"approachAxes\":[[0,0,1],[0,0,-1]],\"maxUndercutAreaMm2\":1},\"undercut\":{\"areaMm2\":0,\"samples\":[]},\"sharpInternalCorners\":[],\"tightFillets\":[]}}],\"diagnostics\":[],\"serverBuild\":\"0.1.0+a89797728c59@2026-11-12T19:50:09.169Z\"}"
+      }
+    ],
+    "structuredContent": {
+      "ok": true,
+      "verdict": "pass",
+      "processes": [
+        "fdm",
+        "cnc"
+      ],
+      "checks": [
+        {
+          "id": "fdm.overhangs",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "No unsupported overhang steeper than 45°.",
+          "value": 0,
+          "limit": 45
+        },
+        {
+          "id": "fdm.bridging",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "All bridges within 10 mm.",
+          "limit": 10
+        },
+        {
+          "id": "fdm.min-wall",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "Walls are at least 2 × nozzle (0.8 mm).",
+          "value": 7.75,
+          "limit": 0.8
+        },
+        {
+          "id": "fdm.min-hole",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "No holes below the printable minimum diameter."
+        },
+        {
+          "id": "fdm.min-pin",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "No pins below the robust minimum diameter."
+        },
+        {
+          "id": "fdm.bed-fit",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "Fits the 'bambu-a1-mini' bed (100 x 70 x 8 mm)."
+        },
+        {
+          "id": "fdm.bed-contact",
+          "process": "fdm",
+          "part": "shape",
+          "status": "pass",
+          "summary": "Bed contact is adequate."
+        },
+        {
+          "id": "cnc.undercuts",
+          "process": "cnc",
+          "part": "shape",
+          "status": "pass",
+          "summary": "No undercuts: every surface is reachable from the allowed approach axes.",
+          "value": 0,
+          "limit": 1
+        },
+        {
+          "id": "cnc.internal-corner-radius",
+          "process": "cnc",
+          "part": "shape",
+          "status": "pass",
+          "summary": "All internal corners along the approach axes are ≥ R3 mm.",
+          "limit": 3
+        }
+      ],
+      "fdm": [
+        {
+          "part": "shape",
+          "result": {
+            "settings": {
+              "buildDirection": [
+                0,
+                0,
+                1
+              ],
+              "nozzleMm": 0.4,
+              "maxOverhangDeg": 45,
+              "maxBridgeMm": 10,
+              "printer": "bambu-a1-mini"
+            },
+            "orientation": {
+              "buildDirection": [
+                0,
+                0,
+                1
+              ],
+              "label": "+z",
+              "rotation": {
+                "axis": [
+                  0,
+                  0,
+                  1
+                ],
+                "deg": 0,
+                "apply": ""
+              },
+              "sizeMm": {
+                "x": 100,
+                "y": 70,
+                "z": 8
+              },
+              "fitsBed": true,
+              "unsupportedAreaMm2": 0,
+              "overhangs": [],
+              "bedContact": {
+                "areaMm2": 6484.046869134709,
+                "footprintMm2": 7000,
+                "ratio": 0.926292409876387,
+                "minBaseMm": 70,
+                "heightMm": 8,
+                "tipRatio": 0.11428571428571428
+              },
+              "bedContactLow": false,
+              "tipRisk": false
+            },
+            "ranking": [
+              {
+                "label": "+z",
+                "buildDirection": [
+                  0,
+                  0,
+                  1
+                ],
+                "rotation": {
+                  "axis": [
+                    0,
+                    0,
+                    1
+                  ],
+                  "deg": 0,
+                  "apply": ""
+                },
+                "sizeMm": {
+                  "x": 100,
+                  "y": 70,
+                  "z": 8
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 0,
+                "bedContactAreaMm2": 6484.046869134709,
+                "bedContactRatio": 0.926292409876387,
+                "heightMm": 8,
+                "tipRisk": false
+              },
+              {
+                "label": "-z",
+                "buildDirection": [
+                  0,
+                  0,
+                  -1
+                ],
+                "rotation": {
+                  "axis": [
+                    1,
+                    0,
+                    0
+                  ],
+                  "deg": 180,
+                  "apply": ".rotateX(180)"
+                },
+                "sizeMm": {
+                  "x": 100,
+                  "y": 70,
+                  "z": 8
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 0,
+                "bedContactAreaMm2": 6484.04686913471,
+                "bedContactRatio": 0.9262924098763871,
+                "heightMm": 8,
+                "tipRisk": false
+              },
+              {
+                "label": "+y",
+                "buildDirection": [
+                  0,
+                  1,
+                  0
+                ],
+                "rotation": {
+                  "axis": [
+                    1,
+                    0,
+                    0
+                  ],
+                  "deg": 90,
+                  "apply": ".rotateX(90)"
+                },
+                "sizeMm": {
+                  "x": 100,
+                  "y": 8,
+                  "z": 70
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 148.39900894382112,
+                "bedContactAreaMm2": 800,
+                "bedContactRatio": 1,
+                "heightMm": 70,
+                "tipRisk": true
+              },
+              {
+                "label": "-y",
+                "buildDirection": [
+                  0,
+                  -1,
+                  0
+                ],
+                "rotation": {
+                  "axis": [
+                    1,
+                    0,
+                    0
+                  ],
+                  "deg": -90,
+                  "apply": ".rotateX(-90)"
+                },
+                "sizeMm": {
+                  "x": 100,
+                  "y": 8,
+                  "z": 70
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 148.39900894382106,
+                "bedContactAreaMm2": 800,
+                "bedContactRatio": 1,
+                "heightMm": 70,
+                "tipRisk": true
+              },
+              {
+                "label": "+x",
+                "buildDirection": [
+                  1,
+                  0,
+                  0
+                ],
+                "rotation": {
+                  "axis": [
+                    0,
+                    1,
+                    0
+                  ],
+                  "deg": -90,
+                  "apply": ".rotateY(-90)"
+                },
+                "sizeMm": {
+                  "x": 8,
+                  "y": 70,
+                  "z": 100
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 148.39900894382123,
+                "bedContactAreaMm2": 560,
+                "bedContactRatio": 1,
+                "heightMm": 100,
+                "tipRisk": true
+              },
+              {
+                "label": "-x",
+                "buildDirection": [
+                  -1,
+                  0,
+                  0
+                ],
+                "rotation": {
+                  "axis": [
+                    0,
+                    1,
+                    0
+                  ],
+                  "deg": 90,
+                  "apply": ".rotateY(90)"
+                },
+                "sizeMm": {
+                  "x": 8,
+                  "y": 70,
+                  "z": 100
+                },
+                "fitsBed": true,
+                "unsupportedAreaMm2": 148.39900894381879,
+                "bedContactAreaMm2": 560,
+                "bedContactRatio": 1,
+                "heightMm": 100,
+                "tipRisk": true
+              }
+            ],
+            "walls": {
+              "violations": [],
+              "truncated": false,
+              "sampleCount": 5072,
+              "thinnestMm": 7.750735411689592
+            },
+            "smallFeatures": [],
+            "verdict": "pass"
+          }
+        }
+      ],
+      "cnc": [
+        {
+          "part": "shape",
+          "result": {
+            "settings": {
+              "toolDiameterMm": 6,
+              "approachAxes": [
+                [
+                  0,
+                  0,
+                  1
+                ],
+                [
+                  0,
+                  0,
+                  -1
+                ]
+              ],
+              "maxUndercutAreaMm2": 1
+            },
+            "undercut": {
+              "areaMm2": 0,
+              "samples": []
+            },
+            "sharpInternalCorners": [],
+            "tightFillets": []
+          }
+        }
+      ],
+      "diagnostics": [],
+      "serverBuild": "0.1.0+a89797728c59@2026-11-12T19:50:09.169Z"
+    }
+  },
+  "jsonrpc": "2.0",
+  "id": 2
+}

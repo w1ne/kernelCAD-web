@@ -1,0 +1,8 @@
+{
+  "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx tsx artifacts/catalog-demos/water-treatment-quality-promotion-20261105/render_water_treatment_variant.ts",
+  "runDate": "2026-11-05",
+  "status": "PASS",
+  "exitCode": 0,
+  "asset": "water-treatment/horizontal-split-case-pump",
+  "preset": "highVisibility"
+}

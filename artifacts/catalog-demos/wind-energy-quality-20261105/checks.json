@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-11-05T12:36:33.034927+00:00",
+  "checks": [
+    {
+      "name": "wind-energy ESLint",
+      "command": "npx eslint catalog/kits/wind-energy/",
+      "exitCode": 0,
+      "passed": true,
+      "evidence": "eslint-output.txt"
+    },
+    {
+      "name": "wind-energy quality gate",
+      "command": "python3 scripts/checkCatalogQuality.py --kit wind-energy",
+      "exitCode": 0,
+      "passed": true,
+      "evidence": "wind-energy-quality-output.txt"
+    },
+    {
+      "name": "catalog integration suite",
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "passed": true,
+      "filesPassed": 4,
+      "testsPassed": 15,
+      "evidence": "catalog-integration-output.txt"
+    },
+    {
+      "name": "local catalog pages and generated index",
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-wind-pages",
+      "exitCode": 0,
+      "passed": true,
+      "assetsChecked": 50,
+      "localPagesPresent": 50,
+      "sourceHashesMatch": true,
+      "hubListsKit": true,
+      "deploymentVerified": false,
+      "evidence": "verification.json"
+    },
+    {
+      "name": "repository-wide quality report",
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "passed": false,
+      "interpretation": "The report records remaining thin assets, which are queued for later rounds.",
+      "evidence": "catalog-quality-output.txt"
+    }
+  ],
+  "catalogQuality": {
+    "passing": 1604,
+    "total": 2390,
+    "passRate": "67%",
+    "thin": 786,
+    "source": "python3 scripts/checkCatalogQuality.py"
+  },
+  "previewRender": {
+    "allKitAssets": 50,
+    "fullKitCommandFile": "preview-render-invocation.txt",
+    "finalChangedAssetCommandFile": "vertical-axis-preview-invocation.txt",
+    "indexRebuiltCommand": "npx tsx scripts/buildAssetCatalog.ts",
+    "buildEvidence": "catalog-build-output.txt"
+  },
+  "allRequiredChecksPassed": true
+}

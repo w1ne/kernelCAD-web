@@ -1,0 +1,306 @@
+{
+  "sources": [
+    {
+      "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
+      "sourceSha256": "fe95e0c69268bb962747fab7870f653f044dddc6d7da9510befdc9da6a984815",
+      "triangleBudget": 1380
+    },
+    {
+      "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
+      "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
+      "triangleBudget": 1600
+    },
+    {
+      "source": "catalog/kits/standard-components/din-rail-terminal-block.kcad.ts",
+      "sourceSha256": "3e57448c2ed3c278aa0a402d8f2fc3445b2c215e428fbde8782017ff681f9dc1",
+      "triangleBudget": 500
+    }
+  ],
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-visible-details-20261106/render_visible_details_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "renders": [
+    {
+      "id": "timing-belt-pulley-standard",
+      "assetId": "timing-belt-pulley",
+      "variant": "standard",
+      "values": {},
+      "dimensionsMm": [
+        48,
+        26.1,
+        48
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-standard.png"
+    },
+    {
+      "id": "timing-belt-pulley-compact",
+      "assetId": "timing-belt-pulley",
+      "variant": "compact",
+      "values": {
+        "size": "compact"
+      },
+      "dimensionsMm": [
+        36,
+        19.6,
+        36
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-compact.png"
+    },
+    {
+      "id": "timing-belt-pulley-large",
+      "assetId": "timing-belt-pulley",
+      "variant": "large",
+      "values": {
+        "size": "large"
+      },
+      "dimensionsMm": [
+        60,
+        32.7,
+        60
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-large.png"
+    },
+    {
+      "id": "timing-belt-pulley-dark",
+      "assetId": "timing-belt-pulley",
+      "variant": "dark",
+      "values": {
+        "aluminum": "#365461",
+        "steel": "#3e484e",
+        "hardware": "#20272b"
+      },
+      "dimensionsMm": [
+        48,
+        26.1,
+        48
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-dark.png"
+    },
+    {
+      "id": "timing-belt-pulley-brass",
+      "assetId": "timing-belt-pulley",
+      "variant": "brass",
+      "values": {
+        "aluminum": "#4a8a99",
+        "steel": "#646f75",
+        "hardware": "#c0944d"
+      },
+      "dimensionsMm": [
+        48,
+        26.1,
+        48
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-brass.png"
+    },
+    {
+      "id": "timing-belt-pulley-weathered",
+      "assetId": "timing-belt-pulley",
+      "variant": "weathered",
+      "values": {
+        "aluminum": "#677d75",
+        "steel": "#665b4d",
+        "hardware": "#51473b"
+      },
+      "dimensionsMm": [
+        48,
+        26.1,
+        48
+      ],
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/timing-belt-pulley-weathered.png"
+    },
+    {
+      "id": "door-hinge-standard",
+      "assetId": "door-hinge",
+      "variant": "standard",
+      "values": {},
+      "dimensionsMm": [
+        64,
+        40,
+        10
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-standard.png"
+    },
+    {
+      "id": "door-hinge-compact",
+      "assetId": "door-hinge",
+      "variant": "compact",
+      "values": {
+        "size": "compact"
+      },
+      "dimensionsMm": [
+        48,
+        30,
+        7.5
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-compact.png"
+    },
+    {
+      "id": "door-hinge-large",
+      "assetId": "door-hinge",
+      "variant": "large",
+      "values": {
+        "size": "large"
+      },
+      "dimensionsMm": [
+        80,
+        50,
+        12.5
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-large.png"
+    },
+    {
+      "id": "door-hinge-dark",
+      "assetId": "door-hinge",
+      "variant": "dark",
+      "values": {
+        "steel": "#3e484e",
+        "brass": "#725938",
+        "fasteners": "#20272b"
+      },
+      "dimensionsMm": [
+        64,
+        40,
+        10
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-dark.png"
+    },
+    {
+      "id": "door-hinge-brass",
+      "assetId": "door-hinge",
+      "variant": "brass",
+      "values": {
+        "steel": "#646f75",
+        "brass": "#c0944d",
+        "fasteners": "#b0804d"
+      },
+      "dimensionsMm": [
+        64,
+        40,
+        10
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-brass.png"
+    },
+    {
+      "id": "door-hinge-weathered",
+      "assetId": "door-hinge",
+      "variant": "weathered",
+      "values": {
+        "steel": "#665b4d",
+        "brass": "#8c734d",
+        "fasteners": "#51473b"
+      },
+      "dimensionsMm": [
+        64,
+        40,
+        10
+      ],
+      "triangles": 1440,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/door-hinge-weathered.png"
+    },
+    {
+      "id": "din-rail-terminal-block-standard",
+      "assetId": "din-rail-terminal-block",
+      "variant": "standard",
+      "values": {},
+      "dimensionsMm": [
+        28,
+        33,
+        24
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-standard.png"
+    },
+    {
+      "id": "din-rail-terminal-block-compact",
+      "assetId": "din-rail-terminal-block",
+      "variant": "compact",
+      "values": {
+        "size": "compact"
+      },
+      "dimensionsMm": [
+        21,
+        24.8,
+        18
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-compact.png"
+    },
+    {
+      "id": "din-rail-terminal-block-large",
+      "assetId": "din-rail-terminal-block",
+      "variant": "large",
+      "values": {
+        "size": "large"
+      },
+      "dimensionsMm": [
+        35,
+        41.3,
+        30
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-large.png"
+    },
+    {
+      "id": "din-rail-terminal-block-dark",
+      "assetId": "din-rail-terminal-block",
+      "variant": "dark",
+      "values": {
+        "steel": "#77858b",
+        "polymer": "#244956",
+        "copper": "#8a5331"
+      },
+      "dimensionsMm": [
+        28,
+        33,
+        24
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-dark.png"
+    },
+    {
+      "id": "din-rail-terminal-block-brass",
+      "assetId": "din-rail-terminal-block",
+      "variant": "brass",
+      "values": {
+        "steel": "#aeb8bd",
+        "polymer": "#1d5364",
+        "copper": "#e0b356"
+      },
+      "dimensionsMm": [
+        28,
+        33,
+        24
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-brass.png"
+    },
+    {
+      "id": "din-rail-terminal-block-weathered",
+      "assetId": "din-rail-terminal-block",
+      "variant": "weathered",
+      "values": {
+        "steel": "#8e8578",
+        "polymer": "#96734f",
+        "copper": "#806747"
+      },
+      "dimensionsMm": [
+        28,
+        33,
+        24
+      ],
+      "triangles": 444,
+      "png": "artifacts/catalog-demos/standard-components-visible-details-20261106/variants/din-rail-terminal-block-weathered.png"
+    }
+  ]
+}

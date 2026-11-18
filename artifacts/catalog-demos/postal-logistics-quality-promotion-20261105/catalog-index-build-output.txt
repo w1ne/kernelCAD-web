@@ -1,0 +1,2 @@
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/catalog/index.json
+(Use `node --trace-deprecation ...` to show where the warning was created)

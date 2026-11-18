@@ -1,0 +1,56 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts aeration-manifold air-pump-cabinet bato-bucket blackout-curtain-drive circulation-pump-skid coco-coir-slab-holder crop-trellis-frame deep-water-culture-bed dosing-pump-skid dutch-bucket-row ebb-flow-grow-table ec-sensor-flow-cell evaporative-cooling-pad flood-drain-valve-manifold greenhouse-circulation-fan greenhouse-climate-sensor-post greenhouse-exhaust-fan greenhouse-fogger-header greenhouse-grow-light-bar greenhouse-tunnel-bay handheld-ec-meter handheld-ph-meter hydroponic-controller-console hydroponic-grow-rack inline-water-heater irrigation-lateral-header media-filter-vessel net-pot-stack nft-channel-rack nutrient-feed-manifold nutrient-measuring-cylinder nutrient-reservoir-tank nutrient-solution-chiller overhead-grow-light-frame peristaltic-dosing-pump ph-probe-flow-cell plant-support-clip-rack propagation-plug-tray return-water-header root-zone-heating-loop screen-filter-housing seedling-propagation-cart seedling-transplant-tool solution-mixing-tank stock-solution-tank substrate-grow-gutter sump-return-tank uv-treatment-chamber venturi-injector-assembly vertical-grow-tower wall-mounted-co2-sensor water-level-float
+(node:763468) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+hydroponics/aeration-manifold: 3380 tris
+hydroponics/air-pump-cabinet: 4036 tris
+hydroponics/bato-bucket: 1392 tris
+hydroponics/blackout-curtain-drive: 1788 tris
+hydroponics/circulation-pump-skid: 1732 tris
+hydroponics/coco-coir-slab-holder: 2136 tris
+hydroponics/crop-trellis-frame: 6420 tris
+hydroponics/deep-water-culture-bed: 5514 tris
+hydroponics/dosing-pump-skid: 2634 tris
+hydroponics/dutch-bucket-row: 4712 tris
+hydroponics/ebb-flow-grow-table: 4088 tris
+hydroponics/ec-sensor-flow-cell: 2970 tris
+hydroponics/evaporative-cooling-pad: 2352 tris
+hydroponics/flood-drain-valve-manifold: 3348 tris
+hydroponics/greenhouse-circulation-fan: 2352 tris
+hydroponics/greenhouse-climate-sensor-post: 1634 tris
+hydroponics/greenhouse-exhaust-fan: 1412 tris
+hydroponics/greenhouse-fogger-header: 4352 tris
+hydroponics/greenhouse-grow-light-bar: 1540 tris
+hydroponics/greenhouse-tunnel-bay: 4404 tris
+hydroponics/handheld-ec-meter: 1294 tris
+hydroponics/handheld-ph-meter: 1926 tris
+hydroponics/hydroponic-controller-console: 1520 tris
+hydroponics/hydroponic-grow-rack: 6266 tris
+hydroponics/inline-water-heater: 2056 tris
+hydroponics/irrigation-lateral-header: 5032 tris
+hydroponics/media-filter-vessel: 3812 tris
+hydroponics/net-pot-stack: 5210 tris
+hydroponics/nft-channel-rack: 3548 tris
+hydroponics/nutrient-feed-manifold: 3152 tris
+hydroponics/nutrient-measuring-cylinder: 1334 tris
+hydroponics/nutrient-reservoir-tank: 1508 tris
+hydroponics/nutrient-solution-chiller: 2104 tris
+hydroponics/overhead-grow-light-frame: 2856 tris
+hydroponics/peristaltic-dosing-pump: 5692 tris
+hydroponics/ph-probe-flow-cell: 2966 tris
+hydroponics/plant-support-clip-rack: 5128 tris
+hydroponics/propagation-plug-tray: 4492 tris
+hydroponics/return-water-header: 2822 tris
+hydroponics/root-zone-heating-loop: 3552 tris
+hydroponics/screen-filter-housing: 1502 tris
+hydroponics/seedling-propagation-cart: 3604 tris
+hydroponics/seedling-transplant-tool: 930 tris
+hydroponics/solution-mixing-tank: 1670 tris
+hydroponics/stock-solution-tank: 2556 tris
+hydroponics/substrate-grow-gutter: 2232 tris
+hydroponics/sump-return-tank: 2042 tris
+hydroponics/uv-treatment-chamber: 1450 tris
+hydroponics/venturi-injector-assembly: 2404 tris
+hydroponics/vertical-grow-tower: 4318 tris
+hydroponics/wall-mounted-co2-sensor: 1034 tris
+hydroponics/water-level-float: 1540 tris

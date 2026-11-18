@@ -1,0 +1,24 @@
+{
+  "checkedDate": "2026-11-06",
+  "purpose": "Pre-change kernelCAD website check; this feature branch is not deployed.",
+  "requests": [
+    {
+      "url": "https://kernelcad.com/",
+      "status": 200,
+      "bytes": 59785,
+      "hasAssetRail": true,
+      "hasNatureAssetText": false
+    },
+    {
+      "url": "https://kernelcad.com/catalog/",
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://kernelcad.com/catalog/nature/cairn/",
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "deployed": false
+}

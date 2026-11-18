@@ -1,0 +1,16 @@
+{
+  "kit": "sports",
+  "beforeAssetIds": 40,
+  "afterAssetIds": 40,
+  "assetIdsUnchanged": true,
+  "sourceHashesChecked": 40,
+  "previewsChecked": 40,
+  "materialColorParamsPerAsset": [
+    2,
+    4
+  ],
+  "presetEntries": 40,
+  "triangleBudgetsPassed": true,
+  "failures": [],
+  "passed": true
+}

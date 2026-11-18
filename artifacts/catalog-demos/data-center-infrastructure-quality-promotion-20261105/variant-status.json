@@ -1,0 +1,8 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/render_data_center_variant.mts",
+  "exitCode": 0,
+  "status": "pass",
+  "preset": "highVisibility",
+  "triangles": 400,
+  "triangleBudget": 2200
+}

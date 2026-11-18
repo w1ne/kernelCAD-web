@@ -1,0 +1,159 @@
+{
+  "checkedAt": "2026-11-01T16:36:23.538Z",
+  "totalKits": 11,
+  "kits": [
+    {
+      "id": "tools-equipment",
+      "assets": 12,
+      "triangles": {
+        "min": 112,
+        "max": 492
+      },
+      "ids": [
+        "adjustable-wrench",
+        "chainsaw",
+        "claw-hammer",
+        "garden-spade",
+        "hand-saw",
+        "pickaxe",
+        "pliers",
+        "power-drill",
+        "rolling-tool-chest",
+        "sawhorse",
+        "screwdriver",
+        "sledgehammer"
+      ]
+    },
+    {
+      "id": "containers",
+      "assets": 12,
+      "triangles": {
+        "min": 180,
+        "max": 556
+      },
+      "ids": [
+        "ammo-crate",
+        "amphora",
+        "cooler-box",
+        "fruit-crate",
+        "ibc-tote",
+        "mason-jar",
+        "milk-churn",
+        "picnic-basket",
+        "rain-barrel",
+        "steamer-trunk",
+        "storage-tote",
+        "wicker-basket"
+      ]
+    },
+    {
+      "id": "electronics",
+      "assets": 12,
+      "triangles": {
+        "min": 72,
+        "max": 428
+      },
+      "ids": [
+        "bookshelf-speaker",
+        "boombox",
+        "computer-monitor",
+        "crt-television",
+        "desk-phone",
+        "desktop-tower",
+        "game-console",
+        "keyboard",
+        "laptop",
+        "retro-radio",
+        "smartphone",
+        "wifi-router"
+      ]
+    },
+    {
+      "id": "food-kitchen",
+      "assets": 12,
+      "triangles": {
+        "min": 140,
+        "max": 480
+      },
+      "ids": [
+        "apple",
+        "bread-loaf",
+        "carrot",
+        "cheese-wheel",
+        "coffee-mug",
+        "cooking-pot",
+        "cutting-board",
+        "dinner-plate",
+        "frying-pan",
+        "kettle",
+        "watermelon",
+        "wine-bottle"
+      ]
+    },
+    {
+      "id": "lighting",
+      "assets": 12,
+      "triangles": {
+        "min": 168,
+        "max": 780
+      },
+      "ids": [
+        "brazier",
+        "chandelier",
+        "flashlight",
+        "hurricane-lantern",
+        "lava-lamp",
+        "oil-lamp",
+        "paper-lantern",
+        "stage-spotlight",
+        "tiki-torch",
+        "tripod-work-light",
+        "wall-sconce",
+        "wall-torch"
+      ]
+    }
+  ],
+  "variants": [
+    {
+      "id": "cooking-pot",
+      "want": "soup, copper",
+      "params": {
+        "pot": "#b8693a",
+        "lidColor": "#c87a48",
+        "grip": "#3a2a20",
+        "state": "soup"
+      },
+      "unmatched": [],
+      "glbSha256": "1acdbb4566d37ca8a5de9418d487d7b819f08ff053f8ce8801ddc659877f29ac"
+    },
+    {
+      "id": "ibc-tote",
+      "want": "wood pallet, 30 fill",
+      "params": {
+        "pallet": "wood",
+        "fill": "30"
+      },
+      "unmatched": [],
+      "glbSha256": "8c1a93f49b60651deeeb5ec4d30a3efee2e313cbeda55706c65097ee8b2ddc7a"
+    },
+    {
+      "id": "paper-lantern",
+      "want": "tall, table",
+      "params": {
+        "shape": "tall",
+        "mount": "table"
+      },
+      "unmatched": [],
+      "glbSha256": "d249eb4bc09b9c0617cbddb7c4237fc68708834076c536124164dc01a045117e"
+    }
+  ],
+  "totalAssets": 373,
+  "addedAssets": 60,
+  "claims": {
+    "originalGeometry": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false
+  }
+}

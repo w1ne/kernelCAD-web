@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-05",
+  "checkedAtUtc": "2026-11-05T22:29:22.419133+00:00",
+  "checks": [
+    {
+      "url": "https://kernelcad.com/",
+      "finalUrl": "https://kernelcad.com/",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 59908
+    },
+    {
+      "url": "https://kernelcad.com/asset-library/",
+      "finalUrl": "https://kernelcad.com/asset-library/",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 12452
+    },
+    {
+      "url": "https://kernelcad.com/assets.json",
+      "finalUrl": "https://kernelcad.com/assets.json",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "bytes": 1149081
+    },
+    {
+      "url": "https://kernelcad.com/assets/airfield-aircraft-fuel-truck.png",
+      "finalUrl": "https://kernelcad.com/assets/airfield-aircraft-fuel-truck.png",
+      "httpStatus": 200,
+      "contentType": "image/png",
+      "bytes": 26020
+    },
+    {
+      "url": "https://kernelcad.com/assets/airfield-aircraft-fuel-truck.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/airfield-aircraft-fuel-truck.kcad.ts",
+      "httpStatus": 200,
+      "contentType": "video/mp2t",
+      "bytes": 1562
+    }
+  ],
+  "publishedCatalogAssetRows": 2116,
+  "publishedAirfieldAsset": {
+    "id": "aircraft-fuel-truck",
+    "kit": "airfield",
+    "title": "Aircraft fuel truck",
+    "preview": "/assets/airfield-aircraft-fuel-truck.png",
+    "sourceUrl": "/assets/airfield-aircraft-fuel-truck.kcad.ts",
+    "triangles": 274
+  },
+  "scope": "Public routes were checked before any deployment of this branch. These results describe the existing live catalog only; no deployment or post-deployment behavior is claimed."
+}

@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ scripts/buildCatalogPages.test.ts (4 tests) 1900ms
+     ✓ gives every page a unique title, canonical URL, bounded description and valid Product JSON-LD  342ms
+     ✓ makes every asset crawlable from the hub and every internal catalog link resolve  531ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  02:20:30
+   Duration  2.18s (transform 106ms, setup 94ms, import 62ms, tests 1.90s, environment 0ms)

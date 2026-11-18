@@ -15,6 +15,7 @@ import { beforeAll, describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import type { MateLoadLimit, MateRecord } from '../../../src/modeling/mates/mate';
 import { createModelingApi } from '../../../src/modeling/api';
+import { validateAssemblyWithMates } from '../../../src/modeling/mates/validator';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 function makeArm() {
@@ -138,6 +139,27 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
       validate: 'error',
       externalLoads: { a: { force: [0, 0, -1000] } },
     })).rejects.toMatchObject({ hint: expect.stringMatching(/joint-load-exceeded/i) });
+  });
+
+  it('measures Gate 3 torque in a mated child’s solved frame', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('rotor', kcad.box(10, 10, 10), { at: [100, 0, 0] })
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'rotor.axis', 'revolute', { pose: 90, limitsDeg: [-180, 180] });
+    const hinge = (arm.__mates() as MateRecord[]).find((mate) => mate.name === 'hinge');
+    if (!hinge) throw new Error('fixture: hinge mate not found');
+    (hinge as { maxLoad?: MateLoadLimit }).maxLoad = { torque: 5 };
+
+    const result = await validateAssemblyWithMates(arm, undefined, undefined, {
+      rotor: { force: [1000, 0, 0] },
+    });
+
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.code === 'assembly.joint.load-exceeded'))
+      .toHaveLength(1);
   });
 
   it('attaches all three codes to scene.warnings under validate=warn (no throw)', async () => {

@@ -34,9 +34,9 @@ Load this skill whenever the user asks any of:
 Do NOT load this skill for static CAD authoring (use `kernelcad-authoring`) or
 for visualization (use the renderer). This skill is feasibility-checking only.
 
-## The 6 entry points
+## Entry points
 
-All six live under the `kinematic.*` namespace exposed to every `.kcad.ts`
+These live under the `kinematic.*` namespace exposed to every `.kcad.ts`
 script. The same surface is reachable from host code via `import * as kinematic from
 'src/kinematic'`. Every entry returns a `Promise<…Result>` envelope carrying
 `source: 'local'`.
@@ -45,11 +45,24 @@ script. The same surface is reachable from host code via `import * as kinematic 
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
+| `kinematic.suggestJointRanges(arm, opts)` | Where should this revolute or prismatic stop so non-exempt parts keep the clearance? | no diagnostic code; the reported stop is the clear side of the bracket; `no-stop` means the sampled poses found no crossing, not a continuous proof; an unmeasured side is `unknown`, never `no-stop` |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
-| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
-| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
+| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
+| `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `assembly.joint.static-hold.mass-unavailable`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
+
+`checkLoadCapacity` defaults to the closed-form beam check. Its deprecated
+`mode: 'stub'` compatibility path compares manually supplied per-part loads
+against a mate's deprecated `maxLoad`; for a mated assembly, connector and
+part-frame origins use the solved mate placements. This is a lever-arm sanity
+check, not reaction propagation, FEA, or hardware acceptance. A warning with
+`assembly.joint.load-unverified` means a connector origin could not be resolved
+by this synchronous path, or a declared load rating is unsupported (the legacy
+checker does not compare torque ratings on ball mates), so that capacity
+comparison did not run. See the [Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md),
+the [topology-origin unverified replay bundle](../../../../docs/demos/joint-load-unverified-topology-1272/README.md),
+and the [ball-joint torque replay bundle](../../../../docs/demos/joint-load-ball-torque-1272/README.md).
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
 
@@ -60,11 +73,19 @@ actuator must supply to hold the downstream mass still, using real mass
 properties (volume and center of mass from the part's declared `density`/`material`,
 same substrate as `inspect({ of: 'mass' })`). Reports the worst pose,
 required torque/force, declared capacity, and margin percent.
+Coverage is limited to actuated `arm.revolute(...)` and `arm.prismatic(...)`
+joints. Mate-only `mechanicalJoint` chains are not evaluated. When no
+actuated body-tree joint is selected, the result is `ok: false` with an
+`assembly.joint.static-hold.no-actuator` warning, naming moving mates when
+available; this result has no holding-capacity coverage. If the assembly
+cannot be lowered to measure part mass, the result is `ok: false` with
+`assembly.joint.static-hold.mass-unavailable`; an unavailable load measurement
+cannot pass. Demo and replay bundle: [Issue #1270 static-hold coverage](../../../../docs/demos/issue-1270-static-hold/README.md) · [mass-unavailable regression](../../../../docs/demos/static-hold-mass-unavailable/README.md).
 `opts.minTorqueMarginPct` (default 20) is a floor, not a hard pass/fail — a
 joint that clears capacity but misses the margin still returns `ok: true`
-with a `margin-low` warn diagnostic; only an actually-exceeded joint flips
-`ok: false`. v1 assumes rigid links and a single uniform gravity vector; pair
-with `checkLoadCapacity` for applied external loads.
+with a `margin-low` warn diagnostic; an exceeded capacity or missing actuator
+coverage returns `ok: false`. v1 assumes rigid links and a single uniform
+gravity vector; pair with `checkLoadCapacity` for applied external loads.
 
 ### `sweepTolerance` — range proofs over the requirements ledger
 
@@ -108,10 +129,11 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'mounting-holes' })` — wraps the facade; accepts `file` or `code`
 - `verify({ check: 'assembly-path', file|code, assembly?, directions?, disassemblyOrder?, sequence?, threadedFasteners?, stability?, gravity?, fixtures?, contactToleranceMm? })` — continuous mesh straight-removal check along six world axes plus explicit vectors; per-part valid directions/blockers and three-way states (removable / blocked / unknown), optional greedy order/stuck set, and a `sequence: true` build plan with a model stamp. Fastened/fixed clusters become subassemblies planned recursively inside and installed as one unit; deterministic heuristics order valid steps; stuck sets use a budgeted partition and a sampling fallback labelled found-by-search, never proven. Threaded fasteners are `unknown: non-straight-path` until P2. `stability: true` adds the approximate P3 centre-of-mass/support-polygon check (`needsHold`, `Step.heldBy`, `model.stability`) under a declared `gravity`/`fixtures`; it is not a physics simulation. Contact is conservative; no rotation, inferred axes or hardware certification.
 - `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
+- `verify({ check: 'joint-range' })` — wraps `suggestJointRanges`; accepts `file|code`, `assembly`, `joint`, `search`, `clearance_mm` (default 0.3), `step`, `resolution`. Passing `{ sweep_budget }` sets the face-weighted exact BREP distance budget. Each revolute or prismatic joint is walked alone from its authored pose while other mates stay at their authored poses. Exact BREP distance brackets the first non-exempt pair inside the clearance, and the reported stop is the clear side of that bracket so the suggested limit keeps the requested clearance. Returns the stop, the limiting part pair, the resolution, and `stop` | `no-stop` | `unknown`. `no-stop` means no crossing was found at the sampled poses, not continuous proof that the interval is clear. A missing finite bound, the sweep budget, or a failed measurement is `unknown`, never a clear side. The `limitsSnippet` is for the caller to apply; the script is not rewritten. Mate neighbours, declared contact pairs, and `disableCollision` pairs are not stops. A contact thinner than the coarse step can be missed. Demo: `docs/demos/joint-range-suggestion/README.md`.
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
-- `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity; accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`.
+- `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity. Scalar `coupleMates` outputs are derived from sampled source mates, represented by native joint equality constraints, and checked at every release integration observation (`mechanism.coupling-residual` if the relation exceeds tolerance). Accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`. A closed-loop mate graph or unmappable coupling returns `mechanism: 'unverified'` with warning `mechanism.physics-unsupported` (coverage.physics false). This is unsupported physics mapping, not a dynamics failure, and it is not a verified build. A ratio check does not simulate involute tooth contact or certify a gear mesh.
 - `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports, each at the station where it bears on the shaft: its connector on the joint axis, else the middle of its material nearest the shaft; an ambiguous station is a warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's frame). The script-level `kinematic.motionLoad` returns the same envelope; feed `partLoads` to `feaStudy({ loadsFrom: { motion, part } })` to solve a structural safety factor at that pose with no hand-typed load. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
 - `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`, `boundaryTolerance`, `boundaryBudget`
 - `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
@@ -140,6 +162,8 @@ call to confirm.
 | K9 `kinematic.mounting-hole.diameter-mismatch` | `fix-arg` | Set both connectors' hole diameter to the same value |
 | `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
 | `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
+| `assembly.joint.static-hold.no-actuator` | `rewrite-feature` | Declare `actuator: { torqueNm }` on `arm.revolute(...)` or `actuator: { forceN }` on `arm.prismatic(...)`; mate-only `mechanicalJoint` chains are not covered; check their `torqueNm` ratings with `verify({ check: 'motion-load', quasi_static: true })` |
+| `assembly.joint.static-hold.mass-unavailable` | `rewrite-feature` | Repair the assembly geometry or lowering failure so static-hold can measure part mass properties |
 | `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
 | `mechanism.load.torque-exceeded` / `mechanism.load.torque-margin-low` | `rewrite-feature` | Stronger actuator, lighter/shorter links, or slower motion (aim for 2x) |
 | `mechanism.load.side-load-exceeded` | `rewrite-feature` | Add a coaxial bushing/bearing and list it in the mechanicalJoint `supports` |
@@ -249,7 +273,7 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity) only for revolute mates built with `joint.clevis(...)` whose `clevis.structural` is attached as `capacity: { structure }` on the mate; its pin, plate and knuckle dimensions come from that record. Other mates are not evaluated. The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
 3. Every revolute joint passes Gate 4 (visual exposure) when it opts in with `exposure: 'exposed'` on the mate: the hinge mechanism reads as a hinge (fork daylight + pin stickout). Mates without the declaration are not checked.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
-5. (Opt-in) `kernelcad validate --include-interference --include-physics` exercises the physics-based gate (criteria 5+6). Adds two failure modes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose → singular kinematic configuration) and `mechanism.drops-on-release` (any joint drifts > 5° or any body translates > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / actuator fail this gate by construction — single-body "spring" parts fastened to one arm produce zero restoring moment around the joint they should brace. The closed-loop tendon API tracked in issue #361 is the kit-level fix.
+5. (Opt-in) `kernelcad validate --include-interference --include-physics` exercises the physics-based gate (criteria 5+6). Adds `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose → singular kinematic configuration), `mechanism.drops-on-release` (any joint drifts > 5° or any body translates > 50 mm in a 0.5 s drop-test from rest), and `mechanism.coupling-residual` when a supported scalar coupling departs by more than 5° or 0.01 mm during native integration. Scalar coupled outputs are derived from source input samples; they are not independent DOFs. Bare revolutes without a closed-loop spring / actuator fail the hold gate by construction — single-body "spring" parts fastened to one arm produce zero restoring moment around the joint they should brace. A closed-loop mate graph or coupling the backend cannot map produces warning `mechanism.physics-unsupported`, leaves `coverage.physics` false, and the mechanism stays unverified. Do not treat that warning as a broken build or as a verified one.
 
 If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
 

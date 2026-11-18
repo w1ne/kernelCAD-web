@@ -1,0 +1,7 @@
+{
+  "command": "npx tsx scripts/renderCatalogPreviews.ts <50 vet-clinic IDs>",
+  "exitCode": 0,
+  "rendered": 50,
+  "previewDirectory": "catalog/kits/vet-clinic/previews",
+  "renderer": "software-rendered low-poly GLB at default parameters"
+}

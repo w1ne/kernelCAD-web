@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-05",
+  "task": "Promote the existing lab-infrastructure kit in place",
+  "sourceRevisionBeforePromotion": "5ea161f78b4d30a8b6f182b1731e2b704043fb1f",
+  "sourceRoot": "catalog/kits/lab-infrastructure",
+  "assetCountBefore": 60,
+  "assetIdsAdded": 0,
+  "materialRoles": {
+    "enamel": "#c9dedc",
+    "steel": "#53666e",
+    "stainless": "#b8c7ca",
+    "glass": "#55b7ca",
+    "polymer": "#e5a331",
+    "rubber": "#30363a"
+  },
+  "presets": ["cleanroom", "highVisibility"],
+  "geometryEnhancements": [
+    "Add tinted sash panes to five fume-enclosure sources and glazing to the pass-through chamber doors.",
+    "Replace the extraction snorkel's rectangular arms with round tubes and loft a flared intake.",
+    "Loft the capture canopy from a wide skirt into a narrower crown.",
+    "Use round modeled faucet spouts, add rubber isolation feet to both isolation tables, and model freezer gaskets as narrow perimeter seals instead of dark door-face slabs."
+  ],
+  "replay": [
+    "Start in a disposable worktree at sourceRevisionBeforePromotion; do not replay over the promoted sources.",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/lab-infrastructure-quality-promotion-20261105/promote_lab_infrastructure.py --dry-run",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/lab-infrastructure-quality-promotion-20261105/promote_lab_infrastructure.py",
+    "mapfile -t asset_ids < <(find catalog/kits/lab-infrastructure -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\\n' | sed 's/\\.kcad\\.ts$//')",
+    "npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python3 scripts/checkCatalogQuality.py --kit lab-infrastructure",
+    "npx eslint catalog/kits/lab-infrastructure/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "rendering": "Catalog software preview renderer at default parameter values; local evidence only.",
+  "deployment": "Feature branch is not deployed; production behavior must be checked after integration and deployment."
+}

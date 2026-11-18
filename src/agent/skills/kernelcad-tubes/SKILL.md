@@ -267,7 +267,7 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 | `usedBy` | names of the tubes that end on the port, `[]` when it is free. A plain `{ point }` end counts when it sits within 0.01 mm of `origin` |
 | `unresolved` | why there is no position; `origin`, `axis` and `placedBy` are then left out |
 
-`connect` places a part once, from the two connectors as declared. It does not follow a mate: when a mate moves the parent, the part placed with `connect` stays where it was. `ports` gives where each one is.
+`connect` sets a part's initial placement from the two connector frames. If a mate later moves the parent, connected children and their connected descendants inherit that rigid scene motion. The port report marks an indirectly moved child as `placedBy: 'mate'` and gives its solved origin and axis; `part.port(name)` still gives the pre-solve position.
 
 A mate decides where the part it places goes, and that part's own `at` does not move it. The first declared part keeps its `at`, and the parts mated to it follow; `kernelcad-assemblies` gives the whole rule. `placedBy` reads `at` only when the mate leaves the part where its `at` puts it. Read `ports` for the real position.
 

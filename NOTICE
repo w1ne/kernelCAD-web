@@ -33,6 +33,14 @@ Apache-2.0 OR MIT; this copy is used under the Apache License, Version 2.0.
 See assets/reference-parts/solidcraft/NOTICE and LICENSE-APACHE. kernelCAD
 models under assets/reference-parts/solidcraft/parts/ are original sources.
 
+Boolean keep-parts
+
+shape.split keeps the overlap and both leftovers as separate solids. The
+idea of retaining each boolean fragment follows Cadrs
+(https://github.com/Sh1Art/Cadrs, MIT and Apache-2.0). kernelCAD does not
+include Cadrs source. The operation uses the already-bound Open CASCADE
+cut and common.
+
 The static dictionary of the Brotli compression format (RFC 7932, appendix A), with which WOFF2
 fonts are compressed, is included unmodified (dist/_brotli_dictionary.js):
 

@@ -1,0 +1,1314 @@
+{
+  "kit": "mining",
+  "assetsPromoted": 50,
+  "newAssetIds": 0,
+  "materialControls": 144,
+  "controlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "materialRoleAssetCounts": {
+    "coatedSteel": 47,
+    "structuralSteel": 44,
+    "stainlessSteel": 34,
+    "rubber": 17,
+    "instrumentGlass": 2
+  },
+  "presetEntries": 100,
+  "loftProfiledSources": 50,
+  "records": [
+    {
+      "id": "apron-feeder",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "left-rail": "structuralSteel",
+        "right-rail": "structuralSteel",
+        "apron-pan-0": "coatedSteel",
+        "apron-pan-1": "coatedSteel",
+        "apron-pan-2": "coatedSteel",
+        "apron-pan-3": "coatedSteel",
+        "apron-pan-4": "coatedSteel",
+        "apron-pan-5": "coatedSteel",
+        "apron-pan-6": "coatedSteel",
+        "apron-pan-7": "coatedSteel",
+        "apron-pan-8": "coatedSteel",
+        "head-sprocket-left": "stainlessSteel",
+        "head-sprocket-right": "stainlessSteel",
+        "feed-skirt-left": "coatedSteel",
+        "feed-skirt-right": "coatedSteel",
+        "drive-motor": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "assay-sample-divider",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "left-bin": "coatedSteel",
+        "right-bin": "coatedSteel",
+        "support-post-left": "structuralSteel",
+        "support-post-right": "structuralSteel",
+        "splitter-housing": "coatedSteel",
+        "feed-hopper": "coatedSteel",
+        "rotary-splitter": "coatedSteel",
+        "drive-box": "coatedSteel",
+        "collection-lip": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "ball-mill",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "shell": "coatedSteel",
+        "feed-trunnion": "stainlessSteel",
+        "discharge-trunnion": "stainlessSteel",
+        "bearing-left": "stainlessSteel",
+        "bearing-right": "stainlessSteel",
+        "girth-ring": "stainlessSteel",
+        "motor": "coatedSteel",
+        "feed-chute": "coatedSteel",
+        "discharge-box": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "belt-magnet-separator",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "conveyor-belt": "rubber",
+        "left-stringer": "structuralSteel",
+        "right-stringer": "structuralSteel",
+        "portal-left": "structuralSteel",
+        "portal-right": "structuralSteel",
+        "portal-top": "structuralSteel",
+        "magnet-housing": "coatedSteel",
+        "coil-cap": "coatedSteel",
+        "control-box": "coatedSteel",
+        "belt-drum": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "cone-crusher-module",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "support-left": "structuralSteel",
+        "support-right": "structuralSteel",
+        "crusher-shell": "coatedSteel",
+        "inner-cone": "coatedSteel",
+        "top-bowl": "coatedSteel",
+        "feed-box": "coatedSteel",
+        "service-deck": "structuralSteel",
+        "drive-cabinet": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "continuous-miner",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "left-track": "structuralSteel",
+        "right-track": "structuralSteel",
+        "main-body": "coatedSteel",
+        "operator-canopy": "coatedSteel",
+        "cutting-drum": "stainlessSteel",
+        "cutter-boom": "coatedSteel",
+        "cable-reel": "rubber",
+        "rear-control-box": "coatedSteel",
+        "left-track-shoe-1": "structuralSteel",
+        "left-track-shoe-2": "structuralSteel",
+        "left-track-shoe-3": "structuralSteel",
+        "left-track-shoe-4": "structuralSteel",
+        "left-track-shoe-5": "structuralSteel",
+        "left-track-shoe-6": "structuralSteel",
+        "left-track-shoe-7": "structuralSteel",
+        "left-track-shoe-8": "structuralSteel",
+        "left-track-shoe-9": "structuralSteel",
+        "left-track-shoe-10": "structuralSteel",
+        "right-track-shoe-1": "structuralSteel",
+        "right-track-shoe-2": "structuralSteel",
+        "right-track-shoe-3": "structuralSteel",
+        "right-track-shoe-4": "structuralSteel",
+        "right-track-shoe-5": "structuralSteel",
+        "right-track-shoe-6": "structuralSteel",
+        "right-track-shoe-7": "structuralSteel",
+        "right-track-shoe-8": "structuralSteel",
+        "right-track-shoe-9": "structuralSteel",
+        "right-track-shoe-10": "structuralSteel",
+        "cutting-pick-1": "coatedSteel",
+        "cutting-pick-2": "coatedSteel",
+        "cutting-pick-3": "coatedSteel",
+        "cutting-pick-4": "coatedSteel",
+        "cutting-pick-5": "coatedSteel",
+        "cutting-pick-6": "coatedSteel",
+        "cutting-pick-7": "coatedSteel",
+        "cutting-pick-8": "coatedSteel",
+        "cutting-pick-9": "coatedSteel",
+        "cutting-pick-10": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "conveyor-take-up-station",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "rail-left": "structuralSteel",
+        "rail-right": "structuralSteel",
+        "tower-left": "structuralSteel",
+        "tower-right": "structuralSteel",
+        "counterweight": "coatedSteel",
+        "carriage": "coatedSteel",
+        "take-up-drum": "stainlessSteel",
+        "guardrail": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "core-drill-rig",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "left-upright": "structuralSteel",
+        "right-upright": "structuralSteel",
+        "crosshead": "coatedSteel",
+        "drill-spindle": "stainlessSteel",
+        "control-cabinet": "coatedSteel",
+        "rod-rack": "stainlessSteel",
+        "hydraulic-pack": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "core-tray-rack",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base-left": "structuralSteel",
+        "base-right": "structuralSteel",
+        "base-crossbar": "structuralSteel",
+        "core-tray-0": "coatedSteel",
+        "core-tray-1": "coatedSteel",
+        "core-tray-2": "coatedSteel",
+        "core-channel-0-0": "coatedSteel",
+        "core-channel-0-1": "coatedSteel",
+        "core-channel-0-2": "coatedSteel",
+        "core-channel-0-3": "coatedSteel",
+        "core-channel-0-4": "coatedSteel",
+        "core-channel-1-0": "coatedSteel",
+        "core-channel-1-1": "coatedSteel",
+        "core-channel-1-2": "coatedSteel",
+        "core-channel-1-3": "coatedSteel",
+        "core-channel-1-4": "coatedSteel",
+        "core-channel-2-0": "coatedSteel",
+        "core-channel-2-1": "coatedSteel",
+        "core-channel-2-2": "coatedSteel",
+        "core-channel-2-3": "coatedSteel",
+        "core-channel-2-4": "coatedSteel",
+        "upright-left": "structuralSteel",
+        "upright-right": "structuralSteel",
+        "top-crossbar": "structuralSteel",
+        "lifting-eye-left": "coatedSteel",
+        "lifting-eye-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "crusher-discharge-conveyor",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "belt": "rubber",
+        "left-stringer": "structuralSteel",
+        "right-stringer": "structuralSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "head-leg-left": "structuralSteel",
+        "head-leg-right": "structuralSteel",
+        "tail-drum": "stainlessSteel",
+        "head-drum": "stainlessSteel",
+        "drive-guard": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "crusher-transfer-chute",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "top-flange": "coatedSteel",
+        "front-wall": "coatedSteel",
+        "back-wall": "coatedSteel",
+        "left-wall": "coatedSteel",
+        "right-wall": "coatedSteel",
+        "discharge-neck": "stainlessSteel",
+        "inspection-cover": "coatedSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "access-boss": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "double-deck-screen",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "deck-lower": "structuralSteel",
+        "deck-upper": "structuralSteel",
+        "side-left": "coatedSteel",
+        "side-right": "coatedSteel",
+        "discharge-lower": "stainlessSteel",
+        "discharge-upper": "stainlessSteel",
+        "exciter-left": "coatedSteel",
+        "exciter-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "flotation-cell-bank",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "cell-0": "coatedSteel",
+        "cell-1": "coatedSteel",
+        "cell-2": "coatedSteel",
+        "motor-0": "coatedSteel",
+        "motor-1": "coatedSteel",
+        "motor-2": "coatedSteel",
+        "walkway": "structuralSteel",
+        "front-rail": "structuralSteel",
+        "launder-left": "coatedSteel",
+        "launder-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "flotation-conditioning-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tank": "coatedSteel",
+        "rim": "coatedSteel",
+        "shaft": "stainlessSteel",
+        "gearbox": "coatedSteel",
+        "mixer-arm-left": "coatedSteel",
+        "mixer-arm-right": "coatedSteel",
+        "paddle-left": "stainlessSteel",
+        "paddle-right": "stainlessSteel",
+        "feed-nozzle": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "grizzly-scalping-deck",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "lower-frame": "structuralSteel",
+        "side-left": "coatedSteel",
+        "side-right": "coatedSteel",
+        "bar-0": "stainlessSteel",
+        "bar-1": "stainlessSteel",
+        "bar-2": "stainlessSteel",
+        "bar-3": "stainlessSteel",
+        "bar-4": "stainlessSteel",
+        "bar-5": "stainlessSteel",
+        "bar-6": "stainlessSteel",
+        "bar-7": "stainlessSteel",
+        "bar-8": "stainlessSteel",
+        "crossbeam-front": "structuralSteel",
+        "crossbeam-back": "structuralSteel",
+        "vibrator-left": "coatedSteel",
+        "vibrator-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "gyratory-crusher-station",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "foundation": "structuralSteel",
+        "column-left": "coatedSteel",
+        "column-right": "coatedSteel",
+        "rear-column": "coatedSteel",
+        "crusher-shell": "coatedSteel",
+        "feed-ring": "stainlessSteel",
+        "top-bridge": "structuralSteel",
+        "discharge-chute": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "high-pressure-grinding-rolls",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "left-frame": "structuralSteel",
+        "right-frame": "structuralSteel",
+        "roll-left": "stainlessSteel",
+        "roll-right": "stainlessSteel",
+        "feed-hopper": "coatedSteel",
+        "hydraulic-left": "stainlessSteel",
+        "hydraulic-right": "stainlessSteel",
+        "drive-left": "coatedSteel",
+        "drive-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "hydrocyclone-cluster",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "header-left": "coatedSteel",
+        "header-right": "coatedSteel",
+        "cyclone-0": "coatedSteel",
+        "cyclone-1": "coatedSteel",
+        "cyclone-2": "coatedSteel",
+        "cyclone-3": "coatedSteel",
+        "cyclone-4": "coatedSteel",
+        "underflow-box": "coatedSteel",
+        "crossbeam": "structuralSteel",
+        "feed-header": "coatedSteel",
+        "service-platform": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "impact-crusher-module",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "crusher-housing": "coatedSteel",
+        "feed-chute": "coatedSteel",
+        "access-door-left": "coatedSteel",
+        "access-door-right": "coatedSteel",
+        "rotor-cap": "stainlessSteel",
+        "motor": "coatedSteel",
+        "service-rail": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "jaw-crusher-module",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "frame-left": "structuralSteel",
+        "frame-right": "structuralSteel",
+        "feed-wall-front": "coatedSteel",
+        "feed-wall-back": "coatedSteel",
+        "feed-wall-left": "coatedSteel",
+        "feed-wall-right": "coatedSteel",
+        "fixed-jaw": "coatedSteel",
+        "swing-jaw": "coatedSteel",
+        "flywheel-left": "rubber",
+        "flywheel-right": "rubber",
+        "drive-motor": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "longwall-shearer",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "shearer-body": "coatedSteel",
+        "guide-shoe-left": "stainlessSteel",
+        "guide-shoe-right": "stainlessSteel",
+        "cutter-left": "coatedSteel",
+        "cutter-right": "coatedSteel",
+        "gearbox-left": "coatedSteel",
+        "gearbox-right": "coatedSteel",
+        "cable-arm": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "magnetic-separator-drum",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "side-left": "coatedSteel",
+        "side-right": "coatedSteel",
+        "separator-drum": "stainlessSteel",
+        "feed-trough": "coatedSteel",
+        "tailings-launder": "coatedSteel",
+        "drive-motor": "coatedSteel",
+        "top-beam": "structuralSteel",
+        "service-platform": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "metal-detector-arch",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "belt": "rubber",
+        "left-leg": "structuralSteel",
+        "right-leg": "structuralSteel",
+        "arch-top": "coatedSteel",
+        "sensor-left": "coatedSteel",
+        "sensor-right": "coatedSteel",
+        "control-cabinet": "coatedSteel",
+        "signal-head": "coatedSteel",
+        "tail-roller": "stainlessSteel",
+        "head-roller": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mill-feed-chute",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "top-collar": "coatedSteel",
+        "front-panel": "coatedSteel",
+        "rear-panel": "coatedSteel",
+        "left-panel": "coatedSteel",
+        "right-panel": "coatedSteel",
+        "outlet-neck": "coatedSteel",
+        "saddle-left": "coatedSteel",
+        "saddle-right": "coatedSteel",
+        "inspection-hatch": "coatedSteel",
+        "access-boss": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mill-relining-machine",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "chassis": "structuralSteel",
+        "left-wheel": "rubber",
+        "right-wheel": "rubber",
+        "operator-cab": "coatedSteel",
+        "cab-roof": "coatedSteel",
+        "lift-mast": "structuralSteel",
+        "handler-boom": "coatedSteel",
+        "tool-head": "coatedSteel",
+        "counterweight": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-locomotive",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "chassis": "structuralSteel",
+        "cab": "coatedSteel",
+        "cab-roof": "coatedSteel",
+        "front-buffer": "coatedSteel",
+        "rear-buffer": "coatedSteel",
+        "front-wheel-near": "rubber",
+        "front-wheel-far": "rubber",
+        "rear-wheel-near": "rubber",
+        "rear-wheel-far": "rubber",
+        "battery-box": "coatedSteel",
+        "cab-side-window-near": "instrumentGlass",
+        "cab-side-window-far": "instrumentGlass",
+        "cab-front-window": "instrumentGlass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-refuge-chamber",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "floor-skid": "structuralSteel",
+        "pod-body": "coatedSteel",
+        "roof-cap": "coatedSteel",
+        "entry-door": "coatedSteel",
+        "window-panel": "instrumentGlass",
+        "air-bottle-left": "coatedSteel",
+        "air-bottle-right": "coatedSteel",
+        "roof-rail": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-skip",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "floor": "coatedSteel",
+        "side-left": "coatedSteel",
+        "side-right": "coatedSteel",
+        "front-wall": "coatedSteel",
+        "back-wall": "coatedSteel",
+        "guide-left": "coatedSteel",
+        "guide-right": "coatedSteel",
+        "lifting-pin": "stainlessSteel",
+        "gate": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-sump-pump",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "motor-body": "coatedSteel",
+        "pump-head": "coatedSteel",
+        "intake-foot": "structuralSteel",
+        "screen-guard-front": "structuralSteel",
+        "screen-guard-back": "structuralSteel",
+        "handle-left": "coatedSteel",
+        "handle-right": "coatedSteel",
+        "discharge-nozzle": "stainlessSteel",
+        "power-cable": "rubber",
+        "cable-entry": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-survey-tripod",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "leg-front": "structuralSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "mounting-plate": "stainlessSteel",
+        "instrument-body": "coatedSteel",
+        "telescope": "coatedSteel",
+        "display": "coatedSteel",
+        "carry-handle": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "mine-ventilation-fan",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "left-support": "structuralSteel",
+        "right-support": "structuralSteel",
+        "fan-housing": "coatedSteel",
+        "inlet-ring": "stainlessSteel",
+        "motor": "coatedSteel",
+        "outlet-plenum": "coatedSteel",
+        "service-platform": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "ore-pass-grizzly",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "lower-frame": "structuralSteel",
+        "side-left": "coatedSteel",
+        "side-right": "coatedSteel",
+        "grizzly-bar-0": "stainlessSteel",
+        "grizzly-bar-1": "stainlessSteel",
+        "grizzly-bar-2": "stainlessSteel",
+        "grizzly-bar-3": "stainlessSteel",
+        "grizzly-bar-4": "stainlessSteel",
+        "grizzly-bar-5": "stainlessSteel",
+        "grizzly-bar-6": "stainlessSteel",
+        "grizzly-bar-7": "stainlessSteel",
+        "grizzly-bar-8": "stainlessSteel",
+        "drive-left": "coatedSteel",
+        "drive-right": "coatedSteel",
+        "upper-crossbar": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "ore-sorting-arch",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "belt": "rubber",
+        "left-leg": "structuralSteel",
+        "right-leg": "structuralSteel",
+        "crossbar": "structuralSteel",
+        "sensor-left": "coatedSteel",
+        "sensor-right": "coatedSteel",
+        "control-cabinet": "coatedSteel",
+        "guard-left": "structuralSteel",
+        "guard-right": "structuralSteel",
+        "scan-beacon": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "overland-conveyor-bridge",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "belt": "rubber",
+        "left-stringer": "structuralSteel",
+        "right-stringer": "structuralSteel",
+        "portal-leg--610--190": "structuralSteel",
+        "portal-leg--610-190": "structuralSteel",
+        "portal-leg-610--190": "structuralSteel",
+        "portal-leg-610-190": "structuralSteel",
+        "portal-top-left": "structuralSteel",
+        "portal-top-right": "structuralSteel",
+        "cross-brace-front": "structuralSteel",
+        "cross-brace-back": "structuralSteel",
+        "idler-left": "coatedSteel",
+        "idler-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "radial-stacker",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "pivot-base": "structuralSteel",
+        "left-wheel": "rubber",
+        "right-wheel": "rubber",
+        "boom-belt": "rubber",
+        "boom-left-truss": "structuralSteel",
+        "boom-right-truss": "structuralSteel",
+        "support-leg": "structuralSteel",
+        "feed-hopper": "coatedSteel",
+        "discharge-hood": "stainlessSteel",
+        "pivot-bearing": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "rock-breaker-boom",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "base-plinth": "structuralSteel",
+        "turntable": "coatedSteel",
+        "pedestal": "coatedSteel",
+        "boom-lower": "coatedSteel",
+        "boom-upper": "coatedSteel",
+        "hydraulic-cylinder": "stainlessSteel",
+        "hammer-body": "coatedSteel",
+        "tool-tip": "stainlessSteel",
+        "hose-pack": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "roof-bolting-rig",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "left-track": "structuralSteel",
+        "right-track": "structuralSteel",
+        "chassis": "structuralSteel",
+        "cab": "coatedSteel",
+        "cab-roof": "coatedSteel",
+        "feed-mast": "structuralSteel",
+        "drill-head-left": "coatedSteel",
+        "drill-head-right": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "rotary-blasthole-drill",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "left-crawler": "coatedSteel",
+        "right-crawler": "coatedSteel",
+        "main-deck": "structuralSteel",
+        "operator-cab": "coatedSteel",
+        "cab-roof": "coatedSteel",
+        "drill-mast": "structuralSteel",
+        "drill-string": "stainlessSteel",
+        "hose-rack": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "run-of-mine-hopper",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "throat": "coatedSteel",
+        "hopper-front": "coatedSteel",
+        "hopper-back": "coatedSteel",
+        "hopper-left": "coatedSteel",
+        "hopper-right": "coatedSteel",
+        "leg-left-front": "structuralSteel",
+        "leg-right-front": "structuralSteel",
+        "leg-left-back": "structuralSteel",
+        "leg-right-back": "structuralSteel",
+        "gate-shaft": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "sag-mill",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "shell": "coatedSteel",
+        "feed-trunnion": "stainlessSteel",
+        "discharge-trunnion": "stainlessSteel",
+        "pier-left": "structuralSteel",
+        "pier-right": "structuralSteel",
+        "girth-drive": "coatedSteel",
+        "motor-left": "coatedSteel",
+        "feed-chute": "coatedSteel",
+        "discharge-launder": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "shaft-headframe",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "tower-left": "structuralSteel",
+        "tower-right": "structuralSteel",
+        "upper-crossbeam": "structuralSteel",
+        "rear-brace": "structuralSteel",
+        "sheave-left": "stainlessSteel",
+        "sheave-right": "stainlessSteel",
+        "operator-platform": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "slurry-pump-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "motor": "coatedSteel",
+        "coupling-guard": "structuralSteel",
+        "pump-casing": "coatedSteel",
+        "suction-flange": "coatedSteel",
+        "discharge-riser": "stainlessSteel",
+        "discharge-flange": "stainlessSteel",
+        "motor-foot-left": "structuralSteel",
+        "motor-foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "spiral-concentrator",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "central-column": "coatedSteel",
+        "spiral-tray-0": "coatedSteel",
+        "spiral-tray-1": "coatedSteel",
+        "spiral-tray-2": "coatedSteel",
+        "spiral-tray-3": "coatedSteel",
+        "spiral-tray-4": "coatedSteel",
+        "spiral-tray-5": "coatedSteel",
+        "feed-box": "coatedSteel",
+        "concentrate-launder": "coatedSteel",
+        "product-spout-a": "stainlessSteel",
+        "product-spout-b": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "stacker-reclaimer-boom",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "foundation": "structuralSteel",
+        "turntable": "coatedSteel",
+        "portal-left": "structuralSteel",
+        "portal-right": "structuralSteel",
+        "portal-top": "structuralSteel",
+        "boom-belt": "rubber",
+        "boom-truss": "structuralSteel",
+        "bucket-wheel": "coatedSteel",
+        "counterweight": "coatedSteel",
+        "operator-cab": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "tailings-filter-press",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-rail-left": "structuralSteel",
+        "base-rail-right": "structuralSteel",
+        "fixed-head": "coatedSteel",
+        "moving-head": "coatedSteel",
+        "filter-plate-0": "stainlessSteel",
+        "filter-plate-1": "stainlessSteel",
+        "filter-plate-2": "stainlessSteel",
+        "filter-plate-3": "stainlessSteel",
+        "filter-plate-4": "stainlessSteel",
+        "filter-plate-5": "stainlessSteel",
+        "filter-plate-6": "stainlessSteel",
+        "filter-plate-7": "stainlessSteel",
+        "filter-plate-8": "stainlessSteel",
+        "hydraulic-ram": "stainlessSteel",
+        "drip-tray": "coatedSteel",
+        "upper-beam": "structuralSteel",
+        "control-pedestal": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "tailings-stack-conveyor",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "belt": "rubber",
+        "left-stringer": "structuralSteel",
+        "right-stringer": "structuralSteel",
+        "support-left": "structuralSteel",
+        "support-right": "structuralSteel",
+        "head-support-left": "structuralSteel",
+        "head-support-right": "structuralSteel",
+        "truss-web": "structuralSteel",
+        "discharge-hood": "stainlessSteel",
+        "head-drum": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "thickener-bridge",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "tank": "coatedSteel",
+        "tank-rim": "coatedSteel",
+        "bridge": "structuralSteel",
+        "bridge-rail-left": "structuralSteel",
+        "bridge-rail-right": "structuralSteel",
+        "center-drive": "coatedSteel",
+        "drive-cover": "coatedSteel",
+        "rake-arm-left": "coatedSteel",
+        "rake-arm-right": "coatedSteel",
+        "walkway": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "trommel-screen",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-skid": "structuralSteel",
+        "support-left": "structuralSteel",
+        "support-right": "structuralSteel",
+        "drum-front-ring": "stainlessSteel",
+        "drum-body": "stainlessSteel",
+        "drum-rear-ring": "stainlessSteel",
+        "feed-box": "coatedSteel",
+        "drive-guard": "structuralSteel",
+        "oversize-chute": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "underground-shuttle-car",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "chassis": "structuralSteel",
+        "ore-body": "coatedSteel",
+        "body-rim": "coatedSteel",
+        "operator-cab": "coatedSteel",
+        "cab-roof": "coatedSteel",
+        "front-wheel-set": "rubber",
+        "rear-wheel-set": "rubber",
+        "front-bumper": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    },
+    {
+      "id": "vacuum-disc-filter",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "trough": "coatedSteel",
+        "left-bearing": "stainlessSteel",
+        "right-bearing": "stainlessSteel",
+        "filter-shaft": "stainlessSteel",
+        "filter-disc-0": "stainlessSteel",
+        "filter-disc-1": "stainlessSteel",
+        "filter-disc-2": "stainlessSteel",
+        "filter-disc-3": "stainlessSteel",
+        "filter-disc-4": "stainlessSteel",
+        "vacuum-header": "coatedSteel",
+        "drive-motor": "coatedSteel",
+        "vacuum-receiver": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftProfiledCylinders": true
+    }
+  ]
+}

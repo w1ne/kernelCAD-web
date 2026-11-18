@@ -1,0 +1,108 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-flat-plate-pattern-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=8000) + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "expectedLengthRatioFiveToThree": 1.625,
+    "measuredLengthRatioFiveToThree": 1.625,
+    "lengthsStrictlyIncrease": true,
+    "holeCountImagesDistinct": true,
+    "brassPresetImageDiffers": true,
+    "sourceTriangleBudget": 800,
+    "maximumMeasuredTriangles": 712
+  },
+  "source": {
+    "file": "catalog/kits/standard-components/flat-joining-plate.kcad.ts",
+    "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280"
+  },
+  "renders": [
+    {
+      "id": "hole-three",
+      "choices": {
+        "holeCount": "three"
+      },
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.064,
+          0.0075,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 7,
+        "parts": 7,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "b81860e9733117aff990ff80bfa794e3a04c593c2c652a924bad446bba4dc1bc",
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280"
+    },
+    {
+      "id": "hole-four",
+      "choices": {
+        "holeCount": "four"
+      },
+      "stats": {
+        "triangles": 572,
+        "sizeM": [
+          0.084,
+          0.0075,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 9,
+        "parts": 9,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "1b0e6b62d493eb6f8107229b4a9b21c8c5d96dbbd152064942c02d20cd3d31e0",
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280"
+    },
+    {
+      "id": "hole-five",
+      "choices": {
+        "holeCount": "five"
+      },
+      "stats": {
+        "triangles": 712,
+        "sizeM": [
+          0.104,
+          0.0075,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "941f5460e2fbbc5cefd0f13ea3c464789d4153a6a97ad706a64c2782ab8d90e8",
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280"
+    },
+    {
+      "id": "hole-five-brass",
+      "choices": {
+        "holeCount": "five"
+      },
+      "preset": "brass",
+      "stats": {
+        "triangles": 712,
+        "sizeM": [
+          0.104,
+          0.0075,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 11,
+        "parts": 11,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "5d16991779e150bca8c5eab64ef3fa33682ffcaeb34a23d39b1f60f61d65e40a",
+      "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280"
+    }
+  ]
+}

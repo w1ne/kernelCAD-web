@@ -47,7 +47,7 @@ describe('executeCookbookTool', () => {
     expect(r.dryRunNotEvidence).toBe(true);
     // Schema / description contract: dryRun success must not be treated as build proof.
     const def = getToolDefinition('execute_cookbook');
-    expect(def?.description).toMatch(/dryRun:true[\s\S]*NOT evidence/i);
+    expect(def?.description).toMatch(/dry_run:true[\s\S]*NOT evidence/i);
     expect(TOOL_OUTPUT_SCHEMAS.execute_cookbook.properties.dryRunNotEvidence).toBeDefined();
   });
 

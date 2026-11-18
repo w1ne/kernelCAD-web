@@ -1,0 +1,32 @@
+{
+  "asset": "park-observation-wheel",
+  "defaultScale": 1.0,
+  "variantScale": 1.25,
+  "defaultTriangles": 620,
+  "variantTriangles": 620,
+  "defaultMaterials": 1,
+  "variantMaterials": 1,
+  "defaultBoundsM": [
+    1.78,
+    5.538596,
+    3.635
+  ],
+  "variantBoundsM": [
+    2.225,
+    6.923245,
+    4.54375
+  ],
+  "boundsRatios": [
+    1.25,
+    1.25,
+    1.25
+  ],
+  "variantKnobs": [
+    "scale:number",
+    "color:color"
+  ],
+  "variantWithinBudget": true,
+  "oneMaterial": true,
+  "scaleChangesBounds": true,
+  "passed": true
+}

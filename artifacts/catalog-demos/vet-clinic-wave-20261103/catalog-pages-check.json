@@ -1,0 +1,10 @@
+{
+  "generatedOutput": "/tmp/kernelcad-vet-clinic-catalog-pages",
+  "assetsInIndex": 2100,
+  "kitsInIndex": 45,
+  "kitPagesExpected": 50,
+  "kitPagesChecked": 50,
+  "previewCopiesChecked": 50,
+  "hubHasKitAndFinder": true,
+  "failures": []
+}

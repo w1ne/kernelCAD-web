@@ -1,0 +1,22 @@
+{
+  "before": {
+    "source": {
+      "path": "artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/before/hull-panel-turnover-cradle.kcad.ts",
+      "sha256": "89db03968217ebeceb6ca63e10ebf914ff75856e9bb31e6aa23062d7e79ad1f8"
+    },
+    "preview": {
+      "path": "artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/before/hull-panel-turnover-cradle.png",
+      "sha256": "4b6931370c89f2f05df1f6397cbb7e142b6cf952e087b7cb0da515c9d90fddec"
+    }
+  },
+  "after": {
+    "source": {
+      "path": "artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/source/hull-panel-turnover-cradle.kcad.ts",
+      "sha256": "330ceb2e5badccfc2fcaa40bb3a597d0016de44c1f7057e4a3ee7a5979ba6457"
+    },
+    "preview": {
+      "path": "artifacts/catalog-demos/shipyard-hull-panel-turnover-cradle-material-review-20261111/after/hull-panel-turnover-cradle.png",
+      "sha256": "6f4c8664a9668676724a0a99892f1eb907dfe028ba9f605d17ca4422a8713648"
+    }
+  }
+}

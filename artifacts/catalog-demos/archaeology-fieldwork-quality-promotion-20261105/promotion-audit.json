@@ -1,0 +1,275 @@
+{
+  "date": "2026-11-05",
+  "kit": "archaeology-fieldwork",
+  "passed": true,
+  "assetsPromoted": 50,
+  "materialControls": 124,
+  "presetEntries": 100,
+  "indexedRowsWithPreview": 50,
+  "catalogTotal": 2390,
+  "catalogTotalUnchanged": true,
+  "catalogIdsUnchanged": true,
+  "qualityGate": "50/50 pass",
+  "globalQualityGate": [
+    "  1904/2390 assets pass (34 rich kits, 10 thin kits)",
+    "  486 thin assets = 20% of the catalog"
+  ],
+  "minimumTriangles": 48,
+  "maximumTriangles": 932,
+  "eslint": "passed with zero errors or warnings",
+  "catalogIntegration": "4 files / 15 tests passed",
+  "localPages": true,
+  "sourceHashes": {
+    "archaeologist-trowel": {
+      "sourceSha256": "8a89c0a39fe19dfc04e53c08e9c9ed3a54c3c2b96f58bdcc092616e26b6c22b8",
+      "actualSha256": "8a89c0a39fe19dfc04e53c08e9c9ed3a54c3c2b96f58bdcc092616e26b6c22b8",
+      "matches": true
+    },
+    "artifact-bag": {
+      "sourceSha256": "61056f89f8343dd7465b57194147c786b2621d9eba2908ec08de9879ec403105",
+      "actualSha256": "61056f89f8343dd7465b57194147c786b2621d9eba2908ec08de9879ec403105",
+      "matches": true
+    },
+    "boundary-flag": {
+      "sourceSha256": "c06c82d284680ab03df719758bcc3b234db39f3accdefcd58771be81edc8e5ee",
+      "actualSha256": "c06c82d284680ab03df719758bcc3b234db39f3accdefcd58771be81edc8e5ee",
+      "matches": true
+    },
+    "context-clipboard": {
+      "sourceSha256": "3b94e935ef7425df527a5f69eda78bca7288b1fb55e235a06a4775f4b2801898",
+      "actualSha256": "3b94e935ef7425df527a5f69eda78bca7288b1fb55e235a06a4775f4b2801898",
+      "matches": true
+    },
+    "detail-paintbrush": {
+      "sourceSha256": "d58c4e7458fba8aab2fb9d0328f5afa774b879251789ac70c7d6f1d12b499626",
+      "actualSha256": "d58c4e7458fba8aab2fb9d0328f5afa774b879251789ac70c7d6f1d12b499626",
+      "matches": true
+    },
+    "detail-scoop": {
+      "sourceSha256": "1262077f2d3bd0daa4a11f64a0bfeea407e972c4f0918fe4326f26509d308d85",
+      "actualSha256": "1262077f2d3bd0daa4a11f64a0bfeea407e972c4f0918fe4326f26509d308d85",
+      "matches": true
+    },
+    "dustpan-and-brush": {
+      "sourceSha256": "91fe16383bdc6aced8bb7d80e05711d32298e9a7e3871ea3f088ca80cf16e3c3",
+      "actualSha256": "91fe16383bdc6aced8bb7d80e05711d32298e9a7e3871ea3f088ca80cf16e3c3",
+      "matches": true
+    },
+    "excavation-camera-tripod": {
+      "sourceSha256": "22cbad57abd64011b316371e725d4e3f2261dc20f82d206e60d7c9f66c22f68f",
+      "actualSha256": "22cbad57abd64011b316371e725d4e3f2261dc20f82d206e60d7c9f66c22f68f",
+      "matches": true
+    },
+    "excavation-grid": {
+      "sourceSha256": "1458e439479a3d5059d2810b8a591d94b455509d5303f7f69aa8bba8c1584fed",
+      "actualSha256": "1458e439479a3d5059d2810b8a591d94b455509d5303f7f69aa8bba8c1584fed",
+      "matches": true
+    },
+    "excavation-pick": {
+      "sourceSha256": "1ee13dedff7a9b1884834d092dc5f461e3b24a5533769114ad89a6c9a21ed1f6",
+      "actualSha256": "1ee13dedff7a9b1884834d092dc5f461e3b24a5533769114ad89a6c9a21ed1f6",
+      "matches": true
+    },
+    "field-loupe": {
+      "sourceSha256": "eaf0e58225a814c7373d01b6d054d89e36e0978caf1b6ce6deaaf42bcaa58fa2",
+      "actualSha256": "eaf0e58225a814c7373d01b6d054d89e36e0978caf1b6ce6deaaf42bcaa58fa2",
+      "matches": true
+    },
+    "field-notebook": {
+      "sourceSha256": "74d3811128672fe2f1b1b4cffc94a837e4ab4d20a3c7c8c377a135c57bd695f2",
+      "actualSha256": "74d3811128672fe2f1b1b4cffc94a837e4ab4d20a3c7c8c377a135c57bd695f2",
+      "matches": true
+    },
+    "finds-tray": {
+      "sourceSha256": "80675f65c7f429ada2622414564ad9358652347b61c09f6fc37729f5e764e265",
+      "actualSha256": "80675f65c7f429ada2622414564ad9358652347b61c09f6fc37729f5e764e265",
+      "matches": true
+    },
+    "fine-mesh-sieve": {
+      "sourceSha256": "794a994690bcb15d969734898409547bba50222123ec5e8dde59ad18e949f5b4",
+      "actualSha256": "794a994690bcb15d969734898409547bba50222123ec5e8dde59ad18e949f5b4",
+      "matches": true
+    },
+    "flotation-tank": {
+      "sourceSha256": "3245e65d1f93b6e06f7d043f97b3779dde1864865ec52307e630f48e49493838",
+      "actualSha256": "3245e65d1f93b6e06f7d043f97b3779dde1864865ec52307e630f48e49493838",
+      "matches": true
+    },
+    "folding-rule": {
+      "sourceSha256": "36c4079934ae43630b4cbd462a0e5b7ad534d8d9643fee9b2513089875e51761",
+      "actualSha256": "36c4079934ae43630b4cbd462a0e5b7ad534d8d9643fee9b2513089875e51761",
+      "matches": true
+    },
+    "grade-rod": {
+      "sourceSha256": "3412020ca522bfe389e07aeb0c71ce33b998606f2ec89443b6bc9eb9832997d6",
+      "actualSha256": "3412020ca522bfe389e07aeb0c71ce33b998606f2ec89443b6bc9eb9832997d6",
+      "matches": true
+    },
+    "hand-auger": {
+      "sourceSha256": "1b40aa09f5a1de88d10771fcaf073ae05f3aae65fd1cb14e69582eb1ddcc756f",
+      "actualSha256": "1b40aa09f5a1de88d10771fcaf073ae05f3aae65fd1cb14e69582eb1ddcc756f",
+      "matches": true
+    },
+    "hand-broom": {
+      "sourceSha256": "132591ed9a51adeb7121ca6cbe7b11ea610deefe4d942c8cbf2bbb1e700b2edf",
+      "actualSha256": "132591ed9a51adeb7121ca6cbe7b11ea610deefe4d942c8cbf2bbb1e700b2edf",
+      "matches": true
+    },
+    "line-level": {
+      "sourceSha256": "ea61c72f8e32cf9e081277413efc0e5cca07c86822c49ef160ace82c88f3cad6",
+      "actualSha256": "ea61c72f8e32cf9e081277413efc0e5cca07c86822c49ef160ace82c88f3cad6",
+      "matches": true
+    },
+    "margin-trowel": {
+      "sourceSha256": "b01a07939cc303e402c4ade36c7c36c0f363beb9e167eb3240a19af296be29f6",
+      "actualSha256": "b01a07939cc303e402c4ade36c7c36c0f363beb9e167eb3240a19af296be29f6",
+      "matches": true
+    },
+    "masonry-chisel": {
+      "sourceSha256": "791699862f87154ae1dfc2898e2aa30397e66a28df361efe6d7799cffa3e7216",
+      "actualSha256": "791699862f87154ae1dfc2898e2aa30397e66a28df361efe6d7799cffa3e7216",
+      "matches": true
+    },
+    "mattock": {
+      "sourceSha256": "4ab87bee5e7f51ad47415426736afb10db9acb5c93f97db52efb2370187208dd",
+      "actualSha256": "4ab87bee5e7f51ad47415426736afb10db9acb5c93f97db52efb2370187208dd",
+      "matches": true
+    },
+    "nested-sieves": {
+      "sourceSha256": "c9289e2ac09e018d2f57181d3bdd6c651a89178acd01e85098a0bddc60a52089",
+      "actualSha256": "c9289e2ac09e018d2f57181d3bdd6c651a89178acd01e85098a0bddc60a52089",
+      "matches": true
+    },
+    "north-arrow-marker": {
+      "sourceSha256": "ce0dab489b7db3acc34f7343e5fcde807a35943cce08f8e0475e34e17f919f52",
+      "actualSha256": "ce0dab489b7db3acc34f7343e5fcde807a35943cce08f8e0475e34e17f919f52",
+      "matches": true
+    },
+    "photo-board": {
+      "sourceSha256": "8fb19e34598cf456f06595984e10d7a74150f9a97251a5f489be570bf673f358",
+      "actualSha256": "8fb19e34598cf456f06595984e10d7a74150f9a97251a5f489be570bf673f358",
+      "matches": true
+    },
+    "photo-north-arrow": {
+      "sourceSha256": "e5b066b6aab5146fd9adf409c899bccf87ee9b95797f9f13122343f3d0f56258",
+      "actualSha256": "e5b066b6aab5146fd9adf409c899bccf87ee9b95797f9f13122343f3d0f56258",
+      "matches": true
+    },
+    "photo-scale-bar": {
+      "sourceSha256": "8a16c5740513cb54d13564664e8fbaf0118d9742031668192acee4ee81e299b3",
+      "actualSha256": "8a16c5740513cb54d13564664e8fbaf0118d9742031668192acee4ee81e299b3",
+      "matches": true
+    },
+    "plumb-bob": {
+      "sourceSha256": "0bceb42b8f4b1e45f2e40444ca22c4604f47292d21daf44634867a905de04318",
+      "actualSha256": "0bceb42b8f4b1e45f2e40444ca22c4604f47292d21daf44634867a905de04318",
+      "matches": true
+    },
+    "pointing-trowel": {
+      "sourceSha256": "3983580fcfe23bce015efd379d48ab62bab5a8075e95169266a6592a704d815e",
+      "actualSha256": "3983580fcfe23bce015efd379d48ab62bab5a8075e95169266a6592a704d815e",
+      "matches": true
+    },
+    "round-point-shovel": {
+      "sourceSha256": "fad4e6434d18f1e4d8f334c66a444a70e322ac6aa50fe18c0f321645beceab9b",
+      "actualSha256": "fad4e6434d18f1e4d8f334c66a444a70e322ac6aa50fe18c0f321645beceab9b",
+      "matches": true
+    },
+    "sample-scoop": {
+      "sourceSha256": "5cb46c30212b8aac739c678b0b769023e2d130d5a2273733cf4251caef9aebf3",
+      "actualSha256": "5cb46c30212b8aac739c678b0b769023e2d130d5a2273733cf4251caef9aebf3",
+      "matches": true
+    },
+    "sample-tag-set": {
+      "sourceSha256": "b2eeeafa3e05fc8ce4db26f7b355cba987fdfd354f130249286834ea37341bc4",
+      "actualSha256": "b2eeeafa3e05fc8ce4db26f7b355cba987fdfd354f130249286834ea37341bc4",
+      "matches": true
+    },
+    "sample-wash-tray": {
+      "sourceSha256": "26e9165482f4801ab7f196ead2b7217ba84ccfca0bfbf1aca318e9497ab1fc25",
+      "actualSha256": "26e9165482f4801ab7f196ead2b7217ba84ccfca0bfbf1aca318e9497ab1fc25",
+      "matches": true
+    },
+    "sediment-bucket": {
+      "sourceSha256": "28cd3c985556eadf1ea86d13c67ce9a43a5f3a61dd022b8791289d7fd9502a04",
+      "actualSha256": "28cd3c985556eadf1ea86d13c67ce9a43a5f3a61dd022b8791289d7fd9502a04",
+      "matches": true
+    },
+    "shaker-screen": {
+      "sourceSha256": "77ba5ec73cf225ef38e8f01d1248301cc9c17967d33dc03b55459e83c4b0bb63",
+      "actualSha256": "77ba5ec73cf225ef38e8f01d1248301cc9c17967d33dc03b55459e83c4b0bb63",
+      "matches": true
+    },
+    "site-camera": {
+      "sourceSha256": "fce59466c4afe30aee35aa396f6096b8d1b447c941f9a2af3025416fc0a5373f",
+      "actualSha256": "fce59466c4afe30aee35aa396f6096b8d1b447c941f9a2af3025416fc0a5373f",
+      "matches": true
+    },
+    "soft-finds-brush": {
+      "sourceSha256": "05c5235a5d7d6f4323f0d3fb3cd7c5576d5b254393d3d9dd8214e1d2136e4400",
+      "actualSha256": "05c5235a5d7d6f4323f0d3fb3cd7c5576d5b254393d3d9dd8214e1d2136e4400",
+      "matches": true
+    },
+    "soil-core-sampler": {
+      "sourceSha256": "eb28facc549ee9e0c8bfd123af451fc2a04c1dd8e3d6a99e63015e24f54f370b",
+      "actualSha256": "eb28facc549ee9e0c8bfd123af451fc2a04c1dd8e3d6a99e63015e24f54f370b",
+      "matches": true
+    },
+    "soil-knife": {
+      "sourceSha256": "7132b8c2c3e0a4a39c28ad7ca1ed50c4afd462847f69735176f41d37a15e8978",
+      "actualSha256": "7132b8c2c3e0a4a39c28ad7ca1ed50c4afd462847f69735176f41d37a15e8978",
+      "matches": true
+    },
+    "sorting-pan": {
+      "sourceSha256": "0adbb7a7276f33776ef47be3ec7b0dec2abda08408bc94a8f9eab4d13c0e5e34",
+      "actualSha256": "0adbb7a7276f33776ef47be3ec7b0dec2abda08408bc94a8f9eab4d13c0e5e34",
+      "matches": true
+    },
+    "specimen-jar-rack": {
+      "sourceSha256": "2ee0c48109e9095963b8eb10aeb34d50d123442d7b5b58c29b2a0af7a6807f71",
+      "actualSha256": "2ee0c48109e9095963b8eb10aeb34d50d123442d7b5b58c29b2a0af7a6807f71",
+      "matches": true
+    },
+    "square-point-shovel": {
+      "sourceSha256": "1c2b7d85ce35f498066480612264ab800c8334914986fa0fa00cafd1125d0437",
+      "actualSha256": "1c2b7d85ce35f498066480612264ab800c8334914986fa0fa00cafd1125d0437",
+      "matches": true
+    },
+    "survey-compass": {
+      "sourceSha256": "e999e5659ed17315f3d7f6b3432ea8ab89bc5c872827f917ee69e6cd43472fc7",
+      "actualSha256": "e999e5659ed17315f3d7f6b3432ea8ab89bc5c872827f917ee69e6cd43472fc7",
+      "matches": true
+    },
+    "survey-stake": {
+      "sourceSha256": "3e9fcf9efb258226bf09191f143868cb4e55573a369464b49222c2826f0bcb2b",
+      "actualSha256": "3e9fcf9efb258226bf09191f143868cb4e55573a369464b49222c2826f0bcb2b",
+      "matches": true
+    },
+    "tape-measure": {
+      "sourceSha256": "c5f19ed0301f922f28f5d6fe2528f667d2ac7f03a5590167b85efe9b1cfaee63",
+      "actualSha256": "c5f19ed0301f922f28f5d6fe2528f667d2ac7f03a5590167b85efe9b1cfaee63",
+      "matches": true
+    },
+    "total-station": {
+      "sourceSha256": "9078ed8b933d9d847af10fd74831757d40bd7da890b31d6b2d101beaba828e63",
+      "actualSha256": "9078ed8b933d9d847af10fd74831757d40bd7da890b31d6b2d101beaba828e63",
+      "matches": true
+    },
+    "trenching-spade": {
+      "sourceSha256": "acfb16a9e4c2b40a640b5b7865d19051781c6a4fa79c37819845448dde8f412f",
+      "actualSha256": "acfb16a9e4c2b40a640b5b7865d19051781c6a4fa79c37819845448dde8f412f",
+      "matches": true
+    },
+    "water-screen-frame": {
+      "sourceSha256": "9316e04aeeefbdbea067cde0bf1a1aff111a42c65fa8f909a2ce833cc9785aec",
+      "actualSha256": "9316e04aeeefbdbea067cde0bf1a1aff111a42c65fa8f909a2ce833cc9785aec",
+      "matches": true
+    },
+    "wire-cleaning-brush": {
+      "sourceSha256": "d7ffffd689cd153a13b9930f658e19de0c2cbd4e543c1dc9da843cf4730e2d72",
+      "actualSha256": "d7ffffd689cd153a13b9930f658e19de0c2cbd4e543c1dc9da843cf4730e2d72",
+      "matches": true
+    }
+  },
+  "issues": []
+}

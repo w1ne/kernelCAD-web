@@ -1,0 +1,9 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "summary": "4 files passed · 15 tests passed",
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "exitCode": 0,
+  "durationSeconds": 214.82,
+  "log": "catalog-test-output.txt"
+}

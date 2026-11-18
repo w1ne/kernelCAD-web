@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-04 UTC",
+  "homepage": {
+    "url": "https://kernelcad.com/",
+    "httpStatus": 200,
+    "bytes": 59908,
+    "observed": "Homepage includes the existing parts-and-kits rail; no feature UI change is being shipped."
+  },
+  "gallery": {
+    "url": "https://kernelcad.com/gallery.json",
+    "httpStatus": 200,
+    "generatedAt": "2026-11-04T22:49:20.123Z"
+  },
+  "assetEndpoint": {
+    "url": "https://kernelcad.com/assets.json",
+    "httpStatus": 200,
+    "generatedAt": "2026-11-04T22:47:28.688Z",
+    "assets": 2116,
+    "constructionEquipmentIds": 60,
+    "constructionEquipmentWithPreview": 60,
+    "constructionEquipmentWithPresets": 0
+  },
+  "boundary": "This is the live pre-promotion baseline. The branch is not deployed; no promoted behavior is claimed for the public site."
+}

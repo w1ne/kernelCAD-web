@@ -15,6 +15,7 @@ import {
   discardOcctShape,
   filletWithHistory,
   mergeEdgeFeatureHistory,
+  type ChamferLegs,
   type EdgeFeatureHistoryResult,
   type EdgeRefForFilleting,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
@@ -28,6 +29,7 @@ import type { FeatureId, FeatureRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
 import { probeMaxFeasible } from './feasibilityProbe';
+import { resolveChamferLegs, type ChamferLegOp } from './asymmetricChamfer';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -453,6 +455,17 @@ interface EdgeOp {
   kind: 'fillet' | 'chamfer';
   value: number;
   continuity: 'G1' | 'G2';
+  /** Tapered fillet only: `endRadius / radius`. A ratio, so the feasibility
+   *  probe scales both ends of the taper together. */
+  endRatio?: number;
+  /** Asymmetric chamfer only: the reference face and the second leg. */
+  legs?: ChamferLegOp;
+}
+
+function chamferLegsOf(op: EdgeOp): ChamferLegs | undefined {
+  if (!op.legs) return undefined;
+  const { face, distance2Ratio, angleDeg } = op.legs;
+  return distance2Ratio !== undefined ? { face, distance2: distance2Ratio * op.value } : { face, angleDeg };
 }
 
 function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeAttempt {
@@ -460,8 +473,9 @@ function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeA
   let result: EdgeFeatureHistoryResult;
   try {
     result = op.kind === 'fillet'
-      ? filletWithHistory(base, refs, op.value, op.continuity)
-      : chamferWithHistory(base, refs, op.value);
+      ? filletWithHistory(base, refs, op.value, op.continuity,
+        op.endRatio === undefined ? undefined : op.endRatio * op.value)
+      : chamferWithHistory(base, refs, op.value, chamferLegsOf(op));
   } catch (e) {
     // A raw WASM exception pointer (a bare integer) is meaningless — never echo it.
     return e instanceof Error
@@ -536,11 +550,13 @@ function applyConstantEdgeFeature(
 ): LowerOutcome {
   const full = attemptEdgeFeature(base, edges, op);
   if (full.ok) return builtFromAttempt(base, full.result, r.id);
-  const filter = filterEdgesByMinLength(edges, 2 * op.value, {
+  const filter = filterEdgesByMinLength(edges, 2 * op.value * Math.max(1, op.endRatio ?? 1), {
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
   if (filter.diagnostic?.severity === 'error') {
-    ctx.diagnostics.push(filter.diagnostic);
+    // The length screen explains the refusal. It is not a feasible radius.
+    // The same probe used for kernel-failed measures one on these edges.
+    ctx.diagnostics.push(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op));
     return built(base);
   }
   if (filter.diagnostic && filter.kept.length > 0) {
@@ -600,6 +616,7 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
   const filletContinuity = meta?.continuity ?? 'G1';
   const radius = requireFilletRadius(ctx, r);
+  const endRadius = r.params.endRadius?.evaluated;
   const edgesResult = pickEdges(r, base, ctx.allRecords);
   if ('error' in edgesResult) {
     ctx.diagnostics.push(edgesResult.error);
@@ -610,7 +627,45 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   if (edgesForFillet === null) {
     return built(base);
   }
-  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, { kind: 'fillet', value: radius, continuity: filletContinuity });
+  if (endRadius !== undefined && !(Number.isFinite(endRadius) && endRadius > 0)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'opts.endRadius', got: endRadius,
+      requires: "a finite number > 0 — the round's radius at each edge's high end",
+    }));
+    return finished(base);
+  }
+  if (endRadius !== undefined && edgesForFillet.some((e) => e.isClosed)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'edges',
+      gotText: 'a closed edge (a full circle or loop), which has no start and end for the taper',
+      requires: 'open edges only — select the straight or open edges to taper, or drop endRadius for a constant round',
+    }));
+    return finished(base);
+  }
+  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, {
+    kind: 'fillet', value: radius, continuity: filletContinuity,
+    ...(endRadius !== undefined ? { endRatio: endRadius / radius } : {}),
+  });
+}
+
+/** A tapered fillet runs from `radius` at one end of each edge to
+ *  `endRadius` at the other; a closed edge (a circle) has no ends. */
+function taperDiagnostic(
+  featureId: FeatureId,
+  spec: { path: string; got?: unknown; gotText?: string; requires: string },
+): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId,
+    severity: 'error',
+    ...invalidArgsText({
+      api: 'fillet(radius, edges, { endRadius })',
+      unit: 'mm',
+      example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+      ...spec,
+    }),
+  };
 }
 
 /** `chamfer` — constant-distance, or the variable form via
@@ -671,7 +726,10 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return finished(base);
   }
   drainResolvedWarnings(r, ctx.diagnostics);
-  return applyConstantEdgeFeature(ctx, r, base, edgesResult as Edge[], { kind: 'chamfer', value: distance, continuity: 'G1' });
+  const edges = edgesResult as Edge[];
+  const legs = resolveChamferLegs(ctx, r, base, toFilletEdgeRefs(edges), distance);
+  if (legs === 'refused') return finished(base);
+  return applyConstantEdgeFeature(ctx, r, base, edges, { kind: 'chamfer', value: distance, continuity: 'G1', legs });
 }
 
 // ---------------------------------------------------------------------------
@@ -700,6 +758,40 @@ interface EdgeFeatureFailure {
 const fmtMm = (v: number): string => String(Number(v.toPrecision(4)));
 
 /**
+ * Attach the largest fillet/chamfer value `probeMaxFeasible` built on
+ * `edges`. The short-edge diagnostic stays a short-edge diagnostic; only a
+ * value the probe built is recorded as feasible. Nothing is applied.
+ */
+function withVerifiedEdgeFeasible(
+  diagnostic: CompilerDiagnostic,
+  base: OcctBackend,
+  edges: Edge[],
+  op: EdgeOp,
+): CompilerDiagnostic {
+  const param = op.kind === 'fillet' ? 'radius' : 'distance';
+  const { maxFeasible, attempts } = probeMaxFeasible(
+    op.value,
+    (value) => edgeFeatureBuilds(base, edges, { ...op, value }),
+    PROBE_ITERATIONS,
+  );
+  const verified = maxFeasible !== undefined && maxFeasible > 0 ? maxFeasible : undefined;
+  const key = op.kind === 'fillet' ? 'maxFeasibleRadius' : 'maxFeasibleDistance';
+  return {
+    ...diagnostic,
+    hint: verified === undefined
+      ? diagnostic.hint
+      : `${diagnostic.hint} The largest ${param} that builds on these ${edges.length} edges is ${fmtMm(verified)} mm (kernel probe).`,
+    details: {
+      param,
+      requestedValue: op.value,
+      probeAttempts: attempts,
+      edgeCount: edges.length,
+      ...(verified === undefined ? {} : { maxFeasibleValue: verified, [key]: verified }),
+    },
+  };
+}
+
+/**
  * `feature.kernel-failed` for a constant fillet/chamfer, with the largest
  * value that verifiably builds on the same edges (bisection against the
  * kernel). The value is reported, never applied.
@@ -708,6 +800,14 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
   const param = f.kind === 'fillet' ? 'radius' : 'distance';
   const { maxFeasible, attempts } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
   const edgesText = `${f.edgeCount === 1 ? 'this edge' : `these ${f.edgeCount} edges`}`;
+  const featureLabel = `feature ${f.featureId}`;
+  // Name the limiting edge selection + feature so refuse.try can steer agents
+  // (OpenZCAD-style: say which radius/edge is the limit). Prior adjacent-round
+  // radii are not tracked on EdgeFeatureFailure yet — max-feasible probe is
+  // the authoritative limit we can name without a larger rewrite.
+  const limitEdgeClause = f.edgeCount === 1
+    ? `limiting edge on ${featureLabel}`
+    : `limiting edge set (${f.edgeCount} edges) on ${featureLabel}`;
   const base: CompilerDiagnostic = {
     target: 'export-occt',
     code: 'feature.kernel-failed',
@@ -721,17 +821,30 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
     return {
       ...base,
       message: `${base.message}. No ${param} down to ${fmtMm(floor)} mm builds on ${edgesText}.`,
-      hint: `No ${f.kind} ${param} works on ${edgesText} (probed down to ${fmtMm(floor)} mm) — the edge selection itself cannot be ${f.kind === 'fillet' ? 'blended' : 'bevelled'}. Select different edges, or check they are not already tangent-continuous.`,
+      hint: `No ${f.kind} ${param} works on ${limitEdgeClause} (probed down to ${fmtMm(floor)} mm; requested ${fmtMm(f.requested)} mm) — the edge selection itself cannot be ${f.kind === 'fillet' ? 'blended' : 'bevelled'} (often already filleted/tangent-continuous or shorter than the round). Select different edges, or check a previous round on an adjacent edge is not blocking this ${f.kind}.`,
       nextAction: { kind: 'rewrite-feature', guidance: `change the ${f.kind} edge selection; no ${param} builds on it` },
-      details: { requestedValue: f.requested, probeAttempts: attempts, maxFeasibleValue: 0 },
+      details: {
+        param,
+        requestedValue: f.requested,
+        probeAttempts: attempts,
+        maxFeasibleValue: 0,
+        edgeCount: f.edgeCount,
+      },
     };
   }
   const key = f.kind === 'fillet' ? 'maxFeasibleRadius' : 'maxFeasibleDistance';
   return {
     ...base,
     message: `${base.message}. The largest ${param} that builds on ${edgesText} is ${fmtMm(maxFeasible)} mm.`,
-    hint: `The largest ${param} that works on ${edgesText} is ${fmtMm(maxFeasible)} mm, verified by a kernel probe. Use a ${param} of ${fmtMm(maxFeasible)} mm or less, or split the selection so the tight edges get a smaller ${param}.`,
+    hint: `Limiting ${param} on ${limitEdgeClause} is ${fmtMm(maxFeasible)} mm (requested ${fmtMm(f.requested)} mm; kernel probe). Use ${param} ≤ ${fmtMm(maxFeasible)} mm, or split the selection so tighter edges get a smaller ${param}. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first.`,
     nextAction: { kind: 'retry-with-smaller-param', param, factor: Number((maxFeasible / f.requested).toFixed(4)) },
-    details: { requestedValue: f.requested, maxFeasibleValue: maxFeasible, [key]: maxFeasible, probeAttempts: attempts },
+    details: {
+      param,
+      requestedValue: f.requested,
+      maxFeasibleValue: maxFeasible,
+      [key]: maxFeasible,
+      probeAttempts: attempts,
+      edgeCount: f.edgeCount,
+    },
   };
 }

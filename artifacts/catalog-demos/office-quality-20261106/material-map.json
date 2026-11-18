@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "archive-box",
+    "sourceSha256Before": "fd1a47b268966ef314c019f949e0cb6c26dc5850b433012cab9c571c132bacf3",
+    "sourceSha256After": "db9f26cb62b251d112dcd85a44a796f44800d9fabec62f5fc2436f80f0163250",
+    "materials": [
+      {
+        "param": "paperboard",
+        "label": "Paperboard",
+        "default": "#b8945b"
+      },
+      {
+        "param": "coverStock",
+        "label": "Cover stock",
+        "default": "#e7ddc7"
+      },
+      {
+        "param": "ink",
+        "label": "Label ink",
+        "default": "#427895"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 150
+  },
+  {
+    "id": "business-card-holder",
+    "sourceSha256Before": "64c8ad79e679c139d8b09cc63b7fc61f26220155483b78055a798737223ac447",
+    "sourceSha256After": "d6a79f1fd98302496529eea94279ad5394782529df7a96c2b079762c793e2c1d",
+    "materials": [
+      {
+        "param": "anodizedAluminum",
+        "label": "Anodized aluminum",
+        "default": "#a6afb2"
+      },
+      {
+        "param": "cardStock",
+        "label": "Card stock",
+        "default": "#f1ece1"
+      },
+      {
+        "param": "rubber",
+        "label": "Rubber feet",
+        "default": "#343c40"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 130
+  },
+  {
+    "id": "calculator",
+    "sourceSha256Before": "9eea664e9ed87fd35348a2f1aa6f4e02d49297bb5d212540efcf111e43e28085",
+    "sourceSha256After": "e12ed5308e7eab1c1b03cbea2dbfb571dac27d562ece8b479b3c402465e7939b",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Case polymer",
+        "default": "#3c454b"
+      },
+      {
+        "param": "lcdGlass",
+        "label": "LCD glass",
+        "default": "#7d9e80"
+      },
+      {
+        "param": "keycapPlastic",
+        "label": "Keycap plastic",
+        "default": "#cdd0c6"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 4,
+    "changed": true,
+    "triangleCount": 156,
+    "triangleBudget": 250
+  },
+  {
+    "id": "clipboard",
+    "sourceSha256Before": "1887636fd899306260893c98390dcaa774e763e59e0434b754a6e92cb19eb643",
+    "sourceSha256After": "34e43d9895289325a39e849915a53247acdcf0ba193071295385bc7fd504e5a3",
+    "materials": [
+      {
+        "param": "polypropylene",
+        "label": "Polypropylene",
+        "default": "#476b7e"
+      },
+      {
+        "param": "paper",
+        "label": "Paper",
+        "default": "#f2efe6"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#b5bdc1"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 92,
+    "triangleBudget": 160
+  },
+  {
+    "id": "desk-calendar",
+    "sourceSha256Before": "cee3e6d735d34ff8251ae9e71e185ddadaa46fdfda1c1aa9f99cc10cef24199f",
+    "sourceSha256After": "a328f7bc021d57fc515cb77ddfaadd4d76d875dd6ebfaa30cf8a2ad3292803cd",
+    "materials": [
+      {
+        "param": "paper",
+        "label": "Calendar paper",
+        "default": "#f0eee5"
+      },
+      {
+        "param": "chipboard",
+        "label": "Chipboard stand",
+        "default": "#416f89"
+      },
+      {
+        "param": "steelWire",
+        "label": "Steel wire",
+        "default": "#bbc0c2"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 120,
+    "triangleBudget": 260
+  },
+  {
+    "id": "desk-organizer",
+    "sourceSha256Before": "460029c1f6447bb3e3bd34442a5a7f46214115bb1547321217972700870c3d81",
+    "sourceSha256After": "2eb77b98c4fe25e4d3a0950191ef889c47e791b6df62bd7931bf43a9a677b563",
+    "materials": [
+      {
+        "param": "timber",
+        "label": "Timber",
+        "default": "#ad8155"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#bfc3c4"
+      },
+      {
+        "param": "labelPaper",
+        "label": "Label paper",
+        "default": "#eae4d3"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 7,
+    "changed": true,
+    "triangleCount": 84,
+    "triangleBudget": 180
+  },
+  {
+    "id": "dry-erase-board",
+    "sourceSha256Before": "d8ad2f615437ba917e4c7f3dd5a0152c3b802cd4df5ec599f55545894e8ec6e1",
+    "sourceSha256After": "e1356ecec3c30820f8dee4487f86e0aa4992bd9d17460fa0a1ff236863d80f0f",
+    "materials": [
+      {
+        "param": "enamelSteel",
+        "label": "Enamel steel",
+        "default": "#f3f3eb"
+      },
+      {
+        "param": "aluminum",
+        "label": "Aluminum frame",
+        "default": "#9da8ab"
+      },
+      {
+        "param": "polymer",
+        "label": "Marker polymer",
+        "default": "#497083"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 12,
+    "changed": true,
+    "triangleCount": 144,
+    "triangleBudget": 200
+  },
+  {
+    "id": "envelope-stack",
+    "sourceSha256Before": "5298cbaaa2853b0f715af971d06e87bd6364ef31477df214c18bbd9acc2f73bd",
+    "sourceSha256After": "17038c2323547311a000a70c3f50b9ea899e35ad91d5064a697539ab9b789216",
+    "materials": [
+      {
+        "param": "kraftPaper",
+        "label": "Kraft paper",
+        "default": "#c8a96d"
+      },
+      {
+        "param": "paper",
+        "label": "Envelope paper",
+        "default": "#f2eee4"
+      },
+      {
+        "param": "ink",
+        "label": "Printed ink",
+        "default": "#4b6681"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 120
+  },
+  {
+    "id": "file-folder",
+    "sourceSha256Before": "1ff436045008750ea99c7852ee96a2dec7365cc56d2078b4462e614cc5f24c3f",
+    "sourceSha256After": "df2c251652bf456ae820641ec28dcf1857a56bb801ade3dc056fdaabab2415cb",
+    "materials": [
+      {
+        "param": "manilaCard",
+        "label": "Manila card",
+        "default": "#c8a85a"
+      },
+      {
+        "param": "paper",
+        "label": "Paper",
+        "default": "#eee9db"
+      },
+      {
+        "param": "steelWire",
+        "label": "Steel wire",
+        "default": "#aab1b3"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 140
+  },
+  {
+    "id": "footrest",
+    "sourceSha256Before": "6ce0e42c4d089bba1173da4352b3b9196926785ab034278a8df960364096a9f7",
+    "sourceSha256After": "0450cc68bd5277107b2514d357637ef2f4ee6f73766bfd0ca8cf012c30ef8d8e",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Platform polymer",
+        "default": "#3c484d"
+      },
+      {
+        "param": "rubber",
+        "label": "Grip rubber",
+        "default": "#7c898b"
+      },
+      {
+        "param": "foam",
+        "label": "Cushion foam",
+        "default": "#d0cab9"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 130
+  },
+  {
+    "id": "fountain-pen",
+    "sourceSha256Before": "20935a3f1c67cf7cfe0e0439bc0914b97f88089c4be6ceefcd21ea0a21bd6244",
+    "sourceSha256After": "6d303ce198e3759e6f9e879300ac070d816cd8c4a60a5f17e7ccf79d868e5ca6",
+    "materials": [
+      {
+        "param": "resin",
+        "label": "Barrel resin",
+        "default": "#254f74"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#b7c1c4"
+      },
+      {
+        "param": "ink",
+        "label": "Ink",
+        "default": "#254777"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 156,
+    "triangleBudget": 180
+  },
+  {
+    "id": "hanging-file-folder",
+    "sourceSha256Before": "6ebcac8352046f3abfbde2eb69c75bad0a6df3a6409c4338f751ed1f3a16c11a",
+    "sourceSha256After": "85edf038f72caaf80d60603077b4cfe3b809eef153fddcb230764277a0283605",
+    "materials": [
+      {
+        "param": "fileCard",
+        "label": "File card",
+        "default": "#88a76a"
+      },
+      {
+        "param": "steel",
+        "label": "Hanging rail steel",
+        "default": "#aeb8bb"
+      },
+      {
+        "param": "paper",
+        "label": "Folder paper",
+        "default": "#f0e8d7"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 6,
+    "changed": true,
+    "triangleCount": 72,
+    "triangleBudget": 180
+  },
+  {
+    "id": "highlighter",
+    "sourceSha256Before": "5c381ae805f9c5c59d91bd3d22d5305eaee4953a6d54f3847dd9c3f9716f005d",
+    "sourceSha256After": "e56356c74b1fd845b177ee1682bf867c2c84c6ba1a1acb1dfa140af56a246538",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Barrel polymer",
+        "default": "#eac633"
+      },
+      {
+        "param": "fluorescentInk",
+        "label": "Fluorescent ink",
+        "default": "#f4ed48"
+      },
+      {
+        "param": "felt",
+        "label": "Felt tip",
+        "default": "#c84747"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 120
+  },
+  {
+    "id": "hole-punch",
+    "sourceSha256Before": "1351a39a4b29e17cceb6c598534bed5842565a7d9ba1ea5300efba055241327a",
+    "sourceSha256After": "a76796defbcb06128e531a0af5e9578141d0e7f57d3ed1cdd203423e74b9553b",
+    "materials": [
+      {
+        "param": "powderCoatedSteel",
+        "label": "Powder-coated steel",
+        "default": "#425e76"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#b6bdc0"
+      },
+      {
+        "param": "polymer",
+        "label": "Handle polymer",
+        "default": "#d05b47"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 6,
+    "changed": true,
+    "triangleCount": 136,
+    "triangleBudget": 170
+  },
+  {
+    "id": "ink-pad",
+    "sourceSha256Before": "c8ca249ff2576ad84b1a0fc19f0c803a00ed65d0ee6a02de15977e5ce67e6b58",
+    "sourceSha256After": "066fe287aa830a629b4020637e22be5507e2bf012851e6e0c19f9381ef58eb6d",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Case polymer",
+        "default": "#475a69"
+      },
+      {
+        "param": "felt",
+        "label": "Ink felt",
+        "default": "#394a55"
+      },
+      {
+        "param": "ink",
+        "label": "Stamp ink",
+        "default": "#385f86"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 4,
+    "changed": true,
+    "triangleCount": 48,
+    "triangleBudget": 120
+  },
+  {
+    "id": "label-maker",
+    "sourceSha256Before": "6dad2bd4bf6c2645dff3c6a25088040263c938d6c90189d5fcbd9420b7106073",
+    "sourceSha256After": "60edb49c1e0c09bbb577cb54b11063ac9938c953f3e3846680d11759ad1b2173",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Case polymer",
+        "default": "#d86045"
+      },
+      {
+        "param": "lcdGlass",
+        "label": "LCD glass",
+        "default": "#88a899"
+      },
+      {
+        "param": "rubber",
+        "label": "Grip rubber",
+        "default": "#363c40"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 236,
+    "triangleBudget": 240
+  },
+  {
+    "id": "laminator",
+    "sourceSha256Before": "c683827896a4287ac7f6553998b70340d153ea4b0c3b0ecff47ec86e58ec0cc0",
+    "sourceSha256After": "7a92f0b3ba4336a1608c90dcd4a9fd1bdc21d6b681cfc69229da189c69c6d398",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Housing polymer",
+        "default": "#48525b"
+      },
+      {
+        "param": "aluminum",
+        "label": "Feed tray aluminum",
+        "default": "#a5adb0"
+      },
+      {
+        "param": "rubber",
+        "label": "Roller rubber",
+        "default": "#31373c"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 10,
+    "changed": true,
+    "triangleCount": 184,
+    "triangleBudget": 230
+  },
+  {
+    "id": "laptop-stand",
+    "sourceSha256Before": "27b10709551ef19763ab024222290610177924093cb1e52a9192fd01e2b6ad6f",
+    "sourceSha256After": "ffea6c7aaa8da8920bc7895e4b9f2bc844db301246a271bad0cc4003e8388e81",
+    "materials": [
+      {
+        "param": "anodizedAluminum",
+        "label": "Anodized aluminum",
+        "default": "#a8afb2"
+      },
+      {
+        "param": "silicone",
+        "label": "Silicone pads",
+        "default": "#353c41"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#8b9498"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 7,
+    "changed": true,
+    "triangleCount": 84,
+    "triangleBudget": 150
+  },
+  {
+    "id": "letter-sorter",
+    "sourceSha256Before": "9829dfefa062659aac3e258b963964b9104f29c752c32ea8cd35fd614444bc90",
+    "sourceSha256After": "5509590028808f72aeef69da413f7ae5304731c32a55d988b47dc5f440849f57",
+    "materials": [
+      {
+        "param": "timber",
+        "label": "Timber",
+        "default": "#aa7d4f"
+      },
+      {
+        "param": "paper",
+        "label": "Letter paper",
+        "default": "#f0e6d1"
+      },
+      {
+        "param": "powderCoatedSteel",
+        "label": "Powder-coated steel",
+        "default": "#3f5967"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 2,
+    "changed": true,
+    "triangleCount": 96,
+    "triangleBudget": 260
+  },
+  {
+    "id": "letter-tray",
+    "sourceSha256Before": "a9490d6bcbbc4cab88d79194c5c879d8067dbdded17e5222a8a77bc6fdc94384",
+    "sourceSha256After": "bf5c5cfcea3b4043885b306bdba7547acbd4ab67f008ab8d9b67bfe2ab292f67",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Tray polymer",
+        "default": "#405969"
+      },
+      {
+        "param": "rubber",
+        "label": "Grip rubber",
+        "default": "#303c44"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#b5b8b6"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 1,
+    "changed": true,
+    "triangleCount": 108,
+    "triangleBudget": 280
+  },
+  {
+    "id": "marker",
+    "sourceSha256Before": "e2b41611a30a3e3906aa179fc637a7ab7e247fff5454620286e412405f6f9bd1",
+    "sourceSha256After": "fe493ddfabe38d305aed64f86afcfd50e7e1f080b0eaeaed789fbf0f14d459cf",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Barrel polymer",
+        "default": "#5b83a5"
+      },
+      {
+        "param": "ink",
+        "label": "Marker ink",
+        "default": "#276395"
+      },
+      {
+        "param": "felt",
+        "label": "Felt tip",
+        "default": "#c3463d"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 156,
+    "triangleBudget": 180
+  },
+  {
+    "id": "mechanical-pencil",
+    "sourceSha256Before": "13d2873fd3d4a3dd2f3b3fa8029ee60d42a89500e5eb1df12e1e13ce8c500e31",
+    "sourceSha256After": "91c5e4f9b138b2b0142002861c8a200318369d12384cdb2151444b45c0f47243",
+    "materials": [
+      {
+        "param": "aluminum",
+        "label": "Barrel aluminum",
+        "default": "#9aa6aa"
+      },
+      {
+        "param": "polymer",
+        "label": "Grip polymer",
+        "default": "#d85e4d"
+      },
+      {
+        "param": "graphite",
+        "label": "Graphite lead",
+        "default": "#393c3e"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 6,
+    "changed": true,
+    "triangleCount": 72,
+    "triangleBudget": 120
+  },
+  {
+    "id": "memo-pad",
+    "sourceSha256Before": "79fc168171ac9601c0b7381f45ff5850468a73ef0f036e52d82afe454eb8798d",
+    "sourceSha256After": "4bb8b8e142dde13dcb5de559a116d6095e2623cb49d3d1c0976f7e69e524df41",
+    "materials": [
+      {
+        "param": "paper",
+        "label": "Memo paper",
+        "default": "#f3eee1"
+      },
+      {
+        "param": "chipboard",
+        "label": "Chipboard backing",
+        "default": "#b78a52"
+      },
+      {
+        "param": "ink",
+        "label": "Printed ink",
+        "default": "#3e627e"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 4,
+    "changed": true,
+    "triangleCount": 48,
+    "triangleBudget": 100
+  },
+  {
+    "id": "monitor-riser",
+    "sourceSha256Before": "39ff2efc5841ea6fb97e567742c85999aa8779fc1c80443e00d0ee6bc0af819f",
+    "sourceSha256After": "64c3c68f611ef27bc248241675da5f5b5e756b96a20f043cf274131fbcac9a64",
+    "materials": [
+      {
+        "param": "timber",
+        "label": "Timber shelf",
+        "default": "#ae8153"
+      },
+      {
+        "param": "steel",
+        "label": "Support steel",
+        "default": "#3d484e"
+      },
+      {
+        "param": "rubber",
+        "label": "Edge rubber",
+        "default": "#ddd2bb"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 120
+  },
+  {
+    "id": "mousepad",
+    "sourceSha256Before": "a0af80b19dd55b02f2d350705ab2450a5b31163cf34148dcfcb0ef8889de9dda",
+    "sourceSha256After": "d89c6a13e78b94533ad22af44a5a5159d1807120afbf84b4e990d72a2106a63b",
+    "materials": [
+      {
+        "param": "fabric",
+        "label": "Woven fabric",
+        "default": "#4d6687"
+      },
+      {
+        "param": "rubber",
+        "label": "Non-slip rubber",
+        "default": "#2f3438"
+      },
+      {
+        "param": "foam",
+        "label": "Cushion foam",
+        "default": "#b5aa93"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 6,
+    "changed": true,
+    "triangleCount": 72,
+    "triangleBudget": 150
+  },
+  {
+    "id": "notebook",
+    "sourceSha256Before": "b953b40090fc72ac116ff81b745a0078293c9b2db11d374353825124303d3cfc",
+    "sourceSha256After": "6385dfb1d585c3ba06d9d742d69ac909c63ee27d852f41fb7e0160e24ab0a718",
+    "materials": [
+      {
+        "param": "paper",
+        "label": "Page paper",
+        "default": "#eee9db"
+      },
+      {
+        "param": "leatherette",
+        "label": "Cover leatherette",
+        "default": "#385971"
+      },
+      {
+        "param": "ink",
+        "label": "Printed ink",
+        "default": "#3d444b"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 6,
+    "changed": true,
+    "triangleCount": 72,
+    "triangleBudget": 150
+  },
+  {
+    "id": "office-pinboard",
+    "sourceSha256Before": "49e0080dd902140d2493ded63d3597e91523221345711a6ef14815f27fc68faf",
+    "sourceSha256After": "4c57547ed17ce364f8630ae700f370f3b2324e1ea0908f642d8f73acc845a17f",
+    "materials": [
+      {
+        "param": "cork",
+        "label": "Cork panel",
+        "default": "#b58b58"
+      },
+      {
+        "param": "timber",
+        "label": "Timber frame",
+        "default": "#765536"
+      },
+      {
+        "param": "steel",
+        "label": "Pin steel",
+        "default": "#5e7c8a"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 10,
+    "changed": true,
+    "triangleCount": 120,
+    "triangleBudget": 160
+  },
+  {
+    "id": "paper-clip-dish",
+    "sourceSha256Before": "2436f64a65f2ac5bbfe3fd517a9edae8287ac43d288d05ffe0271d851416a553",
+    "sourceSha256After": "d4ad0441118d33b2fad06dfcb94c9d142befb236799a646bbd82f8ad83f78adc",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Dish polymer",
+        "default": "#527689"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#b1b8bb"
+      },
+      {
+        "param": "brass",
+        "label": "Brass clips",
+        "default": "#c79b3e"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 8,
+    "changed": true,
+    "triangleCount": 96,
+    "triangleBudget": 180
+  },
+  {
+    "id": "paper-cutter",
+    "sourceSha256Before": "1351674873a65e636a6f8262804cfdb9e2be22a23e49ad3372ad5e46ff50b7eb",
+    "sourceSha256After": "ca75daa813719931ea07e7b857352a042d6c857c5a779d664c114dbdb5db5122",
+    "materials": [
+      {
+        "param": "powderCoatedSteel",
+        "label": "Powder-coated steel",
+        "default": "#59727d"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel blade",
+        "default": "#aeb7ba"
+      },
+      {
+        "param": "polymer",
+        "label": "Handle polymer",
+        "default": "#30383d"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 7,
+    "changed": true,
+    "triangleCount": 84,
+    "triangleBudget": 180
+  },
+  {
+    "id": "paper-shredder",
+    "sourceSha256Before": "33ce0830f1c12dfb6b347ba8f158716ec79d2b7bb756b583bdab610c987f216c",
+    "sourceSha256After": "362c2712ad26a4fadb1ac43bbcb4e1a7ce997cc09e4f0f322fcba41821145994",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Housing polymer",
+        "default": "#b9c4c4"
+      },
+      {
+        "param": "steel",
+        "label": "Cutter steel",
+        "default": "#464b4d"
+      },
+      {
+        "param": "glass",
+        "label": "Bin window glass",
+        "default": "#73948b"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 10,
+    "changed": true,
+    "triangleCount": 184,
+    "triangleBudget": 240
+  },
+  {
+    "id": "paperweight",
+    "sourceSha256Before": "7f1949f3a15cf2f7ae594e016ce60c73a1aefaddb664bf44476c618cecac9711",
+    "sourceSha256After": "69bde41eb90d5042136618600fd52b31d0d04952a993390b6bccddcd0863d565",
+    "materials": [
+      {
+        "param": "glass",
+        "label": "Glass body",
+        "default": "#5d8791"
+      },
+      {
+        "param": "brass",
+        "label": "Brass foot",
+        "default": "#c29e54"
+      },
+      {
+        "param": "ceramic",
+        "label": "Ceramic inset",
+        "default": "#454d53"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 4,
+    "changed": true,
+    "triangleCount": 48,
+    "triangleBudget": 120
+  },
+  {
+    "id": "pencil-cup",
+    "sourceSha256Before": "f9a5dba1659b1e60fd92bfa24889d79894f312380268fdd2d2185729d9f0a37a",
+    "sourceSha256After": "6554601697a316a88527c9e274958ead258bd395544df7b82617bb58c5e04503",
+    "materials": [
+      {
+        "param": "ceramic",
+        "label": "Ceramic cup",
+        "default": "#546f82"
+      },
+      {
+        "param": "wood",
+        "label": "Pencil wood",
+        "default": "#b69263"
+      },
+      {
+        "param": "graphite",
+        "label": "Graphite",
+        "default": "#484e50"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 12,
+    "changed": true,
+    "triangleCount": 144,
+    "triangleBudget": 180
+  },
+  {
+    "id": "ring-binder",
+    "sourceSha256Before": "79c639f87af65056ba2acc1a8f2f834f04e2f3c30e83de7ff942b5445eff0c26",
+    "sourceSha256After": "6114da462591aaa8a76b3bdc7c9f72c35a846053421a03b05017678db343eff6",
+    "materials": [
+      {
+        "param": "polypropylene",
+        "label": "Cover polypropylene",
+        "default": "#4a6c8a"
+      },
+      {
+        "param": "paper",
+        "label": "Paper",
+        "default": "#eee9db"
+      },
+      {
+        "param": "steel",
+        "label": "Ring steel",
+        "default": "#b0b6b8"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 192,
+    "triangleBudget": 260
+  },
+  {
+    "id": "rubber-stamp",
+    "sourceSha256Before": "db39c152ce99452693d73a02ad5853b661479ade49635b7941896bd4f1df430b",
+    "sourceSha256After": "b4f329e6bfb8bd92d6797c9691e5a8a6cdc6c0fe86055f7acbce7770dd8b7e45",
+    "materials": [
+      {
+        "param": "timber",
+        "label": "Handle timber",
+        "default": "#9a7247"
+      },
+      {
+        "param": "rubber",
+        "label": "Stamp rubber",
+        "default": "#3d464b"
+      },
+      {
+        "param": "brass",
+        "label": "Cap brass",
+        "default": "#c39b46"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 92,
+    "triangleBudget": 160
+  },
+  {
+    "id": "ruler",
+    "sourceSha256Before": "1f861048bc40592d1970b3116f7f7f6ac8e26982675fd5ef7adec1132fb18578",
+    "sourceSha256After": "30efb2a1cf18bddf18c6c6a35c98a7d72a153fa84c2904319457e1bf8eb48921",
+    "materials": [
+      {
+        "param": "acrylic",
+        "label": "Ruler acrylic",
+        "default": "#d4ccad"
+      },
+      {
+        "param": "ink",
+        "label": "Scale ink",
+        "default": "#3d586b"
+      },
+      {
+        "param": "aluminum",
+        "label": "End aluminum",
+        "default": "#b7bec0"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 3,
+    "changed": true,
+    "triangleCount": 156,
+    "triangleBudget": 220
+  },
+  {
+    "id": "scissors",
+    "sourceSha256Before": "f3535f1340f54d757c63dd247669b7fdb6e41bcc63fdc6395f416b14dab53f7c",
+    "sourceSha256After": "86e69299570ea238c5096bee287aca369758364c5eed307e6e4faba7bce74694",
+    "materials": [
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#aeb7ba"
+      },
+      {
+        "param": "polymer",
+        "label": "Handle polymer",
+        "default": "#c95045"
+      },
+      {
+        "param": "brass",
+        "label": "Pivot brass",
+        "default": "#c19a4b"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 260,
+    "triangleBudget": 280
+  },
+  {
+    "id": "stapler",
+    "sourceSha256Before": "87f530045fd74ab2e25cd17f99938fd82d0f019a3710c67db4bd7903b7715063",
+    "sourceSha256After": "506805b629e5cd9c3fc1a49169a89d4b87abb4ce07019aee560c8b3ee852992e",
+    "materials": [
+      {
+        "param": "powderCoatedSteel",
+        "label": "Powder-coated steel",
+        "default": "#506a7d"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Stainless steel",
+        "default": "#bdc1c1"
+      },
+      {
+        "param": "rubber",
+        "label": "Grip rubber",
+        "default": "#33383a"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 92,
+    "triangleBudget": 130
+  },
+  {
+    "id": "sticky-notes",
+    "sourceSha256Before": "f2006162a538aff5b90ec324075412d3aa0145bb9cdc26689f017554c89aeb1d",
+    "sourceSha256After": "bdba928195bf960417ca4f2852924d15e0d9e15b28d341c5dad0ab14195de1e8",
+    "materials": [
+      {
+        "param": "paper",
+        "label": "Sticky-note paper",
+        "default": "#e2e559"
+      },
+      {
+        "param": "adhesive",
+        "label": "Adhesive strip",
+        "default": "#e9dfc1"
+      },
+      {
+        "param": "ink",
+        "label": "Printed ink",
+        "default": "#475a6a"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 3,
+    "changed": true,
+    "triangleCount": 36,
+    "triangleBudget": 110
+  },
+  {
+    "id": "tape-dispenser",
+    "sourceSha256Before": "59ae039df13ba5f1065631cdd28e010ae24022a4ef7d277ae1365c9ffa1eef2b",
+    "sourceSha256After": "6dfd96fd139f75be3ed9f1d9e36a7976fe20ec85ffb5435b93dd70c216fd3fdc",
+    "materials": [
+      {
+        "param": "polymer",
+        "label": "Dispenser polymer",
+        "default": "#496b80"
+      },
+      {
+        "param": "stainlessSteel",
+        "label": "Cutter stainless steel",
+        "default": "#acb4b8"
+      },
+      {
+        "param": "rubber",
+        "label": "Roller rubber",
+        "default": "#343a3c"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 124,
+    "triangleBudget": 220
+  },
+  {
+    "id": "wrist-rest",
+    "sourceSha256Before": "dee51a05fd50e364ce616002c006856ebe69511a351d50c9dd79919ef2a338ac",
+    "sourceSha256After": "a46950731533098e2b059a56171c57db445ceb0206b20d00ca5fcabd86ea3499",
+    "materials": [
+      {
+        "param": "fabric",
+        "label": "Cover fabric",
+        "default": "#3d617a"
+      },
+      {
+        "param": "foam",
+        "label": "Cushion foam",
+        "default": "#bbab90"
+      },
+      {
+        "param": "rubber",
+        "label": "Non-slip rubber",
+        "default": "#31393e"
+      }
+    ],
+    "presets": [
+      "professional",
+      "classroom"
+    ],
+    "partCount": 5,
+    "changed": true,
+    "triangleCount": 60,
+    "triangleBudget": 100
+  }
+]

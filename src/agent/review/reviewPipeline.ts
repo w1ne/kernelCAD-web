@@ -140,7 +140,6 @@ export interface RepairContext {
  * - `'unverified'` — the probe wasn't run (cheap path; no assembly in
  *                    the script, or evaluation failed before lowering)
  *
- * Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
  */
 export type MechanismVerdict = 'real' | 'broken' | 'unverified';
 

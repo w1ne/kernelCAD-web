@@ -1,0 +1,888 @@
+{
+  "checkedAt": "2026-11-02T22:50:45.316Z",
+  "totalAssets": 1075,
+  "kit": "construction-equipment",
+  "addedAssets": 60,
+  "query": {
+    "tool": "search_assets",
+    "q": "asphalt paver",
+    "coverage": "ok",
+    "rows": [
+      "asphalt-paver-screed",
+      "track-asphalt-paver",
+      "wheel-asphalt-paver",
+      "asphalt-distributor-truck",
+      "asphalt-transfer-conveyor",
+      "road-tile",
+      "crosswalk-tile"
+    ]
+  },
+  "assets": [
+    {
+      "id": "adjustable-formwork-prop",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "articulated-dump-truck",
+      "triangles": 660,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "asphalt-distributor-truck",
+      "triangles": 1064,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "asphalt-paver-screed",
+      "triangles": 92,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "asphalt-transfer-conveyor",
+      "triangles": 348,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "backhoe-loader",
+      "triangles": 684,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cold-planer-milling-machine",
+      "triangles": 1896,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-batch-plant",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-beam-form",
+      "triangles": 132,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-column-form",
+      "triangles": 108,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-form-tie",
+      "triangles": 156,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-formwork-panel",
+      "triangles": 84,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-placement-bucket",
+      "triangles": 96,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-pump-truck",
+      "triangles": 708,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concrete-vibrator-needle",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "construction-personnel-elevator",
+      "triangles": 96,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "crawler-dozer",
+      "triangles": 1956,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "drywall-panel-lift",
+      "triangles": 380,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grade-rod-and-prism-pole",
+      "triangles": 208,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "jobsite-tile-saw",
+      "triangles": 116,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laser-level-tripod",
+      "triangles": 148,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lowboy-equipment-trailer",
+      "triangles": 576,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "masonry-mixer",
+      "triangles": 356,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mast-climbing-work-platform",
+      "triangles": 96,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-fuel-tank",
+      "triangles": 368,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "modular-shoring-frame",
+      "triangles": 284,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "motor-grader",
+      "triangles": 908,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-roller-stand",
+      "triangles": 168,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pneumatic-tire-roller",
+      "triangles": 1116,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-air-compressor",
+      "triangles": 404,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-core-drill-stand",
+      "triangles": 92,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-floor-grinder",
+      "triangles": 664,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-material-hoist",
+      "triangles": 104,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-site-water-tank",
+      "triangles": 136,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rebar-bending-machine",
+      "triangles": 300,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rebar-cage",
+      "triangles": 916,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rebar-cutting-machine",
+      "triangles": 60,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rebar-straightener-coil",
+      "triangles": 268,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ride-on-concrete-saw",
+      "triangles": 632,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "triangles": 136,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rigid-haul-truck",
+      "triangles": 912,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "road-reclaimer",
+      "triangles": 816,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rough-terrain-forklift",
+      "triangles": 636,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "single-drum-soil-compactor",
+      "triangles": 456,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "skid-steer-loader",
+      "triangles": 712,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "slab-edge-form",
+      "triangles": 132,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tandem-vibratory-roller",
+      "triangles": 324,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "telescopic-handler",
+      "triangles": 624,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "towable-light-tower",
+      "triangles": 152,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "track-asphalt-paver",
+      "triangles": 1808,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tracked-concrete-buggy",
+      "triangles": 1404,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trailer-concrete-line-pump",
+      "triangles": 656,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "transit-mixer-truck",
+      "triangles": 712,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trench-roller",
+      "triangles": 300,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vibrating-concrete-screed",
+      "triangles": 92,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "walk-behind-concrete-saw",
+      "triangles": 620,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "walk-behind-floor-scarifier",
+      "triangles": 664,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "walk-behind-power-trowel",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "water-tanker-truck",
+      "triangles": 1064,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wheel-asphalt-paver",
+      "triangles": 728,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "track-asphalt-paver",
+      "want": "scale 1.15 blue body yellow accent",
+      "params": {
+        "scale": 1.15,
+        "body": "#2e6fd8",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.15",
+          "param": "scale",
+          "value": 1.15
+        },
+        {
+          "term": "blue body",
+          "param": "body",
+          "value": "#2e6fd8"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 1808,
+      "resolvedTriangles": 1808,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "421daf2df844ef6a200114e1f613e10ef93153bef175a03f392ac917c975292e",
+      "resolvedGlbSha256": "a1d03d09958d275915e3c3c6471d6ae4e677959262ce04095e31c0a62b3eafb9"
+    },
+    {
+      "id": "motor-grader",
+      "want": "scale 0.85 green body orange accent",
+      "params": {
+        "scale": 0.85,
+        "body": "#2e8b57",
+        "accent": "#e67e22"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 0.85",
+          "param": "scale",
+          "value": 0.85
+        },
+        {
+          "term": "green body",
+          "param": "body",
+          "value": "#2e8b57"
+        },
+        {
+          "term": "orange accent",
+          "param": "accent",
+          "value": "#e67e22"
+        }
+      ],
+      "defaultTriangles": 908,
+      "resolvedTriangles": 908,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "1709672b0e79534a4f33643a4ab8810c73cd5fd4071d5ca87cce24784f820c13",
+      "resolvedGlbSha256": "e22103378da71e6654e0b1576d9f47a9c10777f2ececed15629ccb5a8a2cb989"
+    },
+    {
+      "id": "concrete-pump-truck",
+      "want": "scale 1.1 red body yellow accent",
+      "params": {
+        "scale": 1.1,
+        "body": "#c0392b",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.1",
+          "param": "scale",
+          "value": 1.1
+        },
+        {
+          "term": "red body",
+          "param": "body",
+          "value": "#c0392b"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 708,
+      "resolvedTriangles": 708,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "2a3702638d7421245c6354432f378a2e165b596e9cc151165a2611a0299ef77f",
+      "resolvedGlbSha256": "da08f5b3fd8d5b50389640cc31ddf3bddafdb5b52d584e118b62b602d9c67bd2"
+    }
+  ],
+  "settings": {
+    "kit": "construction-equipment",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 23,
+    "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+    "assetsPerOverviewFrame": 20,
+    "variants": [
+      {
+        "id": "track-asphalt-paver",
+        "want": "scale 1.15 blue body yellow accent"
+      },
+      {
+        "id": "motor-grader",
+        "want": "scale 0.85 green body orange accent"
+      },
+      {
+        "id": "concrete-pump-truck",
+        "want": "scale 1.1 red body yellow accent"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogSearchAndVariantWorkflow": true,
+    "glbExport": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

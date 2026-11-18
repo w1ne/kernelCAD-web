@@ -1,0 +1,137 @@
+{
+  "straight-walls": {
+    "source": "docs/demos/moulding-check/straight-walls.kcad.ts",
+    "exitCode": 1,
+    "summary": "DFM: 1 parts, 0 clearance pairs, 0 wall clusters, 0 voids, moulding[shape] draft min 0.00° (8 faces < 1°), undercut 0.0 mm², wall 2.000–2.50 mm, 8 sharp corner(s) — FAIL",
+    "diagnosticCounts": {
+      "dfm.moulding.draft-insufficient": 8,
+      "dfm.moulding.sharp-corner": 8
+    },
+    "minDraftDeg": 0,
+    "underDraftedFaces": [
+      {
+        "face": "@kc[shell_1/face/back]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/front]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/f6]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/f8]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/right]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/left]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/f7]",
+        "draftDeg": 0
+      },
+      {
+        "face": "@kc[shell_1/face/f9]",
+        "draftDeg": 0
+      }
+    ],
+    "undercutAreaMm2": 0,
+    "undercutFaces": 0,
+    "thinnestWallMm": 1.9999,
+    "thickestSectionMm": 2.5027,
+    "sharpCorners": 8,
+    "unmeasured": [],
+    "verdict": "fail",
+    "timingsMs": {
+      "mesh": 16,
+      "voids": 107,
+      "moulding": 263,
+      "total": 386
+    }
+  },
+  "wrong-draft": {
+    "source": "docs/demos/moulding-check/wrong-draft.kcad.ts",
+    "exitCode": 1,
+    "summary": "DFM: 1 parts, 0 clearance pairs, 0 wall clusters, 0 voids, moulding[shape] draft min 0.00° (8 faces < 1°), undercut 5534.6 mm², wall 2.000–3.06 mm, 0 sharp corner(s) — FAIL",
+    "diagnosticCounts": {
+      "dfm.moulding.undercut": 10,
+      "dfm.moulding.draft-insufficient": 8
+    },
+    "minDraftDeg": 0.0013504268317805438,
+    "underDraftedFaces": [
+      {
+        "face": "@kc[fillet_1/face/f15]",
+        "draftDeg": 0.0014
+      },
+      {
+        "face": "@kc[fillet_1/face/f20]",
+        "draftDeg": 0.4062
+      },
+      {
+        "face": "@kc[fillet_1/face/f17]",
+        "draftDeg": 0.4062
+      },
+      {
+        "face": "@kc[fillet_1/face/f16]",
+        "draftDeg": 0.4062
+      },
+      {
+        "face": "@kc[fillet_1/face/f13]",
+        "draftDeg": 0.4062
+      },
+      {
+        "face": "@kc[fillet_1/face/f14]",
+        "draftDeg": 0.5911
+      },
+      {
+        "face": "@kc[fillet_1/face/f18]",
+        "draftDeg": 0.5911
+      },
+      {
+        "face": "@kc[fillet_1/face/f19]",
+        "draftDeg": 0.5911
+      }
+    ],
+    "undercutAreaMm2": 5534.61,
+    "undercutFaces": 16,
+    "thinnestWallMm": 1.9999,
+    "thickestSectionMm": 3.0608,
+    "sharpCorners": 0,
+    "unmeasured": [],
+    "verdict": "fail",
+    "timingsMs": {
+      "mesh": 568,
+      "voids": 129,
+      "moulding": 1199,
+      "total": 1896
+    }
+  },
+  "enclosure": {
+    "source": "docs/demos/moulding-check/enclosure.kcad.ts",
+    "exitCode": 0,
+    "summary": "DFM: 1 parts, 0 clearance pairs, 0 wall clusters, 0 voids, moulding[shape] draft min 1.50° (0 faces < 1°), undercut 0.0 mm², wall 2.000–3.03 mm, 0 sharp corner(s) — PASS",
+    "diagnosticCounts": {},
+    "minDraftDeg": 1.4999999999999927,
+    "underDraftedFaces": [],
+    "undercutAreaMm2": 0,
+    "undercutFaces": 0,
+    "thinnestWallMm": 1.9999,
+    "thickestSectionMm": 3.0316,
+    "sharpCorners": 0,
+    "unmeasured": [],
+    "verdict": "pass",
+    "timingsMs": {
+      "mesh": 458,
+      "voids": 101,
+      "moulding": 532,
+      "total": 1091
+    }
+  }
+}

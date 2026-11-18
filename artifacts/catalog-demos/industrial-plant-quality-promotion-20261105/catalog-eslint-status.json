@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/industrial-plant/",
+  "status": "passed",
+  "exitCode": 0,
+  "output": ""
+}

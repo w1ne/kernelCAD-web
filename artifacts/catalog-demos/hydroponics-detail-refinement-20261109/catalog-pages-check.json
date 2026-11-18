@@ -1,0 +1,10 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-hydroponics-detail-refinement-20261109",
+  "kitPages": 52,
+  "assetsInIndex": 2402,
+  "pageAndPreviewPairs": 52,
+  "indexedPresetEntries": 206,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

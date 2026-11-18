@@ -1,0 +1,6 @@
+{
+  "sourceRevision": "c139f259735a6dc8945a40801ded3ee68248ce9d",
+  "command": "python scripts/checkCatalogQuality.py --root <archived-base>/catalog/kits",
+  "exitCode": 1,
+  "reportOnly": true
+}

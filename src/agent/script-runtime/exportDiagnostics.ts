@@ -7,6 +7,7 @@ import {
   type ThreeMfBedWarning,
   type ThreeMfMeshWarning,
 } from '../../kernel/backends/occt/export3mf';
+import type { MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader } from '../../kernel/export/gcode/gcodeHeaderParser';
 import {
@@ -43,6 +44,53 @@ export function stlNotWatertightDiagnostic(
     message: `${subject} is not watertight: ${counts} in ${report.clusters.length} crack cluster(s) at ${spots}.`,
     hint: HINT_TEMPLATES['export.mesh.not-watertight'].template,
     nextAction: NEXT_ACTIONS['export.mesh.not-watertight'],
+  };
+}
+
+export function meshToleranceInvalidDiagnostic(message: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'export.mesh.tolerance-invalid',
+    severity: 'error',
+    message,
+    hint: HINT_TEMPLATES['export.mesh.tolerance-invalid'].template,
+    nextAction: NEXT_ACTIONS['export.mesh.tolerance-invalid'],
+  };
+}
+
+export function meshToleranceUnavailableDiagnostic(targetId: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'export.mesh.tolerance-unavailable',
+    featureId: targetId,
+    severity: 'error',
+    message:
+      'A requested mesh tolerance needs an exact B-rep surface for remeshing and comparison; ' +
+      'this mesh-solid input has only triangles, so no STL/3MF/OBJ file was written.',
+    hint: HINT_TEMPLATES['export.mesh.tolerance-unavailable'].template,
+    nextAction: NEXT_ACTIONS['export.mesh.tolerance-unavailable'],
+  };
+}
+
+export function meshToleranceNotMetDiagnostic(
+  report: MeshDeviationReport,
+  targetId?: string,
+  partName?: string,
+): CompilerDiagnostic {
+  const part = partName === undefined ? 'The export' : `Part '${partName}'`;
+  return {
+    target: 'export-occt',
+    code: 'export.mesh.tolerance-not-met',
+    featureId: targetId,
+    severity: 'error',
+    message:
+      `${part}'s sampled B-rep-to-triangle maximum was ${report.measured_max_mm.toFixed(6)} mm ` +
+      `(p95 ${report.measured_p95_mm.toFixed(6)} mm across ${report.samples} samples; ` +
+      `${report.triangles} triangles), above the 1.05× threshold for the requested ` +
+      `${report.requested_mm} mm tolerance. The file was kept for inspection; ` +
+      'this sampled result is not a certified global maximum.',
+    hint: HINT_TEMPLATES['export.mesh.tolerance-not-met'].template,
+    nextAction: NEXT_ACTIONS['export.mesh.tolerance-not-met'],
   };
 }
 

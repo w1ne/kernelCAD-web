@@ -1,0 +1,16 @@
+Run from the repository root.
+
+python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/promote_apiary_quality.py
+# Render the 50 existing IDs; the exact command and IDs are in preview-render-invocation.txt.
+npx tsx scripts/renderCatalogPreviews.ts <50 apiary IDs>
+npx tsx scripts/buildAssetCatalog.ts
+python scripts/checkCatalogQuality.py --kit apiary
+python scripts/checkCatalogQuality.py --top 0
+npx eslint catalog/kits/apiary/
+npx vitest run tests/integration/catalog/
+npx tsx artifacts/catalog-demos/apiary-quality-promotion-20261105/render_apiary_presets.ts
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-apiary-catalog-pages
+python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/verify_apiary_quality_pages.py /tmp/kernelcad-apiary-catalog-pages
+python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/capture_apiary_quality.py
+python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/inspect_apiary_quality_video.py
+python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/audit_npm_package.py

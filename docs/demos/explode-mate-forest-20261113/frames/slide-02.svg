@@ -1,0 +1,45 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="1080" fill="#ffffff"/>
+  <text x="100" y="100" font-family="DejaVu Sans" font-size="52" font-weight="700" fill="#18212b">Result · mate-axis factor 1</text>
+  <text x="102" y="150" font-family="DejaVu Sans" font-size="26" font-weight="400" fill="#52606d">Offsets applied to the mated component; the standalone table and base stay still.</text>
+  <line x1="100" y1="988" x2="1820" y2="988" stroke="#d6dce1" stroke-width="2"/>
+  <text x="100" y="1032" font-family="DejaVu Sans" font-size="19" font-weight="400" fill="#52606d">Schematic from passing geometry regression · not a renderer capture · mechanism status unverified</text>
+  <text x="1788" y="1032" font-family="DejaVu Sans" font-size="19" font-weight="400" fill="#52606d">03</text>
+
+    <g>
+    <polygon points="240,780 292,728 592,728 540,780" fill="#cbd2d8" stroke="#394652" stroke-width="3"/>
+    <polygon points="540,780 592,728 592,860 540,912" fill="#727e87" stroke="#394652" stroke-width="3"/>
+    <rect x="240" y="780" width="300" height="132" fill="#98a4ad" stroke="#394652" stroke-width="3"/>
+    <text x="262" y="838" font-family="DejaVu Sans" font-size="32" font-weight="700" fill="#ffffff">table</text>
+    <text x="262" y="882" font-family="DejaVu Sans" font-size="22" font-weight="400" fill="#ffffff">offset [0, 0, 0] mm</text>
+  </g>
+    <g>
+    <polygon points="1090,780 1142,728 1442,728 1390,780" fill="#cbd2d8" stroke="#394652" stroke-width="3"/>
+    <polygon points="1390,780 1442,728 1442,860 1390,912" fill="#727e87" stroke="#394652" stroke-width="3"/>
+    <rect x="1090" y="780" width="300" height="132" fill="#98a4ad" stroke="#394652" stroke-width="3"/>
+    <text x="1112" y="838" font-family="DejaVu Sans" font-size="32" font-weight="700" fill="#ffffff">base</text>
+    <text x="1112" y="882" font-family="DejaVu Sans" font-size="22" font-weight="400" fill="#ffffff">offset [0, 0, 0] mm</text>
+  </g>
+    <g>
+    <polygon points="1090,516 1142,464 1442,464 1390,516" fill="#cbd2d8" stroke="#394652" stroke-width="3"/>
+    <polygon points="1390,516 1442,464 1442,596 1390,648" fill="#b96925" stroke="#394652" stroke-width="3"/>
+    <rect x="1090" y="516" width="300" height="132" fill="#e79846" stroke="#394652" stroke-width="3"/>
+    <text x="1112" y="574" font-family="DejaVu Sans" font-size="32" font-weight="700" fill="#ffffff">mid</text>
+    <text x="1112" y="618" font-family="DejaVu Sans" font-size="22" font-weight="400" fill="#ffffff">offset [0, 0, 10] mm</text>
+  </g>
+    <g>
+    <polygon points="1090,252 1142,200 1442,200 1390,252" fill="#cbd2d8" stroke="#394652" stroke-width="3"/>
+    <polygon points="1390,252 1442,200 1442,332 1390,384" fill="#344f69" stroke="#394652" stroke-width="3"/>
+    <rect x="1090" y="252" width="300" height="132" fill="#4b6d8c" stroke="#394652" stroke-width="3"/>
+    <text x="1112" y="310" font-family="DejaVu Sans" font-size="32" font-weight="700" fill="#ffffff">top</text>
+    <text x="1112" y="354" font-family="DejaVu Sans" font-size="22" font-weight="400" fill="#ffffff">offset [0, 0, 20] mm</text>
+  </g>
+    <g stroke="#2563a6" stroke-width="5" fill="none">
+  <line x1="930" y1="648" x2="930" y2="516"/>
+  <path d="M 918 534 L 930 516 L 942 534"/>
+</g><text x="952" y="582" font-family="DejaVu Sans" font-size="24" font-weight="700" fill="#2563a6">+10 mm Z</text>
+    <g stroke="#2563a6" stroke-width="5" fill="none">
+  <line x1="930" y1="516" x2="930" y2="252"/>
+  <path d="M 918 270 L 930 252 L 942 270"/>
+</g><text x="952" y="384" font-family="DejaVu Sans" font-size="24" font-weight="700" fill="#2563a6">+20 mm Z</text>
+  </svg>

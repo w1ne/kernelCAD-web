@@ -45,6 +45,47 @@ describe('exportSvgDrawing', () => {
     expect(svg).not.toContain('>30</text>');
     expect((svg.match(/class="dim"/g) ?? []).length).toBe(2);
     expect(svg).toContain('>1:2</text>');
+    const checked = renderSvgDrawing([part], { format: 'svg-drawing', sheet: 'a3', views: ['front'] });
+    expect(checked.report?.sheetPlacement).toEqual({
+      status: 'clear', checkedViews: ['front'], issues: [],
+    });
+    expect(checked.diagnostics.map(d => d.code)).not.toContain('drawing.view.placement');
+  });
+
+  it('repairs a clipped rendered annotation by growing A4 to A3, without touching geometry', () => {
+    const opts = { format: 'svg-drawing' as const, sheet: 'a4' as const,
+      autoAnnotate: false, titleBlock: {},
+      annotations: [{ kind: 'note' as const, id: 'inspection',
+        at: [0, 0, 12] as const,
+        text: 'INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH' }] };
+    const normal = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }], opts);
+    expect(normal.report?.renderedText?.issues.some(i => i.kind === 'text-outside-page')).toBe(true);
+    expect(decode(normal.bytes)).toContain('viewBox="0 0 297 210"');
+
+    const repaired = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }],
+      { ...opts, layoutRepair: true });
+    expect(repaired.report?.sheetRepair).toEqual({
+      applied: true, status: 'clear',
+      attempts: [
+        { sheet: 'a4', issueCount: 0, overlapped: 0, textIssueCount: 1 },
+        { sheet: 'a3', issueCount: 0, overlapped: 0, textIssueCount: 0 },
+      ],
+    });
+    expect(repaired.report?.renderedText?.issues).toEqual([]);
+    expect(repaired.report?.annotations[0]?.text).toBe(opts.annotations[0].text);
+    expect(decode(repaired.bytes)).toContain('viewBox="0 0 420 297"');
+    expect(repaired.diagnostics.map(d => d.code)).not.toContain('drawing.text.placement');
+  });
+
+  it('stops at the first non-improving page and never reports a false repair', () => {
+    const r = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }],
+      { format: 'svg-drawing', sheet: 'a4', titleBlock: {}, autoAnnotate: false,
+        layoutRepair: true, annotations: [{ kind: 'note', at: [0, 0, 12],
+          text: 'M'.repeat(90) }] });
+    expect(r.report?.sheetRepair?.applied).toBe(false);
+    expect(r.report?.sheetRepair?.attempts.map(a => a.sheet)).toEqual(['a4', 'a3']);
+    expect(r.report?.sheetRepair?.status).toBe('issues');
+    expect(r.report?.renderedText?.issues.some(i => i.kind === 'text-outside-page')).toBe(true);
   });
 
   it('rejects isometric overlays on a front-only sheet', () => {

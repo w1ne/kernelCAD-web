@@ -1,0 +1,19 @@
+{
+  "command": "npm pack --dry-run --ignore-scripts --json",
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "fileCount": 4406,
+  "indexedAssetsTotal": 2000,
+  "recyclingFacilitySources": 153,
+  "recyclingFacilitySourcesPacked": 153,
+  "recyclingFacilityPreviewsPacked": 153,
+  "catalogIndexPacked": true,
+  "packageExports": [
+    "./package.json"
+  ],
+  "productPaths": [],
+  "missing": [],
+  "wroteTarball": false,
+  "ranLifecycleScripts": false,
+  "passed": true
+}

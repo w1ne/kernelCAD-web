@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-archaeology-fieldwork-pages",
+  "kitPages": 50,
+  "assetsInIndex": 1641,
+  "pageAndPreviewPairs": 50,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

@@ -1,0 +1,10 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "status": "pass",
+  "exitCode": 0,
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "evidence": "checks/catalog-integration.log",
+  "durationSeconds": 241.1,
+  "groundingFixes": ["moldboard-plow", "portable-grain-conveyor"]
+}

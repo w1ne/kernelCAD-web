@@ -1,0 +1,12 @@
+{
+  "command": "npx tsx scripts/renderCatalogPreviews.ts",
+  "catalogAssets": 1743,
+  "rendererEntries": 1743,
+  "indexRowsWithPreview": 1743,
+  "previewFilesPresent": 1743,
+  "missingRenders": [],
+  "extraRenders": [],
+  "missingPreviewFiles": [],
+  "missingIndexPaths": [],
+  "passed": true
+}

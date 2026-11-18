@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-13",
+  "fixture": "300 x 20 x 10 mm steel beam on an actuated revolute joint",
+  "faultInjection": "RecomputeEngine.run returns no scene shape",
+  "captureInvocation": "node --import tsx docs/demos/static-hold-mass-unavailable/capture-demo.mjs",
+  "videoInvocation": "bash docs/demos/static-hold-mass-unavailable/render-demo.sh",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "durationSeconds": 10,
+    "renderer": "Pillow source slides + FFmpeg concat",
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "font": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+  },
+  "claims": [
+    "Local deterministic fault-injection replay",
+    "No physics simulation, deployment, or hardware acceptance claim"
+  ]
+}

@@ -138,12 +138,17 @@ export type FeatureKind =
   | 'extrude' | 'revolve' | 'loft' | 'sweep'
   // boolean
   | 'boolean'
+  // Keep intersection, A−B, and B−A as separate solids. Not a wasm bind:
+  // lowered with the existing Cut and Common history helpers.
+  | 'booleanSplit'
   // edge/face features (v0.2+)
   | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'moveFaces' | 'offsetFaces' | 'pattern'
   // symmetric (v0.13+)
   | 'mirror'
   // imports (v0.3+)
   | 'importedMesh' | 'importedStep' | 'importedBrep' | 'importedStl'
+  // Driven tooth spaces cut by discrete poses of the mating spur. Parked solid, not an import.
+  | 'spurGearCut'
   // sketch (v0.2+)
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)
@@ -180,6 +185,9 @@ export type FeatureKind =
   // Capture-only steady CFD study declaration (shape.cfdStudy), no OCCT
   // output. Report-only: run by run_cfd, never by evaluate.
   | 'cfdStudy'
+  // Capture-only rocket flight study (shape/arm.flightStudy), no OCCT output.
+  // Run by run_flight; minStabilityCal makes it an evaluate-time gate.
+  | 'flightStudy'
   // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
   // output. Read by the svg-drawing exporter.
   | 'drawingDatum'
@@ -210,6 +218,8 @@ export type FeatureKind =
   | 'surfaceSew'
   // Bent tube: corner points, one bend radius, round hollow section.
   | 'tube'
+  // Solid circular pipe along a polyline (lines + fillet arcs, no tubeSpec).
+  | 'pipe'
   // Capture-only bending and clearance rules for the tubes in the model.
   | 'tubeSpec'
   // S2: capture-only named requirement declaration, measured by the ledger.

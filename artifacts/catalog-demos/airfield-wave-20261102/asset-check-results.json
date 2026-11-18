@@ -1,0 +1,534 @@
+{
+  "kit": "airfield",
+  "assetCount": 40,
+  "catalogTotal": 795,
+  "knobs": [
+    "scale",
+    "color"
+  ],
+  "allMeshesPresent": true,
+  "allInsideTriangleBudget": true,
+  "allSingleMaterial": true,
+  "assets": [
+    {
+      "id": "aircraft-fuel-truck",
+      "title": "Aircraft fuel truck",
+      "source": "catalog/kits/airfield/aircraft-fuel-truck.kcad.ts",
+      "sourceSha256": "be70410af1697a036a371238d936345d4696f882988c2f8f74abe4a4ee1387f3",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 274,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "aircraft-hangar",
+      "title": "Aircraft hangar",
+      "source": "catalog/kits/airfield/aircraft-hangar.kcad.ts",
+      "sourceSha256": "d0ce1d7670871eddddad400588c69683f04eb119d24ed440a7ff8ad250276b2c",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "aircraft-maintenance-lift",
+      "title": "Aircraft maintenance lift",
+      "source": "catalog/kits/airfield/aircraft-maintenance-lift.kcad.ts",
+      "sourceSha256": "bff9f2f462b420e81777c9c0047f7906a1eb739290bf5f00d77a1c17b26385ac",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 292,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "aircraft-uld-container",
+      "title": "Aircraft ULD container",
+      "source": "catalog/kits/airfield/aircraft-uld-container.kcad.ts",
+      "sourceSha256": "cd02e20f2fb221749b308a0a8a17df1e682c4cb55a246e620f01644f6a7f73ab",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "aircraft-wheel-chocks",
+      "title": "Aircraft wheel chocks",
+      "source": "catalog/kits/airfield/aircraft-wheel-chocks.kcad.ts",
+      "sourceSha256": "c62e29498604ba1e6d257bd87048e8aa3ce71c7861c8001077680500b067b9ff",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "airport-control-tower",
+      "title": "Airport control tower",
+      "source": "catalog/kits/airfield/airport-control-tower.kcad.ts",
+      "sourceSha256": "7d9e19190201452732b0a008750ef2281df01a07de30890edeceef8bead0eb1d",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "airport-fire-engine",
+      "title": "Airport fire engine",
+      "source": "catalog/kits/airfield/airport-fire-engine.kcad.ts",
+      "sourceSha256": "831f1e31a98cc3f6e399cbb2512eb7f4780bac3ae900afdf531290c66a219091",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "amphibious-seaplane",
+      "title": "Amphibious seaplane",
+      "source": "catalog/kits/airfield/amphibious-seaplane.kcad.ts",
+      "sourceSha256": "b2877c54cfc61ede99ced8b5759effa1f0cd91ae7238886cbed425a6e523cae5",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 682,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "approach-lighting-array",
+      "title": "Approach lighting array",
+      "source": "catalog/kits/airfield/approach-lighting-array.kcad.ts",
+      "sourceSha256": "a9ce6b157d059ac1231c35a47739f5a5ce2dd1e8664da91fc8e0923de040f173",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 200,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "apron-shuttle-bus",
+      "title": "Apron shuttle bus",
+      "source": "catalog/kits/airfield/apron-shuttle-bus.kcad.ts",
+      "sourceSha256": "839946d3f28368e0212cfba0c3dc0e6903495628bde56b5d835104ccd1c5b749",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 300,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "baggage-cart-train",
+      "title": "Baggage cart train",
+      "source": "catalog/kits/airfield/baggage-cart-train.kcad.ts",
+      "sourceSha256": "1a4fb95da9217f971e1458c6ee35f2a99306e25bc3d5143b6649abbe87d14afc",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 360,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "baggage-tractor",
+      "title": "Baggage tractor",
+      "source": "catalog/kits/airfield/baggage-tractor.kcad.ts",
+      "sourceSha256": "59f108152e922e7eb0abde495f529ce49a2e4625f66b26f39c7b9ba97334af59",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "belt-loader",
+      "title": "Belt loader",
+      "source": "catalog/kits/airfield/belt-loader.kcad.ts",
+      "sourceSha256": "69cca90a1e1ebe4b441a966dc2d697120101692a6d4bb3e96afa70d993bb0a9f",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "biplane",
+      "title": "Biplane",
+      "source": "catalog/kits/airfield/biplane.kcad.ts",
+      "sourceSha256": "e76ebe9e0b936659c4ac4a2b7f75213dbfd72e9f497be7c3082bb9fbdda5b236",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 472,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "cargo-aircraft",
+      "title": "Cargo aircraft",
+      "source": "catalog/kits/airfield/cargo-aircraft.kcad.ts",
+      "sourceSha256": "eed6192a3a02bdfcce7ab0e7bf63c62663af11e3196ed1dd9605b54c061b27b7",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 458,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "catering-truck",
+      "title": "Catering truck",
+      "source": "catalog/kits/airfield/catering-truck.kcad.ts",
+      "sourceSha256": "85cc3f9c4ec889b218e08decaaded9c75a9d26f9e6b0c933dd22b3510c8ab31f",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "deicing-truck",
+      "title": "De-icing truck",
+      "source": "catalog/kits/airfield/deicing-truck.kcad.ts",
+      "sourceSha256": "90ba79ecfdd54167cc90cfae016a483de3d161b338668212f9c75dd9fd8da6bb",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "firefighting-helicopter",
+      "title": "Firefighting helicopter",
+      "source": "catalog/kits/airfield/firefighting-helicopter.kcad.ts",
+      "sourceSha256": "39273f0d4a0e6b30de6b2c2c8f50490cf60aefc71c84f75def7b2702b07427c9",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 398,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "high-wing-bush-plane",
+      "title": "High-wing bush plane",
+      "source": "catalog/kits/airfield/high-wing-bush-plane.kcad.ts",
+      "sourceSha256": "118b8553e57bf8e61649af34a49d476599fe4b20435288d207e6aa0900aeb345",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 476,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "lavatory-service-truck",
+      "title": "Lavatory service truck",
+      "source": "catalog/kits/airfield/lavatory-service-truck.kcad.ts",
+      "sourceSha256": "226d1306552ff4473f8a95d6b556e5dd1c8aaa3907413ed0cf54ba057205b8f6",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 288,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "narrowbody-airliner",
+      "title": "Narrowbody airliner",
+      "source": "catalog/kits/airfield/narrowbody-airliner.kcad.ts",
+      "sourceSha256": "b66eda93f419fb5cd07466b5a44281a9c020b350578669dbf70e7c04ca0dac54",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 340,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "passenger-boarding-stairs",
+      "title": "Passenger boarding stairs",
+      "source": "catalog/kits/airfield/passenger-boarding-stairs.kcad.ts",
+      "sourceSha256": "521381c8777c644c6a203a8f328857d8b540539c258ef2c421c35ac33fca4360",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "passenger-jet-bridge",
+      "title": "Passenger jet bridge",
+      "source": "catalog/kits/airfield/passenger-jet-bridge.kcad.ts",
+      "sourceSha256": "0536d9311d25668d565757517d0ba64d44b0aa6a8bf4b7a7f2042b260db55d25",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "precision-approach-indicator",
+      "title": "Precision approach indicator",
+      "source": "catalog/kits/airfield/precision-approach-indicator.kcad.ts",
+      "sourceSha256": "3bc86527e90bdce5902363f64976e0176b54add333b3ada6886657165c6b41b7",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "private-jet",
+      "title": "Private jet",
+      "source": "catalog/kits/airfield/private-jet.kcad.ts",
+      "sourceSha256": "12451c47dc1d06a4b298ab5a614e30f15a7ef7fe5b0efc69dd2d5ef12f82812a",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 340,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "pushback-tug",
+      "title": "Pushback tug",
+      "source": "catalog/kits/airfield/pushback-tug.kcad.ts",
+      "sourceSha256": "726d6d48872da8e09917373e920cb59405556d20d52e45d7230de0fb54601264",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "regional-jet",
+      "title": "Regional jet",
+      "source": "catalog/kits/airfield/regional-jet.kcad.ts",
+      "sourceSha256": "a58ba28c238c4d8f4f848fb058fc654f2a173a3b4700882cf8a10778a3da207f",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 340,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "rescue-helicopter",
+      "title": "Rescue helicopter",
+      "source": "catalog/kits/airfield/rescue-helicopter.kcad.ts",
+      "sourceSha256": "b825a7f191e9eb322aaf0114729d43cfbcb07380add0c26ed0648f8bf883de83",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 404,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "runway-edge-light",
+      "title": "Runway edge light",
+      "source": "catalog/kits/airfield/runway-edge-light.kcad.ts",
+      "sourceSha256": "c7a59fde13a2f7d257a9191f50f5a0bc4b7f544d4610ccea373ceeff6d79d75a",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 94,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "runway-sweeper",
+      "title": "Runway sweeper",
+      "source": "catalog/kits/airfield/runway-sweeper.kcad.ts",
+      "sourceSha256": "968053386cf4d0b8428af97a420a526719dc3d98df5b04b57442ddbb6b49ace3",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "runway-threshold-light-array",
+      "title": "Runway threshold light array",
+      "source": "catalog/kits/airfield/runway-threshold-light-array.kcad.ts",
+      "sourceSha256": "e24fa499d2cb3a4d13585cb5bb0624edad619708e3fddebae424c1bd66c31c97",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 804,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "sailplane",
+      "title": "Sailplane",
+      "source": "catalog/kits/airfield/sailplane.kcad.ts",
+      "sourceSha256": "f5f0c49cb4a33f8e0705270e3cc152b995fb658d75caae16c533a859aaa304f3",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "single-engine-trainer",
+      "title": "Single-engine trainer",
+      "source": "catalog/kits/airfield/single-engine-trainer.kcad.ts",
+      "sourceSha256": "091ad47e0b7ed9a2d18ab8c8dc7cc9489e319c59b706565e817540e1b9ea21fb",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 450,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "taxiway-guidance-sign",
+      "title": "Taxiway guidance sign",
+      "source": "catalog/kits/airfield/taxiway-guidance-sign.kcad.ts",
+      "sourceSha256": "54c9f3f2a1d5993840cb1d550344fe3638afcbfd66e3261adb9ba3acec21ff97",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "terminal-gate-front",
+      "title": "Terminal gate front",
+      "source": "catalog/kits/airfield/terminal-gate-front.kcad.ts",
+      "sourceSha256": "05c352245b0d244268cb4d20e710d4ac89a2a714e07a40e1c4b451ce2d041ff1",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "twin-engine-trainer",
+      "title": "Twin-engine trainer",
+      "source": "catalog/kits/airfield/twin-engine-trainer.kcad.ts",
+      "sourceSha256": "c65234e8c30016819a701836ba96f0db21d27616ca704fa0023bc53fbd123428",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 574,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "ultralight-trike",
+      "title": "Ultralight trike",
+      "source": "catalog/kits/airfield/ultralight-trike.kcad.ts",
+      "sourceSha256": "cd0cdf1a08ce5c71cde80f908af6e3c4073482bcbb471ffc1ca639bf8f3082f2",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 476,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "utility-helicopter",
+      "title": "Utility helicopter",
+      "source": "catalog/kits/airfield/utility-helicopter.kcad.ts",
+      "sourceSha256": "f6e17eaa181d044717bb33be14aebabb7c7e3227890e4d3c0af0285e70639881",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 310,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "widebody-airliner",
+      "title": "Widebody airliner",
+      "source": "catalog/kits/airfield/widebody-airliner.kcad.ts",
+      "sourceSha256": "309d4ff7d541321d3911954c45464685e30f53746bc8d293bd53b9a0f58715b5",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 402,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    },
+    {
+      "id": "windsock-mast",
+      "title": "Windsock mast",
+      "source": "catalog/kits/airfield/windsock-mast.kcad.ts",
+      "sourceSha256": "360e37fc7f0fad3ab1f9b2d426bfe1d233fc2df8e04aad19846f43e9c910ce04",
+      "params": [
+        "scale",
+        "color"
+      ],
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "materialCount": 1
+    }
+  ]
+}

@@ -181,6 +181,20 @@ describe('STL round-trip (lib.fromSTL)', () => {
     }
   }, 60_000);
 
+  it('imports several closed shells in one file as solids, not as an open shell', async () => {
+    // A robot exported part by part (two shells of a trunk, a bracket and its bearing) is one
+    // STL holding several closed meshes. Each is watertight; the file used to be reported as
+    // an open shell because the bodies were returned as a compound of shells, never promoted.
+    const a = makeBox();
+    const b = new OcctBackend(replicad.makeBaseBox(10, 20, 30).translate([50, 0, 0]) as replicad.Shape3D);
+    const bytes = await a.union(b).exportSTLAsync();
+    expect(countStlTriangles(bytes).count).toBe(24);
+
+    const res = importStlBytes(bytes);
+    expect(res.isSolid).toBe(true);
+    expect(res.backend.volume()).toBeCloseTo(12000, 6);
+  }, 60_000);
+
   it('is honest about faceting: a cylinder loses volume to chord error', async () => {
     // r=10, h=20 -> exact volume 2000*pi ~= 6283.185
     const cyl = new OcctBackend(replicad.makeCylinder(10, 20) as replicad.Shape3D);

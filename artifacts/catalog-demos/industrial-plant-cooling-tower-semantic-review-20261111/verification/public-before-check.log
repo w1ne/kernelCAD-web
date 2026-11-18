@@ -1,0 +1,18 @@
+Checked before changing the asset; this PR branch is not deployed.
+
+Command:
+  curl -fL --max-time 20 -o /tmp/kernelcad-live-cooling-tower.png \
+    https://kernelcad.com/assets/industrial-plant-evaporative-cooling-tower.png
+Result: HTTP 200, 31552 bytes.
+Public SHA-256: f57ae57c4d05d94962d086429da76f4a7afa48b591d91b169798aff514335a30
+Local pre-edit preview SHA-256: f57ae57c4d05d94962d086429da76f4a7afa48b591d91b169798aff514335a30
+
+Command:
+  curl -fL --max-time 20 -o /tmp/kernelcad-live-cooling-tower.kcad.ts \
+    https://kernelcad.com/assets/industrial-plant-evaporative-cooling-tower.kcad.ts
+Result: HTTP 200, 2976 bytes.
+Public SHA-256: 1bd413dfdaf64d7c522cfe270f4602b8afc8836dd797cc68bda083f2639995e9
+Local pre-edit source SHA-256: 1bd413dfdaf64d7c522cfe270f4602b8afc8836dd797cc68bda083f2639995e9
+
+The URL check confirms that the live asset had the same source and preview as
+the branch before the correction. It is not a post-deployment verification.

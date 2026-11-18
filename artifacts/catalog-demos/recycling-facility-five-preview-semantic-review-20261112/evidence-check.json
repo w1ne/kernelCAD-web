@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "fiveSamplesRecorded": true,
+    "allSourceHashesMatchIndex": true,
+    "allBranchPreviewsRetained": true,
+    "liveBaselinesRetained": true,
+    "pr1258OpenAndClean": true,
+    "prReportedChecksSuccess": true,
+    "reviewVideoInspected": true
+  },
+  "conclusion": "No asset or index changed; no catalog tests were run because no implementation was made.",
+  "allChecksPass": true
+}

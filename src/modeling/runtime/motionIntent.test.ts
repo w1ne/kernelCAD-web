@@ -41,7 +41,7 @@ function build(shoulder: Joint, opts: { animate?: boolean; drive?: boolean } = {
 }
 
 describe('checkMotionIntent', () => {
-  it('fails an animated param that turns a fastened part through its geometry', () => {
+  it('fails an animated param that rotates a fastened part through its geometry', () => {
     const arm = build('geometry');
     const diags = checkMotionIntent(arm);
     expect(diags).toHaveLength(1);
@@ -73,17 +73,38 @@ describe('checkMotionIntent', () => {
     expect(hasMotionIntent(arm)).toBe(false);
   });
 
-  it('ignores a layout animation that slides fastened parts by a spacing param', () => {
+  it('fails when an animation translates fastened geometry with an animated spacing param', () => {
     const session = new CaptureSession();
     const k = createModelingApi({ session });
     const gap = k.param('gapMm', 5, { min: 0, max: 20 });
     const arm = k.assembly('rack');
     const a = arm.part('a', k.box(20, 20, 5));
-    const b = arm.part('b', k.box(20, 20, 5).translate(gap.add(20), 0, 0));
+    const b = arm.part('b', k.box(20, 20, 5).translate(0, 0, gap));
     a.connector('side', { type: 'frame', origin: { kind: 'vec3', value: [20, 10, 0] } });
     b.connector('side', { type: 'frame', origin: { kind: 'vec3', value: [25, 10, 0] } });
     arm.mate('rack-mount', 'a.side', 'b.side', 'fastened');
     k.animationView({ param: 'gapMm', from: 0, to: 20, durationMs: 1000 });
+    const diags = checkMotionIntent(arm);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]).toMatchObject({
+      code: MOTION_ON_FIXED_JOINT,
+      mateName: 'rack-mount',
+      partName: 'b',
+      paramName: 'gapMm',
+    });
+  });
+
+  it('ignores an animated track param that is unused by fastened geometry', () => {
+    const session = new CaptureSession();
+    const k = createModelingApi({ session });
+    k.param('unusedMm', 0, { min: 0, max: 20 });
+    const arm = k.assembly('rack');
+    const a = arm.part('a', k.box(20, 20, 5));
+    const b = arm.part('b', k.box(20, 20, 5).translate(20, 0, 0));
+    a.connector('side', { type: 'frame', origin: { kind: 'vec3', value: [20, 10, 0] } });
+    b.connector('side', { type: 'frame', origin: { kind: 'vec3', value: [20, 10, 0] } });
+    arm.mate('rack-mount', 'a.side', 'b.side', 'fastened');
+    k.animationView({ param: 'unusedMm', from: 0, to: 20, durationMs: 1000 });
     expect(checkMotionIntent(arm)).toEqual([]);
   });
 

@@ -5,6 +5,27 @@ import { sharedSelectionItemSchema, sharedSelectionSchema, selectionResultSchema
 
 const targetSchema = z.object({ studio_url: z.string().url(), session: z.string().min(1) });
 
+/** Studio's selection wire stays camelCase. MCP args are snake_case, and the
+ *  alias fold may attach both spellings; `.strict()` rejects the extras. */
+function pick(raw: Record<string, unknown>, snake: string, camel: string): unknown {
+  return raw[snake] !== undefined ? raw[snake] : raw[camel];
+}
+
+function studioSelection(raw: unknown): unknown {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const item = raw as Record<string, unknown>;
+  const stable = pick(item, 'stable_id', 'stableId');
+  const out: Record<string, unknown> = {
+    shapeIndex: pick(item, 'shape_index', 'shapeIndex'),
+    kind: item.kind,
+    id: item.id,
+    featureId: pick(item, 'feature_id', 'featureId'),
+  };
+  if (stable !== undefined) out.stableId = stable;
+  if (item.ref !== undefined) out.ref = item.ref;
+  return out;
+}
+
 export async function sharedSelectionTool(method: 'GET' | 'POST', input: Record<string, unknown>) {
   try {
     return await sendSelection(method, input);
@@ -16,9 +37,13 @@ export async function sharedSelectionTool(method: 'GET' | 'POST', input: Record<
 async function sendSelection(method: 'GET' | 'POST', input: Record<string, unknown>) {
   const target = targetSchema.parse(input);
   const base = localStudioUrl(target.studio_url);
-  const selection = method === 'POST' ? sharedSelectionSchema.parse(input.selection) : undefined;
+  const selection = method === 'POST' ? sharedSelectionSchema.parse(studioSelection(input.selection)) : undefined;
   const selections = method === 'POST'
-    ? (input.selections === undefined ? undefined : z.array(sharedSelectionItemSchema.unwrap()).parse(input.selections))
+    ? (input.selections === undefined
+      ? undefined
+      : z.array(sharedSelectionItemSchema.unwrap()).parse(
+        Array.isArray(input.selections) ? input.selections.map(studioSelection) : input.selections,
+      ))
     : undefined;
   const model_generation = method === 'POST' ? z.number().int().nonnegative().parse(input.model_generation) : undefined;
   return postSelection(base, target.session, method, selection, selections, model_generation, null);

@@ -47,6 +47,12 @@ export interface StandardParts {
     lengthMm: number;
     detail?: FastenerDetail;
   }): Promise<Shape>;
+  /** ISO 4014 partial-thread hexagon head bolt. Lengths below the standard's minimum are ISO 4017 (`boltHex`). */
+  boltHexPartial(args: {
+    thread: 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: number;
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
   setScrew(args: {
     thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
     lengthMm: number;
@@ -100,6 +106,8 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
       placePart(ctx, { family: 'flat-head-countersunk', thread, lengthMm, detail }),
     boltHex: ({ thread, lengthMm, detail }) =>
       placePart(ctx, { family: 'hex-head-bolt', thread, lengthMm, detail }),
+    boltHexPartial: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'hex-head-bolt-partial', thread, lengthMm, detail }),
     setScrew: ({ thread, lengthMm, detail }) =>
       placePart(ctx, { family: 'set-screw', thread, lengthMm, detail }),
     rodThreaded: ({ thread, lengthMm, detail }) =>

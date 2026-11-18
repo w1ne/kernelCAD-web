@@ -139,4 +139,54 @@ describe('solvedAssembly lowerer — mate-FK integration (v0.6 T17)', () => {
     expect(bb.max[1]).toBeGreaterThan(15);
     expect(bb.max[0]).toBeLessThan(6);
   });
+
+  it('expands a chained coupling declared before its source coupling', async () => {
+    // grip -> idler -> curl, with the curl coupling written first. The finger
+    // must follow the idler's derived 90 deg, not the idler's default 0 deg.
+    const { shape, diagnostics } = await lowerScript(`
+      const arm = assembly('coupled-chain-render');
+      const parent = arm.part('parent', box(4, 4, 4, true));
+      parent
+        .connector('driver', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+        .connector('idler', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      const driver = arm.part('driver', cylinder(2, 2));
+      driver.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      const idler = arm.part('idler', cylinder(2, 2));
+      idler.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      const finger = arm.part('finger', box(20, 4, 4, false));
+      finger.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('grip', 'parent.driver', 'driver.axis', 'revolute', { pose: 90 });
+      arm.mate('spin', 'parent.idler', 'idler.axis', 'revolute');
+      arm.mate('curl', 'parent.hinge', 'finger.hinge', 'revolute');
+      arm.coupleMates('curl', { source: 'spin', ratio: 1 });
+      arm.coupleMates('spin', { source: 'grip', ratio: 1 });
+      return (await arm.solvedModel({}, { validate: 'off' })).toCompound();
+    `);
+
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const bb = shape!.boundingBox();
+    expect(bb.max[1]).toBeGreaterThan(15);
+    expect(bb.max[0]).toBeLessThan(6);
+  });
+
+  it('places a mated pair that does not reach the first declared part', async () => {
+    // `stand` is declared first and has no mates, so the solver grounds it.
+    // The hinge pair is its own mate component; its child must still land on
+    // the parent connector (Z max 7.5), not stay at the local origin (Z max 5).
+    const { shape, diagnostics } = await lowerScript(`
+      const arm = assembly('mate-fk-forest');
+      arm.part('stand', box(2, 2, 2, true).translate(0, 0, -50));
+      const parent = arm.part('parent', box(10, 10, 10, true));
+      parent.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 5] }, axis: [0, 0, 1] });
+      const child = arm.part('child', box(5, 5, 5, true));
+      child.connector('in', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('hinge', 'parent.out', 'child.in', 'revolute', { pose: 0 });
+      return (await arm.solvedModel({}, { validate: 'off' })).toCompound();
+    `);
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const bb = shape!.boundingBox();
+    expect(bb.max[2]).toBeCloseTo(7.5, 3);
+    expect(bb.min[2]).toBeCloseTo(-51, 3);
+  });
 });

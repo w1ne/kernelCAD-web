@@ -134,6 +134,59 @@ describe('renderHuman — human-readable validate output', () => {
     expect(exitCode).toBe(2);
   }, 120_000);
 
+  it('counts only error-severity entries as failures and labels the rest by severity', async () => {
+    vi.mocked(checkMechanismTruth).mockResolvedValue({
+      mechanism: 'broken',
+      failures: [
+        {
+          target: 'export-occt',
+          code: 'mechanism.drops-on-release',
+          severity: 'info',
+          message: "Mate 'curl' swung 50.0° under gravity; informational, not a defect.",
+          hint: 'No action.',
+        },
+        {
+          target: 'export-occt',
+          code: 'mechanism.unverified-budget-exceeded',
+          severity: 'warn',
+          message: 'The pose sweep was skipped.',
+          hint: 'Reduce the sweep.',
+        },
+        {
+          target: 'export-occt',
+          code: 'mechanism.test-broken',
+          severity: 'error',
+          message: 'Mate limits disagree.',
+          hint: 'Re-author the mate.',
+        },
+      ],
+    });
+    const file = fixture('broken-with-notes.kcad.ts', TWO_BOX_FLOATING);
+    const { lines, exitCode } = await renderCli({
+      file,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      includePhysics: false,
+    });
+    expect(lines.slice(0, 11)).toMatchInlineSnapshot(`
+      [
+        "MECHANISM BROKEN — this assembly will not work as built (1 failure)",
+        "  [ERROR] mechanism.test-broken",
+        "         Mate limits disagree.",
+        "         hint: Re-author the mate.",
+        "  [NOTE] mechanism.drops-on-release",
+        "         Mate 'curl' swung 50.0° under gravity; informational, not a defect.",
+        "         hint: No action.",
+        "  [WARN] mechanism.unverified-budget-exceeded",
+        "         The pose sweep was skipped.",
+        "         hint: Reduce the sweep.",
+        "",
+      ]
+    `);
+    expect(exitCode).toBe(2);
+  }, 120_000);
+
   it('renders physical plausibility diagnostics after the validator diagnostics', async () => {
     vi.mocked(reviewMechanicalPlausibility).mockResolvedValue({
       diagnostics: [{

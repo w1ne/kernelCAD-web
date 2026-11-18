@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: skip-body should be headframe steel: expected false to be true // Object.is equality
+ Test Files  1 failed (1)
+      Tests  1 failed (1)

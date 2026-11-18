@@ -1,0 +1,25 @@
+{
+  "programs": [],
+  "streams": [
+    {
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720,
+      "nb_frames": "540"
+    }
+  ],
+  "format": {
+    "duration": "18.000000",
+    "size": "292553"
+  },
+  "video": "data-center-infrastructure-quality-promotion.mp4",
+  "sampleSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5,
+    16.5
+  ],
+  "decodedFrames": 6
+}

@@ -1,0 +1,15 @@
+{
+  "sourceFilesScanned": 72,
+  "sourceFindings": [],
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "packageExportsUnchanged": true,
+  "packedFileCount": 4753,
+  "packedCodeAndWorkflowPathsScanned": 75,
+  "scopeNote": "Physical retail checkout fixtures in generic catalog kits are reusable scene assets; packed code/workflow paths are checked for product implementation details.",
+  "packedCommercialPathFindings": [],
+  "fireStationKitFilesInPack": 141,
+  "expectedFireStationKitFilesInPack": 141,
+  "failures": []
+}

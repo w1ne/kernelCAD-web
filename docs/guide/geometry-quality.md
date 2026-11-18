@@ -65,6 +65,49 @@ symmetry tolerance. Local geometry checks do not certify manufacturing,
 structural loads or hardware acceptance. This opt-in check does not replace
 script-declared DFM gates.
 
+## Runs automatically on export
+
+Exports to STL, STEP, 3MF, OBJ, PLY and G-code run the tiny-face and
+short-edge half of this check on every solid body before the file is written.
+Each assembly part is checked on its own. The export gate skips the symmetry
+sampling and does no meshing. It uses the defaults above (0.01 mm² and 0.1 mm),
+and `tiny_face_area_mm2` / `short_edge_length_mm` on the export call override
+them.
+
+```json
+{ "target": "model", "file": "bracket.kcad.ts", "format": "step",
+  "output_path": "out/bracket.step", "qualityGate": "warn" }
+```
+
+- `qualityGate: "warn"` (default): the file is written. The result carries
+  `geometryQuality { ok, tinyFaces, shortEdges, worst, thresholds, parts }`.
+  `worst` lists up to five findings, smallest relative to their threshold
+  first, each with its part, BREP id, world-frame location and size. The
+  result also carries warn diagnostics `export.geometry-quality.tiny-faces`
+  and `export.geometry-quality.short-edges`.
+- `qualityGate: "block"`: the same findings are errors. The export returns
+  `ok: false` and writes no file.
+- `qualityGate: "off"`: the gate does not run.
+
+`target: "part"` per-part STL exports take the same keys. On the CLI, use
+`kernelcad export step part.kcad.ts -o part.step --quality-gate block`, with
+`--tiny-face-area-mm2` and `--short-edge-length-mm` for the thresholds.
+
+Some bodies are skipped, each with an info diagnostic
+`export.geometry-quality.skipped`. Shells, faces and mixed compounds are
+skipped, and so are mesh (lattice) bodies. A multi-solid compound is checked
+one solid at a time. Bodies that would take the run past a 10,000-face budget
+are also skipped, so a very large assembly is screened up to that budget.
+Instanced parts that share one shape are measured once. Face areas come from
+an adaptive integration with 0.1% relative error. Faces within 1% of the
+threshold are re-measured exactly, so the tiny or not-tiny verdict matches the
+`verify` check. On the gallery turbojet assembly (42 bodies, 2,122 faces) the
+gate adds about 0.9 s to a 37 s STEP export. Drawings, DXF, BOMs, robot
+descriptions, GLB and USD are not gated.
+
 Focused synthetic geometry tests cover tiny steps, short edges, symmetric and
 asymmetric brackets, rotated bodies and sphere pole edges in
-`src/agent/mcp/tools/checkGeometryQuality.test.ts`.
+`src/agent/mcp/tools/checkGeometryQuality.test.ts`. The export gate's warn,
+block and off modes, assembly parts, skips and budget are covered in
+`tests/integration/export/qualityGate.test.ts`. A video of the gate is in
+`docs/demos/export-quality-gate/`.

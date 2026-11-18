@@ -1,0 +1,9 @@
+{
+  "checkedAtUtc": "2026-11-03T10:59:05.011438+00:00",
+  "urls": {
+    "homepage": 200,
+    "catalog": 404
+  },
+  "homepageStatus": 200,
+  "catalogStatus": 404
+}

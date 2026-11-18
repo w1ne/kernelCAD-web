@@ -21,6 +21,7 @@ import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
 import {
+  accurateVolumeOf,
   combinedDiagonal,
   isValidShape,
   isTopologicallyValid,
@@ -430,7 +431,26 @@ export function fuseLostMaterial(
   let resultVolume = 0;
   for (const solid of solidsOf(oc, resultShape)) resultVolume += solidVolume(oc, solid);
   if (!Number.isFinite(resultVolume)) return undefined;
-  return resultVolume < largestSolid - Math.max(1e-6, largestSolid * 1e-4) ? { resultVolume, largestSolid } : undefined;
+  if (!(resultVolume < largestSolid - lossTolerance(largestSolid))) return undefined;
+  // The cached volumes are fixed-order integrals, which can be several
+  // percent off on lofted B-spline solids. A shortfall that size flagged
+  // sound unions of overlapping lofts (the e46-sedan example body) and
+  // the fuzzy "recovery" then replaced them with degenerate solids. Confirm
+  // with adaptive integration before calling the fuse lossy.
+  let accurateLargest = 0;
+  for (const input of inputs) {
+    for (const solid of solidsOf(oc, input)) accurateLargest = Math.max(accurateLargest, accurateVolumeOf(oc, solid));
+  }
+  let accurateResult = 0;
+  for (const solid of solidsOf(oc, resultShape)) accurateResult += accurateVolumeOf(oc, solid);
+  if (!Number.isFinite(accurateLargest) || !Number.isFinite(accurateResult)) return undefined;
+  return accurateResult < accurateLargest - lossTolerance(accurateLargest)
+    ? { resultVolume: accurateResult, largestSolid: accurateLargest }
+    : undefined;
+}
+
+function lossTolerance(largestSolid: number): number {
+  return Math.max(1e-6, largestSolid * 1e-4);
 }
 
 /**

@@ -1,0 +1,31 @@
+{
+  "kit": "space-exploration",
+  "assetsPromoted": 52,
+  "assetsAdded": 0,
+  "idsChanged": false,
+  "materialControlsTotal": 121,
+  "materialKnobsMin": 2,
+  "materialKnobsMax": 4,
+  "materialKnobDistribution": {
+    "2": 37,
+    "3": 13,
+    "4": 2
+  },
+  "presetsPerAsset": [
+    2
+  ],
+  "presetsAdded": 104,
+  "previewsRendered": 52,
+  "indexedRowsWithPreview": 52,
+  "catalogAssets": 2390,
+  "catalogQualityPassed": 1504,
+  "catalogQualityPercent": 62.93,
+  "thinAssets": 886,
+  "thinPercent": 37.07,
+  "kitQualityGate": "PASS 52/52",
+  "eslint": "PASS",
+  "integration": "PASS 4 files / 15 tests",
+  "indexBuild": "PASS; wrote catalog/index.json",
+  "localPages": "PASS 52 pages / 52 preview pairs",
+  "publicSite": "not deployed; pre-deployment baseline recorded"
+}

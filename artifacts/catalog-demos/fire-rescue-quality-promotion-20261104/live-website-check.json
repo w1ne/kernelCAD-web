@@ -1,0 +1,17 @@
+{
+  "url": "https://kernelcad.com/",
+  "assetsUrl": "https://kernelcad.com/assets.json",
+  "checkedDate": "2026-11-04",
+  "httpStatusHomepage": 200,
+  "httpStatusAssets": 200,
+  "assetsGeneratedAt": "2026-11-04T21:55:56.241Z",
+  "assetCount": 2116,
+  "previewBackedCount": 2116,
+  "fireRescueEntries": 60,
+  "fireRescuePresetEntries": 0,
+  "catalogRoute": {
+    "path": "/catalog/",
+    "httpStatus": 404
+  },
+  "note": "Live baseline before the current local fire-rescue source promotion; branch deployment not performed."
+}

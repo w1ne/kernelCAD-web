@@ -6,7 +6,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | obj | ply | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
+// Format enum: stl | step | dxf | 3mf | glb | asset-pack | obj | ply | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
 // the written paths are reported in `mesh_files`. A multi-part DXF export
@@ -23,6 +23,9 @@ import {
   type ExportFormat,
   type ExportOptions,
   type ExportResult,
+  type ExportGeometryQualitySummary,
+  type QualityGateMode,
+  type ExportQualityGateInput,
 } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -30,7 +33,12 @@ import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import type { MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
+
+type ModelExportOptions<T = ExportOptions> = T extends ExportOptions
+  ? Omit<T, 'format'> & { format?: T['format'] }
+  : never;
 
 export interface ExportModelInput {
   file?: string;
@@ -38,10 +46,16 @@ export interface ExportModelInput {
   output_path: string;
   format: ExportFormat;
   feature_id?: string;
-  /** Per-format options bag; discriminator `options.format` must match `format`. */
-  options?: ExportOptions;
+  /** Per-format options. An optional discriminator must match the outer format. */
+  options?: ModelExportOptions;
   /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
+  /** Geometry-quality gate for stl/step/3mf/obj/ply/gcode: 'warn' (default), 'block' or 'off'. */
+  qualityGate?: QualityGateMode;
+  /** Gate threshold override: faces below this BREP area (mm²) are tiny. Default 0.01. */
+  tiny_face_area_mm2?: number;
+  /** Gate threshold override: edges below this length (mm) are short. Default 0.1. */
+  short_edge_length_mm?: number;
 }
 
 export interface ExportModelOutput {
@@ -71,6 +85,10 @@ export interface ExportModelOutput {
   sheet?: { thickness_mm: number; bend_count: number };
   /** Slicer predictions and generator identity from the retained G-code header. */
   gcode_stats?: GcodeStats;
+  /** Export-time tiny-face / short-edge screen (gated formats, qualityGate not 'off'). */
+  geometryQuality?: ExportGeometryQualitySummary;
+  /** Sampled one-sided B-rep surface distance to the triangles in the exported mesh file. */
+  mesh_deviation?: MeshDeviationReport;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -145,12 +163,29 @@ function exportMetadataFields(
   format: ExportFormat,
   result: ExportResult,
   hasErrors: boolean,
-): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats'> {
+): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats' | 'mesh_deviation'> {
   return {
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
     ...(format === 'gcode' && !hasErrors && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+    ...(result.mesh_deviation === undefined ? {} : { mesh_deviation: result.mesh_deviation }),
   };
+}
+
+/** Gate settings from the tool's top-level keys (shared with target:'part'). */
+export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | 'tiny_face_area_mm2' | 'short_edge_length_mm'>): ExportQualityGateInput {
+  return {
+    ...(input.qualityGate === undefined ? {} : { mode: input.qualityGate }),
+    ...(input.tiny_face_area_mm2 === undefined ? {} : { tiny_face_area_mm2: input.tiny_face_area_mm2 }),
+    ...(input.short_edge_length_mm === undefined ? {} : { short_edge_length_mm: input.short_edge_length_mm }),
+  };
+}
+
+function modelExportOptions({ format, options, no_verify }: ExportModelInput): ExportOptions | undefined {
+  // The runtime owns the format mismatch diagnostic for an explicit discriminator.
+  const skipVerification = (format === 'stl' || format === 'step') && no_verify;
+  if (!options && !skipVerification) return undefined;
+  return { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions;
 }
 
 /**
@@ -171,7 +206,7 @@ function exportMetadataFields(
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
-  const { output_path, format, feature_id, options } = input;
+  const { output_path, format, feature_id } = input;
 
   const inputError = validateExportModelInput(input);
   if (inputError !== undefined) {
@@ -183,12 +218,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
-  // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
-  // options bag (the runtime gate is default-on for both formats).
-  let effectiveOptions: ExportOptions | undefined = (format === 'stl' || format === 'step') && input.no_verify
-    ? { ...(options ?? {}), format, verify: false } as ExportOptions
-    : options;
-  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
+  const effectiveOptions = withInfillOutDir(format, modelExportOptions(input), output_path);
 
   let result;
   let sceneSummary = unavailableSceneSummary();
@@ -201,6 +231,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
       feature_id,
       options: effectiveOptions,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
+      qualityGate: qualityGateInput(input),
     });
   } catch (e) {
     return {
@@ -214,12 +245,14 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   // failing the call, same contract as export_part. Other fatal paths
   // return empty bytes and fail without writing.
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   if (errorDiagnostics.length > 0 && result.bytes.length === 0) {
     return {
       ok: false, sceneSummary,
       diagnostics: withNextActions(result.diagnostics),
       feature_count: result.featureCount,
       format,
+      ...geometryQuality,
     };
   }
 
@@ -236,7 +269,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   const diagnostics = [...result.diagnostics];
-  const infill = await infillOutput(result.infillReport, options, diagnostics);
+  const infill = await infillOutput(result.infillReport, input.options, diagnostics);
 
   return {
     ok: errorDiagnostics.length === 0,
@@ -248,6 +281,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     ...companionFilesField(format, meshFiles),
     ...exportMetadataFields(format, result, errorDiagnostics.length > 0),
     ...infill,
+    ...geometryQuality,
     diagnostics: withNextActions(diagnostics),
   };
 }

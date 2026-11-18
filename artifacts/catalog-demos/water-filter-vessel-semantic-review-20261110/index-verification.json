@@ -1,0 +1,15 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/verify_asset_index.py",
+  "assetCount": 2402,
+  "sourceShaMismatches": [],
+  "missingPreviewRows": [],
+  "missingPreviewFiles": [],
+  "changedAsset": {
+    "id": "water-treatment/pressure-sand-filter-vessel",
+    "sourceSha256": "02b3cb990cc48ba2d62fac729a42d26190f53be998a1ee0b4075025aeb9c7f8d",
+    "preview": "/assets/water-treatment-pressure-sand-filter-vessel.png",
+    "triangles": 696,
+    "triangleBudget": 2200
+  },
+  "pass": true
+}

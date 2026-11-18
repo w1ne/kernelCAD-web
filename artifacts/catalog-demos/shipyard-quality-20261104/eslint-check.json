@@ -1,0 +1,7 @@
+{
+  "command": "npx eslint catalog/kits/shipyard/",
+  "sources": 70,
+  "exitCode": 0,
+  "findings": 0,
+  "passed": true
+}

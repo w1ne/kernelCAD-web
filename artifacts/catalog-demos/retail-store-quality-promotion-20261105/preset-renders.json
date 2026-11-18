@@ -1,0 +1,69 @@
+{
+  "targets": [
+    "checkout-counter",
+    "shopping-cart",
+    "upright-drink-cooler"
+  ],
+  "results": [
+    {
+      "asset": "checkout-counter",
+      "preset": "cleanStore",
+      "triangles": 188,
+      "colors": {
+        "powderCoat": "#e5ebed",
+        "laminate": "#d5c3a5",
+        "glass": "#9ccfd6"
+      }
+    },
+    {
+      "asset": "checkout-counter",
+      "preset": "nightRestock",
+      "triangles": 188,
+      "colors": {
+        "powderCoat": "#354750",
+        "laminate": "#685744",
+        "glass": "#3e6677"
+      }
+    },
+    {
+      "asset": "shopping-cart",
+      "preset": "cleanStore",
+      "triangles": 908,
+      "colors": {
+        "stainless": "#bfc8cb",
+        "polypropylene": "#d6e0d5",
+        "rubber": "#40474b"
+      }
+    },
+    {
+      "asset": "shopping-cart",
+      "preset": "nightRestock",
+      "triangles": 908,
+      "colors": {
+        "stainless": "#66747a",
+        "polypropylene": "#45614e",
+        "rubber": "#262b2e"
+      }
+    },
+    {
+      "asset": "upright-drink-cooler",
+      "preset": "cleanStore",
+      "triangles": 816,
+      "colors": {
+        "powderCoat": "#e5ebed",
+        "glass": "#9ccfd6",
+        "stainless": "#bfc8cb"
+      }
+    },
+    {
+      "asset": "upright-drink-cooler",
+      "preset": "nightRestock",
+      "triangles": 816,
+      "colors": {
+        "powderCoat": "#354750",
+        "glass": "#3e6677",
+        "stainless": "#66747a"
+      }
+    }
+  ]
+}

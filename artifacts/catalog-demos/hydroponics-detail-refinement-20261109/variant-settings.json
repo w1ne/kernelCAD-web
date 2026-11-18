@@ -1,0 +1,30 @@
+[
+  {
+    "id": "greenhouse-tunnel-bay",
+    "preset": "highVisibility",
+    "choices": {
+      "sideCurtains": "closed"
+    },
+    "values": {
+      "hoopSteel": "#e87832",
+      "polyFilm": "#d9f0e6",
+      "timber": "#f2c84b",
+      "crop": "#3c9a3a",
+      "sideCurtains": "closed"
+    }
+  },
+  {
+    "id": "wall-mounted-co2-sensor",
+    "preset": "weathered",
+    "choices": {
+      "display": "blind"
+    },
+    "values": {
+      "housing": "#cfc9b8",
+      "trim": "#5e6463",
+      "lcdBacklight": "#a9bb8f",
+      "cable": "#3a3a36",
+      "display": "blind"
+    }
+  }
+]

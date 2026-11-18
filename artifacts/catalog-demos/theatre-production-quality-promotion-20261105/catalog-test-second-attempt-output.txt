@@ -1,0 +1,190 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 240975ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 240478ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 90ms
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts (4 tests | 1 failed) 148938ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults 127ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index 93ms
+     × every committed catalog asset opens with exactly the knobs its index row lists 147909ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index 291ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 644ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 313ms
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 13 passed (15)
+   Start at  06:48:57
+   Duration  401.83s (transform 5.76s, setup 126ms, import 10.07s, tests 390.87s, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: run: npx tsx scripts/buildAssetCatalog.ts: expected '{\n  "schemaVersion": 1,\n  "kits": […' to be '{\n  "schemaVersion": 1,\n  "kits": […' // Object.is equality
+
+- Expected
++ Received
+
+@@ -227008,11 +227008,11 @@
+          "scene"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/theatre-production/rolling-stage-platform.kcad.ts",
+        "preview": "/assets/theatre-production-rolling-stage-platform.png",
+-       "sourceSha256": "30454c0a05e64393ea6b3fce596a9e8fef8101d4bc60d37ff96a0ab1f20e18a6",
++       "sourceSha256": "9fee34dc87dabb78040253472c9670a12b25f7a0e2a7a02c45cbf10f2cafc30f",
+        "triangleBudget": 1800,
+        "params": [
+          {
+            "name": "scale",
+            "type": "number",
+@@ -227060,17 +227060,17 @@
+            "hardware": "#e2b347",
+            "rubber": "#25292c"
+          }
+        },
+        "stats": {
+-         "triangles": 308,
++         "triangles": 84,
+          "sizeM": [
+            1.4,
+-           0.635,
++           0.455,
+            1.015
+          ],
+-         "minUpM": 0,
++         "minUpM": 0.18,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "timber",
+@@ -227085,15 +227085,11 @@
+          {
+            "name": "steel",
+            "color": "#46515a",
+            "parts": [
+              "underframe-left",
+-             "underframe-right",
+-             "caster-fork-left-front",
+-             "caster-fork-left-back",
+-             "caster-fork-right-front",
+-             "caster-fork-right-back"
++             "underframe-right"
+            ],
+            "param": "steel"
+          },
+          {
+            "name": "hardware",
+@@ -227101,21 +227097,10 @@
+            "parts": [
+              "socket-left",
+              "socket-right"
+            ],
+            "param": "hardware"
+-         },
+-         {
+-           "name": "rubber",
+-           "color": "#272a2d",
+-           "parts": [
+-             "caster-wheel-left-front",
+-             "caster-wheel-left-back",
+-             "caster-wheel-right-front",
+-             "caster-wheel-right-back"
+-           ],
+-           "param": "rubber"
+          }
+        ]
+      },
+      {
+        "id": "rope-lock",
+@@ -227485,11 +227470,11 @@
+          "scene"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/theatre-production/scenic-wagon.kcad.ts",
+        "preview": "/assets/theatre-production-scenic-wagon.png",
+-       "sourceSha256": "f3ff318bb63126342e813545d1164c6e300b0b1ff8a6e37d2878e0f16238dbde",
++       "sourceSha256": "eb43a559557480835433424da4773c38807597fe044f4c8a6eb5555c5478dae0",
+        "triangleBudget": 1800,
+        "params": [
+          {
+            "name": "scale",
+            "type": "number",
+@@ -227537,17 +227522,17 @@
+            "hardware": "#e2b347",
+            "rubber": "#25292c"
+          }
+        },
+        "stats": {
+-         "triangles": 344,
++         "triangles": 120,
+          "sizeM": [
+            1.575,
+-           1.045,
++           0.825,
+            0.92
+          ],
+-         "minUpM": 0,
++         "minUpM": 0.22,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "timber",
+@@ -227574,28 +227559,13 @@
+            "name": "hardware",
+            "color": "#c28f3e",
+            "parts": [
+              "handle-left",
+              "handle-right",
+-             "handle-top",
+-             "caster-bracket-left-front",
+-             "caster-bracket-left-back",
+-             "caster-bracket-right-front",
+-             "caster-bracket-right-back"
++             "handle-top"
+            ],
+            "param": "hardware"
+-         },
+-         {
+-           "name": "rubber",
+-           "color": "#272a2d",
+-           "parts": [
+-             "caster-wheel-left-front",
+-             "caster-wheel-left-back",
+-             "caster-wheel-right-front",
+-             "caster-wheel-right-back"
+-           ],
+-           "param": "rubber"
+          }
+        ]
+      },
+      {
+        "id": "scrim-frame",
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts:25:68
+     23|     const committed = readFileSync(join(repoRoot, 'catalog', 'index.js…
+     24|     CatalogIndexSchema.parse(JSON.parse(committed));
+     25|     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toB…
+       |                                                                    ^
+     26|   }, 600_000);
+     27| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/catalog/catalogStudioLink.test.ts > open a catalog asset in Studio by ?catalog=<kit>/<id> > every committed catalog asset opens with exactly the knobs its index row lists
+Error: Catalog source for theatre-production/rolling-stage-platform does not match the index (sha256 30454c0a05e64393ea6b3fce596a9e8fef8101d4bc60d37ff96a0ab1f20e18a6); rebuild catalog/index.json.
+ ❯ loadCatalogAsset src/shared/assets/catalogStudioLink.ts:87:11
+     85|   const sha = await sha256Hex(source);
+     86|   if (sha !== asset.sourceSha256) {
+     87|     throw new CatalogRefError(`Catalog source for ${ref.kit}/${ref.id}…
+       |           ^
+     88|   }
+     89|   return { asset, source, title: asset.title };
+ ❯ openInStudio tests/integration/catalog/catalogStudioLink.test.ts:40:18
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts:96:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

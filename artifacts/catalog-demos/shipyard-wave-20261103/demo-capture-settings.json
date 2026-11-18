@@ -1,0 +1,15 @@
+{
+  "capture": "Chrome DevTools screencast of the local generated catalog preview",
+  "browser": "reuse the already-running Chrome/CDP session and profile",
+  "viewport": "1440x900",
+  "resolution": "1440x900",
+  "sequence": "demo_capture_sequence.js",
+  "durationTargetSeconds": 20,
+  "featuresShown": [
+    "filter plate and block fabrication assets",
+    "open the block transporter preview and mesh stats",
+    "compare default and scale-1.2 generated mesh bounds",
+    "browse coating and drydock work zones"
+  ],
+  "provenanceCaption": "Local preview and software validation on this branch; not a deployed website, hardware test, shipyard specification, or operational acceptance."
+}

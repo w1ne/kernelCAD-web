@@ -1,0 +1,31 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 786ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 297ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 160589ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  159463ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  303ms
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 232580ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 232077ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 81ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: greenhouse-exhaust-fan: expected -0.048 to be close to +0, received difference is 0.048, but expected 5e-7
+ ❯ tests/integration/catalog/catalogIndex.test.ts:20:44
+     18|       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asse…
+     19|       expect(asset.stats.materials, asset.id).toBe(1);
+     20|       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin ==…
+       |                                            ^
+     21|       expect(asset.preview, `${asset.id} needs a rendered homepage pre…
+     22|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 14 passed (15)
+   Start at  05:33:30
+   Duration  238.04s (transform 16.78s, setup 345ms, import 23.32s, tests 394.25s, environment 1ms)

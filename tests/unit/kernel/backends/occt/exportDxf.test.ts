@@ -26,6 +26,19 @@ function parse(bytes: Uint8Array): ParsedDxf {
 }
 
 describe('exportDxf', () => {
+  it('writes the R2013 subclass markers on both cut and bend polylines', () => {
+    const region: Region = {
+      plane: { origin: [0, 0, 0], normal: [0, 0, 1] },
+      outer: [[0, 0], [50, 0], [50, 25], [0, 25]], holes: [],
+      bendLines: [{ start: [25, 0], end: [25, 25], angle: 90, radius: 1, ordinal: 0 }],
+    };
+    const text = new TextDecoder().decode(exportDxf({ kind: 'region', region }, { format: 'dxf' }));
+    const entities = text.split('0\nLWPOLYLINE\n').slice(1);
+    expect(entities).toHaveLength(2);
+    for (const entity of entities) {
+      expect(entity).toMatch(/^100\nAcDbEntity\n8\n[^\n]+\n100\nAcDbPolyline\n90\n/);
+    }
+  });
   it('writes a planar square as one closed LWPOLYLINE on layer "cut"', () => {
     const region: Region = {
       plane: { origin: [0, 0, 0], normal: [0, 0, 1] },

@@ -1,0 +1,13 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/construction-equipment-machines-20261109/render_equipment_variants.ts
+(node:3465688) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+trowel-standard: 920 tris, 0.912 × 0.744 × 1.422 m
+trowel-compact-hi-vis: 920 tris, 0.732 × 0.744 × 1.332 m
+screed-standard-working: 804 tris, 0.544 × 0.861 × 2.200 m
+screed-short-folded-hi-vis: 804 tris, 0.544 × 0.441 × 1.200 m
+rebar-compact-hook: 1376 tris, 0.836 × 0.571 × 0.670 m
+rebar-extended-stirrup-hi-vis: 1684 tris, 1.240 × 0.571 × 0.670 m
+hoist-standard-guarded: 1384 tris, 1.146 × 1.960 × 0.681 m
+hoist-short-open-hi-vis: 1180 tris, 1.146 × 1.400 × 0.681 m
+Rendered and compared 8 source variants; four shape-choice bbox checks passed.

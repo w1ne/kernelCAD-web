@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-06",
+  "kit": "marine",
+  "assetCount": 40,
+  "sampleAssets": ["cargo-ship", "anchor", "life-jacket"],
+  "frameSize": [960, 540],
+  "frameHoldSeconds": 3,
+  "video": "marine-quality-promotion.mp4",
+  "provenance": "Local source promotion and rendered catalog previews only; no deployment or hardware acceptance."
+}

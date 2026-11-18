@@ -1,0 +1,29 @@
+{
+  "ok": false,
+  "status": "warning",
+  "partCount": 3,
+  "jointCount": 1,
+  "diagnostics": [
+    {
+      "code": "assembly.part.floating",
+      "severity": "warning",
+      "message": "Disconnected body: part 'table' has no joint or mate connecting it to any other part.",
+      "hint": "invalid-args.assembly.floating-part — disconnected body 'table'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
+      "partName": "table"
+    }
+  ],
+  "physicalDiagnostics": [],
+  "kernelDiagnostics": [],
+  "mechanism": "unverified",
+  "mechanismFailures": [],
+  "mechanismSummary": {
+    "verdict": "unverified",
+    "maxLevel": "warning",
+    "statement": "Motion not checked: the pose sweep did not run (pass --include-interference). Do not call this mechanism working.",
+    "checked": [],
+    "skipped": [
+      "the pose sweep did not run (pass --include-interference)"
+    ],
+    "failures": []
+  }
+}

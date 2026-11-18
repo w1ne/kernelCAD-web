@@ -1,0 +1,16 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-retail-store-catalog-pages",
+  "generatedOutput": "/tmp/kernelcad-retail-store-catalog-pages",
+  "assetsInIndex": 2390,
+  "kitRows": 48,
+  "kitPagesChecked": 48,
+  "previewCopiesChecked": 48,
+  "sourceHashesChecked": 48,
+  "parameterCountRangeIncludingScale": [
+    3,
+    5
+  ],
+  "hubHasKitAndFinder": true,
+  "failures": [],
+  "passed": true
+}

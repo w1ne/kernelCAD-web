@@ -1,0 +1,13 @@
+{
+  "workflow": "local .kcad.ts sources -> 40 catalog preview renders -> named source presets -> local audit and static-page checks",
+  "video": "artifacts/catalog-demos/photo-video-studio-quality-20261106/photo-video-studio-quality-demo.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 6,
+  "durationSeconds": 18,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/photo-video-studio-quality-20261106/capture_photo_video_quality_demo.py",
+  "provenance": "Rendered locally from committed source, actual named presets, generated previews and local check results; deployment is not shown."
+}

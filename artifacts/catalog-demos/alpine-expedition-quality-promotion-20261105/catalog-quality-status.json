@@ -1,0 +1,16 @@
+{
+  "kitStatus": "passed",
+  "kitSummary": "50/50 assets pass",
+  "kitCommand": "python3 scripts/checkCatalogQuality.py --kit alpine-expedition",
+  "catalogSnapshot": {
+    "status": "reported",
+    "assetsPassing": 1954,
+    "assetsTotal": 2390,
+    "passRatePercent": 81.76,
+    "thinAssets": 436,
+    "thinRatePercent": 18.24,
+    "thinKits": 9,
+    "commandExitCode": 1,
+    "exitNote": "The all-catalog checker reports remaining thin assets with exit code 1; the per-kit promotion gate passes."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-05",
+  "kit": "farm-machinery",
+  "unchangedAssetCount": 60,
+  "scope": "local authoring, rendering, catalog indexing, and page validation; not deployed",
+  "toolVersions": {
+    "node": "v26.12.1",
+    "python": "3.14.9",
+    "video": "ffmpeg libx264, 1280x720, 24 fps, 8 frames at 3 seconds each"
+  },
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/promote_farm_machinery.py --dry-run",
+    "mapfile -t asset_ids < <(find catalog/kits/farm-machinery -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\\n' | sed 's/\\.kcad\\.ts$//')",
+    "npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/kits/farm-machinery/",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-farm-machinery-pages",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/verify_farm_machinery_pages.py /tmp/kernelcad-farm-machinery-pages",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/record_promotion_results.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/capture_farm_machinery_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/inspect_farm_machinery_video.py"
+  ],
+  "finalGroundingFix": {
+    "assets": ["moldboard-plow", "portable-grain-conveyor"],
+    "targetedGeometryCheck": "npx tsx scripts/checkCatalogAsset.ts <asset-source>",
+    "observedMinUpM": 0
+  },
+  "videoInspection": "ffprobe metadata plus an 8-frame contact sheet decoded from the MP4 and inspected after capture"
+}

@@ -1,0 +1,3 @@
+(node:2547233) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+industrial-plant/baghouse-dust-collector: 552 tris

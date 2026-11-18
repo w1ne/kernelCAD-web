@@ -1,0 +1,211 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "photo-video-studio",
+  "kitPages": 40,
+  "hubContainsKit": true,
+  "pages": [
+    {
+      "id": "action-camera",
+      "path": "catalog/photo-video-studio/action-camera/index.html",
+      "previewBytes": 16996
+    },
+    {
+      "id": "backdrop-frame",
+      "path": "catalog/photo-video-studio/backdrop-frame/index.html",
+      "previewBytes": 15937
+    },
+    {
+      "id": "beauty-dish-light",
+      "path": "catalog/photo-video-studio/beauty-dish-light/index.html",
+      "previewBytes": 17566
+    },
+    {
+      "id": "c-stand",
+      "path": "catalog/photo-video-studio/c-stand/index.html",
+      "previewBytes": 14209
+    },
+    {
+      "id": "camcorder",
+      "path": "catalog/photo-video-studio/camcorder/index.html",
+      "previewBytes": 18454
+    },
+    {
+      "id": "camera-backpack",
+      "path": "catalog/photo-video-studio/camera-backpack/index.html",
+      "previewBytes": 17441
+    },
+    {
+      "id": "camera-cage",
+      "path": "catalog/photo-video-studio/camera-cage/index.html",
+      "previewBytes": 21179
+    },
+    {
+      "id": "camera-roller-case",
+      "path": "catalog/photo-video-studio/camera-roller-case/index.html",
+      "previewBytes": 15720
+    },
+    {
+      "id": "camera-slider",
+      "path": "catalog/photo-video-studio/camera-slider/index.html",
+      "previewBytes": 18695
+    },
+    {
+      "id": "camera-tripod",
+      "path": "catalog/photo-video-studio/camera-tripod/index.html",
+      "previewBytes": 28358
+    },
+    {
+      "id": "cinema-camera",
+      "path": "catalog/photo-video-studio/cinema-camera/index.html",
+      "previewBytes": 19152
+    },
+    {
+      "id": "clapperboard",
+      "path": "catalog/photo-video-studio/clapperboard/index.html",
+      "previewBytes": 16235
+    },
+    {
+      "id": "digital-slr-camera",
+      "path": "catalog/photo-video-studio/digital-slr-camera/index.html",
+      "previewBytes": 20685
+    },
+    {
+      "id": "disposable-camera",
+      "path": "catalog/photo-video-studio/disposable-camera/index.html",
+      "previewBytes": 18377
+    },
+    {
+      "id": "film-rangefinder-camera",
+      "path": "catalog/photo-video-studio/film-rangefinder-camera/index.html",
+      "previewBytes": 22580
+    },
+    {
+      "id": "follow-focus-unit",
+      "path": "catalog/photo-video-studio/follow-focus-unit/index.html",
+      "previewBytes": 19240
+    },
+    {
+      "id": "gimbal-stabilizer",
+      "path": "catalog/photo-video-studio/gimbal-stabilizer/index.html",
+      "previewBytes": 16166
+    },
+    {
+      "id": "instant-camera",
+      "path": "catalog/photo-video-studio/instant-camera/index.html",
+      "previewBytes": 18843
+    },
+    {
+      "id": "lantern-softbox",
+      "path": "catalog/photo-video-studio/lantern-softbox/index.html",
+      "previewBytes": 23526
+    },
+    {
+      "id": "led-panel-light",
+      "path": "catalog/photo-video-studio/led-panel-light/index.html",
+      "previewBytes": 15870
+    },
+    {
+      "id": "lens-filter-set",
+      "path": "catalog/photo-video-studio/lens-filter-set/index.html",
+      "previewBytes": 18825
+    },
+    {
+      "id": "lens-hood",
+      "path": "catalog/photo-video-studio/lens-hood/index.html",
+      "previewBytes": 17792
+    },
+    {
+      "id": "light-stand",
+      "path": "catalog/photo-video-studio/light-stand/index.html",
+      "previewBytes": 14656
+    },
+    {
+      "id": "macro-lens",
+      "path": "catalog/photo-video-studio/macro-lens/index.html",
+      "previewBytes": 20249
+    },
+    {
+      "id": "mirrorless-camera",
+      "path": "catalog/photo-video-studio/mirrorless-camera/index.html",
+      "previewBytes": 19972
+    },
+    {
+      "id": "monopod",
+      "path": "catalog/photo-video-studio/monopod/index.html",
+      "previewBytes": 12022
+    },
+    {
+      "id": "pancake-lens",
+      "path": "catalog/photo-video-studio/pancake-lens/index.html",
+      "previewBytes": 21055
+    },
+    {
+      "id": "pocket-digital-camera",
+      "path": "catalog/photo-video-studio/pocket-digital-camera/index.html",
+      "previewBytes": 17408
+    },
+    {
+      "id": "portrait-lens",
+      "path": "catalog/photo-video-studio/portrait-lens/index.html",
+      "previewBytes": 20822
+    },
+    {
+      "id": "reflector-board",
+      "path": "catalog/photo-video-studio/reflector-board/index.html",
+      "previewBytes": 12472
+    },
+    {
+      "id": "ring-light",
+      "path": "catalog/photo-video-studio/ring-light/index.html",
+      "previewBytes": 19774
+    },
+    {
+      "id": "shoulder-rig",
+      "path": "catalog/photo-video-studio/shoulder-rig/index.html",
+      "previewBytes": 19456
+    },
+    {
+      "id": "softbox-light",
+      "path": "catalog/photo-video-studio/softbox-light/index.html",
+      "previewBytes": 16847
+    },
+    {
+      "id": "speedlight-flash",
+      "path": "catalog/photo-video-studio/speedlight-flash/index.html",
+      "previewBytes": 15344
+    },
+    {
+      "id": "telephoto-lens",
+      "path": "catalog/photo-video-studio/telephoto-lens/index.html",
+      "previewBytes": 20784
+    },
+    {
+      "id": "umbrella-reflector",
+      "path": "catalog/photo-video-studio/umbrella-reflector/index.html",
+      "previewBytes": 23175
+    },
+    {
+      "id": "video-tripod",
+      "path": "catalog/photo-video-studio/video-tripod/index.html",
+      "previewBytes": 27988
+    },
+    {
+      "id": "webcam",
+      "path": "catalog/photo-video-studio/webcam/index.html",
+      "previewBytes": 19069
+    },
+    {
+      "id": "wide-angle-lens",
+      "path": "catalog/photo-video-studio/wide-angle-lens/index.html",
+      "previewBytes": 22122
+    },
+    {
+      "id": "zoom-lens",
+      "path": "catalog/photo-video-studio/zoom-lens/index.html",
+      "previewBytes": 18823
+    }
+  ],
+  "localPageGenerator": "scripts/buildCatalogPages.ts",
+  "liveRouteStatus": "unverified pending merge",
+  "deploymentVerified": false
+}

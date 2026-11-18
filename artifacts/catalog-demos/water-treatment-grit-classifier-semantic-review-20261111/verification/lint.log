@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/water-treatment/ tests/integration/catalog/gritClassifierFidelity.test.ts
+Result: exit code 0; ESLint emitted no diagnostics.

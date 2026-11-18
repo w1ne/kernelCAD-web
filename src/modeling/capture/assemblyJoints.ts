@@ -3,8 +3,8 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
-import { fastenerRecordOf, fitRecordOf, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
+import { parseConnectorRef, type AdhesiveMateMetadata, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { adhesiveRecordOf, fastenerRecordOf, fitRecordOf, validateAdhesiveMateMetadata, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
@@ -22,6 +22,8 @@ import {
 } from './assemblyTendonRoute';
 import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
+import { assertMateOptionKeys } from './assemblyMateOptionKeys';
+import { assertCoupleMateOptionKeys } from './assemblyCoupleMateOptionKeys';
 import type {
   AssemblyConnectorRef,
   AssemblyConnectRef,
@@ -42,6 +44,38 @@ function isValidJointLimits(value: [number, number]): boolean {
     value.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
     value[0] < value[1]
   );
+}
+
+const REVOLUTE_JOINT_OPTION_KEYS = ['axis', 'origin', 'limitsDeg', 'actuator'] as const satisfies readonly (keyof RevoluteJointOpts)[];
+
+function assertRevoluteJointOptionKeys(opts: RevoluteJointOpts): void {
+  const unknownKey = Object.keys(opts).find(
+    (key) => !(REVOLUTE_JOINT_OPTION_KEYS as readonly string[]).includes(key),
+  );
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'assembly.revolute(name, parent, child, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${REVOLUTE_JOINT_OPTION_KEYS.join(', ')}`,
+    example: "arm.revolute('hinge', base, link, { axis: [0, 0, 1], origin: [0, 0, 0], limitsDeg: [-90, 90] })",
+  });
+}
+
+const PRISMATIC_JOINT_OPTION_KEYS = ['axis', 'origin', 'limitsMm', 'actuator'] as const satisfies readonly (keyof PrismaticJointOpts)[];
+
+function assertPrismaticJointOptionKeys(opts: PrismaticJointOpts): void {
+  const unknownKey = Object.keys(opts).find(
+    (key) => !(PRISMATIC_JOINT_OPTION_KEYS as readonly string[]).includes(key),
+  );
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'assembly.prismatic(name, parent, child, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${PRISMATIC_JOINT_OPTION_KEYS.join(', ')}`,
+    example: "arm.prismatic('slide', base, carriage, { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+  });
 }
 
 function isScalarCouplingMate(type: MateType): boolean {
@@ -72,6 +106,7 @@ function validateConnectorAssembly(assemblyName: string, connector: AssemblyConn
 // gated mechanisms prefer `arm.connector(...)` + `arm.mate(name, a, b,
 // 'revolute', { ... })`; both surfaces coexist.
 export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
+  assertRevoluteJointOptionKeys(opts);
   if (!isValidVec3(opts.axis)) {
     invalidArgs({
       api: 'revoluteJoint(name, parent, child, { axis })',
@@ -127,6 +162,7 @@ export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPar
 }
 
 export function prismaticJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
+  assertPrismaticJointOptionKeys(opts);
   if (!isValidVec3(opts.axis)) {
     invalidArgs({
       api: 'prismaticJoint(name, parent, child, { axis })',
@@ -270,7 +306,7 @@ export function connectFixed(state: AssemblyState, name: string, a: AssemblyConn
  * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
  * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
  */
-interface MateOptions extends FastenerMateOptionsFields {
+export interface MateOptions extends FastenerMateOptionsFields {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -288,6 +324,8 @@ interface MateOptions extends FastenerMateOptionsFields {
   fastener?: FastenerMateMetadata;
   /** P2 press/snap fit metadata. Only valid on a fastened mate. */
   fit?: FitMateMetadata;
+  /** Planar adhesive interface on a rigid mate. Does not change placement. */
+  adhesive?: AdhesiveMateMetadata;
 }
 
 const JOINT_DYNAMICS_FIELDS = [
@@ -334,6 +372,7 @@ export function recordMate(
   type: MateType,
   opts?: MateOptions,
 ): void {
+  assertMateOptionKeys(name, opts);
   const a = resolveMateConnector(state, aRef);
   const b = resolveMateConnector(state, bRef);
   assertMateConnectorPair(name, type, aRef, bRef, a, b);
@@ -342,7 +381,29 @@ export function recordMate(
   validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
   validateFastenerMateMetadata(name, type, aRef, bRef, opts);
+  validateAdhesiveMateMetadata(type, opts?.adhesive);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
+  stampMateConfiguration(state);
+}
+
+function configurationRef(state: AssemblyState, ref: string): { source: string; name: string } | undefined {
+  const part = state.parts.find((candidate) => candidate.name === parseConnectorRef(ref).partName);
+  if (!part?.configuration) return undefined;
+  return { source: part.configuration.source, name: part.configuration.name };
+}
+
+function stampMateConfiguration(state: AssemblyState): void {
+  const index = state.mates.length - 1;
+  const mate = state.mates[index];
+  if (!mate) return;
+  const aConfiguration = configurationRef(state, mate.a);
+  const bConfiguration = configurationRef(state, mate.b);
+  if (!aConfiguration && !bConfiguration) return;
+  state.mates[index] = {
+    ...mate,
+    ...(aConfiguration ? { aConfiguration } : {}),
+    ...(bConfiguration ? { bConfiguration } : {}),
+  };
 }
 
 function assertMateConnectorPair(
@@ -402,20 +463,20 @@ function buildMateRecord(
   aRef: string,
   bRef: string,
   type: MateType,
-  opts: MateOptions | undefined,
+  opts: MateOptions = {},
 ): MateRecord {
   return {
     name,
     a: aRef,
     b: bRef,
     type,
-    ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
-    ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
-    ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
+    ...(opts.pose !== undefined ? { pose: opts.pose } : {}),
+    ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+    ...(opts.exposure !== undefined ? { exposure: opts.exposure } : {}),
     ...jointDynamicsOf(opts),
-    ...(opts?.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
-    ...(opts?.maxLoad !== undefined
+    ...(opts.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
+    ...(opts.maxLoad !== undefined
       ? {
           maxLoad: {
             ...(opts.maxLoad.force !== undefined ? { force: opts.maxLoad.force } : {}),
@@ -425,7 +486,55 @@ function buildMateRecord(
       : {}),
     ...fastenerRecordOf(opts),
     ...fitRecordOf(opts),
+    ...adhesiveRecordOf(opts.adhesive),
   };
+}
+
+/** A driven mate takes exactly one pose, ratio × source + offset. Reject a
+ *  coupling that gives it no single pose: coupled to itself, already driven by
+ *  another coupling, or closing a loop of couplings. Pose expansion would
+ *  otherwise keep one equation and drop the other without a diagnostic. */
+function rejectConflictingCoupling(state: AssemblyState, driven: string, source: string): void {
+  const example = "arm.coupleMates('output', { source: 'input', ratio: 3 })";
+  if (driven === source) {
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'opts.source',
+      got: source,
+      requires: `a mate other than the driven mate '${driven}' — a mate cannot drive its own pose`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-self',
+      example,
+    });
+  }
+  const sourceOf = new Map(state.mateCouplings.map((c) => [c.driven, c.source]));
+  const existing = sourceOf.get(driven);
+  if (existing !== undefined) {
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'driven',
+      got: driven,
+      requires:
+        `a mate that no other coupling drives — '${driven}' is already driven by '${existing}'; ` +
+        `couple '${driven}' to one source only, or couple '${source}' to '${existing}' to build a chain`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-already-driven',
+      example,
+    });
+  }
+  const loop = [driven, source];
+  for (let next = sourceOf.get(source); next !== undefined; next = sourceOf.get(next)) {
+    loop.push(next);
+    if (next !== driven) continue;
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'opts.source',
+      got: source,
+      requires:
+        `a source that does not lead back to '${driven}' — this coupling closes the loop ${loop.join(' <- ')}, ` +
+        'so no mate in it has an independent pose; leave one mate in the chain uncoupled as the input',
+      hintSlug: 'invalid-args.assembly.coupled-mate-cycle',
+      example,
+    });
+  }
 }
 
 export function coupleMateRecords(
@@ -433,6 +542,7 @@ export function coupleMateRecords(
   driven: string,
   opts: { source: string; ratio: number; offset?: number },
 ): void {
+  assertCoupleMateOptionKeys(driven, opts);
   const source = state.mates.find((mate) => mate.name === opts.source);
   const drivenMate = state.mates.find((mate) => mate.name === driven);
   if (!source || !drivenMate) {
@@ -470,6 +580,7 @@ export function coupleMateRecords(
       example: "arm.coupleMates('output', { source: 'input', ratio: 3, offset: 0 })",
     });
   }
+  rejectConflictingCoupling(state, driven, opts.source);
   state.mateCouplings.push({
     driven,
     source: opts.source,

@@ -1,0 +1,4 @@
+Invocation: PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/capture_demo.py
+Video: ffmpeg concat, 1280x720, 24 fps, H.264, CRF 20, 15-second four-slide source-to-preview review
+Settings SHA256: 6bbbd08dbaf273be193f131f38ac90b1c437605d552b063a77e0b2db9eb27ff0
+Output: artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/standard-components-pulley-elbow-collar.mp4 (234464 bytes)

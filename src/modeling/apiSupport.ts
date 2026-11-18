@@ -60,8 +60,10 @@ const API_EXAMPLES: Record<string, string> = {
   sphere: 'sphere(10)',
   torus: 'torus(20, 5)',
   spurGear: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
+  spurGearPair: 'spurGearPair({ module: 1, teeth: 20, drivenTeeth: 40, faceWidth: 6 })',
   internalSpurGear: 'internalSpurGear({ module: 1, teeth: 54, faceWidth: 8, rimThickness: 4 })',
   spring: 'spring({ length: 30, coilRadius: 5, wireRadius: 1, turns: 8 })',
+  pipe: 'pipe([[0, 0, 0], [40, 0, 0], [40, 0, 30]], 3, { bendRadius: 8 })',
   extrudeRect: 'extrudeRect(40, 30, 10)',
   extrudeCircle: 'extrudeCircle(10, 5)',
   extrudePolygon: 'extrudePolygon([[0, 0], [20, 0], [20, 10], [0, 10]], 5)',
@@ -99,6 +101,21 @@ const ARG_MEANING: Record<string, { why: string; unit?: ArgUnit }> = {
   'spurGear.faceWidth': { why: 'the axial thickness of the gear blank', unit: 'mm' },
   'internalSpurGear.faceWidth': { why: 'the axial thickness of the ring blank', unit: 'mm' },
   'spurGear.bore': { why: 'the centre bore diameter, not the radius', unit: 'mm' },
+  'spurGearPair.module': {
+    why: 'the driver ISO module (pitch diameter / teeth); the driven gear uses drivenModule, which defaults to this',
+    unit: 'mm',
+  },
+  'spurGearPair.drivenModule': {
+    why: 'the driven gear ISO module; leave it unset when both gears share the driver module',
+    unit: 'mm',
+  },
+  'spurGearPair.faceWidth': { why: 'the axial thickness of both gears', unit: 'mm' },
+  'spurGearPair.centerDistance': {
+    why: 'the distance between the gear axes; the standard external mesh is (m1·z1 + m2·z2)/2',
+    unit: 'mm',
+  },
+  'spurGearPair.driverBore': { why: 'the driver centre bore diameter, not the radius', unit: 'mm' },
+  'spurGearPair.drivenBore': { why: 'the driven centre bore diameter, not the radius', unit: 'mm' },
   'internalSpurGear.rimThickness': {
     why: 'the material left outside the root circle of the internal teeth',
     unit: 'mm',

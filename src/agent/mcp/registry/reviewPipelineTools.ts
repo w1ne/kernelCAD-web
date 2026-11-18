@@ -12,50 +12,50 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign. Runs within timeBudgetMs (default 90 s): stages that did not fit are listed in skippedStages (their checks did not run; mechanism is then unverified) and stageTimingsMs shows per-stage cost.',
+      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign. Runs within time_budget_ms (default 90 s): stages that did not fit are listed in skippedStages (their checks did not run; mechanism is then unverified) and stageTimingsMs shows per-stage cost.',
       inputSchema: {
         type: 'object',
         properties: {
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
           assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          designGoal: { type: 'string', description: 'Original user design prompt or goal. Included in suggestedRepairPrompt so topology-redesign repairs restart from the intended physical design instead of local coordinate nudges.' },
-          preserveInterfaces: {
+          design_goal: { type: 'string', description: 'Original user design prompt or goal. Included in suggestedRepairPrompt so topology-redesign repairs restart from the intended physical design instead of local coordinate nudges.' },
+          preserve_interfaces: {
             type: 'array',
             description: 'External mates, connector refs, part names, or behavioral interfaces the repair agent must preserve during redesign.',
             items: { type: 'string' },
           },
-          includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
-          includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
-          requirePhysicalUseCase: {
+          include_pose_envelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
+          include_interference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
+          require_physical_use_case: {
             type: 'boolean',
             description: 'When true, articulated assemblies must declare arm.physicalUseCase(...) evidence: loads, contacts, stable parts, and actuator limits.',
           },
-          physicalUseCaseLevel: {
+          physical_use_case_level: {
             type: 'string',
             enum: ['reachability', 'statics', 'reactions'],
-            description: "Escalating physical-use-case depth; each level includes the previous. 'reachability': targeted sampling over scalar-limited mates named in actuatorLimits, rejecting contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose (revolute/cylindrical/pin-slot limitsDeg, prismatic limitsMm). 'statics': adds pose-bound quasi-static certification at the exact common-contact samples (conservative friction/capacity, world force and moment balance, finite-difference revolute actuator torque); returns physicalUseCaseStaticCertificates on success. 'reactions': adds exact-pose reaction wrenches through uniquely rooted articulated trees, compared against each loaded mate's declared resultant force/moment envelope, and runs the clevis double-shear / pin-bending / bearing / tear-out / net-section check (minimum factor of safety 2) automatically for mates built with joint.clevis. Defaults to 'reachability' when requirePhysicalUseCase is true.",
+            description: "Escalating physical-use-case depth; each level includes the previous. 'reachability': targeted sampling over scalar-limited mates named in actuatorLimits, rejecting contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose (revolute/cylindrical/pin-slot limitsDeg, prismatic limitsMm). 'statics': adds pose-bound quasi-static certification at the exact common-contact samples (conservative friction/capacity, world force and moment balance, finite-difference revolute actuator torque); returns physicalUseCaseStaticCertificates on success. 'reactions': adds exact-pose reaction wrenches through uniquely rooted articulated trees, compared against each loaded mate's declared resultant force/moment envelope, and runs the clevis double-shear / pin-bending / bearing / tear-out / net-section check (minimum factor of safety 2) automatically for mates built with joint.clevis. Defaults to 'reachability' when require_physical_use_case is true.",
           },
-          physicalUseCaseSamplesPerMate: {
+          physical_use_case_samples_per_mate: {
             type: 'integer',
             minimum: 1,
             description: 'Samples per scalar-limited actuator mate for physical-use-case contact reachability. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Default 3; total targeted combinations are capped.',
           },
-          samplesPerMate: {
+          samples_per_mate: {
             type: 'integer',
             minimum: 1,
-            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samples_per_mate.',
           },
           combinatorial: {
             type: 'boolean',
-            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samples_per_mate for both interior coverage and worst-pose detection. Default false.',
           },
-          epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
-          timeBudgetMs: {
+          epsilon_mm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
+          time_budget_ms: {
             type: 'number',
             description: 'Wall-clock budget for the review in ms (default 90000). Once spent, the remaining heavy stages (pose envelope, physical use case, mechanism sweep) are skipped and listed in skippedStages — a partial result instead of a timeout. stageTimingsMs reports where the time went.',
           },
-          trackConnectors: {
+          track_connectors: {
             type: 'array',
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
             items: { type: 'string' },
@@ -75,7 +75,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
           attempts: {
             type: 'array',
-            description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visualReview? }. File attempts can be replayed by Studio build records.',
+            description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visual_review? }. File attempts can be replayed by Studio build records.',
             items: {
               type: 'object',
               properties: {
@@ -83,12 +83,12 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
                 title: { type: 'string' },
                 file: { type: 'string' },
                 code: { type: 'string' },
-                visualReview: {
+                visual_review: {
                   type: 'object',
-                  description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshotPath, concrete findings, and all required checks passing.',
+                  description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshot_path, concrete findings, and all required checks passing.',
                   properties: {
                     accepted: { type: 'boolean' },
-                    screenshotPath: { type: 'string' },
+                    screenshot_path: { type: 'string' },
                     findings: {
                       type: 'array',
                       items: { type: 'string' },
@@ -102,7 +102,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
                           code: { type: 'string' },
                           passed: { type: 'boolean' },
                           finding: { type: 'string' },
-                          screenshotPath: { type: 'string' },
+                          screenshot_path: { type: 'string' },
                         },
                         required: ['code', 'passed', 'finding'],
                       },
@@ -114,45 +114,45 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             },
           },
           assembly: { type: 'string' },
-          preserveInterfaces: {
+          preserve_interfaces: {
             type: 'array',
             items: { type: 'string' },
             description: 'External mates, connector refs, part names, or behavioral interfaces the agent must preserve between attempts.',
           },
-          includePoseEnvelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
-          includeInterference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
-          samplesPerMate: {
+          include_pose_envelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+          include_interference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+          samples_per_mate: {
             type: 'integer',
             minimum: 1,
-            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samples_per_mate.',
           },
           combinatorial: {
             type: 'boolean',
-            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samples_per_mate for both interior coverage and worst-pose detection. Default false.',
           },
-          epsilonMm3: { type: 'number', description: 'Forwarded to review_cad.' },
-          trackConnectors: {
+          epsilon_mm3: { type: 'number', description: 'Forwarded to review_cad.' },
+          track_connectors: {
             type: 'array',
             items: { type: 'string' },
             description: 'Connector refs to track across sampled poses.',
           },
-          stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+          stop_on_pass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           consensus: {
             type: 'boolean',
             description:
-              'Best-of-N by geometric consensus. When true, attempts are N independent candidates for the SAME goal (not a repair sequence): all are reviewed (stopOnPass ignored), all scripts are executed, candidates without a valid solid are dropped, and the candidate whose geometry agrees most with the others (medoid by symmetric Chamfer distance, same model frame) is selected. Ties go to more gates passed, then the shorter script. Returns consensus { chosenIndex, chosenAttemptId, scores, distances, reason }; ok / finalAttemptId / nextActionPrompt describe the selected candidate. Default false.',
+              'Best-of-N by geometric consensus. When true, attempts are N independent candidates for the SAME goal (not a repair sequence): all are reviewed (stop_on_pass ignored), all scripts are executed, candidates without a valid solid are dropped, and the candidate whose geometry agrees most with the others (medoid by symmetric Chamfer distance, same model frame) is selected. Ties go to more gates passed, then the shorter script. Returns consensus { chosenIndex, chosenAttemptId, scores, distances, reason }; ok / finalAttemptId / nextActionPrompt describe the selected candidate. Default false.',
           },
-          autoRevise: {
+          auto_revise: {
             type: 'boolean',
             description:
               'When true (default), failing attempts with repairable feature diagnostics (boolean miss, oversized fillet, …) run bounded repair_script and attach revisionAssist.suggestedPatches / autoApplied.suggestedCode. Set false to skip the extra repair pass (hints-only). Does not autonomously rewrite full CAD models.',
           },
-          requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
-          requirePhysicalAcceptance: {
+          require_visual_review: { type: 'boolean', description: 'Require screenshot-backed visual_review with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
+          require_physical_acceptance: {
             type: 'boolean',
             description: 'Require declared physicalUseCase common-pose reachability and pose-bound quasi-static certification before accepting an attempt. Design-loop also enables this automatically when an attempt script calls physicalUseCase(...).',
           },
-          allowReviewWarnings: {
+          allow_review_warnings: {
             type: 'array',
             items: { type: 'string' },
             description: 'Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok.',
@@ -163,8 +163,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description:
               "Call-time external requirements ([{ name, predicate }]) every attempt is graded against, in the same ledger as script require(). Predicate shape: { metric, a?, b?, op, limit, tolerance?, density? }; operands: { kind: body | faces | edges | part, ref, query? }. A failing or not-evaluated requirement blocks the attempt even with no expert geometry.",
           },
-          outputRecordPath: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
-          recordTitle: { type: 'string', description: 'Optional title for the build record.' },
+          output_record_path: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
+          record_title: { type: 'string', description: 'Optional title for the build record.' },
         },
         required: ['goal', 'attempts'],
       },
@@ -178,13 +178,13 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'Use this when you need the unfolded flat pattern of a bent sheet-metal part. ' +
         'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
         '(outer polyline + holes + bend lines + sketch plane). Any number of parallel bends; crossing bends need corner relief. ' +
-        'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
+        'Pass { file } or { code }; optional { feature_id } to pick a specific Shape.',
       inputSchema: {
         type: 'object',
         properties: {
           file: { type: 'string' },
           code: { type: 'string' },
-          featureId: { type: 'string' },
+          feature_id: { type: 'string' },
         },
       },
     },
@@ -199,14 +199,14 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
         '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
         'calling sdf.materialize (which is the expensive step). The script must bind the SdfField via ' +
-        "sdf.bind('<name>', field) and pass that name as fieldName. " +
-        'Hint: pass either { file } or { code }, plus { fieldName, point: [x,y,z] }.',
+        "sdf.bind('<name>', field) and pass that name as field_name. " +
+        'Hint: pass either { file } or { code }, plus { field_name, point: [x,y,z] }.',
       inputSchema: {
         type: 'object',
         properties: {
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          fieldName: { type: 'string', description: "sdf.bind binding name holding the SdfField." },
+          field_name: { type: 'string', description: "sdf.bind binding name holding the SdfField." },
           point: {
             type: 'array',
             items: { type: 'number' },
@@ -215,7 +215,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description: 'Sample point [x, y, z] in mm.',
           },
         },
-        required: ['fieldName', 'point'],
+        required: ['field_name', 'point'],
       },
     },
     handler: input => evaluateSdfTool(input as unknown as Parameters<typeof evaluateSdfTool>[0]),

@@ -1,0 +1,177 @@
+{
+  "checkedAt": "2026-11-12T07:02:20.738245+00:00",
+  "origin": "https://kernelcad.com",
+  "branchDeployment": "not deployed",
+  "items": [
+    {
+      "kit": "wind-energy",
+      "id": "blade-root-protector",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/wind-energy-blade-root-protector.png",
+          "httpStatus": 200,
+          "savedAs": "blade-root-protector.png",
+          "sha256": "2d6ab227eb2ed5b1961315e323474719bd53a79ee712239318c0a95648d0bdd2",
+          "bytes": 17255,
+          "localSha256": "2d6ab227eb2ed5b1961315e323474719bd53a79ee712239318c0a95648d0bdd2",
+          "matchesLocal": true
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/wind-energy-blade-root-protector.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "blade-root-protector.kcad.ts",
+          "sha256": "34b0d44d7ebaeac28e0d50a870ec664c6db34d897a7eeae590edca3bf147cc00",
+          "bytes": 1786,
+          "localSha256": "34b0d44d7ebaeac28e0d50a870ec664c6db34d897a7eeae590edca3bf147cc00",
+          "matchesLocal": true
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/wind-energy/blade-root-protector/",
+          "httpStatus": 200,
+          "savedAs": "blade-root-protector.html",
+          "sha256": "2a24556587aad614e0ecd45e683b0e46c34e1630e3ce460759e6d8652955809c",
+          "bytes": 15864
+        }
+      ]
+    },
+    {
+      "kit": "wind-energy",
+      "id": "cable-entry-boot",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/wind-energy-cable-entry-boot.png",
+          "httpStatus": 200,
+          "savedAs": "cable-entry-boot.png",
+          "sha256": "6c7d6adc76bb95af9124f186f76a052ff107c5b5fa9a1e8f07aa62d40351d677",
+          "bytes": 19182,
+          "localSha256": "6c7d6adc76bb95af9124f186f76a052ff107c5b5fa9a1e8f07aa62d40351d677",
+          "matchesLocal": true
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/wind-energy-cable-entry-boot.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "cable-entry-boot.kcad.ts",
+          "sha256": "f2cf5d1c59bdea28058c7e692e96c779aa75c17f61907b039e4c4dd21e896142",
+          "bytes": 1701,
+          "localSha256": "f2cf5d1c59bdea28058c7e692e96c779aa75c17f61907b039e4c4dd21e896142",
+          "matchesLocal": true
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/wind-energy/cable-entry-boot/",
+          "httpStatus": 200,
+          "savedAs": "cable-entry-boot.html",
+          "sha256": "e2124a41de856b51f3e61adda694fd4ccbd6061fce2214942efed0afbac6735c",
+          "bytes": 15788
+        }
+      ]
+    },
+    {
+      "kit": "wind-energy",
+      "id": "nacelle-transport-frame",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/wind-energy-nacelle-transport-frame.png",
+          "httpStatus": 200,
+          "savedAs": "nacelle-transport-frame.png",
+          "sha256": "092aca3f19638d7ff200c8c54b73b32450558a4c95c02ef25cc902acab6f40c9",
+          "bytes": 44008,
+          "localSha256": "092aca3f19638d7ff200c8c54b73b32450558a4c95c02ef25cc902acab6f40c9",
+          "matchesLocal": true
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/wind-energy-nacelle-transport-frame.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "nacelle-transport-frame.kcad.ts",
+          "sha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+          "bytes": 7787,
+          "localSha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+          "matchesLocal": true
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/wind-energy/nacelle-transport-frame/",
+          "httpStatus": 200,
+          "savedAs": "nacelle-transport-frame.html",
+          "sha256": "9b93591f3923554abacb9a76d900c8243e04c994736e07069a0980aecea121c8",
+          "bytes": 17598
+        }
+      ]
+    },
+    {
+      "kit": "wind-energy",
+      "id": "wind-farm-meter-pedestal",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/wind-energy-wind-farm-meter-pedestal.png",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-meter-pedestal.png",
+          "sha256": "c4c1aed2f10a5d84dca8cf4aef74030830980e30342d762f72d7941ca7d5d299",
+          "bytes": 19052,
+          "localSha256": "c4c1aed2f10a5d84dca8cf4aef74030830980e30342d762f72d7941ca7d5d299",
+          "matchesLocal": true
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/wind-energy-wind-farm-meter-pedestal.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-meter-pedestal.kcad.ts",
+          "sha256": "2fe75eb81ba6e5d1e6a256cb719ff9a74ca1527e2adb1e2e32c1bf3f62acbd82",
+          "bytes": 1772,
+          "localSha256": "2fe75eb81ba6e5d1e6a256cb719ff9a74ca1527e2adb1e2e32c1bf3f62acbd82",
+          "matchesLocal": true
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/wind-energy/wind-farm-meter-pedestal/",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-meter-pedestal.html",
+          "sha256": "1ef9ecfd6bb6a01058bb820f070dfc81f5d45e8b4f0581adc0fdceb9bcc4ba7b",
+          "bytes": 15880
+        }
+      ]
+    },
+    {
+      "kit": "wind-energy",
+      "id": "wind-farm-pad-mount-transformer",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/wind-energy-wind-farm-pad-mount-transformer.png",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-pad-mount-transformer.png",
+          "sha256": "8d0e13e6885bc63f06cf2bc5e967083627c76c05489d9e2f9b9067a2598b204d",
+          "bytes": 29128,
+          "localSha256": "8d0e13e6885bc63f06cf2bc5e967083627c76c05489d9e2f9b9067a2598b204d",
+          "matchesLocal": true
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/wind-energy-wind-farm-pad-mount-transformer.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-pad-mount-transformer.kcad.ts",
+          "sha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+          "bytes": 2449,
+          "localSha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+          "matchesLocal": true
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/wind-energy/wind-farm-pad-mount-transformer/",
+          "httpStatus": 200,
+          "savedAs": "wind-farm-pad-mount-transformer.html",
+          "sha256": "d1eae9ecb033c7f33eca1956c761fec04a5036da47740bcf013eb77f96d200c8",
+          "bytes": 16443
+        }
+      ]
+    }
+  ]
+}

@@ -16,14 +16,16 @@ import { drawingFromCommands } from './sketchToDrawing';
 import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
-import { meshShapeForExport } from './backendMesh';
+import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
+import { completeLoftFromLifted } from './polyhedralRuledLoft';
+import { cachedCollisionVertices } from './collisionVerticesCache';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { writeStepAssembly } from './stepAssemblyExport';
+import { reproducibleOcctStep, writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
@@ -630,6 +632,7 @@ export class OcctBackend implements ShapeBackend {
     planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number }>,
     opts: {
       ruled?: boolean;
+      faceted?: boolean;
       startPoint?: [number, number, number];
       endPoint?: [number, number, number];
       twistCenter?: [number, number];
@@ -650,16 +653,12 @@ export class OcctBackend implements ShapeBackend {
       );
     }
     const lifted = sketches.map((s, i) => OcctBackend.liftLoftSection(s, planes[i], cx, cy, i));
-    // Replicad's Sketch.loftWith expects the receiver as the first section
-    // and an array (or one) of "other" sections.
-    const [first, ...rest] = lifted;
-    const loftConfig: { ruled?: boolean; startPoint?: unknown; endPoint?: unknown } = {};
-    if (opts.ruled !== undefined) loftConfig.ruled = opts.ruled;
-    if (opts.startPoint) loftConfig.startPoint = opts.startPoint;
-    if (opts.endPoint) loftConfig.endPoint = opts.endPoint;
-    const lofted = (first as { loftWith: (others: unknown[], cfg: typeof loftConfig) => ReplicadShape3D })
-      .loftWith(rest, loftConfig);
-    return new OcctBackend(lofted);
+    return completeLoftFromLifted(
+      lifted,
+      opts,
+      (vertices, indices) => OcctBackend.fromTriangleMesh(vertices, indices),
+      (shape) => new OcctBackend(shape as ReplicadShape3D),
+    );
   }
 
   /** Lift one loft section onto its target plane, applying the per-section
@@ -1015,6 +1014,9 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.shell: thickness must be positive (got ${thickness})`);
     }
     const result = this.shape.shell(thickness, (f) => f.inList([face])) as ReplicadShape3D;
+    // OCCT 8 can return the input unchanged instead of raising (7.6); that is a failure.
+    const v0 = Math.abs(replicad.measureVolume(this.shape)), v1 = Math.abs(replicad.measureVolume(result));
+    if (!(v1 > 0) || Math.abs(v1 - v0) <= v0 * 1e-9) throw new Error(`OcctBackend.shell: OCCT did not produce a shell (thickness ${thickness})`);
     return new OcctBackend(result);
   }
 
@@ -1053,7 +1055,7 @@ export class OcctBackend implements ShapeBackend {
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): {
+  intersectionMetrics(other: OcctBackend, includeSurfaceContact = false): {
     volumeMm3: number;
     areaMm2: number;
     /** World-frame bounds of the common solid, when OCCT can compute them. */
@@ -1081,7 +1083,7 @@ export class OcctBackend implements ShapeBackend {
         const props = new oc.GProp_GProps_1();
         oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
         const volumeMm3 = Math.abs(props.Mass());
-        props.delete();
+        props.delete(); if (!includeSurfaceContact && !(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
         const surface = new oc.GProp_GProps_1();
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
@@ -1089,8 +1091,7 @@ export class OcctBackend implements ShapeBackend {
         const bounds = optimalBoundsOf(shape);
         return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
-        // The handle holds a reference to the common solid; without this the
-        // result of every probe stays in the WASM heap until GC.
+        // The handle holds a reference to the common solid; without this the result of every probe stays in the WASM heap until GC.
         shape.delete();
       }
     } finally {
@@ -1216,10 +1217,11 @@ export class OcctBackend implements ShapeBackend {
    * tolerance, for collision proxies. MuJoCo convexifies every mesh geom, so
    * a physics body needs only a vertex cloud whose hull matches the part;
    * an export-grade tessellation costs far more memory for the same hull.
+   * The cloud is memoized on the underlying replicad shape so a later MJCF
+   * export of the same rest-pose solid does not remesh it.
    */
   collisionVertices(tolerance = 0.5, angularTolerance = 0.6): Float32Array {
-    const meshed = this.shape.mesh({ tolerance, angularTolerance });
-    return new Float32Array(meshed.vertices);
+    return cachedCollisionVertices(this.shape, tolerance, angularTolerance);
   }
 
   getMesh(): RuntimeMesh {
@@ -1263,12 +1265,12 @@ export class OcctBackend implements ShapeBackend {
    * then runs the O(n) edge-adjacency verify on the exact mesh that is
    * encoded, so the report describes the bytes written.
    */
-  async exportSTLWithReportAsync(): Promise<{
+  async exportSTLWithReportAsync(deflection?: ExportMeshDeflection): Promise<{
     bytes: Uint8Array;
     report: WatertightReport;
     triangleCount: number;
   }> {
-    const mesh = meshShapeForExport(this.shape);
+    const mesh = meshShapeForExport(this.shape, deflection);
     const report = verifyWatertight(mesh);
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
     return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
@@ -1283,7 +1285,7 @@ export class OcctBackend implements ShapeBackend {
   async exportSTEPAsync(): Promise<Uint8Array> {
     const blob = this.shape.blobSTEP();
     const buf = await blob.arrayBuffer();
-    return new Uint8Array(buf);
+    return reproducibleOcctStep(getOC(), new Uint8Array(buf));
   }
 
   /**

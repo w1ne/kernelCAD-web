@@ -1,0 +1,344 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/vet-clinic-silhouette-20261106/render_vet_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/vet-clinic/basket-muzzle.kcad.ts",
+      "sourceSha256": "9fe3dbeeea3ffa4066c3a306150c184a318cf959aa8d64ff53c0ac9bad338ee7",
+      "triangleBudget": 1600,
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e2e8e5",
+          "fabricColor": "#5d7d8a",
+          "paddingColor": "#9fb8bf",
+          "stainlessSteelColor": "#d5dcda"
+        },
+        "softTeal": {
+          "polymerColor": "#4d858d",
+          "fabricColor": "#2f4f55",
+          "paddingColor": "#c8d9d5",
+          "stainlessSteelColor": "#a9b5b3"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/vet-clinic/hard-sided-pet-carrier.kcad.ts",
+      "sourceSha256": "662c50ad222412cbbaf96cf01a7ccb382c39de81f9df660bff1d8156aa8558e2",
+      "triangleBudget": 1400,
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#f1f3ef",
+          "baseColor": "#8fa3a8",
+          "stainlessSteelColor": "#d8dfdd",
+          "rubberColor": "#46545a"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "baseColor": "#3f6064",
+          "stainlessSteelColor": "#b7c2c0",
+          "rubberColor": "#263235"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/vet-clinic/kennel-bowl-rail.kcad.ts",
+      "sourceSha256": "8b11bd7ddec92ae8d50e9670ab291325674a7b04cf5c9c4d059df590e713b23a",
+      "triangleBudget": 2400,
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7",
+          "stainlessSteelColor": "#d9e0de",
+          "holderColor": "#8a9a9c",
+          "rubberColor": "#4b5558"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#b9c7c5",
+          "holderColor": "#24494e",
+          "rubberColor": "#1e2a2c"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/vet-clinic/exam-step-stool.kcad.ts",
+      "sourceSha256": "c749680addc981e3f1a4136ab19bebf1a662a9de778880d3a9c303803f22a6ee",
+      "triangleBudget": 1200,
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7",
+          "stainlessSteelColor": "#d6dddb",
+          "rubberColor": "#4a5558",
+          "nosingColor": "#7fb7a6"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#b4c1bf",
+          "rubberColor": "#26363a",
+          "nosingColor": "#f0d27a"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/vet-clinic/specimen-transport-cooler.kcad.ts",
+      "sourceSha256": "077e2ecd034f4a3cab3c1816503b247859ea64296030e2052287a23940d7a4e4",
+      "triangleBudget": 1000,
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#f4f6f3",
+          "lidColor": "#8fb7c4",
+          "glassColor": "#2a4e58",
+          "rubberColor": "#56646a"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "lidColor": "#2f5f66",
+          "glassColor": "#183238",
+          "rubberColor": "#263235"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "basket-muzzle",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1260,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/basket-muzzle-default.png"
+    },
+    {
+      "assetId": "basket-muzzle",
+      "variant": "no-forehead",
+      "view": "3/4",
+      "values": {
+        "forehead": "none"
+      },
+      "triangles": 1184,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/basket-muzzle-no-forehead.png"
+    },
+    {
+      "assetId": "basket-muzzle",
+      "variant": "clinicClean",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#e2e8e5",
+        "fabricColor": "#5d7d8a",
+        "paddingColor": "#9fb8bf",
+        "stainlessSteelColor": "#d5dcda"
+      },
+      "triangles": 1260,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/basket-muzzle-clinicClean.png"
+    },
+    {
+      "assetId": "basket-muzzle",
+      "variant": "softTeal",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#4d858d",
+        "fabricColor": "#2f4f55",
+        "paddingColor": "#c8d9d5",
+        "stainlessSteelColor": "#a9b5b3"
+      },
+      "triangles": 1260,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/basket-muzzle-softTeal.png"
+    },
+    {
+      "assetId": "hard-sided-pet-carrier",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1060,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/hard-sided-pet-carrier-default.png"
+    },
+    {
+      "assetId": "hard-sided-pet-carrier",
+      "variant": "small",
+      "view": "3/4",
+      "values": {
+        "size": "small"
+      },
+      "triangles": 1060,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/hard-sided-pet-carrier-small.png"
+    },
+    {
+      "assetId": "hard-sided-pet-carrier",
+      "variant": "large",
+      "view": "3/4",
+      "values": {
+        "size": "large"
+      },
+      "triangles": 1060,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/hard-sided-pet-carrier-large.png"
+    },
+    {
+      "assetId": "hard-sided-pet-carrier",
+      "variant": "clinicClean",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#f1f3ef",
+        "baseColor": "#8fa3a8",
+        "stainlessSteelColor": "#d8dfdd",
+        "rubberColor": "#46545a"
+      },
+      "triangles": 1060,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/hard-sided-pet-carrier-clinicClean.png"
+    },
+    {
+      "assetId": "hard-sided-pet-carrier",
+      "variant": "softTeal",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#9bbfc0",
+        "baseColor": "#3f6064",
+        "stainlessSteelColor": "#b7c2c0",
+        "rubberColor": "#263235"
+      },
+      "triangles": 1060,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/hard-sided-pet-carrier-softTeal.png"
+    },
+    {
+      "assetId": "kennel-bowl-rail",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1632,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/kennel-bowl-rail-default.png"
+    },
+    {
+      "assetId": "kennel-bowl-rail",
+      "variant": "two",
+      "view": "3/4",
+      "values": {
+        "bowls": "two"
+      },
+      "triangles": 1260,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/kennel-bowl-rail-two.png"
+    },
+    {
+      "assetId": "kennel-bowl-rail",
+      "variant": "four",
+      "view": "3/4",
+      "values": {
+        "bowls": "four"
+      },
+      "triangles": 2004,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/kennel-bowl-rail-four.png"
+    },
+    {
+      "assetId": "kennel-bowl-rail",
+      "variant": "clinicClean",
+      "view": "3/4",
+      "values": {
+        "paintedSteelColor": "#e4ebe7",
+        "stainlessSteelColor": "#d9e0de",
+        "holderColor": "#8a9a9c",
+        "rubberColor": "#4b5558"
+      },
+      "triangles": 1632,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/kennel-bowl-rail-clinicClean.png"
+    },
+    {
+      "assetId": "kennel-bowl-rail",
+      "variant": "softTeal",
+      "view": "3/4",
+      "values": {
+        "paintedSteelColor": "#4d858d",
+        "stainlessSteelColor": "#b9c7c5",
+        "holderColor": "#24494e",
+        "rubberColor": "#1e2a2c"
+      },
+      "triangles": 1632,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/kennel-bowl-rail-softTeal.png"
+    },
+    {
+      "assetId": "exam-step-stool",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 864,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/exam-step-stool-default.png"
+    },
+    {
+      "assetId": "exam-step-stool",
+      "variant": "no-rail",
+      "view": "3/4",
+      "values": {
+        "handrail": "none"
+      },
+      "triangles": 724,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/exam-step-stool-no-rail.png"
+    },
+    {
+      "assetId": "exam-step-stool",
+      "variant": "clinicClean",
+      "view": "3/4",
+      "values": {
+        "paintedSteelColor": "#e4ebe7",
+        "stainlessSteelColor": "#d6dddb",
+        "rubberColor": "#4a5558",
+        "nosingColor": "#7fb7a6"
+      },
+      "triangles": 864,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/exam-step-stool-clinicClean.png"
+    },
+    {
+      "assetId": "exam-step-stool",
+      "variant": "softTeal",
+      "view": "3/4",
+      "values": {
+        "paintedSteelColor": "#4d858d",
+        "stainlessSteelColor": "#b4c1bf",
+        "rubberColor": "#26363a",
+        "nosingColor": "#f0d27a"
+      },
+      "triangles": 864,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/exam-step-stool-softTeal.png"
+    },
+    {
+      "assetId": "specimen-transport-cooler",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 744,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/specimen-transport-cooler-default.png"
+    },
+    {
+      "assetId": "specimen-transport-cooler",
+      "variant": "strap",
+      "view": "3/4",
+      "values": {
+        "carry": "strap"
+      },
+      "triangles": 620,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/specimen-transport-cooler-strap.png"
+    },
+    {
+      "assetId": "specimen-transport-cooler",
+      "variant": "clinicClean",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#f4f6f3",
+        "lidColor": "#8fb7c4",
+        "glassColor": "#2a4e58",
+        "rubberColor": "#56646a"
+      },
+      "triangles": 744,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/specimen-transport-cooler-clinicClean.png"
+    },
+    {
+      "assetId": "specimen-transport-cooler",
+      "variant": "softTeal",
+      "view": "3/4",
+      "values": {
+        "polymerColor": "#9bbfc0",
+        "lidColor": "#2f5f66",
+        "glassColor": "#183238",
+        "rubberColor": "#263235"
+      },
+      "triangles": 744,
+      "png": "artifacts/catalog-demos/vet-clinic-silhouette-20261106/variants/specimen-transport-cooler-softTeal.png"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --kit space-exploration",
+  "summary": "52/52 assets pass",
+  "passed": true
+}

@@ -1,0 +1,17 @@
+{
+  "workflow": "office source -> regenerated catalog previews -> source-driven professional/classroom preset renders -> rebuilt catalog index and local checks",
+  "video": "artifacts/catalog-demos/office-tools-silhouette-20261110/office-tools-silhouette.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "secondsPerFrame": 3,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/office-tools-silhouette-20261110/capture_demo.py",
+  "presetInvocation": "npx tsx artifacts/catalog-demos/office-tools-silhouette-20261110/render_variants.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts archive-box business-card-holder calculator clipboard desk-calendar desk-organizer dry-erase-board envelope-stack file-folder footrest fountain-pen hanging-file-folder highlighter hole-punch ink-pad label-maker laminator laptop-stand letter-sorter letter-tray marker mechanical-pencil memo-pad monitor-riser mousepad notebook office-pinboard paper-clip-dish paper-cutter paper-shredder paperweight pencil-cup ring-binder rubber-stamp ruler scissors stapler sticky-notes tape-dispenser wrist-rest",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "provenance": "Local software renders from checked-in kernelCAD source; no deployment or physical acceptance is shown."
+}

@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-11-12",
+  "origin": "https://kernelcad.com",
+  "items": [
+    {
+      "kit": "construction-equipment",
+      "id": "concrete-batch-plant",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/construction-equipment-concrete-batch-plant.png",
+          "httpStatus": 200,
+          "savedAs": "concrete-batch-plant.png"
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/construction-equipment-concrete-batch-plant.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "concrete-batch-plant.kcad.ts"
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/construction-equipment/concrete-batch-plant/",
+          "httpStatus": 200,
+          "savedAs": "concrete-batch-plant.html"
+        }
+      ]
+    },
+    {
+      "kit": "data-center-infrastructure",
+      "id": "rear-door-heat-exchanger",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
+          "httpStatus": 200,
+          "savedAs": "rear-door-heat-exchanger.png"
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/data-center-infrastructure-rear-door-heat-exchanger.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "rear-door-heat-exchanger.kcad.ts"
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/data-center-infrastructure/rear-door-heat-exchanger/",
+          "httpStatus": 200,
+          "savedAs": "rear-door-heat-exchanger.html"
+        }
+      ]
+    },
+    {
+      "kit": "mining",
+      "id": "rotary-blasthole-drill",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/mining-rotary-blasthole-drill.png",
+          "httpStatus": 200,
+          "savedAs": "rotary-blasthole-drill.png"
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/mining-rotary-blasthole-drill.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "rotary-blasthole-drill.kcad.ts"
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/mining/rotary-blasthole-drill/",
+          "httpStatus": 200,
+          "savedAs": "rotary-blasthole-drill.html"
+        }
+      ]
+    },
+    {
+      "kit": "mining",
+      "id": "shaft-headframe",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/mining-shaft-headframe.png",
+          "httpStatus": 200,
+          "savedAs": "shaft-headframe.png"
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/mining-shaft-headframe.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "shaft-headframe.kcad.ts"
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/mining/shaft-headframe/",
+          "httpStatus": 200,
+          "savedAs": "shaft-headframe.html"
+        }
+      ]
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "towable-light-tower",
+      "routes": [
+        {
+          "type": "preview",
+          "url": "https://kernelcad.com/assets/construction-equipment-towable-light-tower.png",
+          "httpStatus": 200,
+          "savedAs": "towable-light-tower.png"
+        },
+        {
+          "type": "source",
+          "url": "https://kernelcad.com/assets/construction-equipment-towable-light-tower.kcad.ts",
+          "httpStatus": 200,
+          "savedAs": "towable-light-tower.kcad.ts"
+        },
+        {
+          "type": "detail",
+          "url": "https://kernelcad.com/catalog/construction-equipment/towable-light-tower/",
+          "httpStatus": 200,
+          "savedAs": "towable-light-tower.html"
+        }
+      ]
+    }
+  ]
+}

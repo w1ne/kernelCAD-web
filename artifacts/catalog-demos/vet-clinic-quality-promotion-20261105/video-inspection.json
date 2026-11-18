@@ -1,0 +1,26 @@
+{
+  "video": "vet-clinic-quality-promotion.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1",
+        "nb_frames": "491"
+      }
+    ],
+    "format": {
+      "duration": "20.458333"
+    }
+  },
+  "decodedFrames": 6,
+  "contactSheet": "video-review/contact-sheet.png",
+  "visuallyReviewed": true,
+  "reviewNotes": [
+    "All six decoded storyboard sections are distinct and the captions remain legible at 1280x720.",
+    "The clinicClean and softTeal frames show the same anesthesia-machine geometry with clearly different finishes.",
+    "The ending frame labels local verification and states that the branch is not deployed."
+  ]
+}

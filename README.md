@@ -1,17 +1,56 @@
-> Source scope: this repository contains the reusable CAD runtime, CLI, MCP tools and headless renderer. Hosted product UI and commercial manufacturing services are maintained separately. Build the reusable tools with `npm run build`; use `npm run dev` for the standalone renderer.
+# kernelCAD — CAD for coding agents, with editable source and checks
 
-# kernelCAD - CAD runtime for agents
+**Describe a mechanical part in ChatGPT, Claude, Codex, Cursor, or the browser.**
+kernelCAD turns the brief into editable parametric CAD, lets you inspect and
+revise the geometry, and exports **STEP, STL, and drawings**.
 
-**kernelCAD** turns mechanical intent into editable `.kcad.ts` source,
-deterministic review evidence, and exportable manufacturing artifacts.
+**Start here:** [Open Studio](https://app.kernelcad.com/) ·
+[Connect your agent](https://app.kernelcad.com/connect) ·
+[Watch real tool workflows](https://kernelcad.com/docs/workflows) ·
+[Read the prompt-to-STEP guide](https://kernelcad.com/blog/ai-cad-for-coding-agents/)
 
-The core loop is source-first: design brief -> editable `.kcad.ts` ->
-evaluated model -> deterministic validation -> guided revision -> export package.
+![A parameterized planetary gear stage produced through the kernelCAD agent workflow](showcase/planetary-gear-stage/planetary-gear-stage.gif)
 
-kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks.
-Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
-layer above the kernel: deterministic CAD source, feature history, diagnostics,
-validation, variants, and human review.
+**Why not just generate an image?** Your design remains `.kcad.ts` source:
+named features, editable dimensions and assembly structure. Agents can
+evaluate it, check constraints and clearances, revise the source, and export
+files for an engineer to inspect. [Reproducible example source](showcase/)
+and [documented checks](docs/reference-parts-scorecard.md) are public.
+Geometry checks are not material-strength or manufacturing certification.
+
+**Connect a hosted MCP client:** `https://mcp.kernelcad.com/mcp`
+(no local CAD install). **Run locally:** `npx -y kernelcad mcp`
+(Node.js 22.12+).
+
+> Source scope: this repository contains the reusable CAD runtime, CLI, MCP
+> tools and headless renderer. Hosted UI and commercial services are maintained
+> separately. Build the reusable tools with `npm run build`; use `npm run dev`
+> for the standalone renderer.
+
+The workflow is: brief → editable `.kcad.ts` → evaluated B-rep → validation
+→ guided revision → STEP/STL/drawing. OpenCASCADE is the geometry kernel;
+kernelCAD supplies the agent-first modeling and review workflow.
+
+## Manufacturing design use cases
+
+Describe a part, refine its editable CAD source, and export the geometry or
+drawing needed for the next step. These examples are starting points for
+designing parts for different processes:
+
+| Process | Example | Reusable CAD reference |
+|---|---|---|
+| 3D printing | An electronics enclosure with locating lid and PCB posts | [Enclosure](examples/manufacturing-showcase/electronics-enclosure.kcad.ts) |
+| CNC milling | A bearing block with mounting holes and a stepped seat | [Bearing block](examples/manufacturing-showcase/bearing-block.kcad.ts) |
+| Sheet metal | A four-hole bent bracket with a flat pattern | [Bent bracket](examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts) |
+| Laser or waterjet cutting | A motor mounting plate with pilot and hole patterns | [Motor plate](examples/manufacturing-showcase/cut-motor-plate.kcad.ts) |
+| Turning | A shouldered spacer with an axial bore | [Shoulder spacer](examples/manufacturing-showcase/shoulder-spacer.kcad.ts) |
+| Assemblies | A bearing, housing, shaft and retainer | [Bearing assembly](examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts) |
+| Injection molding | A drafted housing with board-screw bosses and structural ribs | [Moulded housing](examples/manufacturing-showcase/moulded-housing.kcad.ts) |
+
+The output is CAD for review, not a manufacturing certification. Check
+dimensions, fit, material and process requirements, and prototype or obtain
+engineering review as appropriate for the part. The [case notes](examples/manufacturing-showcase/README.md)
+describe what has been checked and what remains open for each model.
 
 ## Install
 
@@ -129,8 +168,8 @@ Some checks go past the picture:
 
 The headless OCCT gate checks 27 native `.kcad.ts` reference parts against
 analytic or recorded OCCT volume, surface-area, and bounding-box values. The
-current headline is 25/27 reference parts match; the expected-pass gate is
-25/25, with two documented known failures and their reasons listed in the
+current headline is 27/27 reference parts match; the expected-pass gate is
+27/27, with the analytic inputs and tolerances listed in the
 scorecard. See the
 [reference-parts scorecard](docs/reference-parts-scorecard.md) and its
 [local validation demo](docs/demos/reference-parts-scorecard/README.md).

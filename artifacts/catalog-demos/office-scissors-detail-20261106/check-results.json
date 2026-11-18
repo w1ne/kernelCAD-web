@@ -1,0 +1,67 @@
+{
+  "round": "office scissors default-view geometry repair",
+  "commands": [
+    {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <40 office asset IDs>",
+      "exitCode": 0,
+      "result": "40 previews regenerated; detailed output in preview-render-output.txt"
+    },
+    {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "result": "catalog/index.json regenerated"
+    },
+    {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 0,
+      "result": "2390/2390 assets pass (100.00%)"
+    },
+    {
+      "command": "python3 scripts/checkCatalogQuality.py --kit office",
+      "exitCode": 0,
+      "result": "40/40 assets pass"
+    },
+    {
+      "command": "npx eslint catalog/kits/office/",
+      "exitCode": 0,
+      "result": "clean"
+    },
+    {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "result": "4 files, 15 tests passed in 249.91s"
+    },
+    {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-office-scissors-20261106",
+      "exitCode": 0,
+      "result": "2390 pages plus hub, sitemap and robots.txt generated"
+    },
+    {
+      "command": "python3 artifacts/catalog-demos/office-scissors-detail-20261106/verify_scissors_page.py",
+      "exitCode": 0,
+      "result": "7/7 local page checks passed"
+    },
+    {
+      "command": "npx tsx artifacts/catalog-demos/office-scissors-detail-20261106/render_scissors_presets.ts",
+      "exitCode": 0,
+      "result": "professional and classroom renders each contain 316 triangles"
+    },
+    {
+      "command": "python3 artifacts/catalog-demos/office-scissors-detail-20261106/capture_scissors_demo.py",
+      "exitCode": 0,
+      "result": "15-second MP4 generated"
+    },
+    {
+      "command": "ffprobe and five sampled MP4 frame inspections",
+      "exitCode": 0,
+      "result": "H.264 1280x720 at 24 fps; all five slides legible and truthful"
+    }
+  ],
+  "visualReview": {
+    "office/scissors": "Connected red polymer handles, brass pivot and two silver blades read as shears.",
+    "office/fountain-pen": "Upright dark-blue capped pen with silver band and clip.",
+    "office/paper-shredder": "Graphite cabinet with feed slot, contrasting bin window and front casters."
+  },
+  "deployment": "not deployed; local page only",
+  "physicalAcceptance": "not performed"
+}

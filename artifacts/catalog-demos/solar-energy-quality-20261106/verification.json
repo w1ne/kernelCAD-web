@@ -1,0 +1,1293 @@
+{
+  "date": "2026-11-06",
+  "kit": "solar-energy",
+  "assetCount": 40,
+  "quality": {
+    "before": {
+      "passing": 2291,
+      "total": 2390,
+      "passRate": "95.9%",
+      "thin": 99
+    },
+    "after": {
+      "passing": 2331,
+      "total": 2390,
+      "passRate": "97.5%",
+      "thin": 59
+    },
+    "kit": {
+      "exitCode": 0,
+      "output": "40/40 assets pass (1 rich kits, 0 thin kits)"
+    },
+    "wholeCatalog": {
+      "exitCode": 1,
+      "output": "MIXED  city-street                  61/65   colours/asset=3.09\n  MIXED  nature                       63/66   colours/asset=2.62\n  THIN   office                        0/40   colours/asset=1.00\n  MIXED  outdoor-gear                  1/12   colours/asset=2.92\n  MIXED  props                        44/45   colours/asset=3.33\n\n  2331/2390 assets pass (44 rich kits, 1 thin kits)\n  59 thin assets = 2% of the catalog"
+    }
+  },
+  "materialControlsAdded": 130,
+  "presetEntriesAdded": 80,
+  "indexedMaterialControls": 130,
+  "indexedPresetEntries": 80,
+  "previewCount": 40,
+  "allSourceHashesMatch": true,
+  "allTriangleBudgetsPass": true,
+  "localCatalogPages": {
+    "output": "/tmp/kernelcad-solar-pages-20261106",
+    "pageCount": 40,
+    "allPagesHavePreviewAndControls": true
+  },
+  "deployedPageVerified": false,
+  "deployedPageNote": "The feature branch has not been deployed; local static catalog pages were checked.",
+  "assets": [
+    {
+      "id": "ac-disconnect-switch",
+      "source": "catalog/kits/solar-energy/ac-disconnect-switch.kcad.ts",
+      "sourceSha256": "7baf858ffd9b2b33919fb3bb766ea8489ae7b0a3c377584a2ebfd148c9c05039",
+      "preview": "/assets/solar-energy-ac-disconnect-switch.png",
+      "previewFile": "catalog/kits/solar-energy/previews/ac-disconnect-switch.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "warningPaint",
+          "label": "Safety paint",
+          "default": "#e5a032"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 216,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "balcony-solar-panel",
+      "source": "catalog/kits/solar-energy/balcony-solar-panel.kcad.ts",
+      "sourceSha256": "7912f57ff90744f790eba19ffe64ad0ba53b4270b62945a33b4bce68543db0e5",
+      "preview": "/assets/solar-energy-balcony-solar-panel.png",
+      "previewFile": "catalog/kits/solar-energy/previews/balcony-solar-panel.png",
+      "colorControls": [
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#99968d"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "battery-cabinet",
+      "source": "catalog/kits/solar-energy/battery-cabinet.kcad.ts",
+      "sourceSha256": "885d9f8a4873d02a7b0051d18e89185733443d84f716cd60543ef33c7faa067d",
+      "preview": "/assets/solar-energy-battery-cabinet.png",
+      "previewFile": "catalog/kits/solar-energy/previews/battery-cabinet.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "warningPaint",
+          "label": "Safety paint",
+          "default": "#e5a032"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "battery-rack",
+      "source": "catalog/kits/solar-energy/battery-rack.kcad.ts",
+      "sourceSha256": "1d5ca7dc25066e62487373f9591730e88fd1a7339c9050680eef2697ffbaadfd",
+      "preview": "/assets/solar-energy-battery-rack.png",
+      "previewFile": "catalog/kits/solar-energy/previews/battery-rack.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "batteryPolymer",
+          "label": "Battery polymer",
+          "default": "#3b5d65"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "bifacial-pv-module",
+      "source": "catalog/kits/solar-energy/bifacial-pv-module.kcad.ts",
+      "sourceSha256": "7e3e4a4edeefa1f8b6d858744483fd3c157c4b3b06bf8beaeeb226ffd25d3a80",
+      "preview": "/assets/solar-energy-bifacial-pv-module.png",
+      "previewFile": "catalog/kits/solar-energy/previews/bifacial-pv-module.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "cellBusbar",
+          "label": "PV cell busbars",
+          "default": "#d9dedd"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 192,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "dc-disconnect-switch",
+      "source": "catalog/kits/solar-energy/dc-disconnect-switch.kcad.ts",
+      "sourceSha256": "324648146f098a5d021e99270afadc400a587ac883b00b19812f52992b000b52",
+      "preview": "/assets/solar-energy-dc-disconnect-switch.png",
+      "previewFile": "catalog/kits/solar-energy/previews/dc-disconnect-switch.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "warningPaint",
+          "label": "Safety paint",
+          "default": "#e5a032"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 216,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "flexible-solar-panel",
+      "source": "catalog/kits/solar-energy/flexible-solar-panel.kcad.ts",
+      "sourceSha256": "0f20efcba951c6995ce894cc012a941b9dab0ee8d389fae34d56e50277e4091a",
+      "preview": "/assets/solar-energy-flexible-solar-panel.png",
+      "previewFile": "catalog/kits/solar-energy/previews/flexible-solar-panel.png",
+      "colorControls": [
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        },
+        {
+          "name": "cellBusbar",
+          "label": "PV cell busbars",
+          "default": "#d9dedd"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "floating-solar-platform",
+      "source": "catalog/kits/solar-energy/floating-solar-platform.kcad.ts",
+      "sourceSha256": "b98359482f123f1ebbb3798cb39c62935725e41b2e5cf4a9bc0dd5b555cb5fa7",
+      "preview": "/assets/solar-energy-floating-solar-platform.png",
+      "previewFile": "catalog/kits/solar-energy/previews/floating-solar-platform.png",
+      "colorControls": [
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 208,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "ground-mount-pv-rack",
+      "source": "catalog/kits/solar-energy/ground-mount-pv-rack.kcad.ts",
+      "sourceSha256": "b6890ec0281452b15ca1ce001b9f56a365fdc9880e747b9cceba4724e3c25fe9",
+      "preview": "/assets/solar-energy-ground-mount-pv-rack.png",
+      "previewFile": "catalog/kits/solar-energy/previews/ground-mount-pv-rack.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "home-battery-wall",
+      "source": "catalog/kits/solar-energy/home-battery-wall.kcad.ts",
+      "sourceSha256": "b0bd856bd16622abe291b6c403d88e6f72b961fc96453c669ab3564fe934dba8",
+      "preview": "/assets/solar-energy-home-battery-wall.png",
+      "previewFile": "catalog/kits/solar-energy/previews/home-battery-wall.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "hybrid-inverter",
+      "source": "catalog/kits/solar-energy/hybrid-inverter.kcad.ts",
+      "sourceSha256": "60ec2c5c5a75128c5f5a0a7594012251e19e0d8015345f18471f425cce126c77",
+      "preview": "/assets/solar-energy-hybrid-inverter.png",
+      "previewFile": "catalog/kits/solar-energy/previews/hybrid-inverter.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24515d"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 336,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "microinverter-unit",
+      "source": "catalog/kits/solar-energy/microinverter-unit.kcad.ts",
+      "sourceSha256": "8c49922a4a443f541d1ddc389310209fda893ec687a09043067f6c09044f928b",
+      "preview": "/assets/solar-energy-microinverter-unit.png",
+      "previewFile": "catalog/kits/solar-energy/previews/microinverter-unit.png",
+      "colorControls": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 184,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pad-mount-transformer",
+      "source": "catalog/kits/solar-energy/pad-mount-transformer.kcad.ts",
+      "sourceSha256": "fba74521d18fbb696c33e6aa57dc72995d5c107529c5ae003b571cb4fd005056",
+      "preview": "/assets/solar-energy-pad-mount-transformer.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pad-mount-transformer.png",
+      "colorControls": [
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#99968d"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "ceramic",
+          "label": "Porcelain ceramic",
+          "default": "#eee8d8"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 660,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "plane-of-array-irradiance-sensor",
+      "source": "catalog/kits/solar-energy/plane-of-array-irradiance-sensor.kcad.ts",
+      "sourceSha256": "4ca874c36000772282367fe425095c2ce04c5c5a408aff7be64e290248e59005",
+      "preview": "/assets/solar-energy-plane-of-array-irradiance-sensor.png",
+      "previewFile": "catalog/kits/solar-energy/previews/plane-of-array-irradiance-sensor.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24515d"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pole-mount-transformer",
+      "source": "catalog/kits/solar-energy/pole-mount-transformer.kcad.ts",
+      "sourceSha256": "7b1db1df3d9ab4717cbd74e871a7a0b00aade979fe5145029cdd8f2619f1b0e4",
+      "preview": "/assets/solar-energy-pole-mount-transformer.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pole-mount-transformer.png",
+      "colorControls": [
+        {
+          "name": "wood",
+          "label": "Treated wood",
+          "default": "#856849"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "ceramic",
+          "label": "Porcelain ceramic",
+          "default": "#eee8d8"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 232,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-ballast-block",
+      "source": "catalog/kits/solar-energy/pv-ballast-block.kcad.ts",
+      "sourceSha256": "bc4da8ee55b6b6bd462a54f9e3a71a851b29c023bb13d4ac353630511944c748",
+      "preview": "/assets/solar-energy-pv-ballast-block.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-ballast-block.png",
+      "colorControls": [
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#99968d"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-cable-tray",
+      "source": "catalog/kits/solar-energy/pv-cable-tray.kcad.ts",
+      "sourceSha256": "f842b1e3f8dd3a6d8cd55caf4ee5f493ecdda91e0639dff118ed9fc7ecdbe99c",
+      "preview": "/assets/solar-energy-pv-cable-tray.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-cable-tray.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-combiner-box",
+      "source": "catalog/kits/solar-energy/pv-combiner-box.kcad.ts",
+      "sourceSha256": "83f2204ee1b14f65656ba63e97864ed48e0f10090bcace33a31de60374e354be",
+      "preview": "/assets/solar-energy-pv-combiner-box.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-combiner-box.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 260,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-junction-box",
+      "source": "catalog/kits/solar-energy/pv-junction-box.kcad.ts",
+      "sourceSha256": "335d505bb35fd900e16a04a3cc00f6d75fc2e722fc64ffd56cfc1652bd9e94f9",
+      "preview": "/assets/solar-energy-pv-junction-box.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-junction-box.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 224,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-module-microinverter",
+      "source": "catalog/kits/solar-energy/pv-module-microinverter.kcad.ts",
+      "sourceSha256": "29d44ae79609920954c5f688d6aaa7b172f2f1344f72a6740a64b67197901571",
+      "preview": "/assets/solar-energy-pv-module-microinverter.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-module-microinverter.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-module-transport-cart",
+      "source": "catalog/kits/solar-energy/pv-module-transport-cart.kcad.ts",
+      "sourceSha256": "19a9e38b20fcd7f37c5f10f63399646f0276bcfb924a2246082041c9e784eddc",
+      "preview": "/assets/solar-energy-pv-module-transport-cart.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-module-transport-cart.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 184,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "pv-panel-cleaning-robot",
+      "source": "catalog/kits/solar-energy/pv-panel-cleaning-robot.kcad.ts",
+      "sourceSha256": "ec47eaabc77474d3d1d4584c36249bef098b9b195c6a6a746aada2a97e721b56",
+      "preview": "/assets/solar-energy-pv-panel-cleaning-robot.png",
+      "previewFile": "catalog/kits/solar-energy/previews/pv-panel-cleaning-robot.png",
+      "colorControls": [
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 456,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "roof-flashing-mount",
+      "source": "catalog/kits/solar-energy/roof-flashing-mount.kcad.ts",
+      "sourceSha256": "4ea1b4013f96efc87db3e634b350ad05b06a6027c6a7b7f2a32c0fc4f0b6cbc8",
+      "preview": "/assets/solar-energy-roof-flashing-mount.png",
+      "previewFile": "catalog/kits/solar-energy/previews/roof-flashing-mount.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "rooftop-pv-array",
+      "source": "catalog/kits/solar-energy/rooftop-pv-array.kcad.ts",
+      "sourceSha256": "d4343a5516b08c481d30fae83d08120008cd177932c74e5ae040c2125f4b0c38",
+      "preview": "/assets/solar-energy-rooftop-pv-array.png",
+      "previewFile": "catalog/kits/solar-energy/previews/rooftop-pv-array.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "rooftop-pv-module",
+      "source": "catalog/kits/solar-energy/rooftop-pv-module.kcad.ts",
+      "sourceSha256": "e3d11ade9625c48978ada9740813f164bd2e8e2afea35c6656ef69e06d58f308",
+      "preview": "/assets/solar-energy-rooftop-pv-module.png",
+      "previewFile": "catalog/kits/solar-energy/previews/rooftop-pv-module.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "cellBusbar",
+          "label": "PV cell busbars",
+          "default": "#d9dedd"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "single-axis-solar-tracker",
+      "source": "catalog/kits/solar-energy/single-axis-solar-tracker.kcad.ts",
+      "sourceSha256": "bbe68991cca49d7b9dd9efec7a377391d7fb9b444fd843d120068b5b22355d95",
+      "preview": "/assets/solar-energy-single-axis-solar-tracker.png",
+      "previewFile": "catalog/kits/solar-energy/previews/single-axis-solar-tracker.png",
+      "colorControls": [
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "cellBusbar",
+          "label": "PV cell busbars",
+          "default": "#d9dedd"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 680,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-battery-container",
+      "source": "catalog/kits/solar-energy/solar-battery-container.kcad.ts",
+      "sourceSha256": "01ec75b4444a972b9ef47ff4c44d3d61201fad1a7508e55b05cba2a3c28de6c5",
+      "preview": "/assets/solar-energy-solar-battery-container.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-battery-container.png",
+      "colorControls": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 816,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-carport-canopy",
+      "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
+      "sourceSha256": "817813aeb7e46d10d98bfb3b951a670b03d721e3189296170e4df70f5e6eb64b",
+      "preview": "/assets/solar-energy-solar-carport-canopy.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-carport-canopy.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 216,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-charge-controller",
+      "source": "catalog/kits/solar-energy/solar-charge-controller.kcad.ts",
+      "sourceSha256": "0f589da287c2a31bef11e49e2fe1a1757bae2721c9ca96e01da3261d662182b2",
+      "preview": "/assets/solar-energy-solar-charge-controller.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-charge-controller.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24515d"
+        },
+        {
+          "name": "warningPaint",
+          "label": "Safety paint",
+          "default": "#e5a032"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-data-logger",
+      "source": "catalog/kits/solar-energy/solar-data-logger.kcad.ts",
+      "sourceSha256": "30e440f4d51b8b3be83ff4da14cd808efb444cc3bbba558502cee9caea9a0e16",
+      "preview": "/assets/solar-energy-solar-data-logger.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-data-logger.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-electric-meter",
+      "source": "catalog/kits/solar-energy/solar-electric-meter.kcad.ts",
+      "sourceSha256": "172d9a780c7b1c82bb1613ec2ca4fff2e9e7f128cd92dab9bbcad54aca02d67d",
+      "preview": "/assets/solar-energy-solar-electric-meter.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-electric-meter.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24515d"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-main-panel",
+      "source": "catalog/kits/solar-energy/solar-main-panel.kcad.ts",
+      "sourceSha256": "ab6e150cb6f2d96f6a26f6421340d8dda157ed2715d29bf2c1e58bd358bfc9f9",
+      "preview": "/assets/solar-energy-solar-main-panel.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-main-panel.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-panel-end-clamp",
+      "source": "catalog/kits/solar-energy/solar-panel-end-clamp.kcad.ts",
+      "sourceSha256": "3d18058e5c94ccd9294066478b7a1497d5a643aa4a6517d7dc5ef400743b5a24",
+      "preview": "/assets/solar-energy-solar-panel-end-clamp.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-panel-end-clamp.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 92,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-panel-wash-cart",
+      "source": "catalog/kits/solar-energy/solar-panel-wash-cart.kcad.ts",
+      "sourceSha256": "d985b068261647bbc59b83931004fff94ff43d4ced29ae7550d44680a334412f",
+      "preview": "/assets/solar-energy-solar-panel-wash-cart.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-panel-wash-cart.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-pergola-canopy",
+      "source": "catalog/kits/solar-energy/solar-pergola-canopy.kcad.ts",
+      "sourceSha256": "9613c512382192c862a926e8a2eff2b5e2788e0ee65af6cc5f113dbfc9b668f2",
+      "preview": "/assets/solar-energy-solar-pergola-canopy.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-pergola-canopy.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-roof-section",
+      "source": "catalog/kits/solar-energy/solar-roof-section.kcad.ts",
+      "sourceSha256": "c2f380f43e39dd813495b2d5c4df2db7354047fbfdaa09c59ec68f01286a2380",
+      "preview": "/assets/solar-energy-solar-roof-section.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-roof-section.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "solarGlass",
+          "label": "Solar glass",
+          "default": "#244a68"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 96,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-weather-station",
+      "source": "catalog/kits/solar-energy/solar-weather-station.kcad.ts",
+      "sourceSha256": "8a6b174077c46ca2888fe539660ffd1f7ffd4cb231bf871362f423ea99d646b0",
+      "preview": "/assets/solar-energy-solar-weather-station.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-weather-station.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "solar-wind-sensor-mast",
+      "source": "catalog/kits/solar-energy/solar-wind-sensor-mast.kcad.ts",
+      "sourceSha256": "3ebec949ec4e0961e02337b7065309e969eb25936191947d4de0f93221d54a53",
+      "preview": "/assets/solar-energy-solar-wind-sensor-mast.png",
+      "previewFile": "catalog/kits/solar-energy/previews/solar-wind-sensor-mast.png",
+      "colorControls": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#748184"
+        },
+        {
+          "name": "aluminum",
+          "label": "Frame aluminum",
+          "default": "#b7c1c4"
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer",
+          "default": "#daddd7"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 292,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "string-inverter",
+      "source": "catalog/kits/solar-energy/string-inverter.kcad.ts",
+      "sourceSha256": "714284c24f5503e16951797682536fbf631cc7a5c27bbc6a5a1a4a33004c6c30",
+      "preview": "/assets/solar-energy-string-inverter.png",
+      "previewFile": "catalog/kits/solar-energy/previews/string-inverter.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24515d"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#262c2e"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 336,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "utility-inverter-station",
+      "source": "catalog/kits/solar-energy/utility-inverter-station.kcad.ts",
+      "sourceSha256": "823dc583a9a181a9d5f8892068f8e82d31017f25aec0c6c9a65f600329837a80",
+      "preview": "/assets/solar-energy-utility-inverter-station.png",
+      "previewFile": "catalog/kits/solar-energy/previews/utility-inverter-station.png",
+      "colorControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#c3caca"
+        },
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#687c7c"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800
+    }
+  ]
+}

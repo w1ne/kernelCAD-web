@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-10T04:57:57+00:00",
+  "scope": "Generated local static catalog page; public deployment not checked.",
+  "hub": "site-build/catalog/index.html",
+  "hubContainsAsset": true,
+  "asset": "flat-joining-plate",
+  "page": "site-build/catalog/standard-components/flat-joining-plate/index.html",
+  "pagePreview": "site-build/catalog/standard-components/flat-joining-plate/preview.png",
+  "pagePreviewBytes": 17918,
+  "sourceSha256MatchesIndex": true,
+  "triangleCount": 572,
+  "triangleBudget": 800,
+  "params": [
+    "size",
+    "holeCount",
+    "steel",
+    "zinc"
+  ],
+  "presets": [
+    "brass",
+    "dark",
+    "weathered"
+  ],
+  "hasStudioLink": true
+}

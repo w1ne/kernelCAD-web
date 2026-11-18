@@ -1,0 +1,17 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'kernelcad' evaluate catalog/kits/water-treatment/backwash-pump-skid.kcad.ts --json
+{
+  "ok": true,
+  "featureCount": 165,
+  "diagnostics": [],
+  "requirements": {
+    "ok": true,
+    "entries": [],
+    "summary": {
+      "pass": 0,
+      "fail": 0,
+      "notEvaluated": 0
+    }
+  },
+  "ports": []
+}

@@ -1,0 +1,137 @@
+{
+  "status": "local-cad-capture-and-lowerer-transforms-verified",
+  "source": "model-scene-mate-transforms.kcad.ts",
+  "sourceSha256": "f3c43d741f8ed31c01c944c89a5f6cc78b54670f111efd7e2a6244fd1061efe0",
+  "build": "buildModel + OCCT lowerer",
+  "replay": "compare returned Scene.part.worldTransform with lowered SceneBackend transforms",
+  "parts": [
+    {
+      "name": "base",
+      "color": "#3978ce",
+      "captureOriginMm": [
+        0,
+        0,
+        0
+      ],
+      "lowerOriginMm": [
+        0,
+        0,
+        0
+      ],
+      "captureBoundsMm": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          10,
+          10
+        ]
+      },
+      "lowerBoundsMm": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          10,
+          10
+        ]
+      },
+      "transformDelta": 0
+    },
+    {
+      "name": "child",
+      "color": "#ee9943",
+      "captureOriginMm": [
+        10,
+        0,
+        0
+      ],
+      "lowerOriginMm": [
+        10,
+        0,
+        0
+      ],
+      "captureBoundsMm": {
+        "min": [
+          10,
+          0,
+          0
+        ],
+        "max": [
+          20,
+          10,
+          10
+        ]
+      },
+      "lowerBoundsMm": {
+        "min": [
+          10,
+          0,
+          0
+        ],
+        "max": [
+          20,
+          10,
+          10
+        ]
+      },
+      "transformDelta": 0
+    },
+    {
+      "name": "tip",
+      "color": "#55a88a",
+      "captureOriginMm": [
+        10,
+        0,
+        0
+      ],
+      "lowerOriginMm": [
+        10,
+        0,
+        0
+      ],
+      "captureBoundsMm": {
+        "min": [
+          20,
+          0,
+          0
+        ],
+        "max": [
+          22,
+          4,
+          4
+        ]
+      },
+      "lowerBoundsMm": {
+        "min": [
+          20,
+          0,
+          0
+        ],
+        "max": [
+          22,
+          4,
+          4
+        ]
+      },
+      "transformDelta": 0
+    }
+  ],
+  "checks": {
+    "childDefaultMateTransformIsTenMm": true,
+    "connectedTipInheritsChildMotion": true,
+    "captureAndLoweredTransformsMatch": true,
+    "actualLoweredBrepBoundsFollowSolvedTransforms": true
+  },
+  "scope": {
+    "physicsSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

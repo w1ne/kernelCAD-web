@@ -1,0 +1,8 @@
+ [32m✓[39m tests/integration/catalog/dualPortAcPedestalCableMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 775[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the hanging cable leads a cable-elastomer finish, distinct from the powder-coated enclosure [33m 431[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 14:29:56
+[2m   Duration [22m 12.66s[2m (transform 9.51s, setup 191ms, import 11.35s, tests 775ms, environment 0ms)[22m
+

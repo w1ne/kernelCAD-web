@@ -1,0 +1,1519 @@
+{
+  "kit": "railway",
+  "assets": [
+    {
+      "id": "baggage-cart",
+      "title": "Station baggage cart",
+      "partCount": 9,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "base": "paintedSteel",
+        "upright-left": "paintedSteel",
+        "upright-right": "paintedSteel",
+        "top-rail": "stainlessSteel",
+        "side-left": "paintedSteel",
+        "side-right": "paintedSteel",
+        "wheel-left": "rubber",
+        "wheel-right": "rubber",
+        "handle": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#665d50",
+          "stainlessSteel": "#a5a9a6",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "stainlessSteel": "#cad2d1",
+          "rubber": "#272e32"
+        }
+      },
+      "originalColor": "#62594d"
+    },
+    {
+      "id": "buffer-stop",
+      "title": "Railway buffer stop",
+      "partCount": 10,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "concrete",
+        "paintedSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "rail-left": "railSteel",
+        "rail-right": "railSteel",
+        "sleeper-1": "concrete",
+        "sleeper-2": "concrete",
+        "sleeper-3": "concrete",
+        "post-left": "paintedSteel",
+        "post-right": "paintedSteel",
+        "crossbeam": "paintedSteel",
+        "pad-left": "rubber",
+        "pad-right": "rubber"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a",
+          "paintedSteel": "#5c5e5d",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8",
+          "paintedSteel": "#b74734",
+          "rubber": "#272e32"
+        }
+      },
+      "originalColor": "#555b5f"
+    },
+    {
+      "id": "caboose",
+      "title": "Caboose",
+      "partCount": 13,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "body": "paintedSteel",
+        "roof": "paintedSteel",
+        "cupola": "paintedSteel",
+        "cupola-roof": "paintedSteel",
+        "window-left": "glass",
+        "window-right": "glass",
+        "platform-left": "paintedSteel",
+        "platform-right": "paintedSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#955f48",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca"
+        }
+      },
+      "originalColor": "#a35c42"
+    },
+    {
+      "id": "commuter-car",
+      "title": "Commuter rail car",
+      "partCount": 17,
+      "baseMaterial": "paintedAluminum",
+      "materials": [
+        "railSteel",
+        "paintedAluminum",
+        "glass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "body": "paintedAluminum",
+        "roof": "paintedAluminum",
+        "window-1": "glass",
+        "window-2": "glass",
+        "window-3": "glass",
+        "window-4": "glass",
+        "door-left": "paintedAluminum",
+        "door-right": "paintedAluminum",
+        "air-unit-1": "stainlessSteel",
+        "air-unit-2": "stainlessSteel",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedAluminum": "#5a6466",
+          "glass": "#5a99a7",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedAluminum": "#28728a",
+          "glass": "#68b9ca",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
+      "originalColor": "#52636b"
+    },
+    {
+      "id": "crossing-gate",
+      "title": "Rail crossing gate",
+      "partCount": 11,
+      "baseMaterial": "galvanizedSteel",
+      "materials": [
+        "galvanizedSteel",
+        "safetyPaint",
+        "enamel",
+        "signalAmberGlass"
+      ],
+      "assignments": {
+        "base": "galvanizedSteel",
+        "pivot-post": "galvanizedSteel",
+        "housing": "galvanizedSteel",
+        "barrier-arm": "safetyPaint",
+        "barrier-stripe-1": "enamel",
+        "barrier-stripe-2": "enamel",
+        "barrier-stripe-3": "enamel",
+        "barrier-stripe-4": "enamel",
+        "counterweight": "safetyPaint",
+        "lamp-post": "galvanizedSteel",
+        "lamp-head": "signalAmberGlass"
+      },
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "safetyPaint": "#c7a13f",
+          "enamel": "#ccc3af",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "safetyPaint": "#f5c521",
+          "enamel": "#f6eddb",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
+      "originalColor": "#ce4f3c"
+    },
+    {
+      "id": "crossing-warning-light",
+      "title": "Rail crossing warning light",
+      "partCount": 8,
+      "baseMaterial": "galvanizedSteel",
+      "materials": [
+        "galvanizedSteel",
+        "signalRedGlass",
+        "signalAmberGlass",
+        "safetyPaint"
+      ],
+      "assignments": {
+        "post": "galvanizedSteel",
+        "backplate": "galvanizedSteel",
+        "lamp-left": "signalRedGlass",
+        "lamp-right": "signalAmberGlass",
+        "hood-left": "safetyPaint",
+        "hood-right": "safetyPaint",
+        "mount": "galvanizedSteel",
+        "base": "galvanizedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f",
+          "safetyPaint": "#c7a13f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f",
+          "safetyPaint": "#f5c521"
+        }
+      },
+      "originalColor": "#d3513f"
+    },
+    {
+      "id": "curved-track",
+      "title": "Curved railway track loop",
+      "partCount": 15,
+      "baseMaterial": "railSteel",
+      "materials": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "assignments": {
+        "ballast-ring": "ballast",
+        "outer-rail": "railSteel",
+        "inner-rail": "railSteel",
+        "sleeper-1": "concrete",
+        "sleeper-2": "concrete",
+        "sleeper-3": "concrete",
+        "sleeper-4": "concrete",
+        "sleeper-5": "concrete",
+        "sleeper-6": "concrete",
+        "sleeper-7": "concrete",
+        "sleeper-8": "concrete",
+        "sleeper-9": "concrete",
+        "sleeper-10": "concrete",
+        "sleeper-11": "concrete",
+        "sleeper-12": "concrete"
+      },
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
+      "originalColor": "#555b5f"
+    },
+    {
+      "id": "diesel-locomotive",
+      "title": "Diesel locomotive",
+      "partCount": 18,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "signalAmberGlass"
+      ],
+      "assignments": {
+        "frame": "railSteel",
+        "long-hood": "paintedSteel",
+        "nose": "paintedSteel",
+        "cab": "paintedSteel",
+        "cab-roof": "paintedSteel",
+        "cab-side-window-left": "glass",
+        "cab-side-window-right": "glass",
+        "cab-front-window": "glass",
+        "front-grille": "railSteel",
+        "headlamp-left": "signalAmberGlass",
+        "headlamp-right": "signalAmberGlass",
+        "wheel-left-1": "railSteel",
+        "wheel-left-2": "railSteel",
+        "wheel-left-3": "railSteel",
+        "wheel-right-1": "railSteel",
+        "wheel-right-2": "railSteel",
+        "wheel-right-3": "railSteel",
+        "pilot": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#3b717e",
+          "glass": "#5a99a7",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
+      "originalColor": "#4b555b"
+    },
+    {
+      "id": "dining-car",
+      "title": "Dining car",
+      "partCount": 14,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "body": "paintedSteel",
+        "roof": "paintedSteel",
+        "window-1": "glass",
+        "window-2": "glass",
+        "window-3": "glass",
+        "window-4": "glass",
+        "window-5": "glass",
+        "window-6": "glass",
+        "galley-vent": "stainlessSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#847252",
+          "glass": "#5a99a7",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
+      "originalColor": "#8c7650"
+    },
+    {
+      "id": "electric-locomotive",
+      "title": "Electric locomotive",
+      "partCount": 18,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "aluminum"
+      ],
+      "assignments": {
+        "frame": "railSteel",
+        "body": "paintedSteel",
+        "nose-left": "paintedSteel",
+        "cab": "paintedSteel",
+        "front-window": "glass",
+        "cab-side-window-left": "glass",
+        "cab-side-window-right": "glass",
+        "roof": "paintedSteel",
+        "pantograph-base": "aluminum",
+        "pantograph-left": "aluminum",
+        "pantograph-right": "aluminum",
+        "pantograph-top": "aluminum",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-left-c": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel",
+        "wheel-right-c": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#416f7a",
+          "glass": "#5a99a7",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "aluminum": "#bdc8c8"
+        }
+      },
+      "originalColor": "#4c5b63"
+    },
+    {
+      "id": "flatbed-wagon",
+      "title": "Flatbed wagon",
+      "partCount": 12,
+      "baseMaterial": "railSteel",
+      "materials": [
+        "railSteel",
+        "timber",
+        "paintedSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "deck": "timber",
+        "stake-left-front": "paintedSteel",
+        "stake-left-back": "paintedSteel",
+        "stake-right-front": "paintedSteel",
+        "stake-right-back": "paintedSteel",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "timber": "#846649",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
+      "originalColor": "#5b6265"
+    },
+    {
+      "id": "freight-boxcar",
+      "title": "Freight boxcar",
+      "partCount": 15,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "galvanizedSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "box-body": "paintedSteel",
+        "roof": "paintedSteel",
+        "sliding-door": "paintedSteel",
+        "door-rail": "galvanizedSteel",
+        "ladder-left": "galvanizedSteel",
+        "ladder-right": "galvanizedSteel",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel",
+        "coupler-front": "railSteel",
+        "coupler-rear": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#6d6354",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
+      "originalColor": "#6c6152"
+    },
+    {
+      "id": "handcar",
+      "title": "Railway handcar",
+      "partCount": 10,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "timber",
+        "paintedSteel",
+        "railSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "platform": "timber",
+        "frame": "paintedSteel",
+        "wheel-left-front": "railSteel",
+        "wheel-left-back": "railSteel",
+        "wheel-right-front": "railSteel",
+        "wheel-right-back": "railSteel",
+        "pump-post": "paintedSteel",
+        "pump-arm": "paintedSteel",
+        "grip-left": "rubber",
+        "grip-right": "rubber"
+      },
+      "presets": {
+        "weathered": {
+          "timber": "#846649",
+          "paintedSteel": "#705944",
+          "railSteel": "#666a6a",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734",
+          "railSteel": "#56636a",
+          "rubber": "#272e32"
+        }
+      },
+      "originalColor": "#70543c"
+    },
+    {
+      "id": "hopper-wagon",
+      "title": "Hopper wagon",
+      "partCount": 12,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "galvanizedSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "hopper-body": "paintedSteel",
+        "left-slope": "paintedSteel",
+        "right-slope": "paintedSteel",
+        "top-rail-front": "galvanizedSteel",
+        "top-rail-back": "galvanizedSteel",
+        "outlet-left": "galvanizedSteel",
+        "outlet-right": "galvanizedSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#545858",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
+      "originalColor": "#4a5358"
+    },
+    {
+      "id": "inspection-trolley",
+      "title": "Track inspection trolley",
+      "partCount": 10,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "timber",
+        "rubber",
+        "railSteel"
+      ],
+      "assignments": {
+        "chassis": "paintedSteel",
+        "seat-post": "timber",
+        "seat": "timber",
+        "handle-post": "paintedSteel",
+        "handlebar": "rubber",
+        "tool-box": "paintedSteel",
+        "wheel-left-front": "railSteel",
+        "wheel-left-back": "railSteel",
+        "wheel-right-front": "railSteel",
+        "wheel-right-back": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#6a7068",
+          "timber": "#846649",
+          "rubber": "#414342",
+          "railSteel": "#666a6a"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "timber": "#9b7146",
+          "rubber": "#272e32",
+          "railSteel": "#56636a"
+        }
+      },
+      "originalColor": "#68736e"
+    },
+    {
+      "id": "level-crossing",
+      "title": "Railway level crossing",
+      "partCount": 9,
+      "baseMaterial": "asphalt",
+      "materials": [
+        "asphalt",
+        "railSteel",
+        "safetyPaint"
+      ],
+      "assignments": {
+        "road": "asphalt",
+        "rail-left": "railSteel",
+        "rail-right": "railSteel",
+        "road-panel-left": "asphalt",
+        "road-panel-right": "asphalt",
+        "warning-post-left": "safetyPaint",
+        "warning-post-right": "safetyPaint",
+        "crossbar-left": "safetyPaint",
+        "crossbar-right": "safetyPaint"
+      },
+      "presets": {
+        "weathered": {
+          "asphalt": "#575a58",
+          "railSteel": "#666a6a",
+          "safetyPaint": "#c7a13f"
+        },
+        "freshService": {
+          "asphalt": "#555c5e",
+          "railSteel": "#56636a",
+          "safetyPaint": "#f5c521"
+        }
+      },
+      "originalColor": "#5a6064"
+    },
+    {
+      "id": "luggage-stack",
+      "title": "Station luggage stack",
+      "partCount": 8,
+      "baseMaterial": "polymerShell",
+      "materials": [
+        "polymerShell",
+        "leather",
+        "rubber"
+      ],
+      "assignments": {
+        "case-bottom": "polymerShell",
+        "case-middle": "polymerShell",
+        "case-top": "polymerShell",
+        "handle-bottom": "leather",
+        "handle-middle": "leather",
+        "handle-top": "leather",
+        "wheel-left": "rubber",
+        "wheel-right": "rubber"
+      },
+      "presets": {
+        "weathered": {
+          "polymerShell": "#5a7682",
+          "leather": "#6e523e",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "polymerShell": "#4388a5",
+          "leather": "#795239",
+          "rubber": "#272e32"
+        }
+      },
+      "originalColor": "#73634d"
+    },
+    {
+      "id": "lumber-wagon",
+      "title": "Lumber wagon",
+      "partCount": 11,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "timber",
+        "paintedSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "deck": "timber",
+        "end-stake-left": "paintedSteel",
+        "end-stake-right": "paintedSteel",
+        "log-1": "timber",
+        "log-2": "timber",
+        "log-3": "timber",
+        "log-4": "timber",
+        "log-5": "timber",
+        "wheel-a": "railSteel",
+        "wheel-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "timber": "#846649",
+          "paintedSteel": "#715c45"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
+      "originalColor": "#72583e"
+    },
+    {
+      "id": "mail-car",
+      "title": "Railway mail car",
+      "partCount": 13,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "aluminum"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "body": "paintedSteel",
+        "roof": "paintedSteel",
+        "door-left": "paintedSteel",
+        "door-right": "paintedSteel",
+        "window-a": "glass",
+        "window-b": "glass",
+        "vent-a": "aluminum",
+        "vent-b": "aluminum",
+        "wheel-a": "railSteel",
+        "wheel-b": "railSteel",
+        "wheel-c": "railSteel",
+        "wheel-d": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#5d6870",
+          "glass": "#5a99a7",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "aluminum": "#bdc8c8"
+        }
+      },
+      "originalColor": "#566879"
+    },
+    {
+      "id": "maintenance-railcar",
+      "title": "Rail maintenance car",
+      "partCount": 10,
+      "baseMaterial": "safetyPaint",
+      "materials": [
+        "railSteel",
+        "safetyPaint",
+        "paintedSteel",
+        "signalAmberGlass"
+      ],
+      "assignments": {
+        "frame": "railSteel",
+        "deck": "safetyPaint",
+        "cab": "safetyPaint",
+        "cab-roof": "safetyPaint",
+        "tool-box": "paintedSteel",
+        "beacon": "signalAmberGlass",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "safetyPaint": "#c7a13f",
+          "paintedSteel": "#5b6567",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "safetyPaint": "#f5c521",
+          "paintedSteel": "#b74734",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
+      "originalColor": "#59645e"
+    },
+    {
+      "id": "milepost",
+      "title": "Railway milepost",
+      "partCount": 7,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "enamel",
+        "concrete"
+      ],
+      "assignments": {
+        "post": "paintedSteel",
+        "board": "enamel",
+        "distance-mark-vertical": "paintedSteel",
+        "distance-mark-top": "paintedSteel",
+        "distance-mark-bottom": "paintedSteel",
+        "cap": "paintedSteel",
+        "foot": "concrete"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#596060",
+          "enamel": "#ccc3af",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "enamel": "#f6eddb",
+          "concrete": "#b8b4a8"
+        }
+      },
+      "originalColor": "#efe6cf"
+    },
+    {
+      "id": "passenger-coach",
+      "title": "Passenger coach",
+      "partCount": 17,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "glass"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "body": "paintedSteel",
+        "roof": "paintedSteel",
+        "window-1": "glass",
+        "window-2": "glass",
+        "window-3": "glass",
+        "window-4": "glass",
+        "window-5": "glass",
+        "window-6": "glass",
+        "door-left": "paintedSteel",
+        "door-right": "paintedSteel",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-front": "railSteel",
+        "wheel-left-back": "railSteel",
+        "wheel-right-front": "railSteel",
+        "wheel-right-back": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#686e70",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca"
+        }
+      },
+      "originalColor": "#657179"
+    },
+    {
+      "id": "platform-canopy",
+      "title": "Station platform canopy",
+      "partCount": 8,
+      "baseMaterial": "galvanizedSteel",
+      "materials": [
+        "galvanizedSteel",
+        "paintedSteel"
+      ],
+      "assignments": {
+        "post-left": "galvanizedSteel",
+        "post-right": "galvanizedSteel",
+        "roof-left": "paintedSteel",
+        "roof-right": "paintedSteel",
+        "ridge": "paintedSteel",
+        "brace-left": "paintedSteel",
+        "brace-right": "paintedSteel",
+        "gutter": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "paintedSteel": "#b74734"
+        }
+      },
+      "originalColor": "#596167"
+    },
+    {
+      "id": "rail-sleeper",
+      "title": "Railway sleeper",
+      "partCount": 9,
+      "baseMaterial": "concrete",
+      "materials": [
+        "concrete",
+        "railSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "beam": "concrete",
+        "seat-left": "concrete",
+        "seat-right": "concrete",
+        "plate-left": "railSteel",
+        "plate-right": "railSteel",
+        "bolt-1": "stainlessSteel",
+        "bolt-2": "stainlessSteel",
+        "bolt-3": "stainlessSteel",
+        "bolt-4": "stainlessSteel"
+      },
+      "presets": {
+        "weathered": {
+          "concrete": "#9a968a",
+          "railSteel": "#666a6a",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "concrete": "#b8b4a8",
+          "railSteel": "#56636a",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
+      "originalColor": "#777c7e"
+    },
+    {
+      "id": "railway-lantern",
+      "title": "Railway lantern",
+      "partCount": 7,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "glass",
+        "brass"
+      ],
+      "assignments": {
+        "base": "paintedSteel",
+        "body": "paintedSteel",
+        "globe": "glass",
+        "top-cap": "paintedSteel",
+        "handle-left": "brass",
+        "handle-right": "brass",
+        "handle-top": "brass"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#5c5244",
+          "glass": "#5a99a7",
+          "brass": "#ac8d4b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "brass": "#d3aa4d"
+        }
+      },
+      "originalColor": "#554a3c"
+    },
+    {
+      "id": "railway-ticket-machine",
+      "title": "Station ticket machine",
+      "partCount": 6,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "displayGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "pedestal": "paintedSteel",
+        "housing": "paintedSteel",
+        "display": "displayGlass",
+        "keypad": "stainlessSteel",
+        "ticket-slot": "stainlessSteel",
+        "top-cap": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#596466",
+          "displayGlass": "#436171",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "displayGlass": "#417b98",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
+      "originalColor": "#51636b"
+    },
+    {
+      "id": "semaphore-signal",
+      "title": "Railway semaphore signal",
+      "partCount": 10,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "safetyPaint",
+        "brass",
+        "galvanizedSteel"
+      ],
+      "assignments": {
+        "mast": "paintedSteel",
+        "base": "paintedSteel",
+        "arm": "safetyPaint",
+        "arm-tip": "safetyPaint",
+        "counterweight": "paintedSteel",
+        "pivot": "brass",
+        "ladder-1": "galvanizedSteel",
+        "ladder-2": "galvanizedSteel",
+        "ladder-3": "galvanizedSteel",
+        "ladder-4": "galvanizedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#606260",
+          "safetyPaint": "#c7a13f",
+          "brass": "#ac8d4b",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "safetyPaint": "#f5c521",
+          "brass": "#d3aa4d",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
+      "originalColor": "#5a6063"
+    },
+    {
+      "id": "signal-gantry",
+      "title": "Railway signal gantry",
+      "partCount": 10,
+      "baseMaterial": "galvanizedSteel",
+      "materials": [
+        "galvanizedSteel",
+        "paintedSteel",
+        "signalRedGlass",
+        "signalAmberGlass"
+      ],
+      "assignments": {
+        "tower-left": "galvanizedSteel",
+        "tower-right": "galvanizedSteel",
+        "crossbeam": "galvanizedSteel",
+        "walkway": "galvanizedSteel",
+        "signal-left": "paintedSteel",
+        "signal-right": "paintedSteel",
+        "lens-left": "signalRedGlass",
+        "lens-right": "signalAmberGlass",
+        "ladder-left": "galvanizedSteel",
+        "ladder-right": "galvanizedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "paintedSteel": "#5b6567",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "paintedSteel": "#b74734",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
+      "originalColor": "#51585c"
+    },
+    {
+      "id": "signal-light",
+      "title": "Railway signal light",
+      "partCount": 9,
+      "baseMaterial": "galvanizedSteel",
+      "materials": [
+        "galvanizedSteel",
+        "signalRedGlass",
+        "signalAmberGlass",
+        "signalGreenGlass"
+      ],
+      "assignments": {
+        "mast": "galvanizedSteel",
+        "backboard": "galvanizedSteel",
+        "lens-top": "signalRedGlass",
+        "lens-middle": "signalAmberGlass",
+        "lens-bottom": "signalGreenGlass",
+        "hood-top": "galvanizedSteel",
+        "hood-middle": "galvanizedSteel",
+        "hood-bottom": "galvanizedSteel",
+        "base": "galvanizedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f",
+          "signalGreenGlass": "#4b8a5e"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f",
+          "signalGreenGlass": "#32a05e"
+        }
+      },
+      "originalColor": "#42484c"
+    },
+    {
+      "id": "station-bench",
+      "title": "Station bench",
+      "partCount": 11,
+      "baseMaterial": "timber",
+      "materials": [
+        "timber",
+        "paintedSteel"
+      ],
+      "assignments": {
+        "seat": "timber",
+        "back": "timber",
+        "slat-seat-1": "timber",
+        "slat-seat-2": "timber",
+        "slat-seat-3": "timber",
+        "leg-left-front": "paintedSteel",
+        "leg-right-front": "paintedSteel",
+        "leg-left-back": "paintedSteel",
+        "leg-right-back": "paintedSteel",
+        "arm-left": "paintedSteel",
+        "arm-right": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "timber": "#846649",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
+      "originalColor": "#725e49"
+    },
+    {
+      "id": "station-clock",
+      "title": "Station clock",
+      "partCount": 11,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "enamel",
+        "brass"
+      ],
+      "assignments": {
+        "post": "paintedSteel",
+        "face": "enamel",
+        "rim": "brass",
+        "hour-hand": "paintedSteel",
+        "minute-hand": "paintedSteel",
+        "dial-mark-top": "paintedSteel",
+        "dial-mark-bottom": "paintedSteel",
+        "dial-mark-left": "paintedSteel",
+        "dial-mark-right": "paintedSteel",
+        "top-cap": "paintedSteel",
+        "base": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#6c6356",
+          "enamel": "#ccc3af",
+          "brass": "#ac8d4b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "enamel": "#f6eddb",
+          "brass": "#d3aa4d"
+        }
+      },
+      "originalColor": "#6b6255"
+    },
+    {
+      "id": "station-platform",
+      "title": "Station platform",
+      "partCount": 5,
+      "baseMaterial": "concrete",
+      "materials": [
+        "concrete",
+        "tactilePolymer"
+      ],
+      "assignments": {
+        "platform": "concrete",
+        "edge": "concrete",
+        "tactile-strip": "tactilePolymer",
+        "step-left": "concrete",
+        "step-right": "concrete"
+      },
+      "presets": {
+        "weathered": {
+          "concrete": "#9a968a",
+          "tactilePolymer": "#c29e42"
+        },
+        "freshService": {
+          "concrete": "#b8b4a8",
+          "tactilePolymer": "#f0c32c"
+        }
+      },
+      "originalColor": "#777d7f"
+    },
+    {
+      "id": "steam-locomotive",
+      "title": "Steam locomotive",
+      "partCount": 16,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "brass",
+        "glass"
+      ],
+      "assignments": {
+        "lower-frame": "railSteel",
+        "boiler": "paintedSteel",
+        "boiler-front": "paintedSteel",
+        "smokestack": "paintedSteel",
+        "stack-cap": "brass",
+        "cab": "paintedSteel",
+        "cab-roof": "paintedSteel",
+        "front-window": "glass",
+        "cowcatcher": "paintedSteel",
+        "wheel-a-left": "railSteel",
+        "wheel-a-right": "railSteel",
+        "wheel-b-left": "railSteel",
+        "wheel-b-right": "railSteel",
+        "wheel-c-left": "railSteel",
+        "wheel-c-right": "railSteel",
+        "drive-rod": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#884d40",
+          "brass": "#ac8d4b",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "brass": "#d3aa4d",
+          "glass": "#68b9ca"
+        }
+      },
+      "originalColor": "#34393d"
+    },
+    {
+      "id": "straight-track",
+      "title": "Straight railway track",
+      "partCount": 9,
+      "baseMaterial": "ballast",
+      "materials": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "assignments": {
+        "ballast": "ballast",
+        "rail-left": "railSteel",
+        "rail-right": "railSteel",
+        "sleeper-1": "concrete",
+        "sleeper-2": "concrete",
+        "sleeper-3": "concrete",
+        "sleeper-4": "concrete",
+        "sleeper-5": "concrete",
+        "sleeper-6": "concrete"
+      },
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
+      "originalColor": "#555b5f"
+    },
+    {
+      "id": "subway-car",
+      "title": "Subway car",
+      "partCount": 16,
+      "baseMaterial": "paintedAluminum",
+      "materials": [
+        "railSteel",
+        "paintedAluminum",
+        "glass"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "car-body": "paintedAluminum",
+        "front-cab": "paintedAluminum",
+        "front-window": "glass",
+        "roof": "paintedAluminum",
+        "door-left": "paintedAluminum",
+        "door-right": "paintedAluminum",
+        "window-left": "glass",
+        "window-right": "glass",
+        "window-rear": "glass",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedAluminum": "#5b6465",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedAluminum": "#28728a",
+          "glass": "#68b9ca"
+        }
+      },
+      "originalColor": "#53636a"
+    },
+    {
+      "id": "tank-wagon",
+      "title": "Rail tank wagon",
+      "partCount": 13,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "railSteel",
+        "paintedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "underframe": "railSteel",
+        "tank": "paintedSteel",
+        "tank-cap-left": "stainlessSteel",
+        "tank-cap-right": "stainlessSteel",
+        "top-hatch": "paintedSteel",
+        "walkway": "stainlessSteel",
+        "ladder": "railSteel",
+        "bogie-left": "railSteel",
+        "bogie-right": "railSteel",
+        "wheel-left-a": "railSteel",
+        "wheel-left-b": "railSteel",
+        "wheel-right-a": "railSteel",
+        "wheel-right-b": "railSteel"
+      },
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#5c6060",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
+      "originalColor": "#555d62"
+    },
+    {
+      "id": "ticket-barrier",
+      "title": "Railway ticket barrier",
+      "partCount": 7,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "displayGlass",
+        "aluminum"
+      ],
+      "assignments": {
+        "base": "paintedSteel",
+        "pedestal": "paintedSteel",
+        "reader": "displayGlass",
+        "flap": "aluminum",
+        "sensor": "displayGlass",
+        "side-post": "paintedSteel",
+        "side-rail": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#595c5c",
+          "displayGlass": "#436171",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "displayGlass": "#417b98",
+          "aluminum": "#bdc8c8"
+        }
+      },
+      "originalColor": "#50585d"
+    },
+    {
+      "id": "timetable-board",
+      "title": "Station timetable board",
+      "partCount": 7,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "enamel",
+        "brass",
+        "paintedSteel"
+      ],
+      "assignments": {
+        "panel": "enamel",
+        "display": "enamel",
+        "top-cap": "brass",
+        "post-left": "paintedSteel",
+        "post-right": "paintedSteel",
+        "foot-left": "paintedSteel",
+        "foot-right": "paintedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "enamel": "#ccc3af",
+          "brass": "#ac8d4b",
+          "paintedSteel": "#5b6265"
+        },
+        "freshService": {
+          "enamel": "#f6eddb",
+          "brass": "#d3aa4d",
+          "paintedSteel": "#b74734"
+        }
+      },
+      "originalColor": "#536069"
+    },
+    {
+      "id": "track-switch-lever",
+      "title": "Track switch lever",
+      "partCount": 6,
+      "baseMaterial": "paintedSteel",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "base": "paintedSteel",
+        "pivot-post": "galvanizedSteel",
+        "lever": "paintedSteel",
+        "grip": "rubber",
+        "counterweight": "paintedSteel",
+        "rod": "galvanizedSteel"
+      },
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#696352",
+          "galvanizedSteel": "#898e8d",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4",
+          "rubber": "#272e32"
+        }
+      },
+      "originalColor": "#67624f"
+    },
+    {
+      "id": "turnout-track",
+      "title": "Railway turnout track",
+      "partCount": 11,
+      "baseMaterial": "ballast",
+      "materials": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "assignments": {
+        "ballast": "ballast",
+        "main-left": "railSteel",
+        "main-right": "railSteel",
+        "branch-rail": "railSteel",
+        "frog": "railSteel",
+        "tie-1": "concrete",
+        "tie-2": "concrete",
+        "tie-3": "concrete",
+        "tie-4": "concrete",
+        "tie-5": "concrete",
+        "tie-6": "concrete"
+      },
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
+      "originalColor": "#555b5f"
+    }
+  ]
+}

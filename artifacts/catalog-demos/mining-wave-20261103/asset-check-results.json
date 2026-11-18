@@ -1,0 +1,814 @@
+{
+  "kit": "mining",
+  "added": 50,
+  "catalogTotal": 1441,
+  "passed": 50,
+  "total": 50,
+  "triangleRange": [
+    128,
+    376
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "allPreviewPathsAndFilesPresent": true,
+  "allCatalogAssetsPreviewBacked": true,
+  "lint": {
+    "command": "npx eslint catalog/",
+    "passed": true,
+    "exitCode": 0,
+    "outputFile": "catalog-lint-output.txt"
+  },
+  "pages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-mining-pages",
+    "kitPages": 50,
+    "assetsInIndex": 1441,
+    "pageAndPreviewPairs": 50,
+    "hubListsKit": true,
+    "missing": [],
+    "passed": true
+  },
+  "liveWebsiteSnapshot": {
+    "homepageStatus": 200,
+    "livePreviewAssets": 543,
+    "branchDeployed": false
+  },
+  "npmPackageBoundary": {
+    "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-mining-npm-pack",
+    "tarball": "/tmp/kernelcad-mining-npm-pack/kernelcad-0.17.4.tgz",
+    "tarballBytes": 49159823,
+    "tarballSha256": "7f4f9e9c1eccbf0f9153eca387047603bae1c79502b15ae2e50af2fe55c69ed9",
+    "package": "kernelcad@0.17.4",
+    "packedFileCount": 3271,
+    "catalogIndexIncluded": true,
+    "miningSources": 50,
+    "miningPreviews": 50,
+    "cliEntryIncluded": true,
+    "headlessPlayerIncluded": true,
+    "packageExports": {
+      "./package.json": "./package.json"
+    },
+    "privateProductPaths": [],
+    "passed": true
+  },
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 152.63
+  },
+  "assets": [
+    {
+      "id": "apron-feeder",
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-apron-feeder.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "assay-sample-divider",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-assay-sample-divider.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ball-mill",
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-ball-mill.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "belt-magnet-separator",
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-belt-magnet-separator.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cone-crusher-module",
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-cone-crusher-module.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "continuous-miner",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-continuous-miner.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "conveyor-take-up-station",
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-conveyor-take-up-station.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "core-drill-rig",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-core-drill-rig.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "core-tray-rack",
+      "triangles": 376,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-core-tray-rack.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "crusher-discharge-conveyor",
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-crusher-discharge-conveyor.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "crusher-transfer-chute",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-crusher-transfer-chute.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "double-deck-screen",
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-double-deck-screen.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "flotation-cell-bank",
+      "triangles": 292,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-flotation-cell-bank.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "flotation-conditioning-tank",
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-flotation-conditioning-tank.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "grizzly-scalping-deck",
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-grizzly-scalping-deck.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "gyratory-crusher-station",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-gyratory-crusher-station.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "high-pressure-grinding-rolls",
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-high-pressure-grinding-rolls.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "hydrocyclone-cluster",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-hydrocyclone-cluster.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "impact-crusher-module",
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-impact-crusher-module.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "jaw-crusher-module",
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-jaw-crusher-module.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "longwall-shearer",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-longwall-shearer.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "magnetic-separator-drum",
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-magnetic-separator-drum.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "metal-detector-arch",
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-metal-detector-arch.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mill-feed-chute",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mill-feed-chute.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mill-relining-machine",
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mill-relining-machine.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-locomotive",
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-locomotive.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-refuge-chamber",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-refuge-chamber.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-skip",
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-skip.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-sump-pump",
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-sump-pump.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-survey-tripod",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-survey-tripod.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mine-ventilation-fan",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-mine-ventilation-fan.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ore-pass-grizzly",
+      "triangles": 244,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-ore-pass-grizzly.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ore-sorting-arch",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-ore-sorting-arch.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overland-conveyor-bridge",
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-overland-conveyor-bridge.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "radial-stacker",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-radial-stacker.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rock-breaker-boom",
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-rock-breaker-boom.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "roof-bolting-rig",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-roof-bolting-rig.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rotary-blasthole-drill",
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-rotary-blasthole-drill.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "run-of-mine-hopper",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-run-of-mine-hopper.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sag-mill",
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-sag-mill.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "shaft-headframe",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-shaft-headframe.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "slurry-pump-skid",
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-slurry-pump-skid.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "spiral-concentrator",
+      "triangles": 240,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-spiral-concentrator.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "stacker-reclaimer-boom",
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-stacker-reclaimer-boom.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "tailings-filter-press",
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-tailings-filter-press.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "tailings-stack-conveyor",
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-tailings-stack-conveyor.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "thickener-bridge",
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-thickener-bridge.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "trommel-screen",
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-trommel-screen.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "underground-shuttle-car",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-underground-shuttle-car.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "vacuum-disc-filter",
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/mining-vacuum-disc-filter.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    }
+  ]
+}

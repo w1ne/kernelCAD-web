@@ -1,0 +1,107 @@
+{
+  "checkedAtUtc": "2026-11-11T15:53:02.785007+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "currentDestinationPrExcludedFromChangedSourceConflicts": 1258,
+  "otherOpenPrsChecked": [
+    {
+      "number": 1336,
+      "title": "fix(export): default PBR GLB handoff to metres (#1299)"
+    },
+    {
+      "number": 1334,
+      "title": "Add evidence-aware DFM review outcomes"
+    },
+    {
+      "number": 1329,
+      "title": "fix(naming): fail safely on replaced edge selections"
+    },
+    {
+      "number": 1328,
+      "title": "fix(mechanism): clarify skipped sweep guidance"
+    },
+    {
+      "number": 1327,
+      "title": "test(mechanism): cover real fixed-cover motion (#1262)"
+    },
+    {
+      "number": 1326,
+      "title": "test(mcp): cover clamshell rest overlap issue #1261"
+    },
+    {
+      "number": 1325,
+      "title": "Add bounded open-centerline rib geometry"
+    },
+    {
+      "number": 1324,
+      "title": "fix(mechanism): preserve coupled mate physics for issue #1321"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF"
+    },
+    {
+      "number": 1276,
+      "title": "feat(export): add mesh tolerance controls with sampled deviation reporting"
+    },
+    {
+      "number": 1260,
+      "title": "Resolve ParamRef coordinates in cutout profiles"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)"
+    },
+    {
+      "number": 1215,
+      "title": "feat(catalog): industrial-plant wave \u2014 60 assets"
+    },
+    {
+      "number": 1211,
+      "title": "feat(catalog): sports wave \u2014 40 assets"
+    },
+    {
+      "number": 1195,
+      "title": "spike(b2b): ECAD-to-enclosure and headless API contract"
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)"
+    }
+  ],
+  "results": {
+    "orchard-air-blast-sprayer": {
+      "source": "catalog/kits/farm-machinery/orchard-air-blast-sprayer.kcad.ts",
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "otherOpenPrChangedSourceMatches": []
+    },
+    "potato-harvester": {
+      "source": "catalog/kits/farm-machinery/potato-harvester.kcad.ts",
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "otherOpenPrChangedSourceMatches": []
+    },
+    "self-propelled-field-sprayer": {
+      "source": "catalog/kits/farm-machinery/self-propelled-field-sprayer.kcad.ts",
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "otherOpenPrChangedSourceMatches": []
+    },
+    "grain-dryer": {
+      "source": "catalog/kits/farm-machinery/grain-dryer.kcad.ts",
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "otherOpenPrChangedSourceMatches": []
+    },
+    "farm-grain-auger": {
+      "source": "catalog/kits/farm-machinery/farm-grain-auger.kcad.ts",
+      "openIssueTitleBodyMatches": [],
+      "openPrTitleBodyMatches": [],
+      "otherOpenPrChangedSourceMatches": []
+    }
+  }
+}

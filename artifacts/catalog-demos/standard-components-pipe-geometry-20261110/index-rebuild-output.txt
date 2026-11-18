@@ -1,0 +1,9 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Outcome: completed after rendering the 50 standard-components kit previews.
+The original console transcript was not retained during the build.
+Generated file: catalog/index.json
+Observed after build: 9,205,730 bytes; mtime 2026-11-10 11:30:54 UTC.
+Independent freshness evidence: integration-output.txt reports the catalog test
+building every source and confirming the committed index is fresh;
+index-verification.json records all 2,402 source hashes matching and all indexed
+previews present.

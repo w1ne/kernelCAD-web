@@ -1,0 +1,18 @@
+{
+  "command": "npm pack --ignore-scripts --pack-destination <temporary directory> --json",
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "fileCount": 5202,
+  "sportsSourcesIncluded": 40,
+  "sportsSourcesExpected": 40,
+  "sportsPreviewsIncluded": 40,
+  "sportsPreviewsExpected": 40,
+  "catalogIndexIncluded": true,
+  "archiveSha256": "4ecff110979edb3430d4fa7435b5b3d784973f26ad6c69f2ed54cb0844978255",
+  "archiveRetained": false,
+  "packageExportsUnchanged": true,
+  "forbiddenChangedProductPaths": [],
+  "productImplementationPaths": [],
+  "missing": [],
+  "passed": true
+}

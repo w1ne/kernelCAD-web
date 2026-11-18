@@ -1,0 +1,24 @@
+{
+  "captureDate": "2026-11-02",
+  "workflow": "Local kernelCAD catalog source -> catalog index -> mesh previews -> static asset pages -> explanatory video",
+  "kit": "marine",
+  "assetCount": 40,
+  "video": {
+    "file": "marine-kit.mp4",
+    "resolution": "1280x720",
+    "durationSeconds": 24,
+    "frameRate": 24,
+    "sourceFrameCadence": "1 still frame every 3 seconds",
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "settings": "ffmpeg -framerate 1/3 -i frames/frame-%02d.png -c:v libx264 -r 24 -pix_fmt yuv420p -crf 25 -movflags +faststart"
+  },
+  "validation": {
+    "catalogBuild": "npx tsx scripts/buildAssetCatalog.ts",
+    "lint": "npx eslint catalog/",
+    "integration": "npx vitest run tests/integration/catalog/",
+    "pageBuild": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-marine-pages",
+    "deployedSite": "not verified; pending merge and deployment",
+    "hardwareAcceptance": "not performed"
+  }
+}

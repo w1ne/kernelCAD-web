@@ -1,0 +1,19 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "secondsPerSlide": 2.2,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "renderCommand": "npx tsx scripts/renderCatalogPreviews.ts substation-transformer-conservator",
+  "verificationLines": [
+    "Focused GLB regression: 1/1 passed",
+    "Catalog integration: 30 files / 45 tests passed",
+    "Grid-substation quality gate: 80/80 (100.00%)",
+    "Global structural gate: 2,401/2,402 (99.96%)"
+  ],
+  "caveat": "Local kernelCAD source render and export checks; not a transformer design approval, deployment, or physical acceptance."
+}

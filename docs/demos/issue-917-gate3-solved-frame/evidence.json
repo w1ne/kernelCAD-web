@@ -1,0 +1,63 @@
+{
+  "scenario": "rotated mated child with a world-space manual force and legacy mate torque limit",
+  "invocation": "npx tsx docs/demos/issue-917-gate3-solved-frame/capture-demo.ts",
+  "fixture": "gate3-solved-frame.kcad.ts",
+  "localValidatorReplay": true,
+  "physicsSimulationRun": false,
+  "deployedBehaviorVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "externalLoad": {
+    "rotor": {
+      "force": [
+        1000,
+        0,
+        0
+      ]
+    }
+  },
+  "declaredLegacyLimitNm": 5,
+  "authoredAtMm": [
+    100,
+    0,
+    0
+  ],
+  "localConnectorOriginMm": [
+    10,
+    0,
+    0
+  ],
+  "solvedPartOriginMm": [
+    -6.123233995736766e-16,
+    -10,
+    0
+  ],
+  "solvedJointOriginMm": [
+    0,
+    0,
+    0
+  ],
+  "solvedLeverArmMm": [
+    -6.123233995736766e-16,
+    -10,
+    0
+  ],
+  "legacyAuthoredFrameEstimatedTorqueNm": 0,
+  "solvedFrameCalculatedTorqueNm": 10,
+  "validatorObservedTorqueNm": 10,
+  "diagnostic": {
+    "code": "assembly.joint.load-exceeded",
+    "message": "Joint 'hinge' (revolute) torque=10.00N·m exceeds maxLoad.torque=5N·m.",
+    "hint": "Increase maxLoad on this joint, reduce externalLoads, or split the load path with an additional joint."
+  },
+  "result": {
+    "ok": false,
+    "failures": [
+      {
+        "element": "hinge",
+        "elementKind": "mate",
+        "reason": "joint-load-exceeded"
+      }
+    ]
+  },
+  "limitations": "The deprecated manual-load gate is a lever-arm sanity check. It is not reaction propagation, FEA, deployed behavior, or hardware acceptance."
+}

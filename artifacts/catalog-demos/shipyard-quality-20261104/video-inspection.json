@@ -1,0 +1,12 @@
+{
+  "video": "shipyard-quality.mp4",
+  "durationSeconds": 36.0,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "frameRate": "24/1",
+  "frameCount": "864",
+  "contactSheet": "video-contact-sheet.png",
+  "contactSheetGrid": "3 columns x 4 rows, one frame every 3 seconds"
+}

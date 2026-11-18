@@ -32,6 +32,7 @@ import {
   runFeaGateOnModel,
   type FeaGateReport,
 } from '../modeling/runtime/fea/runFeaGate';
+import { runFlightGateOnModel } from '../modeling/runtime/flight/runFlightGate';
 import {
   runTubeChecksOnModel,
   type TubeCheckReport,
@@ -41,8 +42,10 @@ import { detectMissingReturn } from '../modeling/validation/missingReturn';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import { detectDetachedMaterial } from '../modeling/validation/booleanIntegrity';
+import { Scene } from '../modeling/validation/scene';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
+import { evaluateCacheKey, getEvaluatedScript, rememberEvaluatedScript } from './evaluateCache';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
 import type { SelectionRecord } from '../shared/intent/selectionRecord';
@@ -233,6 +236,9 @@ async function buildModelForInput(
  *  Only studies that declare `minSafetyFactor` run here — a study without
  *  one is a report you fetch with `run_fea`, not a gate.
  *
+ *  Flight stability: a `flightStudy` with `minStabilityCal` runs its
+ *  stability check (mass, CG, Barrowman CP; no trajectory) here.
+ *
  *  Tube gate: same seam, but not opt-in by a spec record. It runs whenever
  *  the model has tube records (a missing `tubeSpec` only earns a warn). */
 async function runOptInGates(
@@ -250,6 +256,12 @@ async function runOptInGates(
   if (!fatal) {
     feaReport = await runFeaGateOnModel(model);
     if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
+  }
+
+  // Flight stability gate: same opt-in seam, only studies with minStabilityCal.
+  if (!fatal) {
+    const flightReport = runFlightGateOnModel(model);
+    if (flightReport) model.diagnostics.push(...flightReport.diagnostics);
   }
 
   let tubeReport: TubeCheckReport | undefined;
@@ -292,7 +304,44 @@ function declaredDimensionSummaries(model: BuiltModel): DeclaredDimensionSummary
   return dimensions.map(({ text, kind, source }) => ({ text, kind, source }));
 }
 
+function appendDeferredOverlapDiagnostics(model: BuiltModel): void {
+  if (!(model.returnValue instanceof Scene)) return;
+
+  model.diagnostics.push(...model.returnValue.__deferredValidationDiagnostics()
+    .filter((diagnostic) => diagnostic.code === 'assembly.interference.overlap')
+    .map((diagnostic): CompilerDiagnostic => ({
+      target: 'export-occt',
+      code: diagnostic.code,
+      severity: 'error',
+      message: diagnostic.message,
+      hint: diagnostic.hint,
+      ...(diagnostic.partA !== undefined && diagnostic.partB !== undefined
+        ? {
+            details: {
+              partA: diagnostic.partA,
+              partB: diagnostic.partB,
+              ...(diagnostic.volumeMm3 !== undefined ? { volumeMm3: diagnostic.volumeMm3 } : {}),
+            },
+          }
+        : {}),
+    })));
+}
+
 export async function evaluateAndBuildScript(
+  input: EvaluateInput,
+  opts?: EvaluateOptions,
+): Promise<EvaluateAndBuildResult> {
+  const cacheKey = await evaluateCacheKey(input, opts);
+  if (cacheKey !== undefined) {
+    const hit = getEvaluatedScript<EvaluateAndBuildResult>(cacheKey);
+    if (hit !== undefined) return hit;
+  }
+  const result = await evaluateAndBuildScriptFresh(input, opts);
+  if (cacheKey !== undefined) rememberEvaluatedScript(cacheKey, result);
+  return result;
+}
+
+async function evaluateAndBuildScriptFresh(
   input: EvaluateInput,
   opts?: EvaluateOptions,
 ): Promise<EvaluateAndBuildResult> {
@@ -310,6 +359,11 @@ export async function evaluateAndBuildScript(
   const built = await buildModelForInput(input, apiFactory);
   if ('evaluation' in built) return { evaluation: built.evaluation };
   const model = built.model;
+  // Strict solvedModel validation defers overlap-only failures so the
+  // evaluator can finish lowering and report mechanism.rest-interpenetration.
+  // Keep the original validator diagnostic on the shared evaluation surface
+  // as well; other strict validation errors still fail during capture.
+  appendDeferredOverlapDiagnostics(model);
   if (input.baseline !== undefined) model.diagnostics.push(...selectionDriftDiagnostics(input.baseline, model.selections));
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 

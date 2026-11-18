@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-11-05",
+  "workflow": "node docs/demos/token-benchmark/generate.mjs",
+  "input": "docs/benchmarks/token-efficiency/output.json",
+  "video": {
+    "path": "docs/demos/token-benchmark/demo.mp4",
+    "sha256": "49250ee69bc12c63c7f658660e0ae51313d697ea081d7469b841b64bba9bbadf",
+    "bytes": 160762,
+    "codec": "h264",
+    "width": 1600,
+    "height": 900,
+    "frameRate": "24/1",
+    "pixelFormat": "yuv420p",
+    "durationSeconds": 20.041667
+  },
+  "visualInspection": {
+    "reviewedArtifact": "docs/demos/token-benchmark/video-review/contact-sheet.png",
+    "reviewedDecodedSlides": 4,
+    "result": "All four slides render without clipping; the CLI workflow, measured distributions, and selected native asset counts are legible at full video resolution."
+  },
+  "scope": "Source-token measurement only; no geometry simulation, deployment, or hardware acceptance is claimed."
+}

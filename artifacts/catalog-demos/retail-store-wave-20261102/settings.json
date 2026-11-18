@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-02",
+  "kit": "retail-store",
+  "assetCount": 48,
+  "demo": {
+    "source": "capture_retail_store_demo.py",
+    "output": "retail-store-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 9,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "groups": 6,
+    "assetsPerGroup": 8
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/generate_retail_store_assets.py",
+    "npx eslint catalog/ --fix",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/render_retail_store_previews.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-retail-store-pages",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/verify_retail_store_pages.py /tmp/kernelcad-retail-store-pages",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/record_retail_store_checks.py",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/write_retail_store_readme.py",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/capture_retail_store_demo.py",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/inspect_retail_store_video.py",
+    "python3 artifacts/catalog-demos/retail-store-wave-20261102/inspect_retail_store_video.py --manual-inspection-passed"
+  ],
+  "verificationScope": {
+    "covered": ["local source and index", "local mesh export and triangle/material audit", "catalog integration suite", "local generated static pages", "rendered previews"],
+    "notCovered": ["deployed website behavior", "physical retail equipment", "hardware acceptance"]
+  }
+}

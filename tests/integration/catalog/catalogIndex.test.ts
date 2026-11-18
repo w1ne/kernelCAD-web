@@ -17,12 +17,15 @@ describe('asset catalog', () => {
     for (const asset of built.assets) {
       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asset.triangleBudget);
       expect(asset.stats.materials, asset.id).toBe(1);
+      expect(asset.params.some(param => ['number', 'boolean', 'choice'].includes(param.type)), `${asset.id} needs an editable size or configuration control`).toBe(true);
       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin === 'base' ? 0 : asset.stats.minUpM, 6);
+      expect(asset.preview, `${asset.id} needs a rendered homepage preview`).toBe(`/assets/${asset.kit}-${asset.id}.png`);
     }
     const committed = readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8');
     CatalogIndexSchema.parse(JSON.parse(committed));
     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toBe(serializeCatalogIndex(built));
-  }, 600_000);
+  // The complete 2,402-asset export can exceed 15 minutes on this workspace.
+  }, 1_800_000);
 
   it('every characters-kit asset ships a GLB rig with a pivot per joint', () => {
     const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')));

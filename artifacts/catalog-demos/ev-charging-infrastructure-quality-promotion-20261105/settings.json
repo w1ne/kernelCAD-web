@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-05",
+  "kit": "ev-charging-infrastructure",
+  "existingAssetCount": 50,
+  "preview": {
+    "command": "python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/render_kit_previews.py",
+    "ids": "all 50 existing kit IDs, in sorted batches of 10",
+    "export": "low-poly GLB using each source triangleBudget",
+    "view": "catalog software 3/4 view at 512x512"
+  },
+  "presetRender": {
+    "command": "npx tsx artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/render_preset_variants.ts",
+    "path": "catalogStore.variantSource -> runAndExport GLB -> catalog software renderer",
+    "assets": {
+      "compact-dc-fast-charger": ["fleetReady", "nightService"],
+      "nacs-connector": ["fleetReady"],
+      "solar-ev-carport": ["fleetReady"]
+    }
+  },
+  "quality": {
+    "command": "python3 scripts/checkCatalogQuality.py --kit ev-charging-infrastructure",
+    "expected": "50/50 assets, 2–4 material-named color controls, at least one presets() block",
+    "globalSnapshotCommand": "python3 scripts/checkCatalogQuality.py"
+  },
+  "index": {
+    "command": "npx tsx scripts/buildAssetCatalog.ts",
+    "checks": "source SHA-256, generated preview route, triangle budget, native parameter and preset values"
+  },
+  "lint": {
+    "command": "npx eslint catalog/kits/ev-charging-infrastructure/"
+  },
+  "integration": {
+    "command": "npx vitest run tests/integration/catalog/"
+  },
+  "localCatalogPages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-ev-charging-quality-pages",
+    "verification": "python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/verify_catalog_pages.py /tmp/kernelcad-ev-charging-quality-pages"
+  },
+  "packageBoundary": {
+    "command": "npm pack --json --pack-destination /tmp/kernelcad-ev-pack-20261105",
+    "audit": "python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/audit_npm_pack.py /tmp/kernelcad-ev-pack-20261105/kernelcad-0.17.4.tgz"
+  },
+  "video": {
+    "command": "python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/make_demo_video.py",
+    "inspectionCommand": "python3 artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/inspect_video.py --manual-review",
+    "resolution": "1280x720",
+    "frameRate": 24,
+    "caption": "Local source and preview behavior; no deployed-site or hardware-acceptance claim"
+  }
+}

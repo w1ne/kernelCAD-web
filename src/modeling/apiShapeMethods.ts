@@ -11,13 +11,16 @@ import {
   spurGearOutline,
   spurGearRadii,
   SpurGearProfileError,
+  type PlanetaryToothCompatibility,
   type SpurGearOutline,
 } from './spurGear';
 import { isValidEditableNumber, type Param } from '../shared/intent/types';
 import { invalidArgs } from '../shared/intent/invalidArgs';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { KernelError } from '../shared/intent/kernelError';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { currentValue, toParam } from '../shared/runtime/editableHelpers';
+import { isParamRef } from '../shared/runtime/paramRef';
+import { collectParamRefs } from '../shared/runtime/resolveParams';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
 import type {
   KernelCadApi,
@@ -36,6 +39,8 @@ export function makePrimitiveMethods(
       assertEditableNumber('box', 'x', x);
       assertEditableNumber('box', 'y', y);
       assertEditableNumber('box', 'z', z);
+      assertNotOptionBag('box', centered);
+      assertFaceLabelOptKeys('box', opts, "box(40, 30, 10, false, { faceLabels: { lid: 'top' } })");
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
         kind: 'box',
@@ -47,6 +52,8 @@ export function makePrimitiveMethods(
     cylinder(h, r, _segments, opts) {
       assertEditableNumber('cylinder', 'h', h);
       assertEditableNumber('cylinder', 'r', r);
+      assertNotOptionBag('cylinder', _segments);
+      assertFaceLabelOptKeys('cylinder', opts, "cylinder(20, 5, undefined, { faceLabels: { cap: 'top' } })");
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'cylinder');
       return session.createShape({
         kind: 'cylinder',
@@ -57,6 +64,7 @@ export function makePrimitiveMethods(
     },
     sphere(r, opts) {
       assertEditableNumber('sphere', 'r', r);
+      assertFaceLabelOptKeys('sphere', opts, 'sphere(5)');
       if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
         throw new KernelError(
           'feature.face-ref.not-applicable',
@@ -112,6 +120,72 @@ export function makePrimitiveMethods(
       return profile.revolve();
     },
   };
+}
+
+/** Reject an option object passed in the positional slot before the option
+ *  bag. In `box`'s `centered` slot `{ centered: false }` or `{ faceLabels }`
+ *  was truthy, so the box came out centred and the labels were dropped; in
+ *  `cylinder`'s `segments` slot `{ centered: true }` was ignored. */
+function assertNotOptionBag(api: 'box' | 'cylinder', value: unknown): void {
+  if (value === null || typeof value !== 'object' || isParamRef(value)) return;
+  invalidArgs(api === 'box'
+    ? {
+        api: 'box(x, y, z, centered, { faceLabels })',
+        path: 'centered',
+        got: value,
+        showType: true,
+        requires: 'a positional boolean; options such as faceLabels go in the fifth argument',
+        example: "box(40, 30, 10, true, { faceLabels: { lid: 'top' } })",
+        featureId: 'box',
+      }
+    : {
+        api: 'cylinder(h, r, segments, { faceLabels })',
+        path: 'segments',
+        got: value,
+        showType: true,
+        requires: 'a number or undefined; options such as faceLabels go in the fourth argument, and there is no centered flag — use .translate(0, 0, -h / 2)',
+        example: "cylinder(20, 5, undefined, { faceLabels: { cap: 'top' } })",
+        featureId: 'cylinder',
+      });
+}
+
+/** Reject a primitive option-bag key other than `faceLabels` instead of
+ *  dropping it (`cylinder(h, r, 32, { centered: true })` was not centred). */
+function assertFaceLabelOptKeys(api: 'box' | 'cylinder' | 'sphere', opts: unknown, example: string): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) return;
+  const unknownKey = Object.keys(opts).find((key) => key !== 'faceLabels');
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: api === 'sphere' ? 'sphere(r)' : `${api}(…, { faceLabels })`,
+    path: `opts.${unknownKey}`,
+    got: (opts as Record<string, unknown>)[unknownKey],
+    requires: api === 'sphere'
+      ? 'no option keys; sphere takes only the radius'
+      : `a known option key; ${api} accepts only faceLabels${api === 'cylinder' ? ' and has no centered flag — use .translate(0, 0, -h / 2)' : ''}`,
+    example,
+    featureId: api,
+  });
+}
+
+const SPRING_KEYS = new Set(['length', 'coilRadius', 'wireRadius', 'turns', 'axis', 'pointsPerTurn', 'endStyle', 'segments']);
+
+/** Reject option keys `spring()` does not read. A misspelled `endStyle`
+ *  (`ends`, `endstyle`) or an unsupported `pitch` used to be dropped, building
+ *  open-ended or differently pitched coils with no diagnostic. */
+function assertSpringKeys(opts: SpringOptions): void {
+  if (!opts || typeof opts !== 'object') return;
+  for (const key of Object.keys(opts)) {
+    if (!SPRING_KEYS.has(key)) {
+      invalidArgs({
+        api: 'spring(opts)',
+        path: `opts.${key}`,
+        gotText: `an unknown option '${key}'`,
+        requires: `one of ${[...SPRING_KEYS].join(', ')}; pitch is length / turns`,
+        example: "spring({ length: 30, coilRadius: 5, wireRadius: 1, turns: 8, endStyle: 'closed' })",
+        featureId: 'spring',
+      });
+    }
+  }
 }
 
 /** Validate the four positive dimensions of `spring()` in call order. */
@@ -214,6 +288,7 @@ export function makeSpringMethod(
   self: () => KernelCadApi,
 ): KernelCadApi['spring'] {
   return (opts) => {
+    assertSpringKeys(opts);
     const { length, coilRadius, wireRadius, turns } = resolveSpringSizing(opts);
     const axis = resolveSpringAxis(opts);
     const { pointsPerTurn, cylinderSegments } = resolveSpringSampling(opts);
@@ -289,6 +364,19 @@ function assertSpurGearOptsObject(opts: SpurGearOptions): void {
   }
 }
 
+/** Gear maths (involute outline, radii, bore/rim checks) runs at capture
+ *  time, so a numeric ParamRef in a gear slot is read through the live
+ *  ParamTable with `currentValue`, the capture-time resolver `helix()`,
+ *  rotate, scale and `path().circle` use. The params it reads are noted on
+ *  the session so a warm edit of one is refused rather than left stale.
+ *  Anything else passes through untouched so the slot's own check still
+ *  rejects strings, NaN and non-numeric refs. */
+function gearArg(session: CaptureSession, value: unknown): unknown {
+  if (!isParamRef(value) || value._type !== 'number') return value;
+  for (const name of collectParamRefs(value)) session.captureResolvedParams.add(name);
+  return currentValue(value, session.paramTable);
+}
+
 function resolveSpurGearTeeth(teeth: unknown): number {
   if (typeof teeth !== 'number' || !Number.isInteger(teeth) || teeth < 6 || teeth > 400) {
     invalidArgs({
@@ -362,7 +450,7 @@ function resolveSpurGearBore(value: unknown, module: number, root: number): numb
 
 /** Validate `spurGear()` options and apply defaults (20° pressure angle,
  *  backlash 0.05·module, no bore). */
-function resolveSpurGearOpts(opts: SpurGearOptions): {
+function resolveSpurGearOpts(opts: SpurGearOptions, session: CaptureSession): {
   module: number;
   teeth: number;
   pressureAngle: number;
@@ -371,12 +459,16 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
   backlash: number;
 } {
   assertSpurGearOptsObject(opts);
-  const module = assertPositiveFinite('spurGear', 'module', opts.module);
-  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', opts.faceWidth);
-  const teeth = resolveSpurGearTeeth(opts.teeth);
-  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
-  const backlash = resolveSpurGearBacklash(opts.backlash, module);
-  const bore = resolveSpurGearBore(opts.bore, module, spurGearRadii(module, teeth, pressureAngle).root);
+  const module = assertPositiveFinite('spurGear', 'module', gearArg(session, opts.module));
+  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', gearArg(session, opts.faceWidth));
+  const teeth = resolveSpurGearTeeth(gearArg(session, opts.teeth));
+  const pressureAngle = resolveSpurGearPressureAngle(gearArg(session, opts.pressureAngle));
+  const backlash = resolveSpurGearBacklash(gearArg(session, opts.backlash), module);
+  const bore = resolveSpurGearBore(
+    gearArg(session, opts.bore),
+    module,
+    spurGearRadii(module, teeth, pressureAngle).root,
+  );
   return { module, teeth, pressureAngle, faceWidth, bore, backlash };
 }
 
@@ -385,7 +477,7 @@ export function makeSpurGearMethod(
   self: () => KernelCadApi,
 ): KernelCadApi['spurGear'] {
   return (opts) => {
-    const { module, teeth, pressureAngle, faceWidth, bore, backlash } = resolveSpurGearOpts(opts);
+    const { module, teeth, pressureAngle, faceWidth, bore, backlash } = resolveSpurGearOpts(opts, session);
     let outline: SpurGearOutline;
     try {
       outline = spurGearOutline({ module, teeth, pressureAngleDeg: pressureAngle, backlash });
@@ -441,7 +533,7 @@ function assertInternalSpurGearOptsObject(opts: InternalSpurGearOptions): void {
   }
 }
 
-function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
+function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions, session: CaptureSession): {
   module: number;
   teeth: number;
   pressureAngle: number;
@@ -450,17 +542,18 @@ function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
   rimThickness: number;
 } {
   assertInternalSpurGearOptsObject(opts);
-  const module = assertPositiveFinite('internalSpurGear', 'module', opts.module);
-  const faceWidth = assertPositiveFinite('internalSpurGear', 'faceWidth', opts.faceWidth);
-  const teeth = resolveSpurGearTeeth(opts.teeth);
+  const module = assertPositiveFinite('internalSpurGear', 'module', gearArg(session, opts.module));
+  const faceWidth = assertPositiveFinite('internalSpurGear', 'faceWidth', gearArg(session, opts.faceWidth));
+  const teeth = resolveSpurGearTeeth(gearArg(session, opts.teeth));
   // Reuse spurGear tooth-count message but retarget the feature name.
-  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
-  const backlash = resolveSpurGearBacklash(opts.backlash, module);
-  if (opts.profileShift !== undefined && opts.profileShift !== 0) {
+  const pressureAngle = resolveSpurGearPressureAngle(gearArg(session, opts.pressureAngle));
+  const backlash = resolveSpurGearBacklash(gearArg(session, opts.backlash), module);
+  const profileShift = gearArg(session, opts.profileShift);
+  if (profileShift !== undefined && profileShift !== 0) {
     invalidArgs({
       api: 'internalSpurGear({ profileShift })',
       path: 'opts.profileShift',
-      got: opts.profileShift,
+      got: profileShift,
       requires:
         '0, or omit it — this version generates an unshifted basic rack, so a non-zero profile shift is not yet supported',
       unit: 'ratio',
@@ -470,7 +563,7 @@ function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
   }
   const rimThickness = opts.rimThickness === undefined
     ? 2.5 * module
-    : assertPositiveFinite('internalSpurGear', 'rimThickness', opts.rimThickness);
+    : assertPositiveFinite('internalSpurGear', 'rimThickness', gearArg(session, opts.rimThickness));
   return { module, teeth, pressureAngle, faceWidth, backlash, rimThickness };
 }
 
@@ -491,7 +584,7 @@ export function makeInternalSpurGearMethod(
 ): KernelCadApi['internalSpurGear'] {
   return (opts) => {
     const { module, teeth, pressureAngle, faceWidth, backlash, rimThickness } =
-      resolveInternalSpurGearOpts(opts);
+      resolveInternalSpurGearOpts(opts, session);
     let boreOutline: SpurGearOutline;
     try {
       boreOutline = internalSpurGearBoreOutline({
@@ -523,10 +616,20 @@ export function makeInternalGearAlias(self: () => KernelCadApi): KernelCadApi['i
   return (opts) => self().internalSpurGear(opts);
 }
 
-export function makePlanetaryToothCompatibilityMethod(): KernelCadApi['planetaryToothCompatibility'] {
+export function makePlanetaryToothCompatibilityMethod(
+  session: CaptureSession,
+): KernelCadApi['planetaryToothCompatibility'] {
   return (opts: PlanetaryToothCompatibilityOpts) => {
+    // The checker re-validates each count, so unresolved values still fail there.
+    const counts = (opts && typeof opts === 'object'
+      ? {
+        sunTeeth: gearArg(session, opts.sunTeeth),
+        planetTeeth: gearArg(session, opts.planetTeeth),
+        ringTeeth: gearArg(session, opts.ringTeeth),
+      }
+      : opts) as PlanetaryToothCompatibility;
     try {
-      assertPlanetaryToothCompatibility(opts);
+      assertPlanetaryToothCompatibility(counts);
     } catch (err) {
       if (err instanceof SpurGearProfileError) {
         throw new KernelError(

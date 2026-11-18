@@ -11,12 +11,12 @@ describe('assembly path MCP check', () => {
         }>;
         expect(p.check.enum).toContain('assembly-path');
         expect(p).toHaveProperty('directions');
-        expect(p).toHaveProperty('disassemblyOrder');
+        expect(p).toHaveProperty('disassembly_order');
         expect(p).toHaveProperty('sequence');
-        expect(p).toHaveProperty('threadedFasteners');
+        expect(p).toHaveProperty('threaded_fasteners');
         expect(p).toHaveProperty('stability');
         expect(p).toHaveProperty('fixtures');
-        expect(p).toHaveProperty('contactToleranceMm');
+        expect(p).toHaveProperty('contact_tolerance_mm');
         expect(p).toHaveProperty('gravity');
     });
     it('evaluates real assembly code through verify', async () => {

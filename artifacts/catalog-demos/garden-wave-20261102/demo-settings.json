@@ -1,0 +1,14 @@
+{
+  "source": "catalog/kits/garden/*.kcad.ts",
+  "input_images": "catalog/kits/garden/previews/*.png",
+  "frame_count": 6,
+  "frame_size_px": [
+    1600,
+    920
+  ],
+  "duration_per_frame_seconds": 4,
+  "video_duration_seconds": 24,
+  "fps": 30,
+  "codec": "H.264 / libx264, yuv420p",
+  "captions": "Local source validation and generated previews only; no deployment or physical acceptance claimed."
+}

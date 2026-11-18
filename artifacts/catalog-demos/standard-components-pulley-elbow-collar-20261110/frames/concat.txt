@@ -1,0 +1,9 @@
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/frames/01-before-after.png'
+duration 3.75
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/frames/02-pulley-variants.png'
+duration 3.75
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/frames/03-collar-variants.png'
+duration 3.75
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/frames/04-elbow-checks.png'
+duration 3.75
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/frames/04-elbow-checks.png'

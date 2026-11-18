@@ -54,7 +54,7 @@ let bracket: Awaited<ReturnType<typeof exportPdf>>;
 beforeAll(async () => {
   await initOcct();
   dir = mkdtempSync(join(tmpdir(), 'kernelcad-pdf-drawing-'));
-  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B' });
+  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B', autoAnnotate: true });
 }, 180_000);
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -85,6 +85,22 @@ describe('pdf-drawing: file structure', () => {
     expect(bracket.page.heightMm).toBeCloseTo(297, 1);
     expect(bracket.page.imageCount).toBe(0);
   });
+});
+
+describe('pdf-drawing: bounded sheet layout repair', () => {
+  it('exports the repaired page as A3 and passes its geometry and rendered text report', async () => {
+    const note = 'INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH';
+    const r = await exportPdf('return box(80,50,12);', {
+      sheet: 'a4', layoutRepair: true, autoAnnotate: false,
+      annotations: [{ id: 'inspection', kind: 'note', at: [0, 0, 12], text: note }],
+    });
+    expect(r.drawingReport?.sheetRepair?.applied).toBe(true);
+    expect(r.drawingReport?.sheetRepair?.status).toBe('clear');
+    expect(r.drawingReport?.renderedText?.issues).toEqual([]);
+    expect(r.page.widthMm).toBeCloseTo(420, 1);
+    expect(r.page.heightMm).toBeCloseTo(297, 1);
+    expect(textsOf(r.page)).toContain(note);
+  }, 120_000);
 });
 
 describe('pdf-drawing: title block', () => {
@@ -269,6 +285,27 @@ describe('pdf-drawing: sheets and projection', () => {
 });
 
 describe('pdf-drawing: public entry points', () => {
+  it('generic MCP export accepts layoutRepair and returns the verified A3 PDF', async () => {
+    const out = join(dir, 'mcp-repaired-inspection.pdf');
+    const note = 'INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH';
+    const r = await callMcpTool('export', {
+      target: 'model', code: 'return box(80,50,12);',
+      format: 'pdf-drawing', output_path: out,
+      options: { format: 'pdf-drawing', sheet: 'a4', autoAnnotate: false,
+        date: DATE, layoutRepair: true,
+        annotations: [{ id: 'inspection', kind: 'note', at: [0, 0, 12], text: note }] },
+    }) as { ok: boolean; drawing_report?: { sheetRepair?: { applied: boolean; status: string };
+      renderedText?: { issues: unknown[] } }; diagnostics?: { code: string }[] };
+    expect(r.ok).toBe(true);
+    expect(r.drawing_report?.sheetRepair).toMatchObject({ applied: true, status: 'clear' });
+    expect(r.drawing_report?.renderedText?.issues).toEqual([]);
+    expect(r.diagnostics?.map(d => d.code) ?? []).not.toContain('drawing.text.placement');
+    const page = await readPdfPageVectors(new Uint8Array(readFileSync(out)));
+    expect(page.widthMm).toBeCloseTo(420, 1);
+    expect(page.heightMm).toBeCloseTo(297, 1);
+    expect(textsOf(page)).toContain(note);
+  }, 120_000);
+
   it('MCP export writes the PDF and returns the placement report', async () => {
     const out = join(dir, 'bracket.pdf');
     const r = await callMcpTool('export', {
@@ -276,7 +313,7 @@ describe('pdf-drawing: public entry points', () => {
       file: BRACKET_FILE,
       format: 'pdf-drawing',
       output_path: out,
-      options: { format: 'pdf-drawing', revision: 'C', date: DATE },
+      options: { format: 'pdf-drawing', revision: 'C', date: DATE, autoAnnotate: true },
     }) as { ok: boolean; byte_count: number; format: string; drawing_report?: { placed: number } };
     expect(r.ok).toBe(true);
     expect(r.format).toBe('pdf-drawing');

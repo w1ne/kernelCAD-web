@@ -45,7 +45,7 @@ export type AnimationEase = (typeof ANIMATION_EASES)[number];
 export interface AnimationKey {
   /** Timeline position in milliseconds (>= 0, finite, unique within a track). */
   atMs: number;
-  /** Param value at this keyframe. Clamped to the param's declared min/max range. */
+  /** Authored param value at this keyframe. */
   value: number;
   /** Easing of the segment that ENDS at this key; default 'linear'. */
   ease?: AnimationEase;
@@ -110,7 +110,10 @@ export function isAnimationViewTracksSpec(spec: AnimationViewSpec): spec is Anim
 /** AnimationKey after normalization: `ease` is always present ('linear' default). */
 export interface NormalizedAnimationKey {
   atMs: number;
+  /** Param value used by timeline sampling (clamped to the declared range). */
   value: number;
+  /** Original authored value when `value` was clamped to the param range. */
+  authoredValue?: number;
   ease: AnimationEase;
 }
 

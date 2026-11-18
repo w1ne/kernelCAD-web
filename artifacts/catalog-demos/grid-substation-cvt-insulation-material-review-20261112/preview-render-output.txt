@@ -1,0 +1,2 @@
+$ npx tsx scripts/renderCatalogPreviews.ts substation-capacitive-voltage-transformer
+grid-substation/substation-capacitive-voltage-transformer: 252 tris

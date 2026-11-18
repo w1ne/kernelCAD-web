@@ -1,0 +1,10 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'vitest' run tests/integration/catalog/
+
+ RUN  v4.1.12 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  14:54:14
+   Duration  199.58s (transform 14.35s, setup 314ms, import 19.40s, tests 316.57s, environment 0ms)

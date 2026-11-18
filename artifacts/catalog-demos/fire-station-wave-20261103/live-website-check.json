@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-03T11:26:00Z",
+  "method": "reused existing Chrome/CDP session; homepage also read through the web reader",
+  "homepageStatus": 200,
+  "homepageObservedContent": "Original low-poly kits rail; assets described as parametric, metres and CC0",
+  "catalogRoute": "/catalog/",
+  "catalogStatus": 404,
+  "previewRows": 1291,
+  "kits": 31,
+  "fireStationRows": 0,
+  "branchDeployed": false,
+  "notes": "This is the last successful endpoint check. Later CDP evaluation timed out and direct unauthenticated requests returned 403; no newer endpoint result is claimed. The current branch is not deployed, so public verification of this wave is pending deployment."
+}

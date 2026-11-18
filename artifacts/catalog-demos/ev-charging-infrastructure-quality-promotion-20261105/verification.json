@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-05",
+  "scope": "local source, catalog index, generated previews, and built package",
+  "kit": {
+    "id": "ev-charging-infrastructure",
+    "originalIds": 50,
+    "idsPreserved": true,
+    "passed": 50,
+    "total": 50,
+    "passRate": "100%",
+    "materialControls": 159,
+    "materialControlsPerAsset": "2–4",
+    "namedPresets": 100,
+    "presetMaterialValues": 318,
+    "previewsRendered": 50,
+    "previewsIndexed": 50,
+    "triangles": {
+      "min": 92,
+      "max": 492,
+      "budget": 2400
+    },
+    "visualReview": {
+      "assets": ["compact-dc-fast-charger", "nacs-connector", "solar-ev-carport"],
+      "result": "all three previews read as their object forms in contrasting color"
+    }
+  },
+  "catalog": {
+    "passed": 1754,
+    "total": 2390,
+    "passRate": "73.39%",
+    "thin": 636,
+    "sourceHashesVerified": true,
+    "previewRoutesVerified": true
+  },
+  "lint": {
+    "command": "npx eslint catalog/kits/ev-charging-infrastructure/",
+    "passed": true
+  },
+  "integration": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "filesPassed": 4,
+    "testsPassed": 15
+  },
+  "localCatalogPages": {
+    "generated": 2390,
+    "evKitPages": 50,
+    "previewPagePairs": 50,
+    "parametersListed": true,
+    "passed": true,
+    "deployed": false
+  },
+  "sourceBoundary": {
+    "changedPaths": 152,
+    "unexpectedPaths": 0,
+    "privateProductPaths": 0,
+    "passed": true
+  },
+  "builtNpmArtifact": {
+    "package": "kernelcad@0.17.4",
+    "tarballBytes": 70358356,
+    "files": 5200,
+    "evSources": 50,
+    "evPreviews": 50,
+    "privateProductPaths": 0,
+    "passed": true
+  },
+  "demoVideo": {
+    "file": "ev-charging-infrastructure-quality-promotion.mp4",
+    "durationSeconds": 24,
+    "bytes": 303223,
+    "sha256": "e9b74c0d1a7acfc3d1d6915871899ae6f796e2de8980865eaa22b33c6a08d9e8",
+    "sampledAndVisuallyInspected": true
+  },
+  "deployment": "not performed",
+  "hardwareAcceptance": "not claimed"
+}

@@ -93,7 +93,7 @@ export function exportShapeDxfProfile(
   const section = readSection(opts);
   const r = extract(shape, opts, section);
   if (!r.ok) {
-    const what = section ? 'DXF section failed' : 'DXF export needs a flat part';
+    const what = section ? 'DXF section failed' : 'This is a 3D part, not a flat plate';
     return nonPlanar(targetId, `${what}: ${r.reason}.`, diagnostics, featureCount);
   }
   const bytes = exportDxf({ kind: 'profiles', layers: [{ loops: r.profile.loops }] }, opts);
@@ -155,7 +155,7 @@ function sceneDxfFromParts(
   if (failed.length > 0) {
     return nonPlanar(
       targetId,
-      `DXF export needs every part to be flat; not flat: ${failed.join('; ')}.`,
+      `These parts are 3D, not flat plates: ${failed.join('; ')}.`,
       diagnostics,
       featureCount,
     );

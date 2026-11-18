@@ -1,0 +1,851 @@
+{
+  "checkedAt": "2026-11-02T22:48:16.954Z",
+  "method": "npx tsx artifacts/catalog-demos/construction-equipment-wave-20261102/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 1075,
+  "generatedAssetPages": 1075,
+  "constructionEquipmentPages": 60,
+  "checkedConstructionEquipmentPages": [
+    {
+      "id": "adjustable-formwork-prop",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "articulated-dump-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 660,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "asphalt-distributor-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1064,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "asphalt-paver-screed",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 92,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "asphalt-transfer-conveyor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 348,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "backhoe-loader",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 684,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-planer-milling-machine",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1896,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-batch-plant",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 220,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-beam-form",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-column-form",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-form-tie",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-formwork-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-placement-bucket",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-pump-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 708,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "concrete-vibrator-needle",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "construction-personnel-elevator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "crawler-dozer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1956,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "drywall-panel-lift",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 380,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grade-rod-and-prism-pole",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 208,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "jobsite-tile-saw",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laser-level-tripod",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 148,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lowboy-equipment-trailer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 576,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "masonry-mixer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 356,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mast-climbing-work-platform",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mobile-fuel-tank",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 368,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "modular-shoring-frame",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 284,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "motor-grader",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 908,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pipe-roller-stand",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pneumatic-tire-roller",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-air-compressor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 404,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-core-drill-stand",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 92,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-floor-grinder",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 664,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-material-hoist",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-site-water-tank",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rebar-bending-machine",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rebar-cage",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 916,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rebar-cutting-machine",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rebar-straightener-coil",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 268,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ride-on-concrete-saw",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 632,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rigid-haul-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 912,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "road-reclaimer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 816,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rough-terrain-forklift",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 636,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "single-drum-soil-compactor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 456,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "skid-steer-loader",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 712,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "slab-edge-form",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tandem-vibratory-roller",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 324,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "telescopic-handler",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 624,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "towable-light-tower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 152,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "track-asphalt-paver",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1808,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tracked-concrete-buggy",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1404,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "trailer-concrete-line-pump",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 656,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "transit-mixer-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 712,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "trench-roller",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vibrating-concrete-screed",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 92,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "walk-behind-concrete-saw",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 620,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "walk-behind-floor-scarifier",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 664,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "walk-behind-power-trowel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "water-tanker-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1064,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wheel-asphalt-paver",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 728,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; this branch has not been deployed"
+}

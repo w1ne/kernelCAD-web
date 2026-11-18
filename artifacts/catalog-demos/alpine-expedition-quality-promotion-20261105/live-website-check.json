@@ -1,0 +1,22 @@
+{
+  "checkedAtUtc": "2026-11-05T19:04:26.335633+00:00",
+  "scope": "existing public site; this feature branch has not been deployed",
+  "checks": [
+    {
+      "url": "https://kernelcad.com/",
+      "status": 200
+    },
+    {
+      "url": "https://kernelcad.com/catalog/",
+      "status": 404
+    },
+    {
+      "url": "https://kernelcad.com/catalog/alpine-expedition/",
+      "status": 404
+    },
+    {
+      "url": "https://kernelcad.com/assets.json",
+      "status": 200
+    }
+  ]
+}

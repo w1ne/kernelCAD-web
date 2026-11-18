@@ -3,15 +3,64 @@
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { EdgeHistoryMap, FaceLineage, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
-
-function seedEdges(shape: OcctBackend, featureId: string): EdgeHistoryMap {
-  const map: EdgeHistoryMap = new Map();
-  for (const hash of shape.edgeHashes()) map.set(hash, { rootHash: hash, rootFeatureId: featureId });
-  return map;
-}
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, type LowerContext, type LowerOutcome } from './context';
+
+const HASH_UPPER = 2147483647;
+
+type SampledEdge = {
+  pointAt(t: number): { z: number; delete?: () => void };
+  tangentAt(t: number): { z: number; delete?: () => void };
+  wrapped?: { HashCode(upper: number): number };
+};
+
+/**
+ * Birth roles for a box's twelve edges. Same idea as the six canonical face
+ * names: classified once, on the primitive, and stored on EdgeLineage so a
+ * later fillet reads the label instead of re-querying direction. `corner` is
+ * the four vertical edges; `top-perimeter` / `bottom-perimeter` are the two
+ * horizontal loops.
+ */
+function boxEdgeRoleLabels(shape: OcctBackend): Map<string, string> {
+  const edges = (shape.getReplicadShape() as unknown as { edges: SampledEdge[] }).edges;
+  const samples: { hash: string; tz: number; z: number }[] = [];
+  for (const edge of edges) {
+    const mid = edge.pointAt(0.5);
+    const tangent = edge.tangentAt(0.5);
+    const hash = edge.wrapped?.HashCode(HASH_UPPER).toString(16);
+    if (hash) samples.push({ hash, tz: tangent.z, z: mid.z });
+    mid.delete?.();
+    tangent.delete?.();
+  }
+  const horizontal = samples.filter((s) => Math.abs(s.tz) < 0.5);
+  const split = horizontal.length === 0
+    ? 0
+    : (Math.min(...horizontal.map((s) => s.z)) + Math.max(...horizontal.map((s) => s.z))) / 2;
+  const out = new Map<string, string>();
+  for (const sample of samples) {
+    if (Math.abs(sample.tz) > 0.9) out.set(sample.hash, 'corner');
+    else if (Math.abs(sample.tz) < 0.5) {
+      out.set(sample.hash, sample.z >= split ? 'top-perimeter' : 'bottom-perimeter');
+    }
+  }
+  return out;
+}
+
+function seedEdges(shape: OcctBackend, featureId: string): EdgeHistoryMap {
+  const labels = shape.kind === 'box' ? boxEdgeRoleLabels(shape) : undefined;
+  const map: EdgeHistoryMap = new Map();
+  for (const [rootOrdinal, hash] of shape.edgeHashes().entries()) {
+    const label = labels?.get(hash);
+    map.set(hash, {
+      rootHash: hash,
+      rootFeatureId: featureId,
+      rootOrdinal,
+      ...(label !== undefined ? { labelName: label } : {}),
+    });
+  }
+  return map;
+}
 
 /** `box(x, y, z, { centered })` — seeds the six canonical face names into the
  *  history map so downstream selectors can name them. */

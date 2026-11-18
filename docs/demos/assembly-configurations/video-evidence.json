@@ -1,0 +1,24 @@
+{
+  "source": "examples/assemblies/configured-bearing-blocks.kcad.ts",
+  "partSource": "examples/manufacturing-showcase/bearing-block.kcad.ts",
+  "kind": "local-turntable",
+  "not": ["motion-study", "deployed-capture", "printed-part"],
+  "invocation": "npx tsx src/agent/cli/index.ts animate examples/assemblies/configured-bearing-blocks.kcad.ts docs/demos/assembly-configurations/demo.mp4 --turntable --preset publish --width 960 --height 540 --duration-ms 6000 --elevation 20 --background white",
+  "settings": {
+    "preset": "publish",
+    "width": 960,
+    "height": 540,
+    "durationMs": 6000,
+    "fps": 30,
+    "frames": 180,
+    "elevationDeg": 20,
+    "background": "white"
+  },
+  "encoderNote": "turntable reported verify skipped; interference is the integration test at epsilon 0.01 mm³",
+  "sha256": {
+    "demo.mp4": "3fc4f47afc832d98de33a5c589a3eb255aa2fda136c64aaa7de395088812bc1d",
+    "assembled.png": "ae97e343861591b8eeebc60606bfd2e0c286451e2e1e9140d24d30521a40e63a",
+    "inspect/channels/rgb/iso.png": "76bc85399682b4befc94f10671aa5a797844b2dd0164c62e174c5dc4ef7912cf"
+  },
+  "visualCheck": "Frames 0 and 90 show two matching end blocks and a larger middle block, each seated on the base plate with a centre bore and four mount holes. The blocks do not overlap."
+}

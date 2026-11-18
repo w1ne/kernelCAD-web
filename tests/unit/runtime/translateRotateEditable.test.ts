@@ -11,7 +11,6 @@
 //   3. Parametric reactivity: building a translated box, editing the param
 //      via session.params.update, observing the shape's bbox center moved.
 //
-// Spec: kernelCAD-private/docs/specs/2026-05-08-translate-rotate-editable-design.md
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';

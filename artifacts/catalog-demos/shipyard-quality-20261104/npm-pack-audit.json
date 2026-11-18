@@ -1,0 +1,14 @@
+{
+  "command": "npm pack --dry-run --ignore-scripts --json",
+  "lifecycleScriptsDisabled": true,
+  "dryRun": true,
+  "packages": 1,
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "packageFiles": 5199,
+  "shipyardSources": 70,
+  "shipyardPreviews": 70,
+  "catalogIndexPackaged": true,
+  "inventoryForBoundaryAudit": "/tmp/kernelcad-shipyard-quality-npm-pack.json",
+  "passed": true
+}

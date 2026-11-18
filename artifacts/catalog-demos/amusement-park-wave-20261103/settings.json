@@ -1,0 +1,18 @@
+{
+  "wave": "amusement-park",
+  "checkedAt": "2026-11-03",
+  "assetCount": 70,
+  "kit": "amusement-park",
+  "triangleBudget": 1800,
+  "requiredParams": ["scale", "color"],
+  "materialsPerAsset": 1,
+  "units": "millimetres",
+  "coordinateSystem": "Z-up",
+  "origin": "base",
+  "license": "CC0-1.0",
+  "previewRender": "npx tsx scripts/renderCatalogPreviews.ts <new asset ids>",
+  "catalogBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "integrationChecks": "npx vitest run tests/integration/catalog/",
+  "deploymentStatus": "not deployed; branch builds locally",
+  "hardwareAcceptance": "not applicable; visualization props only"
+}

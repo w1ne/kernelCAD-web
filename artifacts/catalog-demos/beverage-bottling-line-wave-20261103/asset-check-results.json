@@ -1,0 +1,27 @@
+{
+  "kit": "beverage-bottling-line",
+  "assetsExpected": 50,
+  "assetsIndexed": 50,
+  "assetsAudited": 50,
+  "totalCatalogAssets": 2050,
+  "totalKits": 44,
+  "triangles": {
+    "min": 96,
+    "max": 832
+  },
+  "materialsPerAsset": [
+    1
+  ],
+  "paramNamesPerAsset": [
+    "scale",
+    "body",
+    "accent"
+  ],
+  "previewFiles": 50,
+  "sourceHashesMatch": true,
+  "baseOffsetRangeM": [
+    0,
+    0
+  ],
+  "failures": []
+}

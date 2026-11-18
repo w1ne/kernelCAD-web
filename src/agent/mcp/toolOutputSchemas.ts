@@ -29,11 +29,20 @@ import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputS
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FEA_OUTPUT_SCHEMAS } from './registry/feaTools.outputSchemas';
 import { CFD_OUTPUT_SCHEMAS } from './registry/cfdTools.outputSchemas';
+import { FLIGHT_OUTPUT_SCHEMAS } from './registry/flightTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
 import { ASSET_CATALOG_OUTPUT_SCHEMAS } from './registry/assetCatalogTools.outputSchemas';
+import { COST_ESTIMATE_OUTPUT_SCHEMAS } from './registry/costTools.outputSchemas';
+import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.outputSchemas';
+import { SCAN_REFERENCE_OUTPUT_SCHEMAS } from './registry/scanReferenceTools.outputSchemas';
+import { METRIC_THREAD_OUTPUT_SCHEMAS } from './registry/metricThreadTools.outputSchemas';
+import { SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS } from './registry/splitKeepPartsTools.outputSchemas';
+import { STEP_INSPECT_VIEWS_OUTPUT_SCHEMAS } from './registry/stepInspectViewsTools.outputSchemas';
+import { EXPORT_HEALTH_OUTPUT_SCHEMAS } from './registry/exportHealthTools.outputSchemas';
+import { SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS } from './registry/sdfExportPreviewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -64,6 +73,34 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
       featureCount: { type: 'number', description: 'Number of features captured by the script.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      refuse: {
+        type: 'object',
+        description: 'Present only when ok is false and an error diagnostic exists. The first error: code (DiagnosticCode), message, optional location, and try (the recovery hint). Warnings alone omit refuse.',
+        properties: {
+          code: { type: 'string', description: 'DiagnosticCode of the first error-severity diagnostic.' },
+          message: { type: 'string' },
+          location: {
+            type: 'object',
+            properties: {
+              featureId: { type: 'string' },
+              param: { type: 'string', description: 'Parameter named by the diagnostic details, when present.' },
+              scriptLocation: {
+                type: 'object',
+                properties: {
+                  line: { type: 'number' },
+                  column: { type: 'number' },
+                  path: { type: 'string' },
+                },
+                additionalProperties: false,
+              },
+            },
+            additionalProperties: false,
+          },
+          try: { type: 'string', description: 'Actionable recovery hint from the diagnostic or its hint template.' },
+        },
+        required: ['code', 'message', 'try'],
+        additionalProperties: false,
+      },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
       parts: { type: 'object', additionalProperties: true, description: 'Assembly parts summary { count, names } when the scene is assembly-built.' },
       featureHealth: {
@@ -207,6 +244,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
             edgeCount: { type: 'object', additionalProperties: true, description: '{ base, revised, delta } BREP edge count.' },
             holeCount: { type: 'object', additionalProperties: true, description: '{ base, revised, delta } cylindrical-hole count.' },
             maxDeviationMm: { type: 'number', description: 'Two-sided discrete Hausdorff distance between the two surfaces.' },
+            faces: {
+              type: 'object',
+              additionalProperties: true,
+              description:
+                "Which faces changed: { added, removed, modified, unchangedCount, addedCount, removedCount, modifiedCount, matchedByLineage, truncated }. Entries: { surfaceType, areaMm2, center, normal?, axis?, radiusMm?, ref? }; modified entries add { before, after, offsetMm, change: 'moved' | 'resized' | 'reshaped', matchedBy: 'lineage' | 'geometry' }. Lists capped at 50.",
+            },
           },
           required: ['name', 'verdict', 'addedMm3', 'removedMm3', 'commonMm3'],
           additionalProperties: true,
@@ -214,7 +257,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         description: 'Per matched body, the material-level delta (success).',
       },
       unmatched: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Bodies present on only one side; each also raises diff.body.unmatched.' },
-      summary: { type: 'object', additionalProperties: true, description: 'Verdict counts plus totalAddedMm3 / totalRemovedMm3 / maxDeviationMm.' },
+      summary: { type: 'object', additionalProperties: true, description: 'Verdict counts plus totalAddedMm3 / totalRemovedMm3 / maxDeviationMm, face-change totals { added, removed, modified, unchanged }, and text: a plain-language account naming the faces that changed.' },
       render: { type: 'object', additionalProperties: true, description: 'Overlay result when render: true — { ok, images, out_dir, script_path, error? }.' },
       side: { type: 'string', description: "Which side failed ('base' | 'revised') (failure)." },
       error: { type: 'string', description: 'Failure message (failure).' },
@@ -683,118 +726,10 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
 
   ...ASSET_CATALOG_OUTPUT_SCHEMAS,
-
-
-  evaluate_sdf: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      distance: { type: 'number', description: 'Signed distance in mm; negative = inside (success).' },
-      inside: { type: 'boolean', description: 'Whether the point is inside the surface (success).' },
-      aabb: { type: 'object', additionalProperties: true, description: 'Axis-aligned bounding box of the field (success).' },
-      kind: { type: 'string', description: 'SDF field kind (success).' },
-      error: { type: 'string' },
-      errorCode: { type: 'string' },
-      hint: { type: 'string' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
-
-  // Merged dispatcher (selected by `target`): union of model/part export outputs.
-  export: {
-    type: 'object',
-    properties: {
-      sceneSummary: SCENE_SUMMARY_SCHEMA,
-      ok: { type: 'boolean' },
-      output_path: { type: 'string', description: "target:'model' — written file path." },
-      byte_count: { type: 'number', description: "target:'model' — file size in bytes." },
-      feature_count: { type: 'number' },
-      format: { type: 'string' },
-      gcode_stats: {
-        type: 'object',
-        description: 'G-code only: slicer predictions and generator identity reported by artifact comments; not physical measurements.',
-        properties: {
-          slicer: { type: 'object', properties: { name: { type: 'string', enum: ['OrcaSlicer', 'PrusaSlicer'] }, version: { type: 'string' } }, required: ['name', 'version'], additionalProperties: false },
-          estimatedPrintTimeSeconds: { type: 'number', minimum: 0 },
-          filamentUsedGrams: { type: 'number', minimum: 0 },
-          filamentUsedMeters: { type: 'number', minimum: 0 },
-          layerCount: { type: 'integer', minimum: 0 },
-          maxZMm: { type: 'number', minimum: 0 },
-        },
-        additionalProperties: false,
-      },
-      mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files: meshes/<part>.stl for urdf/sdf-gazebo, meshes/<part>.usda mesh layers for usd-isaac.' },
-      part_files: { type: 'array', items: { type: 'string' }, description: "Per-part DXF files: parts/<part>.dxf for a multi-part dxf export (layout 'per-part', the default)." },
-      written: { type: 'array', items: { type: 'object', additionalProperties: true }, description: "target:'part' — per-part export records." },
-      infill: { type: 'object', additionalProperties: true, description: "3mf with options.infill — stress-graded infill: band table (density, stress range, volume %), saving vs uniform infill at the high density, FEA peaks, and images { heatmap, bands, cutaway } PNG paths." },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
-
-  send_to_printer: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      uploaded_path: { type: 'string', description: 'Path/name the G-code (bambu-lan: the .gcode.3mf print file) was stored under on the printer.' },
-      dry_run: { type: 'boolean', description: 'True when only connectivity/auth was validated (no upload, no print start).' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
-
-  capture_animation: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      output_path: { type: 'string', description: 'Written MP4 path (MP4 mode).' },
-      frame_count: { type: 'number' },
-      duration_ms: { type: 'number' },
-      fps: { type: 'number' },
-      verified: { type: 'boolean', description: 'Whether pose-interference verification passed.' },
-      verify_skipped: { type: 'boolean' },
-      collisions: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Colliding poses { t_ms, a, b, volume_mm3 }.' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-      errorCode: { type: 'string' },
-      errorHint: { type: 'string' },
-      failure_kind: { type: 'string' },
-    },
-    required: ['ok', 'diagnostics'],
-    additionalProperties: true,
-  },
-
-  render_preview: {
-    type: 'object',
-    properties: {
-      sceneSummary: SCENE_SUMMARY_SCHEMA,
-      ok: { type: 'boolean', description: 'Whether the preview rendered.' },
-      images: {
-        type: 'array',
-        items: { type: 'object', additionalProperties: true },
-        description: 'Rendered tiles { name, path, description } — absolute local PNG paths with per-view camera orientation (kernelCAD is Z-up).',
-      },
-      out_dir: { type: 'string', description: 'Directory holding the PNGs (session temp dir unless out_dir was given).' },
-      bounds: { type: 'object', additionalProperties: true, description: 'Model AABB in mm { min, max } the camera was fit to (success).' },
-      mechanism: { type: 'string', description: "Mechanism-truth verdict: 'real' | 'broken' | 'unverified'." },
-      mechanism_failure_codes: { type: 'array', items: { type: 'string' }, description: "De-duplicated failure codes when mechanism is 'broken'." },
-      render_source: { type: 'string', description: "Lane that served the render: 'static-player' | 'dev-server' | 'explicit'." },
-      render_ms: { type: 'number', description: 'Wall-clock render time in ms (provisioning + browser + captures).' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-      errorCode: { type: 'string' },
-      errorHint: { type: 'string' },
-    },
-    required: ['ok', 'images', 'diagnostics'],
-    additionalProperties: true,
-  },
+  ...SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS,
   ...FEA_OUTPUT_SCHEMAS,
   ...CFD_OUTPUT_SCHEMAS,
+  ...FLIGHT_OUTPUT_SCHEMAS,
   fit_plane: {
     type: 'object',
     properties: {
@@ -824,4 +759,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
   },
   ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
+  ...COST_ESTIMATE_OUTPUT_SCHEMAS,
+  ...TOLERANCE_STACK_OUTPUT_SCHEMAS,
+  ...SCAN_REFERENCE_OUTPUT_SCHEMAS,
+  ...METRIC_THREAD_OUTPUT_SCHEMAS,
+  ...SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS,
+  ...STEP_INSPECT_VIEWS_OUTPUT_SCHEMAS,
+  ...EXPORT_HEALTH_OUTPUT_SCHEMAS,
 };

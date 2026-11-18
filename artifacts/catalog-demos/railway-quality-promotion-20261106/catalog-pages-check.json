@@ -1,0 +1,665 @@
+{
+  "checkedAt": "2026-11-06",
+  "kit": "railway",
+  "kitPages": 40,
+  "previewedRows": 40,
+  "sourceHashesMatch": true,
+  "hubContainsKit": true,
+  "pages": [
+    {
+      "id": "baggage-cart",
+      "path": "catalog/railway/baggage-cart/index.html",
+      "previewBytes": 25671,
+      "previewPath": "/assets/railway-baggage-cart.png",
+      "materialParams": [
+        "paintedSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "buffer-stop",
+      "path": "catalog/railway/buffer-stop/index.html",
+      "previewBytes": 26332,
+      "previewPath": "/assets/railway-buffer-stop.png",
+      "materialParams": [
+        "railSteel",
+        "concrete",
+        "paintedSteel",
+        "rubber"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "caboose",
+      "path": "catalog/railway/caboose/index.html",
+      "previewBytes": 27280,
+      "previewPath": "/assets/railway-caboose.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "commuter-car",
+      "path": "catalog/railway/commuter-car/index.html",
+      "previewBytes": 27324,
+      "previewPath": "/assets/railway-commuter-car.png",
+      "materialParams": [
+        "railSteel",
+        "paintedAluminum",
+        "glass",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "crossing-gate",
+      "path": "catalog/railway/crossing-gate/index.html",
+      "previewBytes": 23906,
+      "previewPath": "/assets/railway-crossing-gate.png",
+      "materialParams": [
+        "galvanizedSteel",
+        "safetyPaint",
+        "enamel",
+        "signalAmberGlass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "crossing-warning-light",
+      "path": "catalog/railway/crossing-warning-light/index.html",
+      "previewBytes": 19692,
+      "previewPath": "/assets/railway-crossing-warning-light.png",
+      "materialParams": [
+        "galvanizedSteel",
+        "signalRedGlass",
+        "signalAmberGlass",
+        "safetyPaint"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "curved-track",
+      "path": "catalog/railway/curved-track/index.html",
+      "previewBytes": 28114,
+      "previewPath": "/assets/railway-curved-track.png",
+      "materialParams": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "diesel-locomotive",
+      "path": "catalog/railway/diesel-locomotive/index.html",
+      "previewBytes": 24477,
+      "previewPath": "/assets/railway-diesel-locomotive.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "signalAmberGlass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "dining-car",
+      "path": "catalog/railway/dining-car/index.html",
+      "previewBytes": 24310,
+      "previewPath": "/assets/railway-dining-car.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "electric-locomotive",
+      "path": "catalog/railway/electric-locomotive/index.html",
+      "previewBytes": 32636,
+      "previewPath": "/assets/railway-electric-locomotive.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "aluminum"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "flatbed-wagon",
+      "path": "catalog/railway/flatbed-wagon/index.html",
+      "previewBytes": 21244,
+      "previewPath": "/assets/railway-flatbed-wagon.png",
+      "materialParams": [
+        "railSteel",
+        "timber",
+        "paintedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "freight-boxcar",
+      "path": "catalog/railway/freight-boxcar/index.html",
+      "previewBytes": 22849,
+      "previewPath": "/assets/railway-freight-boxcar.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "galvanizedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "handcar",
+      "path": "catalog/railway/handcar/index.html",
+      "previewBytes": 27888,
+      "previewPath": "/assets/railway-handcar.png",
+      "materialParams": [
+        "timber",
+        "paintedSteel",
+        "railSteel",
+        "rubber"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "hopper-wagon",
+      "path": "catalog/railway/hopper-wagon/index.html",
+      "previewBytes": 25572,
+      "previewPath": "/assets/railway-hopper-wagon.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "galvanizedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "inspection-trolley",
+      "path": "catalog/railway/inspection-trolley/index.html",
+      "previewBytes": 27419,
+      "previewPath": "/assets/railway-inspection-trolley.png",
+      "materialParams": [
+        "paintedSteel",
+        "timber",
+        "rubber",
+        "railSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "level-crossing",
+      "path": "catalog/railway/level-crossing/index.html",
+      "previewBytes": 25654,
+      "previewPath": "/assets/railway-level-crossing.png",
+      "materialParams": [
+        "asphalt",
+        "railSteel",
+        "safetyPaint"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "luggage-stack",
+      "path": "catalog/railway/luggage-stack/index.html",
+      "previewBytes": 19627,
+      "previewPath": "/assets/railway-luggage-stack.png",
+      "materialParams": [
+        "polymerShell",
+        "leather",
+        "rubber"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "lumber-wagon",
+      "path": "catalog/railway/lumber-wagon/index.html",
+      "previewBytes": 24753,
+      "previewPath": "/assets/railway-lumber-wagon.png",
+      "materialParams": [
+        "railSteel",
+        "timber",
+        "paintedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "mail-car",
+      "path": "catalog/railway/mail-car/index.html",
+      "previewBytes": 23455,
+      "previewPath": "/assets/railway-mail-car.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass",
+        "aluminum"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "maintenance-railcar",
+      "path": "catalog/railway/maintenance-railcar/index.html",
+      "previewBytes": 27379,
+      "previewPath": "/assets/railway-maintenance-railcar.png",
+      "materialParams": [
+        "railSteel",
+        "safetyPaint",
+        "paintedSteel",
+        "signalAmberGlass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "milepost",
+      "path": "catalog/railway/milepost/index.html",
+      "previewBytes": 15165,
+      "previewPath": "/assets/railway-milepost.png",
+      "materialParams": [
+        "paintedSteel",
+        "enamel",
+        "concrete"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "passenger-coach",
+      "path": "catalog/railway/passenger-coach/index.html",
+      "previewBytes": 23045,
+      "previewPath": "/assets/railway-passenger-coach.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "glass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "platform-canopy",
+      "path": "catalog/railway/platform-canopy/index.html",
+      "previewBytes": 22524,
+      "previewPath": "/assets/railway-platform-canopy.png",
+      "materialParams": [
+        "galvanizedSteel",
+        "paintedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "rail-sleeper",
+      "path": "catalog/railway/rail-sleeper/index.html",
+      "previewBytes": 21929,
+      "previewPath": "/assets/railway-rail-sleeper.png",
+      "materialParams": [
+        "concrete",
+        "railSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "railway-lantern",
+      "path": "catalog/railway/railway-lantern/index.html",
+      "previewBytes": 23724,
+      "previewPath": "/assets/railway-railway-lantern.png",
+      "materialParams": [
+        "paintedSteel",
+        "glass",
+        "brass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "railway-ticket-machine",
+      "path": "catalog/railway/railway-ticket-machine/index.html",
+      "previewBytes": 15386,
+      "previewPath": "/assets/railway-railway-ticket-machine.png",
+      "materialParams": [
+        "paintedSteel",
+        "displayGlass",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "semaphore-signal",
+      "path": "catalog/railway/semaphore-signal/index.html",
+      "previewBytes": 22747,
+      "previewPath": "/assets/railway-semaphore-signal.png",
+      "materialParams": [
+        "paintedSteel",
+        "safetyPaint",
+        "brass",
+        "galvanizedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "signal-gantry",
+      "path": "catalog/railway/signal-gantry/index.html",
+      "previewBytes": 21950,
+      "previewPath": "/assets/railway-signal-gantry.png",
+      "materialParams": [
+        "galvanizedSteel",
+        "paintedSteel",
+        "signalRedGlass",
+        "signalAmberGlass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "signal-light",
+      "path": "catalog/railway/signal-light/index.html",
+      "previewBytes": 20532,
+      "previewPath": "/assets/railway-signal-light.png",
+      "materialParams": [
+        "galvanizedSteel",
+        "signalRedGlass",
+        "signalAmberGlass",
+        "signalGreenGlass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "station-bench",
+      "path": "catalog/railway/station-bench/index.html",
+      "previewBytes": 22424,
+      "previewPath": "/assets/railway-station-bench.png",
+      "materialParams": [
+        "timber",
+        "paintedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "station-clock",
+      "path": "catalog/railway/station-clock/index.html",
+      "previewBytes": 21397,
+      "previewPath": "/assets/railway-station-clock.png",
+      "materialParams": [
+        "paintedSteel",
+        "enamel",
+        "brass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "station-platform",
+      "path": "catalog/railway/station-platform/index.html",
+      "previewBytes": 17089,
+      "previewPath": "/assets/railway-station-platform.png",
+      "materialParams": [
+        "concrete",
+        "tactilePolymer"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "steam-locomotive",
+      "path": "catalog/railway/steam-locomotive/index.html",
+      "previewBytes": 27660,
+      "previewPath": "/assets/railway-steam-locomotive.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "brass",
+        "glass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "straight-track",
+      "path": "catalog/railway/straight-track/index.html",
+      "previewBytes": 20530,
+      "previewPath": "/assets/railway-straight-track.png",
+      "materialParams": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "subway-car",
+      "path": "catalog/railway/subway-car/index.html",
+      "previewBytes": 23252,
+      "previewPath": "/assets/railway-subway-car.png",
+      "materialParams": [
+        "railSteel",
+        "paintedAluminum",
+        "glass"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "tank-wagon",
+      "path": "catalog/railway/tank-wagon/index.html",
+      "previewBytes": 27681,
+      "previewPath": "/assets/railway-tank-wagon.png",
+      "materialParams": [
+        "railSteel",
+        "paintedSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "ticket-barrier",
+      "path": "catalog/railway/ticket-barrier/index.html",
+      "previewBytes": 20227,
+      "previewPath": "/assets/railway-ticket-barrier.png",
+      "materialParams": [
+        "paintedSteel",
+        "displayGlass",
+        "aluminum"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "timetable-board",
+      "path": "catalog/railway/timetable-board/index.html",
+      "previewBytes": 19315,
+      "previewPath": "/assets/railway-timetable-board.png",
+      "materialParams": [
+        "enamel",
+        "brass",
+        "paintedSteel"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "track-switch-lever",
+      "path": "catalog/railway/track-switch-lever/index.html",
+      "previewBytes": 22839,
+      "previewPath": "/assets/railway-track-switch-lever.png",
+      "materialParams": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "rubber"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    },
+    {
+      "id": "turnout-track",
+      "path": "catalog/railway/turnout-track/index.html",
+      "previewBytes": 25153,
+      "previewPath": "/assets/railway-turnout-track.png",
+      "materialParams": [
+        "ballast",
+        "railSteel",
+        "concrete"
+      ],
+      "presets": [
+        "freshService",
+        "weathered"
+      ],
+      "sourceSha256Matches": true
+    }
+  ],
+  "localPageGenerator": "scripts/buildCatalogPages.ts",
+  "liveRouteStatus": "unverified; branch not deployed",
+  "deploymentVerified": false
+}

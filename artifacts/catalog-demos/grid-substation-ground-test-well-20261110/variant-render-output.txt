@@ -1,0 +1,9 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/grid-substation-ground-test-well-20261110/render_variants.ts
+(node:3535963) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+depth-360: 1128 triangles; size 1080.0 × 608.0 × 770.0 mm
+depth-480: 1128 triangles; size 1080.0 × 728.0 × 770.0 mm
+depth-620: 1128 triangles; size 1080.0 × 868.0 × 770.0 mm
+depth-480-maintenance: 1128 triangles; size 1080.0 × 728.0 × 770.0 mm
+Rendered 4 source variants; depth, palette, and triangle checks passed.

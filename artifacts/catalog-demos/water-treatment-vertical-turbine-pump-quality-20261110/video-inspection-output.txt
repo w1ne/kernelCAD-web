@@ -1,0 +1,33 @@
+{
+  "file": "water-treatment-vertical-turbine-pump-quality.mp4",
+  "sha256": "0617412151a66f0f2805b824060dce2df769c5928d92df766956962947434783",
+  "bytes": 160477,
+  "durationSeconds": 12.041667,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "codec": "h264",
+  "samples": [
+    {
+      "timeSeconds": 1.5,
+      "file": "sample-01.png",
+      "sha256": "a3555c7ecf29e258d91e0213ca696444bb1a56b73bbd36d282abac6d4b44ffbe"
+    },
+    {
+      "timeSeconds": 4.5,
+      "file": "sample-02.png",
+      "sha256": "e503a9b209a45d9d02322274e6c0def4f5000927fdeaf05a4b162eebe1329f36"
+    },
+    {
+      "timeSeconds": 7.5,
+      "file": "sample-03.png",
+      "sha256": "88b7d24ad0263f5e32cf915365e807c8795e164cf5ea88ec07b23ae3d862b851"
+    },
+    {
+      "timeSeconds": 10.5,
+      "file": "sample-04.png",
+      "sha256": "5e07177a7be32b2ac4464026eb4ef2db94a0851f66f6349ef95a81e910edf0f8"
+    }
+  ],
+  "inspection": "Four decoded samples were assembled into video-review/decoded-samples.png and visually reviewed."
+}

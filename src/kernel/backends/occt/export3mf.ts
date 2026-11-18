@@ -42,6 +42,11 @@ import { createRequire } from 'node:module';
 import {
   meshShapeForExport,
 } from './occtBackend';
+import {
+  exportMeshDeflection,
+  validateExportMeshToleranceOptions,
+  type MeshDeviationReport,
+} from './backendMesh';
 import type { MeshData } from './exportStlBinary';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { WorldFramePart } from './sceneToWorldFrame';
@@ -103,6 +108,10 @@ export type { SlicerFlavor } from './threeMfSlicerConfig';
 
 export interface Export3mfOptions {
   format: '3mf';
+  /** Requested absolute mesh tolerance in millimetres. */
+  tolerance?: number;
+  /** Maximum mesh normal-angle change in degrees. */
+  angularToleranceDeg?: number;
   /** 3MF document unit. Default `mm`. */
   printUnit?: ThreeMfUnit;
   /** When `true`, embed the original `.kcad.ts` source as a 3MF extension
@@ -208,7 +217,13 @@ export interface Export3mfResult {
   bytes: Uint8Array;
   bedWarnings: ThreeMfBedWarning[];
   meshWarnings: ThreeMfMeshWarning[];
+  mesh_deviation?: MeshDeviationReport;
 }
+
+export type MeshDeviationMeasurer = (
+  parts: readonly MeshedPart[],
+  requestedMm: number,
+) => MeshDeviationReport;
 
 /** A part mesh with more bad edges than the defect budget after the heal
  *  pass. The message contains `not watertight` (the runtime keys on it). */
@@ -307,30 +322,16 @@ export async function export3mfAsync(
 export async function export3mfWithReportAsync(
   parts: ReadonlyArray<WorldFramePart | MeshedPart>,
   options: Export3mfOptions,
+  measureDeviation?: MeshDeviationMeasurer,
 ): Promise<Export3mfResult> {
   if (parts.length === 0) {
     throw new Error('export3mfAsync: no parts to write.');
   }
+  const toleranceError = validateExportMeshToleranceOptions(options);
+  if (toleranceError !== undefined) throw new Error(toleranceError);
 
-  const { parts: meshed, meshWarnings } = healPartMeshes(parts.map((p) =>
-    hasMesh(p)
-      ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape()) },
-  ));
-
-  const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
-  const arrange: ThreeMfArrange = options.arrange ?? 'none';
-  const slicer = resolveSlicer(options);
-  if (!ARRANGE_VALUES.includes(arrange)) {
-    throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
-  }
-  if (!SLICER_VALUES.includes(slicer)) {
-    throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
-  }
-  if (!Object.hasOwn(MM_PER_UNIT, printUnit)) {
-    throw new Error(`export3mfAsync: options.printUnit must be one of ${Object.keys(MM_PER_UNIT).join(', ')}; got '${String(printUnit)}'.`);
-  }
-  const mmPerUnit = MM_PER_UNIT[printUnit];
+  const { parts: meshed, meshWarnings, mesh_deviation } = prepareExportMeshes(parts, options, measureDeviation);
+  const { printUnit, arrange, slicer, mmPerUnit } = resolveExportSettings(options);
   const isoDate = new Date().toISOString().slice(0, 10);
 
   const { bases, partPindex, partSlot } = resolvePartMaterials(meshed);
@@ -342,8 +343,13 @@ export async function export3mfWithReportAsync(
     ? layoutWithModifiers(meshed, partPindex, partSlot, arrange, slicer, options)
     : layoutParts(meshed, partPindex, partSlot, arrange, slicer, options);
 
+  // All resources share one ID namespace. Keep object IDs stable for build
+  // items and slicer sidecars, and allocate the material group after them.
+  const baseMaterialsId = [...layout.meshObjects, ...layout.componentObjects]
+    .reduce((maxId, object) => Math.max(maxId, object.id), 0) + 1;
+
   const objectEntries = [
-    ...layout.meshObjects.map((o) => meshObjectXml(o, mmPerUnit)),
+    ...layout.meshObjects.map((o) => meshObjectXml(o, mmPerUnit, baseMaterialsId)),
     ...layout.componentObjects.map((c) => [
       `  <object id="${c.id}" type="model" name="${escapeXml(c.name)}">`,
       `    <components>`,
@@ -365,10 +371,14 @@ export async function export3mfWithReportAsync(
 <model unit="${PRINT_UNIT_TAG[printUnit]}" xml:lang="en-US"
        xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
   <metadata name="Application">${escapeXml(attributionGenerator(KERNELCAD_VERSION))}</metadata>
-  <metadata name="Description">${escapeXml(`Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`)}</metadata>
+  <metadata name="Description">${escapeXml(
+    options.tolerance === undefined
+      ? `Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`
+      : `Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE}); requested mesh tolerance ${String(options.tolerance)} mm`,
+  )}</metadata>
   <metadata name="CreationDate">${isoDate}</metadata>
   <resources>
-    <basematerials id="${BASEMATERIALS_ID}">
+    <basematerials id="${baseMaterialsId}">
 ${baseMaterialEntries}
     </basematerials>
 ${objectEntries}
@@ -406,10 +416,80 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
   if (embedSource) {
     files['Metadata/source.kcad.ts'] = strToU8(options.scriptSource!);
   }
-  return { bytes: zipSync(files), bedWarnings: layout.bedWarnings, meshWarnings };
+  return {
+    bytes: zipSync(files),
+    bedWarnings: layout.bedWarnings,
+    meshWarnings,
+    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+  };
 }
 
-const BASEMATERIALS_ID = 1;
+function prepareExportMeshes(
+  parts: ReadonlyArray<WorldFramePart | MeshedPart>,
+  options: Export3mfOptions,
+  measureDeviation?: MeshDeviationMeasurer,
+): ReturnType<typeof healPartMeshes> & { mesh_deviation?: MeshDeviationReport } {
+  const angularOnlyDeflection = exportMeshDeflection({ angularToleranceDeg: options.angularToleranceDeg });
+  const requestedDeflection = exportMeshDeflection(options);
+  const meshInputParts = (refine: boolean): MeshedPart[] => parts.map(part => meshExportPart(
+    part,
+    options,
+    measureDeviation,
+    refine,
+    requestedDeflection,
+    angularOnlyDeflection,
+  ));
+  let healed = healPartMeshes(meshInputParts(false));
+  let mesh_deviation: MeshDeviationReport | undefined;
+  if (options.tolerance !== undefined && measureDeviation !== undefined) {
+    mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    if (mesh_deviation.measured_max_mm > options.tolerance * 1.05) {
+      // Keep the legacy relative mesh when it meets the absolute ceiling;
+      // otherwise refine and measure the triangles that will be serialized.
+      healed = healPartMeshes(meshInputParts(true));
+      mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    }
+  }
+  return { ...healed, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
+}
+
+function resolveExportSettings(options: Export3mfOptions): {
+  printUnit: ThreeMfUnit;
+  arrange: ThreeMfArrange;
+  slicer: SlicerFlavor;
+  mmPerUnit: number;
+} {
+  const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
+  const arrange: ThreeMfArrange = options.arrange ?? 'none';
+  const slicer = resolveSlicer(options);
+  if (!ARRANGE_VALUES.includes(arrange)) {
+    throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
+  }
+  if (!SLICER_VALUES.includes(slicer)) {
+    throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
+  }
+  if (!Object.hasOwn(MM_PER_UNIT, printUnit)) {
+    throw new Error(`export3mfAsync: options.printUnit must be one of ${Object.keys(MM_PER_UNIT).join(', ')}; got '${String(printUnit)}'.`);
+  }
+  return { printUnit, arrange, slicer, mmPerUnit: MM_PER_UNIT[printUnit] };
+}
+
+function meshExportPart(
+  part: WorldFramePart | MeshedPart,
+  options: Export3mfOptions,
+  measureDeviation: MeshDeviationMeasurer | undefined,
+  refine: boolean,
+  requestedDeflection: ReturnType<typeof exportMeshDeflection>,
+  angularOnlyDeflection: ReturnType<typeof exportMeshDeflection>,
+): MeshedPart {
+  const reusable = !refine && hasMesh(part) && options.angularToleranceDeg === undefined &&
+    (options.tolerance === undefined || measureDeviation !== undefined);
+  if (reusable) return part;
+  const deflection = refine || measureDeviation === undefined || options.tolerance === undefined
+    ? requestedDeflection
+    : angularOnlyDeflection;
+  return { ...part, mesh: meshShapeForExport(part.shape.getReplicadShape(), deflection) };
+}
 
 /**
  * One `<base>` per distinct (name, colour): the name is the part's
@@ -800,7 +880,7 @@ function mergedBounds(all: readonly Bounds3[]): Bounds3 {
 }
 
 /** `<object>` XML; vertex coordinates are mm divided by `mmPerUnit`. */
-function meshObjectXml(o: MeshObject, mmPerUnit: number): string {
+function meshObjectXml(o: MeshObject, mmPerUnit: number, baseMaterialsId: number): string {
   const verts = o.mesh.vertices;
   const vertexNodes: string[] = [];
   for (let v = 0; v < verts.length; v += 3) {
@@ -812,13 +892,13 @@ function meshObjectXml(o: MeshObject, mmPerUnit: number): string {
   const triNodes: string[] = [];
   for (let t = 0; t < tris.length; t += 3) {
     const own = o.trianglePindex?.[t / 3];
-    const props = own === undefined || own === o.pindex ? '' : ` pid="${BASEMATERIALS_ID}" p1="${own}"`;
+    const props = own === undefined || own === o.pindex ? '' : ` pid="${baseMaterialsId}" p1="${own}"`;
     triNodes.push(
       `        <triangle v1="${tris[t]}" v2="${tris[t + 1]}" v3="${tris[t + 2]}"${props} />`,
     );
   }
   return [
-    `  <object id="${o.id}" type="model" name="${escapeXml(o.name)}" pid="${BASEMATERIALS_ID}" pindex="${o.pindex}">`,
+    `  <object id="${o.id}" type="model" name="${escapeXml(o.name)}" pid="${baseMaterialsId}" pindex="${o.pindex}">`,
     `    <mesh>`,
     `      <vertices>`,
     ...vertexNodes,

@@ -1,0 +1,9 @@
+{
+  "command": "scripts/buildCatalogPages.ts /tmp/kernelcad-amusement-park-quality-promotion-20261104",
+  "kitPages": 70,
+  "assetsInIndex": 2390,
+  "pageAndPreviewPairs": 70,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

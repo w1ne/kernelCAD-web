@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-03",
+  "kit": "recycling-facility",
+  "assetCount": 153,
+  "targetIndexedTotal": 2000,
+  "runtime": {
+    "node": "v22.23.4",
+    "dependencyBootstrap": "npm ci reported that package.json and package-lock.json are out of sync; npm install --package-lock=false --allow-git=all installed dependencies without changing the lockfile",
+    "occtLoader": "node-preload.mjs supplies require and __dirname globals needed by the pinned Emscripten package in this local ESM run"
+  },
+  "demo": {
+    "source": "capture_recycling_demo.py",
+    "output": "recycling-facility-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-wave-20261103/generate_recycling_assets.py",
+    "npx eslint catalog/ --fix",
+    "npx --silent eslint catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node artifacts/catalog-demos/recycling-facility-wave-20261103/render_recycling_previews.mjs",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npm run build",
+    "npm pack --dry-run --ignore-scripts --json > artifacts/catalog-demos/recycling-facility-wave-20261103/npm-pack-dry-run.json",
+    "node artifacts/catalog-demos/recycling-facility-wave-20261103/audit_npm_pack.mjs",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-wave-20261103/capture_recycling_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-wave-20261103/inspect_recycling_video.py"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and generated catalog index",
+      "catalog integration suite for load, knobs, mesh, triangle budget, one material and Studio opening",
+      "catalog ESLint",
+      "rendered PNG previews for every indexed asset",
+      "local generated static catalog pages",
+      "built npm package contents and public source boundary",
+      "MP4 decode and visual review"
+    ],
+    "notCovered": [
+      "deployed website behavior for this feature branch",
+      "equipment ratings or process performance",
+      "operator safety or environmental compliance",
+      "physical acceptance"
+    ]
+  }
+}

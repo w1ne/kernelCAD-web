@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-11-05T20:03:17Z",
+  "branch": "feat/catalog-2000",
+  "branchDeployed": false,
+  "beforePromotionBaseline": {
+    "assetLibraryUrl": "https://kernelcad.com/asset-library/",
+    "assetLibraryHttpStatus": 200,
+    "assetLibraryHtmlBytes": 12437,
+    "assetLibraryShowsModelLibrary": true,
+    "assetLibraryContainsApiary": false,
+    "catalogHubUrl": "https://kernelcad.com/catalog/",
+    "catalogHubHttpStatus": 404,
+    "galleryJsonUrl": "https://kernelcad.com/gallery.json",
+    "galleryGeneratedAt": "2026-11-05T13:03:11.571Z",
+    "galleryEntryCount": 18
+  },
+  "afterPromotionPublicPageVerified": false,
+  "status": "The live site was checked before source changes. This feature branch is not deployed; public-page verification remains pending merge and marketing deployment. Local generated catalog pages are checked separately."
+}

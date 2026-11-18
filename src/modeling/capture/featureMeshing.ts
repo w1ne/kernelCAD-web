@@ -252,6 +252,7 @@ interface AssemblyLikeForTendons {
     readonly material?: PBRMaterial;
   }[];
   __parts(): readonly {
+    readonly id?: FeatureId;
     readonly name: string;
     /** Placement as captured; the scene part's shape already carries it. */
     readonly at?: Vec3Param;
@@ -271,6 +272,11 @@ interface AssemblyLikeForTendons {
   }[];
   /** Optional so structural fakes without mates keep working. */
   __mates?(): readonly { readonly a: string; readonly b: string }[];
+  /** Optional so structural fakes without legacy joints keep working. */
+  __joints?(): readonly {
+    readonly parentPartId: FeatureId;
+    readonly childPartId: FeatureId;
+  }[];
   __session?(): { readonly paramTable: ParamTable };
 }
 
@@ -478,10 +484,10 @@ function collectTendonLookups(
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
   const wrapByRef = new Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>();
-  // The scene transforms below move shapes that already carry `at`; a mated
-  // part's declared origins get its `at` so they land on its body.
-  const atOf = partAtFor(arm.__mates?.() ?? [], arm.__parts(), arm.__session?.().paramTable);
-  for (const part of arm.__parts()) {
+  // A posed part's connectors and wraps need the `at` already on its scene shape.
+  const parts = arm.__parts();
+  const atOf = partAtFor(arm.__mates?.() ?? [], parts, arm.__session?.().paramTable, arm.__joints?.() ?? []);
+  for (const part of parts) {
     const at = atOf(part.name) ?? ([0, 0, 0] as const);
     const onPart = (v: Vec3): Vec3 => [v[0] + at[0], v[1] + at[1], v[2] + at[2]];
     for (const conn of part.mateConnectors) {

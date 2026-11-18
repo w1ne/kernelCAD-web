@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2026-11-05T14:16:19.740Z",
+  "sourceCommit": "8d868293535a9152ad46e4d18dd6c8486b9f5823",
+  "catalogueRoot": "catalog/kits",
+  "sampleDefinition": "Every regular file matching catalog/kits/**/*.kcad.ts, sorted by repository-relative path.",
+  "exclusionRule": "Exclude source files larger than 1000000 bytes; list every exclusion in the manifest and output.",
+  "tokenizer": {
+    "encoding": "o200k_base",
+    "implementation": "js-tiktoken@1.0.21",
+    "implementationLicense": "MIT"
+  },
+  "includedCount": 2100,
+  "excludedLargeSources": [],
+  "largestIncludedSource": {
+    "path": "catalog/kits/characters/knight-figure.kcad.ts",
+    "bytes": 8313
+  },
+  "distributions": {
+    "withMeta": {
+      "n": 2100,
+      "min": 207,
+      "median": 635,
+      "mean": 781.1428571428571,
+      "max": 3183,
+      "p90": 1304
+    },
+    "withoutMeta": {
+      "n": 2100,
+      "min": 95,
+      "median": 491,
+      "mean": 640.7909523809524,
+      "max": 2998,
+      "p90": 1157
+    },
+    "programOnly": {
+      "n": 2100,
+      "min": 95,
+      "median": 468.5,
+      "mean": 606.6209523809524,
+      "max": 2959,
+      "p90": 1078
+    }
+  },
+  "focusAssets": [
+    {
+      "path": "catalog/kits/standard-components/angle-bracket.kcad.ts",
+      "bytes": 1549,
+      "withMeta": 539,
+      "withoutMeta": 422,
+      "programOnly": 422
+    },
+    {
+      "path": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
+      "bytes": 1234,
+      "withMeta": 410,
+      "withoutMeta": 284,
+      "programOnly": 284
+    },
+    {
+      "path": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
+      "bytes": 1239,
+      "withMeta": 397,
+      "withoutMeta": 275,
+      "programOnly": 275
+    }
+  ],
+  "sampleManifest": "docs/benchmarks/token-efficiency/sample-manifest.json"
+}

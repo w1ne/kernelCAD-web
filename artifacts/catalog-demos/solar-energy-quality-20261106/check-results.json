@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-06",
+  "pass": true,
+  "scope": "solar-energy source promotion and local catalog validation",
+  "commands": {
+    "kitQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit solar-energy",
+      "exitCode": 0,
+      "result": "40/40 assets pass"
+    },
+    "wholeCatalogQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "result": "2331/2390 pass (97.5%); 59 thin assets remain, all in other kits"
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/solar-energy/",
+      "exitCode": 0,
+      "result": "clean"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "durationSeconds": 246.81,
+      "result": "all tests passed; all catalog sources opened, triangle budgets and generated source hashes checked"
+    },
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <40 solar-energy asset ids>",
+      "exitCode": 0,
+      "assets": 40
+    },
+    "catalogIndexBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "result": "catalog/index.json regenerated from sources"
+    },
+    "localCatalogPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-solar-pages-20261106",
+      "exitCode": 0,
+      "pagesBuilt": 2390,
+      "solarPagesChecked": 40,
+      "result": "all solar pages include title, preview and material controls"
+    },
+    "publicPage": {
+      "deployed": false,
+      "result": "feature branch is not deployed; no live page change is claimed"
+    }
+  }
+}

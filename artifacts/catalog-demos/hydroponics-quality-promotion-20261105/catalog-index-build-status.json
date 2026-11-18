@@ -1,0 +1,7 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0,
+  "passed": true,
+  "rows": 2390,
+  "output": "wrote catalog/index.json"
+}

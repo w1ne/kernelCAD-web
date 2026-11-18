@@ -23,6 +23,8 @@ kernelcad export ply  path/to/script.kcad.ts -o /tmp/out.ply --options '{"encodi
 kernelcad export stl  path/to/script.kcad.ts --part lever -o /tmp/lever.stl  # one solved-assembly part (world-frame); repeat --part with -o <dir> for a subset
 kernelcad export stl  path/to/script.kcad.ts --parts all -o /tmp/parts/      # every assembly part as <dir>/<part>.stl
 kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl --no-verify     # skip the default-on watertight verify gate
+kernelcad export step path/to/script.kcad.ts -o /tmp/out.step --quality-gate block  # fail (write nothing) on tiny faces / short edges; default warn, off skips
+kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl --tiny-face-area-mm2 0.05 --short-edge-length-mm 0.2  # quality gate thresholds
 kernelcad parts path/to/script.kcad.ts --json                  # list assembly parts with bbox, volume, surface area, triangle count
 
 # Render a 4-view PNG (front/right/top/iso) for visual review.

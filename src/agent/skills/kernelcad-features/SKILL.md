@@ -94,6 +94,8 @@ const compliance = tempRayBan.embossText({
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Default `'original'` (preserves mm size; planar faces only). |
 | `fontFamily` | `string?` | Logical name or `.ttf` path. Default Liberation Sans. |
 
+Any other key throws `feature.invalid-args` (e.g. `font` is not `fontFamily`, `halign` is not `align`).
+
 The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. The fuse / cut runs through history-aware booleans (`fuseWithHistory` / `cutWithHistory`) so the newly-created glyph faces carry created-ref labels on the result `historyMap` and can be targeted downstream:
 
 | `depth` sign | Label on planar glyph face | Label on side walls |
@@ -132,6 +134,8 @@ const branded = bottle.union(raised);
 | `face` | `FaceSelector \| string` | Canonical / label. |
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Same as embossText. |
 | `asEdge` | `boolean?` | **NOT IMPLEMENTED.** When `true`, the lowerer emits `feature.project-curve.no-intersection`. Use closed-curve projection. |
+
+Any other key throws `feature.invalid-args` (e.g. `scale` is not `scaleMode`, `curve` is not `source`).
 
 ### Recovery table
 
@@ -258,6 +262,12 @@ built, the hole fails with an error diagnostic; it is never cut without it.
 `thread: { pitch, modeled?, clearance? }` turns a hole into an ISO metric
 tapped hole. `diameter` is then the NOMINAL thread size (M6 → 6), and the hole
 drills the ISO 68-1 minor diameter `diameter − 1.0825 × pitch`.
+
+`thread: true` or `{ fromDiameter: true }` fills that coarse pitch from the
+ISO 261 table (`diameter: 12` → M12×1.75) and records `metadata.threadSpec`.
+`metricThreadFromDiameter(12)` returns the same numbers. A clearance bore
+(13.5 mm for an M12 close/normal fit) is not a tap. `threadedHole` accepts
+`diameter` instead of `spec`; when both are set they must agree within 0.05 mm.
 
 ```typescript
 // M6 × 1 nut thread with 0.05 mm of play; modeled: false keeps the bore only

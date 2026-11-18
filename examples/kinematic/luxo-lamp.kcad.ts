@@ -158,15 +158,17 @@ const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
 //   - sits at x = -SHOULDER_MAST_X (8 mm behind the pivot in the column
 //     footprint — column radius is 12 mm so the mast base lies inside
 //     the column's solid material, satisfying joint-mesh-continuity)
-//   - rises from z = COLUMN_TOP_Z to z = COLUMN_TOP_Z + SHOULDER_MAST_H
-//     (33 mm above the pivot)
+//   - stands on the base-disc top (z = BASE_H) beside the column and rises
+//     to z = COLUMN_TOP_Z + SHOULDER_MAST_H (33 mm above the pivot). The
+//     shoulder clevis pocket hollows the column top between the fork
+//     plates, so a mast that only sat on the column top would float.
 //   - radius SPRING_POST_R (1 mm — thin, reads as a wire-form spring
 //     anchor stud)
 //   - connector `shoulderSpringAnchorBase` lives at the mast tip
 const SHOULDER_MAST_X = -13;
 const SHOULDER_MAST_H = 33;
-const shoulderBaseMast = cylinder(SHOULDER_MAST_H, SPRING_POST_R, 16)
-  .translate(SHOULDER_MAST_X, 0, COLUMN_TOP_Z)
+const shoulderBaseMast = cylinder(COLUMN_TOP_Z + SHOULDER_MAST_H - BASE_H, SPRING_POST_R, 16)
+  .translate(SHOULDER_MAST_X, 0, BASE_H)
   .material(mCast);
 const SHOULDER_BASE_ANCHOR: [number, number, number] = [
   SHOULDER_MAST_X,
@@ -181,20 +183,36 @@ const baseBodyRaw = baseDisc.union(feltPad).union(bolts).union(baseColumn).union
 // = knuckleR + 6 (clears the parent fork's bridge tab over the joint's
 // full sweep range).
 const beamClearTight  = clevisStyle.knuckleR;       // 12 mm
-const beamClearSweep  = clevisStyle.knuckleR + 6;   // 18 mm
+// A child beam starts 2 mm inside its clevis tongue (radius knuckleR) so the
+// tongue and beam fuse into one solid. The beam is no wider than the tongue,
+// so it stays between the parent fork plates over the full sweep.
+const beamTongueStart = clevisStyle.knuckleR - 2;   // 10 mm
+
+// Distal yoke: the beam (ARM_W) is narrower than the fork gap, so the next
+// joint's fork plates would float beside it. A yoke as wide as the fork
+// carries both plates. joint.clevis cuts the tongue pocket out of its middle,
+// so only the two cheeks outside the fork gap remain near the pivot. The
+// cheeks stop 3 mm short of the pivot to stay clear of the child's sweep.
+const YOKE_W = clevisStyle.forkGapY + 2 * clevisStyle.plateT;  // 26 mm — outer fork faces
+const YOKE_BACK = 3;                                           // reaches 3 mm back along the beam (keeps the added mass small)
+const YOKE_PIVOT_CLEAR = 3;
+function distalYoke(beamEnd: number, pivotX: number) {
+  const x0 = beamEnd - YOKE_BACK;
+  const x1 = pivotX - YOKE_PIVOT_CLEAR;
+  return box(x1 - x0, YOKE_W, ARM_T, true).translate((x0 + x1) / 2, 0, 0);
+}
 
 // ============================================================================
 // LOWER ARM body — cream-painted rectangular beam + TWO spring-anchor
 // posts (one near the shoulder end, one near the elbow end).
 // ============================================================================
 
-const LOWER_BEAM_START = beamClearTight;
+const LOWER_BEAM_START = beamTongueStart;
 const LOWER_BEAM_END   = L_LOWER - beamClearTight;
 const LOWER_BEAM_LEN   = LOWER_BEAM_END - LOWER_BEAM_START;
 const LOWER_BEAM_MID   = (LOWER_BEAM_START + LOWER_BEAM_END) / 2;
 const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
-  .translate(LOWER_BEAM_MID, 0, 0)
-  .material(mArm);
+  .translate(LOWER_BEAM_MID, 0, 0);
 
 // P10: two spring anchor posts on the lower-arm. The X positions are
 // CALIBRATED for physics — the shoulder-spring anchor sits well
@@ -215,25 +233,26 @@ const LOWER_ELBOW_ANCHOR: [number, number, number] = [
   ARM_T / 2 + SPRING_MOUNT_DZ,
 ];
 const lowerShoulderPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(LOWER_SHOULDER_ANCHOR_X, 0, ARM_T / 2 - 1)
-  .material(mArm);
+  .translate(LOWER_SHOULDER_ANCHOR_X, 0, ARM_T / 2 - 1);
 const lowerElbowPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(LOWER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1)
+  .translate(LOWER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1);
+const lowerBeamWithBosses = lowerBeam
+  .union(lowerShoulderPost)
+  .union(lowerElbowPost)
+  .union(distalYoke(LOWER_BEAM_END, L_LOWER))
   .material(mArm);
-const lowerBeamWithBosses = lowerBeam.union(lowerShoulderPost).union(lowerElbowPost);
 
 // ============================================================================
 // UPPER ARM body — same pattern as the lower arm: two posts, one near
 // each joint end.
 // ============================================================================
 
-const UPPER_BEAM_START = beamClearSweep;
+const UPPER_BEAM_START = beamTongueStart;
 const UPPER_BEAM_END   = L_UPPER - beamClearTight;
 const UPPER_BEAM_LEN   = UPPER_BEAM_END - UPPER_BEAM_START;
 const UPPER_BEAM_MID   = (UPPER_BEAM_START + UPPER_BEAM_END) / 2;
 const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
-  .translate(UPPER_BEAM_MID, 0, 0)
-  .material(mArm);
+  .translate(UPPER_BEAM_MID, 0, 0);
 
 // P10 calibrated upper-arm anchor positions, matching the lower-arm
 // pattern: elbow-side anchor 40 mm past the elbow pivot, wrist-side
@@ -252,12 +271,14 @@ const UPPER_WRIST_ANCHOR: [number, number, number] = [
   ARM_T / 2 + SPRING_MOUNT_DZ,
 ];
 const upperElbowPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(UPPER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1)
-  .material(mArm);
+  .translate(UPPER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1);
 const upperWristPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(UPPER_WRIST_ANCHOR_X, 0, ARM_T / 2 - 1)
+  .translate(UPPER_WRIST_ANCHOR_X, 0, ARM_T / 2 - 1);
+const upperBeamWithBosses = upperBeam
+  .union(upperElbowPost)
+  .union(upperWristPost)
+  .union(distalYoke(UPPER_BEAM_END, L_UPPER))
   .material(mArm);
-const upperBeamWithBosses = upperBeam.union(upperElbowPost).union(upperWristPost);
 
 // ============================================================================
 // LAMP HEAD body — neck + slim shade + small socket + bulb + wrist
@@ -281,21 +302,22 @@ const NECK_STEM_R = FORK_HALF_GAP - 4;                       // 5 mm — fits be
 // fork's front face, slipping between the y=±9 fork plate inner faces.
 const HEAD_STEM_BACK = 0;                                    // starts at the pivot (inside the tongue solid)
 const HEAD_STEM_FRONT = clevisStyle.knuckleR + 7;           // 19 mm — 7 mm past the fork front face
-const headNeckStem = cylinder(HEAD_STEM_FRONT - HEAD_STEM_BACK, NECK_STEM_R, 32)
-  .rotate([0, 1, 0], 90)
-  .translate(HEAD_STEM_BACK, 0, 0)
-  .material(mCast);
 // Fat decorative neck starts just past the fork's forward footprint so its
 // wide disc never overlaps the fork plates.
-const HEAD_NECK_BACK = HEAD_STEM_FRONT - 1;                  // 14 mm — 1 mm overlap with the stem for a connected solid
+const HEAD_NECK_BACK = HEAD_STEM_FRONT - 1;                  // 18 mm — 1 mm inside the fork-clear stem length
 const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm
-const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
-const headNeckFat = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
+const SHADE_ANCHOR_X = HEAD_NECK_CLEAR + 6;
+// The narrow stem continues through the fat neck and 1 mm into the shade's
+// closed small end, so the shade is carried instead of floating 6 mm in front
+// of the neck. Only the slim stem bridges the gap, which keeps the head mass
+// (and the calibrated balance springs) close to the original build.
+const headNeckStem = cylinder(SHADE_ANCHOR_X + 1 - HEAD_STEM_BACK, NECK_STEM_R, 32)
   .rotate([0, 1, 0], 90)
-  .translate(HEAD_NECK_BACK, 0, 0)
-  .material(mCast);
-const headNeck = headNeckStem.union(headNeckFat);
+  .translate(HEAD_STEM_BACK, 0, 0);
+const headNeckFat = cylinder(HEAD_NECK_FRONT - HEAD_NECK_BACK, SHADE_R_SMALL + 1.5, 32)
+  .rotate([0, 1, 0], 90)
+  .translate(HEAD_NECK_BACK, 0, 0);
 
 // Shade — hollow truncated cone (outer cone minus inner cone), axis +X.
 const shadeProfileOuter = path()
@@ -315,15 +337,18 @@ const shadeProfileInner = path()
 const shadeInner = shadeProfileInner.revolve();
 
 const shadeRaw = shadeOuter.subtract(shadeInner);
-const SHADE_ANCHOR_X = HEAD_NECK_CLEAR + 6;
 const shade = shadeRaw
   .rotate([0, 1, 0], 90)
   .translate(SHADE_ANCHOR_X, 0, 0)
   .material(mBrass);
 
-const socket = cylinder(SOCKET_LEN, SOCKET_R, 32)
+// The socket starts 1 mm inside the shade's end wall so the shade carries it;
+// its front face stays where the bulb seats.
+const SOCKET_BACK = SHADE_ANCHOR_X + SHADE_WALL - 1;
+const SOCKET_FRONT = SHADE_ANCHOR_X + 4 + SOCKET_LEN;
+const socket = cylinder(SOCKET_FRONT - SOCKET_BACK, SOCKET_R, 32)
   .rotate([0, 1, 0], 90)
-  .translate(SHADE_ANCHOR_X + 4, 0, 0)
+  .translate(SOCKET_BACK, 0, 0)
   .material(mSocket);
 
 const bulb = sphere(BULB_R)
@@ -341,11 +366,14 @@ const HEAD_WRIST_ANCHOR: [number, number, number] = [
   0,
   HEAD_NECK_TOP_Z + SPRING_MOUNT_DZ,
 ];
-const headWristPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(HEAD_WRIST_ANCHOR_X, 0, HEAD_NECK_TOP_Z - 1)
-  .material(mCast);
+// The anchor sits above the narrow stem, so the post rises from 1 mm inside
+// the stem to the original tip height instead of floating above it.
+const HEAD_POST_BASE_Z = NECK_STEM_R - 1;
+const headWristPost = cylinder(HEAD_NECK_TOP_Z - 1 + SPRING_POST_H - HEAD_POST_BASE_Z, SPRING_POST_R, 16)
+  .translate(HEAD_WRIST_ANCHOR_X, 0, HEAD_POST_BASE_Z);
+const headNeck = headNeckStem.union(headNeckFat).union(headWristPost).material(mCast);
 
-const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(headWristPost);
+const headBodyRaw = headNeck.union(shade).union(socket).union(bulb);
 
 // ============================================================================
 // JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at world
@@ -580,7 +608,9 @@ arm.tendon('shoulder-spring', {
   // co-calibration against static equilibrium (an inverse-dynamics solve) —
   // stiffening the shoulder alone overshoots (8°) while leaving it sags (5°).
   // Best single-spring balance below; full re-calibration is a follow-up.
-  restLengthMm: 36,
+  // 34 mm (was 36) restores the pre-yoke shoulder drop-test margin after the
+  // distal yokes and tongue overlaps added link mass: 3.7° drift vs 3.8° before.
+  restLengthMm: 34,
   stiffnessNmm: 1.0,
   dampingNsmm: 0.1,
   visualStyle: 'coil',

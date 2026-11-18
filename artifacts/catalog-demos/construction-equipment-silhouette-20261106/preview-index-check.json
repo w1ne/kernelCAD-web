@@ -1,0 +1,552 @@
+{
+  "status": "passed",
+  "kit": "construction-equipment",
+  "verifiedAssets": 60,
+  "refinedAssets": [
+    "towable-light-tower",
+    "ride-on-power-trowel",
+    "concrete-batch-plant"
+  ],
+  "rows": [
+    {
+      "id": "adjustable-formwork-prop",
+      "source": "catalog/kits/construction-equipment/adjustable-formwork-prop.kcad.ts",
+      "sourceSha256": "7494b37b0449a40d4fbaf09ec7b6443c612babfbe85e856ebcf48c54f3dfabe2",
+      "preview": "/assets/construction-equipment-adjustable-formwork-prop.png",
+      "previewSha256": "692738ee945875f22d9766a0baf625f68dfd67c50b7b73a185b25a1e9de196e9",
+      "triangles": 124,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "articulated-dump-truck",
+      "source": "catalog/kits/construction-equipment/articulated-dump-truck.kcad.ts",
+      "sourceSha256": "c20a96be39b45bc2fc9457e2cd19afa65427b4fd2ff78ff845e03b3b34c1ee8a",
+      "preview": "/assets/construction-equipment-articulated-dump-truck.png",
+      "previewSha256": "d3b6bbb7f20475f1464937073598481bb4c918d4159a515fd217fbcd2577d820",
+      "triangles": 1232,
+      "triangleBudget": 2800
+    },
+    {
+      "id": "asphalt-distributor-truck",
+      "source": "catalog/kits/construction-equipment/asphalt-distributor-truck.kcad.ts",
+      "sourceSha256": "502a0178c1ca114ce1274fa12462529a495eccf8b05d893b5b2aad51657c690b",
+      "preview": "/assets/construction-equipment-asphalt-distributor-truck.png",
+      "previewSha256": "a520056aedffb04d694e2a36f1181a91015fa2a1eef85d9bc5a130ea8a149194",
+      "triangles": 1196,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "asphalt-paver-screed",
+      "source": "catalog/kits/construction-equipment/asphalt-paver-screed.kcad.ts",
+      "sourceSha256": "634e85e3a6ced95f642315adc13403bb4c27365eaa1178763ca2a0699133edd3",
+      "preview": "/assets/construction-equipment-asphalt-paver-screed.png",
+      "previewSha256": "47cf4363249da930421fac4a62aa86b8c4c06b7b659c5e0c77bbbc59fae1c6ae",
+      "triangles": 92,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "asphalt-transfer-conveyor",
+      "source": "catalog/kits/construction-equipment/asphalt-transfer-conveyor.kcad.ts",
+      "sourceSha256": "abad652c0ab886f1576c90dd9fe8d59a54d25c69c46e822dbcb967f489d15be4",
+      "preview": "/assets/construction-equipment-asphalt-transfer-conveyor.png",
+      "previewSha256": "2b74d7548d4304ac1d906c28e034c3e9cf004aaff2d2be6b71f9183c140bbe58",
+      "triangles": 348,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "backhoe-loader",
+      "source": "catalog/kits/construction-equipment/backhoe-loader.kcad.ts",
+      "sourceSha256": "76f3247ea3beea5e4ecc039127eab97efde774507030dbe2f800d4d803fdf8e9",
+      "preview": "/assets/construction-equipment-backhoe-loader.png",
+      "previewSha256": "eb0774638d9dcf799b568181e5e88738ea3f603a7065a3c247f30b8ac40a5414",
+      "triangles": 816,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "cold-planer-milling-machine",
+      "source": "catalog/kits/construction-equipment/cold-planer-milling-machine.kcad.ts",
+      "sourceSha256": "d999ce7dd3f0d58b3ff3b3b79aa50a28f3f5498b538c16293fc24fbdc9553a9d",
+      "preview": "/assets/construction-equipment-cold-planer-milling-machine.png",
+      "previewSha256": "d4ec0604dbf15430c258f72d5fbc1e160c128757d68c495344fec34d777b3242",
+      "triangles": 1896,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-batch-plant",
+      "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
+      "sourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "preview": "/assets/construction-equipment-concrete-batch-plant.png",
+      "previewSha256": "4eafef3970c612c3445cc0720ff546886ad7bd268d48199151e1c4d97783472a",
+      "triangles": 1500,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-beam-form",
+      "source": "catalog/kits/construction-equipment/concrete-beam-form.kcad.ts",
+      "sourceSha256": "47de3edfede32a0974dd49409a3295c54b9950dbff3033d32a6673bad28005fa",
+      "preview": "/assets/construction-equipment-concrete-beam-form.png",
+      "previewSha256": "7658d82b135026282d97936b055867f2bae7f15e3ca0314032c5af70346c0a2f",
+      "triangles": 132,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-column-form",
+      "source": "catalog/kits/construction-equipment/concrete-column-form.kcad.ts",
+      "sourceSha256": "89078456f1e3ae9e0a80a237fcec31a2fc280d5b29780942cd8eb3a88f1bb660",
+      "preview": "/assets/construction-equipment-concrete-column-form.png",
+      "previewSha256": "6dde8cfbddf489865e290d57830bc2a8082febd47b6231a8e0f6cb21fd78b720",
+      "triangles": 108,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-form-tie",
+      "source": "catalog/kits/construction-equipment/concrete-form-tie.kcad.ts",
+      "sourceSha256": "edb3d8f910836bba6bac899f3efb5ac560f4f70a3482c786a19f72764f03f12e",
+      "preview": "/assets/construction-equipment-concrete-form-tie.png",
+      "previewSha256": "e45da09def6cdcc4b20b8dc6cb92ca47539fa5ca9085909f0315a48270ab9220",
+      "triangles": 156,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-formwork-panel",
+      "source": "catalog/kits/construction-equipment/concrete-formwork-panel.kcad.ts",
+      "sourceSha256": "a6361a027fe352b54ba9598897b75a281b61085b1eee87b9a7eda08f5b25f531",
+      "preview": "/assets/construction-equipment-concrete-formwork-panel.png",
+      "previewSha256": "5368a7d5b9f6493735691ed1551da45079418b3f522812c7fe215689f194b132",
+      "triangles": 84,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-placement-bucket",
+      "source": "catalog/kits/construction-equipment/concrete-placement-bucket.kcad.ts",
+      "sourceSha256": "441178a0bb366d427a843177ab0f068db18323df750785ba67f5a27815427d89",
+      "preview": "/assets/construction-equipment-concrete-placement-bucket.png",
+      "previewSha256": "bd84ab793282f2caa49dd1215e6b155d46e10d04fadfbece258e7d9636f1df06",
+      "triangles": 96,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "concrete-pump-truck",
+      "source": "catalog/kits/construction-equipment/concrete-pump-truck.kcad.ts",
+      "sourceSha256": "00e6971700f9ac52980acf08f4ce14e6d849fc399114a809b82c171b363033d6",
+      "preview": "/assets/construction-equipment-concrete-pump-truck.png",
+      "previewSha256": "ed4ba96e54b0484a513517a6780ecd3bf42f6d93caa704bd1b15f63194f37979",
+      "triangles": 988,
+      "triangleBudget": 2800
+    },
+    {
+      "id": "concrete-vibrator-needle",
+      "source": "catalog/kits/construction-equipment/concrete-vibrator-needle.kcad.ts",
+      "sourceSha256": "66dbd339fa806cf3af587ab8afd3fd550aebda116fb2022e8755480164658c2a",
+      "preview": "/assets/construction-equipment-concrete-vibrator-needle.png",
+      "previewSha256": "de7ab15497ca88c3bc6287fbdf4fe36219e313a6015e40525860c2bbba81d52e",
+      "triangles": 124,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "construction-personnel-elevator",
+      "source": "catalog/kits/construction-equipment/construction-personnel-elevator.kcad.ts",
+      "sourceSha256": "2e5508c1915baf950db43761e3a85b7d2aedbb3789f013934b24e38c6c9af2f5",
+      "preview": "/assets/construction-equipment-construction-personnel-elevator.png",
+      "previewSha256": "f15526b25140d8efae4b5d758f9acee30f0ce3238f3f819e6a11e805dd0f0c27",
+      "triangles": 96,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "crawler-dozer",
+      "source": "catalog/kits/construction-equipment/crawler-dozer.kcad.ts",
+      "sourceSha256": "200d22d882f6e2934c5e30425481219692e2d400926627cc524fe9e526fd8175",
+      "preview": "/assets/construction-equipment-crawler-dozer.png",
+      "previewSha256": "3ba35f43ca490674befe4b84af1d092ebe5f0836e5bc67be1eb9ffff92b51413",
+      "triangles": 2344,
+      "triangleBudget": 2800
+    },
+    {
+      "id": "drywall-panel-lift",
+      "source": "catalog/kits/construction-equipment/drywall-panel-lift.kcad.ts",
+      "sourceSha256": "6b4cb71d64146dfff4c03b7a551a6c5c3e3e131613e478808a3703f685f0a3eb",
+      "preview": "/assets/construction-equipment-drywall-panel-lift.png",
+      "previewSha256": "66aca250a36d44b80a46a25b14614730c541b8509ac91f734fa94a15a03ee23c",
+      "triangles": 380,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "grade-rod-and-prism-pole",
+      "source": "catalog/kits/construction-equipment/grade-rod-and-prism-pole.kcad.ts",
+      "sourceSha256": "0b0935d4760ba924217aace3ddc98fb0f3b385550ee9d54a56ee714a4b6146e0",
+      "preview": "/assets/construction-equipment-grade-rod-and-prism-pole.png",
+      "previewSha256": "67f25938f893daa28d4743040022a5ee05d2e83dd27a1dff05d60437c1c4945a",
+      "triangles": 208,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "jobsite-tile-saw",
+      "source": "catalog/kits/construction-equipment/jobsite-tile-saw.kcad.ts",
+      "sourceSha256": "ffd1a8ed70b66295143be2b6920702378047127e2768a901e2c68499ad35b445",
+      "preview": "/assets/construction-equipment-jobsite-tile-saw.png",
+      "previewSha256": "b3e241e18f408d4446ff17f3d170235d9d032c53a82b68432628d0854ebaa74d",
+      "triangles": 116,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "laser-level-tripod",
+      "source": "catalog/kits/construction-equipment/laser-level-tripod.kcad.ts",
+      "sourceSha256": "8afc2cc1a828e794775bf3c694e42a5a5168da962516487d7ff202d3f401eb3f",
+      "preview": "/assets/construction-equipment-laser-level-tripod.png",
+      "previewSha256": "d03445957a9a90e071902e08447e6879e06882d575c8433712b272d96496db4d",
+      "triangles": 148,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "lowboy-equipment-trailer",
+      "source": "catalog/kits/construction-equipment/lowboy-equipment-trailer.kcad.ts",
+      "sourceSha256": "ccaea0ba090b141dbb9f725edb3ebedfca3e2bcf9162b5cd741cfb24d465ba8c",
+      "preview": "/assets/construction-equipment-lowboy-equipment-trailer.png",
+      "previewSha256": "79d593c614d1909d46e07f9835753b7b8a529097c887456099ab6dd52277b63a",
+      "triangles": 800,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "masonry-mixer",
+      "source": "catalog/kits/construction-equipment/masonry-mixer.kcad.ts",
+      "sourceSha256": "4d3b79bbbc4496c579250bea5b1f6a67abb8cdc8ac28341edbec853688509b5d",
+      "preview": "/assets/construction-equipment-masonry-mixer.png",
+      "previewSha256": "b9834bda015b21abf7079592fd5e13824e4bd266a93d3ea2d07ba47c9685216a",
+      "triangles": 356,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "mast-climbing-work-platform",
+      "source": "catalog/kits/construction-equipment/mast-climbing-work-platform.kcad.ts",
+      "sourceSha256": "8ebdb8bc8894de9064f31bf2836ca07dfbbe5d0ecfdbb8e9d3b7b8151f2d5bc2",
+      "preview": "/assets/construction-equipment-mast-climbing-work-platform.png",
+      "previewSha256": "1f779a8bbc838a29b082b12416493e9543a7724b71b934028462ec778f87b2f5",
+      "triangles": 96,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "mobile-fuel-tank",
+      "source": "catalog/kits/construction-equipment/mobile-fuel-tank.kcad.ts",
+      "sourceSha256": "bebd8bde32740d2f5baea9a58d6df6f5b2fbf2ebd6bb0e81807e6edea2f4f9f7",
+      "preview": "/assets/construction-equipment-mobile-fuel-tank.png",
+      "previewSha256": "a44ecde72cc436cd334a0e0f081b7943945739f28d61dcd3f749a1a637b6da92",
+      "triangles": 368,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "modular-shoring-frame",
+      "source": "catalog/kits/construction-equipment/modular-shoring-frame.kcad.ts",
+      "sourceSha256": "1b16aeaff15d0e1c0de8a4cd9646fc859dde6b431719a4fc9b0c682c79327ac7",
+      "preview": "/assets/construction-equipment-modular-shoring-frame.png",
+      "previewSha256": "4b72bccf9d365bb5fb1f791cd8240cb2b3872c409f4a00a3c7edc4563b285d53",
+      "triangles": 284,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "motor-grader",
+      "source": "catalog/kits/construction-equipment/motor-grader.kcad.ts",
+      "sourceSha256": "71a27c856cefc6177495ad252877b4d25b16df9dfb380dd5625d78862a54dfdf",
+      "preview": "/assets/construction-equipment-motor-grader.png",
+      "previewSha256": "d54a29f73a4d53f6d73db1057867905cb38041f7be7218d4b2856a7047e22610",
+      "triangles": 1040,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "pipe-roller-stand",
+      "source": "catalog/kits/construction-equipment/pipe-roller-stand.kcad.ts",
+      "sourceSha256": "1c37bcaa18520af234e41c4b188ccd931ccd7225b8cadc9acc8a5a3464c75ec8",
+      "preview": "/assets/construction-equipment-pipe-roller-stand.png",
+      "previewSha256": "ecf49d8126745330a157c6aab746038b96a57b6840f1dbf9d4c5ed5cc4a971bc",
+      "triangles": 168,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "pneumatic-tire-roller",
+      "source": "catalog/kits/construction-equipment/pneumatic-tire-roller.kcad.ts",
+      "sourceSha256": "7345f03aa71f7039927c659baf2c02bde368dc91de877806eecd15d926ffb161",
+      "preview": "/assets/construction-equipment-pneumatic-tire-roller.png",
+      "previewSha256": "cdcbdc9288f4b7b7e4b49e15567d0f93460f2dbcea7b9f11cc1362af56109ecc",
+      "triangles": 1116,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "portable-air-compressor",
+      "source": "catalog/kits/construction-equipment/portable-air-compressor.kcad.ts",
+      "sourceSha256": "86844f2591b3f65ecccaa724e41810c952f9c8a1dca4ac554b3d495d56271ec0",
+      "preview": "/assets/construction-equipment-portable-air-compressor.png",
+      "previewSha256": "0d1769f0f5aa75962a3c90fb6c33dcc965002c6a31a0bd11c7c624457c63d0af",
+      "triangles": 404,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "portable-core-drill-stand",
+      "source": "catalog/kits/construction-equipment/portable-core-drill-stand.kcad.ts",
+      "sourceSha256": "287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a",
+      "preview": "/assets/construction-equipment-portable-core-drill-stand.png",
+      "previewSha256": "314e9afefe7dde3b77cac15dfee13def3efa882dfc55f163a83b5274f33c1572",
+      "triangles": 92,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "portable-floor-grinder",
+      "source": "catalog/kits/construction-equipment/portable-floor-grinder.kcad.ts",
+      "sourceSha256": "de406714c0a98a9c30a46c30aa0b809008bc4915fb149b62a659b7ec8d5eed0e",
+      "preview": "/assets/construction-equipment-portable-floor-grinder.png",
+      "previewSha256": "086c6b5d5207df228c2fe33aaa02db376813994e8e7c2b1e4d25dd264dec30ba",
+      "triangles": 664,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "portable-material-hoist",
+      "source": "catalog/kits/construction-equipment/portable-material-hoist.kcad.ts",
+      "sourceSha256": "129eaaaffd58a385f3e6ff6a318faa61c9149c758ce89dd58967bdb5fd12670a",
+      "preview": "/assets/construction-equipment-portable-material-hoist.png",
+      "previewSha256": "b3e1aa87594a96090cc0e4174af78d80fa08ed4e9e48fefd498db1fd18dd4fa0",
+      "triangles": 104,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "portable-site-water-tank",
+      "source": "catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts",
+      "sourceSha256": "bd9790f6e4f843dbf74f1e3a9ea0f09bbb7525be5c2c32d65310ede78012b89f",
+      "preview": "/assets/construction-equipment-portable-site-water-tank.png",
+      "previewSha256": "78d523b9c8e47d2ee8226660b6d45f5c1a5e4a2014f1a95e73f19199c1926df7",
+      "triangles": 136,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rebar-bending-machine",
+      "source": "catalog/kits/construction-equipment/rebar-bending-machine.kcad.ts",
+      "sourceSha256": "2a35ee7f556167b4262112ae1c3a0827837ef577fc19c3a82fd1d1fc6be74038",
+      "preview": "/assets/construction-equipment-rebar-bending-machine.png",
+      "previewSha256": "84fe67bf644eebe2c33b9a2813d18719642af9ee45ab8b70c5d2c23b66606fd6",
+      "triangles": 300,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rebar-cage",
+      "source": "catalog/kits/construction-equipment/rebar-cage.kcad.ts",
+      "sourceSha256": "b8717c35db49985f06fec4dac90ac2195ed45ea1050b29a8780a439f2fbb58f1",
+      "preview": "/assets/construction-equipment-rebar-cage.png",
+      "previewSha256": "10161cf87af85fef576754b8fc14687ed20af0672725e53eb88ab6483a192d49",
+      "triangles": 916,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rebar-cutting-machine",
+      "source": "catalog/kits/construction-equipment/rebar-cutting-machine.kcad.ts",
+      "sourceSha256": "ed284afb56fcd2fdbc03bacaf7b1fdc6176daebe27a022575d74f37d858833db",
+      "preview": "/assets/construction-equipment-rebar-cutting-machine.png",
+      "previewSha256": "fd39e389584bb1bfab6a35497c1fd13d9a73a8f0bc66a26f404fae48e192af92",
+      "triangles": 60,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rebar-straightener-coil",
+      "source": "catalog/kits/construction-equipment/rebar-straightener-coil.kcad.ts",
+      "sourceSha256": "470fb944f3e8a715af1cc8877a303f384fa79d88065c9acac66d87e99a5c052b",
+      "preview": "/assets/construction-equipment-rebar-straightener-coil.png",
+      "previewSha256": "f39d25580aba12727503f014842327e7a2eb91adad36a6cfc281d409c0bde223",
+      "triangles": 268,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "ride-on-concrete-saw",
+      "source": "catalog/kits/construction-equipment/ride-on-concrete-saw.kcad.ts",
+      "sourceSha256": "2a43191c19be17ac4a144ffda6a9e7f3994a7b890ba7b54543549a8268a46fb0",
+      "preview": "/assets/construction-equipment-ride-on-concrete-saw.png",
+      "previewSha256": "488a2279e0451e77316fb23ae515faf348bce772cc41ad3357568c1c700a5cb0",
+      "triangles": 632,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
+      "sourceSha256": "a74ca976fef37316a3f3888dfac77bf127685402da0b30d8ae0da4ff614ad70e",
+      "preview": "/assets/construction-equipment-ride-on-power-trowel.png",
+      "previewSha256": "e597a1ea2ed825c0a7518c2546ce86f86e3c21d0c7834ff55339fe0e3df02357",
+      "triangles": 1112,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rigid-haul-truck",
+      "source": "catalog/kits/construction-equipment/rigid-haul-truck.kcad.ts",
+      "sourceSha256": "149af0386fe3f825bd2af0da9da48e635dfe0c10bf288bfb131180bb72e1ee91",
+      "preview": "/assets/construction-equipment-rigid-haul-truck.png",
+      "previewSha256": "501517dd84d13d02ceb5205cd45eca411e8a376190f98b851a1c36249502bf76",
+      "triangles": 1044,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "road-reclaimer",
+      "source": "catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
+      "sourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+      "preview": "/assets/construction-equipment-road-reclaimer.png",
+      "previewSha256": "549b2b3edc8943a2ef3e05b16c2540810ab23e858cece0aa0b5feded91c32234",
+      "triangles": 816,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "rough-terrain-forklift",
+      "source": "catalog/kits/construction-equipment/rough-terrain-forklift.kcad.ts",
+      "sourceSha256": "a3fe710b619d2f02e6fccae5f7fd5eb2d3fe3c6335ff604db458e97f183b3d30",
+      "preview": "/assets/construction-equipment-rough-terrain-forklift.png",
+      "previewSha256": "3bec0ddad0fc0f2b0a8038c166a970e248aa98b16dcc0a4b9360d28e9d531254",
+      "triangles": 768,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "single-drum-soil-compactor",
+      "source": "catalog/kits/construction-equipment/single-drum-soil-compactor.kcad.ts",
+      "sourceSha256": "23b49c11ac5c7d69314dc90655d34f95a59b359c9acec1fca4a69f629b34716c",
+      "preview": "/assets/construction-equipment-single-drum-soil-compactor.png",
+      "previewSha256": "adba5ef543e8790c855e9824a61d1f20d2cab2cd6534cd68c9a22cd6c98ed6c7",
+      "triangles": 456,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "skid-steer-loader",
+      "source": "catalog/kits/construction-equipment/skid-steer-loader.kcad.ts",
+      "sourceSha256": "3d199a5c9f0d55e6d4745e612d1774bdb931a30d24885250e470a24e647c44fe",
+      "preview": "/assets/construction-equipment-skid-steer-loader.png",
+      "previewSha256": "af7b121821763ec2684f5d488636c4681776cb2902f02a4d91e5cda81e7e0bd3",
+      "triangles": 844,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "slab-edge-form",
+      "source": "catalog/kits/construction-equipment/slab-edge-form.kcad.ts",
+      "sourceSha256": "5029ee38f75e88f2ab3ab026c200171413fcdf5d199d02a2014af040da9c951d",
+      "preview": "/assets/construction-equipment-slab-edge-form.png",
+      "previewSha256": "f37d4d7cd4b48409f70fc3729afdd24b3a77f49016fd939fd3a620ec60abc5b4",
+      "triangles": 132,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "tandem-vibratory-roller",
+      "source": "catalog/kits/construction-equipment/tandem-vibratory-roller.kcad.ts",
+      "sourceSha256": "3462b8cdd2adf287f9781debba8b1b9c8b15ec6b94c46178602cd65d17b23c1c",
+      "preview": "/assets/construction-equipment-tandem-vibratory-roller.png",
+      "previewSha256": "36f28dbcbcd7786b0142f6321a6ae1751fae171ac8c3ff95b465b4a86093f4b8",
+      "triangles": 324,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "telescopic-handler",
+      "source": "catalog/kits/construction-equipment/telescopic-handler.kcad.ts",
+      "sourceSha256": "7f35a35776e7f658e8f438cc8f02993165cc3575c214ea4272887b236030a376",
+      "preview": "/assets/construction-equipment-telescopic-handler.png",
+      "previewSha256": "aee5ea19cc7f72c60046a033dbb1f3d83c5b779bdc57f6e40943c1cd8a906789",
+      "triangles": 756,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "towable-light-tower",
+      "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
+      "sourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "preview": "/assets/construction-equipment-towable-light-tower.png",
+      "previewSha256": "c7989048c0b360c1065816eb5a1d8f575c498ec60570dcc6625fcfbee12a2d2f",
+      "triangles": 1328,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "track-asphalt-paver",
+      "source": "catalog/kits/construction-equipment/track-asphalt-paver.kcad.ts",
+      "sourceSha256": "5de135a81a670322a5c4a22b22b2af70281da68c0a1002ba45d1f2853cd91a8c",
+      "preview": "/assets/construction-equipment-track-asphalt-paver.png",
+      "previewSha256": "d224587c8a9fd76cbe16f0c7e072f3b1879594809321103fa0785be67582cc5c",
+      "triangles": 1952,
+      "triangleBudget": 2800
+    },
+    {
+      "id": "tracked-concrete-buggy",
+      "source": "catalog/kits/construction-equipment/tracked-concrete-buggy.kcad.ts",
+      "sourceSha256": "6fd097b38babd7594cfe66776fef7f4582ac61e5073079ffbac01d87320cd2f0",
+      "preview": "/assets/construction-equipment-tracked-concrete-buggy.png",
+      "previewSha256": "183fd89ad6b3f8af56e89646ab12d3497c5afe6033deb033eb358a1469e7acfa",
+      "triangles": 1524,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "trailer-concrete-line-pump",
+      "source": "catalog/kits/construction-equipment/trailer-concrete-line-pump.kcad.ts",
+      "sourceSha256": "6580df37a4599c3a8d309781488d2d9bcebf900d230f9ef17d8fce1fe6d59fc9",
+      "preview": "/assets/construction-equipment-trailer-concrete-line-pump.png",
+      "previewSha256": "096f1de1f1a4ab66d9d400f837ccdf785c3c715488ce531ed128717b37622ed2",
+      "triangles": 656,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "transit-mixer-truck",
+      "source": "catalog/kits/construction-equipment/transit-mixer-truck.kcad.ts",
+      "sourceSha256": "a3e331058e0f4a078ab20052ece48f9467df669bf86586ea01cabb49b1288b88",
+      "preview": "/assets/construction-equipment-transit-mixer-truck.png",
+      "previewSha256": "b4ea627e9f0f61dd027b7e9a66e5aad17b01aa5eccef0bddbe1793253faa3c83",
+      "triangles": 844,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "trench-roller",
+      "source": "catalog/kits/construction-equipment/trench-roller.kcad.ts",
+      "sourceSha256": "61fc8297cf6d20afca04980ffb1e751cb20dfa2c7afd01fd4a0f9f7070d48a5f",
+      "preview": "/assets/construction-equipment-trench-roller.png",
+      "previewSha256": "7e2807e5d7d55f2e36ffacce81d33f0b301e35964e284e4be665c08a809dac59",
+      "triangles": 300,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "vibrating-concrete-screed",
+      "source": "catalog/kits/construction-equipment/vibrating-concrete-screed.kcad.ts",
+      "sourceSha256": "f209f75f725600cf97389f8e20e24683d67a1920cda2d9ed0f61228d40fd1993",
+      "preview": "/assets/construction-equipment-vibrating-concrete-screed.png",
+      "previewSha256": "d57584092874a0c4ff0b52bd31e66ddb4f587df3e5797f8907e2ff34e6959b41",
+      "triangles": 92,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "walk-behind-concrete-saw",
+      "source": "catalog/kits/construction-equipment/walk-behind-concrete-saw.kcad.ts",
+      "sourceSha256": "9a5caa8230ac84e12b042d52c27ee2b6bc6174f20ae8783bb83832144731e716",
+      "preview": "/assets/construction-equipment-walk-behind-concrete-saw.png",
+      "previewSha256": "432e711092b30b8858ad02c45428d05371fb51ce62756a5fcbbdbe68f4e8d754",
+      "triangles": 620,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "walk-behind-floor-scarifier",
+      "source": "catalog/kits/construction-equipment/walk-behind-floor-scarifier.kcad.ts",
+      "sourceSha256": "ab27c326f3bac8e05c7bdce0838a946bac8e05455e5bb83ab6a34a160cf3f37f",
+      "preview": "/assets/construction-equipment-walk-behind-floor-scarifier.png",
+      "previewSha256": "56ef248e252f28bc8e1655c8cb86b9b115b88a164ffb82f0eb8224da54acae5c",
+      "triangles": 664,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "walk-behind-power-trowel",
+      "source": "catalog/kits/construction-equipment/walk-behind-power-trowel.kcad.ts",
+      "sourceSha256": "c1f3b516f1b7438bc784c2a96bacd49994e939ed4ea708ac5e8b86924ef88505",
+      "preview": "/assets/construction-equipment-walk-behind-power-trowel.png",
+      "previewSha256": "57148ed3d1b8f0c1c8c176179918e91ae9a52954c87ec3b1a6011e94eb818e2f",
+      "triangles": 124,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "water-tanker-truck",
+      "source": "catalog/kits/construction-equipment/water-tanker-truck.kcad.ts",
+      "sourceSha256": "ff008a91d54918995038aff95d879353335dd3bd53351aecbc88b4ad88217a0a",
+      "preview": "/assets/construction-equipment-water-tanker-truck.png",
+      "previewSha256": "7a31c41444f4a544bbbc607a786864555cbec515d6d0cda58310a5f5cc1f3fa9",
+      "triangles": 1196,
+      "triangleBudget": 2200
+    },
+    {
+      "id": "wheel-asphalt-paver",
+      "source": "catalog/kits/construction-equipment/wheel-asphalt-paver.kcad.ts",
+      "sourceSha256": "f80406659fd3f35070338aab76fb8710f9ca7f0d7e3e5ed065db682e59148693",
+      "preview": "/assets/construction-equipment-wheel-asphalt-paver.png",
+      "previewSha256": "7020ee5e67226d1504c0763b470323971552d04632f5fddee1e6d6b9640ae014",
+      "triangles": 728,
+      "triangleBudget": 2200
+    }
+  ]
+}

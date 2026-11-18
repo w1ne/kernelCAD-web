@@ -1,0 +1,43 @@
+{
+  "source": "local OCCT exporter; A4 four-view fixture plate",
+  "actualExport": {
+    "sheetPlacement": {
+      "status": "clear",
+      "checkedViews": [
+        "front",
+        "top",
+        "left",
+        "iso"
+      ],
+      "issues": []
+    },
+    "diagnostics": []
+  },
+  "failureInjection": {
+    "method": "pure layout preflight with displaced front view",
+    "sheetPlacement": {
+      "status": "issues",
+      "checkedViews": [
+        "front",
+        "top",
+        "left",
+        "iso"
+      ],
+      "issues": [
+        {
+          "kind": "outside-frame",
+          "views": [
+            "front"
+          ]
+        },
+        {
+          "kind": "title-block-overlap",
+          "views": [
+            "front"
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": "Geometry boxes only, not annotation, PDF raster, GD&T, or manufacturability certification"
+}

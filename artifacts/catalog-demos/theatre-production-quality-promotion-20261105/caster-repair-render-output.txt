@@ -1,0 +1,2 @@
+theatre-production/rolling-stage-platform: 308 tris
+theatre-production/scenic-wagon: 344 tris

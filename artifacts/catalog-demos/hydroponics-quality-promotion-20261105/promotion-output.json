@@ -1,0 +1,1311 @@
+{
+  "kit": "hydroponics",
+  "assetsPromoted": 52,
+  "newAssetIds": 0,
+  "materialControls": 152,
+  "controlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 104,
+  "profiledCylinderSources": 52,
+  "geometryUpgrades": [
+    "Turned shoulders on the existing cylinder forms",
+    "Curved polyethylene roof added to greenhouse-tunnel-bay",
+    "Swept rotor blades and open frame rails added to greenhouse-exhaust-fan",
+    "Swept rotor blades and upright guard added to greenhouse-circulation-fan",
+    "Cylindrical motor and axial pump volute replace cuboid solids on circulation-pump-skid"
+  ],
+  "materialRolesUsed": [
+    "glass",
+    "growSubstrate",
+    "polycarbonate",
+    "polyethylene",
+    "polymer",
+    "powderCoatedSteel",
+    "pvc",
+    "rubber",
+    "safetyAmber",
+    "stainlessSteel"
+  ],
+  "records": [
+    {
+      "id": "aeration-manifold",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "mounting-rail": "powderCoatedSteel",
+        "header": "pvc",
+        "support-left": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "branch-rail": "pvc",
+        "riser-left": "pvc",
+        "riser-mid-left": "pvc",
+        "riser-mid-right": "pvc",
+        "riser-right": "pvc",
+        "end-cap-left": "polymer",
+        "end-cap-right": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "air-pump-cabinet",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "cabinet": "polymer",
+        "roof-cap": "polymer",
+        "front-door": "polymer",
+        "door-handle": "polymer",
+        "louvre-a": "polymer",
+        "louvre-b": "polymer",
+        "louvre-c": "polymer",
+        "left-foot": "powderCoatedSteel",
+        "right-foot": "powderCoatedSteel",
+        "air-intake": "polymer",
+        "outlet-stub": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "bato-bucket",
+      "materials": [
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "bucket-body": "polymer",
+        "upper-rim": "polymer",
+        "inset-lid": "polymer",
+        "front-panel": "polymer",
+        "side-rib-left": "polymer",
+        "side-rib-right": "polymer",
+        "drain-bulkhead": "pvc",
+        "feed-stub": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "blackout-curtain-drive",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer",
+        "rubber"
+      ],
+      "partAssignments": {
+        "mount-plate": "powderCoatedSteel",
+        "left-bracket": "powderCoatedSteel",
+        "right-bracket": "powderCoatedSteel",
+        "motor-box": "powderCoatedSteel",
+        "screen-rail": "powderCoatedSteel",
+        "curtain-weight": "polymer",
+        "limit-switch-box": "polymer",
+        "roller-tube": "rubber",
+        "drive-coupler": "polymer",
+        "idler-cap": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "circulation-pump-skid",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-plate": "powderCoatedSteel",
+        "motor-block": "powderCoatedSteel",
+        "coupling-guard": "powderCoatedSteel",
+        "front-nameplate": "polymer",
+        "inlet-pipe": "pvc",
+        "discharge-pipe": "pvc",
+        "pump-volute": "powderCoatedSteel",
+        "inlet-flange": "pvc",
+        "motor-endcap": "powderCoatedSteel",
+        "pump-support-near": "powderCoatedSteel",
+        "pump-support-far": "powderCoatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "coco-coir-slab-holder",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "left-end": "polymer",
+        "right-end": "polymer",
+        "front-rail": "powderCoatedSteel",
+        "back-rail": "powderCoatedSteel",
+        "slab": "polymer",
+        "deck-strip-a": "polymer",
+        "deck-strip-b": "polymer",
+        "deck-strip-c": "polymer",
+        "irrigation-line": "pvc",
+        "drain-line": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "crop-trellis-frame",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "foot-left-front": "powderCoatedSteel",
+        "foot-right-front": "powderCoatedSteel",
+        "foot-left-back": "powderCoatedSteel",
+        "foot-right-back": "powderCoatedSteel",
+        "post-left-front": "powderCoatedSteel",
+        "post-right-front": "powderCoatedSteel",
+        "post-left-back": "powderCoatedSteel",
+        "post-right-back": "powderCoatedSteel",
+        "top-rail": "powderCoatedSteel",
+        "mid-rail": "powderCoatedSteel",
+        "tension-anchor-left": "powderCoatedSteel",
+        "tension-anchor-right": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "deep-water-culture-bed",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "trough-base": "powderCoatedSteel",
+        "front-wall": "polymer",
+        "back-wall": "polymer",
+        "left-wall": "polymer",
+        "right-wall": "polymer",
+        "raft-panel-a": "polymer",
+        "raft-panel-b": "polymer",
+        "rim-front": "polymer",
+        "rim-back": "polymer",
+        "drain-outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "dosing-pump-skid",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-skid": "powderCoatedSteel",
+        "back-panel": "polymer",
+        "pump-shelf": "polymer",
+        "control-box": "polymer",
+        "left-pump-body": "polymer",
+        "right-pump-body": "polymer",
+        "left-tube-rail": "pvc",
+        "right-tube-rail": "pvc",
+        "left-meter-head": "powderCoatedSteel",
+        "right-meter-head": "powderCoatedSteel",
+        "pickup-left": "pvc",
+        "pickup-right": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "dutch-bucket-row",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "support-frame-left": "powderCoatedSteel",
+        "support-frame-right": "powderCoatedSteel",
+        "longitudinal-rail-front": "powderCoatedSteel",
+        "longitudinal-rail-back": "powderCoatedSteel",
+        "bucket-1": "polymer",
+        "bucket-2": "polymer",
+        "bucket-3": "polymer",
+        "bucket-4": "polymer",
+        "feed-header": "pvc",
+        "return-header": "pvc",
+        "feed-riser": "pvc",
+        "return-drop": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "ebb-flow-grow-table",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tray-floor": "polymer",
+        "front-lip": "polymer",
+        "back-lip": "polymer",
+        "left-lip": "polymer",
+        "right-lip": "polymer",
+        "leg-left-front": "powderCoatedSteel",
+        "leg-right-front": "powderCoatedSteel",
+        "leg-left-back": "powderCoatedSteel",
+        "leg-right-back": "powderCoatedSteel",
+        "lower-brace": "powderCoatedSteel",
+        "overflow-standpipe": "pvc",
+        "return-outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "ec-sensor-flow-cell",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-plate": "powderCoatedSteel",
+        "support-left": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "sensor-block": "polymer",
+        "cable-box": "polymer",
+        "left-union": "pvc",
+        "right-union": "pvc",
+        "flow-body": "polymer",
+        "electrode-cap": "stainlessSteel",
+        "probe-tip": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "evaporative-cooling-pad",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer",
+        "growSubstrate"
+      ],
+      "partAssignments": {
+        "pad-core": "growSubstrate",
+        "frame-left": "powderCoatedSteel",
+        "frame-right": "powderCoatedSteel",
+        "frame-top": "powderCoatedSteel",
+        "sump-trough": "polymer",
+        "front-grille": "polymer",
+        "side-support-left": "powderCoatedSteel",
+        "side-support-right": "powderCoatedSteel",
+        "water-header": "pvc",
+        "inlet-riser": "pvc",
+        "drain-outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "flood-drain-valve-manifold",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc"
+      ],
+      "partAssignments": {
+        "mounting-plate": "powderCoatedSteel",
+        "header-pipe": "pvc",
+        "left-branch": "pvc",
+        "right-branch": "pvc",
+        "valve-handle-left": "pvc",
+        "valve-handle-right": "pvc",
+        "outlet-rail": "pvc",
+        "valve-body-left": "pvc",
+        "valve-body-right": "pvc",
+        "riser": "pvc",
+        "outlet-left": "pvc",
+        "outlet-right": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-circulation-fan",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-foot": "powderCoatedSteel",
+        "mast": "powderCoatedSteel",
+        "motor-housing": "powderCoatedSteel",
+        "guard-crossbar-a": "powderCoatedSteel",
+        "guard-crossbar-b": "powderCoatedSteel",
+        "fan-guard": "powderCoatedSteel",
+        "hub": "polymer",
+        "stand-collar": "powderCoatedSteel",
+        "blade-north": "polymer",
+        "blade-southwest": "polymer",
+        "blade-southeast": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-climate-sensor-post",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "weighted-foot": "powderCoatedSteel",
+        "junction-box": "polymer",
+        "cross-arm": "polymer",
+        "sensor-head": "polymer",
+        "rain-shield-top": "polymer",
+        "rain-shield-mid": "polymer",
+        "rain-shield-low": "polymer",
+        "mast": "powderCoatedSteel",
+        "aspiration-cap": "polymer",
+        "cable-gland": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-exhaust-fan",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "fan-hub": "powderCoatedSteel",
+        "corner-boss-left": "polymer",
+        "corner-boss-right": "polymer",
+        "outer-frame-top": "powderCoatedSteel",
+        "outer-frame-bottom": "powderCoatedSteel",
+        "outer-frame-left": "powderCoatedSteel",
+        "outer-frame-right": "powderCoatedSteel",
+        "inner-frame-top": "powderCoatedSteel",
+        "inner-frame-bottom": "powderCoatedSteel",
+        "inner-frame-left": "powderCoatedSteel",
+        "inner-frame-right": "powderCoatedSteel",
+        "blade-a": "polymer",
+        "blade-b": "polymer",
+        "blade-c": "polymer",
+        "blade-d": "polymer",
+        "motor-housing": "powderCoatedSteel",
+        "motor-shaft": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-fogger-header",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "header-rail": "pvc",
+        "hanger-left": "powderCoatedSteel",
+        "hanger-right": "powderCoatedSteel",
+        "brace-left": "powderCoatedSteel",
+        "brace-right": "powderCoatedSteel",
+        "nozzle-1": "pvc",
+        "nozzle-2": "pvc",
+        "nozzle-3": "pvc",
+        "nozzle-4": "pvc",
+        "feed-riser": "pvc",
+        "end-cap": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-grow-light-bar",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer",
+        "polycarbonate"
+      ],
+      "partAssignments": {
+        "light-diffuser": "polycarbonate",
+        "upper-housing": "polymer",
+        "end-cap-left": "polymer",
+        "end-cap-right": "polymer",
+        "suspension-left": "powderCoatedSteel",
+        "suspension-right": "powderCoatedSteel",
+        "junction-box": "polymer",
+        "cable-entry": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "greenhouse-tunnel-bay",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer",
+        "polyethylene"
+      ],
+      "partAssignments": {
+        "base-rail-left": "powderCoatedSteel",
+        "base-rail-right": "powderCoatedSteel",
+        "front-post-left": "powderCoatedSteel",
+        "front-post-right": "powderCoatedSteel",
+        "rear-post-left": "powderCoatedSteel",
+        "rear-post-right": "powderCoatedSteel",
+        "ridge-beam": "powderCoatedSteel",
+        "front-door-header": "pvc",
+        "vent-curb": "polymer",
+        "ridge-support": "powderCoatedSteel",
+        "polyethylene-roof": "polyethylene"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "handheld-ec-meter",
+      "materials": [
+        "stainlessSteel",
+        "polymer",
+        "glass",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "meter-body": "polymer",
+        "shoulder": "polymer",
+        "display": "glass",
+        "button-one": "safetyAmber",
+        "button-two": "safetyAmber",
+        "probe-clip": "stainlessSteel",
+        "probe-stem": "stainlessSteel",
+        "probe-tip": "stainlessSteel",
+        "lanyard-eye": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "handheld-ph-meter",
+      "materials": [
+        "stainlessSteel",
+        "polymer",
+        "glass"
+      ],
+      "partAssignments": {
+        "meter-shell": "polymer",
+        "upper-cap": "polymer",
+        "display": "glass",
+        "keypad": "polymer",
+        "left-key": "polymer",
+        "right-key": "polymer",
+        "probe-holder": "stainlessSteel",
+        "electrode": "stainlessSteel",
+        "connector": "polymer",
+        "cable-end": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "hydroponic-controller-console",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer",
+        "glass",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "plinth": "powderCoatedSteel",
+        "cabinet": "polymer",
+        "display-hood": "glass",
+        "screen": "glass",
+        "lower-door": "polymer",
+        "left-button": "safetyAmber",
+        "right-button": "safetyAmber",
+        "selector-left": "safetyAmber",
+        "selector-right": "safetyAmber",
+        "signal-stack": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "hydroponic-grow-rack",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "leg-front-left": "powderCoatedSteel",
+        "leg-front-right": "powderCoatedSteel",
+        "leg-back-left": "powderCoatedSteel",
+        "leg-back-right": "powderCoatedSteel",
+        "lower-channel": "polymer",
+        "middle-channel": "polymer",
+        "upper-channel": "polymer",
+        "side-feed": "pvc",
+        "crossbar-low": "powderCoatedSteel",
+        "crossbar-high": "powderCoatedSteel",
+        "feed-pipe": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "inline-water-heater",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "support-base": "powderCoatedSteel",
+        "front-panel": "polymer",
+        "insulation-band": "polymer",
+        "junction-box": "polymer",
+        "top-cap": "polymer",
+        "heater-body": "polymer",
+        "inlet-union": "pvc",
+        "outlet-union": "pvc",
+        "status-post": "powderCoatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "irrigation-lateral-header",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "main-bar": "polymer",
+        "front-mount": "powderCoatedSteel",
+        "rear-mount": "powderCoatedSteel",
+        "drop-rail": "pvc",
+        "end-cap": "polymer",
+        "drop-left": "pvc",
+        "drop-mid-left": "pvc",
+        "drop-mid-right": "pvc",
+        "drop-right": "pvc",
+        "flush-valve": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "media-filter-vessel",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-frame": "powderCoatedSteel",
+        "front-panel": "polymer",
+        "side-panel": "polymer",
+        "top-ring": "polymer",
+        "service-cover": "polymer",
+        "left-foot": "powderCoatedSteel",
+        "right-foot": "powderCoatedSteel",
+        "vessel-shell": "polymer",
+        "inlet-port": "pvc",
+        "outlet-port": "pvc",
+        "backwash-port": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "net-pot-stack",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-plate": "powderCoatedSteel",
+        "lower-cup": "polymer",
+        "second-cup": "polymer",
+        "third-cup": "polymer",
+        "upper-cup": "polymer",
+        "rim-lower": "polymer",
+        "rim-middle": "polymer",
+        "rim-upper": "polymer",
+        "center-spacer": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "nft-channel-rack",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "left-foot": "powderCoatedSteel",
+        "right-foot": "powderCoatedSteel",
+        "left-upright": "polymer",
+        "right-upright": "polymer",
+        "lower-channel-left": "polymer",
+        "lower-channel-right": "polymer",
+        "upper-channel-left": "polymer",
+        "upper-channel-right": "polymer",
+        "top-crossbar": "powderCoatedSteel",
+        "feed-header": "pvc",
+        "feed-riser": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "nutrient-feed-manifold",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc"
+      ],
+      "partAssignments": {
+        "header": "pvc",
+        "mount-rail": "powderCoatedSteel",
+        "support-left": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "valve-left": "pvc",
+        "valve-mid-left": "pvc",
+        "valve-mid": "pvc",
+        "valve-mid-right": "pvc",
+        "valve-right": "pvc",
+        "branch-1": "pvc",
+        "branch-2": "pvc",
+        "branch-3": "pvc",
+        "branch-4": "pvc",
+        "branch-5": "pvc",
+        "supply-riser": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "nutrient-measuring-cylinder",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-foot": "powderCoatedSteel",
+        "pouring-lip": "polymer",
+        "mark-low": "polymer",
+        "mark-mid-low": "polymer",
+        "mark-mid": "polymer",
+        "mark-mid-high": "polymer",
+        "vessel": "polymer",
+        "rim": "polymer",
+        "spout-tip": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "nutrient-reservoir-tank",
+      "materials": [
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tank-shell": "polymer",
+        "lid": "polymer",
+        "hatch-ring": "polymer",
+        "hatch-cover": "polymer",
+        "left-band": "polymer",
+        "right-band": "polymer",
+        "sight-column": "polymer",
+        "drain-fitting": "pvc",
+        "vent-cap": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "nutrient-solution-chiller",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base": "powderCoatedSteel",
+        "chiller-body": "polymer",
+        "top-panel": "polymer",
+        "front-door": "polymer",
+        "grille-a": "polymer",
+        "grille-b": "polymer",
+        "grille-c": "polymer",
+        "control-pod": "polymer",
+        "inlet-port": "pvc",
+        "outlet-port": "pvc",
+        "service-knob": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "overhead-grow-light-frame",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "foot-left-front": "powderCoatedSteel",
+        "foot-right-front": "powderCoatedSteel",
+        "foot-left-back": "powderCoatedSteel",
+        "foot-right-back": "powderCoatedSteel",
+        "leg-left-front": "powderCoatedSteel",
+        "leg-right-front": "powderCoatedSteel",
+        "leg-left-back": "powderCoatedSteel",
+        "leg-right-back": "powderCoatedSteel",
+        "top-beam-front": "powderCoatedSteel",
+        "top-beam-back": "powderCoatedSteel",
+        "light-bar-a": "polymer",
+        "light-bar-b": "polymer",
+        "hanger-left": "powderCoatedSteel",
+        "hanger-right": "powderCoatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "peristaltic-dosing-pump",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer",
+        "rubber"
+      ],
+      "partAssignments": {
+        "mounting-foot": "powderCoatedSteel",
+        "pump-base": "powderCoatedSteel",
+        "controller": "rubber",
+        "screen-bezel": "polymer",
+        "tubing-guide-left": "rubber",
+        "tubing-guide-right": "rubber",
+        "pump-head": "polymer",
+        "rotor-cap": "powderCoatedSteel",
+        "tube-inlet": "pvc",
+        "tube-outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "ph-probe-flow-cell",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "mounting-block": "powderCoatedSteel",
+        "front-label": "polymer",
+        "left-union": "pvc",
+        "right-union": "pvc",
+        "probe-clip": "stainlessSteel",
+        "flow-cell": "pvc",
+        "probe-gland": "stainlessSteel",
+        "probe-stem": "stainlessSteel",
+        "inlet": "pvc",
+        "outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "plant-support-clip-rack",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "backboard": "polymer",
+        "base-foot": "powderCoatedSteel",
+        "top-cap": "polymer",
+        "left-bracket": "powderCoatedSteel",
+        "right-bracket": "powderCoatedSteel",
+        "clip-rail-low": "powderCoatedSteel",
+        "clip-rail-mid": "powderCoatedSteel",
+        "clip-rail-high": "powderCoatedSteel",
+        "clip-left-low": "polymer",
+        "clip-mid-low": "polymer",
+        "clip-right-low": "polymer",
+        "hanging-eye": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "propagation-plug-tray",
+      "materials": [
+        "polymer",
+        "growSubstrate"
+      ],
+      "partAssignments": {
+        "tray-floor": "polymer",
+        "front-rim": "polymer",
+        "back-rim": "polymer",
+        "left-rim": "polymer",
+        "right-rim": "polymer",
+        "cell-row-front": "growSubstrate",
+        "cell-row-mid-front": "growSubstrate",
+        "cell-row-mid-back": "growSubstrate",
+        "cell-row-back": "growSubstrate",
+        "carry-grip-left": "polymer",
+        "carry-grip-right": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "return-water-header",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc"
+      ],
+      "partAssignments": {
+        "header-pipe": "pvc",
+        "support-left": "powderCoatedSteel",
+        "support-center-left": "powderCoatedSteel",
+        "support-center-right": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "inlet-left": "pvc",
+        "inlet-mid-left": "pvc",
+        "inlet-mid-right": "pvc",
+        "inlet-right": "pvc",
+        "cleanout": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "root-zone-heating-loop",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "left-header": "pvc",
+        "right-header": "pvc",
+        "run-front": "polymer",
+        "run-center": "polymer",
+        "run-back": "polymer",
+        "support-front-left": "powderCoatedSteel",
+        "support-front-right": "powderCoatedSteel",
+        "support-back-left": "powderCoatedSteel",
+        "support-back-right": "powderCoatedSteel",
+        "inlet-riser": "pvc",
+        "outlet-riser": "pvc",
+        "control-valve": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "screen-filter-housing",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "mounting-skid": "powderCoatedSteel",
+        "left-union": "pvc",
+        "right-union": "pvc",
+        "front-label": "polymer",
+        "cap-tab": "polymer",
+        "support-left": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "filter-canister": "polymer",
+        "top-cap": "polymer",
+        "inlet-port": "pvc",
+        "outlet-port": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "seedling-propagation-cart",
+      "materials": [
+        "powderCoatedSteel",
+        "polymer",
+        "rubber"
+      ],
+      "partAssignments": {
+        "lower-tray": "polymer",
+        "tray-two": "polymer",
+        "tray-three": "polymer",
+        "upper-tray": "polymer",
+        "post-left": "powderCoatedSteel",
+        "post-right": "powderCoatedSteel",
+        "push-handle": "polymer",
+        "front-stop": "polymer",
+        "caster-left-front": "rubber",
+        "caster-right-front": "rubber",
+        "caster-left-back": "rubber",
+        "caster-right-back": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "seedling-transplant-tool",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "grip": "polymer",
+        "grip-end-left": "polymer",
+        "grip-end-right": "polymer",
+        "shaft": "stainlessSteel",
+        "guard": "powderCoatedSteel",
+        "tip": "stainlessSteel",
+        "collar": "polymer",
+        "hanging-eye": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solution-mixing-tank",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tank-body": "polymer",
+        "top-rim": "polymer",
+        "motor-bridge": "powderCoatedSteel",
+        "motor-cover": "powderCoatedSteel",
+        "service-panel": "polymer",
+        "leg-front": "powderCoatedSteel",
+        "agitator-shaft": "stainlessSteel",
+        "agitator-blade": "polymer",
+        "sampling-port": "polymer",
+        "drain-outlet": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "stock-solution-tank",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tank": "polymer",
+        "base-ring": "powderCoatedSteel",
+        "top-cap": "polymer",
+        "cap-grip": "polymer",
+        "front-label-panel": "polymer",
+        "side-rib-left": "polymer",
+        "side-rib-right": "polymer",
+        "metering-valve": "pvc",
+        "dip-tube": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "substrate-grow-gutter",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "trough": "polymer",
+        "front-rim": "polymer",
+        "back-rim": "polymer",
+        "end-cap-left": "polymer",
+        "end-cap-right": "polymer",
+        "support-left": "powderCoatedSteel",
+        "support-middle": "powderCoatedSteel",
+        "support-right": "powderCoatedSteel",
+        "feed-tube": "pvc",
+        "drain-pickup": "pvc"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "sump-return-tank",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tank-base": "powderCoatedSteel",
+        "front-wall": "polymer",
+        "back-wall": "polymer",
+        "left-wall": "polymer",
+        "right-wall": "polymer",
+        "screen-panel-a": "polymer",
+        "screen-panel-b": "polymer",
+        "access-lid": "polymer",
+        "inlet-left": "pvc",
+        "inlet-right": "pvc",
+        "pump-socket": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "uv-treatment-chamber",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer",
+        "glass"
+      ],
+      "partAssignments": {
+        "skid-base": "powderCoatedSteel",
+        "control-box": "polymer",
+        "service-door": "polymer",
+        "left-support": "powderCoatedSteel",
+        "right-support": "powderCoatedSteel",
+        "pipe-left": "pvc",
+        "pipe-right": "pvc",
+        "treatment-canister": "polymer",
+        "lamp-cap": "glass",
+        "sample-tap": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "venturi-injector-assembly",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "support-base": "powderCoatedSteel",
+        "left-pipe": "pvc",
+        "right-pipe": "pvc",
+        "body-center": "polymer",
+        "bypass-bridge": "polymer",
+        "bypass-left": "polymer",
+        "bypass-right": "polymer",
+        "injector-throat": "polymer",
+        "adjustment-knob": "polymer",
+        "suction-port": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "vertical-grow-tower",
+      "materials": [
+        "powderCoatedSteel",
+        "pvc",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-plinth": "powderCoatedSteel",
+        "lower-collar": "polymer",
+        "tier-one": "polymer",
+        "tier-two": "polymer",
+        "tier-three": "polymer",
+        "top-lid": "polymer",
+        "central-feed-column": "pvc",
+        "side-port-left": "polymer",
+        "side-port-right": "polymer",
+        "foot-a": "powderCoatedSteel",
+        "foot-b": "powderCoatedSteel",
+        "foot-c": "powderCoatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "wall-mounted-co2-sensor",
+      "materials": [
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "backplate": "polymer",
+        "sensor-case": "polymer",
+        "top-vent": "polymer",
+        "middle-vent": "polymer",
+        "bottom-vent": "polymer",
+        "left-lug": "polymer",
+        "right-lug": "polymer",
+        "cable-gland": "polymer",
+        "sensor-cap": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "water-level-float",
+      "materials": [
+        "powderCoatedSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "mounting-foot": "powderCoatedSteel",
+        "top-bracket": "powderCoatedSteel",
+        "clamp-block": "stainlessSteel",
+        "cable-clip": "polymer",
+        "guide-mast": "powderCoatedSteel",
+        "float-body": "polymer",
+        "adjust-collar": "polymer",
+        "cable-gland": "polymer",
+        "switch-head": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    }
+  ]
+}

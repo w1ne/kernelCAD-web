@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -8,7 +8,8 @@ import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
-import { meshFromSTL } from './fromMeshFormats';
+import * as stlImport from '../../kernel/backends/occt/importStl';
+import { fromSTL, meshFromSTL } from './fromMeshFormats';
 
 const tmpDir = mkdtempSync(join(tmpdir(), 'kcad-mesh-import-'));
 afterAll(() => rmSync(tmpDir, { recursive: true, force: true }));
@@ -32,5 +33,28 @@ describe('lib.meshFromSTL file limits', () => {
     const result = await new RecomputeEngine(lowerer).run(session.getRecords(), { paramTable: session.paramTable });
     expect(result.diagnostics.some(d => /requires BRep geometry/.test(d.message))).toBe(true);
     expect(result.shapes.get(combined.id)).toBeUndefined();
+  });
+});
+
+describe('lib.fromSTL error reporting', () => {
+  it('distinguishes a numeric OCCT failure from invalid input', async () => {
+    writeFileSync(join(tmpDir, 'kernel-failure.stl'), 'fixture');
+    const importer = vi.spyOn(stlImport, 'importStlBytes').mockImplementationOnce(() => { throw 24; });
+    try {
+      await expect(fromSTL({ session: new CaptureSession(), scriptDir: tmpDir }, 'kernel-failure.stl'))
+        .rejects.toMatchObject({
+          code: 'feature.kernel-failed',
+          message: expect.stringContaining('OCCT exception 24'),
+          hint: expect.stringContaining('fromSTL.kernel'),
+        });
+    } finally {
+      importer.mockRestore();
+    }
+  });
+
+  it('still gives a parse diagnostic for malformed STL bytes', async () => {
+    writeFileSync(join(tmpDir, 'broken.stl'), 'not an STL');
+    await expect(fromSTL({ session: new CaptureSession(), scriptDir: tmpDir }, 'broken.stl'))
+      .rejects.toMatchObject({ hint: expect.stringContaining('fromSTL.parse') });
   });
 });

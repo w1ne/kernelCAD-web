@@ -1,0 +1,31 @@
+{
+  "asset": "recycling-facility/horizontal-baler",
+  "page": "/tmp/kernelcad-recycling-facility-baler-20261106-pages/catalog/recycling-facility/horizontal-baler/index.html",
+  "checks": {
+    "page_exists": true,
+    "page_title": true,
+    "open_mouth_description": true,
+    "material_controls": true,
+    "presets": true,
+    "preview_exists": true,
+    "preview_hash_matches": true,
+    "source_hash_matches_index": true,
+    "preview_path_indexed": true,
+    "triangle_budget_honest": true
+  },
+  "allPassed": true,
+  "triangles": 676,
+  "triangleBudget": 1800,
+  "materialControls": [
+    "paintedSteel",
+    "stainlessSteel",
+    "rubber",
+    "recoveredMaterial"
+  ],
+  "presetNames": [
+    "highVisibility",
+    "weathered"
+  ],
+  "sourceSha256": "9fca920f5402ce6747f93496fe3824680c40b8b74be4c8f5c85b040b2fa8d913",
+  "previewSha256": "df4ba0f98cb7ef86417dc8babe947d22873b0f345a5dffc5fb7faaab84552569"
+}

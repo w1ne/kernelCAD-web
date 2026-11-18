@@ -1,0 +1,43 @@
+{
+  "file": "standard-components-pipe-geometry.mp4",
+  "sha256": "eac91679810b3e4e4a14bbcac1a89185228ad456ccb94e7d3a7e29671e26458e",
+  "bytes": 247525,
+  "durationSeconds": 17.541667,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "codec": "h264",
+  "samples": [
+    {
+      "timeSeconds": 1.5,
+      "file": "sample-01.png",
+      "sha256": "2aa11104a543956adac6356569ccff38337421b24f5fad23fecd89f09bbdc376"
+    },
+    {
+      "timeSeconds": 4.5,
+      "file": "sample-02.png",
+      "sha256": "55ae21eecf8e03a3144722a5c87a77a56c459ff83954e0264a6deb6c06bcb541"
+    },
+    {
+      "timeSeconds": 7.5,
+      "file": "sample-03.png",
+      "sha256": "91e1ffd7a5919d93f43f549459fb4122598752e044c45550e07e1d3819795a90"
+    },
+    {
+      "timeSeconds": 10.5,
+      "file": "sample-04.png",
+      "sha256": "23cd89a307733c24bde0f8a29ef6ea337bf71c53b63580ad8d8752569c6da9cf"
+    },
+    {
+      "timeSeconds": 13.5,
+      "file": "sample-05.png",
+      "sha256": "5b894ccc9c66f2e66f0b4b4b52975630c4e2379307977901dcbd814434c8c9cf"
+    },
+    {
+      "timeSeconds": 16.5,
+      "file": "sample-06.png",
+      "sha256": "babe3613912c39628f072c7544d350539d949dbf9565dd253a220262ab84c5d6"
+    }
+  ],
+  "inspection": "Six decoded MP4 frames were assembled into video-review/decoded-samples.png and visually reviewed."
+}

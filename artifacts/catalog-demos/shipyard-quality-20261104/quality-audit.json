@@ -1,0 +1,1904 @@
+{
+  "expected": 70,
+  "audited": 70,
+  "passed": 70,
+  "failed": [],
+  "assets": [
+    {
+      "id": "abrasive-blast-pot",
+      "origin": "base",
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.24,
+        1.68,
+        0.795222
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "airless-coating-pump-cart",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.432176,
+        1.39,
+        0.81
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "alignment-target-stand",
+      "origin": "base",
+      "triangles": 252,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.46,
+        1.7,
+        0.92
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "assembly-block-pivot-dolly",
+      "origin": "base",
+      "triangles": 400,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.98,
+        1.19,
+        1.23
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "blast-dust-collector",
+      "origin": "base",
+      "triangles": 356,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.05,
+        2.13,
+        0.995
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "bow-section-support-stand",
+      "origin": "base",
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.9,
+        1.65,
+        0.76
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "caisson-ballast-manifold-stand",
+      "origin": "base",
+      "triangles": 484,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.93,
+        1.19,
+        0.7
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "coating-climate-monitor-stand",
+      "origin": "base",
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        0.71,
+        2.23,
+        0.99
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "coating-mix-cabinet",
+      "origin": "base",
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.03,
+        2.36,
+        0.96
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "confined-space-rescue-tripod",
+      "origin": "base",
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.66,
+        2.07,
+        1.43
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dock-gate-caisson",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "buoyancyCoat",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "buoyancyCoat",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.94,
+        2.17,
+        0.62
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dock-gate-winch-base",
+      "origin": "base",
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.9,
+        0.84,
+        1.67
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dockside-service-hose-reel",
+      "origin": "base",
+      "triangles": 292,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.28,
+        1.34,
+        1.11
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dockside-work-platform",
+      "origin": "base",
+      "triangles": 476,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.2,
+        1.835,
+        1.705
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "drydock-access-stair-tower",
+      "origin": "base",
+      "triangles": 448,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.75,
+        1.4,
+        0.895
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "drydock-edge-guard-section",
+      "origin": "base",
+      "triangles": 252,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.44,
+        1.255,
+        0.44
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "drydock-level-reference-post",
+      "origin": "base",
+      "triangles": 520,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        0.7,
+        3.03,
+        0.62
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "electrical-test-cart",
+      "origin": "base",
+      "triangles": 452,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.285317,
+        1.38,
+        0.88
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "electrode-storage-oven",
+      "origin": "base",
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.32,
+        1.76,
+        0.89
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "fire-watch-response-cart",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.467478,
+        2.51,
+        0.855
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "flexible-duct-hose-stand",
+      "origin": "base",
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.62,
+        1.2,
+        1.04
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "floating-drydock-pontoon-module",
+      "origin": "base",
+      "triangles": 364,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.98,
+        0.97,
+        1.85
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "grit-recovery-hopper",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.68,
+        1.37,
+        1.3
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-block-fabrication-jig",
+      "origin": "base",
+      "triangles": 420,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.7,
+        1.77,
+        2.3
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-block-paint-booth",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        3.13,
+        3.18,
+        2.34
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-block-spreader-beam",
+      "origin": "base",
+      "triangles": 380,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        3.14,
+        1.71,
+        1.58
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-panel-cutting-table",
+      "origin": "base",
+      "triangles": 420,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.66,
+        1.065,
+        1.95
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-panel-turnover-cradle",
+      "origin": "base",
+      "triangles": 420,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.18,
+        1.76,
+        1.76
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-profile-template-rack",
+      "origin": "base",
+      "triangles": 364,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.995,
+        2.15,
+        1.18
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hull-survey-grid-frame",
+      "origin": "base",
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.41,
+        1.86,
+        1.41
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "keel-block-stack",
+      "origin": "base",
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "timber",
+        "timberEndGrain"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "timber",
+        "timberEndGrain"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.15,
+        1.06,
+        0.7
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "keel-section-fit-up-jig",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.97,
+        1.18,
+        1.28
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "low-profile-material-skid",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.3,
+        0.73,
+        1.56
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "masking-material-rack",
+      "origin": "base",
+      "triangles": 444,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.82,
+        2.015,
+        1.38
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-hull-access-platform",
+      "origin": "base",
+      "triangles": 592,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.785317,
+        1.355,
+        1.385
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "modular-axle-carrier",
+      "origin": "base",
+      "triangles": 456,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.1,
+        0.88,
+        1.84
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "modular-scaffold-bay",
+      "origin": "base",
+      "triangles": 504,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.205,
+        2.14,
+        1.36
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "optical-measurement-station",
+      "origin": "base",
+      "triangles": 276,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        0.97,
+        1.85,
+        1.1
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "paint-booth-filter-wall",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        3.65,
+        1.99,
+        0.44
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "paint-curing-air-heater",
+      "origin": "base",
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.74,
+        1.495,
+        0.94
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "panel-line-strongback",
+      "origin": "base",
+      "triangles": 476,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        3,
+        0.54,
+        1.52
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-pressure-test-skid",
+      "origin": "base",
+      "triangles": 412,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.935,
+        1,
+        0.84
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-rack-fork-pocket",
+      "origin": "base",
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.735,
+        1.005,
+        1.38
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-spool-rotator",
+      "origin": "base",
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.35,
+        1.05,
+        1.08
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-spool-saddle-stand",
+      "origin": "base",
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.6,
+        1.45,
+        0.715
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "plasma-cutting-gantry-head",
+      "origin": "base",
+      "triangles": 196,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.6,
+        1.15,
+        0.645
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "plate-pack-transfer-cart",
+      "origin": "base",
+      "triangles": 372,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.91,
+        1.54,
+        1.085
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "plate-roller-conveyor",
+      "origin": "base",
+      "triangles": 440,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.55,
+        0.575,
+        1.54
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "plate-rolling-machine",
+      "origin": "base",
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.33,
+        1.495,
+        1.56
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "portable-ventilation-fan",
+      "origin": "base",
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.18,
+        1.415,
+        0.83
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "portable-weld-fume-extractor",
+      "origin": "base",
+      "triangles": 340,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.097414,
+        3.27,
+        0.895
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "refit-service-bench",
+      "origin": "base",
+      "triangles": 392,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.95,
+        1.98,
+        0.97
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "ship-lift-cradle",
+      "origin": "base",
+      "triangles": 396,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        3,
+        0.78,
+        1.83
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "ship-plate-staging-pallet",
+      "origin": "base",
+      "triangles": 336,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.5,
+        0.672,
+        1.42
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "shipfitter-tool-cabinet",
+      "origin": "base",
+      "triangles": 364,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.445,
+        1.55,
+        0.8
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "shipyard-block-transporter",
+      "origin": "base",
+      "triangles": 576,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        3.81,
+        1.25,
+        1.9
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "slipway-rail-shoe",
+      "origin": "base",
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "timber",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "timber",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.32,
+        0.6,
+        1.12
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "stern-section-support-frame",
+      "origin": "base",
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.2,
+        1.985,
+        0.57
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "surface-prep-drying-rack",
+      "origin": "base",
+      "triangles": 448,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.22,
+        2.03,
+        1.36
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "temporary-work-light-mast",
+      "origin": "base",
+      "triangles": 364,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.74,
+        3.32,
+        1.16
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "ultrasonic-test-cart",
+      "origin": "base",
+      "triangles": 420,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.400143,
+        1.41,
+        0.805
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "vessel-refit-job-board",
+      "origin": "base",
+      "triangles": 420,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2.02,
+        2.36,
+        0.6
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "vessel-shore-power-pedestal",
+      "origin": "base",
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        0.93,
+        1.74,
+        1.07
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "weld-consumable-issue-cage",
+      "origin": "base",
+      "triangles": 364,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        2.05,
+        1.87,
+        1.175
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "weld-fit-up-table",
+      "origin": "base",
+      "triangles": 392,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        1.76,
+        1.44,
+        1.16
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "weld-inspection-light-stand",
+      "origin": "base",
+      "triangles": 252,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 6,
+      "sizeM": [
+        0.9,
+        1.91,
+        0.62
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "welding-curtain-screen",
+      "origin": "base",
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        2,
+        1.5,
+        0.55
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "welding-gas-cylinder-trolley",
+      "origin": "base",
+      "triangles": 428,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "safetyMarking",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.04,
+        1.56,
+        0.66
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "yard-cable-reel-cart",
+      "origin": "base",
+      "triangles": 344,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.42238,
+        1.49,
+        1.02
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "yard-material-tug-cart",
+      "origin": "base",
+      "triangles": 372,
+      "triangleBudget": 1800,
+      "meshMaterials": 1,
+      "materialKnobs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "presets": [
+        "fresh-coat",
+        "weathered-yard"
+      ],
+      "distinctColorArgs": [
+        "elastomer",
+        "structuralSteel",
+        "yardPaint"
+      ],
+      "geometryCalls": 11,
+      "sizeM": [
+        1.98,
+        1.705,
+        1.18
+      ],
+      "minUpM": 0
+    }
+  ]
+}

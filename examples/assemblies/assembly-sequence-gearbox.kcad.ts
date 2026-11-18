@@ -73,15 +73,17 @@ for (let index = 0; index < boltPositions.length; index++) {
 // envelope cannot reach the socket. P2 reports tool-blocked { fastener, rib }.
 arm.part('tool-clearance-rib', box(1.5, 4, 10, true).translate(34.75, 18, 47).finish('aluminium-brushed'));
 
-// Frame connectors are mate metadata, not geometry: the planner groups the
-// cluster and plans its inside; it does not solve the mates in this example.
+// Each shaft and its two gears form their own fastened mate cluster. The
+// solver places the gears from these seats, so each seat and mount sits at the
+// gear centre in the shared modelled frame and the mates keep every part where
+// it is drawn. The planner groups each cluster and plans its inside.
 const seat = (value: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value } });
-inputShaftRef.connector('gear-a-seat', seat([0, 0, -11])).connector('gear-b-seat', seat([0, 0, 1]));
-outputShaftRef.connector('gear-c-seat', seat([0, 0, -11])).connector('gear-d-seat', seat([0, 0, 1]));
-gearARef.connector('shaft-mount', seat([0, 0, 0]));
-gearBRef.connector('shaft-mount', seat([0, 0, 0]));
-gearCRef.connector('shaft-mount', seat([0, 0, 0]));
-gearDRef.connector('shaft-mount', seat([0, 0, 0]));
+inputShaftRef.connector('gear-a-seat', seat([-18, 0, 10])).connector('gear-b-seat', seat([-18, 0, 22]));
+outputShaftRef.connector('gear-c-seat', seat([18, 0, 10])).connector('gear-d-seat', seat([18, 0, 22]));
+gearARef.connector('shaft-mount', seat([-18, 0, 10]));
+gearBRef.connector('shaft-mount', seat([-18, 0, 22]));
+gearCRef.connector('shaft-mount', seat([18, 0, 10]));
+gearDRef.connector('shaft-mount', seat([18, 0, 22]));
 arm.mate('input-shaft-gear-a', 'input-shaft.gear-a-seat', 'gear-a.shaft-mount', 'fastened', { fit: { kind: 'press', part: 'gear-a', axis: [0, 0, 1] } });
 arm.mate('input-shaft-gear-b', 'input-shaft.gear-b-seat', 'gear-b.shaft-mount', 'fastened');
 arm.mate('output-shaft-gear-c', 'output-shaft.gear-c-seat', 'gear-c.shaft-mount', 'fastened');

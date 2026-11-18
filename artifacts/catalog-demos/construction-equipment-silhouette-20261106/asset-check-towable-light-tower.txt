@@ -1,0 +1,5 @@
+EXIT CODE: 0
+(node:4102382) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"towable-light-tower","triangles":1328,"budget":2200,"sizeM":[1.605,2.562,0.868],"minUpM":0,"materials":1,"knobs":["scale:number","mastHeight:choice","lampCount:choice","equipmentPaintColor:color","structuralSteelColor:color","tireRubberColor:color","lampLensColor:color"],"palette":["structuralSteelColor=#89969a","equipmentPaintColor=#e1a31b","lampLensColor=#f2dfaa","tireRubberColor=#252a2d"]}
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/construction-equipment-silhouette-20261106/asset-renders/towable-light-tower.png

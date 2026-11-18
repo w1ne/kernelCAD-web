@@ -1,0 +1,1409 @@
+{
+  "kit": "airfield",
+  "asset_count": 40,
+  "material_control_count": 142,
+  "preset_entry_count": 80,
+  "assets": [
+    {
+      "id": "aircraft-fuel-truck",
+      "title": "Aircraft fuel truck",
+      "group": "ground-vehicle",
+      "description": "Runway refueller with a rounded tank, distinct driver cab, hose reel and four heavy tyres.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#d9ae27",
+          "parts": 1
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 3
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "aircraft-hangar",
+      "title": "Aircraft hangar",
+      "group": "building",
+      "description": "Open-front apron hangar with side and rear walls, a pitched gable roof, ridge cap and a clear aircraft-door opening.",
+      "materials": [
+        {
+          "name": "cladding",
+          "label": "Metal cladding",
+          "default": "#f0ead8",
+          "parts": 2
+        },
+        {
+          "name": "roofMetal",
+          "label": "Roof metal",
+          "default": "#39799c",
+          "parts": 3
+        },
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#bcb8ad",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "pitched-roof"
+      ]
+    },
+    {
+      "id": "aircraft-maintenance-lift",
+      "title": "Aircraft maintenance lift",
+      "group": "vehicle-equipment",
+      "description": "Self-propelled scissor lift with a guarded service platform, crossed arms and compact chassis.",
+      "materials": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#d6a72d",
+          "parts": 4
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#89989c",
+          "parts": 3
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "aircraft-uld-container",
+      "title": "Aircraft ULD container",
+      "group": "misc",
+      "description": "Rounded-corner air cargo unit load device with a raised roof and pallet base.",
+      "materials": [
+        {
+          "name": "aluminium",
+          "label": "Aluminium",
+          "default": "#b6c0c1",
+          "parts": 2
+        },
+        {
+          "name": "polymer",
+          "label": "Polymer pallet",
+          "default": "#566f72",
+          "parts": 1
+        },
+        {
+          "name": "steel",
+          "label": "Steel fittings",
+          "default": "#7d898d",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "aircraft-wheel-chocks",
+      "title": "Aircraft wheel chocks",
+      "group": "misc",
+      "description": "Paired triangular wheel chocks with connecting safety rope and broad ground contact.",
+      "materials": [
+        {
+          "name": "safetyPaint",
+          "label": "High-visibility paint",
+          "default": "#e76f32",
+          "parts": 2
+        },
+        {
+          "name": "ropeFabric",
+          "label": "Rope fabric",
+          "default": "#343a3d",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "airport-control-tower",
+      "title": "Airport control tower",
+      "group": "building",
+      "description": "Air traffic control tower with a tapered concrete shaft, glazed observation cab and broad roof cap.",
+      "materials": [
+        {
+          "name": "cladding",
+          "label": "Metal cladding",
+          "default": "#f4c430",
+          "parts": 1
+        },
+        {
+          "name": "roofMetal",
+          "label": "Roof metal",
+          "default": "#38596d",
+          "parts": 1
+        },
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#b8b4aa",
+          "parts": 2
+        },
+        {
+          "name": "glass",
+          "label": "Glazing",
+          "default": "#2aa9be",
+          "parts": 2
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "tapered-tower-shaft"
+      ]
+    },
+    {
+      "id": "airport-fire-engine",
+      "title": "Airport fire engine",
+      "group": "ground-vehicle",
+      "description": "Airport rescue truck with a pale crew cab, red equipment body, roof monitor, raised metallic ladder, heavy axles and metal compartment doors.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Rescue vehicle paint",
+          "default": "#d93a31",
+          "parts": 1
+        },
+        {
+          "name": "cabPaint",
+          "label": "Crew cab paint",
+          "default": "#e7e8df",
+          "parts": 1
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 13
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "equipment-compartment-panels",
+        "roof-ladder"
+      ]
+    },
+    {
+      "id": "amphibious-seaplane",
+      "title": "Amphibious seaplane",
+      "group": "airframe",
+      "description": "Twin-engine seaplane with a high wing, twin floats and water-ready hull profile.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#558aa0",
+          "parts": 6
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 17
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "approach-lighting-array",
+      "title": "Approach lighting array",
+      "group": "misc",
+      "description": "Approach-light runway fixture with a long crossbar, center mast and side braces.",
+      "materials": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#8c999c",
+          "parts": 4
+        },
+        {
+          "name": "lensGlass",
+          "label": "Optical glass",
+          "default": "#e8c766",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "apron-shuttle-bus",
+      "title": "Apron shuttle bus",
+      "group": "ground-vehicle",
+      "description": "Long low-floor airport shuttle bus with a broad passenger cabin and three wheel pairs.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#4b7892",
+          "parts": 1
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 1
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 1
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 6
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "baggage-cart-train",
+      "title": "Baggage cart train",
+      "group": "baggage-train",
+      "description": "Apron tractor towing three low-sided baggage trailers with paired axles.",
+      "materials": [
+        {
+          "name": "tractorPaint",
+          "label": "Tractor paint",
+          "default": "#557d59",
+          "parts": 1
+        },
+        {
+          "name": "trailerPaint",
+          "label": "Trailer paint",
+          "default": "#e2b535",
+          "parts": 3
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#89969a",
+          "parts": 4
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 6
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "baggage-tractor",
+      "title": "Baggage tractor",
+      "group": "ground-vehicle",
+      "description": "Compact electric apron tractor with a forward cab, low chassis, tow coupling and four wheels.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#d5af32",
+          "parts": 3
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 2
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "belt-loader",
+      "title": "Belt loader",
+      "group": "ground-vehicle",
+      "description": "Compact baggage loader with an inclined conveyor belt, support frame and low service chassis.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#e4b22c",
+          "parts": 1
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 3
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 5
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "biplane",
+      "title": "Biplane",
+      "group": "airframe",
+      "description": "Open-cockpit biplane with two stacked wings, interplane struts, propeller and fixed landing gear.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#b94b40",
+          "parts": 5
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 10
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "cargo-aircraft",
+      "title": "Cargo aircraft",
+      "group": "airframe",
+      "description": "High-tail freighter with a broad fuselage, raised wing and four under-wing engines.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#507a99",
+          "parts": 5
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 9
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "catering-truck",
+      "title": "Catering truck",
+      "group": "ground-vehicle",
+      "description": "High-sided catering vehicle with a box body, cab, rear stabilizers and raised service platform.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#d7d9d1",
+          "parts": 3
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 2
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "deicing-truck",
+      "title": "De-icing truck",
+      "group": "ground-vehicle",
+      "description": "De-icing service vehicle with a fluid tank, telescoping boom and raised operator basket.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#d8b32a",
+          "parts": 3
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 3
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "firefighting-helicopter",
+      "title": "Firefighting helicopter",
+      "group": "helicopter",
+      "description": "Heavy-lift helicopter with a long rotor, reinforced skids and a suspended water bucket.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#d93a31",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Cockpit glass",
+          "default": "#78b9c3",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Rotor and hardware metal",
+          "default": "#9ca9ad",
+          "parts": 14
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "high-wing-bush-plane",
+      "title": "High-wing bush plane",
+      "group": "airframe",
+      "description": "Short-field utility aircraft with a high wing, large wheels and a single nose propeller.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#d6b33d",
+          "parts": 6
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 10
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "lavatory-service-truck",
+      "title": "Lavatory service truck",
+      "group": "ground-vehicle",
+      "description": "Compact sanitary service vehicle with a tank body, rear hose and low access step.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#4c9caa",
+          "parts": 2
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 3
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "narrowbody-airliner",
+      "title": "Narrowbody airliner",
+      "group": "airframe",
+      "description": "Single-aisle airliner with swept wings, under-wing engines, tail fin and landing gear.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e9e8df",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 5
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "passenger-boarding-stairs",
+      "title": "Passenger boarding stairs",
+      "group": "vehicle-equipment",
+      "description": "Towable mobile stairway with a stepped flight, upper landing, handrails and four wheels.",
+      "materials": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#d6a72d",
+          "parts": 2
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#89989c",
+          "parts": 10
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 4
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "passenger-jet-bridge",
+      "title": "Passenger jet bridge",
+      "group": "vehicle-equipment",
+      "description": "Telescoping passenger bridge with a terminal connector, support column and aircraft docking head.",
+      "materials": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated steel",
+          "default": "#d6a72d",
+          "parts": 3
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#89989c",
+          "parts": 2
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "precision-approach-indicator",
+      "title": "Precision approach indicator",
+      "group": "misc",
+      "description": "Four-unit visual approach indicator bar on a low ground stand.",
+      "materials": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#818f93",
+          "parts": 4
+        },
+        {
+          "name": "lensGlass",
+          "label": "Optical glass",
+          "default": "#e8e2ce",
+          "parts": 4
+        },
+        {
+          "name": "housingPaint",
+          "label": "Housing paint",
+          "default": "#53666a",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "private-jet",
+      "title": "Private jet",
+      "group": "airframe",
+      "description": "Long-range business jet with a narrow cabin, swept wings and two rear-mounted engines.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#ebe9e0",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 5
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "pushback-tug",
+      "title": "Pushback tug",
+      "group": "ground-vehicle",
+      "description": "Low-profile aircraft pushback tug with a broad wheelbase, raised cab and nose-wheel cradle.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#d9ae27",
+          "parts": 2
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 2
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 5
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "regional-jet",
+      "title": "Regional jet",
+      "group": "airframe",
+      "description": "Small passenger jet with swept wings, two under-wing engines and a three-wheel landing gear.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e9e8df",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 5
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "rescue-helicopter",
+      "title": "Rescue helicopter",
+      "group": "helicopter",
+      "description": "Rescue helicopter with a wide cabin, tail rotor, landing skids and side-mounted hoist arm.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#d9b02d",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Cockpit glass",
+          "default": "#78b9c3",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Rotor and hardware metal",
+          "default": "#9ca9ad",
+          "parts": 15
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "runway-edge-light",
+      "title": "Runway edge light",
+      "group": "misc",
+      "description": "Low runway-edge fixture with a broad ground plate, short stem and raised light housing.",
+      "materials": [
+        {
+          "name": "castAluminium",
+          "label": "Cast aluminium",
+          "default": "#98a5a8",
+          "parts": 1
+        },
+        {
+          "name": "lensGlass",
+          "label": "Optical glass",
+          "default": "#e8c76c",
+          "parts": 1
+        },
+        {
+          "name": "concrete",
+          "label": "Concrete base",
+          "default": "#858780",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "runway-sweeper",
+      "title": "Runway sweeper",
+      "group": "ground-vehicle",
+      "description": "Apron sweeper vehicle with a front rotary brush, operator cab and rear equipment housing.",
+      "materials": [
+        {
+          "name": "vehiclePaint",
+          "label": "Vehicle paint",
+          "default": "#c9a52b",
+          "parts": 2
+        },
+        {
+          "name": "windshieldGlass",
+          "label": "Windshield glass",
+          "default": "#72b1bd",
+          "parts": 3
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a9b4b6",
+          "parts": 1
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre and belt rubber",
+          "default": "#282e31",
+          "parts": 6
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "cab-windscreen"
+      ]
+    },
+    {
+      "id": "runway-threshold-light-array",
+      "title": "Runway threshold light array",
+      "group": "misc",
+      "description": "Portable runway threshold bar with a low aluminium base and alternating red and green optical lamps.",
+      "materials": [
+        {
+          "name": "aluminium",
+          "label": "Aluminium bar",
+          "default": "#8e9b9e",
+          "parts": 1
+        },
+        {
+          "name": "redLens",
+          "label": "Red optical glass",
+          "default": "#c84036",
+          "parts": 9
+        },
+        {
+          "name": "greenLens",
+          "label": "Green optical glass",
+          "default": "#4c9b62",
+          "parts": 9
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "sailplane",
+      "title": "Sailplane",
+      "group": "airframe",
+      "description": "Slender glider fuselage and long tapered wings with a compact tailplane and small wheel.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e3e2da",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 1
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "single-engine-trainer",
+      "title": "Single-engine trainer",
+      "group": "airframe",
+      "description": "Light training aircraft with a high wing, cockpit canopy, nose propeller and tricycle landing gear.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#d8ddd9",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 10
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "taxiway-guidance-sign",
+      "title": "Taxiway guidance sign",
+      "group": "misc",
+      "description": "Freestanding airfield guidance sign with a wide panel, two posts and weighted feet.",
+      "materials": [
+        {
+          "name": "reflectiveFilm",
+          "label": "Reflective sign film",
+          "default": "#d7b83d",
+          "parts": 1
+        },
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#8d999b",
+          "parts": 2
+        },
+        {
+          "name": "concrete",
+          "label": "Concrete feet",
+          "default": "#858780",
+          "parts": 2
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "terminal-gate-front",
+      "title": "Terminal gate front",
+      "group": "building",
+      "description": "Terminal gate facade with two concrete piers, a glazed passenger opening, projecting canopy and apron slab.",
+      "materials": [
+        {
+          "name": "roofMetal",
+          "label": "Roof metal",
+          "default": "#356d8f",
+          "parts": 1
+        },
+        {
+          "name": "concrete",
+          "label": "Concrete",
+          "default": "#b6aa96",
+          "parts": 4
+        },
+        {
+          "name": "glass",
+          "label": "Glazing",
+          "default": "#3db4c2",
+          "parts": 2
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": [
+        "shorter-concourse-roof",
+        "gate-glazing-band"
+      ]
+    },
+    {
+      "id": "twin-engine-trainer",
+      "title": "Twin-engine trainer",
+      "group": "airframe",
+      "description": "Compact twin-propeller trainer with tapered wings, twin nacelles and a low tailplane.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#d8ddd9",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 13
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "ultralight-trike",
+      "title": "Ultralight trike",
+      "group": "airframe",
+      "description": "Minimal weight-shift aircraft with a triangular wing, open frame, seat and three small wheels.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e0b53b",
+          "parts": 6
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 10
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "utility-helicopter",
+      "title": "Utility helicopter",
+      "group": "helicopter",
+      "description": "Utility helicopter with a glazed cabin, tail boom, two-blade rotor and paired landing skids.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e5e4da",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Cockpit glass",
+          "default": "#78b9c3",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Rotor and hardware metal",
+          "default": "#9ca9ad",
+          "parts": 12
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "widebody-airliner",
+      "title": "Widebody airliner",
+      "group": "airframe",
+      "description": "Wide-body passenger aircraft with a broad fuselage, four engine nacelles and a wide main wing.",
+      "materials": [
+        {
+          "name": "airframePaint",
+          "label": "Airframe paint",
+          "default": "#e9e8df",
+          "parts": 4
+        },
+        {
+          "name": "canopyGlass",
+          "label": "Canopy glass",
+          "default": "#76b6c0",
+          "parts": 1
+        },
+        {
+          "name": "bareMetal",
+          "label": "Bare aluminium",
+          "default": "#aab5b8",
+          "parts": 7
+        },
+        {
+          "name": "rubber",
+          "label": "Tyre rubber",
+          "default": "#292f32",
+          "parts": 3
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    },
+    {
+      "id": "windsock-mast",
+      "title": "Windsock mast",
+      "group": "misc",
+      "description": "Airfield windsock on a tall mast with a circular support frame and tapered fabric sleeve.",
+      "materials": [
+        {
+          "name": "galvanizedSteel",
+          "label": "Galvanized steel",
+          "default": "#879497",
+          "parts": 6
+        },
+        {
+          "name": "fabric",
+          "label": "Windsock fabric",
+          "default": "#e15b34",
+          "parts": 1
+        },
+        {
+          "name": "reflectiveFilm",
+          "label": "Reflective fabric",
+          "default": "#eee5cf",
+          "parts": 1
+        }
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "added_geometry": []
+    }
+  ]
+}
+Dry run: 40 airfield assets, 142 material controls
+Cab glazing added: 8 cabs with three panes each
+New geometry: cab glazing, ARFF equipment doors and roof ladder, pitched hangar roof, tapered tower shaft, terminal gate glazing

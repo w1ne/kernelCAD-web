@@ -1,0 +1,1369 @@
+{
+  "date": "2026-11-06",
+  "baseCommit": "5e4313eed",
+  "kit": "medical",
+  "existingAssetCount": 40,
+  "catalogAssetCount": 2390,
+  "assetIdsAddedRenamedOrDuplicated": 0,
+  "materialControls": {
+    "genericShellAccentBefore": 80,
+    "materialNamedAfter": 132,
+    "minimumPerAsset": 2,
+    "maximumPerAsset": 4,
+    "averagePerAsset": 3.3,
+    "presetEntries": 80
+  },
+  "quality": {
+    "passing": 2390,
+    "total": 2390,
+    "passRate": "100.00%",
+    "thinAssets": 0,
+    "medicalKit": {
+      "passing": 40,
+      "total": 40,
+      "averageColorKnobs": 3.3
+    },
+    "gateOutput": "\n  2390/2390 assets pass (49 rich kits, 0 thin kits)\n",
+    "kitGateOutput": "\n  40/40 assets pass (1 rich kits, 0 thin kits)\n"
+  },
+  "silhouetteDetailsAdded": [
+    "Erlenmeyer flask tapered loft, liquid-level panel and graduation marks",
+    "Petri dish agar sample and sample-label part",
+    "Pulse oximeter interior finger pads",
+    "Specimen cup paper identification label",
+    "Syringe plunger seal"
+  ],
+  "medicalAssets": [
+    {
+      "id": "adhesive-bandage-box",
+      "sourceSha256": "466997176041e0ea8097930c593a3ac5d1f881a83a40839083ce03e500719e21",
+      "triangleCount": 60,
+      "triangleBudget": 260,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paperboard",
+        "cottonGauze",
+        "medicalInk"
+      ],
+      "preview": "/assets/medical-adhesive-bandage-box.png"
+    },
+    {
+      "id": "bandage-roll",
+      "sourceSha256": "32c47e221338600fecc686a63d5cda55a415ad4dd1465a625a0abc79e667d2e7",
+      "triangleCount": 152,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "cottonGauze",
+        "compressionWrap",
+        "cardboard"
+      ],
+      "preview": "/assets/medical-bandage-roll.png"
+    },
+    {
+      "id": "bedside-cabinet",
+      "sourceSha256": "29a0c19504cfe50325f083d52a90d499cbf2de94f5b4ca74cc765ecbdee844f0",
+      "triangleCount": 84,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paintedSteel",
+        "laminate",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-bedside-cabinet.png"
+    },
+    {
+      "id": "blood-collection-tube",
+      "sourceSha256": "033ac926e348c9d7de0ef13a9557d29392b40cbc9add680951266948614722ce",
+      "triangleCount": 176,
+      "triangleBudget": 240,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "clearPolymer",
+        "rubberStopper",
+        "labelPaper"
+      ],
+      "preview": "/assets/medical-blood-collection-tube.png"
+    },
+    {
+      "id": "blood-pressure-monitor",
+      "sourceSha256": "784a91866d08f8f3e9c9ad5b49a67e96c89daa73cca8eb6d4fd310c68e6bb019",
+      "triangleCount": 268,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "displayGlass",
+        "cuffFabric",
+        "siliconeRubber"
+      ],
+      "preview": "/assets/medical-blood-pressure-monitor.png"
+    },
+    {
+      "id": "centrifuge",
+      "sourceSha256": "c51e7733568f1b774b8e7828f5380286fd87a40a2cae94a24a209a1428f56225",
+      "triangleCount": 280,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paintedSteel",
+        "clearPolycarbonate",
+        "displayGlass",
+        "rubber"
+      ],
+      "preview": "/assets/medical-centrifuge.png"
+    },
+    {
+      "id": "defibrillator",
+      "sourceSha256": "b6581f53b7c59e52fbe8b215bf7fb813d649f724f4f61c2e98a3abb5da89c4e8",
+      "triangleCount": 128,
+      "triangleBudget": 450,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "displayGlass",
+        "siliconeRubber"
+      ],
+      "preview": "/assets/medical-defibrillator.png"
+    },
+    {
+      "id": "diagnostic-monitor",
+      "sourceSha256": "b0522497deda577c990188f91891e1cda5352b242f0a168d1db8c362d3b6b7cc",
+      "triangleCount": 224,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "displayGlass",
+        "anodizedAluminum",
+        "rubber"
+      ],
+      "preview": "/assets/medical-diagnostic-monitor.png"
+    },
+    {
+      "id": "digital-thermometer",
+      "sourceSha256": "8725ca30d365244bcdbb612701eeec4b617c3f2b115713d1e27b309ab04c85da",
+      "triangleCount": 156,
+      "triangleBudget": 240,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "displayGlass",
+        "stainlessSteel",
+        "silicone"
+      ],
+      "preview": "/assets/medical-digital-thermometer.png"
+    },
+    {
+      "id": "erlenmeyer-flask",
+      "sourceSha256": "47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140",
+      "triangleCount": 188,
+      "triangleBudget": 260,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "borosilicateGlass",
+        "solution",
+        "graduationInk"
+      ],
+      "preview": "/assets/medical-erlenmeyer-flask.png"
+    },
+    {
+      "id": "exam-table",
+      "sourceSha256": "d74d1eed72ab9384330e05da7163b288311c5fee1f19d7e54175a3eb1b8766b1",
+      "triangleCount": 128,
+      "triangleBudget": 600,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "vinylUpholstery",
+        "powderCoatedSteel",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-exam-table.png"
+    },
+    {
+      "id": "examination-light",
+      "sourceSha256": "86c4aef9ae5c0ab1754e6c1f85eac8ece28cf000246536605e44502b8845598a",
+      "triangleCount": 368,
+      "triangleBudget": 450,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "powderCoatedSteel",
+        "rubber",
+        "anodizedAluminum",
+        "opalGlass"
+      ],
+      "preview": "/assets/medical-examination-light.png"
+    },
+    {
+      "id": "first-aid-kit",
+      "sourceSha256": "9c422517df97e458ceab364c00be2da9f9268034d820480c6bafa81139e35c21",
+      "triangleCount": 108,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "medicalInk",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-first-aid-kit.png"
+    },
+    {
+      "id": "forceps",
+      "sourceSha256": "5b221d7c30ce95ae947ac54ff81d336a7b5acd658f8b090d275d8c1009ab788e",
+      "triangleCount": 68,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "stainlessSteel",
+        "medicalPolymer"
+      ],
+      "preview": "/assets/medical-forceps.png"
+    },
+    {
+      "id": "forearm-crutches",
+      "sourceSha256": "e6faa7d974a0e2ff0a70dae7d97f903b7c443e237cdce37ab9a799cf2eae0e6a",
+      "triangleCount": 288,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "anodizedAluminum",
+        "medicalPolymer",
+        "siliconeRubber"
+      ],
+      "preview": "/assets/medical-forearm-crutches.png"
+    },
+    {
+      "id": "gauze-pads",
+      "sourceSha256": "1e91bcc4c6e555b651af958cd8a94c711d64e377111f37c604f25975fcb8e643",
+      "triangleCount": 72,
+      "triangleBudget": 240,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "cottonGauze",
+        "sterileMesh",
+        "medicalTape"
+      ],
+      "preview": "/assets/medical-gauze-pads.png"
+    },
+    {
+      "id": "hospital-bed",
+      "sourceSha256": "d18b5b83987451ddf2df6dbb0f91b3525a8a395153ce6c6497fe2c59023f1f20",
+      "triangleCount": 320,
+      "triangleBudget": 600,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "vinylUpholstery",
+        "paintedSteel",
+        "medicalPolymer",
+        "rubber",
+        "rails"
+      ],
+      "preview": "/assets/medical-hospital-bed.png"
+    },
+    {
+      "id": "instrument-trolley",
+      "sourceSha256": "9ef74532f8df2a661b9703be75a0e09fe3fbd45f96c75e52c7c4f0e41ee5150c",
+      "triangleCount": 224,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "stainlessSteel",
+        "medicalPolymer",
+        "rubber"
+      ],
+      "preview": "/assets/medical-instrument-trolley.png"
+    },
+    {
+      "id": "iv-stand",
+      "sourceSha256": "99e6f6a9ddcbc164f58016fa3adf2e13cdaeb97508a002f76f45366681ea5231",
+      "triangleCount": 292,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "stainlessSteel",
+        "medicalPolymer",
+        "rubber"
+      ],
+      "preview": "/assets/medical-iv-stand.png"
+    },
+    {
+      "id": "lab-incubator",
+      "sourceSha256": "91bdf054cb469aa4195013e143f084bd703d32f316f9335fc00f5a70aa86533e",
+      "triangleCount": 96,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paintedSteel",
+        "borosilicateGlass",
+        "medicalPolymer",
+        "silicone"
+      ],
+      "preview": "/assets/medical-lab-incubator.png"
+    },
+    {
+      "id": "medical-cart",
+      "sourceSha256": "ffb33692bfa745c3165824dcf2a63d40990eb3cf9d78ab2c4c79546957389929",
+      "triangleCount": 400,
+      "triangleBudget": 600,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "stainlessSteel",
+        "medicalPolymer",
+        "rubber",
+        "shelves"
+      ],
+      "preview": "/assets/medical-medical-cart.png"
+    },
+    {
+      "id": "microscope",
+      "sourceSha256": "b3d6117b1e955e99a39559d6f3960610e9b35d0ffd8162b17a196384c49a4922",
+      "triangleCount": 292,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paintedMetal",
+        "anodizedAluminum",
+        "opticalGlass",
+        "rubber"
+      ],
+      "preview": "/assets/medical-microscope.png"
+    },
+    {
+      "id": "nebulizer",
+      "sourceSha256": "bd52c6038d7b12de9f95ba9174890d150c981ce754a7307bf0971a9f15a2d13d",
+      "triangleCount": 280,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "clearPolycarbonate",
+        "siliconeTubing",
+        "rubber"
+      ],
+      "preview": "/assets/medical-nebulizer.png"
+    },
+    {
+      "id": "otoscope",
+      "sourceSha256": "5aaefaa6be4028920e4b451989eb456ae3c50273de30282321d989da383b8cf4",
+      "triangleCount": 220,
+      "triangleBudget": 280,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "rubber",
+        "stainlessSteel",
+        "opticalGlass"
+      ],
+      "preview": "/assets/medical-otoscope.png"
+    },
+    {
+      "id": "oxygen-cylinder",
+      "sourceSha256": "ed730b6cba98745bf1a8a7984e1a4dbcfad5683342fc3d3e2eeb5c7e104a4b3b",
+      "triangleCount": 200,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "paintedSteel",
+        "brass",
+        "gaugeGlass",
+        "rubber"
+      ],
+      "preview": "/assets/medical-oxygen-cylinder.png"
+    },
+    {
+      "id": "petri-dish",
+      "sourceSha256": "4b1c9e985025b8c257d78c32171a44be4233a21eed34b0e7cc73db3aff480aaa",
+      "triangleCount": 232,
+      "triangleBudget": 240,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "clearPolymer",
+        "agar",
+        "labelPaper"
+      ],
+      "preview": "/assets/medical-petri-dish.png"
+    },
+    {
+      "id": "pill-blister-pack",
+      "sourceSha256": "3f9bd8648e95b1f4d23d2487b63728bec3874771a3a7fb72f60d547b81d4816f",
+      "triangleCount": 288,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "aluminumFoil",
+        "tabletCoating",
+        "blisterPolymer"
+      ],
+      "preview": "/assets/medical-pill-blister-pack.png"
+    },
+    {
+      "id": "pill-bottle",
+      "sourceSha256": "8f0a31addf71dd236325a4d80dc929a1c9550a4d16c45035c6abd19b1767a243",
+      "triangleCount": 220,
+      "triangleBudget": 260,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "amberPolymer",
+        "labelPaper",
+        "medicalPolymer"
+      ],
+      "preview": "/assets/medical-pill-bottle.png"
+    },
+    {
+      "id": "pulse-oximeter",
+      "sourceSha256": "c5a372041121e2917cbd32bcfb29ba9586c97bc29f20bec760c830c006bb344e",
+      "triangleCount": 148,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "stainlessSteel",
+        "displayGlass",
+        "silicone"
+      ],
+      "preview": "/assets/medical-pulse-oximeter.png"
+    },
+    {
+      "id": "reflex-hammer",
+      "sourceSha256": "a3780389e18754159a11e74a86c43eb76161f549c8118321e10e34f342ce03cd",
+      "triangleCount": 188,
+      "triangleBudget": 220,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "anodizedAluminum",
+        "stainlessSteel",
+        "siliconeRubber"
+      ],
+      "preview": "/assets/medical-reflex-hammer.png"
+    },
+    {
+      "id": "sharps-container",
+      "sourceSha256": "98cbcc57651301b8c42d5779f874bccdde572517637eca349be7d0ed6004e497",
+      "triangleCount": 60,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "polypropylene",
+        "medicalInk",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-sharps-container.png"
+    },
+    {
+      "id": "specimen-cup",
+      "sourceSha256": "86329156268425dad25f0ae86bfd82293e7177f7e3e4f8838c67d9442f3f0051",
+      "triangleCount": 188,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "polypropylene",
+        "medicalPolymer",
+        "labelPaper"
+      ],
+      "preview": "/assets/medical-specimen-cup.png"
+    },
+    {
+      "id": "specimen-tube-rack",
+      "sourceSha256": "f21e11eb72ca9cacc035e83324658ee1ff96357bb40544f39bac8b80a711a752",
+      "triangleCount": 376,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "clearPolymer",
+        "capPolymer",
+        "tubeCount"
+      ],
+      "preview": "/assets/medical-specimen-tube-rack.png"
+    },
+    {
+      "id": "stethoscope",
+      "sourceSha256": "219fe521a306174f735bf56c60f78a5fe8f25fd7077b1b9407380c867a21ab3e",
+      "triangleCount": 228,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "siliconeTubing",
+        "rubber",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-stethoscope.png"
+    },
+    {
+      "id": "surgical-scissors",
+      "sourceSha256": "d4f2cad79aa505e2a5ae47cfd6e6a47fab5ed1e4772c0a8228630cb882783123",
+      "triangleCount": 268,
+      "triangleBudget": 350,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "medicalPolymer",
+        "stainlessSteel"
+      ],
+      "preview": "/assets/medical-surgical-scissors.png"
+    },
+    {
+      "id": "syringe",
+      "sourceSha256": "35a652af0450ec28eef00efafae47310110a1b99921f0b9f52c3b19984ae7357",
+      "triangleCount": 292,
+      "triangleBudget": 300,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "clearPolymer",
+        "siliconeRubber",
+        "stainlessSteel",
+        "graduationInk"
+      ],
+      "preview": "/assets/medical-syringe.png"
+    },
+    {
+      "id": "tongue-depressor-pack",
+      "sourceSha256": "ac7429f633c47e6e5c9818cbdeec0e092d5b1ec1d249ab492871cce8aa0e1837",
+      "triangleCount": 84,
+      "triangleBudget": 240,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "birchWood",
+        "paperSleeve",
+        "medicalInk"
+      ],
+      "preview": "/assets/medical-tongue-depressor-pack.png"
+    },
+    {
+      "id": "walker-frame",
+      "sourceSha256": "540237ccb26878c85e7e8cbf807c6d01702fdb103b5ee25a013b8e1b1a59fe8d",
+      "triangleCount": 196,
+      "triangleBudget": 400,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "anodizedAluminum",
+        "silicone",
+        "rubber"
+      ],
+      "preview": "/assets/medical-walker-frame.png"
+    },
+    {
+      "id": "walking-cane",
+      "sourceSha256": "9e3758347891b4c256ccd9861bef2a3fa82de1c0a075d0d6d26313e495c62887",
+      "triangleCount": 144,
+      "triangleBudget": 220,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "hardwood",
+        "medicalPolymer",
+        "rubber"
+      ],
+      "preview": "/assets/medical-walking-cane.png"
+    },
+    {
+      "id": "wheelchair",
+      "sourceSha256": "3d72b40c35aa15d073212239f9085b620ac07bea6d48f86a669ef085a95690d6",
+      "triangleCount": 332,
+      "triangleBudget": 500,
+      "presetNames": [
+        "clinic",
+        "emergency"
+      ],
+      "parameterNames": [
+        "anodizedAluminum",
+        "vinylUpholstery",
+        "rubber",
+        "medicalPolymer"
+      ],
+      "preview": "/assets/medical-wheelchair.png"
+    }
+  ],
+  "previewCount": 40,
+  "localPages": {
+    "generatedPages": 2390,
+    "verifiedMedicalPages": 40,
+    "siteFiles": "sitemap.xml and robots.txt are site-owned and were not emitted by this static catalog writer; its CLI success line is stale.",
+    "pageChecks": [
+      {
+        "id": "adhesive-bandage-box",
+        "path": "catalog/medical/adhesive-bandage-box/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Paperboard carton",
+          "Cotton gauze",
+          "Printed medical ink"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "bandage-roll",
+        "path": "catalog/medical/bandage-roll/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Cotton gauze",
+          "Compression gauze",
+          "Cardboard core"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "bedside-cabinet",
+        "path": "catalog/medical/bedside-cabinet/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Painted steel",
+          "Laminate top",
+          "Stainless-steel pulls"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "blood-collection-tube",
+        "path": "catalog/medical/blood-collection-tube/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Clear polymer",
+          "Rubber stopper",
+          "Label paper"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "blood-pressure-monitor",
+        "path": "catalog/medical/blood-pressure-monitor/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Display glass",
+          "Cuff fabric",
+          "Silicone and rubber"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "centrifuge",
+        "path": "catalog/medical/centrifuge/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Painted steel",
+          "Clear polycarbonate",
+          "Display glass",
+          "Rubber feet"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "defibrillator",
+        "path": "catalog/medical/defibrillator/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Display glass",
+          "Silicone electrode pads"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "diagnostic-monitor",
+        "path": "catalog/medical/diagnostic-monitor/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Display glass",
+          "Anodized aluminum",
+          "Rubber controls"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "digital-thermometer",
+        "path": "catalog/medical/digital-thermometer/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Display glass",
+          "Stainless-steel probe",
+          "Silicone end cap"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "erlenmeyer-flask",
+        "path": "catalog/medical/erlenmeyer-flask/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Borosilicate glass",
+          "Liquid solution",
+          "Graduation ink"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "exam-table",
+        "path": "catalog/medical/exam-table/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Vinyl upholstery",
+          "Powder-coated steel",
+          "Stainless-steel paper bar"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "examination-light",
+        "path": "catalog/medical/examination-light/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Powder-coated steel",
+          "Rubber casters",
+          "Anodized-aluminum lamp head",
+          "Opal glass diffuser"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "first-aid-kit",
+        "path": "catalog/medical/first-aid-kit/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Printed medical ink",
+          "Stainless-steel latches"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "forceps",
+        "path": "catalog/medical/forceps/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Stainless steel",
+          "Medical-grade grip polymer"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "forearm-crutches",
+        "path": "catalog/medical/forearm-crutches/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Anodized aluminum",
+          "Molded cuff polymer",
+          "Silicone and rubber"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "gauze-pads",
+        "path": "catalog/medical/gauze-pads/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Cotton gauze",
+          "Sterile mesh",
+          "Medical tape"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "hospital-bed",
+        "path": "catalog/medical/hospital-bed/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Vinyl upholstery",
+          "Painted steel",
+          "Molded rail polymer",
+          "Rubber casters"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "instrument-trolley",
+        "path": "catalog/medical/instrument-trolley/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Stainless steel",
+          "Molded tray bumper",
+          "Rubber casters"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "iv-stand",
+        "path": "catalog/medical/iv-stand/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Stainless steel",
+          "Fluid-bag polymer",
+          "Rubber casters"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "lab-incubator",
+        "path": "catalog/medical/lab-incubator/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Painted steel",
+          "Borosilicate viewing glass",
+          "Control polymer",
+          "Silicone seal and grip"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "medical-cart",
+        "path": "catalog/medical/medical-cart/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Stainless steel",
+          "Polymer shelf lips",
+          "Rubber casters"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "microscope",
+        "path": "catalog/medical/microscope/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Painted metal",
+          "Anodized stage hardware",
+          "Optical glass",
+          "Rubber eyecup"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "nebulizer",
+        "path": "catalog/medical/nebulizer/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Clear medicine-cup polymer",
+          "Silicone connector",
+          "Rubber controls"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "otoscope",
+        "path": "catalog/medical/otoscope/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Rubber grip band",
+          "Stainless-steel head",
+          "Optical glass"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "oxygen-cylinder",
+        "path": "catalog/medical/oxygen-cylinder/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Painted cylinder steel",
+          "Brass valve",
+          "Gauge glass",
+          "Rubber base ring"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "petri-dish",
+        "path": "catalog/medical/petri-dish/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Clear dish polymer",
+          "Agar medium",
+          "Sample label paper"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "pill-blister-pack",
+        "path": "catalog/medical/pill-blister-pack/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Aluminum foil",
+          "Tablet coating",
+          "Blister polymer"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "pill-bottle",
+        "path": "catalog/medical/pill-bottle/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Amber polymer",
+          "Label paper",
+          "Cap polymer"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "pulse-oximeter",
+        "path": "catalog/medical/pulse-oximeter/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Medical-grade polymer",
+          "Stainless-steel hinge",
+          "Display glass",
+          "Silicone finger pad"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "reflex-hammer",
+        "path": "catalog/medical/reflex-hammer/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Anodized-aluminum handle",
+          "Stainless-steel head",
+          "Silicone percussion tips"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "sharps-container",
+        "path": "catalog/medical/sharps-container/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Puncture-resistant polypropylene",
+          "Warning marking color",
+          "Stainless-steel carry tab"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "specimen-cup",
+        "path": "catalog/medical/specimen-cup/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Polypropylene cup",
+          "Lid polymer",
+          "Identification label paper"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "specimen-tube-rack",
+        "path": "catalog/medical/specimen-tube-rack/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Rack polymer",
+          "Clear tube polymer",
+          "Color-coded cap polymer"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "stethoscope",
+        "path": "catalog/medical/stethoscope/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Silicone tubing",
+          "Rubber earpieces",
+          "Stainless-steel chestpiece"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "surgical-scissors",
+        "path": "catalog/medical/surgical-scissors/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Grip polymer",
+          "Stainless-steel blades and pivot"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "syringe",
+        "path": "catalog/medical/syringe/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Clear barrel polymer",
+          "Silicone plunger seal",
+          "Stainless-steel needle",
+          "Graduation ink"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "tongue-depressor-pack",
+        "path": "catalog/medical/tongue-depressor-pack/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Birch wood",
+          "Paper sleeve",
+          "Printed seal ink"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "walker-frame",
+        "path": "catalog/medical/walker-frame/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Anodized aluminum",
+          "Silicone hand grips",
+          "Rubber floor glides"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "walking-cane",
+        "path": "catalog/medical/walking-cane/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Hardwood shaft",
+          "Molded hand grip",
+          "Rubber ferrule"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      },
+      {
+        "id": "wheelchair",
+        "path": "catalog/medical/wheelchair/index.html",
+        "previewCopied": true,
+        "materialLabels": [
+          "Anodized aluminum frame",
+          "Vinyl upholstery",
+          "Rubber tires and casters",
+          "Molded armrest polymer"
+        ],
+        "presets": [
+          "clinic",
+          "emergency"
+        ],
+        "hasTitleOgH1CanonicalJsonLd": true
+      }
+    ]
+  },
+  "commands": {
+    "previewRender": {
+      "exitCode": 0,
+      "invocation": "npx tsx scripts/renderCatalogPreviews.ts $(python3 -c 'import json; print(\" \".join(x[\"asset\"] for x in json.load(open(\"artifacts/catalog-demos/medical-materials-quality-20261106/material-map.json\"))[\"assets\"]))')",
+      "log": "preview-render-output.txt"
+    },
+    "catalogBuild": {
+      "exitCode": 0,
+      "invocation": "npx tsx scripts/buildAssetCatalog.ts",
+      "log": "catalog-build-output.txt"
+    },
+    "qualityGate": {
+      "exitCode": 0,
+      "log": "catalog-quality-output.txt"
+    },
+    "eslint": {
+      "exitCode": 0,
+      "log": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "log": "integration-output.txt"
+    },
+    "localPages": {
+      "exitCode": 0,
+      "invocation": "npm run catalog:pages -- /tmp/medical-materials-catalog-pages-20261106",
+      "log": "local-pages-output.txt",
+      "verifiedOutput": "2390 asset pages + hub; no sitemap.xml or robots.txt"
+    },
+    "presetVariants": {
+      "exitCode": 0,
+      "count": 6,
+      "log": "preset-render-output.txt"
+    }
+  },
+  "initialIntegrationAttempt": {
+    "exitCode": 1,
+    "log": "integration-output-initial-stale-index.txt",
+    "cause": "Erlenmeyer description was corrected after an earlier index build; the source hash mismatch was fixed by rebuilding catalog/index.json before the final passing suite."
+  },
+  "publicSiteBaseline": {
+    "checkedAt": "2026-11-06T07:49:03Z",
+    "method": "curl -sS -L",
+    "urls": {
+      "https://kernelcad.com/": 200,
+      "https://kernelcad.com/catalog/": 404,
+      "https://kernelcad.com/catalog/medical/diagnostic-monitor/": 404,
+      "https://app.kernelcad.com/studio?catalog=medical/diagnostic-monitor": 200
+    },
+    "sitemapCatalogEntries": 0,
+    "deploymentStatus": "The feat/catalog-2000 branch is not deployed. These results are a live baseline, not post-deployment verification."
+  },
+  "deployment": "Branch is not deployed. Local page generation is verified; live catalog routes were 404 at baseline.",
+  "acceptanceLimits": "Stylized visualization assets only; no clinical-device accuracy, manufacturing suitability, deployed behavior or physical acceptance is claimed."
+}

@@ -1,0 +1,5 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-mining-quality-20261105",
+  "status": "PASS",
+  "pageAndPreviewPairs": 50
+}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { dfmReviewTool } from '../tools/dfmReview';
+import { dfmFixRecheckTool } from '../tools/dfmFixRecheck';
 import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
 import type { ToolRegistryEntry } from './types';
 
@@ -15,14 +16,21 @@ export const manufacturingToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'dfm_review',
       description:
-        'Use this when you need a manufacturability (DFM) report before printing or machining a part: returns a pass/fail checklist, no dfmSpec(...) needed. ' +
-        "Pass { file | code } and optional processes (default ['fdm', 'cnc']). " +
+        'Use this when you need a manufacturability (DFM) report before printing, machining, bending (sheet metal) or injection molding a part: returns a three-state checklist, no dfmSpec(...) needed. ' +
+        "Pass { file | code } and optional processes: 'fdm' | 'cnc' | 'sheet-metal' | 'injection-molding' (default ['fdm', 'cnc']). " +
         'FDM 3D printing checks: fdm.overhangs (unsupported overhang steeper than max_overhang_deg, default 45° from vertical), fdm.bridging (bridges over max_bridge_mm, default 10), ' +
         'fdm.min-wall (walls under 2 × nozzle_mm, default 0.4 mm nozzle), fdm.min-hole (holes under 5 × nozzle), fdm.min-pin (warn), fdm.bed-fit (printer profile bed, default generic-fdm), fdm.bed-contact (warn). ' +
         'CNC 3-axis milling checks: cnc.undercuts (surface unreachable from approach_axes, default [\'+z\']; list several axes for several setups) and ' +
         'cnc.internal-corner-radius (sharp internal corners and fillets smaller than the end-mill radius, tool_diameter_mm default 6). ' +
-        "Returns { ok, verdict: 'pass'|'fail', checks: [{ id, process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }], fdm?, cnc?, diagnostics }. " +
-        "Settings from the script's dfmSpec({ process: 'fdm' }) are used as defaults; call options win. For the script-declared gates (clearance, voids, channels) use verify({ check: 'dfm' }).",
+        'Sheet-metal checks (sheetMetal(...).bend(...) parts; thickness read from the model; a non-sheet part returns sheet.not-sheet-metal as not-checked) on the flat pattern: ' +
+        'sheet.min-bend-radius (inner radius ≥ min_bend_radius_ratio × t, default 1), sheet.hole-to-bend (hole edge to bend line ≥ hole_to_bend_thicknesses × t + R, default 2.5), ' +
+        'sheet.hole-to-edge (≥ hole_to_edge_thicknesses × t, default 2), sheet.min-flange (outside of bend to edge ≥ min_flange_thicknesses × t, default 4). ' +
+        "Injection-molding checks (the dfmSpec({ process: 'moulding' }) engine; two-part mold opening along ±pull_direction, default '+z'): mold.draft (faces with less than min_draft_deg draft, default 1°; face refs are optional when unique lineage is available), " +
+        'mold.wall-thickness (fail under min_wall_mm, default 1; warn over max_wall_mm, default 4, or when thickest/thinnest > max_wall_ratio, default 2.5), mold.undercuts (faces neither mold half releases), ' +
+        'mold.sharp-internal-corners (warn: creases and fillets under min_radius_mm, default 0.5); an unmeasured required rule is not-checked. ' +
+        "Returns { ok, verdict?: 'pass'|'fail'|'not-checked', checks: [{ id (rule key), process, part, source, status: 'pass'|'fail'|'warn'|'not-checked', summary, value?, limit?, unit?, op?, tolerance?, refs? }] }. Tolerance is in the same unit as value and limit, defaults to zero, and is inclusive: for >=, pass when value + tolerance >= limit; for <=, pass when value - tolerance <= limit. Face refs are omitted when unique resolvable lineage is unavailable. Also returns fdm?, cnc?, sheetMetal?, injectionMolding?, diagnostics. " +
+        "`ok` reports successful invocation/model evaluation/process execution, not manufacturability: checked findings can fail while `ok` is true. Argument or model-evaluation errors return `ok: false` without a verdict; a completed review can be `not-checked` while `ok` is true. " +
+        "Settings from the script's dfmSpec({ process: 'fdm' | 'moulding' }) are used as defaults; call options win. For the script-declared gates (clearance, voids, channels) use verify({ check: 'dfm' }).",
       inputSchema: {
         type: 'object',
         properties: {
@@ -30,7 +38,7 @@ export const manufacturingToolEntries: ToolRegistryEntry[] = [
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
           processes: {
             type: 'array',
-            items: { type: 'string', enum: ['fdm', 'cnc'] },
+            items: { type: 'string', enum: ['fdm', 'cnc', 'sheet-metal', 'injection-molding'] },
             description: "Processes to review. Default ['fdm', 'cnc'].",
           },
           nozzle_mm: { type: 'number', description: 'FDM nozzle diameter, mm. Default 0.4.' },
@@ -45,9 +53,67 @@ export const manufacturingToolEntries: ToolRegistryEntry[] = [
             description: "CNC tool approach directions, one per setup (the tool comes from that side). Default ['+z'].",
           },
           max_undercut_area_mm2: { type: 'number', description: 'CNC unreachable area tolerated before cnc.undercuts fails, mm². Default 1.' },
+          min_bend_radius_ratio: { type: 'number', description: 'Sheet metal: inner bend radius must be ≥ this × thickness. Default 1.' },
+          hole_to_bend_thicknesses: { type: 'number', description: 'Sheet metal: hole edge to bend line must be ≥ this × thickness + bend radius. Default 2.5.' },
+          hole_to_edge_thicknesses: { type: 'number', description: 'Sheet metal: hole edge to blank edge must be ≥ this × thickness. Default 2.' },
+          min_flange_thicknesses: { type: 'number', description: 'Sheet metal: flange length from the outside of the bend must be ≥ this × thickness. Default 4.' },
+          pull_direction: { type: 'string', enum: AXIS_ENUM, description: "Injection molding: part-local mold-opening axis (the two halves separate along ±this). Default '+z'." },
+          min_draft_deg: { type: 'number', description: 'Injection molding: minimum draft angle to the pull direction, degrees. Default 1.' },
+          min_wall_mm: { type: 'number', description: 'Injection molding: thinnest allowed wall, mm. Default 1.' },
+          max_wall_mm: { type: 'number', description: 'Injection molding: thickest allowed section, mm. Default 4.' },
+          max_wall_ratio: { type: 'number', description: 'Injection molding: thickest / thinnest wall above this warns (non-uniform walls warp and sink). Default 2.5.' },
+          min_radius_mm: { type: 'number', description: 'Injection molding: smallest internal corner radius before mold.sharp-internal-corners warns, mm. Default 0.5.' },
         },
       },
     },
     handler: input => dfmReviewTool(input as unknown as Parameters<typeof dfmReviewTool>[0]),
+  },
+];
+
+/**
+ * Appended at the tail of TOOL_REGISTRY. The manufacturability family already
+ * occupies index 50 (`dfm_review`); inserting here would renumber every tool
+ * after it. kernelCAD-server pins that order.
+ */
+export const manufacturingFixRecheckToolEntries: ToolRegistryEntry[] = [
+  {
+    definition: {
+      name: 'dfm_fix_recheck',
+      description:
+        'Use this when a dfm_review finding should get one safe parameter edit and the same review again. ' +
+        "Pass { file | code } and the same process options as dfm_review, or a single process (not both process and processes). " +
+        'Runs dfm_review, applies at most one edit, then reviews the edited source. The only edits are: an existing fillet or filletIntersection radius raised to the check limit; ' +
+        'a shell() thickness raised to the minimum wall plus 0.01 mm; a draft() angle raised to the minimum draft. ' +
+        'A sharp corner, a thin solid that is not a shell(), an undrafted face, a param()-driven value, and every other finding are not edited. ' +
+        "Optional finding_id is a check id such as 'fdm.min-wall'. Optional diagnostic_code is a dfm.* code or that same check id. " +
+        'When either is set, a finding that is not safe does not fall through to a different check. ' +
+        'material is copied onto the report and does not change the numeric gates. ' +
+        "Returns { ok, applied, status: 'applied'|'no-safe-fix'|'invalid', processes, material?, before, after?, cleared, remaining, suggestions, change?, new_code?, refusal?, diagnostics, bounds: { maxApplies: 1, appliedCount } }. " +
+        'new_code is present only when applied is true. The caller persists it. Nothing is written.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          ...manufacturingToolEntries[0].definition.inputSchema.properties,
+          process: {
+            type: 'string',
+            enum: ['fdm', 'cnc', 'sheet-metal', 'injection-molding'],
+            description: "One process. Use processes for several. Not both.",
+          },
+          material: {
+            type: 'string',
+            description: 'Recorded on the report. Does not change the numeric gates.',
+          },
+          finding_id: {
+            type: 'string',
+            description: "dfm_review check id to fix, for example 'fdm.min-wall'. Omit to take the first safe finding.",
+          },
+          diagnostic_code: {
+            type: 'string',
+            description: 'A dfm.* diagnostic code, or the same check id as finding_id.',
+          },
+        },
+      },
+    },
+    handler: input => dfmFixRecheckTool(input as unknown as Parameters<typeof dfmFixRecheckTool>[0]),
   },
 ];

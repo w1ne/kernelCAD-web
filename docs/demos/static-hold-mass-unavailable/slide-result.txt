@@ -1,0 +1,9 @@
+Result: no verification pass
+
+ok: false
+posesSampled: 0
+
+assembly.joint.static-hold.mass-unavailable
+severity: error
+
+No actuator capacity comparison was made.

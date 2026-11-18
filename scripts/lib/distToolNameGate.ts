@@ -88,6 +88,12 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'part_files',
   // export result field carrying the svg-drawing placement report.
   'drawing_report',
+  // dfm_review injection-molding option names (options, not calls).
+  'pull_direction',
+  'max_wall_ratio',
+  // export geometry-quality gate threshold options (option names, not calls).
+  'tiny_face_area_mm2',
+  'short_edge_length_mm',
   // export result field carrying slicer estimates, not an MCP tool call.
   'gcode_stats',
   'binding_name',
@@ -168,6 +174,13 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'to_pos_mm',
   'assembly_order',
   'sheets_rows',
+  // load_scan_reference / fit_model_to_scan result and option fields
+  // (documented alongside those tool names, which DO resolve — fields, not calls).
+  'point_count',
+  'max_points',
+  'binary_big_endian',
+  'translate_mm',
+  'clearance_mm',
 ]);
 
 export interface ToolNameHit {

@@ -84,7 +84,7 @@ export async function lowerCutout(ctx: LowerContext, r: FeatureRecord): Promise<
   }
   const profile = ctx.inputs.byKey.profile as OcctBackend | undefined;
   const { lowerCutout: cutProfileOnBackend } = await import('../../../../kernel/backends/occt/cutoutLowerer');
-  const res = cutProfileOnBackend(r, target, profile, ctx.allRecords);
+  const res = cutProfileOnBackend(r, target, profile, ctx.allRecords, ctx.inputs.resolveRecord);
   ctx.diagnostics.push(...res.diagnostics);
   if (res.diagnostics.some(d => d.severity === 'error')) {
     return finished(target);

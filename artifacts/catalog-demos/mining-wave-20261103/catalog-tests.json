@@ -1,0 +1,7 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "status": "passed",
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "durationSeconds": 152.63
+}

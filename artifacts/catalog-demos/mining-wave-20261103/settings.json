@@ -1,0 +1,353 @@
+{
+  "kit": "mining",
+  "generatedOn": "2026-11-03",
+  "assetCount": 50,
+  "demo": {
+    "source": "capture_mining_demo.py",
+    "output": "mining-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "sourceCommand": "python3 artifacts/catalog-demos/mining-wave-20261103/generate_mining_assets.py",
+  "catalogCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts",
+  "knobs": {
+    "scale": {
+      "default": 1,
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    "color": "asset-specific hex color"
+  },
+  "triangleBudget": 1800,
+  "materialCount": 1,
+  "verificationScope": {
+    "covered": [
+      "local source and index",
+      "low-poly mesh export",
+      "triangle and material audit",
+      "catalog integration suite",
+      "preview files and URLs",
+      "local generated catalog pages",
+      "current public website snapshot"
+    ],
+    "notCovered": [
+      "deployed behavior for this branch",
+      "equipment operating performance",
+      "structural suitability",
+      "safety certification",
+      "physical acceptance"
+    ]
+  },
+  "assets": [
+    {
+      "id": "shaft-headframe",
+      "title": "Mine shaft headframe",
+      "defaultColor": "#686d69",
+      "parts": 8
+    },
+    {
+      "id": "mine-skip",
+      "title": "Mine skip conveyance",
+      "defaultColor": "#786e58",
+      "parts": 9
+    },
+    {
+      "id": "mine-locomotive",
+      "title": "Underground mine locomotive",
+      "defaultColor": "#a26b40",
+      "parts": 10
+    },
+    {
+      "id": "underground-shuttle-car",
+      "title": "Underground shuttle car",
+      "defaultColor": "#b17a38",
+      "parts": 8
+    },
+    {
+      "id": "continuous-miner",
+      "title": "Continuous miner",
+      "defaultColor": "#c19b42",
+      "parts": 8
+    },
+    {
+      "id": "longwall-shearer",
+      "title": "Longwall shearer",
+      "defaultColor": "#77766a",
+      "parts": 8
+    },
+    {
+      "id": "roof-bolting-rig",
+      "title": "Underground roof-bolting rig",
+      "defaultColor": "#d3a64c",
+      "parts": 8
+    },
+    {
+      "id": "rotary-blasthole-drill",
+      "title": "Rotary blasthole drill rig",
+      "defaultColor": "#d49a38",
+      "parts": 8
+    },
+    {
+      "id": "core-drill-rig",
+      "title": "Exploration core drill rig",
+      "defaultColor": "#87917e",
+      "parts": 8
+    },
+    {
+      "id": "mine-ventilation-fan",
+      "title": "Mine ventilation fan station",
+      "defaultColor": "#638078",
+      "parts": 8
+    },
+    {
+      "id": "mine-refuge-chamber",
+      "title": "Mine refuge chamber",
+      "defaultColor": "#71816e",
+      "parts": 8
+    },
+    {
+      "id": "mine-survey-tripod",
+      "title": "Mine survey tripod",
+      "defaultColor": "#b7874e",
+      "parts": 8
+    },
+    {
+      "id": "ore-pass-grizzly",
+      "title": "Ore-pass grizzly gate",
+      "defaultColor": "#777d73",
+      "parts": 15
+    },
+    {
+      "id": "run-of-mine-hopper",
+      "title": "Run-of-mine feed hopper",
+      "defaultColor": "#787469",
+      "parts": 10
+    },
+    {
+      "id": "jaw-crusher-module",
+      "title": "Jaw crusher module",
+      "defaultColor": "#6e7770",
+      "parts": 12
+    },
+    {
+      "id": "cone-crusher-module",
+      "title": "Cone crusher module",
+      "defaultColor": "#65756f",
+      "parts": 9
+    },
+    {
+      "id": "gyratory-crusher-station",
+      "title": "Gyratory crusher station",
+      "defaultColor": "#6d736d",
+      "parts": 8
+    },
+    {
+      "id": "impact-crusher-module",
+      "title": "Impact crusher module",
+      "defaultColor": "#8a6d47",
+      "parts": 8
+    },
+    {
+      "id": "rock-breaker-boom",
+      "title": "Crusher rock-breaker boom",
+      "defaultColor": "#b1873d",
+      "parts": 9
+    },
+    {
+      "id": "grizzly-scalping-deck",
+      "title": "Grizzly scalping deck",
+      "defaultColor": "#777c73",
+      "parts": 16
+    },
+    {
+      "id": "double-deck-screen",
+      "title": "Double-deck vibrating screen",
+      "defaultColor": "#6c7975",
+      "parts": 9
+    },
+    {
+      "id": "trommel-screen",
+      "title": "Rotary trommel screen",
+      "defaultColor": "#7c7869",
+      "parts": 9
+    },
+    {
+      "id": "apron-feeder",
+      "title": "Heavy-duty apron feeder",
+      "defaultColor": "#776c55",
+      "parts": 16
+    },
+    {
+      "id": "crusher-transfer-chute",
+      "title": "Crusher transfer chute",
+      "defaultColor": "#716f64",
+      "parts": 10
+    },
+    {
+      "id": "crusher-discharge-conveyor",
+      "title": "Crusher discharge conveyor",
+      "defaultColor": "#7c7059",
+      "parts": 10
+    },
+    {
+      "id": "overland-conveyor-bridge",
+      "title": "Overland conveyor bridge",
+      "defaultColor": "#737b70",
+      "parts": 13
+    },
+    {
+      "id": "conveyor-take-up-station",
+      "title": "Conveyor take-up station",
+      "defaultColor": "#727970",
+      "parts": 9
+    },
+    {
+      "id": "radial-stacker",
+      "title": "Radial stacker conveyor",
+      "defaultColor": "#b0833f",
+      "parts": 10
+    },
+    {
+      "id": "stacker-reclaimer-boom",
+      "title": "Stacker reclaimer boom",
+      "defaultColor": "#7e7158",
+      "parts": 10
+    },
+    {
+      "id": "ore-sorting-arch",
+      "title": "Ore sorting sensor arch",
+      "defaultColor": "#62736e",
+      "parts": 10
+    },
+    {
+      "id": "belt-magnet-separator",
+      "title": "Overband belt magnet separator",
+      "defaultColor": "#73766c",
+      "parts": 10
+    },
+    {
+      "id": "metal-detector-arch",
+      "title": "Conveyor metal detector arch",
+      "defaultColor": "#6d776f",
+      "parts": 10
+    },
+    {
+      "id": "high-pressure-grinding-rolls",
+      "title": "High-pressure grinding rolls",
+      "defaultColor": "#6a7771",
+      "parts": 10
+    },
+    {
+      "id": "sag-mill",
+      "title": "SAG grinding mill",
+      "defaultColor": "#72756d",
+      "parts": 9
+    },
+    {
+      "id": "ball-mill",
+      "title": "Ball mill assembly",
+      "defaultColor": "#6d7670",
+      "parts": 9
+    },
+    {
+      "id": "mill-relining-machine",
+      "title": "Mill relining machine",
+      "defaultColor": "#b28a45",
+      "parts": 9
+    },
+    {
+      "id": "mill-feed-chute",
+      "title": "Mill feed chute",
+      "defaultColor": "#736f61",
+      "parts": 10
+    },
+    {
+      "id": "hydrocyclone-cluster",
+      "title": "Hydrocyclone cluster",
+      "defaultColor": "#7f7970",
+      "parts": 12
+    },
+    {
+      "id": "flotation-cell-bank",
+      "title": "Flotation cell bank",
+      "defaultColor": "#617b77",
+      "parts": 11
+    },
+    {
+      "id": "flotation-conditioning-tank",
+      "title": "Flotation conditioning tank",
+      "defaultColor": "#697b73",
+      "parts": 9
+    },
+    {
+      "id": "magnetic-separator-drum",
+      "title": "Wet magnetic separator",
+      "defaultColor": "#637a75",
+      "parts": 9
+    },
+    {
+      "id": "spiral-concentrator",
+      "title": "Spiral concentrator bank",
+      "defaultColor": "#697c77",
+      "parts": 12
+    },
+    {
+      "id": "thickener-bridge",
+      "title": "Tailings thickener bridge",
+      "defaultColor": "#6a7872",
+      "parts": 10
+    },
+    {
+      "id": "tailings-filter-press",
+      "title": "Tailings filter press",
+      "defaultColor": "#747970",
+      "parts": 17
+    },
+    {
+      "id": "vacuum-disc-filter",
+      "title": "Vacuum disc filter",
+      "defaultColor": "#738079",
+      "parts": 12
+    },
+    {
+      "id": "slurry-pump-skid",
+      "title": "Slurry pump skid",
+      "defaultColor": "#657a75",
+      "parts": 9
+    },
+    {
+      "id": "mine-sump-pump",
+      "title": "Mine sump pump",
+      "defaultColor": "#606b64",
+      "parts": 10
+    },
+    {
+      "id": "tailings-stack-conveyor",
+      "title": "Tailings stack conveyor",
+      "defaultColor": "#77766c",
+      "parts": 10
+    },
+    {
+      "id": "assay-sample-divider",
+      "title": "Assay sample divider",
+      "defaultColor": "#847a62",
+      "parts": 10
+    },
+    {
+      "id": "core-tray-rack",
+      "title": "Exploration core tray rack",
+      "defaultColor": "#8b7656",
+      "parts": 26
+    }
+  ]
+}

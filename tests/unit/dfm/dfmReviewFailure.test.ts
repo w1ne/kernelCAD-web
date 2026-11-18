@@ -19,11 +19,24 @@ describe('dfm_review failure isolation', () => {
   it('reports ok:false when FDM throws, and still runs CNC', async () => {
     const r = await dfmReviewTool({ code: 'return box(40, 30, 10);' });
     expect(r.ok).toBe(false);
-    expect(r.verdict).toBe('fail');
-    expect(r.checks.find(c => c.id === 'fdm.analysis')?.status).toBe('fail');
+    expect(r.verdict).toBe('not-checked');
+    expect(r.checks.find(c => c.id === 'fdm.analysis')?.status).toBe('not-checked');
     expect(r.checks.find(c => c.id === 'cnc.undercuts')?.status).toBe('pass');
     expect(r.checks.find(c => c.id === 'cnc.internal-corner-radius')?.status).toBe('pass');
     expect(r.diagnostics.some(d => d.code === 'feature.kernel-failed' && d.severity === 'error')).toBe(true);
+  }, 60000);
+
+  it('keeps a checked failure above an incomplete analysis in aggregate precedence', async () => {
+    const code = `
+      const stem = box(4, 10, 20).translate(10, 0, 0);
+      const bar = box(24, 10, 4).translate(0, 0, 20);
+      return stem.union(bar);
+    `;
+    const r = await dfmReviewTool({ code });
+    expect(r.ok).toBe(false);
+    expect(r.verdict).toBe('fail');
+    expect(r.checks.find(c => c.id === 'fdm.analysis')?.status).toBe('not-checked');
+    expect(r.checks.find(c => c.id === 'cnc.undercuts')?.status).toBe('fail');
   }, 60000);
 
   it('passes when only the unaffected process is requested', async () => {

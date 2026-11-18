@@ -9,7 +9,7 @@
 // severity diagnostic surfaces the conflict at the override point.
 
 import { describe, expect, it, beforeAll } from 'vitest';
-import { buildModel } from '../../../src/modeling/buildModel';
+import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
@@ -37,6 +37,35 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
     expect(placementIgnored[0].severity).toBe('info');
     expect(placementIgnored[0].message).toContain('child');
     expect(placementIgnored[0].hint).toMatch(/mate connector/i);
+  });
+
+  it('resolves a parameter-driven `at:` before checking whether mate FK ignores it', async () => {
+    const model = await buildModel({
+      fileName: 'param-placement-ignored.kcad.ts',
+      code: `
+        const offset = param('offset', 125);
+        const arm = assembly('test');
+        arm.part('base', box(10, 10, 10))
+           .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        arm.part('child', box(10, 10, 10), { at: [offset, 0, 0] })
+           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
+        arm.mate('m', 'base.p', 'child.q', 'fastened');
+        return arm.solvedModel({});
+      `,
+    });
+    const placementIgnored = model.diagnostics.find(
+      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
+    );
+
+    expect(placementIgnored).toBeDefined();
+    expect(placementIgnored?.message).toContain('(125.00, 0.00, 0.00)');
+
+    const edited = await updateModelParams(model, [{ name: 'offset', value: 275 }]);
+    const editedPlacementIgnored = edited.model.diagnostics.find(
+      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
+    );
+    expect(editedPlacementIgnored).toBeDefined();
+    expect(editedPlacementIgnored?.message).toContain('(275.00, 0.00, 0.00)');
   });
 
   it('does NOT emit when the mated part has no `at:`', async () => {
@@ -101,10 +130,10 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
     }
   });
 
-  // The walk starts at the first declared part. When that part is in no
-  // mate, the mate between `a` and `b` is not solved and both stay at their
-  // `at`, so neither `at` is ignored.
-  it('does NOT emit for mated parts the walk from the first part does not reach', async () => {
+  // The first declared part is in no mate, so the `a`-`b` pair is its own
+  // mate component. Its first part `a` keeps its `at`, like the grounded
+  // part; the mate places `b`, so only `b`'s `at` is ignored.
+  it('emits only for the mated child of a component the first part does not reach', async () => {
     const model = await buildModel({
       fileName: 'unreached-at.kcad.ts',
       code: `
@@ -118,9 +147,12 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
         return arm.solvedModel({}, { validate: 'off' });
       `,
     });
-    expect(
-      model.diagnostics.filter((d) => d.code === 'assembly.placement-ignored-by-mate-fk'),
-    ).toEqual([]);
+    const placementIgnored = model.diagnostics.filter(
+      (d) => d.code === 'assembly.placement-ignored-by-mate-fk',
+    );
+    expect(placementIgnored).toHaveLength(1);
+    expect(placementIgnored[0].message).toContain("'b'");
+    expect(placementIgnored[0].message).not.toContain("'a'");
   });
 
   it('does NOT emit when a part has `at:` but is NOT mated', async () => {

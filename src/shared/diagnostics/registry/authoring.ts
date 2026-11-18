@@ -28,7 +28,7 @@ export const AUTHORING_CODES = {
   },
   'authoring.prefer-api.gear': {
     hintTemplate:
-      "Build gears with spurGear({ module, teeth, faceWidth, backlash }) (ringGear for internal teeth), not hand-built teeth. Recipe: involute-spur-gear-pair.",
+      "Build gears with spurGear({ module, teeth, faceWidth, backlash }) or spurGearPair({ module, teeth, drivenTeeth, faceWidth }) (ringGear for internal teeth), not hand-built teeth. Recipe: involute-spur-gear-pair.",
     nextAction: { kind: 'call-tool', tool: 'lookup_cookbook', args: { query: 'two meshing spur gears' } },
     defaultSeverity: 'info',
     group: 'authoring',

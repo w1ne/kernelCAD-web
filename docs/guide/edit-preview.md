@@ -7,7 +7,11 @@ the revised source in scratch sessions and returns three linked reports:
 - `geometry` — the same material diff as `diff_geometry`: per matched body
   `addedMm3`, `removedMm3`, `commonMm3`, bbox / face / edge / hole deltas, a
   surface deviation, and a verdict (`identical`, `moved`, `resized`,
-  `topology-changed`). `geometry.summary` is the one-line totals block.
+  `topology-changed`). Each body's `faces` lists which faces were added,
+  removed or modified (moved / resized / reshaped, with before/after area,
+  centre, normal or radius and a stable `@kc[...]` ref where one exists).
+  `geometry.summary` is the totals block, and `geometry.summary.text` is the
+  same diff in plain language.
 - `requirementsDiff` — the S2 ledger diff. Every entry pairs by source, name
   and declaring feature, then by occurrence. Each entry carries before/after
   snapshots (`status`, `measured`, `limit`, `margin`) and a margin delta. The

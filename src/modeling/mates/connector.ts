@@ -55,6 +55,8 @@ export interface Connector {
   readonly jointClearanceRadius?: number;
   /** Fluid port data; only valid on `axis` connectors. */
   readonly port?: FluidPort;
+  /** Set when the owning part was instanced from a named configuration. */
+  readonly configuration?: { readonly source: string; readonly name: string };
 }
 
 export interface MakeConnectorInput {

@@ -1,0 +1,10 @@
+{
+  "resolution": "1280x720",
+  "fps": 20,
+  "poseRangeDeg": [0, 90],
+  "poseSamples": 41,
+  "endpointHoldFrames": 20,
+  "view": "XY top projection of transformed BREP bounds",
+  "encoder": "H.264, yuv420p, CRF 27",
+  "evidence": "Actual local build, solveMates placements, and reposed SceneBackend bounds"
+}

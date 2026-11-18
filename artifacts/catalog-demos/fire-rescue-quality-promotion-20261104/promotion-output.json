@@ -1,0 +1,617 @@
+{
+  "kit": "fire-rescue",
+  "promoted": 60,
+  "assets": [
+    {
+      "id": "aerial-ladder-fire-engine",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 54
+    },
+    {
+      "id": "collapsible-fire-water-tank",
+      "family": "tank",
+      "materialControls": [
+        "safetyBandColor",
+        "vesselPaintColor",
+        "steelworkColor"
+      ],
+      "partAssignments": 10
+    },
+    {
+      "id": "deck-gun-monitor",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "safetyMarkingColor",
+        "steelColor"
+      ],
+      "partAssignments": 7
+    },
+    {
+      "id": "dry-chemical-fire-extinguisher",
+      "family": "tank",
+      "materialControls": [
+        "safetyBandColor",
+        "sealRubberColor",
+        "steelworkColor",
+        "vesselPaintColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "electric-fire-pumper",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 39
+    },
+    {
+      "id": "extension-fire-ladder",
+      "family": "ladder",
+      "materialControls": [
+        "aluminumColor",
+        "safetyFinishColor"
+      ],
+      "partAssignments": 22
+    },
+    {
+      "id": "fire-apparatus-wheel-chock",
+      "family": "tool",
+      "materialControls": [
+        "safetyMarkingColor",
+        "gripRubberColor",
+        "toolCoatingColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "fire-blanket-canister",
+      "family": "fabric",
+      "materialControls": [
+        "fabricColor",
+        "safetyTrimColor"
+      ],
+      "partAssignments": 4
+    },
+    {
+      "id": "fire-command-van",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 36
+    },
+    {
+      "id": "fire-hose-bridge",
+      "family": "tool",
+      "materialControls": [
+        "safetyMarkingColor",
+        "toolCoatingColor",
+        "steelColor"
+      ],
+      "partAssignments": 5
+    },
+    {
+      "id": "fire-hose-coupling",
+      "family": "tool",
+      "materialControls": [
+        "steelColor",
+        "safetyMarkingColor",
+        "gripRubberColor",
+        "toolCoatingColor"
+      ],
+      "partAssignments": 6
+    },
+    {
+      "id": "fire-hose-nozzle",
+      "family": "nozzle",
+      "materialControls": [
+        "nozzleMetalColor",
+        "selectorFinishColor",
+        "gripRubberColor"
+      ],
+      "partAssignments": 4
+    },
+    {
+      "id": "fire-hose-roll",
+      "family": "hose",
+      "materialControls": [
+        "hoseFabricColor",
+        "couplingMetalColor",
+        "webbingColor"
+      ],
+      "partAssignments": 27
+    },
+    {
+      "id": "fire-utility-pickup",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 27
+    },
+    {
+      "id": "firefighter-facepiece",
+      "family": "electronics",
+      "materialControls": [
+        "displayGlassColor",
+        "metalHardwareColor",
+        "gripRubberColor",
+        "housingPolymerColor"
+      ],
+      "partAssignments": 7
+    },
+    {
+      "id": "firefighter-gloves",
+      "family": "gloves",
+      "materialControls": [
+        "cuffFabricColor",
+        "gloveLeatherColor"
+      ],
+      "partAssignments": 14
+    },
+    {
+      "id": "firefighter-hood",
+      "family": "fabric",
+      "materialControls": [
+        "fabricColor",
+        "safetyTrimColor"
+      ],
+      "partAssignments": 4
+    },
+    {
+      "id": "firefighter-portable-radio",
+      "family": "electronics",
+      "materialControls": [
+        "housingPolymerColor",
+        "metalHardwareColor",
+        "displayGlassColor"
+      ],
+      "partAssignments": 10
+    },
+    {
+      "id": "firefighter-turnout-coat",
+      "family": "turnout",
+      "materialControls": [
+        "turnoutFabricColor",
+        "reflectiveTapeColor",
+        "sleeveFabricColor",
+        "hardwareColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "firefighter-turnout-pants",
+      "family": "turnout",
+      "materialControls": [
+        "turnoutFabricColor",
+        "reflectiveTapeColor"
+      ],
+      "partAssignments": 9
+    },
+    {
+      "id": "fireground-command-board",
+      "family": "tool",
+      "materialControls": [
+        "steelColor",
+        "toolCoatingColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 16
+    },
+    {
+      "id": "floating-draft-pump",
+      "family": "tool",
+      "materialControls": [
+        "steelColor",
+        "safetyMarkingColor",
+        "toolCoatingColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "foam-concentrate-canister",
+      "family": "tank",
+      "materialControls": [
+        "safetyBandColor",
+        "steelworkColor",
+        "vesselPaintColor"
+      ],
+      "partAssignments": 4
+    },
+    {
+      "id": "foam-eductor",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "steelColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 5
+    },
+    {
+      "id": "fog-nozzle",
+      "family": "nozzle",
+      "materialControls": [
+        "nozzleMetalColor",
+        "selectorFinishColor",
+        "gripRubberColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "folded-hose-pack",
+      "family": "hose",
+      "materialControls": [
+        "webbingColor",
+        "hoseFabricColor",
+        "couplingMetalColor"
+      ],
+      "partAssignments": 23
+    },
+    {
+      "id": "folding-attic-ladder",
+      "family": "ladder",
+      "materialControls": [
+        "aluminumColor",
+        "safetyFinishColor",
+        "hardwareColor"
+      ],
+      "partAssignments": 17
+    },
+    {
+      "id": "gated-wye-fire-connection",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "safetyMarkingColor",
+        "steelColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "hazmat-response-truck",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 39
+    },
+    {
+      "id": "heavy-rescue-fire-truck",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 49
+    },
+    {
+      "id": "hose-reel-cart",
+      "family": "hose",
+      "materialControls": [
+        "couplingMetalColor",
+        "hoseFabricColor",
+        "rubberColor"
+      ],
+      "partAssignments": 12
+    },
+    {
+      "id": "hydraulic-rescue-cutter",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "steelColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "hydraulic-rescue-ram",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "steelColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 7
+    },
+    {
+      "id": "hydraulic-rescue-spreader",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "steelColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "large-diameter-hose-roll",
+      "family": "hose",
+      "materialControls": [
+        "hoseFabricColor",
+        "couplingMetalColor",
+        "webbingColor"
+      ],
+      "partAssignments": 39
+    },
+    {
+      "id": "municipal-fire-engine",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 38
+    },
+    {
+      "id": "municipal-water-tender",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 42
+    },
+    {
+      "id": "personal-alert-safety-device",
+      "family": "electronics",
+      "materialControls": [
+        "housingPolymerColor",
+        "metalHardwareColor",
+        "displayGlassColor"
+      ],
+      "partAssignments": 5
+    },
+    {
+      "id": "portable-fire-pump",
+      "family": "tool",
+      "materialControls": [
+        "steelColor",
+        "safetyMarkingColor",
+        "toolCoatingColor"
+      ],
+      "partAssignments": 7
+    },
+    {
+      "id": "portable-fire-scene-light",
+      "family": "fan",
+      "materialControls": [
+        "guardMetalColor",
+        "lensColor",
+        "rubberFootColor",
+        "fanFramePaintColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "portable-ground-monitor",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "safetyMarkingColor",
+        "steelColor"
+      ],
+      "partAssignments": 9
+    },
+    {
+      "id": "positive-pressure-ventilation-fan",
+      "family": "fan",
+      "materialControls": [
+        "lensColor",
+        "guardMetalColor",
+        "rubberFootColor",
+        "fanFramePaintColor"
+      ],
+      "partAssignments": 12
+    },
+    {
+      "id": "quint-fire-apparatus",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 59
+    },
+    {
+      "id": "rescue-basket-stretcher",
+      "family": "tool",
+      "materialControls": [
+        "safetyMarkingColor",
+        "steelColor",
+        "toolCoatingColor"
+      ],
+      "partAssignments": 14
+    },
+    {
+      "id": "rescue-cribbing-blocks",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "safetyMarkingColor"
+      ],
+      "partAssignments": 12
+    },
+    {
+      "id": "rescue-sling-harness",
+      "family": "fabric",
+      "materialControls": [
+        "safetyTrimColor",
+        "fabricColor"
+      ],
+      "partAssignments": 7
+    },
+    {
+      "id": "rescue-tripod",
+      "family": "tool",
+      "materialControls": [
+        "safetyMarkingColor",
+        "toolCoatingColor",
+        "steelColor"
+      ],
+      "partAssignments": 9
+    },
+    {
+      "id": "roof-hook-ladder",
+      "family": "ladder",
+      "materialControls": [
+        "aluminumColor",
+        "safetyFinishColor",
+        "hardwareColor"
+      ],
+      "partAssignments": 11
+    },
+    {
+      "id": "roof-hook-pike-pole",
+      "family": "ladder",
+      "materialControls": [
+        "aluminumColor",
+        "safetyFinishColor",
+        "hardwareColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "self-contained-breathing-apparatus",
+      "family": "scba",
+      "materialControls": [
+        "harnessColor",
+        "cylinderColor",
+        "regulatorMetalColor",
+        "hoseRubberColor"
+      ],
+      "partAssignments": 9
+    },
+    {
+      "id": "smoke-ejector-fan",
+      "family": "fan",
+      "materialControls": [
+        "lensColor",
+        "guardMetalColor",
+        "rubberFootColor",
+        "fanFramePaintColor"
+      ],
+      "partAssignments": 11
+    },
+    {
+      "id": "smooth-bore-nozzle",
+      "family": "nozzle",
+      "materialControls": [
+        "nozzleMetalColor",
+        "selectorFinishColor"
+      ],
+      "partAssignments": 3
+    },
+    {
+      "id": "structural-fire-boots",
+      "family": "boots",
+      "materialControls": [
+        "leatherColor",
+        "soleRubberColor"
+      ],
+      "partAssignments": 6
+    },
+    {
+      "id": "structural-fire-helmet",
+      "family": "helmet",
+      "materialControls": [
+        "shieldColor",
+        "helmetShellColor",
+        "chinStrapColor"
+      ],
+      "partAssignments": 8
+    },
+    {
+      "id": "thermal-imaging-camera",
+      "family": "electronics",
+      "materialControls": [
+        "housingPolymerColor",
+        "displayGlassColor",
+        "gripRubberColor"
+      ],
+      "partAssignments": 5
+    },
+    {
+      "id": "tiller-ladder-fire-truck",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 57
+    },
+    {
+      "id": "vehicle-stabilization-strut",
+      "family": "tool",
+      "materialControls": [
+        "toolCoatingColor",
+        "safetyMarkingColor",
+        "steelColor"
+      ],
+      "partAssignments": 5
+    },
+    {
+      "id": "wildland-brush-truck",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 24
+    },
+    {
+      "id": "wildland-fire-engine",
+      "family": "vehicle",
+      "materialControls": [
+        "metalworkColor",
+        "tireRubberColor",
+        "cabPaintColor",
+        "bodyPaintColor"
+      ],
+      "partAssignments": 36
+    },
+    {
+      "id": "wildland-fire-helmet",
+      "family": "helmet",
+      "materialControls": [
+        "shieldColor",
+        "helmetShellColor",
+        "chinStrapColor"
+      ],
+      "partAssignments": 9
+    }
+  ]
+}

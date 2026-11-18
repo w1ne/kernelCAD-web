@@ -64,6 +64,36 @@ function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
 }
 
+const CUTOUT_OPTION_KEYS: ReadonlySet<string> = new Set(['face', 'depth', 'upToFace', 'depthMode', 'name', 'enabled']);
+
+/** Reject a missing option bag or a key `cutout` does not read. A misspelt
+ *  `enable: false` used to be dropped and the pocket still cut; `mode` or
+ *  `symmetric` left the cut blind; a missing `opts` failed with a raw
+ *  TypeError. */
+export function assertCutoutOptionKeys(opts: unknown, featureId: FeatureId | undefined): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'cutout(profile, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { face, depth | upToFace, depthMode?, name?, enabled? }',
+      example: CUTOUT_EXAMPLE,
+      featureId,
+    });
+  }
+  const unknown = Object.keys(opts).find((key) => !CUTOUT_OPTION_KEYS.has(key));
+  if (unknown === undefined) return;
+  invalidArgs({
+    api: 'cutout(profile, opts)',
+    path: `opts.${unknown}`,
+    got: (opts as Record<string, unknown>)[unknown],
+    requires: `a known option key; cutout accepts ${[...CUTOUT_OPTION_KEYS].join(', ')}`,
+    example: CUTOUT_EXAMPLE,
+    featureId,
+  });
+}
+
 /** Cheap O(n²) line-segment self-intersection check. Slice-1 limitation:
  *  only straight (lineTo) segments are checked; segments involving arcs
  *  (tangentArc / threePointsArc / sagittaArc / bulgeArc / radiusArc) are
@@ -115,6 +145,34 @@ function cross(o: [number, number], a: [number, number], b: [number, number]): n
   return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
 }
 
+const UP_TO_FACE_EXAMPLE =
+  "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })";
+
+function validateUpToFace(opts: CutoutOpts, featureId: FeatureId | undefined): void {
+  const v: unknown = opts.upToFace;
+  if (typeof v !== 'string' && (typeof v !== 'object' || v === null || Array.isArray(v))) {
+    invalidArgs({
+      api: 'cutout(profile, { face, upToFace })',
+      path: 'opts.upToFace',
+      got: v,
+      showType: true,
+      requires: "a planar face of the body: a FaceRef ({ kind: 'canonical', face: 'bottom' }), a face name, a label or a FaceQuery",
+      example: UP_TO_FACE_EXAMPLE,
+      featureId,
+    });
+  }
+  if (opts.depthMode === 'symmetric') {
+    invalidArgs({
+      api: 'cutout(profile, { face, upToFace, depthMode })',
+      path: 'opts.depthMode',
+      got: opts.depthMode,
+      requires: "no depthMode with upToFace; the cut runs from the entry face to the target face only",
+      example: UP_TO_FACE_EXAMPLE,
+      featureId,
+    });
+  }
+}
+
 export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | undefined): void {
   if (opts.depth === undefined && opts.upToFace === undefined) {
     invalidArgs({
@@ -137,6 +195,7 @@ export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | unde
       featureId,
     });
   }
+  if (opts.upToFace !== undefined) validateUpToFace(opts, featureId);
   if (typeof opts.depth === 'number') {
     if (!isFiniteNumber(opts.depth) || opts.depth <= 0) {
       invalidArgs({

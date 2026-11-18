@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-11",
+  "source": "examples/cookbook-parity/rib-stiffened-plate.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 13194,
+  "boundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      40,
+      30,
+      29.9
+    ]
+  },
+  "meshedFeatureCount": 3,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

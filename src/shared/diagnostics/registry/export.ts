@@ -4,6 +4,13 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const EXPORT_CODES = {
+  'export.scene.requires-brep': {
+    hintTemplate: 'Select B-rep parts explicitly or replace the named mesh parts with B-rep geometry, then export again.',
+    nextAction: { kind: 'fix-arg', field: 'feature_id' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The requested scene export needs B-rep geometry for all selected parts.',
+  },
   // Export (19)
   'export.feature-not-found': {
     hintTemplate:
@@ -28,13 +35,21 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
   },
+  'export.mesh.tolerance-invalid': {
+    hintTemplate:
+      'Set options.tolerance to a finite number of at least 0.001 mm. options.angularToleranceDeg, when supplied, must be greater than 0 and at most 180 degrees.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'An STL, 3MF, or OBJ export received an invalid mesh-tolerance option; refusal happens before the output file is written.',
+  },
   'export.dxf.non-planar': {
     hintTemplate:
-      'DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.',
+      'This is a 3D part, not a flat plate or panel. Use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for the solid.',
     nextAction: { kind: 'fix-arg', field: 'options.section' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A DXF export was attempted on a part that is not flat (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
+    description: 'A DXF export was attempted on a 3D part that is not a flat plate or panel (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
   },
   'export.3mf.not-watertight': {
     hintTemplate:
@@ -75,6 +90,22 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
+  },
+  'export.mesh.tolerance-not-met': {
+    hintTemplate:
+      'The sampled B-rep-to-triangle measurement exceeded the requested tolerance threshold. The file was kept for inspection. Try a finer options.tolerance and inspect the exported mesh; sampled measurements are not a certified global bound.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The sampled maximum distance from exact B-rep surface samples to the exported triangles exceeded 1.05 times the requested mesh tolerance; the file remains available for inspection.',
+  },
+  'export.mesh.tolerance-unavailable': {
+    hintTemplate:
+      'Mesh tolerance needs an exact B-rep surface to compare with the exported triangles. This mesh solid has no B-rep source, so its existing triangles cannot be remeshed or measured against the requested tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'options.tolerance' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A mesh-solid STL/3MF/OBJ export requested a B-rep-based mesh tolerance, but only an input triangle mesh is available.',
   },
   'export.brep.invalid': {
     hintTemplate:
@@ -171,6 +202,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
   },
+  'export.urdf.inertia-fallback': {
+    hintTemplate:
+      'Mass properties failed for this link, so the URDF inertial is the unit substitute (mass 1 kg, diagonal 1e-3 kg·m², centre of mass at the origin). Repair the solid and export again.',
+    nextAction: { kind: 'fix-arg', field: 'shape' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A URDF link substituted unit inertia because mass properties could not be computed.',
+  },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:
       'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export({ target: \'model\', format: \'srdf\', ... }) or set combinatorial: true.',
@@ -202,6 +241,14 @@ export const EXPORT_CODES = {
     defaultSeverity: 'warn',
     group: 'export',
     description: 'A pin_slot mate was lowered to an SDFormat revolute joint; the slot translation DOF was lost.',
+  },
+  'export.sdf-gazebo.coupling-dropped': {
+    hintTemplate:
+      'SDFormat 1.10 has no <mimic> joint; a coupleMates coupling was not carried, so the driven joint moves freely in the simulator. Enforce the ratio in the simulator controller, or export a format that carries joint couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A coupleMates coupling could not be represented in SDFormat 1.10; the driven joint was emitted as an independent joint.',
   },
   'export.sdf-gazebo.invalid-version': {
     hintTemplate:
@@ -252,6 +299,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A mate kind with no PhysicsJoint equivalent (planar/cylindrical/pin_slot/ball) was found while lowering to a usd-isaac physics stage.',
   },
+  'export.usd.coupling-dropped': {
+    hintTemplate:
+      'This usd-isaac export leaves the driven joint independent; the serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The usd-isaac serializer does not author a backend-specific mimic relation for a coupleMates coupling; the driven mate was emitted as an independent physics joint.',
+  },
   'export.usd.pose-unsolved': {
     hintTemplate:
       'The mate graph could not be solved to per-link world poses, so every link was placed at the stage origin and the simulator will spawn them overlapping. Run solve_mates to find the unsolvable mate, fix the connector geometry, then re-export.',
@@ -282,5 +337,29 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A PLY export received an unknown option key or an out-of-set encoding / normals / colors value; nothing was written.',
+  },
+  'export.geometry-quality.tiny-faces': {
+    hintTemplate:
+      'Snap near-coincident steps/offsets to an exact shared value (or make them >= the threshold), then re-export. qualityGate: "off" skips the gate; tiny_face_area_mm2 changes the threshold.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'snap near-coincident steps or offsets to an exact shared value so no sliver face remains, then re-export' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The export-time geometry-quality gate found BREP faces below tiny_face_area_mm2 (default 0.01 mm²) on a solid body of an STL/STEP/3MF/OBJ/PLY/G-code export. Warning with qualityGate "warn" (default); an error that stops the export with "block".',
+  },
+  'export.geometry-quality.short-edges': {
+    hintTemplate:
+      'Merge or lengthen the reported short edges (snap near-equal dimensions, remove micro-steps), then re-export. qualityGate: "off" skips the gate; short_edge_length_mm changes the threshold.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'snap near-equal dimensions or remove micro-steps so no edge is shorter than the threshold, then re-export' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The export-time geometry-quality gate found BREP edges below short_edge_length_mm (default 0.1 mm) on a solid body of an STL/STEP/3MF/OBJ/PLY/G-code export. Warning with qualityGate "warn" (default); an error that stops the export with "block".',
+  },
+  'export.geometry-quality.skipped': {
+    hintTemplate:
+      "The export geometry-quality gate did not screen this body (not a single solid, a mesh body, or over the face budget). Run verify({ check: 'geometry-quality', feature_id }) on it directly if it must be screened.",
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'geometry-quality' } },
+    defaultSeverity: 'info',
+    group: 'export',
+    description: 'The export-time geometry-quality gate skipped a body: a shell/face/wire or mixed compound, a mesh (lattice) body, a measurement failure, or a body that would exceed the face budget.',
   },
 } as const satisfies Record<`export.${string}`, DiagnosticCodeSpec>;

@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-10",
+  "catalogKit": "industrial-plant",
+  "auditedAssets": [
+    "baghouse-dust-collector",
+    "bucket-elevator",
+    "flare-stack",
+    "palletizer-robot-cell",
+    "vibratory-feeder"
+  ],
+  "beforePreviewSource": "https://kernelcad.com/assets/industrial-plant-{asset-id}.png",
+  "beforeSource": "https://kernelcad.com/assets/industrial-plant-{asset-id}.kcad.ts",
+  "beforeFiles": {
+    "baghouse-dust-collector": {
+      "previewSha256": "b2ff09d5f136b240fe7a1d28a68ac77ba3bb90ed65e7f97f3bdfd03de740901c",
+      "sourceSha256": "0dd19cfbf5d210afe7f047a06476d9a51b2cb3fa2611b81f3b9651c366881663"
+    },
+    "bucket-elevator": {
+      "previewSha256": "159406197519e5160f39cdf91cdb296fec17df1deb607f55f7fce015bf2cb5b5",
+      "sourceSha256": "1823419b094433df04532e33e74ab66d55351c0b206c86008bd8ccc9409fb355"
+    },
+    "flare-stack": {
+      "previewSha256": "4cf55df7c721df1482b5fb6d4646b315d35af7abc835319634ea79638b13729f",
+      "sourceSha256": "7c2cdf65d74072ecbd8bf3501a6e08e8c96e1996ec8f569b2aaed8fe43db08ad"
+    },
+    "palletizer-robot-cell": {
+      "previewSha256": "b73a2974c5eddd59fa69de0a227b5b5dc12fe8104b09f640e26acdd44d3c8c62",
+      "sourceSha256": "7a7a33dd0ecc04f58ddad77029a7ed00a38200c760bdfbc0aaea632437e5eb18"
+    },
+    "vibratory-feeder": {
+      "previewSha256": "99be648b681dc8e298c729416cff69e6121529193f7bd584953269119a418d9f",
+      "sourceSha256": "e05b4a6be99d89bd0d38a88b5e21b99750fbe9edebbe5f969cfa910b129f549f"
+    }
+  },
+  "baghouseAfter": {
+    "sourceSha256": "a54575dda8981eb2aeb208056a1618a5150d81df5f2edd79f1c926f66f65d02d",
+    "previewSha256": "956d0c484d17243faebba04d8590a9e14b75cad46fb7406c755e8f1c5367689f"
+  },
+  "publicBeforeMatchedLocalBefore": true,
+  "note": "All five public asset sources and previews matched the local pre-edit snapshot byte-for-byte. The baghouse source and preview after hashes describe local branch output. Enclosed filter media are fixed material; visible steel and safety-paint controls drive the visible palette."
+}

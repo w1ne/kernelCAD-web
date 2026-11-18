@@ -1,0 +1,16 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-apiary-catalog-pages",
+  "generatedOutput": "/tmp/kernelcad-apiary-catalog-pages",
+  "assetsInIndex": 2390,
+  "kitRows": 50,
+  "kitPagesChecked": 50,
+  "previewCopiesChecked": 50,
+  "sourceHashesChecked": 50,
+  "parameterCountRangeIncludingScale": [
+    3,
+    4
+  ],
+  "hubHasKitAndFinder": true,
+  "failures": [],
+  "passed": true
+}

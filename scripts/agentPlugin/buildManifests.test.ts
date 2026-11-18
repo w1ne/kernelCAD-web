@@ -32,11 +32,20 @@ describe('agent plugin manifests', () => {
 
     it('marketplace plugin sources resolve to the plugin dir and bundled skills exist', () => {
         expect(existsSync(join(root, cfg.pluginDir, 'skills'))).toBe(true);
-        for (const name of ['kernelcad-design-loop', 'kernelcad-cookbooks', 'kernelcad-studio-paint', 'kernelcad-export']) {
+        for (const name of cfg.skills) {
             const skill = readFileSync(join(root, cfg.pluginDir, 'skills', name, 'SKILL.md'), 'utf8');
-            expect(skill).toMatch(new RegExp(`^---\\nname: ${name}\\ndescription: .+\\n---`));
+            expect(skill).toMatch(new RegExp(`^---\\nname: ${name}\\n`));
+            expect(skill).toMatch(/\ndescription: (?:[^\n]+|>-\n(?: {2}[^\n]+\n)+)/);
+            expect(skill).toMatch(/^---\n[\s\S]+?\n---\n/);
         }
         expect(existsSync(join(root, 'skills', 'kernelcad-export', 'SKILL.md'))).toBe(true); // Gemini symlink
+        for (const reference of [
+            'manufacturing-readiness/references/evidence-contract.md',
+            'design-trade-study/references/evidence-contract.md',
+            'design-trade-study/references/scoring-and-sensitivity.md',
+        ]) {
+            expect(existsSync(join(root, cfg.pluginDir, 'skills', reference)), reference).toBe(true);
+        }
     });
 
     it('cursor deeplink encodes the hosted URL', () => {

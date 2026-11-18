@@ -415,6 +415,7 @@ function clampToParamRange(
           message: `animationView: track '${track.param}' key at ${key.atMs}ms has value ${key.value} outside the param's declared range [${min ?? '-inf'}, ${max ?? '+inf'}]; stored value clamped to ${clamped}.`,
           hint: HINT_TEMPLATES['animation.value.clamped'].template,
         });
+        key.authoredValue = key.value;
         key.value = clamped;
       }
     }

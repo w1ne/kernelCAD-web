@@ -1,0 +1,15 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/render_variants.ts
+(node:150932) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+cable-4mm: 812 triangles
+cable-8mm: 812 triangles
+cable-compact-8mm: 812 triangles
+cable-large-8mm: 812 triangles
+cable-high-visibility: 812 triangles
+flange-10mm: 764 triangles
+flange-18mm: 764 triangles
+flange-compact-18mm: 764 triangles
+flange-large-18mm: 764 triangles
+flange-brass: 764 triangles
+Rendered 10 source variants; bore, palette, and triangle-budget checks passed.

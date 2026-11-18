@@ -1,0 +1,8 @@
+ [32m✓[39m tests/integration/catalog/catalogIndex.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 266363[2mms[22m[39m
+     [33m[2m✓[22m[39m every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh [33m 265927[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 19:27:14
+[2m   Duration [22m 275.51s[2m (transform 26.59s, setup 990ms, import 36.69s, tests 460.87s, environment 1ms)[22m
+

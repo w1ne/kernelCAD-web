@@ -34,4 +34,16 @@ lineup.part('flat-washer', flatWasher.translate(13, -row, 0).finish('aluminium-b
 const lockWasher = await lib.part({ family: 'lock-washer', thread: 'M5', detail: 'envelope' });
 lineup.part('lock-washer', lockWasher.translate(39, -row, 0).finish('aluminium-brushed'));
 
+// Center stack, tip on the base (z = 0). ISO 4014 M6×30 carries 18 mm of
+// thread from the tip, so the nut at z = 1.6..6.8 sits fully on that thread.
+// The head washer is on the 12 mm plain shank under the head. Envelope
+// solids: nominal table geometry, not a certified part.
+const partialBolt = await lib.part({ family: 'hex-head-bolt-partial', thread: 'M6', lengthMm: 30, detail: 'envelope' });
+const partialNut = await lib.part({ family: 'hex-nut', thread: 'M6', detail: 'envelope' });
+const partialWasher = await lib.part({ family: 'flat-washer', thread: 'M6', detail: 'envelope' });
+lineup.part('iso-4014-bolt', partialBolt.translate(0, 0, 30).finish('stainless'));
+lineup.part('iso-7089-tail-washer', partialWasher.translate(0, 0, 0).finish('aluminium-brushed'));
+lineup.part('iso-4032-nut', partialNut.translate(0, 0, 1.6).finish('steel'));
+lineup.part('iso-7089-head-washer', partialWasher.translate(0, 0, 28.4).finish('aluminium-brushed'));
+
 return lineup.model();

@@ -1,0 +1,5 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "exitCode": 1,
+  "durationSeconds": 245.1
+}

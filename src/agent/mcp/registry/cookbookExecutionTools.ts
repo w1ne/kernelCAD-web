@@ -14,8 +14,8 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
       description:
         'Use this when you need evaluate_script (and optionally open_in_studio) for an industry / cookbook demo in ONE step — after lookup_cookbook for industry demos, prefer execute_cookbook when you need evaluate+Studio together; empty lookup is not a stop (freehand-author instead). ' +
         'Resolves a cookbook snippet by `id` or BM25 `query` (same ranking as lookup_cookbook), evaluates its body via evaluate_script with bounded vendor timeouts, and returns explicit status with stage resolve|evaluate|open_in_studio. ' +
-        'Pass openInStudio:true to publish the same script via open_in_studio after a green full evaluate (hosted MCP). ' +
-        'dryRun:true is the fast capture-only path — it is NOT evidence the cookbook builds a solid or is safe to publish; finish with dryRun:false (default) before claiming success or opening Studio.',
+        'Pass open_in_studio:true to publish the same script via open_in_studio after a green full evaluate (hosted MCP). ' +
+        'dry_run:true is the fast capture-only path — it is NOT evidence the cookbook builds a solid or is safe to publish; finish with dry_run:false (default) before claiming success or opening Studio.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -28,10 +28,10 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
             description:
               'When id is omitted: natural-language query; BM25 picks the top hit (same as lookup_cookbook).',
           },
-          openInStudio: {
+          open_in_studio: {
             type: 'boolean',
             description:
-              'Default false. When true, after a green full (non-dryRun) evaluate, call open_in_studio on the same script (hosted MCP).',
+              'Default false. When true, after a green full (non-dry_run) evaluate, call open_in_studio on the same script (hosted MCP).',
             default: false,
           },
           kernel: {
@@ -40,10 +40,10 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
             description:
               "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics.",
           },
-          dryRun: {
+          dry_run: {
             type: 'boolean',
             description:
-              'Default false. dryRun:true is NOT evidence the cookbook builds a solid — capture-only checks; do not claim success or open Studio from a dry run alone.',
+              'Default false. dry_run:true is NOT evidence the cookbook builds a solid — capture-only checks; do not claim success or open Studio from a dry run alone.',
             default: false,
           },
         },

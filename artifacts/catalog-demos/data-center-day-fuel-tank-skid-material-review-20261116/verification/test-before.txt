@@ -1,0 +1,20 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts > data-center-infrastructure/day-fuel-tank materials > renders the tank support skid as steel, not engineering polymer
+AssertionError: expected [ 'scale', 'steel', 'polymer' ] to not include 'polymer'
+ ❯ tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts:22:55
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.map((knob) => knob.name)).not.toContain('polym…
+       |                                                       ^
+     23|     expect(asset.params.map((knob) => knob.name)).toContain('skidSteel…
+     24| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  00:28:58
+   Duration  22.57s (transform 17.91s, setup 376ms, import 20.86s, tests 956ms, environment 0ms)
+

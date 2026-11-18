@@ -158,6 +158,9 @@ function enumerateAndRecord(
  * blend surface is curvature-continuous. The construction-time fillet form
  * stays `ChFi3d_Rational` (matches the historical default in this codebase).
  *
+ * `endRadius` tapers each edge's round linearly from `radius` at the edge's
+ * low end to `endRadius` at its high end (see `startsAtLowEnd`).
+ *
  * @throws {Error} If any edge hash is not found on the body.
  * @throws {Error} If the fillet builder fails (IsDone() === false).
  */
@@ -166,6 +169,7 @@ export function filletWithHistory(
   edges: readonly EdgeRefForFilleting[],
   radius: number,
   continuity: FilletContinuity = 'G1',
+  endRadius?: number,
 ): EdgeFeatureHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -189,12 +193,14 @@ export function filletWithHistory(
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(radius, edgeShape);
+      if (endRadius === undefined) builder.Add_2(radius, edgeShape);
+      else if (startsAtLowEnd(oc, edgeShape)) builder.Add_3(radius, endRadius, edgeShape);
+      else builder.Add_3(endRadius, radius, edgeShape);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
       throw new Error(
-        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}, ${edges.length} edges, continuity ${continuity})`,
+        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}${endRadius === undefined ? '' : ` to ${endRadius}`}, ${edges.length} edges, continuity ${continuity})`,
       );
     }
     const resultShape = builder.Shape();
@@ -215,8 +221,65 @@ export function filletWithHistory(
 }
 
 /**
+ * Whether the start of `edge`'s parameter range (the end `Add_3` gives `R1`) is the
+ * edge's low end: the lower coordinate on the axis the edge spans most.
+ * A tapered fillet puts `radius` at the low end and `endRadius` at the high
+ * end, independent of how the kernel happens to orient the edge.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function startsAtLowEnd(oc: any, edge: unknown): boolean {
+  const curve = new oc.BRepAdaptor_Curve_2(edge);
+  const first = curve.Value(curve.FirstParameter());
+  const last = curve.Value(curve.LastParameter());
+  const d = [last.X() - first.X(), last.Y() - first.Y(), last.Z() - first.Z()];
+  for (const handle of [curve, first, last]) handle.delete();
+  const axis = d.reduce((best, v, i) => (Math.abs(v) > Math.abs(d[best]) ? i : best), 0);
+  return d[axis] >= 0;
+}
+
+/**
+ * Second leg of an asymmetric chamfer. `distance` is measured on `face`
+ * (the TopoDS_Face of the body that borders every chamfered edge); the other
+ * leg is `distance2` on the opposite face, or follows from `angleDeg`, the
+ * angle between the bevel and `face`.
+ */
+export interface ChamferLegs {
+  face: unknown;
+  distance2?: number;
+  angleDeg?: number;
+}
+
+/** Hashes of the `edges` that do not border `face`. */
+export function edgesNotOnFace(face: unknown, edges: readonly EdgeRefForFilleting[]): EdgeHash[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const onFace = new Set<EdgeHash>();
+  const explorer = new oc.TopExp_Explorer_2(face, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    for (; explorer.More(); explorer.Next()) {
+      onFace.add(explorer.Current().HashCode(HASH_UPPER).toString(16));
+    }
+  } finally {
+    explorer.delete();
+  }
+  return edges.map((e) => e.hash).filter((hash) => !onFace.has(hash));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addChamferEdge(oc: any, builder: any, distance: number, edgeShape: unknown, legs?: ChamferLegs): void {
+  if (!legs) {
+    builder.Add_2(distance, edgeShape);
+    return;
+  }
+  const face = oc.TopoDS.Face_1(legs.face);
+  if (legs.angleDeg !== undefined) builder.AddDA(distance, (legs.angleDeg * Math.PI) / 180, edgeShape, face);
+  else builder.Add_3(distance, legs.distance2, edgeShape, face);
+}
+
+/**
  * Apply a chamfer of `distance` to the specified edges of `body`, capturing
- * face/edge evolution history from BRepFilletAPI_MakeChamfer.
+ * face/edge evolution history from BRepFilletAPI_MakeChamfer. `legs` makes
+ * the bevel asymmetric (two distances, or distance and angle).
  *
  * @throws {Error} If any edge hash is not found on the body.
  * @throws {Error} If the chamfer builder fails (IsDone() === false).
@@ -225,6 +288,7 @@ export function chamferWithHistory(
   body: OcctBackend,
   edges: readonly EdgeRefForFilleting[],
   distance: number,
+  legs?: ChamferLegs,
 ): EdgeFeatureHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -242,7 +306,7 @@ export function chamferWithHistory(
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(distance, edgeShape);
+      addChamferEdge(oc, builder, distance, edgeShape, legs);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
@@ -398,6 +462,9 @@ function shapeVolume(oc: any, shape: unknown): number {
 function plausibleShellVolume(volume: number, bodyVolume: number, thickness: number): boolean {
   if (!Number.isFinite(volume) || volume <= 0) return false;
   if (thickness > 0 && Number.isFinite(bodyVolume) && volume > bodyVolume * (1 + 1e-6)) return false;
+  // OCCT 8 can report IsDone and hand back the input unchanged when the offset
+  // does not close (7.6 raised or left IsDone false); that is not a shell.
+  if (Number.isFinite(bodyVolume) && Math.abs(volume - bodyVolume) <= bodyVolume * 1e-9) return false;
   return true;
 }
 

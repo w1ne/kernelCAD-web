@@ -5,7 +5,8 @@
 // Types for the dfmSpec() top-level API. A dfmSpec feature is a capture-only
 // (virtual) node that declares printability gates (minimum wall thickness,
 // inter-part clearance, internal-channel topology, and — with
-// `process: 'fdm'` — the FDM printability check) for the model. It never
+// `process: 'fdm'` the FDM printability check, with `process: 'moulding'`
+// the injection-moulding check) for the model. It never
 // produces OCCT geometry — the check engine reads the last dfmSpec record
 // from the feature graph at evaluate time and enforces the declared gates.
 
@@ -36,6 +37,18 @@ export const FDM_DEFAULTS = {
   maxBridgeMm: 10,
 } as const;
 
+/** Defaults for the injection-moulding check (process: 'moulding'). 1° draft
+ *  suits a smooth (polished / light texture) finish; 1–4 mm is the usual
+ *  nominal-wall band for unfilled thermoplastics (ABS, PC, PP); 0.5 mm is the
+ *  common minimum inside radius at the base of a rib or wall. */
+export const MOULDING_DEFAULTS = {
+  pullDirection: [0, 0, 1] as [number, number, number],
+  minDraftDeg: 1.0,
+  minWallMm: 1.0,
+  maxWallMm: 4.0,
+  minRadiusMm: 0.5,
+} as const;
+
 export interface DfmSpec {
   /** mm — minimum printed wall thickness, per non-excluded part. Omit to skip. */
   minWall?: number;
@@ -50,10 +63,12 @@ export interface DfmSpec {
    *  checks. Supports a trailing-'*' glob per entry ('servo-*'). */
   exclude?: readonly string[];
   channels?: readonly DfmChannelSpec[];
-  /** Printing process whose design rules apply. `'fdm'` runs the FDM
-   *  printability check (overhangs, bridges, nozzle-relative walls and
-   *  features, bed contact, bed fit, orientation ranking). */
-  process?: 'fdm';
+  /** Process whose design rules apply. `'fdm'` runs the FDM printability
+   *  check (overhangs, bridges, nozzle-relative walls and features, bed
+   *  contact, bed fit, orientation ranking). `'moulding'` runs the
+   *  injection-moulding check (draft, undercuts, thin and thick walls, sharp
+   *  internal corners). */
+  process?: 'fdm' | 'moulding';
   /** process 'fdm': part-local direction pointing UP from the bed while
    *  printing — an axis token or a non-zero vector. Default '+z'. The gcode
    *  export places the part in this orientation before slicing. */
@@ -70,6 +85,32 @@ export interface DfmSpec {
   /** process 'fdm': bundled printer profile for the bed-fit check (same names
    *  as the gcode export's `options.printer`). Default 'generic-fdm'. */
   printer?: string;
+  /** process 'moulding': mould opening (pull) direction — an axis token or a
+   *  non-zero vector. The two mould halves separate along ±this axis, so '+z'
+   *  and '-z' are equivalent. Default '+z'. */
+  pullDirection?: FdmAxisDirection | readonly [number, number, number];
+  /** process 'moulding': minimum draft angle, degrees, for every face whose
+   *  normal is not parallel to the pull direction. Default 1.0. */
+  minDraftDeg?: number;
+  /** process 'moulding': thinnest moulded wall, mm. Default 1.0. */
+  minWallMm?: number;
+  /** process 'moulding': thickest moulded section (inscribed-sphere
+   *  diameter), mm — thicker sections sink and warp. Default 4.0. */
+  maxWallMm?: number;
+  /** process 'moulding': minimum radius of an internal (concave) corner, mm.
+   *  Default 0.5. */
+  minRadiusMm?: number;
+}
+
+/** Normalized injection-moulding settings stored on the record when
+ *  `process: 'moulding'`. */
+export interface DfmMouldingMetadata {
+  /** Unit vector, part-local frame. */
+  pullDirection: [number, number, number];
+  minDraftDeg: number;
+  minWallMm: number;
+  maxWallMm: number;
+  minRadiusMm: number;
 }
 
 /** Normalized FDM settings stored on the record when `process: 'fdm'`. */
@@ -99,6 +140,8 @@ export interface DfmSpecMetadata {
   channels: readonly DfmChannelMetadata[];
   /** Present only when the spec declares `process: 'fdm'`. */
   fdm?: DfmFdmMetadata;
+  /** Present only when the spec declares `process: 'moulding'`. */
+  moulding?: DfmMouldingMetadata;
   virtual: true;
 }
 

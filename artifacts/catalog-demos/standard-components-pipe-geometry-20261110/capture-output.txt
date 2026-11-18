@@ -1,0 +1,4 @@
+Invocation: python3 artifacts/catalog-demos/standard-components-pipe-geometry-20261110/capture_demo.py
+Video command: ffmpeg -f concat -safe 0 -i frames/concat.txt -vf fps=24,scale=1280:720,format=yuv420p -c:v libx264 -preset medium -crf 20 -movflags +faststart
+Settings SHA256: c067ade6f18191d465fec8c0b4cf941ccf43f91b127eb9ee6fd46e436d0053a3
+Output: artifacts/catalog-demos/standard-components-pipe-geometry-20261110/standard-components-pipe-geometry.mp4 (247525 bytes)

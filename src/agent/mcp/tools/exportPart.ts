@@ -21,6 +21,11 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { ExportGeometryQualitySummary, QualityGateMode } from '../../script-runtime/export';
+import type { ExportMeshToleranceOptions, MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
+import { validateExportMeshToleranceOptions } from '../../../kernel/backends/occt/backendMesh';
+import { meshToleranceInvalidDiagnostic, meshToleranceNotMetDiagnostic } from '../../script-runtime/exportDiagnostics';
+import { qualityGateInput } from './exportModel';
 
 export interface ExportPartInput {
   file?: string;
@@ -33,19 +38,29 @@ export interface ExportPartInput {
   output_dir?: string;
   /** Skip the watertight verify gate (default: verify on). */
   no_verify?: boolean;
+  /** Per-part geometry-quality gate: 'warn' (default), 'block' or 'off'. */
+  qualityGate?: QualityGateMode;
+  tiny_face_area_mm2?: number;
+  short_edge_length_mm?: number;
+  /** STL mesh controls applied independently to each selected part. */
+  options?: ExportMeshToleranceOptions;
 }
 
 export interface WrittenPartFile {
   part: string;
   output_path: string;
   byte_count: number;
+  triangle_count: number;
   watertight: boolean;
+  mesh_deviation?: MeshDeviationReport;
 }
 
 export interface ExportPartOutput {
   ok: boolean;
   sceneSummary?: SceneSummary;
   written?: WrittenPartFile[];
+  /** Per-part tiny-face / short-edge screen (qualityGate not 'off'). */
+  geometryQuality?: ExportGeometryQualitySummary;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -89,8 +104,14 @@ async function writeExportedParts(
       part: p.name,
       output_path: finalPath,
       byte_count: p.bytes.byteLength,
+      triangle_count: p.triangleCount,
       watertight: p.report.ok,
+      ...(p.mesh_deviation === undefined ? {} : { mesh_deviation: p.mesh_deviation }),
     });
+    if (p.mesh_deviation !== undefined &&
+        p.mesh_deviation.measured_max_mm > p.mesh_deviation.requested_mm * 1.05) {
+      diagnostics.push(meshToleranceNotMetDiagnostic(p.mesh_deviation, undefined, p.name));
+    }
     if (!input.no_verify && !p.report.ok) {
       diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
     }
@@ -114,6 +135,11 @@ async function writeExportedParts(
 export async function exportPartTool(input: ExportPartInput): Promise<ExportPartOutput> {
   const allParts = input.part === undefined || input.part === 'all';
 
+  const toleranceError = validateExportMeshToleranceOptions(input.options);
+  if (toleranceError !== undefined) {
+    return { ok: false, diagnostics: withNextActions([meshToleranceInvalidDiagnostic(toleranceError)]) };
+  }
+
   const destinationError = validateExportDestinations(input, allParts);
   if (destinationError !== undefined) {
     return { ok: false, error: destinationError };
@@ -133,6 +159,8 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
       fileName: source.fileName,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
       ...(allParts ? {} : { parts: [input.part!] }),
+      qualityGate: qualityGateInput(input),
+      options: input.options,
     });
   } catch (e) {
     return {
@@ -141,9 +169,10 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
     };
   }
 
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
   if (errorDiagnostics.length > 0) {
-    return { ok: false, sceneSummary, diagnostics: withNextActions(result.diagnostics) };
+    return { ok: false, sceneSummary, ...geometryQuality, diagnostics: withNextActions(result.diagnostics) };
   }
 
   const written: WrittenPartFile[] = [];
@@ -154,10 +183,12 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
   }
 
   const gateFailed = !input.no_verify && written.some(w => !w.watertight);
+  const toleranceFailed = diagnostics.some(d => d.code === 'export.mesh.tolerance-not-met');
   return {
-    ok: !gateFailed,
+    ok: !gateFailed && !toleranceFailed,
     sceneSummary,
     written,
+    ...geometryQuality,
     diagnostics: withNextActions(diagnostics),
   };
 }

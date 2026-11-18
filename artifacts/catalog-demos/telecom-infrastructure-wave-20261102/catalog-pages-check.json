@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-telecom-pages",
+  "kitPages": 56,
+  "assetsInIndex": 1239,
+  "pageAndPreviewPairs": 56,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

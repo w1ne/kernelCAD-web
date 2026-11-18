@@ -105,11 +105,24 @@ describe('body.lattice()', () => {
     expect((model.match(/<triangle /g) ?? []).length).toBe(stl.latticeReport!.triangles);
 
     const obj = await runAndExport({ code: CUBE, fileName: 'c.kcad.ts', format: 'obj' });
-    expect((new TextDecoder().decode(obj.bytes).match(/^f /gm) ?? []).length).toBe(stl.latticeReport!.triangles);
+    expect((strFromU8(unzipSync(obj.bytes)['model.obj']!).match(/^f /gm) ?? []).length).toBe(stl.latticeReport!.triangles);
 
     const step = await runAndExport({ code: CUBE, fileName: 'c.kcad.ts', format: 'step' });
     expect(step.bytes.length).toBe(0);
     expect(errors(step.diagnostics)).toContain('export.mesh-body.format-unsupported');
+  }, 120_000);
+
+  it('refuses B-rep mesh tolerance options when exporting a mesh-solid input', async () => {
+    for (const format of ['stl', '3mf', 'obj'] as const) {
+      const result = await runAndExport({
+        code: CUBE,
+        fileName: 'c.kcad.ts',
+        format,
+        options: { format, tolerance: 0.01 } as never,
+      });
+      expect(result.bytes).toHaveLength(0);
+      expect(errors(result.diagnostics)).toContain('export.mesh.tolerance-unavailable');
+    }
   }, 120_000);
 
   it('DFM reports lattice walls thinner than the printable minimum', async () => {

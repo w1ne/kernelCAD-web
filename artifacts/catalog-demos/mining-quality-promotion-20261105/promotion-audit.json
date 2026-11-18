@@ -1,0 +1,34 @@
+{
+  "kit": "mining",
+  "assetsPromoted": 50,
+  "newAssetIds": 0,
+  "indexedRowsWithPreview": 50,
+  "sourceHashesCurrent": 50,
+  "materialControls": 144,
+  "materialControlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 100,
+  "loftProfiledSources": 50,
+  "extraSilhouetteDetails": {
+    "continuousMinerTrackShoes": 20,
+    "continuousMinerCutterPicks": 10,
+    "locomotiveCabWindows": 3
+  },
+  "triangles": {
+    "min": 144,
+    "max": 600,
+    "maxBudget": 1800,
+    "withinDeclaredBudgets": true
+  },
+  "qualityGate": "50/50 pass",
+  "overallQualityBefore": "1754/2390",
+  "overallQualityAfter": "1804/2390 (75.48%)",
+  "thinAssetsAfter": 586,
+  "eslint": "PASS",
+  "catalogIntegration": "PASS",
+  "localPages": true,
+  "failures": [],
+  "passed": true
+}

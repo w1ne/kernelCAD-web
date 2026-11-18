@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-05",
+  "checkedAt": "before retail-store promotion; curl User-Agent request",
+  "checks": [
+    {
+      "url": "https://kernelcad.com/asset-library/",
+      "finalUrl": "https://kernelcad.com/asset-library/",
+      "httpStatus": 200,
+      "pageText": "Model library \u2014 kernelCAD | Model library"
+    },
+    {
+      "url": "https://kernelcad.com/catalog/",
+      "finalUrl": "https://kernelcad.com/catalog/",
+      "httpStatus": 404,
+      "pageText": "Page not found \u2014 kernelCAD | Page not found"
+    },
+    {
+      "url": "https://kernelcad.com/docs/parametrize",
+      "finalUrl": "https://kernelcad.com/docs/parametrize",
+      "httpStatus": 200,
+      "pageText": "Parametrize \u2014 kernelCAD | Parametrize"
+    }
+  ],
+  "scope": "No deployment performed."
+}

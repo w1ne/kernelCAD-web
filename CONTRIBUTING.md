@@ -43,7 +43,20 @@ verification command is:
 npm run test:release-hygiene
 ```
 
+npm Trusted Publishing (OIDC): the `kernelcad` package on npmjs.com must list
+this repository and `.github/workflows/release-archive.yml` as a trusted
+publisher. Without it, `npm publish` fails with E404 on PUT (seen on the
+v0.17.4 run) while archives still succeed, leaving the registry stuck on an
+older version (for example 0.15.0) so `npx kernelcad` lacks `.finish`.
+
 ## Trademark
 
 The MIT license covers the code only. Use of the kernelCAD name and logo is
 governed by [TRADEMARKS.md](TRADEMARKS.md).
+
+## Implementation documentation
+
+Use GitHub issues for unfinished implementation work and PRs/tests for shipped
+behavior. Do not add one-off `docs/plans/`, `docs/specs/`, `docs/superpowers/`
+plans, or dated design Markdown. Update existing user-facing guides, API contracts,
+and runnable examples when behavior changes. Retired designs remain in Git history.

@@ -1,0 +1,50 @@
+{
+  "scope": "Local SDK validation replay; not deployed/slicer/hardware acceptance",
+  "invocation": "node --import tsx docs/demos/3mf-resource-ids/run.ts",
+  "settings": {
+    "format": "3mf",
+    "printUnit": "mm",
+    "arrange": "none",
+    "slicer": "generic"
+  },
+  "generatedAt": "2026-11-02T21:59:26.956Z",
+  "nodeVersion": "v24.22.1",
+  "exporterSha256": "5832c705ab4fc2e511e59d91dad71428472f87fb8402f07636af24f0271bf0c0",
+  "fixture": {
+    "kind": "generic injected watertight cube",
+    "dimensionsMm": [
+      10,
+      10,
+      10
+    ],
+    "vertices": 8,
+    "triangles": 12
+  },
+  "resourceIds": [
+    2,
+    1
+  ],
+  "objectId": 1,
+  "materialId": 2,
+  "objectMaterialId": 2,
+  "materialIndex": 0,
+  "buildObjectId": 1,
+  "displayColor": "#FF0000FF",
+  "checks": {
+    "resourceIdsUnique": true,
+    "positiveIds": true,
+    "materialReferenceResolves": true,
+    "buildReferenceResolves": true,
+    "verticesUnchanged": true,
+    "trianglesUnchanged": true,
+    "closedConsistentEdges": true,
+    "unitsUnchanged": true,
+    "colorUnchanged": true
+  },
+  "edgeCount": 18,
+  "archiveBytes": 1243,
+  "archiveSha256": "0a74710c565b0fb9fb2b9625253a3633913a8d45ddd7acb134395254e4a1174c",
+  "acceptedInSlicer": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

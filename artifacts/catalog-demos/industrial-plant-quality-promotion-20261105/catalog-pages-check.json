@@ -1,0 +1,8 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-quality-pages",
+  "kitPages": 60,
+  "pageAndPreviewPairs": 60,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

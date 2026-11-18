@@ -1,0 +1,7 @@
+Measured before source edits on 2026-11-05:
+
+1296/2390 assets pass (22 rich kits, 22 thin kits)
+1094 thin assets = 46% of the catalog
+
+Hydroponics was 0/52 and all 52 assets were thin. The promotion adds 52
+passing existing sources, for a net count change of zero.

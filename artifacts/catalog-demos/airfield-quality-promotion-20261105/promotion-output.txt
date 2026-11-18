@@ -1,0 +1,3 @@
+Applied: 40 airfield assets, 142 material controls
+Cab glazing added: 8 cabs with three panes each
+New geometry: cab glazing, ARFF equipment doors and roof ladder, pitched hangar roof, tapered tower shaft, terminal gate glazing

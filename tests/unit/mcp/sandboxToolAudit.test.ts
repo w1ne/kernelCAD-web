@@ -199,7 +199,7 @@ describe('MCP sandbox audit — enforcement through callMcpTool', () => {
     const exportDef = sandboxToolDefinition(TOOLS.find(t => t.name === 'export')!);
     expect(exportDef.description).toContain('SANDBOX MODE: path arguments (file, output_path, output_dir)');
     const fetchDef = sandboxToolDefinition(TOOLS.find(t => t.name === 'fetch_part')!);
-    expect(fetchDef.description).toMatch(/network URLs in partsBaseUrl, model\.url are refused/);
+    expect(fetchDef.description).toMatch(/network URLs in parts_base_url, model\.url are refused/);
     expect(sandboxToolDefinition(TOOLS.find(t => t.name === 'send_to_printer')!).description).toContain('unavailable in this session');
   });
 });

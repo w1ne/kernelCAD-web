@@ -1,0 +1,23 @@
+{
+  "programs": [],
+  "stream_groups": [],
+  "streams": [
+    {
+      "codec_name": "h264",
+      "width": 720,
+      "height": 640,
+      "pix_fmt": "yuv420p",
+      "avg_frame_rate": "24/1"
+    }
+  ],
+  "format": {
+    "duration": "12.000000",
+    "size": "64412"
+  },
+  "visual_review": {
+    "before_frame": "The two yellow warning posts are visibly suspended above and outside the pit wall.",
+    "after_frame": "Both posts meet the wall top on visible base plates; the pit, breaker arm, hammer, and HPU remain clear.",
+    "captions_readable": true,
+    "reviewed_by": "visual inspection of extracted MP4 frames"
+  }
+}

@@ -47,6 +47,11 @@ export interface BrepClosest {
  * `brepExtremaDistance` plus the first pair of closest points, for gates
  * that report where the two shapes come nearest.
  */
+/** Closest-point pair, resolving the installed OCCT module once. */
+export function brepExtremaClosestBetween(shapeA: unknown, shapeB: unknown): BrepClosest | undefined {
+  return brepExtremaClosest(getOC(), shapeA, shapeB);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function brepExtremaClosest(oc: any, shapeA: any, shapeB: any): BrepClosest | undefined {
   const dist = new oc.BRepExtrema_DistShapeShape_1();

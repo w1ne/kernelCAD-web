@@ -1,0 +1,210 @@
+{
+  "kit": "photo-video-studio",
+  "expectedAssets": 40,
+  "foundAssets": 40,
+  "checkedPages": 40,
+  "missing": [],
+  "allPagesAndPreviewsPresent": true,
+  "pages": [
+    {
+      "id": "action-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/action-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/action-camera/preview.png"
+    },
+    {
+      "id": "backdrop-frame",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/backdrop-frame/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/backdrop-frame/preview.png"
+    },
+    {
+      "id": "beauty-dish-light",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/beauty-dish-light/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/beauty-dish-light/preview.png"
+    },
+    {
+      "id": "c-stand",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/c-stand/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/c-stand/preview.png"
+    },
+    {
+      "id": "camcorder",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camcorder/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camcorder/preview.png"
+    },
+    {
+      "id": "camera-backpack",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-backpack/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-backpack/preview.png"
+    },
+    {
+      "id": "camera-cage",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-cage/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-cage/preview.png"
+    },
+    {
+      "id": "camera-roller-case",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-roller-case/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-roller-case/preview.png"
+    },
+    {
+      "id": "camera-slider",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-slider/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-slider/preview.png"
+    },
+    {
+      "id": "camera-tripod",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-tripod/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/camera-tripod/preview.png"
+    },
+    {
+      "id": "cinema-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/cinema-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/cinema-camera/preview.png"
+    },
+    {
+      "id": "clapperboard",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/clapperboard/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/clapperboard/preview.png"
+    },
+    {
+      "id": "digital-slr-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/digital-slr-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/digital-slr-camera/preview.png"
+    },
+    {
+      "id": "disposable-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/disposable-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/disposable-camera/preview.png"
+    },
+    {
+      "id": "film-rangefinder-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/film-rangefinder-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/film-rangefinder-camera/preview.png"
+    },
+    {
+      "id": "follow-focus-unit",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/follow-focus-unit/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/follow-focus-unit/preview.png"
+    },
+    {
+      "id": "gimbal-stabilizer",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/gimbal-stabilizer/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/gimbal-stabilizer/preview.png"
+    },
+    {
+      "id": "instant-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/instant-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/instant-camera/preview.png"
+    },
+    {
+      "id": "lantern-softbox",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lantern-softbox/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lantern-softbox/preview.png"
+    },
+    {
+      "id": "led-panel-light",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/led-panel-light/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/led-panel-light/preview.png"
+    },
+    {
+      "id": "lens-filter-set",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lens-filter-set/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lens-filter-set/preview.png"
+    },
+    {
+      "id": "lens-hood",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lens-hood/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/lens-hood/preview.png"
+    },
+    {
+      "id": "light-stand",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/light-stand/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/light-stand/preview.png"
+    },
+    {
+      "id": "macro-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/macro-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/macro-lens/preview.png"
+    },
+    {
+      "id": "mirrorless-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/mirrorless-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/mirrorless-camera/preview.png"
+    },
+    {
+      "id": "monopod",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/monopod/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/monopod/preview.png"
+    },
+    {
+      "id": "pancake-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/pancake-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/pancake-lens/preview.png"
+    },
+    {
+      "id": "pocket-digital-camera",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/pocket-digital-camera/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/pocket-digital-camera/preview.png"
+    },
+    {
+      "id": "portrait-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/portrait-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/portrait-lens/preview.png"
+    },
+    {
+      "id": "reflector-board",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/reflector-board/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/reflector-board/preview.png"
+    },
+    {
+      "id": "ring-light",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/ring-light/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/ring-light/preview.png"
+    },
+    {
+      "id": "shoulder-rig",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/shoulder-rig/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/shoulder-rig/preview.png"
+    },
+    {
+      "id": "softbox-light",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/softbox-light/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/softbox-light/preview.png"
+    },
+    {
+      "id": "speedlight-flash",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/speedlight-flash/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/speedlight-flash/preview.png"
+    },
+    {
+      "id": "telephoto-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/telephoto-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/telephoto-lens/preview.png"
+    },
+    {
+      "id": "umbrella-reflector",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/umbrella-reflector/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/umbrella-reflector/preview.png"
+    },
+    {
+      "id": "video-tripod",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/video-tripod/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/video-tripod/preview.png"
+    },
+    {
+      "id": "webcam",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/webcam/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/webcam/preview.png"
+    },
+    {
+      "id": "wide-angle-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/wide-angle-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/wide-angle-lens/preview.png"
+    },
+    {
+      "id": "zoom-lens",
+      "page": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/zoom-lens/index.html",
+      "preview": "/tmp/kernelcad-photo-video-studio-pages/catalog/photo-video-studio/zoom-lens/preview.png"
+    }
+  ]
+}

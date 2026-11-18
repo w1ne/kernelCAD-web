@@ -1,0 +1,4 @@
+
+  2390/2390 assets pass (49 rich kits, 0 thin kits)
+kit-exit=0
+full-exit=0

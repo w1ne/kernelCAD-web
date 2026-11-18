@@ -1,0 +1,502 @@
+{
+  "date": "2026-11-02",
+  "command": "npx vitest run tests/integration/catalog/",
+  "integrationSuite": "passed",
+  "testFilesPassed": 4,
+  "testsPassed": 15,
+  "auditedCatalogAssets": 583,
+  "total": 40,
+  "passed": 40,
+  "allAssetsBuildExportInsideBudgetOnOneMaterial": true,
+  "studioKnobContract": "passed for every committed catalog asset",
+  "sportsKnobs": [
+    "scale",
+    "color"
+  ],
+  "sportsMinTriangleCount": 12,
+  "sportsMaxTriangleCount": 386,
+  "sportsTriangleBudget": 1800,
+  "deployedBehavior": "not verified; branch is not deployed",
+  "assets": [
+    {
+      "id": "american-football",
+      "title": "American football",
+      "triangles": 30,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "badminton-racket",
+      "title": "Badminton racket",
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "barbell",
+      "title": "Barbell",
+      "triangles": 188,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "baseball-bat",
+      "title": "Baseball bat",
+      "triangles": 176,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "baseball-glove",
+      "title": "Baseball glove",
+      "triangles": 386,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "baseball",
+      "title": "Baseball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "basketball-hoop",
+      "title": "Basketball hoop",
+      "triangles": 176,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "basketball",
+      "title": "Basketball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "batting-helmet",
+      "title": "Batting helmet",
+      "triangles": 68,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "cricket-bat",
+      "title": "Cricket bat",
+      "triangles": 112,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "cricket-wicket",
+      "title": "Cricket wicket",
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "dumbbell",
+      "title": "Dumbbell",
+      "triangles": 88,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "exercise-ball",
+      "title": "Exercise ball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "foam-roller",
+      "title": "Foam roller",
+      "triangles": 44,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "golf-bag",
+      "title": "Golf bag",
+      "triangles": 276,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "golf-club",
+      "title": "Golf club",
+      "triangles": 100,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "gym-bench",
+      "title": "Gym bench",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "hockey-puck",
+      "title": "Hockey puck",
+      "triangles": 44,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "hockey-stick",
+      "title": "Field hockey stick",
+      "triangles": 36,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "inline-skate",
+      "title": "Inline skate",
+      "triangles": 270,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "jump-rope",
+      "title": "Jump rope",
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "kettlebell",
+      "title": "Kettlebell",
+      "triangles": 290,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "lacrosse-stick",
+      "title": "Lacrosse stick",
+      "triangles": 90,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "shuttlecock",
+      "title": "Shuttlecock",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "skateboard",
+      "title": "Skateboard",
+      "triangles": 348,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "soccer-ball",
+      "title": "Soccer ball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "soccer-goal",
+      "title": "Soccer goal",
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "sports-water-bottle",
+      "title": "Sports water bottle",
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "starting-block",
+      "title": "Track starting block",
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "tennis-ball",
+      "title": "Tennis ball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "tennis-net",
+      "title": "Tennis net",
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "tennis-racket",
+      "title": "Tennis racket",
+      "triangles": 288,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "track-hurdle",
+      "title": "Track hurdle",
+      "triangles": 124,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "treadmill",
+      "title": "Treadmill",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "trophy-cup",
+      "title": "Trophy cup",
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "volleyball-net",
+      "title": "Volleyball net",
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "volleyball",
+      "title": "Volleyball",
+      "triangles": 78,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "weight-plate",
+      "title": "Weight plate",
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "yoga-block",
+      "title": "Yoga block",
+      "triangles": 12,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    },
+    {
+      "id": "yoga-mat",
+      "title": "Yoga mat",
+      "triangles": 56,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ]
+    }
+  ]
+}

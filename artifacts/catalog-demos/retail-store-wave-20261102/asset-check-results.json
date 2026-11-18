@@ -1,0 +1,934 @@
+{
+  "kit": "retail-store",
+  "added": 48,
+  "catalogTotal": 1183,
+  "passed": 48,
+  "total": 48,
+  "triangleRange": [
+    80,
+    708
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 130.01
+  },
+  "assets": [
+    {
+      "id": "aisle-sign",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.76,
+        1.005,
+        0.09
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "assisted-checkout-till",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.5,
+        0.53,
+        0.35
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "bakery-display-case",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.54,
+        1.5,
+        0.68
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "barcode-scanner",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.31,
+        0.176,
+        0.24
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "bottle-return-kiosk",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.92,
+        1.31,
+        0.827
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "bulk-food-bin",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.72,
+        1.07,
+        0.802
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "cash-drawer",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 80,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.45,
+        0.16,
+        0.482
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "checkout-bagging-stand",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.85,
+        0.865,
+        0.62
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "checkout-conveyor",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.88,
+        0.84,
+        0.62
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "checkout-counter",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        2.11,
+        0.548,
+        0.843
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "checkout-divider",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.262,
+        0.09,
+        0.076
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "chest-freezer",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.48,
+        0.78,
+        0.767
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "clothing-rail",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.62,
+        1.55,
+        0.452
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "customer-service-desk",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.95,
+        1.71,
+        0.951
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "deli-service-case",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.76,
+        1.59,
+        0.75
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "entry-security-gate",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.35,
+        0.96,
+        0.286
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "flatbed-stock-trolley",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 448,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.1,
+        1.127,
+        0.715
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "floor-display-stand",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.68,
+        1.554,
+        0.62
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "gondola-shelf",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.8,
+        2,
+        1.06
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "handbasket",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.5,
+        0.623,
+        0.36
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "hanging-wayfinding-sign",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 124,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.64,
+        1.118,
+        0.1335
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "impulse-merchandiser",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.44,
+        1.724,
+        0.39
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "magazine-rack",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.738,
+        1.42,
+        0.474
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "pallet-display",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.2,
+        1.708,
+        1
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "parcel-locker-bank",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 708,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.61,
+        2.64,
+        0.265
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "payment-terminal",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.21,
+        0.1925,
+        0.19
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "price-check-scale",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.38,
+        0.5225,
+        0.34
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "produce-crate-stack",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.26,
+        1.398,
+        1.059
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "produce-display-table",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.9,
+        1.41,
+        0.931
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "queue-barrier",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 212,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.28,
+        1,
+        0.28
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "queue-stanchion",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.35,
+        0.988,
+        0.35
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "receipt-printer",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 80,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.255,
+        0.182,
+        0.2495
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "recycling-station",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.21,
+        0.895,
+        0.5
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "refrigerated-display-case",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.88,
+        1.845,
+        0.915
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "returns-drop-bin",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.72,
+        0.92,
+        0.644
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "roll-cage-trolley",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 380,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.9,
+        1.54,
+        0.888
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "self-checkout-kiosk",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.605,
+        1.05,
+        0.555
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "shelf-endcap",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.92,
+        2.13,
+        0.625
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "shopping-bag-dispenser",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.52,
+        0.78,
+        0.299
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "shopping-basket",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.6,
+        0.63,
+        0.43
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "shopping-cart",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 356,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.84,
+        1.08,
+        0.67
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "stock-hand-truck",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.56,
+        1.127,
+        0.455
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "stock-ladder",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.72,
+        0.92,
+        0.545
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "trolley-corral",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 196,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.8,
+        0.692,
+        0.695
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "upright-drink-cooler",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        0.78,
+        2,
+        0.885
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "wall-shelf-unit",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.42,
+        2.24,
+        0.515
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "wire-grid-display",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.2,
+        1.756,
+        0.5
+      ],
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "id": "wooden-pallet",
+      "sourceSha256Matches": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "triangles": 212,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.2,
+        0.184,
+        0.95
+      ],
+      "passed": true,
+      "reasons": []
+    }
+  ]
+}

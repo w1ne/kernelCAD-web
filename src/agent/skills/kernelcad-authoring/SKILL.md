@@ -44,7 +44,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | Intent words | API | Cookbook id |
 |---|---|---|
 | bolt hole, clearance hole, M3–M8 | `body.holes(face, { positions: [{ u, v }], diameter, depth: 'through' })`; ISO 273 clearance M3 3.4 · M4 4.5 · M5 5.5 · M6 6.6 · M8 9 | clearance-hole-through-plate |
-| thread, tapped, tap drill, M-size into the part | `body.threadedHole(face, { u, v, spec: 'M5', depth })` (`modeled: true` = real thread) or `body.hole(face, { diameter: <nominal>, depth, thread: { pitch } })`; coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
+| thread, tapped, tap drill, M-size into the part | `body.threadedHole(face, { u, v, spec: 'M5', depth })` (`modeled: true` = real thread) or `body.hole(face, { diameter: <nominal>, depth, thread: true })` (12 → M12×1.75); an explicit `thread: { pitch }` still works; coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
 | external thread, threaded rod, bolt, jar neck | `threadedRod({ spec: 'M6', length })` (+ union a head); `isoThread(spec)` gives pitch / tap drill | iso-metric-bolt-and-nut |
 | counterbore, socket head flush | `body.hole(face, { diameter, depth, counterbore: { diameter, depth } })` (M3 Ø6.5×3.4, M4 Ø8×4.4, M5 Ø10×5.4, M6 Ø11×6.4) | drawing-hole-and-gdt-callouts |
 | countersink, flat head flush | `body.hole(face, { diameter, depth, countersink: { diameter, angleDeg: 90 } })` | countersunk-flat-head-screw |
@@ -57,7 +57,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | pocket, recess | blind `cutout` or blind `hole` (`depth: n`) | blind-pocket-from-top |
 | enclosure, box, case, hollow, wall thickness | `.shell(wall, { face: 'top' })` on the outer body, or subtract the inner box; lid = second part | enclosure-lid-with-screw-bosses |
 | standoffs, bosses, PCB / Raspberry Pi mount | union `cylinder` bosses on the floor, then `holes(..., { thread })` or insert pilots through them | enclosure-lid-with-screw-bosses |
-| gear, involute, module, pinion | `spurGear({ module, teeth, faceWidth, bore, backlash })`, `ringGear`; centre distance m(z1+z2)/2 | involute-spur-gear-pair |
+| gear, involute, module, pinion | `spurGear({ module, teeth, faceWidth, bore, backlash })`, `spurGearPair`, `ringGear`; centre distance m(z1+z2)/2 | involute-spur-gear-pair |
 | sheet metal, bend, flange, flat pattern | `sheetMetal(profile, { thickness, kFactor }).bend({ atX }, angle, radius)` — lines in blank coordinates, the shorter side folds, chain bends for U / Z; drill the blank before bending; MCP `flatten_pattern` | sheet-metal-l-bracket-bend |
 | fit, clearance, tolerance, printer | clearance param (per side: press 0.05 · snap 0.15 · slip 0.2 · running 0.3) + `dfmSpec({ process: 'fdm', printer, minClearance })` | fdm-fit-clearance-by-fit-type |
 | hinge, pivot, rotating joint | two `assembly().part`s, axis `connector`s, `mate(name, a, b, 'revolute', { limitsDeg })` | clamshell-hinge-two-part-assembly |

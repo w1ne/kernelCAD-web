@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280, initial-scale=1">
+<title>kernelCAD office asset wave</title>
+<style>
+:root{color-scheme:dark;--bg:#111923;--panel:#1a2632;--line:#304455;--text:#edf2f3;--muted:#a6b5be;--accent:#8ed3c4;--warm:#e0b677}
+*{box-sizing:border-box}html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:var(--bg);color:var(--text);font:16px/1.35 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.slide{display:none;width:100%;height:100%;position:relative;padding:28px 34px 52px}.slide.active{display:flex;flex-direction:column}h1,h2,p{margin:0}h1{font-size:34px;line-height:1.04;letter-spacing:-.035em}h1 em{font-style:normal;color:var(--accent)}.eyebrow{color:var(--warm);font-size:12px;font-weight:750;letter-spacing:.15em;margin-bottom:10px}footer{position:absolute;left:34px;right:34px;bottom:16px;border-top:1px solid var(--line);padding-top:9px;color:var(--muted);font-size:10px;letter-spacing:.11em;font-weight:650}
+.hero{display:none;grid-template-columns:1.1fr .9fr;align-items:center;gap:24px;padding-bottom:60px}.hero.active{display:grid}.hero-copy h1{font-size:66px;margin:4px 0 18px}.subtitle{max-width:560px;color:#c8d3d8;font-size:20px}.subtitle code{color:var(--accent);font-size:.86em}.chips{display:flex;gap:8px;margin:24px 0 0;flex-wrap:wrap}.chips span{border:1px solid #456171;background:#192a34;padding:7px 11px;border-radius:999px;color:#d6e4e6;font-size:12px}.hero-note{margin-top:25px;color:var(--muted);font-size:13px}.hero-objects{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}.hero-objects figure{margin:0;background:#edf2f5;border-radius:12px;overflow:hidden;text-align:center;color:#26343e;font-weight:650;font-size:13px}.hero-objects figure:first-child{grid-column:1 / -1;width:58%;justify-self:center}.hero-objects img{display:block;width:100%;height:178px;object-fit:contain}.hero-objects figure:first-child img{height:202px}.hero-objects figcaption{padding:0 8px 10px}
+.workflow header{display:flex;align-items:end;justify-content:space-between;margin:4px 0 22px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1}.steps article{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px 14px}.steps b{color:var(--warm);font-size:13px;letter-spacing:.12em}.steps h2{font-size:21px;margin:8px 0}.steps code{display:block;min-height:34px;color:var(--accent);font-size:11px;overflow-wrap:anywhere}.steps p{color:#bdc9ce;font-size:13px;margin-top:13px}.steps p strong{color:#fff;font-size:16px}.evidence{display:flex;justify-content:space-between;gap:10px;margin:16px 0 0;padding:12px 14px;background:#182730;border:1px solid #355062;border-radius:9px;color:#cbd6da;font-size:11px}.evidence b{color:var(--accent);margin-right:4px}
+.gallery{padding-top:23px}.gallery header{height:64px;display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.gallery header h1{font-size:31px}.counter{color:var(--warm);font-weight:700;font-size:14px}.grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);gap:10px;flex:1;min-height:0}.asset-card{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden;display:flex;flex-direction:column}.preview{background:#edf2f5;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}.preview img{width:100%;height:100%;object-fit:contain}.asset-copy{height:43px;display:flex;justify-content:center;flex-direction:column;padding:4px 9px;gap:1px}.asset-copy strong{font-size:12px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.asset-copy span{font-size:9px;color:var(--muted)}
+</style></head><body><section class="slide hero active" data-slide="0">
+    <div class="hero-copy"><p class="eyebrow">KERNELCAD · ORIGINAL PARAMETRIC CATALOG</p><h1>40 new<br><em>office assets</em></h1>
+      <p class="subtitle">Desk supplies, document handling and workstation accessories, authored as editable <code>.kcad.ts</code> models.</p>
+      <div class="chips"><span>CC0 1.0</span><span>millimetres · Z up</span><span>format + colour knobs</span></div>
+      <p class="hero-note">Local catalog build from original kernelCAD source. No imported store meshes.</p></div>
+    <div class="hero-objects"><figure><img class="" src="/preview/calculator.png" alt="Desktop calculator preview"><figcaption>Desktop calculator</figcaption></figure><figure><img class="" src="/preview/letter-tray.png" alt="Letter tray preview"><figcaption>Letter tray</figcaption></figure><figure><img class="" src="/preview/pencil-cup.png" alt="Pencil cup preview"><figcaption>Pencil cup</figcaption></figure></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section>
+<section class="slide workflow" data-slide="1">
+    <header><p class="eyebrow">SOURCE → CHECK → PREVIEW</p><h1>One kit, 40 editable sources</h1></header>
+    <div class="steps">
+      <article><b>01</b><h2>Author</h2><code>catalog/kits/office/*.kcad.ts</code><p>Each model has CC0 metadata, labelled knobs and a low-poly triangle budget.</p></article>
+      <article><b>02</b><h2>Check</h2><code>checkCatalogAsset.ts</code><p><strong>40 / 40 passed</strong><br>Each stands at z = 0 with one material.</p></article>
+      <article><b>03</b><h2>Build</h2><code>npm run catalog:build</code><p><strong>413 assets</strong><br>12 kits in the generated index.</p></article>
+      <article><b>04</b><h2>Preview + gate</h2><code>npm run catalog:previews</code><p><strong>40 office previews</strong><br>Catalog integration gate: 2 / 2 tests passed.</p></article>
+    </div>
+    <div class="evidence"><span><b>Replay</b> generated local PNGs</span><span><b>Simulation</b> not run</span><span><b>Deployment</b> not verified; PR branch only</span><span><b>Hardware</b> not applicable</span></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section>
+<section class="slide gallery" data-slide="2">
+    <header><div><p class="eyebrow">OFFICE KIT · ORIGINAL PARAMETRIC MODELS</p><h1>01–10 <em>of 40</em></h1></div><span class="counter">01 / 04</span></header>
+    <div class="grid">
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/archive-box.png" alt="Archive box preview"></div>
+    <div class="asset-copy"><strong>Archive box</strong><span>prop · 60 tris · 01</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/business-card-holder.png" alt="Business card holder preview"></div>
+    <div class="asset-copy"><strong>Business card holder</strong><span>item · 60 tris · 02</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/calculator.png" alt="Desktop calculator preview"></div>
+    <div class="asset-copy"><strong>Desktop calculator</strong><span>item · 156 tris · 03</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/clipboard.png" alt="Clipboard preview"></div>
+    <div class="asset-copy"><strong>Clipboard</strong><span>item · 92 tris · 04</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/desk-calendar.png" alt="Desk calendar preview"></div>
+    <div class="asset-copy"><strong>Desk calendar</strong><span>item · 120 tris · 05</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/desk-organizer.png" alt="Desk organizer preview"></div>
+    <div class="asset-copy"><strong>Desk organizer</strong><span>item · 84 tris · 06</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/dry-erase-board.png" alt="Dry-erase board preview"></div>
+    <div class="asset-copy"><strong>Dry-erase board</strong><span>prop · 144 tris · 07</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/envelope-stack.png" alt="Envelope stack preview"></div>
+    <div class="asset-copy"><strong>Envelope stack</strong><span>item · 60 tris · 08</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/file-folder.png" alt="File folder preview"></div>
+    <div class="asset-copy"><strong>File folder</strong><span>item · 60 tris · 09</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/footrest.png" alt="Office footrest preview"></div>
+    <div class="asset-copy"><strong>Office footrest</strong><span>prop · 60 tris · 10</span></div>
+  </article></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section>
+<section class="slide gallery" data-slide="3">
+    <header><div><p class="eyebrow">OFFICE KIT · ORIGINAL PARAMETRIC MODELS</p><h1>11–20 <em>of 40</em></h1></div><span class="counter">02 / 04</span></header>
+    <div class="grid">
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/fountain-pen.png" alt="Fountain pen preview"></div>
+    <div class="asset-copy"><strong>Fountain pen</strong><span>item · 156 tris · 11</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/hanging-file-folder.png" alt="Hanging file folder preview"></div>
+    <div class="asset-copy"><strong>Hanging file folder</strong><span>item · 72 tris · 12</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/highlighter.png" alt="Highlighter preview"></div>
+    <div class="asset-copy"><strong>Highlighter</strong><span>item · 60 tris · 13</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/hole-punch.png" alt="Hole punch preview"></div>
+    <div class="asset-copy"><strong>Hole punch</strong><span>item · 136 tris · 14</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/ink-pad.png" alt="Ink pad preview"></div>
+    <div class="asset-copy"><strong>Ink pad</strong><span>item · 48 tris · 15</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/label-maker.png" alt="Desktop label maker preview"></div>
+    <div class="asset-copy"><strong>Desktop label maker</strong><span>prop · 236 tris · 16</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/laminator.png" alt="Desktop laminator preview"></div>
+    <div class="asset-copy"><strong>Desktop laminator</strong><span>prop · 96 tris · 17</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/laptop-stand.png" alt="Laptop stand preview"></div>
+    <div class="asset-copy"><strong>Laptop stand</strong><span>prop · 84 tris · 18</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/letter-sorter.png" alt="Letter sorter preview"></div>
+    <div class="asset-copy"><strong>Letter sorter</strong><span>item · 96 tris · 19</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/letter-tray.png" alt="Letter tray preview"></div>
+    <div class="asset-copy"><strong>Letter tray</strong><span>item · 108 tris · 20</span></div>
+  </article></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section>
+<section class="slide gallery" data-slide="4">
+    <header><div><p class="eyebrow">OFFICE KIT · ORIGINAL PARAMETRIC MODELS</p><h1>21–30 <em>of 40</em></h1></div><span class="counter">03 / 04</span></header>
+    <div class="grid">
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/marker.png" alt="Office marker preview"></div>
+    <div class="asset-copy"><strong>Office marker</strong><span>item · 156 tris · 21</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/mechanical-pencil.png" alt="Mechanical pencil preview"></div>
+    <div class="asset-copy"><strong>Mechanical pencil</strong><span>item · 72 tris · 22</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/memo-pad.png" alt="Memo pad preview"></div>
+    <div class="asset-copy"><strong>Memo pad</strong><span>item · 48 tris · 23</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/monitor-riser.png" alt="Monitor riser preview"></div>
+    <div class="asset-copy"><strong>Monitor riser</strong><span>prop · 60 tris · 24</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/mousepad.png" alt="Mouse pad preview"></div>
+    <div class="asset-copy"><strong>Mouse pad</strong><span>item · 72 tris · 25</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/notebook.png" alt="Notebook preview"></div>
+    <div class="asset-copy"><strong>Notebook</strong><span>item · 72 tris · 26</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/office-pinboard.png" alt="Office pinboard preview"></div>
+    <div class="asset-copy"><strong>Office pinboard</strong><span>prop · 120 tris · 27</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/paper-clip-dish.png" alt="Paper clip dish preview"></div>
+    <div class="asset-copy"><strong>Paper clip dish</strong><span>item · 96 tris · 28</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/paper-cutter.png" alt="Paper cutter preview"></div>
+    <div class="asset-copy"><strong>Paper cutter</strong><span>prop · 84 tris · 29</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/paper-shredder.png" alt="Paper shredder preview"></div>
+    <div class="asset-copy"><strong>Paper shredder</strong><span>prop · 96 tris · 30</span></div>
+  </article></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section>
+<section class="slide gallery" data-slide="5">
+    <header><div><p class="eyebrow">OFFICE KIT · ORIGINAL PARAMETRIC MODELS</p><h1>31–40 <em>of 40</em></h1></div><span class="counter">04 / 04</span></header>
+    <div class="grid">
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/paperweight.png" alt="Paperweight preview"></div>
+    <div class="asset-copy"><strong>Paperweight</strong><span>item · 48 tris · 31</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/pencil-cup.png" alt="Pencil cup preview"></div>
+    <div class="asset-copy"><strong>Pencil cup</strong><span>item · 144 tris · 32</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/ring-binder.png" alt="Ring binder preview"></div>
+    <div class="asset-copy"><strong>Ring binder</strong><span>item · 192 tris · 33</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/rubber-stamp.png" alt="Rubber stamp preview"></div>
+    <div class="asset-copy"><strong>Rubber stamp</strong><span>item · 92 tris · 34</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/ruler.png" alt="Office ruler preview"></div>
+    <div class="asset-copy"><strong>Office ruler</strong><span>item · 156 tris · 35</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/scissors.png" alt="Office scissors preview"></div>
+    <div class="asset-copy"><strong>Office scissors</strong><span>item · 164 tris · 36</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/stapler.png" alt="Stapler preview"></div>
+    <div class="asset-copy"><strong>Stapler</strong><span>item · 92 tris · 37</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/sticky-notes.png" alt="Sticky notes preview"></div>
+    <div class="asset-copy"><strong>Sticky notes</strong><span>item · 36 tris · 38</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/tape-dispenser.png" alt="Tape dispenser preview"></div>
+    <div class="asset-copy"><strong>Tape dispenser</strong><span>item · 124 tris · 39</span></div>
+  </article>
+  <article class="asset-card">
+    <div class="preview"><img class="" src="/preview/wrist-rest.png" alt="Keyboard wrist rest preview"></div>
+    <div class="asset-copy"><strong>Keyboard wrist rest</strong><span>item · 60 tris · 40</span></div>
+  </article></div>
+    <footer>LOCAL PREVIEW REPLAY · PR BRANCH · NO DEPLOYMENT OR HARDWARE ACCEPTANCE</footer>
+  </section><script>window.setSlide=(index)=>{document.querySelectorAll('.slide').forEach((slide,i)=>slide.classList.toggle('active',i===index));document.body.dataset.slide=String(index)};</script></body></html>

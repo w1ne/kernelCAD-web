@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { summarizeMechanism } from './mechanismVerdict';
+import { mergeCoverage, summarizeMechanism } from './mechanismVerdict';
 
 const coverage = { poses: 7, joints: 3, fastened: 2, sweep: true, physics: false, limitsChecked: 2, matesChecked: true, skipped: [] as string[] };
 
@@ -13,6 +13,35 @@ describe('summarizeMechanism', () => {
       'Motion checked: 7 poses across 3 joints (each joint at its limits), animation within limits on 2 joints, all mates satisfied, no collisions, fastened parts stay rigid. Gravity not checked.',
     );
     expect(s.maxLevel).toBe('ok');
+  });
+
+  it('names declared ignore pairs while keeping them in collision coverage', () => {
+    const s = summarizeMechanism({
+      mechanism: 'real',
+      failures: [],
+      coverage: { ...coverage, ignoredPairs: [['base-frame', 'platform']] },
+    });
+    expect(s.checked).toContain('no swept collisions; declared ignore pairs also checked during travel: base-frame ↔ platform');
+    expect(s.statement).toContain('declared ignore pairs also checked during travel: base-frame ↔ platform');
+    expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('retains closed-loop mobility evidence in the structured verdict', () => {
+    const loopMobility = [{
+      assembly: 'scissor', pose: 'rest', loops: ['upper_cross'], coordinates: 4,
+      rank: 3, mobility: 1, gruebler: 1, redundantConstraints: 0, drivenDof: 1,
+      independent: ['lift'],
+    }];
+    const summary = summarizeMechanism({ mechanism: 'real', failures: [], coverage: { ...coverage, loopMobility } });
+
+    expect(summary.loopMobility).toEqual(loopMobility);
+    expect(mergeCoverage([
+      { ...coverage, loopMobility },
+      { ...coverage, loopMobility: [{ ...loopMobility[0], pose: 'max' }] },
+    ])?.loopMobility).toEqual([
+      loopMobility[0],
+      { ...loopMobility[0], pose: 'max' },
+    ]);
   });
 
   it('keeps a real verdict ok but names the joint ranges it could not check', () => {
@@ -34,14 +63,90 @@ describe('summarizeMechanism', () => {
     expect(s.checked).toEqual([]);
   });
 
+  it('describes a zero sweep budget as a forced skip', () => {
+    const budget = {
+      target: 'export-occt', code: 'mechanism.unverified-budget-exceeded', severity: 'warn',
+      message: 'The articulated BREP pose-sweep was SKIPPED: sweepBudget is 0 (forced skip) (2 parts ...)', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [budget], coverage: { ...coverage, sweep: false } });
+    expect(s.skipped).toContain('collision sweep across the joint travel skipped: sweepBudget is 0 (forced skip)');
+    expect(s.statement).toContain('sweepBudget is 0 (forced skip)');
+  });
+
+  it('names declared ignore pairs when a collision sweep is unverified', () => {
+    const budget = {
+      target: 'export-occt', code: 'mechanism.unverified-budget-exceeded', severity: 'warn',
+      message: 'The articulated BREP pose-sweep was SKIPPED: estimated work 600 exceeds the budget 300.', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({
+      mechanism: 'unverified',
+      failures: [budget],
+      coverage: { ...coverage, sweep: false, ignoredPairs: [['base-frame', 'platform']] },
+    });
+    expect(s.statement).toContain('Declared ignore pairs are not certified clear across joint travel: base-frame ↔ platform');
+    expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('names an unsupported closed loop as skipped physics, not a broken mechanism', () => {
+    const unsupported = {
+      target: 'export-occt', code: 'mechanism.physics-unsupported', severity: 'warn',
+      message: 'Physics was not run because the mate graph is a closed loop.', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({
+      mechanism: 'unverified',
+      failures: [unsupported],
+      coverage: { ...coverage, sweep: true, physics: false },
+    });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.statement).toMatch(/closed-loop mate graphs are unsupported/);
+    expect(s.statement).toMatch(/Do not call this mechanism working/);
+    expect(s.failures).toEqual([]);
+  });
+
+  it('names unavailable rest-pose continuity in an unverified summary', () => {
+    const unknown = {
+      target: 'export-occt', code: 'mechanism.joint-mesh-unverified', severity: 'warn',
+      message: "Joint 'select' parent body 'parent': rest-pose continuity could not be measured because both measurement paths failed.",
+      hint: 'h', details: { mateName: 'select', partName: 'parent', side: 'parent' },
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [unknown], coverage });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.skipped).toContain("rest-pose joint continuity could not be measured at 'select' on 'parent'");
+    expect(s.statement).toMatch(/^Motion not checked: rest-pose joint continuity could not be measured at 'select' on 'parent'\. Do not call this mechanism working\.$/);
+    expect(s.failures).toEqual([]);
+  });
+
   it('names the joint of a broken verdict', () => {
     const d = {
       target: 'export-occt', code: 'mechanism.motion-on-fixed-joint', severity: 'error',
       message: "Joint drive 'shoulder-drive' turns joint 'shoulder', but 'shoulder' is fastened.", hint: 'h', mateName: 'shoulder',
     } as CompilerDiagnostic;
-    const s = summarizeMechanism({ mechanism: 'broken', failures: [d] });
-    expect(s.statement).toBe("Mechanism broken: Joint drive 'shoulder-drive' turns joint 'shoulder', but 'shoulder' is fastened.");
+    const s = summarizeMechanism({
+      mechanism: 'broken',
+      failures: [d],
+      coverage: { ...coverage, ignoredPairs: [['base-frame', 'platform']] },
+    });
+    expect(s.statement).toBe("Mechanism broken: Joint drive 'shoulder-drive' turns joint 'shoulder', but 'shoulder' is fastened. Declared ignore pairs: base-frame ↔ platform.");
     expect(s.failures).toEqual([{ code: d.code, reason: d.message, joint: 'shoulder' }]);
     expect(s.maxLevel).toBe('error');
+    expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('keeps closed-loop and joint names in a broken verdict failure', () => {
+    const diagnostic = {
+      target: 'export-occt', code: 'kinematic.loop.lockup', severity: 'error',
+      message: 'The loop cannot close at this pose.', hint: 'Limit the driven range.',
+      details: { loop: 'coupler_rocker', joint: 'rocker_ground' },
+    } as CompilerDiagnostic;
+    const summary = summarizeMechanism({ mechanism: 'broken', failures: [diagnostic], coverage });
+
+    expect(summary.failures).toEqual([{
+      code: diagnostic.code,
+      reason: diagnostic.message,
+      joint: 'rocker_ground',
+      loop: 'coupler_rocker',
+    }]);
   });
 });

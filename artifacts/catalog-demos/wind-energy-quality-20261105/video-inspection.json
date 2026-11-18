@@ -1,0 +1,48 @@
+{
+  "inspectedAt": "2026-11-05T12:37:22.751861+00:00",
+  "video": "wind-energy-quality-demo.mp4",
+  "metadata": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "20.000000",
+      "size": "234693"
+    }
+  },
+  "method": "Decoded one frame at each slide midpoint with ffmpeg and visually inspected all five full-resolution frames.",
+  "frames": [
+    {
+      "file": "frame-01.png",
+      "timeSeconds": 2,
+      "review": "Title, turbine, pad-mount transformer, and maintenance cart are legible and read as colored objects."
+    },
+    {
+      "file": "frame-02.png",
+      "timeSeconds": 6,
+      "review": "Three material controls and their assigned turbine parts are readable beside the default rendered turbine."
+    },
+    {
+      "file": "frame-03.png",
+      "timeSeconds": 10,
+      "review": "Default, weathered, and high-visibility presets visibly change the turbine palette; high-visibility blades are orange."
+    },
+    {
+      "file": "frame-04.png",
+      "timeSeconds": 14,
+      "review": "Eight kit previews are legible; the corrected vertical-axis model shows three separated rotor blades, central shaft, and radial supports."
+    },
+    {
+      "file": "frame-05.png",
+      "timeSeconds": 18,
+      "review": "Quality, preview, lint, integration, local-page totals, and not-deployed caveat are legible."
+    }
+  ],
+  "result": "All five frames reviewed; layout and captions are readable at 1280x720. The clip distinguishes local checks from deployment and physical acceptance."
+}

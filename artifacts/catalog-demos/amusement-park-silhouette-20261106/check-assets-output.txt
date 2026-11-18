@@ -1,0 +1,5 @@
+family-carousel: 3358/3400 tris, size 6.3 x 4.7 x 6.3 m, minUp 0
+tea-cup-spinner-car: 1132/1800 tris, size 2.66 x 0.995 x 2.66 m, minUp 0
+junior-coaster-train-car: 1244/2000 tris, size 2.6 x 1.18 x 1 m, minUp 0
+drop-tower-seat-ring: 2340/2400 tris, size 4.08 x 6.025981 x 4.08 m, minUp 0
+park-maintenance-golf-cart: 1352/1800 tris, size 3.195 x 1.96 x 1.32 m, minUp 0

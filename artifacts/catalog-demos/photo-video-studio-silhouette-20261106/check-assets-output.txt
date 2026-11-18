@@ -1,0 +1,5 @@
+digital-slr-camera: 1732/2400 tris, size 0.146 x 0.111 x 0.166 m, minUp 0
+telephoto-lens: 1414/1800 tris, size 0.308 x 0.163 x 0.142 m, minUp 0
+camera-tripod: 1720/2000 tris, size 0.989317 x 1.424 x 0.862133 m, minUp 0
+softbox-light: 1212/1500 tris, size 0.906025 x 1.92 x 1.064 m, minUp 0
+cinema-camera: 1466/1800 tris, size 0.237345 x 0.201217 x 0.570581 m, minUp 0

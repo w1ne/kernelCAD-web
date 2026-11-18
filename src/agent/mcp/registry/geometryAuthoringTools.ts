@@ -176,7 +176,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
       name: 'add_curve',
       description:
         "Use this when you need a freeform/organic 3D curve — a body feature line, brow, spine rail, or G2 blend between panels — authored as a Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n" +
-        "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
+        "- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `control_points` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n" +
         "- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\n" +
         "The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
       inputSchema: {
@@ -188,7 +188,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             description: 'Which curve-construction path to use.',
           },
           code: { type: 'string', description: 'The .kcad.ts source code.' },
-          controlPoints: {
+          control_points: {
             type: 'array',
             description: "kind:'nurbs' — control points as Vec3 triples in mm; at least 2 entries.",
             items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
@@ -196,7 +196,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           degree: { type: 'integer', minimum: 1, description: "kind:'nurbs' — curve degree; default 3 (cubic)." },
           weights: {
             type: 'array',
-            description: "kind:'nurbs' — optional rational weights, one per control point (same length as controlPoints).",
+            description: "kind:'nurbs' — optional rational weights, one per control point (same length as control_points).",
             items: { type: 'number' },
           },
           knots: {
@@ -229,7 +229,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
         },
         required: ['kind', 'code'],
         allOf: [
-          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['control_points'] } },
           { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
         ],
       },
@@ -241,8 +241,8 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
       name: 'add_path_segment',
       description:
         "Use this when you need a freeform/organic 2D outline — an eyewear brow, ergonomic grip, sneaker midsole, or body silhouette — by appending a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n" +
-        "- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n" +
-        "- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n" +
+        "- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `start_tangent`/`end_tangent` (inserted as script opts `startTangent`/`endTangent`). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n" +
+        "- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries). Pass `control_points`; control_points[0] must match pen and the pen ends at control_points[N-1]. Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = control_points.length + degree + 1).\n" +
         "- 'hermite' — `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\n" +
         'Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.',
       inputSchema: {
@@ -262,21 +262,21 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             minItems: 2,
           },
           tension: { type: 'number', description: "kind:'spline' — optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation." },
-          startTangent: {
+          start_tangent: {
             type: 'array',
             description: "kind:'spline' — optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
-          endTangent: {
+          end_tangent: {
             type: 'array',
             description: "kind:'spline' — optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.",
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
           },
-          controlPoints: {
+          control_points: {
             type: 'array',
             description: "kind:'nurbs' — control-net vertices as Vec2 pairs in mm; at least degree+1 entries.",
             items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
@@ -289,7 +289,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           },
           knots: {
             type: 'array',
-            description: "kind:'nurbs' — optional explicit knot vector; length must equal controlPoints.length + degree + 1.",
+            description: "kind:'nurbs' — optional explicit knot vector; length must equal control_points.length + degree + 1.",
             items: { type: 'number' },
           },
           a: {
@@ -317,7 +317,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
         required: ['kind', 'code', 'chain_anchor'],
         allOf: [
           { if: { properties: { kind: { const: 'spline' } } }, then: { required: ['points'] } },
-          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['controlPoints'] } },
+          { if: { properties: { kind: { const: 'nurbs' } } }, then: { required: ['control_points'] } },
           { if: { properties: { kind: { const: 'hermite' } } }, then: { required: ['a', 'b'] } },
         ],
       },
@@ -333,7 +333,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
       inputSchema: {
         type: 'object',
         properties: {
-          imageUrl: {
+          image_url: {
             type: 'string',
             description: 'URL or path to the reference image. Supports file://, http(s)://, data:image/...;base64,..., or a bare filesystem path.',
           },
@@ -361,7 +361,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
               required: ['label', 'kind'],
             },
           },
-          maxWaypointsPerFeature: {
+          max_waypoints_per_feature: {
             type: 'integer',
             description: 'Cap on waypoints per feature. Defaults to 12 (suitable for medium-inflection outlines).',
             minimum: 2,
@@ -371,15 +371,15 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             enum: ['opencv', 'vision-llm', 'hybrid', 'auto'],
             description: 'Force a specific backend; default `auto` routes by corner-color stddev.',
           },
-          scaleAnchor: {
+          scale_anchor: {
             type: 'object',
             description: 'Pixel-to-real-world scale anchor: two measured points on the image. Absent -> the returned ledger\'s `scale` fact is `missing`.',
             properties: {
-              pixelDistance: { type: 'number', description: 'Distance in pixels between the two measured points.' },
-              realDistance: { type: 'number', description: 'The same distance in real-world units.' },
+              pixel_distance: { type: 'number', description: 'Distance in pixels between the two measured points.' },
+              real_distance: { type: 'number', description: 'The same distance in real-world units.' },
               unit: { type: 'string', enum: ['mm', 'cm', 'in'] },
             },
-            required: ['pixelDistance', 'realDistance', 'unit'],
+            required: ['pixel_distance', 'real_distance', 'unit'],
           },
           priors: {
             type: 'array',
@@ -401,7 +401,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             description: 'Assumption-ledger strictness. `warn` (default) never blocks. `error` fails the call when any `missing` ledger fact (e.g. scale) is still open.',
           },
         },
-        required: ['imageUrl'],
+        required: ['image_url'],
       },
     },
     handler: input => traceFromImageTool(input as unknown as Parameters<typeof traceFromImageTool>[0]),
@@ -474,15 +474,15 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           align:       { type: 'string', enum: ['left', 'center', 'right'], description: "mode:'sketch' — horizontal alignment relative to position (default left); mode:'emboss' — relative to the UV anchor (default center)." },
           position:    { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: "mode:'sketch' — [x, y] anchor in mm. Default [0, 0]." },
           rotation:    { type: 'number', description: "mode:'sketch' — CCW rotation in degrees around position (default 0); mode:'emboss' — CCW rotation in the face tangent plane (default 0)." },
-          bindAs:      { type: 'string', description: "mode:'sketch' — emits `const <bindAs> = sketch.text(...)`; mode:'emboss' — emits `const <bindAs> = <target>.embossText(...);`." },
+          bind_as:      { type: 'string', description: "mode:'sketch' — emits `const <bind_as> = sketch.text(...)`; mode:'emboss' — emits `const <bind_as> = <target>.embossText(...);`." },
           target:      { type: 'string', description: "mode:'emboss' — variable name of the Shape to chain onto (inserted verbatim)." },
-          textContent: { type: 'string', description: "mode:'emboss' — text content (UTF-8, non-empty, non-whitespace)." },
+          text_content: { type: 'string', description: "mode:'emboss' — text content (UTF-8, non-empty, non-whitespace)." },
           depth:       { type: 'number', description: "mode:'emboss' — signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero." },
           face:        { type: 'string', description: "mode:'emboss' — target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
-          fontFamily:  { type: 'string', description: "mode:'emboss' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
-          anchorU:     { type: 'number', description: "mode:'emboss' — U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5." },
-          anchorV:     { type: 'number', description: "mode:'emboss' — V anchor in [0, 1] face-local. Default 0.5." },
-          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: "mode:'emboss' — Drawing.sketchOnFace scaling mode. Default original." },
+          font_family:  { type: 'string', description: "mode:'emboss' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans." },
+          anchor_u:     { type: 'number', description: "mode:'emboss' — U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5." },
+          anchor_v:     { type: 'number', description: "mode:'emboss' — V anchor in [0, 1] face-local. Default 0.5." },
+          scale_mode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: "mode:'emboss' — Drawing.sketchOnFace scaling mode. Default original." },
         },
         required: ['mode', 'code'],
       },
@@ -492,7 +492,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'project_curve',
-      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`asEdge: true`) is not implemented and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
+      description: 'Use this when you need to wrap a 2D closed curve onto a 3D face. Insert a `<shape>.projectCurve({ source, face, scaleMode? })` chained call into a kernelCAD script. Pass `scale_mode` for that option. The `source` is the structured `{ kind: "sketchCommands", commands: [...] }` wire format the runtime API accepts. Wraps the curve onto the face along the face normal; pair with `.extrude(d)` / `.cut(...)` for raised or engraved logos on curved bodies. Open-wire projection (`as_edge: true`) is not implemented and is rejected at edit time. Side-effect-free; returns modified code plus diagnostics.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -512,9 +512,9 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             },
           },
           face:      { type: 'string', description: 'Target face — canonical name or label.' },
-          scaleMode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
-          asEdge:    { type: 'boolean', description: 'Open-wire (edge) projection. NOT IMPLEMENTED — rejected at edit time. Use a closed-curve projection (omit asEdge).' },
-          bindAs:    { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
+          scale_mode: { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          as_edge:    { type: 'boolean', description: 'Open-wire (edge) projection. NOT IMPLEMENTED — rejected at edit time. Use a closed-curve projection (omit as_edge).' },
+          bind_as:    { type: 'string', description: 'Optional local variable name; emits `const <bind_as> = <target>.projectCurve(...);`.' },
         },
         required: ['code', 'target', 'commands', 'face'],
       },
@@ -539,7 +539,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           circular:  { type: 'object', description: 'Required when kind=circular.', properties: {
             count: { type: 'integer', minimum: 2 },
             axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
-            angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
+            angle_deg: { type: 'number', description: 'Optional; defaults to 360.' },
           }, required: ['count', 'axis'] },
           grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
             x: { type: 'object', description: 'First grid axis.', properties: {

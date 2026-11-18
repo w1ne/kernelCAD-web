@@ -22,6 +22,46 @@ import { select } from './selection/shapeList';
 import { KernelError } from '../shared/intent/kernelError';
 import type { KernelCadApi } from './api';
 import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
+import { invalidArgs } from '../shared/intent/invalidArgs';
+
+const HELIX_KEYS = new Set(['radius', 'pitch', 'turns', 'axis', 'pointsPerTurn', 'startAngle']);
+const HELIX_AXES = new Set(['X', 'Y', 'Z']);
+const HELIX_EXAMPLE = "helix({ radius: 5, pitch: 2, turns: 8, axis: 'Z' })";
+
+// `helix({ ..., lefthand: true })` dropped the key and returned a right-hand
+// rail, and `axis: 'x'` fell through to the Y-axis branch.
+function assertHelixOptions(opts: unknown): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'helix(opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }',
+      example: HELIX_EXAMPLE,
+    });
+  }
+  const unknownKeys = Object.keys(opts).filter((key) => !HELIX_KEYS.has(key));
+  if (unknownKeys.length > 0) {
+    invalidArgs({
+      api: 'helix(opts)',
+      path: 'opts',
+      gotText: `unknown keys: ${unknownKeys.join(', ')}`,
+      requires: `only ${[...HELIX_KEYS].join(', ')}; helix() has no handedness option`,
+      example: HELIX_EXAMPLE,
+    });
+  }
+  const axis = (opts as { axis?: unknown }).axis;
+  if (axis !== undefined && !HELIX_AXES.has(axis as string)) {
+    invalidArgs({
+      api: 'helix(opts)',
+      path: 'opts.axis',
+      got: axis,
+      requires: "'X', 'Y' or 'Z' (upper case)",
+      example: HELIX_EXAMPLE,
+    });
+  }
+}
 
 type BatchParamDeclaration = number | boolean | ({ default: number | boolean | string } & ParamMetadata);
 
@@ -67,6 +107,7 @@ export function makeParamMethods(
       return makePath(session);
     },
     helix(opts) {
+      assertHelixOptions(opts);
       const table = session.paramTable;
       const numeric: HelixOptions = {
         radius: currentValue(opts.radius, table),

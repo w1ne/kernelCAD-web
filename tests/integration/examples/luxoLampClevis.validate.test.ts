@@ -19,8 +19,6 @@
 // explicitly delegates `examples/kinematic/luxo-lamp.kcad.ts` to this
 // file (see HOSTED_IN_DEDICATED_FILE there).
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P5-luxo-geometric-rebuild.md
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { runValidateCli } from '../../../src/agent/cli/commands/validate';

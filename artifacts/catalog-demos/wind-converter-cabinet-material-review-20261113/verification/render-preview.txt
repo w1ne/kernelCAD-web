@@ -1,0 +1,2 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts converter-cabinet
+Output: wind-energy/converter-cabinet: 132 tris

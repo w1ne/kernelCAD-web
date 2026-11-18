@@ -1,0 +1,5 @@
+{
+  "status": "passed",
+  "command": "npx eslint catalog/kits/archaeology-fieldwork/",
+  "summary": "passed with zero errors or warnings"
+}

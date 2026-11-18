@@ -1,0 +1,100 @@
+{
+  "reviewedAt": "2026-11-11T16:54:03.019457+00:00",
+  "samples": [
+    {
+      "id": "ballistic-separator",
+      "kit": "recycling-facility",
+      "sourceSnapshot": "source/samples/ballistic-separator.kcad.ts",
+      "previewSnapshot": "sample-previews/ballistic-separator.png",
+      "observation": "Inclined paddle deck, feed and fraction chutes, fines hopper, crank discs and access rail read as a ballistic separator; painted frame, steel deck, dark chutes and yellow guards are coherent.",
+      "result": "No material mismatch found.",
+      "sourcePath": "catalog/kits/recycling-facility/ballistic-separator.kcad.ts",
+      "previewPath": "/assets/recycling-facility-ballistic-separator.png",
+      "baselineSourceSha256": "38ff99eb3fff358889f4ebdf6bd800057f55a60869bf59a2f5ffdc56b55a19ad",
+      "baselinePreviewSha256": "1e91add91aa7ce680ab7b3ef6ff6deca6f7756a427659709d74d7548ba4613e4",
+      "baselineTriangleCount": 1764,
+      "triangleBudget": 2500,
+      "baselineEnvelopeM": [
+        3.675,
+        3.92,
+        6.445494
+      ]
+    },
+    {
+      "id": "wind-turbine-blade",
+      "kit": "wind-energy",
+      "sourceSnapshot": "source/samples/wind-turbine-blade.kcad.ts",
+      "previewSnapshot": "sample-previews/wind-turbine-blade.png",
+      "observation": "A tapered twisted composite blade stands on its bolted root and steel stand; pale composite, darker leading-edge strip, red warning band and yellow stand are visually separated.",
+      "result": "No material mismatch found.",
+      "sourcePath": "catalog/kits/wind-energy/wind-turbine-blade.kcad.ts",
+      "previewPath": "/assets/wind-energy-wind-turbine-blade.png",
+      "baselineSourceSha256": "ffa8c4c2af18da48f24a1d2d94c93584d7499182f62c341207c298e6b828084c",
+      "baselinePreviewSha256": "2d723dd40a60d692ef3defa0c549bc380d2ded814c9ea509975be9609b907f6e",
+      "baselineTriangleCount": 1138,
+      "triangleBudget": 3000,
+      "baselineEnvelopeM": [
+        0.444762,
+        2.1,
+        0.4
+      ]
+    },
+    {
+      "id": "chlorine-dosing-skid",
+      "kit": "water-treatment",
+      "sourceSnapshot": "source/before/chlorine-dosing-skid.kcad.ts",
+      "previewSnapshot": "previews/before/chlorine-dosing-skid.png",
+      "observation": "Tank, metering-pump body, controls, stainless tube rack and spill tray are visible. Before: the chemical day tank shared coated-steel color with the pump and cabinet.",
+      "result": "Material mismatch corrected: the day tank now has an independent polyethylene color control.",
+      "sourcePath": "catalog/kits/water-treatment/chlorine-dosing-skid.kcad.ts",
+      "previewPath": "/assets/water-treatment-chlorine-dosing-skid.png",
+      "baselineSourceSha256": "67118697138e902f59dfbd058d85a73bc9707019798a1a3497d8e129c62d4867",
+      "baselinePreviewSha256": "1c76d136e62d2d7d1f8ca021ca3459bf5398e3f4c6bc04c98f25efd82333b2da",
+      "baselineTriangleCount": 188,
+      "triangleBudget": 2200,
+      "baselineEnvelopeM": [
+        0.88,
+        0.51,
+        0.52
+      ]
+    },
+    {
+      "id": "substation-oil-cooling-pump-skid",
+      "kit": "grid-substation",
+      "sourceSnapshot": "source/samples/substation-oil-cooling-pump-skid.kcad.ts",
+      "previewSnapshot": "sample-previews/substation-oil-cooling-pump-skid.png",
+      "observation": "A skid base, pump and motor pair, and raised suction/discharge pipe runs are visible; galvanized and stainless steel finishes are plausible.",
+      "result": "No material mismatch found.",
+      "sourcePath": "catalog/kits/grid-substation/substation-oil-cooling-pump-skid.kcad.ts",
+      "previewPath": "/assets/grid-substation-substation-oil-cooling-pump-skid.png",
+      "baselineSourceSha256": "5ada32a3c4c4519e16b82b6096efc5e064737e9afd02497d8d01c4d01c341063",
+      "baselinePreviewSha256": "7c251d21b38815eac4fc5201b922c97cb219cee79b98485c438fce4b79a4febe",
+      "baselineTriangleCount": 144,
+      "triangleBudget": 1800,
+      "baselineEnvelopeM": [
+        2.5,
+        1.4475,
+        1.3
+      ]
+    },
+    {
+      "id": "continuous-miner",
+      "kit": "mining",
+      "sourceSnapshot": "source/samples/continuous-miner.kcad.ts",
+      "previewSnapshot": "sample-previews/continuous-miner.png",
+      "observation": "Low crawler body, cutter drum and pick rows, loading pan, conveyor, tail boom and operator canopy read as a continuous miner; machine paint, track steel, wear surfaces and rubber/cable are separated.",
+      "result": "No material mismatch found.",
+      "sourcePath": "catalog/kits/mining/continuous-miner.kcad.ts",
+      "previewPath": "/assets/mining-continuous-miner.png",
+      "baselineSourceSha256": "30222da0d2f76236e55d70934f4fcb613144fc65419d78081fe1ae4443df785b",
+      "baselinePreviewSha256": "ba180ae2e930fb7ed88f2b94444a0c5521a909db35289e48d1be6569576da33c",
+      "baselineTriangleCount": 3496,
+      "triangleBudget": 4200,
+      "baselineEnvelopeM": [
+        13.198869,
+        2.539194,
+        4.167631
+      ]
+    }
+  ]
+}

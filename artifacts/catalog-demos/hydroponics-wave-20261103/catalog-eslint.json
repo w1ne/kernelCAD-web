@@ -1,0 +1,8 @@
+{
+  "command": "npx eslint catalog/",
+  "assetSources": 1795,
+  "errorCount": 0,
+  "warningCount": 0,
+  "output": "",
+  "passed": true
+}

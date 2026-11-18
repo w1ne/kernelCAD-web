@@ -1,0 +1,1270 @@
+{
+  "totalAssets": 2240,
+  "totalKits": 47,
+  "amusementParkAssets": 70,
+  "previewBackedAssets": 2240,
+  "allRowsUnique": true,
+  "allNewAssetsPass": true,
+  "assets": [
+    {
+      "id": "accessible-entry-queue-gate",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "accessible-ride-transfer-bench",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "admission-turnstile-bank",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ball-toss-target-wall",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "balloon-dart-gallery",
+      "sourceSha256Matches": true,
+      "triangles": 732,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "bumper-car",
+      "sourceSha256Matches": true,
+      "triangles": 392,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "character-meet-backdrop",
+      "sourceSha256Matches": true,
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "character-meet-photo-easel",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "churro-warmer-cart",
+      "sourceSha256Matches": true,
+      "triangles": 444,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "condiment-counter",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "cotton-candy-cart",
+      "sourceSha256Matches": true,
+      "triangles": 372,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "drop-tower-seat-ring",
+      "sourceSha256Matches": true,
+      "triangles": 376,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "duck-pond-game-trough",
+      "sourceSha256Matches": true,
+      "triangles": 384,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "entrance-photo-frame",
+      "sourceSha256Matches": true,
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "entrance-planter",
+      "sourceSha256Matches": true,
+      "triangles": 512,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "family-carousel",
+      "sourceSha256Matches": true,
+      "triangles": 976,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "family-locker-bank",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "family-plaza-shade-pavilion",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "family-rest-bench",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "first-aid-response-cart",
+      "sourceSha256Matches": true,
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "funnel-cake-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "game-token-counter",
+      "sourceSha256Matches": true,
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "guest-services-map-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "height-check-marker",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ice-cream-cart",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "junior-coaster-track-section",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "junior-coaster-train-car",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "lemonade-dispenser-cart",
+      "sourceSha256Matches": true,
+      "triangles": 400,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "log-flume-boat",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "lost-child-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "midway-barker-microphone-stand",
+      "sourceSha256Matches": true,
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "midway-scoreboard",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "miniature-park-tram-coach",
+      "sourceSha256Matches": true,
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "miniature-park-tram-engine",
+      "sourceSha256Matches": true,
+      "triangles": 324,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "parade-rope-stanchion",
+      "sourceSha256Matches": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-entry-arch",
+      "sourceSha256Matches": true,
+      "triangles": 162,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-maintenance-golf-cart",
+      "sourceSha256Matches": true,
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-observation-wheel",
+      "sourceSha256Matches": true,
+      "triangles": 620,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-operations-radio-rack",
+      "sourceSha256Matches": true,
+      "triangles": 384,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-pathway-bollard-light",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-stroller",
+      "sourceSha256Matches": true,
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-waste-sorting-station",
+      "sourceSha256Matches": true,
+      "triangles": 240,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "park-water-fountain",
+      "sourceSha256Matches": true,
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "picnic-table-with-umbrella",
+      "sourceSha256Matches": true,
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pirate-ship-ride-car",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "playground-climber",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "popcorn-warmer-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pretzel-warmer-counter",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "prize-wall-display",
+      "sourceSha256Matches": true,
+      "triangles": 774,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "queue-shade-canopy",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "queue-switchback-rail",
+      "sourceSha256Matches": true,
+      "triangles": 904,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "refillable-cup-rack",
+      "sourceSha256Matches": true,
+      "triangles": 324,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ride-load-platform",
+      "sourceSha256Matches": true,
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ride-maintenance-tool-cart",
+      "sourceSha256Matches": true,
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ride-operator-console",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ride-photo-camera",
+      "sourceSha256Matches": true,
+      "triangles": 196,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ride-photo-preview-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ring-toss-game-counter",
+      "sourceSha256Matches": true,
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "rope-net-tunnel",
+      "sourceSha256Matches": true,
+      "triangles": 240,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "skee-ball-lane",
+      "sourceSha256Matches": true,
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "soft-drink-fountain",
+      "sourceSha256Matches": true,
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "splash-pad-jet-column",
+      "sourceSha256Matches": true,
+      "triangles": 576,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "stroller-parking-rack",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "stroller-service-station",
+      "sourceSha256Matches": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "tea-cup-spinner-car",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ticket-vending-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ticket-window-booth",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "water-race-game-lane",
+      "sourceSha256Matches": true,
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "wayfinding-pylon",
+      "sourceSha256Matches": true,
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "wristband-checkin-desk",
+      "sourceSha256Matches": true,
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    }
+  ]
+}

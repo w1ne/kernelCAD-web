@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/data-center-infrastructure/",
+  "exitCode": 0,
+  "status": "pass"
+}

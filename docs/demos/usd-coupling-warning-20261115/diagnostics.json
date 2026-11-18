@@ -1,0 +1,12 @@
+[
+  {
+    "target": "export-occt",
+    "code": "export.usd.coupling-dropped",
+    "severity": "warn",
+    "message": "Mate 'output' is coupled to 'input' (output = -0.5 * input, authored units), but the usd-isaac serializer does not author a coupling API; 'output' was emitted as an independent joint.",
+    "hint": "The emitted stage will not enforce this coupling. This serializer does not author backend-specific mimic APIs. Enforce the ratio in the simulator controller, or export a format that preserves mate couplings.",
+    "nextAction": {
+      "kind": "inspect-message"
+    }
+  }
+]

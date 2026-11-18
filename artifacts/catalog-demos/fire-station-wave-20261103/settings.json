@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-03",
+  "sourceGenerator": "python3 artifacts/catalog-demos/fire-station-wave-20261103/generate_fire_station_assets.py",
+  "sourceGeometry": {
+    "units": "millimetres",
+    "axis": "Z up",
+    "originPolicy": "base for floor-standing assets; wall or ceiling for mounted fixtures",
+    "parameters": ["scale", "color"],
+    "materials": "one shared color material per asset",
+    "triangleBudget": 1800,
+    "license": "CC0-1.0"
+  },
+  "catalogCommands": [
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts <70 fire-station asset IDs>",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/ --fix",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "node": "v22.23.4",
+  "previewRenderer": "catalog/scripts/renderCatalogPreviews.ts",
+  "parameterVariant": {
+    "asset": "station-alerting-control-console",
+    "scale": 1.15,
+    "color": "#b46f3d",
+    "method": "rewrite the parameter defaults in an in-memory copy of the .kcad.ts source, export the GLB, and render; the checked-in source retains default values"
+  },
+  "demo": {
+    "source": "artifacts/catalog-demos/fire-station-wave-20261103/capture_fire_station_demo.py",
+    "frames": 12,
+    "layout": "1280x720",
+    "durationSeconds": 36,
+    "codec": "H.264, yuv420p",
+    "crf": 25,
+    "frameRate": 24,
+    "chapters": ["scene workflow", "native source", "parameter variant", "all 70 rendered previews", "local validation and live baseline"]
+  },
+  "claimsBoundary": {
+    "localReplay": "the local source and preview workflow only",
+    "localValidation": "catalog source, mesh, preview, page and integration checks",
+    "deployedBehavior": "not verified; branch not deployed",
+    "hardwareAcceptance": "not applicable; assets are generic visualization props"
+  }
+}

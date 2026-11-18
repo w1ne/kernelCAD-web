@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-04T20:20:00Z",
+  "status": "NOT VERIFIED",
+  "branch": "feat/catalog-2000",
+  "deployed": false,
+  "httpChecks": {
+    "https://kernelcad.com/": 403,
+    "https://kernelcad.com/catalog/": 403,
+    "https://kernelcad.com/gallery.json": 403
+  },
+  "existingBrowserSession": "Read-only CDP page selection timed out; no browser was launched or stopped.",
+  "claim": "Local source, preview and page validation only; no deployed behavior is claimed."
+}

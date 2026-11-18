@@ -1,0 +1,52 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/standard-components-cable-gland-flange-20261110/verify_asset_index.py",
+  "catalogAssetCount": 2402,
+  "catalogKitCount": 50,
+  "allSourceHashesMatch": true,
+  "allPreviewsPresent": true,
+  "standardComponentsAssetCount": 50,
+  "checked": {
+    "cable-gland": {
+      "sourceSha256": "c441ec560cf3eed47a9dff208b72f6d1d6765b72ba3b37be8368b19b143c4370",
+      "preview": "catalog/kits/standard-components/previews/cable-gland.png",
+      "previewSha256": "f2dc6cd567d02c95707e01ef4e6e5469b5ae1df9511939f22ca8b6fd432198f5",
+      "indexedPreview": "/assets/standard-components-cable-gland.png",
+      "triangles": 812,
+      "triangleBudget": 900,
+      "params": [
+        "size",
+        "cableDiameter",
+        "polymer",
+        "stainless",
+        "rubber",
+        "cablePvc"
+      ],
+      "presets": [
+        "highVisibility",
+        "industrial",
+        "marine"
+      ]
+    },
+    "square-mounting-flange": {
+      "sourceSha256": "20d875d0202ac99bd31352b509d24b5f95a0e171fe2a94e7f257df69f2ea33e6",
+      "preview": "catalog/kits/standard-components/previews/square-mounting-flange.png",
+      "previewSha256": "c40f3cc63903ddb2b5adbb9eb420a6e4a79072ec1a646e5ea896fb2b82cf0742",
+      "indexedPreview": "/assets/standard-components-square-mounting-flange.png",
+      "triangles": 764,
+      "triangleBudget": 860,
+      "params": [
+        "size",
+        "boreDiameter",
+        "stainless",
+        "castIron",
+        "rubber",
+        "zincSteel"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    }
+  }
+}

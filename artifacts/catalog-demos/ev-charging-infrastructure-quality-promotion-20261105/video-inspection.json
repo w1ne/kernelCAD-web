@@ -1,0 +1,39 @@
+{
+  "video": "ev-charging-infrastructure-quality-promotion.mp4",
+  "sha256": "e9b74c0d1a7acfc3d1d6915871899ae6f796e2de8980865eaa22b33c6a08d9e8",
+  "bytes": 303223,
+  "ffprobe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "24.041667",
+      "size": "303223"
+    }
+  },
+  "sampleTimesSeconds": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20
+  ],
+  "decodedFrames": [
+    "decoded-01.png",
+    "decoded-02.png",
+    "decoded-03.png",
+    "decoded-04.png",
+    "decoded-05.png",
+    "decoded-06.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualContactSheetReview": true,
+  "manualReviewNotes": "The six sampled slides show the source-to-color promotion, recognizable charger/connector/canopy previews, default versus named preset renders, all-kit preview sheet, and local checks. Text remains readable; captions state local behavior and make no deployment or hardware-acceptance claim."
+}

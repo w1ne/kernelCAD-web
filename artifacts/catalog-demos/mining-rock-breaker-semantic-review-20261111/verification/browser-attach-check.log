@@ -1,0 +1,6 @@
+Existing Chrome session inspected before attachment:
+- CDP endpoint: 127.0.0.1:9223
+- Browser: Chrome/156.0.8078.79
+- Existing page count after failed attach: 55
+- No capture tab was opened; the Chrome process remained running.
+- No fallback browser was launched.

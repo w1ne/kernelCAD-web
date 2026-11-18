@@ -1,0 +1,46 @@
+{
+  "reviewedAt": "2026-11-02T22:13:25.102Z",
+  "artifact": "../demo.mp4",
+  "decode": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "durationSeconds": 18,
+    "audio": false
+  },
+  "decodedSampleSheet": "decoded-contact-sheet.png",
+  "sampledAtSeconds": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16
+  ],
+  "manualReview": {
+    "result": "pass",
+    "notes": [
+      "All three Laboratory Infrastructure index panels are present and legible at native playback size.",
+      "The panels cover all 60 assets and label each id, triangle count and three knobs.",
+      "Variant sections show default and resolved low-poly exports at the same scale; requested size and body/accent colors are visible.",
+      "No blank or corrupt frames were seen; the footer identifies local software rendering and says deployment is unverified."
+    ]
+  },
+  "sha256": {
+    "video": "ddcf6576223092187658703910f68bdf583774d4ad5037b73de9cfbe62cd002e",
+    "decodedSampleSheet": "b0abc7ca1f78cc7a162c1ec3db7058298d698cec403d57e5968e022a0327e9af"
+  },
+  "claimBoundary": {
+    "localCatalogWorkflow": true,
+    "softwareRendered": true,
+    "liveDeployment": false,
+    "simulation": false,
+    "regulatoryCompliance": false,
+    "hardwareAcceptance": false
+  }
+}

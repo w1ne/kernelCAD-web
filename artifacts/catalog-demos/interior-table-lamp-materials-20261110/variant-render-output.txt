@@ -1,0 +1,10 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/interior-table-lamp-materials-20261110/render_variants.ts
+(node:1459520) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+jar-default: 144 triangles; size 285.1 × 495.0 × 292.5 mm
+column-default: 144 triangles; size 285.1 × 505.0 × 292.5 mm
+terracotta: 144 triangles; size 285.1 × 495.0 × 292.5 mm
+mid-century: 144 triangles; size 285.1 × 495.0 × 292.5 mm
+monochrome: 144 triangles; size 285.1 × 495.0 × 292.5 mm
+Rendered 5 source variants; base choice, palette, and triangle-budget checks passed.

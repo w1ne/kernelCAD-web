@@ -21,6 +21,9 @@ export interface BindingFingerprint {
   producer?: string;
   /** Name of the entity within its producer: canonical face name or label. */
   role?: string;
+  /** Stable source identity for a lineage-tracked edge, independent of its
+   *  current OCCT hash and geometry. */
+  sourceId?: string;
   /** Unit outward normal (faces) or unit tangent at mid-curve (edges). */
   direction?: Vec3;
   /** Cylinder / sphere / circle radius, mm. */

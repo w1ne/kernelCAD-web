@@ -9,6 +9,184 @@
   and all inputs reused), not only an unchanged prefix. Demo:
   `docs/demos/params-plain-math/` (a 2-of-52-feature edit in ~0.15–0.2 s vs a
   2.2 s full rebuild locally).
+- `kinematic.suggestJointRanges` and `verify({ check: 'joint-range' })` suggest
+  revolute and prismatic limits from geometry. Each joint is swept alone from
+  its authored pose, with other mates held at their authored poses, until a
+  non-exempt pair is within the clearance (default 0.3 mm) or the finite
+  search bound is reached. Exact BREP distance brackets the crossing, and the
+  reported stop is the clear side of that bracket so the suggested limit keeps
+  the requested clearance. A gap within 1e-6 mm of the clearance counts as
+  reached. The result is a limits snippet; the model is not rewritten. A
+  missing bound, the sweep budget, or a failed measurement is `unknown`, never
+  a clear range. `no-stop` means the sampled poses found no crossing, not a
+  continuous proof the interval is clear. Mate neighbours and declared contact
+  pairs are not stops.
+- Rocket flight study (#1441). `arm.flightStudy({ motor, aero, launch,
+  recovery, minStabilityCal })` (or `shape.flightStudy`) takes mass and CG
+  from the parts, replaces `motor.part` with the declared motor (thrust table
+  or RASP `.eng` text; CG shifts as the propellant burns), and reads the
+  Barrowman CP off the nose and fin geometry (fin root / tip chord, span,
+  sweep and position from mesh sections) or declared dimensions. A declared
+  `minStabilityCal` fails evaluate with `flight.stability.below-min`. MCP
+  `run_flight` integrates an RK4 point-mass trajectory (ISA atmosphere, rail,
+  wind, parachutes) and returns apogee, max speed / acceleration, rail-exit
+  speed, descent rate, landing time, a t/z/v/a/p_static series (JSON or CSV)
+  and an animationView track. Validated against the LabWired Pathfinder
+  reference (apogee 368 m at 8.9 s). Example:
+  `examples/flight/pathfinder-rocket.kcad.ts`.
+- Travel-gear catalog wave: 12 original parametric low-poly CC0 assets in the
+  new `catalog/kits/travel-gear` kit for luggage and small journey accessories.
+  Kit README, generated previews and the reproducible local demo bundle:
+  `docs/demos/catalog-travel-gear/`.
+- `shape.split` keeps the overlap and both leftovers. Default `keep: 'parts'`
+  returns a Scene of `intersection`, a_only and b_only (empty fragments
+  omitted). A single keep returns that Shape. `subtract`, `intersect` and
+  `union` are unchanged. MCP: `split_keep_parts`.
+- `metricThreadFromDiameter` and `resolve_metric_thread` map a nominal diameter
+  (12 mm → M12×1.75) or a tap drill (D − P; 5 mm → M6) to the ISO 261 coarse
+  designation. `hole` / `holes` accept `thread: true` to fill that pitch.
+  `threadedHole` accepts `diameter` as well as `spec`. A clearance bore is
+  refused; ISO 273 stays on `clearanceFitForHoleDiameter`.
+  a model's bounding box, a plate/blank/bar stock, and an end mill, and can
+  emit mill G-code. Origin is the stock corner. This is a bbox heuristic, not
+  a collision-checked post, and it is separate from the FDM slicer `gcode` export.
+- `load_scan_reference` reads an ASCII PLY, little-endian binary PLY, or XYZ
+  cloud as a non-solid reference (bbox and centroid in millimetres).
+  `fit_model_to_scan` compares a parametric model's bounding box and reports
+  translation, scale, and per-axis clearance. Booleans on the cloud are refused.
+  `lib.fromSTL` and `mesh_to_features` are unchanged.
+- `dfm_fix_recheck` runs `dfm_review`, applies at most one safe edit (an
+  existing fillet radius, `shell()` thickness, or `draft()` angle), and
+  reviews the edited source. The caller persists `new_code`. Nothing is
+  written. Other findings come back as suggestions.
+- `estimate_cost` returns a labelled offline USD heuristic for 3d-print, cnc,
+  and sheet-cut from part volume, bounding box, and any declared material,
+  FabProcess, or StockSpec. It is not a supplier quote.
+- `analyze_tolerance_stack` returns a labelled 1D worst-case and RSS stack from
+  explicit contributors or from `shape.dimension` tolerances. A missing
+  tolerance is refused. It is not a full GD&T capability study.
+- GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
+  `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
+  `sizeM` and `minUpM`.
+- Construction Equipment catalog wave: 60 original parametric low-poly CC0
+  assets for paving, compaction, concrete placement, formwork/rebar and site
+  logistics in the new `catalog/kits/construction-equipment` kit. The generated
+  catalog grows from 1,015 to 1,075 audited assets. Kit documentation and the
+  reproducible local demo bundle are in
+  `catalog/kits/construction-equipment/README.md` and
+  `artifacts/catalog-demos/construction-equipment-wave-20261102/`.
+- Farm Machinery catalog wave: 60 original parametric low-poly CC0 assets
+  covering field tractors, implements, planting, crop care, forage, harvest,
+  grain handling and irrigation in the new `catalog/kits/farm-machinery` kit.
+  The generated catalog grows from 955 to 1,015 assets. Kit documentation and
+  the reproducible local demo bundle are in
+  `catalog/kits/farm-machinery/README.md` and
+  `artifacts/catalog-demos/farm-machinery-wave-20261102/`.
+- Laboratory infrastructure catalog wave: 60 original parametric low-poly
+  laboratory benches, storage, service systems, extraction enclosures and
+  cleanroom fixtures in the new `catalog/kits/lab-infrastructure` kit. The
+  generated catalog grows from 895 to 955 assets. The kit README and local demo
+  bundle are in `catalog/kits/lab-infrastructure/README.md` and
+  `artifacts/catalog-demos/lab-infrastructure-wave-20261102/`.
+- Industrial plant catalog wave: 60 original parametric low-poly CC0 factory
+  assets covering process equipment, power and controls, material handling,
+  lifting, access and safety in the new `catalog/kits/industrial-plant` kit.
+  The generated catalog grows from 835 to 895 assets. The kit README and
+  reproducible local demo bundle are in `catalog/kits/industrial-plant/README.md`
+  and `artifacts/catalog-demos/industrial-plant-wave-20261102/`.
+- Solar energy catalog wave: 40 original parametric low-poly CC0 photovoltaic
+  modules, mounting systems, storage and grid equipment, sensing and service
+  props in the new `catalog/kits/solar-energy` kit, growing the catalog from
+  795 to 835 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/solar-energy/README.md` and
+  `artifacts/catalog-demos/solar-energy-wave-20261102/`.
+- Airfield catalog wave: 40 original parametric low-poly CC0 aircraft, apron
+  service vehicles and airport fixtures in the new `catalog/kits/airfield` kit,
+  growing the generated catalog from 755 to 795 assets. The kit README and
+  reviewed local demo bundle are in `catalog/kits/airfield/README.md` and
+  `artifacts/catalog-demos/airfield-wave-20261102/`.
+- Asset catalog: 40 original parametric low-poly CC0 sports assets in the new
+  `catalog/kits/sports` kit, bringing the catalog from 543 to 583 assets. The
+  kit README and reviewed demo bundle are in `catalog/kits/sports/README.md`
+  and `artifacts/catalog-demos/sports-wave-20261102/`.
+- Outdoor gear catalog wave: 12 original parametric low-poly CC0 assets in the
+  new `catalog/kits/outdoor-gear` kit: a backpack, sleeping bag, camp chair
+  and stove, hiking boots and poles, binoculars, compass, canteen, map case,
+  hammock and fishing rod. The catalog grows from 583 to 595 assets. Kit
+  README, generated previews and the reproducible demo bundle:
+  `docs/demos/catalog-wave-2/`.
+- Music catalog wave: 40 original parametric low-poly CC0 instruments and stage
+  props in the new `catalog/kits/music` kit, growing the catalog from 595 to
+  635 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/music/README.md` and
+  `artifacts/catalog-demos/music-wave-20261102/`.
+- Photo/video studio catalog wave: 40 original parametric low-poly CC0 camera,
+  lens, lighting, support and production props in the new
+  `catalog/kits/photo-video-studio` kit, growing the catalog from 635 to 675
+  audited assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/photo-video-studio/README.md` and
+  `artifacts/catalog-demos/photo-video-studio-wave-20261102/`.
+- Railway catalog wave: 40 original parametric low-poly CC0 locomotives,
+  rolling stock, track pieces, signals and station props in the new
+  `catalog/kits/railway` kit, growing the catalog from 715 to 755 audited
+  assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/railway/README.md` and
+  `artifacts/catalog-demos/railway-wave-20261102/`.
+- Marine catalog wave: 40 original parametric low-poly CC0 nautical safety,
+  dockside, navigation, fishing and harbor props in the new `catalog/kits/marine`
+  kit, growing the catalog from 675 to 715 audited assets. The kit README and
+  reviewed local demo bundle are in `catalog/kits/marine/README.md` and
+  `artifacts/catalog-demos/marine-wave-20261102/`.
+
+- Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
+  five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,
+  drill, saws, chainsaw, pliers, spade, pickaxe, sawhorse, rolling tool
+  chest), `catalog/kits/containers` (tote, baskets, jar, amphora, trunk, ammo
+  and fruit crates, rain barrel, milk churn, cooler, IBC tote),
+  `catalog/kits/electronics` (monitor, keyboard, laptop, PC tower, CRT TV,
+  radio, boombox, speaker, smartphone, console, desk phone, router),
+  `catalog/kits/food-kitchen` (apple, carrot, watermelon, bread, cheese, wine,
+  plate, pot, pan, kettle, mug, cutting board) and `catalog/kits/lighting`
+  (chandelier, torches, brazier, lanterns, sconce, lava lamp, spotlight,
+  flashlight, oil lamp, work light). Each has choice and colour knobs,
+  presets and a committed preview. The catalog grows from 313 to 373 assets.
+- Injection-moulding DFM check: `dfmSpec({ process: 'moulding', pullDirection,
+  minDraftDeg, minWallMm, maxWallMm, minRadiusMm })` (defaults '+z', 1°, 1 mm,
+  4 mm, 0.5 mm) checks each part on its actual geometry. It reports every face
+  whose normal is off the pull axis and has less than `minDraftDeg` of draft
+  (measured per BREP face, with the exact surface normal on curved faces) and
+  every face that material blocks from releasing into either mould half
+  (undercut area per face). It also reports walls under `minWallMm` (the
+  min-wall ray sampler), the thickest section over `maxWallMm` (largest
+  inscribed sphere, a lower bound within one voxel) and inside corners
+  sharper than `minRadiusMm` (radius-0 concave creases and tighter cylindrical
+  fillets). A quantity it cannot measure is a warn `dfm.moulding.unmeasured`,
+  not a pass. New codes: `dfm.moulding.undercut`,
+  `dfm.moulding.draft-insufficient`, `dfm.moulding.thin-wall` (error),
+  `dfm.moulding.thick-wall`, `dfm.moulding.sharp-corner`,
+  `dfm.moulding.unmeasured` (warn). The report reaches `kernelcad dfm`,
+  `verify({ check: 'dfm' })` (`moulding[]`) and the requirements ledger.
+  Cookbook: `injection-moulding-draft-and-walls`. Demo bundle:
+  `docs/demos/moulding-check/`.
+- `dfm_review` processes `'sheet-metal'` and `'injection-molding'` (default
+  stays `['fdm', 'cnc']`). Sheet metal reviews the flat pattern of a
+  `sheetMetal(...)` chain with the model's thickness: `sheet.min-bend-radius`
+  (R ≥ t), `sheet.hole-to-bend` (≥ 2.5 × t + R), `sheet.hole-to-edge`
+  (≥ 2 × t), `sheet.min-flange` (≥ 4 × t), located in flat-pattern
+  coordinates; a non-sheet part returns one `sheet.not-sheet-metal` warn.
+  Injection molding runs the moulding engine above as `mold.draft`,
+  `mold.wall-thickness` (plus a `max_wall_ratio` uniformity warning),
+  `mold.undercuts` and `mold.sharp-internal-corners`. Every limit is a call
+  option. Demo bundle: `docs/demos/dfm-sheetmetal-molding/`.
+- `dfm_review` fixes: `cnc.internal-corner-radius` no longer reports the
+  facets of a blind side hole's floor as sharp corners, nor checks the floor
+  edges of a closed top pocket as vertical corners for a side (`+x`) setup
+  (a corner only counts for an axis when both faces are walls along it and
+  the tool reaches it; an edge an allowed axis reaches as a floor corner is
+  cut sharp by a flat end mill). The `fdm.min-hole` diagnostic is now
+  error-level in `dfm_review`, matching the failed check (the `dfmSpec` gate
+  keeps it a warning).
+
 - CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
   `kernelcad cfd run|status`, and the script declaration
   `shape.cfdStudy({ flow, fluid, inlet, outlet, velocity | flowRateLpm, ... })`.

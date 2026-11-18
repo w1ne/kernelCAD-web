@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-05",
+  "kit": "industrial-plant",
+  "unchangedAssetCount": 60,
+  "scope": "local source authoring, preview rendering, catalog indexing, and page validation; branch is not deployed",
+  "toolVersions": {
+    "node": "v26.12.1",
+    "python": "3.14.9",
+    "ffmpeg": "6.1.1",
+    "videoEncoder": "libx264"
+  },
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/promote_industrial_plant.py --dry-run",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/promote_industrial_plant.py",
+    "mapfile -t asset_ids < <(find catalog/kits/industrial-plant -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\\n' | sed 's/\\.kcad\\.ts$//')",
+    "npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python scripts/checkCatalogQuality.py --kit industrial-plant",
+    "npx eslint catalog/kits/industrial-plant/",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-quality-pages",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/verify_industrial_plant_pages.py /tmp/kernelcad-industrial-plant-quality-pages",
+    "npx tsx artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/render_industrial_variant.mts",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/record_promotion_results.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/capture_industrial_plant_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/inspect_industrial_plant_video.py"
+  ],
+  "videoSettings": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "encoder": "libx264",
+    "frameRate": 24,
+    "frames": 8,
+    "secondsPerFrame": 3,
+    "durationSeconds": 24,
+    "audio": false
+  },
+  "variantRender": "Evaluate the authored highVisibility preset, apply its declared overrides, export a low-poly GLB, and render the resolved triangles to PNG."
+}

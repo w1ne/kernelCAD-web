@@ -1,0 +1,9 @@
+file '/home/andrii/worktrees/kernelCAD-web/token-bench/docs/demos/token-benchmark/generated/slide-01.png'
+duration 5
+file '/home/andrii/worktrees/kernelCAD-web/token-bench/docs/demos/token-benchmark/generated/slide-02.png'
+duration 5
+file '/home/andrii/worktrees/kernelCAD-web/token-bench/docs/demos/token-benchmark/generated/slide-03.png'
+duration 5
+file '/home/andrii/worktrees/kernelCAD-web/token-bench/docs/demos/token-benchmark/generated/slide-04.png'
+duration 5
+file '/home/andrii/worktrees/kernelCAD-web/token-bench/docs/demos/token-benchmark/generated/slide-04.png'

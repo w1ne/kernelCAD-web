@@ -1,0 +1,16 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-airfield-catalog-pages",
+  "generatedOutput": "/tmp/kernelcad-airfield-catalog-pages",
+  "assetsInIndex": 2390,
+  "kitRows": 40,
+  "kitPagesChecked": 40,
+  "previewCopiesChecked": 40,
+  "sourceHashesChecked": 40,
+  "parameterCountRangeIncludingScale": [
+    3,
+    5
+  ],
+  "hubHasKitAndFinder": true,
+  "failures": [],
+  "passed": true
+}

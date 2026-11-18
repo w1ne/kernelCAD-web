@@ -1,0 +1,5 @@
+amusement-park/drop-tower-seat-ring: 2340 tris
+amusement-park/family-carousel: 3358 tris
+amusement-park/junior-coaster-train-car: 1244 tris
+amusement-park/park-maintenance-golf-cart: 1352 tris
+amusement-park/tea-cup-spinner-car: 1132 tris

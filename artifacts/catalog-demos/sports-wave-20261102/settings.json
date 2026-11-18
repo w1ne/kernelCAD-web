@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-02",
+  "assets": 40,
+  "resolution": "1280x720",
+  "frames": 8,
+  "secondsPerFrame": 3,
+  "fps": 24,
+  "encoding": "H.264, yuv420p, CRF 25",
+  "previewSource": "catalog/kits/sports/previews/*.png",
+  "catalogSource": "catalog/index.json",
+  "authoringSource": "generate_sports_assets.py",
+  "captureSource": "capture_sports_demo.py",
+  "inspectionSource": "inspect_sports_video.py",
+  "pageCheckSource": "verify_catalog_pages.py",
+  "invocation": [
+    "python3 artifacts/catalog-demos/sports-wave-20261102/generate_sports_assets.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python3 artifacts/catalog-demos/sports-wave-20261102/render_sports_previews.py",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/sports-wave-20261102/record_asset_checks.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-sports-catalog-pages",
+    "python3 artifacts/catalog-demos/sports-wave-20261102/verify_catalog_pages.py /tmp/kernelcad-sports-catalog-pages",
+    "python3 artifacts/catalog-demos/sports-wave-20261102/capture_sports_demo.py",
+    "python3 artifacts/catalog-demos/sports-wave-20261102/inspect_sports_video.py --manual-inspection-passed"
+  ],
+  "video": "artifacts/catalog-demos/sports-wave-20261102/sports-kit.mp4"
+}

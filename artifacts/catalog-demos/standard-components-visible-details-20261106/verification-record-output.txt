@@ -1,0 +1,86 @@
+EXIT CODE: 0
+{
+  "date": "2026-11-06",
+  "assetsRefined": [
+    "standard-components/timing-belt-pulley",
+    "standard-components/door-hinge",
+    "standard-components/din-rail-terminal-block"
+  ],
+  "newAssetIDs": 0,
+  "newKits": 0,
+  "newMaterialControls": 3,
+  "newPresetBlocks": 0,
+  "presetEntriesExpanded": 9,
+  "assetResults": {
+    "timing-belt-pulley": {
+      "triangles": 1236,
+      "triangleBudget": 1380,
+      "knobs": [
+        "size:choice",
+        "aluminum:color",
+        "steel:color",
+        "hardware:color"
+      ],
+      "palette": [
+        "aluminum=#6fabc3",
+        "steel=#c8cfd2",
+        "hardware=#29363e"
+      ]
+    },
+    "door-hinge": {
+      "triangles": 1440,
+      "triangleBudget": 1600,
+      "knobs": [
+        "size:choice",
+        "steel:color",
+        "brass:color",
+        "fasteners:color"
+      ],
+      "palette": [
+        "steel=#52778e",
+        "fasteners=#d1d7d9",
+        "brass=#c38b3d"
+      ]
+    },
+    "din-rail-terminal-block": {
+      "triangles": 444,
+      "triangleBudget": 500,
+      "knobs": [
+        "size:choice",
+        "steel:color",
+        "polymer:color",
+        "copper:color"
+      ],
+      "palette": [
+        "polymer=#e46b3c",
+        "copper=#d9a344",
+        "steel=#b9c4c9"
+      ]
+    }
+  },
+  "kitAssets": 50,
+  "catalogAssets": 2390,
+  "kitPassing": 50,
+  "kitTotal": 50,
+  "kitPassRate": "100%",
+  "catalogPassing": 2390,
+  "catalogTotal": 2390,
+  "catalogPassRate": "100%",
+  "thinAssets": 0,
+  "previewCount": 50,
+  "allKitPreviewPathsPresent": true,
+  "sourceSha256Matches": true,
+  "eslint": "PASS",
+  "eslintExitCode": 0,
+  "integrationFiles": 4,
+  "integrationTests": 15,
+  "integrationExitCode": 0,
+  "localPage": "PASS",
+  "localPageCheckCount": 19,
+  "catalogBuildExitCode": 0,
+  "previewRenderExitCode": 0,
+  "variantRenderExitCode": 0,
+  "deploymentVerified": false,
+  "physicalAcceptance": false,
+  "passed": true
+}

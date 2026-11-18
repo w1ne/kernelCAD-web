@@ -7,6 +7,7 @@ import { TOOLS } from './toolRegistry';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_TITLES } from './toolTitles';
 import { RETIRED_TOOL_NAMES } from './retiredToolNames';
+import { snakeCasePropertyOffenders } from './snakeCaseArgs';
 
 // Repo root relative to this file: src/agent/mcp → ../../../
 const ROOT = resolve(__dirname, '../../../');
@@ -121,6 +122,17 @@ describe('tool-name consistency', () => {
     const names = TOOLS.map(t => t.name);
     expect(new Set(names).size).toBe(names.length);
     for (const n of names) expect(n).toMatch(/^[a-z][a-z0-9_]*$/);
+  });
+
+  it('every inputSchema property name is snake_case', () => {
+    // Agents invent snake_case (`base_file`) while a camelCase schema key
+    // (`baseFile`) is a silent miss. Nested object args follow the same rule.
+    // JSON Schema keywords (type, exclusiveMinimum, …) are not property names.
+    const offenders = TOOLS.flatMap(tool => snakeCasePropertyOffenders(tool.name, tool.inputSchema));
+    expect(
+      offenders,
+      `MCP inputSchema property names must match /^[a-z][a-z0-9_]*$/:\n${offenders.join('\n')}`,
+    ).toEqual([]);
   });
 
   it('every tool description starts with "Use this when" (ChatGPT-discovery metadata convention)', () => {

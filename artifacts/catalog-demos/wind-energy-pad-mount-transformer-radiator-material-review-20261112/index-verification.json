@@ -1,0 +1,18 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "changedIndexRows": [
+    "wind-farm-pad-mount-transformer"
+  ],
+  "sourceSha256": "30d4213bb9ed5bc82d5f04137bb9168f93614cb8b9aeb055fc8075c9535c5656",
+  "previewSha256": "9ca2a06eb315b68ce64dfc27aa9fc5e7f25fb7901e956b7d0831eca129d461d3",
+  "previewPath": "/assets/wind-energy-wind-farm-pad-mount-transformer.png",
+  "triangles": 360,
+  "sizeM": [
+    0.9,
+    0.973,
+    0.7
+  ],
+  "sourceIndexFresh": true,
+  "previewExists": true
+}

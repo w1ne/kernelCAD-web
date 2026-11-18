@@ -374,11 +374,12 @@ function scenePartMotion(
  *
  * Per-part data is the assembly's authoring-time view: `name` from
  * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
- * and `worldTransform` from the v0.6 mate solver when mates are declared
- * (Pattern A FK over `solveMates(arm, poses)`) or identity otherwise.
- * Identity is a no-op fall-back for v0.5 callers and for kinematic-zero
- * `model()` calls — the lowerer-side body-tree FK on `solvedAssembly`
- * still applies for v0.5 `arm.revolute/.fixed/.prismatic/.ball` joints.
+ * and `worldTransform` from the v0.6 mate solver when resolved transforms
+ * are supplied. `solvedModel()` supplies full capture-time FK; `model()`
+ * supplies synchronous FK when every referenced connector origin is a
+ * numeric vector. Identity is the fallback for mate-free and topology-based
+ * `model()` calls, and for parts the mate graph does not place. The lowerer
+ * still resolves topology connectors and v0.5 body-tree joints at recompute.
  *
  * Precedence: when a part has BOTH an authoring `.translate(...)` chain
  * AND lives in a mate graph, the solver-assigned `worldTransform` wins on
@@ -400,6 +401,7 @@ export function makeScene(
   sceneShape: Shape,
   warnings: readonly SceneDiagnostic[] = [],
   matePartTransforms?: ReadonlyMap<string, Transform>,
+  deferredValidationDiagnostics: readonly ValidatorDiagnostic[] = [],
 ): Scene {
   const sceneFeatureId = sceneShape.id;
   const session = state.session;
@@ -434,6 +436,7 @@ export function makeScene(
     state.mates.length > 0 ? [...state.mates] : undefined,
     warnings,
     state.tendons.length > 0 ? [...state.tendons] : undefined,
+    deferredValidationDiagnostics,
   );
 }
 
@@ -615,15 +618,17 @@ export interface SolvedModelOptions {
    * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
    * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
    * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
-   * detection output still surfaces them on the status bar), but FILTERED
-   * out of the validator's `assembly.interference.overlap` diagnostic
-   * stream — they don't throw under `validate: 'error'` and don't appear
-   * in `scene.warnings` under `validate: 'warn'`.
+   * detection output still surfaces them on the status bar), and filtered
+   * out of `assembly.interference.overlap` and rest-pose
+   * `mechanism.rest-interpenetration` diagnostics for that pair. Rest-pose
+   * mate-gap and joint-continuity checks remain active, as do collision
+   * checks at sampled motion poses. A measured ignored rest overlap emits a
+   * warning and leaves the physical mechanism verdict unverified.
    *
    * This is the granular alternative to `validate: 'off'`. Use it when a
    * specific known-acceptable contact (e.g. a knuckle joint where two arm
-   * parts must touch by design) should not block the validator while
-   * still letting the rest of the validation gate run.
+   * parts must touch by design) should not block rest-pose overlap checks
+   * while mate continuity and sampled motion checks still run.
    */
   ignore?: ReadonlyArray<readonly [string, string]>;
 }
@@ -946,11 +951,11 @@ async function validateSolvedModelGate(
   return { result, envelopeDiagnostics };
 }
 
-/** Phase 4 of `solvedModel` — turn the validator result into either a thrown
- *  `KernelError` (`mode === 'error'`) or an aggregated-warnings `Scene`
- *  (`mode === 'warn'`). Split out of `recordSolvedModel` for the same
- *  complexity-budget reason as `applySolvedModelEntryChecks`; no behavior
- *  change. */
+/** Phase 4 of `solvedModel` — turn the validator result into a thrown
+ *  `KernelError` or an aggregated-diagnostics `Scene`. Overlap-only errors
+ *  are deferred to mechanism truth so evaluate_script can report its
+ *  mechanism-specific verdict. Split out of `recordSolvedModel` for the same
+ *  complexity-budget reason as `applySolvedModelEntryChecks`. */
 /**
  * Prefer mate-solver structural failures over secondary pose/BREP clashes
  * when `validate:'error'` throws a single KernelError.
@@ -992,11 +997,21 @@ function finalizeSolvedModelScene(
 ): Scene {
   if (mode === 'error') {
     const errDiag = pickPrimaryValidateError(result);
+    const errorDiagnostics = result.diagnostics.filter((d) => d.severity === 'error');
+    // `evaluate_script` runs mechanism truth only after the script has built.
+    // Let the overlap-only validator result reach that pass, which reports
+    // the same rest-pose defect as `mechanism.rest-interpenetration` and sets
+    // mechanism=broken. Preserve the validator diagnostics on the Scene for
+    // callers that inspect it directly. Any additional error family remains
+    // a throwing validation failure.
+    const onlyRestPoseOverlaps = errorDiagnostics.length > 0
+      && errorDiagnostics.every((d) => d.code === 'assembly.interference.overlap')
+      && envelopeDiagnostics.every((d) => d.severity !== 'error');
     // Status-driven fallback: `over-constrained` / `did-not-converge`
     // always carry an error-severity diagnostic per validator.ts, so the
     // `errDiag` lookup catches them; the explicit status check below is
     // a belt-and-suspenders guarantee for the spec wording.
-    if (errDiag) {
+    if (errDiag && !onlyRestPoseOverlaps) {
       const siblingErrors = result.diagnostics.filter(
         (d) => d.severity === 'error' && d !== errDiag,
       );
@@ -1009,6 +1024,14 @@ function finalizeSolvedModelScene(
         undefined,
         errDiag.hint,
       );
+    }
+    if (onlyRestPoseOverlaps) {
+      return makeScene(state, sceneShape, [
+        ...result.diagnostics,
+        ...envelopeDiagnostics,
+        ...limitWarnings,
+        ...overlayIntentDiagnostics(state),
+      ], mateT, errorDiagnostics);
     }
     if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
       throw new KernelError(
@@ -1071,9 +1094,11 @@ function finalizeSolvedModelScene(
  * Returns a `Promise<Scene>` (multi-body view, frozen). The Promise
  * wraps the v0.6 mate-aware validator pass — the `opts.validate` gate
  * runs `validateAssemblyWithMates(this)` and either attaches
- * diagnostics to `scene.warnings` (`'warn'`, default), throws on the
- * first error-severity diagnostic (`'error'`), or skips validation
- * (`'off'`). The default flips to `'error'` when
+ * diagnostics to `scene.warnings` (`'warn'`, default), throws on error
+ * diagnostics (`'error'`), or skips validation (`'off'`). An overlap-only
+ * error is retained on the Scene and deferred to evaluate_script's mechanism
+ * truth pass so it can report `mechanism.rest-interpenetration`. The default
+ * flips to `'error'` when
  * `KERNELCAD_VALIDATE_DEFAULT=error` is set in the environment (T10
  * wires this from `kernelcad evaluate`).
  *

@@ -1,0 +1,851 @@
+{
+  "checkedAt": "2026-11-02T22:24:47.705Z",
+  "method": "npx tsx artifacts/catalog-demos/farm-machinery-wave-20261102/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 1015,
+  "generatedAssetPages": 1015,
+  "laboratoryInfrastructurePages": 60,
+  "checkedLaboratoryInfrastructurePages": [
+    {
+      "id": "articulated-4wd-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 576,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bale-accumulator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bale-spear-attachment",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bale-wrapper",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 748,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "chisel-plow",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "combine-harvester",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 448,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "compact-utility-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 516,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "corn-header",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cotton-picker",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 544,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "drip-irrigation-filter-unit",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 420,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "farm-grain-auger",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 284,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fertilizer-spreader",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 160,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "field-cultivator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 416,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "flail-mower-implement",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 324,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "forage-harvester",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 472,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "forage-wagon",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 260,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "front-end-loader-frame",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 172,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "general-purpose-loader-bucket",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grain-bin-aeration-fan",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 140,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grain-cart",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 296,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grain-dryer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grain-header",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "high-clearance-sprayer-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 564,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "irrigation-hose-reel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 268,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "land-leveling-scraper",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "manure-spreader",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 444,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "moldboard-plow",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "no-till-seeder",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 712,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "offset-disc-harrow",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 648,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "orchard-air-blast-sprayer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 400,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "orchard-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 552,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pallet-fork-attachment",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "portable-grain-conveyor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 380,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "potato-harvester",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 600,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "precision-planter",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 716,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pto-shaft-guard",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rear-landscape-rake",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "root-grapple-attachment",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rotary-mower-implement",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 324,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rotary-tedder",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 488,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "round-baler",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 600,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "row-crop-cultivator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 344,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "row-crop-planter",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 756,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "row-crop-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 552,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "seed-drill",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 848,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "self-propelled-field-sprayer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 424,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sicklebar-mower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 368,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "square-baler",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 568,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "stone-picker-implement",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 444,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "subsoiler-implement",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 204,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sugar-beet-harvester",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 612,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "three-point-hitch-frame",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 160,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tracked-field-tractor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 1104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tractor-ballast-weight",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tractor-box-blade",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "tractor-drawbar-hitch",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 92,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "trailed-field-sprayer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 864,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "traveling-sprinkler-cart",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 256,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wheel-hay-rake",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 764,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; this branch has not been deployed"
+}

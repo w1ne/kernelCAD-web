@@ -35,6 +35,20 @@ describe('resetOcct — wasm poison recovery', () => {
     expect(box.isEmpty()).toBe(false);
   }, 120_000);
 
+  it('replaces the old Node exception handlers when OCCT is reset repeatedly', async () => {
+    const before = {
+      uncaughtException: process.listenerCount('uncaughtException'),
+      unhandledRejection: process.listenerCount('unhandledRejection'),
+    };
+
+    await resetOcct();
+    await resetOcct();
+    await resetOcct();
+
+    expect(process.listenerCount('uncaughtException')).toBe(before.uncaughtException);
+    expect(process.listenerCount('unhandledRejection')).toBe(before.unhandledRejection);
+  }, 120_000);
+
   it('recovers sphere/box after a wasm trap on a corrupted object', async () => {
     await initOcct();
     // Production poison was a stale object whose memory had been reused (an

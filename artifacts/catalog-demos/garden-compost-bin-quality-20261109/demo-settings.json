@@ -1,0 +1,30 @@
+{
+  "assetSource": "catalog/kits/garden/compost-bin.kcad.ts",
+  "baselinePreview": "before-preview.png",
+  "defaultPreview": "catalog/kits/garden/previews/compost-bin.png",
+  "triangleBudget": 420,
+  "variants": [
+    { "id": "open", "frontAccess": "open" },
+    { "id": "lower-access", "frontAccess": "lower-access" },
+    { "id": "closed", "frontAccess": "closed" },
+    { "id": "painted", "frontAccess": "open", "preset": "painted" }
+  ],
+  "video": {
+    "file": "compost-bin-quality.mp4",
+    "frameSizePx": [1280, 720],
+    "fps": 30,
+    "secondsPerFrame": 3,
+    "codec": "H.264, yuv420p",
+    "audio": false,
+    "claims": "Local source-driven preview and validation only; not deployed and not physically accepted."
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/garden-compost-bin-quality-20261109/render_garden_previews.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx artifacts/catalog-demos/garden-compost-bin-quality-20261109/render_compost_bin_variants.ts",
+    "python3 artifacts/catalog-demos/garden-compost-bin-quality-20261109/capture_compost_bin_demo.py",
+    "python3 artifacts/catalog-demos/garden-compost-bin-quality-20261109/inspect_compost_bin_video.py",
+    "npx eslint catalog/kits/garden/",
+    "npx vitest run tests/integration/catalog/"
+  ]
+}

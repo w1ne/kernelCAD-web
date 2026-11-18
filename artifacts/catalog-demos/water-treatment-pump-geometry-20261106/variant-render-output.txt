@@ -1,0 +1,62 @@
+(node:3819716) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "command": "npx tsx artifacts/catalog-demos/water-treatment-pump-geometry-20261106/render_water_treatment_variants.ts",
+  "exporter": "exportLowPolyAsset(variantSource(source, indexedPresetAndChoice), sourceFileName)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "asset": "water-treatment/high-lift-pump-skid",
+      "variant": "highVisibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "pumpCapacity": "highFlow"
+      },
+      "sourceSha256": "3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84",
+      "triangles": 1628,
+      "png": "variants/high-lift-pump-skid-highVisibility.png"
+    },
+    {
+      "asset": "water-treatment/horizontal-split-case-pump",
+      "variant": "highVisibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "elastomer": "#282d30",
+        "casingSize": "heavyDuty"
+      },
+      "sourceSha256": "876fb7769dcb8f27d4cd2d198a57ea18b478308d0770561880348a41bb940c5d",
+      "triangles": 1548,
+      "png": "variants/horizontal-split-case-pump-highVisibility.png"
+    },
+    {
+      "asset": "water-treatment/reverse-osmosis-skid",
+      "variant": "two-vessels",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "membraneVessels": "2"
+      },
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "triangles": 2104,
+      "png": "variants/reverse-osmosis-skid-two-vessels.png"
+    },
+    {
+      "asset": "water-treatment/reverse-osmosis-skid",
+      "variant": "four-vessels",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "membraneVessels": "4"
+      },
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "triangles": 3216,
+      "png": "variants/reverse-osmosis-skid-four-vessels.png"
+    }
+  ]
+}

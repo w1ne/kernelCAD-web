@@ -1,0 +1,5 @@
+{
+  "command": "python3 catalog/kits/standard-components/demo/check-static-pages.py",
+  "exitCode": 0,
+  "durationSeconds": 0.0
+}

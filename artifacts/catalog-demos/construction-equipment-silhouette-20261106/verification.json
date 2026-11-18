@@ -1,0 +1,135 @@
+{
+  "status": "passed",
+  "kit": "construction-equipment",
+  "assetsPromotedFromThin": 0,
+  "existingAssetsVisuallyRefined": 3,
+  "catalogAssetCount": 2390,
+  "catalogQuality": {
+    "passed": 2390,
+    "total": 2390,
+    "passRate": "100.00%",
+    "thinAssets": 0
+  },
+  "kitQuality": {
+    "passed": 60,
+    "total": 60,
+    "passRate": "100.00%"
+  },
+  "assets": [
+    {
+      "id": "towable-light-tower",
+      "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
+      "sourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "triangles": 1328,
+      "triangleBudget": 2200,
+      "sizeM": [
+        1.605,
+        2.562,
+        0.868
+      ],
+      "minUpM": 0,
+      "params": [
+        "scale:number",
+        "mastHeight:choice",
+        "lampCount:choice",
+        "equipmentPaintColor:color",
+        "structuralSteelColor:color",
+        "tireRubberColor:color",
+        "lampLensColor:color"
+      ],
+      "materialPalette": [
+        "structuralSteelColor=#89969a",
+        "equipmentPaintColor=#e1a31b",
+        "lampLensColor=#f2dfaa",
+        "tireRubberColor=#252a2d"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/towable-light-tower.png"
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
+      "sourceSha256": "a74ca976fef37316a3f3888dfac77bf127685402da0b30d8ae0da4ff614ad70e",
+      "triangles": 1112,
+      "triangleBudget": 2200,
+      "sizeM": [
+        1.044,
+        0.544434,
+        0.504
+      ],
+      "minUpM": 0,
+      "params": [
+        "scale:number",
+        "bladeCount:choice",
+        "rotorSize:choice",
+        "equipmentPaintColor:color",
+        "structuralSteelColor:color",
+        "rubberColor:color",
+        "seatVinylColor:color"
+      ],
+      "materialPalette": [
+        "structuralSteelColor=#89969a",
+        "equipmentPaintColor=#e1a31b",
+        "seatVinylColor=#32383a",
+        "rubberColor=#303638"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/ride-on-power-trowel.png"
+    },
+    {
+      "id": "concrete-batch-plant",
+      "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
+      "sourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "triangles": 1500,
+      "triangleBudget": 2200,
+      "sizeM": [
+        1.917,
+        2.176,
+        1.476402
+      ],
+      "minUpM": 0,
+      "params": [
+        "scale:number",
+        "aggregateBinCount:choice",
+        "siloHeight:choice",
+        "equipmentPaintColor:color",
+        "structuralSteelColor:color",
+        "aggregateColor:color",
+        "cementSiloColor:color"
+      ],
+      "materialPalette": [
+        "aggregateColor=#758266",
+        "equipmentPaintColor=#e1a31b",
+        "structuralSteelColor=#89969a",
+        "aggregate-conveyor-belt=#303638",
+        "cementSiloColor=#c3c8c3",
+        "control-cabin-window=#8eb6ba"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/concrete-batch-plant.png"
+    }
+  ],
+  "materialColorControlsAdded": 6,
+  "presetVariantBlocksExtended": 6,
+  "newPresetNames": 0,
+  "previewsRerendered": 60,
+  "index": {
+    "assetsVerified": 60,
+    "sourceHashesMatch": true,
+    "previewPathsPresent": true
+  },
+  "localPagesChecked": 3,
+  "eslint": "passed",
+  "catalogIntegration": {
+    "status": "passed",
+    "files": 4,
+    "tests": 15
+  },
+  "renderInspect": {
+    "status": "failed_cdp_attach",
+    "reason": "Playwright connected to the existing Chrome CDP websocket, then timed out after 30000 ms; the command required that attachment and did not launch a second browser.",
+    "existingChromeRemainedOpen": true,
+    "pageCountBefore": 4,
+    "pageCountAfter": 4,
+    "softwareRenderedPreviewsInspected": 3
+  },
+  "deployment": "not deployed",
+  "physicalAcceptance": "not claimed"
+}

@@ -1,0 +1,339 @@
+{
+  "date": "2026-11-02",
+  "source": "catalog/kits/garden/*.kcad.ts",
+  "command": "for f in catalog/kits/garden/*.kcad.ts; do npx tsx scripts/checkCatalogAsset.ts \"$f\"; done",
+  "result": "40/40 passed",
+  "checks": {
+    "allWithinTriangleBudget": true,
+    "opaqueMaterialsPerAsset": 1,
+    "baseOriginAtZ0": true
+  },
+  "assets": [
+    {
+      "id": "bat-box",
+      "source": "catalog/kits/garden/bat-box.kcad.ts",
+      "triangles": 84,
+      "triangleBudget": 280,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "bird-feeder-post",
+      "source": "catalog/kits/garden/bird-feeder-post.kcad.ts",
+      "triangles": 108,
+      "triangleBudget": 360,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "birdbath",
+      "source": "catalog/kits/garden/birdbath.kcad.ts",
+      "triangles": 216,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "birdhouse-post",
+      "source": "catalog/kits/garden/birdhouse-post.kcad.ts",
+      "triangles": 148,
+      "triangleBudget": 320,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "coiled-garden-hose",
+      "source": "catalog/kits/garden/coiled-garden-hose.kcad.ts",
+      "triangles": 200,
+      "triangleBudget": 280,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "cold-frame",
+      "source": "catalog/kits/garden/cold-frame.kcad.ts",
+      "triangles": 108,
+      "triangleBudget": 320,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "compost-bin",
+      "source": "catalog/kits/garden/compost-bin.kcad.ts",
+      "triangles": 348,
+      "triangleBudget": 420,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "compost-tumbler",
+      "source": "catalog/kits/garden/compost-tumbler.kcad.ts",
+      "triangles": 296,
+      "triangleBudget": 340,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "drip-irrigation-row",
+      "source": "catalog/kits/garden/drip-irrigation-row.kcad.ts",
+      "triangles": 224,
+      "triangleBudget": 360,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-arbor",
+      "source": "catalog/kits/garden/garden-arbor.kcad.ts",
+      "triangles": 132,
+      "triangleBudget": 420,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-cloche",
+      "source": "catalog/kits/garden/garden-cloche.kcad.ts",
+      "triangles": 222,
+      "triangleBudget": 260,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-gnome",
+      "source": "catalog/kits/garden/garden-gnome.kcad.ts",
+      "triangles": 192,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-hose-reel",
+      "source": "catalog/kits/garden/garden-hose-reel.kcad.ts",
+      "triangles": 328,
+      "triangleBudget": 340,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-kneeling-pad",
+      "source": "catalog/kits/garden/garden-kneeling-pad.kcad.ts",
+      "triangles": 84,
+      "triangleBudget": 220,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-lattice-trellis",
+      "source": "catalog/kits/garden/garden-lattice-trellis.kcad.ts",
+      "triangles": 180,
+      "triangleBudget": 440,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-orb-sculpture",
+      "source": "catalog/kits/garden/garden-orb-sculpture.kcad.ts",
+      "triangles": 222,
+      "triangleBudget": 240,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-pergola",
+      "source": "catalog/kits/garden/garden-pergola.kcad.ts",
+      "triangles": 204,
+      "triangleBudget": 520,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-pinwheel",
+      "source": "catalog/kits/garden/garden-pinwheel.kcad.ts",
+      "triangles": 214,
+      "triangleBudget": 220,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-sundial",
+      "source": "catalog/kits/garden/garden-sundial.kcad.ts",
+      "triangles": 288,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-thermometer",
+      "source": "catalog/kits/garden/garden-thermometer.kcad.ts",
+      "triangles": 168,
+      "triangleBudget": 260,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "garden-vertical-planter",
+      "source": "catalog/kits/garden/garden-vertical-planter.kcad.ts",
+      "triangles": 360,
+      "triangleBudget": 440,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "greenhouse-staging-shelf",
+      "source": "catalog/kits/garden/greenhouse-staging-shelf.kcad.ts",
+      "triangles": 168,
+      "triangleBudget": 480,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "grow-bag-planter",
+      "source": "catalog/kits/garden/grow-bag-planter.kcad.ts",
+      "triangles": 156,
+      "triangleBudget": 240,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "insect-hotel",
+      "source": "catalog/kits/garden/insect-hotel.kcad.ts",
+      "triangles": 360,
+      "triangleBudget": 420,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "mini-greenhouse",
+      "source": "catalog/kits/garden/mini-greenhouse.kcad.ts",
+      "triangles": 204,
+      "triangleBudget": 560,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "oscillating-sprinkler",
+      "source": "catalog/kits/garden/oscillating-sprinkler.kcad.ts",
+      "triangles": 264,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "plant-label-set",
+      "source": "catalog/kits/garden/plant-label-set.kcad.ts",
+      "triangles": 180,
+      "triangleBudget": 220,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "plant-obelisk",
+      "source": "catalog/kits/garden/plant-obelisk.kcad.ts",
+      "triangles": 332,
+      "triangleBudget": 360,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "potting-bench",
+      "source": "catalog/kits/garden/potting-bench.kcad.ts",
+      "triangles": 144,
+      "triangleBudget": 400,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "potting-soil-sack",
+      "source": "catalog/kits/garden/potting-soil-sack.kcad.ts",
+      "triangles": 144,
+      "triangleBudget": 220,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "propagation-dome",
+      "source": "catalog/kits/garden/propagation-dome.kcad.ts",
+      "triangles": 266,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "rain-chain",
+      "source": "catalog/kits/garden/rain-chain.kcad.ts",
+      "triangles": 336,
+      "triangleBudget": 360,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "rain-gauge",
+      "source": "catalog/kits/garden/rain-gauge.kcad.ts",
+      "triangles": 184,
+      "triangleBudget": 260,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "raised-bed-trellis",
+      "source": "catalog/kits/garden/raised-bed-trellis.kcad.ts",
+      "triangles": 204,
+      "triangleBudget": 420,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "rotary-sprinkler",
+      "source": "catalog/kits/garden/rotary-sprinkler.kcad.ts",
+      "triangles": 240,
+      "triangleBudget": 260,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "row-cover-tunnel",
+      "source": "catalog/kits/garden/row-cover-tunnel.kcad.ts",
+      "triangles": 204,
+      "triangleBudget": 380,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "seedling-tray",
+      "source": "catalog/kits/garden/seedling-tray.kcad.ts",
+      "triangles": 288,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "tomato-cage",
+      "source": "catalog/kits/garden/tomato-cage.kcad.ts",
+      "triangles": 240,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "weather-vane",
+      "source": "catalog/kits/garden/weather-vane.kcad.ts",
+      "triangles": 204,
+      "triangleBudget": 320,
+      "minUpM": 0,
+      "materials": 1
+    },
+    {
+      "id": "worm-composter",
+      "source": "catalog/kits/garden/worm-composter.kcad.ts",
+      "triangles": 152,
+      "triangleBudget": 300,
+      "minUpM": 0,
+      "materials": 1
+    }
+  ],
+  "catalogIndexGate": {
+    "command": "npx vitest run tests/integration/catalog/catalogIndex.test.ts",
+    "result": "passed: 2 tests",
+    "durationSeconds": 60.05
+  },
+  "previewCount": 40
+}

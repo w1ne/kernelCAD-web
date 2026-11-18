@@ -1,0 +1,41 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 1163ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  688ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 1159ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  640ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1724ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 1711ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  1167ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 1895ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  1026ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2076ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1500ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2409ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1337ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  641ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 2778ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  2239ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 2765ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  1270ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 2800ms
+     ✓ keeps its belt flights visible in the generated catalog preview  2188ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 3465ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  1808ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1125ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 350ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 6616ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  4253ms
+     ✓ has a material-removing helix and two real radial hub bores  1588ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 14403ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  426ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  11986ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  411ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 524856ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  523922ms
+
+ Test Files  15 passed (15)
+      Tests  30 passed (30)
+   Start at  03:17:39
+   Duration  530.90s (transform 61.87s, setup 1.65s, import 91.20s, tests 570.17s, environment 1ms)

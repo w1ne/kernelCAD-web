@@ -1,0 +1,39 @@
+EXIT CODE: 0
+{
+  "status": "passed",
+  "catalogQuality": {
+    "passed": 2390,
+    "total": 2390,
+    "passRate": "100.00%",
+    "thinAssets": 0
+  },
+  "kitQuality": {
+    "passed": 60,
+    "total": 60,
+    "passRate": "100.00%"
+  },
+  "assets": [
+    {
+      "id": "towable-light-tower",
+      "triangles": 1328,
+      "budget": 2200
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "triangles": 1112,
+      "budget": 2200
+    },
+    {
+      "id": "concrete-batch-plant",
+      "triangles": 1500,
+      "budget": 2200
+    }
+  ],
+  "previewsRerendered": 60,
+  "localPagesChecked": 3,
+  "catalogIntegration": {
+    "status": "passed",
+    "files": 4,
+    "tests": 15
+  }
+}

@@ -1,0 +1,9 @@
+Result: ok = false
+assembly.joint.static-hold.no-actuator [warn]
+No arm.revolute/arm.prismatic joint with a declared actuator
+capacity was evaluated, so this check has no holding-capacity
+coverage. Moving mate(s) skipped: 'base-yaw',
+'shoulder-pitch', 'elbow-pitch', 'wrist-pitch'. Mate-only
+mechanicalJoint chains are not yet covered by checkStaticHold.
+Declare actuator: { torqueNm } on arm.revolute(...) or
+actuator: { forceN } on arm.prismatic(...).

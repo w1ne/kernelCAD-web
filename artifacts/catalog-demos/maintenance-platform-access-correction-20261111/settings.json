@@ -1,0 +1,27 @@
+{
+  "asset": "industrial-plant/maintenance-platform",
+  "sourceSnapshots": {
+    "before": "source/before/catalog/kits/industrial-plant/maintenance-platform.kcad.ts (HEAD 06131e4b4)",
+    "after": "source/after/catalog/kits/industrial-plant/maintenance-platform.kcad.ts"
+  },
+  "render": {
+    "pipeline": "buildCatalogAssetWithGlb + scripts/lib/glbSoftwareRender.ts",
+    "previewSizePx": 512,
+    "pitchDeg": 22,
+    "defaultYawDeg": 35,
+    "alternateYawDeg": 120,
+    "label": "asset title and triangle count"
+  },
+  "video": {
+    "file": "maintenance-platform-access-correction.mp4",
+    "codec": "H.264, yuv420p",
+    "frameSizePx": "512x512",
+    "frameRate": 24,
+    "sequence": [
+      "Before: single isolated step",
+      "After: 3-tread access stair, aligned handrails, three-sided guard",
+      "After: alternate view of the same model"
+    ],
+    "invocation": "bash artifacts/catalog-demos/maintenance-platform-access-correction-20261111/make-video.sh"
+  }
+}

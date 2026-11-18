@@ -1,0 +1,7 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --kit vet-clinic",
+  "exitCode": 0,
+  "passed": 50,
+  "total": 50,
+  "thin": 0
+}

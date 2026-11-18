@@ -1,0 +1,8 @@
+(node:328713) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+checkout-counter/cleanStore: 188 tris
+checkout-counter/nightRestock: 188 tris
+shopping-cart/cleanStore: 908 tris
+shopping-cart/nightRestock: 908 tris
+upright-drink-cooler/cleanStore: 816 tris
+upright-drink-cooler/nightRestock: 816 tris

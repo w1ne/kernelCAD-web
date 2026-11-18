@@ -97,4 +97,55 @@ export const DFM_CODES = {
     group: 'dfm',
     description: "The part's extents in the declared FDM build direction exceed the selected printer profile's bed on some axis.",
   },
+  // Injection-moulding check (6) — dfmSpec({ process: 'moulding' }): draft,
+  // undercuts, thin and thick walls, sharp internal corners, and an explicit
+  // marker for anything the check could not measure.
+  'dfm.moulding.undercut': {
+    hintTemplate:
+      'Material blocks this face from releasing along the pull direction, so the part locks in the mould. Remove the overhang, core it out from the pull direction, change pullDirection, or budget a side action / lifter.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'open the face to the pull direction or move the feature onto a side action' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A ray from a face toward the mould half it releases into (±pull direction, by the side the face faces) hits the part itself.',
+  },
+  'dfm.moulding.draft-insufficient': {
+    hintTemplate:
+      'A face that slides against the mould on ejection has less draft than minDraftDeg, so it drags, scuffs and raises ejection force. Apply shape.draft(angle, { face, pullDir }) to the face (1° smooth finish; add ~1° per 0.025 mm texture depth).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add draft >= minDraftDeg to the reported face' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A face whose normal is not parallel to the pull direction has a measured draft angle below the declared minimum.',
+  },
+  'dfm.moulding.thin-wall': {
+    hintTemplate:
+      'Melt freezes off in walls thinner than minWallMm before the cavity fills (short shot). Thicken the section to the nominal wall, or lower minWallMm only for a high-flow resin.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'thicken the wall at the reported xyz to >= minWallMm' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Inward ray sampling measured a moulded wall thinner than the declared moulding minimum.',
+  },
+  'dfm.moulding.thick-wall': {
+    hintTemplate:
+      'Sections thicker than maxWallMm cool slowly and shrink more than their surroundings: sink marks, voids and warp. Core the section out to the nominal wall and recover stiffness with ribs (rib thickness 50-60 % of the wall).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'core out the thick section at the reported xyz to <= maxWallMm' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'The largest inscribed sphere of the part (voxel distance transform refined by exact mesh distance) is wider than the declared moulding maximum wall.',
+  },
+  'dfm.moulding.sharp-corner': {
+    hintTemplate:
+      'An internal corner tighter than minRadiusMm concentrates stress and disturbs flow. Fillet the concave edge (inside radius about half the wall, outside radius = inside + wall).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'fillet the reported concave edge to >= minRadiusMm' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A concave crease between two faces (radius 0) or a concave cylindrical blend with a radius below the declared minimum.',
+  },
+  'dfm.moulding.unmeasured': {
+    hintTemplate:
+      'The moulding check could not measure this quantity on this part, so it is NOT passed — it is unknown. Inspect the part for open or degenerate geometry with evaluate and re-run.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A moulding measurement produced no usable sample (no wall ray hit, empty voxel grid, or face normals unavailable).',
+  },
 } as const satisfies Record<`dfm.${string}`, DiagnosticCodeSpec>;

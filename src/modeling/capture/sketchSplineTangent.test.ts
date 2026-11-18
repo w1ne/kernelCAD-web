@@ -47,6 +47,26 @@ describe('path().spline — tangent extension (V slice)', () => {
     expect(splineCmd.endTangent?.y.evaluated).toBe(0);
   });
 
+  it('rejects a misspelled endpoint tangent before recording the spline', () => {
+    const builder = makePath().moveTo(0, 0);
+    const opts = {
+      startTangent: [1, 0],
+      endTanget: [1, 0],
+    } as unknown as NonNullable<Parameters<typeof builder.spline>[1]>;
+    let caught: KernelError | undefined;
+
+    try {
+      builder.spline([[0, 0], [5, 10], [10, 0]], opts);
+    } catch (error) {
+      caught = error as KernelError;
+    }
+
+    expect(caught).toBeInstanceOf(KernelError);
+    expect(caught?.code).toBe('feature.invalid-args');
+    expect(caught?.message).toMatch(/opts\.endTanget.*unknown option/i);
+    expect((builder as unknown as PathBuilderInternal).commands.some((command) => command.kind === 'spline')).toBe(false);
+  });
+
   it('throws tangent-zero-magnitude on a [0, 0] startTangent', () => {
     let caught: KernelError | undefined;
     try {

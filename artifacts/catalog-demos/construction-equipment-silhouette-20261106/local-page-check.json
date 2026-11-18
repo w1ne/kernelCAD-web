@@ -1,0 +1,86 @@
+{
+  "status": "passed",
+  "pagesChecked": 3,
+  "rows": [
+    {
+      "id": "towable-light-tower",
+      "page": "/tmp/kernelcad-construction-equipment-silhouette-20261106-pages-nSRTeB/catalog/construction-equipment/towable-light-tower/index.html",
+      "previewSha256": "c7989048c0b360c1065816eb5a1d8f575c498ec60570dcc6625fcfbee12a2d2f",
+      "materials": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "tireRubberColor",
+        "lampLensColor"
+      ],
+      "shapeChoices": {
+        "mastHeight": [
+          "1200",
+          "1800",
+          "2400"
+        ],
+        "lampCount": [
+          "2",
+          "4",
+          "6"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "page": "/tmp/kernelcad-construction-equipment-silhouette-20261106-pages-nSRTeB/catalog/construction-equipment/ride-on-power-trowel/index.html",
+      "previewSha256": "e597a1ea2ed825c0a7518c2546ce86f86e3c21d0c7834ff55339fe0e3df02357",
+      "materials": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "rubberColor",
+        "seatVinylColor"
+      ],
+      "shapeChoices": {
+        "bladeCount": [
+          "4",
+          "6"
+        ],
+        "rotorSize": [
+          "compact",
+          "standard",
+          "wide"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "concrete-batch-plant",
+      "page": "/tmp/kernelcad-construction-equipment-silhouette-20261106-pages-nSRTeB/catalog/construction-equipment/concrete-batch-plant/index.html",
+      "previewSha256": "4eafef3970c612c3445cc0720ff546886ad7bd268d48199151e1c4d97783472a",
+      "materials": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "aggregateColor",
+        "cementSiloColor"
+      ],
+      "shapeChoices": {
+        "aggregateBinCount": [
+          "2",
+          "3",
+          "4"
+        ],
+        "siloHeight": [
+          "1200",
+          "1500",
+          "1900"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ]
+    }
+  ]
+}

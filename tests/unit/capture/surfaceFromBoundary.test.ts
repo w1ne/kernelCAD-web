@@ -3,6 +3,7 @@ import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isKernelError } from '../../../src/shared/intent/kernelError';
+import type { Curve3D } from '../../../src/modeling/capture/curveProxy';
 
 describe('surfaceFromBoundary()', () => {
   beforeAll(async () => {
@@ -104,5 +105,41 @@ describe('surfaceFromBoundary()', () => {
     } else {
       throw new Error('expected coonsPatch record');
     }
+  });
+});
+
+describe('surfaceFromBoundary() option keys', () => {
+  function quad() {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const curves = [
+      kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 }),
+      kcad.nurbsCurve([[10, 0, 0], [10, 10, 0]], { degree: 1 }),
+      kcad.nurbsCurve([[10, 10, 0], [0, 10, 0]], { degree: 1 }),
+      kcad.nurbsCurve([[0, 10, 0], [0, 0, 0]], { degree: 1 }),
+    ] as [Curve3D, Curve3D, Curve3D, Curve3D];
+    return { session, kcad, curves };
+  }
+  const surfaceCount = (session: CaptureSession) => session.getSurfaceRecords().length;
+
+  it('rejects an unknown key such as samples instead of filling at the default', () => {
+    const { session, kcad, curves } = quad();
+    const before = surfaceCount(session);
+    expect(() => kcad.surfaceFromBoundary(curves, { samples: 40 } as never)).toThrow(
+      /surfaceFromBoundary\(curves, opts\): opts\.samples .*unknown option 'samples'.*continuity, sampling/,
+    );
+    expect(surfaceCount(session)).toBe(before);
+  });
+
+  it('rejects a positional continuity', () => {
+    const { kcad, curves } = quad();
+    expect(() => kcad.surfaceFromBoundary(curves, 'C1' as never)).toThrow(
+      /surfaceFromBoundary\(curves, opts\?\): opts .*options object/,
+    );
+  });
+
+  it('accepts every documented key', () => {
+    const { kcad, curves } = quad();
+    expect(() => kcad.surfaceFromBoundary(curves, { continuity: 'C1', sampling: 30 })).not.toThrow();
   });
 });
