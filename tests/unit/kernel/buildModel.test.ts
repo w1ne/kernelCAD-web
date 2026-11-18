@@ -407,4 +407,24 @@ describe('updateModelParams on a param used as a plain number', () => {
     await expect(updateModelParams(model, [{ name: 'w', value: 500 }])).rejects.toThrow(/above max 200/);
     expect(extentX(model)).toBeCloseTo(64, 6);
   });
+
+  it('preserves a symbolic edit when a later plain-math edit rebuilds from source', async () => {
+    let model = await buildModel({
+      fileName: 'mixed-param-edits.kcad.ts',
+      code: `
+        const w = param('w', 60);
+        const t = param('t', 5);
+        const base = box(20, 20, 5);
+        const plate = box(w + 4, 30, t).translate(0, 40, 0);
+        return base.union(plate);
+      `,
+    });
+
+    model = (await updateModelParams(model, [{ name: 't', value: 10 }])).model;
+    model = (await updateModelParams(model, [{ name: 'w', value: 80 }])).model;
+
+    expect(model.session.paramTable.get('t').value).toBe(10);
+    expect(model.rootShape).toBeDefined();
+    expect((model.rootShape as OcctBackend).volume()).toBeCloseTo(27_200, 5);
+  });
 });

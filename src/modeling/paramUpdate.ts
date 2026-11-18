@@ -117,6 +117,30 @@ async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]
     });
   }
   let code = model.code;
+
+  // A previous symbolic edit can live only in the session ParamTable: its
+  // source default is still the original value. Carry those current values
+  // into the rewritten source before applying this edit, or rebuilding a
+  // plain-math param would silently reset unrelated controls to their old
+  // defaults. Keep this conservative: if a changed value cannot be written
+  // back into source, fail instead of returning a model with lost edits.
+  const editedNames = new Set(edits.map((edit) => edit.name));
+  for (const entry of model.session.paramTable.list()) {
+    if (editedNames.has(entry.name) || Object.is(entry.value, entry.defaultValue)) continue;
+    const rewritten = setParamValue(code, entry.name, entry.value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      invalidArgs({
+        api: 'params.update(edits)',
+        path: 'edits[].name',
+        got: entry.name,
+        requires: `a source param declaration that can be rewritten so the current value is preserved (${rewritten.error ?? 'not found'})`,
+        example: "const thickness = param('thickness', 5);",
+        hintSlug: 'invalid-args.param.not-found',
+      });
+    }
+    code = rewritten.new_code;
+  }
+
   for (const edit of edits) {
     const rewritten = setParamValue(code, edit.name, edit.value);
     if (!rewritten.ok || rewritten.new_code === undefined) {
