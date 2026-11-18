@@ -41286,7 +41286,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-taper.png",
-      "sourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
+      "sourceSha256": "e2d04293ed7b555c55bd2a0d8b3079dbba24617b5c665e822ca6a53e17d6586c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41362,8 +41362,7 @@
           "color": "#3999a1",
           "parts": [
             "infeed-belt",
-            "outfeed-belt",
-            "tape-head"
+            "outfeed-belt"
           ],
           "param": "foodPolymer"
         },
@@ -41374,6 +41373,7 @@
             "upright-front",
             "upright-back",
             "bridge",
+            "tape-head",
             "adjuster-front",
             "adjuster-back",
             "hmi"

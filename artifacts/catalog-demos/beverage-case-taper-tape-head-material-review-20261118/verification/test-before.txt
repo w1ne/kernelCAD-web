@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/caseTaperTapeRollMaterial.test.ts (1 test | 1 failed) 656ms
+     × renders the tape roll as packing tape, not food-grade polymer 291ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/caseTaperTapeRollMaterial.test.ts > beverage-bottling-line/case-taper materials > renders the tape roll as packing tape, not food-grade polymer
+AssertionError: tape-head should use the metal finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/caseTaperTapeRollMaterial.test.ts:57:85
+     55|     const head = colorsFor('tape-head');
+     56|     expect(head.length).toBeGreaterThan(0);
+     57|     expect(head.every(matches('#aebdc1')), 'tape-head should use the m…
+       |                                                                                     ^
+     58|   }, 120_000);
+     59| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  03:10:00
+   Duration  10.75s (transform 8.16s, setup 163ms, import 9.65s, tests 656ms, environment 0ms)

@@ -15,7 +15,7 @@ beforeAll(async () => {
 }, 120_000);
 
 describe('beverage-bottling-line/case-taper materials', () => {
-  it('renders the tape roll as packing tape, not food-grade polymer', async () => {
+  it('keeps the packing tape roll and metal tape head in their material roles', async () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
 
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
@@ -54,6 +54,6 @@ describe('beverage-bottling-line/case-taper materials', () => {
     expect(roll.every(matches('#c39058')), 'tape-roll should be packing tape').toBe(true);
     const head = colorsFor('tape-head');
     expect(head.length).toBeGreaterThan(0);
-    expect(head.every(matches('#3999a1')), 'tape-head should keep its polymer finish').toBe(true);
+    expect(head.every(matches('#aebdc1')), 'tape-head should use the metal finish').toBe(true);
   }, 120_000);
 });
