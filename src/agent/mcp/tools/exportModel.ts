@@ -36,14 +36,18 @@ import type { StressInfillReport } from '../../script-runtime/stressInfillExport
 import type { MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
+type ModelExportOptions<T = ExportOptions> = T extends ExportOptions
+  ? Omit<T, 'format'> & { format?: T['format'] }
+  : never;
+
 export interface ExportModelInput {
   file?: string;
   code?: string;
   output_path: string;
   format: ExportFormat;
   feature_id?: string;
-  /** Per-format options bag; discriminator `options.format` must match `format`. */
-  options?: ExportOptions;
+  /** Per-format options. An optional discriminator must match the outer format. */
+  options?: ModelExportOptions;
   /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
   /** Geometry-quality gate for stl/step/3mf/obj/ply/gcode: 'warn' (default), 'block' or 'off'. */
@@ -177,6 +181,13 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
   };
 }
 
+function modelExportOptions({ format, options, no_verify }: ExportModelInput): ExportOptions | undefined {
+  // The runtime owns the format mismatch diagnostic for an explicit discriminator.
+  const skipVerification = (format === 'stl' || format === 'step') && no_verify;
+  if (!options && !skipVerification) return undefined;
+  return { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions;
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -195,7 +206,7 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
-  const { output_path, format, feature_id, options } = input;
+  const { output_path, format, feature_id } = input;
 
   const inputError = validateExportModelInput(input);
   if (inputError !== undefined) {
@@ -207,12 +218,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
-  // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
-  // options bag (the runtime gate is default-on for both formats).
-  let effectiveOptions: ExportOptions | undefined = (format === 'stl' || format === 'step') && input.no_verify
-    ? { ...(options ?? {}), format, verify: false } as ExportOptions
-    : options;
-  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
+  const effectiveOptions = withInfillOutDir(format, modelExportOptions(input), output_path);
 
   let result;
   let sceneSummary = unavailableSceneSummary();
@@ -263,7 +269,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   const diagnostics = [...result.diagnostics];
-  const infill = await infillOutput(result.infillReport, options, diagnostics);
+  const infill = await infillOutput(result.infillReport, input.options, diagnostics);
 
   return {
     ok: errorDiagnostics.length === 0,
