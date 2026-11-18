@@ -122,6 +122,8 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
   visualQa?: DrawingVisualQaOptions;
   /** Single front elevation, or the complete default four-view sheet. */
   views?: readonly DrawingViewName[];
+  /** Show hidden edges in orthographic views. Defaults to true. */
+  hiddenLines?: boolean;
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
   pdfSheet?: boolean;
   draftingProfile?: DraftingProfileId | DraftingProfile;
@@ -463,7 +465,7 @@ export function renderSvgDrawing(
     h: bounds.max[2] - bounds.min[2],
   };
 
-  const styled = projectSheetViews(shape, explodedShape);
+  const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false);
   const viewBoxes = {
     front: styled.front.box,
     top: styled.top.box,
@@ -552,6 +554,7 @@ export function renderSvgDrawing(
 function projectSheetViews(
   shape: AnyShape,
   explodedShape: AnyShape | undefined,
+  hiddenLines: boolean,
 ): Record<DrawingViewName, StyledView> {
   const styled = {} as Record<DrawingViewName, StyledView>;
   // One preparation serves every view of the assembled shape.
@@ -559,7 +562,7 @@ function projectSheetViews(
   try {
     for (const name of VIEW_NAMES) {
       const camera = makeDrawingCamera(name);
-      const options = { withHidden: name !== 'iso' };
+      const options = { withHidden: hiddenLines && name !== 'iso' };
       const raw = name === 'iso' && explodedShape !== undefined
         ? projectShapeForDrawing(explodedShape, camera, options)
         : assembled.project(camera, options);

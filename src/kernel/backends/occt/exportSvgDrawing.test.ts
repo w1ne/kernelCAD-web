@@ -178,6 +178,11 @@ describe('exportSvgDrawing', () => {
     const topVisible = classGroup(top, 'visible');
     expect(countPaths(topVisible)).toBeGreaterThanOrEqual(2);
 
+    const clean = decode(exportSvgDrawing([part], { format: 'svg-drawing', hiddenLines: false }));
+    expect(countPaths(classGroup(viewGroup(clean, 'front'), 'hidden'))).toBe(0);
+    expect(classGroup(viewGroup(clean, 'front'), 'visible')).toBe(classGroup(front, 'visible'));
+    expect(classGroup(viewGroup(clean, 'top'), 'visible')).toBe(topVisible);
+
     // The isometric pictorial never carries hidden lines.
     const iso = viewGroup(svg, 'iso');
     expect(countPaths(classGroup(iso, 'hidden'))).toBe(0);
