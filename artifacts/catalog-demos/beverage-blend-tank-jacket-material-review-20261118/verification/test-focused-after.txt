@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts > beverage-bottling-line/beverage-blend-tank jacket material > keeps the sanitary vessel and jacket stainless while the legs stay powder-coated 227ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:01:14
+   Duration  6.31s (transform 4.62s, setup 115ms, import 5.53s, tests 509ms, environment 0ms)

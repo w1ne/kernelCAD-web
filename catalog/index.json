@@ -38798,7 +38798,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/beverage-blend-tank.kcad.ts",
       "preview": "/assets/beverage-bottling-line-beverage-blend-tank.png",
-      "sourceSha256": "734726728395b032ae36bc3624cf8d58ef5f6073ee5509c99f04e6f59ca74293",
+      "sourceSha256": "7432a6b58158f0ce53f3fdd086799426b3b42a9a7cc66ce44d5a7815e4b15f5c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -38859,6 +38859,7 @@
             "vessel-shell",
             "top-head",
             "bottom-head",
+            "jacket-band",
             "manway",
             "shaft",
             "impeller-a",
@@ -38873,7 +38874,6 @@
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
-            "jacket-band",
             "agitator-drive",
             "leg-0",
             "leg-1",

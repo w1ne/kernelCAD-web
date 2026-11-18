@@ -1,0 +1,1 @@
+PASS — `python3 artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/make_demo.py` exited 0 and generated the inspected 15-second H.264 MP4.
