@@ -1,0 +1,16 @@
+{
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "kitCountBefore": 50,
+  "kitCountAfter": 50,
+  "changedRows": [
+    "beverage-bottling-line/carton-bottom-sealer"
+  ],
+  "sourceSha256Index": "bc900b35694f9dee94b1981b4a0b0e7f56d8fadc4ae0fea13f1a66c96fd79ea5",
+  "sourceSha256Actual": "bc900b35694f9dee94b1981b4a0b0e7f56d8fadc4ae0fea13f1a66c96fd79ea5",
+  "sourceHashMatches": true,
+  "previewPath": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
+  "previewExists": true,
+  "triangles": 176,
+  "triangleBudget": 2200
+}

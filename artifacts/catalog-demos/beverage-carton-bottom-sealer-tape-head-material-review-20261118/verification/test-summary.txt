@@ -1,0 +1,6 @@
+Command: npx vitest run tests/integration/catalog/ --reporter=verbose
+Exit code: 0
+Test Files  153 passed (153)
+Tests       223 passed (223)
+Duration:   830.97 seconds reported by Vitest
+The suite included catalogIndex.test.ts, which rebuilt all 2,402 catalog sources and verified the committed index against the exact serialized build.

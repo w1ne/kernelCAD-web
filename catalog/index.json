@@ -40565,7 +40565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-bottom-sealer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
-      "sourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
+      "sourceSha256": "bc900b35694f9dee94b1981b4a0b0e7f56d8fadc4ae0fea13f1a66c96fd79ea5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -40635,7 +40635,8 @@
             "infeed-bed",
             "outfeed-bed",
             "tower-left",
-            "tower-right"
+            "tower-right",
+            "tape-head"
           ],
           "param": "stainlessSteel"
         },
@@ -40643,7 +40644,6 @@
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "tape-head",
             "tape-roll",
             "guide-0",
             "guide-1",

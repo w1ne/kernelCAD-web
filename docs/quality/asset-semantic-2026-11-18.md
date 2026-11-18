@@ -100,3 +100,26 @@ The indexed envelope and simplified machine silhouette remain unresolved
 semantic concerns; this material correction does not address them. The public
 page was checked before the branch change. The source is not deployed, and the
 software preview is not an equipment simulation or hardware-acceptance result.
+
+## Beverage bottling line: carton-sealer tape head
+
+PR #1258 was merged with all reported checks successful and no submitted
+review. The five rendered previews `cap-feed-hopper`, `slip-sheet-dispenser`,
+`stretch-wrapper`, `wraparound-labeler`, and `carton-bottom-sealer` were checked
+against current open issues and PRs; none of the selected source paths or IDs
+was targeted. No material mismatch was established in the first four samples.
+
+In `carton-bottom-sealer`, `finishPart` matched `tape-head` through the generic
+`tape` token and colored the metal applicator mechanism as food-grade polymer.
+The part now uses the existing `stainlessSteel` control; `tape-roll` remains on
+`foodPolymer`. Geometry, IDs, presets and the 176-triangle mesh are unchanged.
+The focused GLB regression failed against the baseline source and passes with
+the correction. The rendered preview was regenerated and the catalog index
+rebuilt with its current source hash. The [handoff bundle](../../artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/README.md)
+contains the five-preview ledger, live baseline, before/after captures, test,
+verification logs and inspected MP4. A dated official equipment-material
+comparison is retained in `kernelCAD-private`.
+
+The public detail page, source and preview matched the pre-edit branch baseline
+before the change. The feature branch is not deployed; this is a local
+software-render and GLB material check, not simulation or hardware acceptance.

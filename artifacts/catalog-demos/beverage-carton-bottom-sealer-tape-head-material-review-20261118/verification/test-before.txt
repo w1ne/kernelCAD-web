@@ -1,0 +1,4 @@
+Command: npx vitest run tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts --reporter=verbose
+Run: 2026-11-18 19:00:54 UTC, before changing carton-bottom-sealer.kcad.ts
+Result: 1 test failed as intended against the baseline source.
+Failure: expected stainlessSteel palette parts to include 'tape-head'; baseline assigned the taping head to foodPolymer.
