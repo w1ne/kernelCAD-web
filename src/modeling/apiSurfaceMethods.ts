@@ -79,32 +79,7 @@ export function makeNurbsSurfaceMethods(
   session: CaptureSession,
 ): Pick<KernelCadApi, 'nurbsSurface' | 'surfaceFromCurves' | 'nurbsCurve' | 'spline3d'> {
   return {
-    nurbsSurface(opts) {
-      assertOptionKeys(
-        'nurbsSurface',
-        ['controls', 'weights', 'degree', 'knots', 'periodic'],
-        'nurbsSurface({ controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]], degree: { u: 1, v: 1 } })',
-        opts,
-      );
-      validateNurbsControls(opts.controls);
-      validateNurbsDegree(opts.controls, opts.degree);
-      if (opts.weights && !isRectangularGrid(opts.weights as unknown[][])) {
-        throw new KernelError(
-          'feature.nurbs.degenerate-controls',
-          `nurbsSurface: weights grid must be the same rectangular shape as controls; got ${describeGridShape(opts.weights)}.`,
-          undefined,
-          'nurbs.degenerate-controls — weights grid must match controls shape.',
-        );
-      }
-      return session.addNurbsSurface({
-        kind: 'nurbsSurface',
-        controls: opts.controls,
-        weights: opts.weights,
-        degree: opts.degree,
-        knots: opts.knots,
-        periodic: opts.periodic,
-      });
-    },
+    nurbsSurface: opts => captureNurbsSurface(session, opts),
 
     surfaceFromCurves(sections) {
       if (!Array.isArray(sections) || sections.length < 2) {
@@ -207,6 +182,36 @@ export function makeNurbsSurfaceMethods(
       });
     },
   };
+}
+
+function captureNurbsSurface(
+  session: CaptureSession,
+  opts: Parameters<KernelCadApi['nurbsSurface']>[0],
+): ReturnType<KernelCadApi['nurbsSurface']> {
+  assertOptionKeys(
+    'nurbsSurface',
+    ['controls', 'weights', 'degree', 'knots', 'periodic'],
+    'nurbsSurface({ controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]], degree: { u: 1, v: 1 } })',
+    opts,
+  );
+  validateNurbsControls(opts.controls);
+  validateNurbsDegree(opts.controls, opts.degree);
+  if (opts.weights && !isRectangularGrid(opts.weights as unknown[][])) {
+    throw new KernelError(
+      'feature.nurbs.degenerate-controls',
+      `nurbsSurface: weights grid must be the same rectangular shape as controls; got ${describeGridShape(opts.weights)}.`,
+      undefined,
+      'nurbs.degenerate-controls — weights grid must match controls shape.',
+    );
+  }
+  return session.addNurbsSurface({
+    kind: 'nurbsSurface',
+    controls: opts.controls,
+    weights: opts.weights,
+    degree: opts.degree,
+    knots: opts.knots,
+    periodic: opts.periodic,
+  });
 }
 
 export function makeCurveMethods(
