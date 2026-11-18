@@ -8,7 +8,7 @@ import { built, noShape, type LowerContext, type LowerOutcome } from './context'
 
 /** `importedStep` / `importedBrep` / `importedStl` — one arm for all three. */
 export function lowerImported(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  // `lib.fromSTEP` / `lib.fromBREP` / `lib.fromSTL` all ran their import
+  // `lib.fromSTEP` / `lib.fromBREP` / `lib.fromSTL` / `lib.from3MF` all ran their import
   // at capture time (host-side fs read + the format's OCCT reader); the
   // resulting OcctBackend was parked in `lowerer.importedGeometry` keyed
   // by feature id. Lowering is a hand-back — the geometry is already a

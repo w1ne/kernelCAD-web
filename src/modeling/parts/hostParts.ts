@@ -3,7 +3,7 @@
 //
 // Capability-guarded façade over the node-only parts features.
 //
-// `lib.fromSTEP` / `fromBREP` / `fromSTL` read files off disk; `lib.findPart`,
+// `lib.fromSTEP` / `fromBREP` / `fromSTL` / `from3MF` read files off disk; `lib.findPart`,
 // `lib.fetchPart` and `lib.standard.*` additionally reach the parts catalog
 // (disk cache + network). Their implementations pull `node:fs`, `node:crypto`,
 // `node:path` and `node:url`, and `src/modeling/api.ts` imported all of them
@@ -27,6 +27,7 @@ import type { Sketch } from '../capture/sketch';
 import type { CaptureSession } from '../capture/captureSession';
 import type { FromStepOptions } from './fromSTEP';
 import type { FromSTLOptions } from './fromMeshFormats';
+import type { From3MFOptions } from './fromMeshFormats';
 import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
 import type { FetchPartOpts } from './fetchPart';
 import type { FindPartOpts, FindPartResult } from './findPart';
@@ -63,6 +64,16 @@ export async function fromSTLViaHost(
   requireHostFs('lib.fromSTL()');
   const { fromSTL } = await import('./fromMeshFormats');
   return fromSTL(ctx, path, opts);
+}
+
+export async function from3MFViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts: From3MFOptions,
+): Promise<Shape> {
+  requireHostFs('lib.from3MF()');
+  const { from3MF } = await import('./fromMeshFormats');
+  return from3MF(ctx, path, opts);
 }
 
 export async function meshFromSTLViaHost(
