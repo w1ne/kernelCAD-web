@@ -181,6 +181,13 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
   };
 }
 
+function modelExportOptions({ format, options, no_verify }: ExportModelInput): ExportOptions | undefined {
+  // The runtime owns the format mismatch diagnostic for an explicit discriminator.
+  const skipVerification = (format === 'stl' || format === 'step') && no_verify;
+  if (!options && !skipVerification) return undefined;
+  return { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions;
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -199,7 +206,7 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
-  const { output_path, format, feature_id, options } = input;
+  const { output_path, format, feature_id } = input;
 
   const inputError = validateExportModelInput(input);
   if (inputError !== undefined) {
@@ -211,13 +218,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
-  // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
-  // options bag (the runtime gate is default-on for both formats).
-  const skipVerification = (format === 'stl' || format === 'step') && input.no_verify;
-  let effectiveOptions = options || skipVerification
-    ? { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions
-    : undefined;
-  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
+  const effectiveOptions = withInfillOutDir(format, modelExportOptions(input), output_path);
 
   let result;
   let sceneSummary = unavailableSceneSummary();
@@ -268,7 +269,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   const diagnostics = [...result.diagnostics];
-  const infill = await infillOutput(result.infillReport, options, diagnostics);
+  const infill = await infillOutput(result.infillReport, input.options, diagnostics);
 
   return {
     ok: errorDiagnostics.length === 0,
