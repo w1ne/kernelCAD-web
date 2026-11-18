@@ -305,8 +305,28 @@ function resolveCallerPoses(
       resolved[name] = value;
       continue;
     }
+    if (mate.type === 'fastened') {
+      invalidArgs({
+        api: 'solve_mates({ poses })',
+        path: `poses.${name}`,
+        got: value,
+        requires: "no pose for a 'fastened' mate because it has zero articulation DOFs",
+        example: "arm.mate('swing', 'servo.shaft', 'arm.hub', 'revolute'); solve_mates({ poses: { swing: 90 } })",
+        hintSlug: 'invalid-args.assembly.mate-pose-on-zero-dof-mate',
+      });
+    }
     const pose = resolveMatePose(mate, arm, { [name]: value });
-    if (pose !== undefined) resolved[name] = pose as NumericPoses[string];
+    if (pose === undefined) {
+      invalidArgs({
+        api: 'solve_mates({ poses })',
+        path: `poses.${name}`,
+        got: value,
+        requires: "a solver-supported mate pose; planar mates do not accept pose overrides",
+        example: "arm.mate('swing', 'servo.shaft', 'arm.hub', 'revolute'); solve_mates({ poses: { swing: 90 } })",
+        hint: 'Use an articulated mate with a supported pose coordinate, or omit this override.',
+      });
+    }
+    resolved[name] = pose as NumericPoses[string];
   }
   return resolved;
 }

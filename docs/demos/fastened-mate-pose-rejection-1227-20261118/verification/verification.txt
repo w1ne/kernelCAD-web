@@ -1,0 +1,18 @@
+Node: v24.22.2
+
+Reproduction before the fix:
+- `PATH="/home/andrii/.nvm/versions/node/v24.22.2/bin:$PATH" node_modules/.bin/vitest run src/modeling/mates/solver.test.ts --reporter=dot -t 'caller pose overrides on fastened mates'`
+- Failed as expected: the promise resolved with `{ status: 'solved' }` and identity poses instead of rejecting the unsupported override.
+
+Focused verification after the fix:
+- `PATH="/home/andrii/.nvm/versions/node/v24.22.2/bin:$PATH" node_modules/.bin/vitest run src/modeling/mates/solver.test.ts --reporter=dot -t 'caller pose overrides on (fastened|planar) mates'` — 2 passed, 16 skipped.
+- `PATH="/home/andrii/.nvm/versions/node/v24.22.2/bin:$PATH" node_modules/.bin/vitest run tests/integration/mcp/solveMates.test.ts --reporter=dot -t 'rejects a pose override for a fastened mate'` — 1 passed, 6 skipped.
+- `PATH="/home/andrii/.nvm/versions/node/v24.22.2/bin:$PATH" node_modules/.bin/eslint src/modeling/mates/solver.ts src/modeling/mates/solver.test.ts tests/integration/mcp/solveMates.test.ts` — passed.
+- `PATH="/home/andrii/.nvm/versions/node/v24.22.2/bin:$PATH" npm run typecheck` — passed.
+
+Demo inspection:
+- `python3 docs/demos/fastened-mate-pose-rejection-1227-20261118/capture_demo.py` — encoded 1280x720 H.264, yuv420p, 24 fps, 9 seconds.
+- `python3 docs/demos/fastened-mate-pose-rejection-1227-20261118/inspect_demo.py` — inspected 1s, 4s, and 7s frames; text and local-only caption are legible.
+- MP4 SHA-256: `f384b25c4faf6f48392152a80b945f6a7050a1df81c85f1e94a743cbf5af069e` (103,613 bytes).
+
+Scope: local solver and MCP argument validation only. No hosted deployment, animation playback, physical simulation, or hardware acceptance was run.
