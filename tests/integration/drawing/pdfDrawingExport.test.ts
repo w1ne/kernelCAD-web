@@ -198,6 +198,19 @@ describe('pdf-drawing: views and annotations', () => {
     expect(hidden[0].dash.map(d => Math.round(d * 100) / 100)).toEqual([1.6, 0.8]);
   });
 
+  it('suppresses hidden paths in the exported PDF when requested', async () => {
+    const standard = await exportPdf(BRACKET);
+    const clean = await exportPdf(BRACKET, { hiddenLines: false });
+    const isVisible = (path: PdfPageVectors['paths'][number]) =>
+      path.stroked && Math.abs(path.widthMm - 0.5) < 1e-3 && path.dash.length === 0;
+    const isHidden = (path: PdfPageVectors['paths'][number]) =>
+      path.stroked && Math.abs(path.widthMm - 0.25) < 1e-3 && path.dash.length > 0;
+    expect(clean.page.paths.filter(isHidden)).toHaveLength(0);
+    expect(standard.page.paths.filter(isHidden).length).toBeGreaterThan(0);
+    expect(clean.page.paths.filter(isVisible)).toEqual(standard.page.paths.filter(isVisible));
+    expect(textsOf(clean.page)).toEqual(textsOf(standard.page));
+  });
+
   it('carries the automatic dimensions, hole callouts and GD&T', () => {
     const texts = textsOf(bracket.page).join(' | ');
     expect(texts).toContain('4× Ø6.6 THRU');
