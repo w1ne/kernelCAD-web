@@ -28,7 +28,8 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FromSTEPContext } from './fromSTEP';
 
-const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
+const DISPLAY_STL_MAX_MIB = 80;
+const DISPLAY_STL_MAX_BYTES = DISPLAY_STL_MAX_MIB * 1024 * 1024;
 
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
@@ -135,12 +136,12 @@ export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<S
   requirePath(path, 'meshFromSTL', '.stl');
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
   const buf = await readOrThrow(absPath, path, 'meshFromSTL');
-  if (buf.byteLength > IMPORT_MAX_BYTES) {
+  if (buf.byteLength > DISPLAY_STL_MAX_BYTES) {
     invalidArgs({
       api: 'lib.meshFromSTL(path)',
       path: 'path',
       gotText: `${absPath} (${buf.byteLength} bytes)`,
-      requires: 'an STL file no larger than 50 MiB (the per-file limit is 50 MiB)',
+      requires: `an STL file no larger than ${DISPLAY_STL_MAX_MIB} MiB (the per-file limit is ${DISPLAY_STL_MAX_MIB} MiB)`,
       example: "lib.meshFromSTL('./parts/bracket.stl')",
       hintSlug: 'invalid-args.lib.meshFromSTL.file-too-large',
     });

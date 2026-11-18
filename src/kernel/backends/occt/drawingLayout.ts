@@ -345,10 +345,10 @@ export interface SheetLayout {
 }
 
 /** One elevation centred in the usable sheet, with room for dimensions. */
-export function computeFrontSheetLayout(front: ViewBox2, sheet: SheetSpec): SheetLayout {
+export function computeFrontSheetLayout(front: ViewBox2, sheet: SheetSpec, requestedScale?: number): SheetLayout {
   const usableW = sheet.w - 2 * sheet.margin - 24;
   const usableH = sheet.h - 2 * sheet.margin - sheet.titleBlock.h - 30;
-  const scale = pickDrawingScale(Math.min(usableW / front.w, usableH / front.h));
+  const scale = requestedScale ?? pickDrawingScale(Math.min(usableW / front.w, usableH / front.h));
   const w = front.w * scale, h = front.h * scale;
   const x = sheet.margin + (usableW - w) / 2;
   const y = sheet.margin + (usableH - h) / 2;
@@ -375,8 +375,9 @@ export function computeSheetLayout(
   views: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
   projection: ProjectionAngle = 'third',
+  requestedScale?: number,
 ): SheetLayout {
-  if (projection === 'first') return computeFirstAngleLayout(views, sheet);
+  if (projection === 'first') return computeFirstAngleLayout(views, sheet, requestedScale);
   const { margin, gap } = sheet;
   const availW = sheet.w - 2 * margin;
   const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
@@ -389,7 +390,7 @@ export function computeSheetLayout(
     (availW - 2 * gap) / needW,
     (availH - gap - DIM_BAND) / needH,
   );
-  const s = pickDrawingScale(raw);
+  const s = requestedScale ?? pickDrawingScale(raw);
 
   const contentW = needW * s + 2 * gap;
   const contentH = needH * s + gap + DIM_BAND;
@@ -468,6 +469,7 @@ export function computeSheetLayout(
 function computeFirstAngleLayout(
   views: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
+  requestedScale?: number,
 ): SheetLayout {
   const { margin, gap } = sheet;
   const availW = sheet.w - 2 * margin;
@@ -485,7 +487,7 @@ function computeFirstAngleLayout(
     (availW - 2 * gap) / needW,
     (availH - gap - topBand) / needH,
   );
-  const s = pickDrawingScale(raw);
+  const s = requestedScale ?? pickDrawingScale(raw);
 
   const contentW = needW * s + 2 * gap;
   const contentH = needH * s + gap + topBand;

@@ -16,12 +16,27 @@ const tmpDir = mkdtempSync(join(tmpdir(), 'kcad-mesh-import-'));
 afterAll(() => rmSync(tmpDir, { recursive: true, force: true }));
 
 describe('lib.meshFromSTL file limits', () => {
-  it('rejects a file larger than 50 MiB with a clear diagnostic', async () => {
+  it('preserves all facets in a dense binary display STL', async () => {
+    const path = join(tmpDir, 'dense.stl');
+    const triangles = 1_450_000;
+    const bytes = Buffer.alloc(84 + 50 * triangles);
+    bytes.writeUInt32LE(triangles, 80);
+    for (let offset = 84; offset < bytes.length; offset += 50) {
+      bytes.writeFloatLE(1, offset + 24);
+      bytes.writeFloatLE(1, offset + 40);
+    }
+    writeFileSync(path, bytes);
+    const session = new CaptureSession();
+    const mesh = await meshFromSTL({ session, scriptDir: tmpDir }, 'dense.stl');
+    expect(session.getRecords().find(record => record.id === mesh.id)?.metadata?.triangleCount).toBe(triangles);
+  });
+
+  it('rejects a file larger than 80 MiB with a clear diagnostic', async () => {
     const path = join(tmpDir, 'large.stl');
     writeFileSync(path, new Uint8Array());
-    truncateSync(path, 50 * 1024 * 1024 + 1);
+    truncateSync(path, 80 * 1024 * 1024 + 1);
     await expect(meshFromSTL({ session: new CaptureSession(), scriptDir: tmpDir }, 'large.stl'))
-      .rejects.toThrow(/per-file limit is 50 MiB/i);
+      .rejects.toThrow(/per-file limit is 80 MiB/i);
   });
 
   it('stops a fillet with display mesh inputs before OCCT lowering', async () => {

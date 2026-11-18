@@ -161,6 +161,7 @@ export type ExportOptions =
   | (DrawingReviewOptions & {
       format: 'svg-drawing';
       hiddenLines?: boolean;
+      scale?: number;
       visualQa?: DrawingVisualQaOptions;
       /** Printable review preview with PDF sheet and title-block defaults. */
       pdfSheet?: boolean;
@@ -225,6 +226,7 @@ export type ExportOptions =
 export interface PdfDrawingOptions extends DrawingReviewOptions {
   format: 'pdf-drawing';
   hiddenLines?: boolean;
+  scale?: number;
   /** Inspect the serialized sheet and generated PDF. With autoRepair enabled,
    *  the export may retry on up to three larger standard sheets. */
   visualQa?: DrawingVisualQaOptions;

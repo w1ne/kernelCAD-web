@@ -124,6 +124,8 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
   views?: readonly DrawingViewName[];
   /** Show hidden edges in orthographic views. Defaults to true. */
   hiddenLines?: boolean;
+  /** Explicit paper-to-model scale ratio, such as 0.2 for 1:5. */
+  scale?: number;
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
   pdfSheet?: boolean;
   draftingProfile?: DraftingProfileId | DraftingProfile;
@@ -390,7 +392,7 @@ function computeDrawingPage(ctx: DrawingStageInput,
   const { parts, options, dims, sectionSpecs, shape, styled, viewBoxes, projection, frontOnly } = ctx;
   const hasSections = sectionSpecs.length > 0;
   const { sheet, page, size: sheetSize } = resolveSheet({ ...options, sheet: size }, viewBoxes, projection, hasSections);
-  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection);
+  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection, options.scale);
   const s = gridLayout.scale;
   const annotate = (layout: SheetLayout): DrawingPagePass => {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -447,6 +449,9 @@ export function renderSvgDrawing(
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
   options = applyDraftingProfile(options);
+  if (options.scale !== undefined && (!Number.isFinite(options.scale) || options.scale <= 0)) {
+    throw new Error('Drawing scale must be a finite positive paper-to-model ratio.');
+  }
   const frontOnly = validateDrawingViewSelection(options);
   const reviewPlans = validateDrawingReviewOptions(options, options.declarations?.reviewPlans);
   options = { ...options, reviewPlans };
