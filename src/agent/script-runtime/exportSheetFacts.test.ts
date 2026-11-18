@@ -37,6 +37,19 @@ describe('DXF export sheet facts', () => {
         expect(made.sheet).toEqual({ thicknessMm: 2, bendCount: 1 });
     });
 
+    it('sections an off-origin solid without shifting its planar coordinates', async () => {
+        const made = await runAndExport({
+            code: 'return box(80, 4, 65).translate(311, 228, -74);',
+            fileName: 'translated.kcad.ts',
+            format: 'dxf',
+            options: { format: 'dxf', section: { axis: 'y', at: 230.5 } },
+        });
+        const text = new TextDecoder().decode(made.bytes);
+        expect(made.diagnostics).toEqual([]);
+        expect(text).toContain('10\n311.000000\n20\n-74.000000');
+        expect(text).toContain('10\n391.000000\n20\n-9.000000');
+    });
+
     it('reports nothing for a cross-section, which is not a sheet', async () => {
         const made = await runAndExport({
             code: 'return box(20, 20, 20);',
