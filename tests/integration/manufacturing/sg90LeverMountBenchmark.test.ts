@@ -16,8 +16,10 @@
 //   5. a LeverReach edit through set_param's source rewrite lengthens the
 //      lever and stays clash-free over the swing;
 //   6. seeded defects (the horn pressed 1 mm onto the gear housing, a pocket
-//      narrower than the servo body, M1.6 holes in place of M2 clearance)
-//      fail. The second is caught by the build itself.
+//      narrower than the servo body, M1.6 holes in place of M2 clearance,
+//      a missing revolute mate that leaves the arm disconnected, and a
+//      fastened mate on the axis connectors) fail. The pocket and wrong-mate
+//      defects are caught by the build itself.
 // Not verified: SG90 supplier variant, spline engagement, screws, stall
 // torque, and the ear-hole pitch (moving a hole keeps every volume and box).
 // Tolerances are this fixture's own: 0.1 % on volume, 0.01 mm on positions,
@@ -184,6 +186,32 @@ describe('manufacturing benchmark 08: SG90 servo lever on a printed plate (#1227
     const codes = evaluated.diagnostics.map((diagnostic) => diagnostic.code);
     expect(codes).toContain('mechanism.joint-mesh-gap');
     expect(codes).toContain('assembly.mechanical.connector-not-in-solid');
+  }, 180_000);
+
+  it('catches a missing revolute mate that strands the servo arm', async () => {
+    const code = inject(SOURCE,
+      "mount.mate('swing', 'servo.shaft', 'arm.hub', 'revolute', { limitsDeg: [0, 180] });\n",
+      '');
+
+    // The shapes and fixed servo/plate mate remain valid; the independently
+    // authored arm must not be accepted as a mechanism after its drive mate is
+    // removed from the graph.
+    const evaluated = await evaluateScriptTool({ code });
+    expect(evaluated.ok).toBe(false);
+    expect(evaluated.mechanism).toBe('broken');
+    expect(evaluated.diagnostics.map((diagnostic) => diagnostic.code)).toContain('mechanism.orphan-part');
+  }, 180_000);
+
+  it('rejects a fastened mate substituted for the actuated swing', async () => {
+    const code = inject(SOURCE,
+      "mount.mate('swing', 'servo.shaft', 'arm.hub', 'revolute', { limitsDeg: [0, 180] });",
+      "mount.mate('swing', 'servo.shaft', 'arm.hub', 'fastened');");
+    const evaluated = await evaluateScriptTool({ code });
+    expect(evaluated.ok).toBe(false);
+    const error = evaluated.diagnostics.find((diagnostic) => diagnostic.severity === 'error');
+    expect(error?.code).toBe('feature.invalid-args');
+    expect(error?.message).toMatch(/'servo\.shaft' is a 'axis' connector.*'arm\.hub' is a 'axis' one/);
+    expect(error?.message).toMatch(/'fastened' two 'frame'/);
   }, 180_000);
 
   it('a LeverReach edit lengthens the lever and stays clash-free', async () => {

@@ -43,7 +43,7 @@ describe('authoring feature capture records', () => {
       source: { kind: 'sketchCommands', commands: SAMPLE_COMMANDS },
       face: 'front',
       scaleMode: 'bounds',
-      asEdge: true,
+      asEdge: false,
     });
 
     const authoringRecords = session.exportSession().records.filter((record) => (
@@ -163,7 +163,7 @@ describe('authoring feature capture records', () => {
         metadata: {
           source: { kind: 'sketchCommands', commands: SAMPLE_COMMANDS },
           scaleMode: 'bounds',
-          asEdge: true,
+          asEdge: false,
           faceRef: { kind: 'canonical', face: 'front' },
         },
       },

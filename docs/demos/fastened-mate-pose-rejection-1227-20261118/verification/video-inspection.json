@@ -1,0 +1,27 @@
+{
+  "video": "demo.mp4",
+  "sha256": "f384b25c4faf6f48392152a80b945f6a7050a1df81c85f1e94a743cbf5af069e",
+  "metadata": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "9.000000",
+      "size": "103613"
+    }
+  },
+  "inspectedSeconds": [
+    1,
+    4,
+    7
+  ],
+  "visualInspection": "Titles, topology labels, error text, and local-verification caption are legible in the sampled frames.",
+  "source": "capture_demo.py"
+}
