@@ -1,0 +1,13 @@
+{
+  "workflow": "case-04 Pi camera mount placement drift regression",
+  "source": "tests/fixtures/manufacturing/pi-camera-mount.kcad.ts",
+  "test": "tests/integration/manufacturing/piCameraMountBenchmark.test.ts",
+  "mutation": "assembly.part mount at x changes from 20 mm to 21 mm",
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-pose-drift-1227-20261118/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/piCameraMountBenchmark.test.ts --reporter=dot"
+}
