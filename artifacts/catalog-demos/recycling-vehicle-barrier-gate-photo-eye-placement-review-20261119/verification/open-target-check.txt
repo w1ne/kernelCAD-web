@@ -1,0 +1,6 @@
+Candidate source files checked against the open PR #1507 diff (git diff --name-only origin/develop...HEAD at 49fcb5ad9): no matches.
+gh search issues "<id>" --repo w1ne/kernelCAD-web --state open returned zero results for each of the five candidate IDs.
+gh search prs "<id>" --repo w1ne/kernelCAD-web --state open returned zero results for four IDs. "roller-conveyor-section" returned PR #1507 (this lane): its body names the bottling-line carton roller conveyor, not recycling-facility/roller-conveyor-section.
+Open PRs at audit time: #1507 (this lane), #1309, #1253, #1094. None names a vehicle barrier gate, tyre drop-off rack, truck wheel wash, recycling roller conveyor section or walking-floor trailer asset.
+No earlier .md file under artifacts/catalog-demos/ names any of the five IDs (grep over the concatenated ledgers: 0 hits each).
+Selection method: recycling-facility has 96 assets that no earlier ledger names. A contact sheet of 20 of their rendered previews was opened; five site-equipment assets were then checked at full preview resolution and in source.

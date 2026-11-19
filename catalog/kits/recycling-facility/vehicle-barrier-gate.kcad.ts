@@ -95,12 +95,14 @@ if (restPost.value) {
   for (const y of [-55, 55]) add(`rest-fork-${y}`, blk(RX, y, HZ - 120, 150, 18, 170).color('#2b2d2f'));
 }
 
-// Photo-eye pair either side of the lane, just behind the boom.
-for (const [i, y] of [[0, -600], [1, 600]] as const) {
-  const x = BX + 900;
-  add(`eye-post-${i}`, blk(x, y, 0, 80, 80, 620).color(cabinet));
-  add(`eye-head-${i}`, blk(x, y, 620, 110, 110, 150).color('#2b2d2f'));
-  add(`eye-lens-${i}`, cylinder(10, 26, 12).rotateX(i === 0 ? -90 : 90).translate(x, i === 0 ? y + 55 : y - 55, 700).color('#d23a2a'));
+// Photo-eye pair either side of the lane, just ahead of the boom on the road
+// side: one post by the cabinet plinth, one in line with the rest post,
+// lenses facing each other so the beam crosses the lane.
+const EY = -300;
+for (const [i, x] of [[0, 420], [1, BX + L - 200]] as const) {
+  add(`eye-post-${i}`, blk(x, EY, 0, 80, 80, 620).color(cabinet));
+  add(`eye-head-${i}`, blk(x, EY, 620, 110, 110, 150).color('#2b2d2f'));
+  add(`eye-lens-${i}`, cylinder(10, 26, 12).rotateY(i === 0 ? 90 : -90).translate(i === 0 ? x + 55 : x - 55, EY, 700).color('#d23a2a'));
 }
 
 return p.model();

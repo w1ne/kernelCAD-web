@@ -270084,7 +270084,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/vehicle-barrier-gate.kcad.ts",
       "preview": "/assets/recycling-facility-vehicle-barrier-gate.png",
-      "sourceSha256": "77290924b6b973c777dcbcd123b0f6aeabfc975215d7e5584859ebaebe53a6a3",
+      "sourceSha256": "eaa2427e4365ee20843a20e4120cb43b29d21da01117b04fb512e3b60760d288",
       "triangleBudget": 2400,
       "params": [
         {
@@ -270163,7 +270163,7 @@
         "sizeM": [
           4.52,
           1.266,
-          1.31
+          0.595
         ],
         "minUpM": 0,
         "materials": 1
