@@ -5,8 +5,9 @@
 // aluminium horn and steel screw heads without splitting the servo into one
 // assembly part (and one fastened mate) per colour.
 //
-// Cut faces take the body's finish: the cable notch below is ABS, not the
-// cutter's finish. A finish on the union result would recolour every face.
+// A cut face takes the finish of the faces around it, never the cutter's:
+// the cable notch below is ABS. A finish on the union result would recolour
+// every face.
 //
 // Dimensions are a representative SG90-size envelope, not a vendor drawing.
 

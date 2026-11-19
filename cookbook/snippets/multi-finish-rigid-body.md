@@ -39,8 +39,9 @@ const horn = union(
 const screwA = cylinder(1.2, 1.9).translate(13.8, 0, 18).finish('steel');
 const screwB = cylinder(1.2, 1.9).translate(-13.8, 0, 18).finish('steel');
 
-// A cut face takes the body's finish, never the cutter's. A finish on the
-// union result would recolour every face, so leave the result unfinished.
+// A cut or fillet face takes the finish of the faces around it (here ABS),
+// never the cutter's. A finish on the union result would recolour every
+// face, so leave the result unfinished.
 const notch = box(3, 4, 2, true).translate(-11.4, 0, 3);
 return union(caseShell, horn, screwA, screwB).subtract(notch);
 ```

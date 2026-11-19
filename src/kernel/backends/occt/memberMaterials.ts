@@ -22,8 +22,12 @@
 // Rules that follow:
 //   - an appearance set on the result (or anything downstream of a member)
 //     still covers every face, so `union(a, b).finish('x')` is unchanged;
-//   - faces a cutter left behind (a bore, a pocket wall) and faces born in a
-//     later feature (a fillet) take the body's appearance: the primary
+//   - a face with no member in its lineage (the wall a cutter left behind,
+//     a blend face born in a later fillet) takes the finish of the faces
+//     around it when they agree: a bore drilled only through the horn has
+//     aluminium walls, a rounded horn rim stays aluminium. Where the
+//     neighbours differ (a blend across the case/horn seam) or nothing
+//     around it resolves, it takes the body's appearance: the primary
 //     lineage default, exactly what the whole-body path already used;
 //   - only faces whose source differs from that default are listed, so a
 //     model whose operands share one finish produces no per-face entries.
@@ -149,18 +153,12 @@ export function memberMaterialsByFace(
   }
   const defaultPbr = defaultId === undefined ? undefined : ownAppearance(recordById.get(defaultId));
   const defaultKey = defaultPbr === undefined ? undefined : JSON.stringify(defaultPbr);
-  const out: MaterialByFaceIndex = {};
-  let any = false;
-  faces.forEach((face, index) => {
-    let hash: string;
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      hash = faceHashOf(face as any);
-    } catch {
-      return;
-    }
-    const lineage = history.get(hash);
-    if (lineage === undefined) return;
+  // Per face: a member finish, DEFAULT (the body's own), or undefined when no
+  // material-side record with an appearance is in the face's lineage (a
+  // blend face born in a fillet, the wall a cutter left behind).
+  const resolved: Array<PBRMaterial | typeof DEFAULT | undefined> = faces.map((face) => {
+    const lineage = history.get(hashOf(face));
+    if (lineage === undefined) return undefined;
     const chain = lineage.descendsFrom
       ?? [lineage.rootFeatureId, ...(lineage.featureId !== undefined ? [lineage.featureId] : [])];
     for (let i = chain.length - 1; i >= 0; i--) {
@@ -168,14 +166,79 @@ export function memberMaterialsByFace(
       if (!side.has(id)) continue;
       const pbr = ownAppearance(recordById.get(id));
       if (pbr === undefined) continue;
-      // A member finished like the body adds nothing; list only faces that
-      // render differently from the whole-shape default.
-      if (id !== defaultId && JSON.stringify(pbr) !== defaultKey) {
-        out[index] = pbr;
-        any = true;
-      }
-      return;
+      return id === defaultId || JSON.stringify(pbr) === defaultKey ? DEFAULT : pbr;
     }
+    return undefined;
+  });
+  inheritFromNeighbours(faces, resolved);
+
+  const out: MaterialByFaceIndex = {};
+  let any = false;
+  resolved.forEach((r, index) => {
+    if (r === undefined || r === DEFAULT) return;
+    out[index] = r;
+    any = true;
   });
   return any ? out : undefined;
+}
+
+const DEFAULT = Symbol('body-default');
+
+function hashOf(shape: unknown): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return faceHashOf(shape as any);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * A face with no member in its lineage takes the finish of the faces around
+ * it when they all agree: a fillet rounding the horn's rim stays aluminium, a
+ * bore drilled only through the horn has aluminium walls. A face between two
+ * different finishes (a blend across the case/horn seam) keeps the body
+ * default. Blend chains (vertex blends touching only other blends) settle
+ * over a few passes.
+ */
+function inheritFromNeighbours(
+  faces: readonly unknown[],
+  resolved: Array<PBRMaterial | typeof DEFAULT | undefined>,
+): void {
+  if (!resolved.some((r) => r === undefined)) return;
+  const facesByEdge = new Map<string, number[]>();
+  const edgesOfFace: string[][] = faces.map((face, index) => {
+    let edges: unknown[] = [];
+    try {
+      edges = (face as { edges: unknown[] }).edges;
+    } catch {
+      edges = [];
+    }
+    const hashes = edges.map((edge) => hashOf(edge)).filter((h) => h !== '');
+    for (const h of hashes) {
+      const list = facesByEdge.get(h);
+      if (list === undefined) facesByEdge.set(h, [index]);
+      else if (!list.includes(index)) list.push(index);
+    }
+    return hashes;
+  });
+  const keyOf = (r: PBRMaterial | typeof DEFAULT): string => (r === DEFAULT ? '' : JSON.stringify(r));
+  for (let pass = 0; pass < 4; pass++) {
+    let changed = false;
+    const prev = resolved.slice();
+    prev.forEach((r, index) => {
+      if (r !== undefined) return;
+      const seen = new Map<string, PBRMaterial | typeof DEFAULT>();
+      for (const edge of edgesOfFace[index]!) {
+        for (const other of facesByEdge.get(edge) ?? []) {
+          const n = other === index ? undefined : prev[other];
+          if (n !== undefined) seen.set(keyOf(n), n);
+        }
+      }
+      if (seen.size === 0) return;
+      resolved[index] = seen.size === 1 ? [...seen.values()][0]! : DEFAULT;
+      changed = true;
+    });
+    if (!changed) return;
+  }
 }

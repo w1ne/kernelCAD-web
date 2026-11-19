@@ -91,6 +91,36 @@ describe('union() keeps each member finish on its own faces', () => {
     expect(names).toEqual(new Set(['abs', 'aluminium']));
   });
 
+  it('a fillet after the union keeps member finishes; a blend on the horn rim stays aluminium', async () => {
+    const { features, tailId } = await meshes(`${SERVO}\nreturn union(caseBody, horn).fillet(0.5);`);
+    const body = features.find((f) => f.featureId === tailId)!;
+    expect(body.material?.name).toBe('abs');
+    const faces = faceNames(body);
+    expect(new Set(faces.map((f) => f.name))).toEqual(new Set(['abs', 'aluminium']));
+    // The horn's top rim blend: a curved band whose every vertex sits just
+    // under the horn top (z 37.5..38) — not the flat top disc.
+    const rim = body.faces
+      .map((face, i) => ({ face, name: faces[i]!.name }))
+      .filter(({ face }) => {
+        const v = face.vertices;
+        let minZ = Infinity, maxZ = -Infinity;
+        for (let i = 2; i < v.length; i += 3) { minZ = Math.min(minZ, v[i]!); maxZ = Math.max(maxZ, v[i]!); }
+        return minZ > 37.4 && maxZ - minZ > 0.1;
+      });
+    expect(rim.length).toBeGreaterThan(0);
+    for (const f of rim) expect(f.name).toBe('aluminium');
+  });
+
+  it('a bore drilled only through one member has that member finish', async () => {
+    const { features, tailId } = await meshes(
+      `${SERVO}\nreturn union(caseBody, horn).subtract(cylinder(4, 1).translate(0, 0, 34).finish('steel'));`,
+    );
+    const body = features.find((f) => f.featureId === tailId)!;
+    const bore = faceNames(body).filter((f) => Math.hypot(f.c[0], f.c[1]) < 1.01 && f.c[2] > 34);
+    expect(bore.length).toBeGreaterThan(0);
+    for (const f of bore) expect(f.name).toBe('aluminium');
+  });
+
   it('a finish on the union result still covers every face', async () => {
     const { features, tailId } = await meshes(`${SERVO}\nreturn union(caseBody, horn, screw).finish('brass');`);
     const body = features.find((f) => f.featureId === tailId)!;

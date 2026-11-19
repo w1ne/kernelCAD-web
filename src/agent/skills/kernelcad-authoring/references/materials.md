@@ -35,9 +35,11 @@ return union(caseShell, horn, screw);           // three finishes, one solid
 ```
 
 Rules: a finish on the union RESULT covers every face (it wins over the
-members); faces a `subtract` / `intersect` cutter leaves behind (a bore, a
-notch) take the body's finish, never the cutter's; faces born in a later
-feature (a fillet across the seam) take the body's finish. Pieces of the SAME
+members); a face no member made — the wall a `subtract` / `intersect` cutter
+leaves behind, a fillet blend — takes the finish of the faces around it when
+they agree (a bore through the horn is aluminium, a rounded horn rim stays
+aluminium) and the body's finish where they differ (a blend across the
+case/horn seam); never the cutter's finish. Pieces of the SAME
 material are fused first and finished once — two same-finish members that
 overlap fail `union.member-overlap`. Split into assembly parts only when the
 pieces move relative to each other or are separate BOM lines. Example:

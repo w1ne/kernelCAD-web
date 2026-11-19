@@ -469,8 +469,8 @@ shape, not a copy.
 
 // Tag this shape with a render-time role color (geometry unchanged). Through
 // union() each member keeps its own color / finish on the faces it contributed;
-// a color on the union result covers every face; faces a subtract/intersect
-// cutter leaves behind take the body color. Tokens: 'servo' | 'gear' | 'beam' |
+// a color on the union result covers every face; a bore wall or fillet blend
+// takes the color of the faces around it when they agree, else the body color. Tokens: 'servo' | 'gear' | 'beam' |
 // 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
