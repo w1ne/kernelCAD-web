@@ -26,12 +26,12 @@
     ],
     "format": {
       "duration": "10.000000",
-      "size": "136390"
+      "size": "141651"
     }
   },
   "poster": "poster.png",
-  "posterSha256": "adfa7309fb7fe9ef4ab01210d35b111d7c95cfe9d6c36f7ab7096f653ed28166",
-  "videoSha256": "d49ecd8e1dd6e932d339626ed20da1161a14516cb9dee0e9b39389f6be696bb7",
+  "posterSha256": "807b6c928a551c48980cd98a7282c994a8e9b5260d37d8a3e88c8d5d4778309b",
+  "videoSha256": "e9e02170429a4e18844fa2c3414c1e8e568be2c9a9992745dc6be3ab811541b7",
   "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
   "scope": "Local kernelCAD Node API: STEP export, import as a KernelCAD project, second STEP export. Both files are read back through the OCCT XCAF STEP reader.",
   "simulationRun": false,

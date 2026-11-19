@@ -1,0 +1,124 @@
+{
+  "scope": "Local kernelCAD Node API: STEP export of an assembly that sets no colours, text check for colour entities, read-back through the OCCT XCAF STEP reader, and import as a KernelCAD project.",
+  "invocation": "node --import tsx docs/demos/step-uncoloured-parts/capture-demo.mts",
+  "source": "examples/bom/panel-with-fasteners.kcad.ts",
+  "sourceSha256": "ca93d6b276e6fac27a10ebd45442642e32e5537c955e9cfaf5639205d7f797bd",
+  "implementationSha256": {
+    "src/kernel/backends/occt/stepAssemblyExport.ts": "d8ba2e6609283c06d40755f4d7ca5ab53f0760d94f0acc570e2d43197d0d750d",
+    "src/kernel/backends/occt/sceneStepExport.ts": "b4d6113dfc5711ad5c83224b8a52cf308ae79d080dd7556216ab815a8dff2ea9",
+    "src/kernel/import/stepBundleWriter.ts": "1588665c2b1ab12740d9c0c6b8dbe93e5e4d9c223e727bb9ea8a0cf6a330eb28"
+  },
+  "step": {
+    "bytes": 50766,
+    "sha256": "ee70a3755242f66ff4c8eb274965392fba9bf6cb6b7e0a67bd20e2aeedb66980",
+    "colourEntities": 0
+  },
+  "tree": {
+    "productCount": 4,
+    "instanceCount": 9,
+    "instancesReadWithColour": 0,
+    "importWarnings": [],
+    "products": [
+      {
+        "product": "plate",
+        "volumeMm3": 72000,
+        "instances": [
+          {
+            "name": "plate",
+            "color": null
+          }
+        ]
+      },
+      {
+        "product": "standoff_0",
+        "volumeMm3": 2827.433,
+        "instances": [
+          {
+            "name": "standoff_0",
+            "color": null
+          },
+          {
+            "name": "standoff_1",
+            "color": null
+          },
+          {
+            "name": "standoff_2",
+            "color": null
+          }
+        ]
+      },
+      {
+        "product": "bracket",
+        "volumeMm3": 1200,
+        "instances": [
+          {
+            "name": "bracket",
+            "color": null
+          }
+        ]
+      },
+      {
+        "product": "screw_0",
+        "volumeMm3": 35.249,
+        "instances": [
+          {
+            "name": "screw_0",
+            "color": null
+          },
+          {
+            "name": "screw_1",
+            "color": null
+          },
+          {
+            "name": "screw_2",
+            "color": null
+          },
+          {
+            "name": "screw_3",
+            "color": null
+          }
+        ]
+      }
+    ]
+  },
+  "importedProject": {
+    "writer": "writeStepBundle (kernelcad import-step)",
+    "scriptSha256": "36fab9db713cfc1de00f10b5b3bd06d79dce3d03b69757506605dd213aed32e4",
+    "scriptLines": 31,
+    "colourCalls": 0,
+    "scriptExcerpt": [
+      "const imported = assembly(\"panel\");",
+      "const part_000001 = await lib.fromBREP(\"./parts/7bb93074216364f8b94f2e6592b40db0de05cb307c8a28bd37dafe9284c1702c.brep\");",
+      "imported.part(\"plate\", part_000001);",
+      "const part_000002 = (await lib.fromBREP(\"./parts/cc84d851f32b62aa059ba2a6f36e17c8c729c6960617116de4562eeb52acd79c.brep\"))",
+      "  .translate(20, 10, 3);",
+      "imported.part(\"standoff_0\", part_000002);"
+    ]
+  },
+  "before": {
+    "commit": "5f6868265",
+    "record": "docs/demos/step-instance-roundtrip/evidence.json",
+    "colourEntity": "DRAUGHTING_PRE_DEFINED_COLOUR('red')",
+    "instancesReadWithColour": 9,
+    "readColour": "#ff0000",
+    "importedScriptLines": 40,
+    "importedScriptExcerpt": [
+      "const imported = assembly(\"panel\");",
+      "const part_000001 = (await lib.fromBREP(\"./parts/7bb93074216364f8b94f2e6592b40db0de05cb307c8a28bd37dafe9284c1702c.brep\"))",
+      "  .color(\"#ff0000\");",
+      "imported.part(\"plate\", part_000001);",
+      "const part_000002 = (await lib.fromBREP(\"./parts/cc84d851f32b62aa059ba2a6f36e17c8c729c6960617116de4562eeb52acd79c.brep\"))",
+      "  .translate(20, 10, 3)",
+      "  .color(\"#ff0000\");",
+      "imported.part(\"standoff_0\", part_000002);"
+    ]
+  },
+  "limits": [
+    "Other CAD systems were not used to open the file.",
+    "The values under \"before\" are recorded from a capture on the named commit; this script does not measure them again.",
+    "A project imported from STEP with an earlier kernelCAD version keeps the explicit red colour that version wrote into its script."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

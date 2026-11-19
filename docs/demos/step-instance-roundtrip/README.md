@@ -48,8 +48,8 @@ the files, and the demo shows no deployed behavior or hardware acceptance. The
 imported project drops the root product name from each part name; a nested
 part is named by its sub-assembly path, and a name with characters other than
 letters, digits, `_` and `-` is changed and reported. The example
-sets no colours; its parts read back as `#ff0000` from the first export, and
-the imported project carries that as an explicit `.color(...)`. Hardware placed
+sets no colours; its parts are written and read back without a colour, and
+the imported project sets none. Hardware placed
 by a hole-driven helper is not instanced. The exported file hashes are valid for
 this capture only: OCCT orders the colour style entities of a multi-colour
 scene differently between writes.

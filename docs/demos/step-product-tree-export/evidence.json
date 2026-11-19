@@ -4,15 +4,15 @@
   "source": "examples/bom/panel-with-fasteners.kcad.ts",
   "sourceSha256": "ca93d6b276e6fac27a10ebd45442642e32e5537c955e9cfaf5639205d7f797bd",
   "implementationSha256": {
-    "src/kernel/backends/occt/sceneStepExport.ts": "af63bae1a26f55b309f202fcd26fdc22a511e2d651d61fff4f133c898ab93d8b",
-    "src/kernel/backends/occt/stepAssemblyExport.ts": "6b696c4204246dfd29289db44aeb548bd0e5df1cb7a952499bd344e378aae5a8",
+    "src/kernel/backends/occt/sceneStepExport.ts": "b4d6113dfc5711ad5c83224b8a52cf308ae79d080dd7556216ab815a8dff2ea9",
+    "src/kernel/backends/occt/stepAssemblyExport.ts": "d8ba2e6609283c06d40755f4d7ca5ab53f0760d94f0acc570e2d43197d0d750d",
     "src/kernel/export/stepReproducible.ts": "02b39ad2c720c207b936a6bde145d4be7ce99e466041abf56904e6797ce90051",
-    "src/modeling/backends/occt/lowerers/partPrototype.ts": "0471da8717955a80e2a9089fe71c3cb05b3d2293ac3f278bb2bd06f3f873e460"
+    "src/modeling/backends/occt/lowerers/partPrototype.ts": "795b29bf60893d5fcc1f00e55b2a52d232dbd7057b74c0fe16c9834b658f40e3"
   },
   "step": {
     "file": "panel.step",
-    "bytes": 52332,
-    "sha256": "13fe9b37804e799f86c750687cd725d97b1856669e83663f58f62dbcb8730d43"
+    "bytes": 50766,
+    "sha256": "ee70a3755242f66ff4c8eb274965392fba9bf6cb6b7e0a67bd20e2aeedb66980"
   },
   "tree": {
     "productCount": 4,
@@ -48,7 +48,7 @@
               0,
               0
             ],
-            "color": "#ff0000"
+            "color": null
           }
         ]
       },
@@ -80,7 +80,7 @@
               10,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           },
           {
             "name": "standoff_1",
@@ -93,7 +93,7 @@
               10,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           },
           {
             "name": "standoff_2",
@@ -106,7 +106,7 @@
               10,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           }
         ]
       },
@@ -138,7 +138,7 @@
               90,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           }
         ]
       },
@@ -170,7 +170,7 @@
               110,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           },
           {
             "name": "screw_1",
@@ -183,7 +183,7 @@
               110,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           },
           {
             "name": "screw_2",
@@ -196,7 +196,7 @@
               110,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           },
           {
             "name": "screw_3",
@@ -209,7 +209,7 @@
               110,
               3
             ],
-            "color": "#ff0000"
+            "color": null
           }
         ]
       }

@@ -1,5 +1,12 @@
 # Unreleased
 
+- STEP export writes no colour for an assembly part that has none. Every
+  such part was written as red, and `import-step` then gave it an explicit
+  `.color("#ff0000")`. The part is now written and read back without a
+  colour, as a single-part export already was. A colour that the script sets
+  is unchanged. A project imported from STEP with an earlier version keeps
+  the red `.color(...)` calls in its script; import the file again or delete
+  them. Demo: `docs/demos/step-uncoloured-parts/`.
 - STEP colours use the correct colour space. Export wrote a hex colour to
   `COLOUR_RGB` with the sRGB curve applied a second time (`#3366cc` became
   `0.4845, 0.6652, 0.9063`, about `#7caae7`), and `import-step` read a file

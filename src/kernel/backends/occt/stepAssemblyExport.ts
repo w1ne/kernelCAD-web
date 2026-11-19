@@ -2,10 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/stepAssemblyExport.ts
 //
-// STEP writer (XCAF document + STEPCAFControl_Writer): one named, coloured
-// body per part, or a product tree (one product per distinct part with one
-// placed instance per use) when a part is repeated. A single body without an
-// assembly tree is written the same way (`writeStepBody`).
+// STEP writer (XCAF document + STEPCAFControl_Writer): one named body per
+// part, or a product tree (one product per distinct part with one placed
+// instance per use) when a part is repeated. A single body without an
+// assembly tree is written the same way (`writeStepBody`). A colour is
+// written only for a part that has one.
 //
 // Why not `replicad.exportSTEP`: it registers the raw XSControl_WorkSession
 // with its GC FinalizationRegistry AND wraps the same object in a
@@ -33,7 +34,7 @@ export interface StepAssemblyPart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   shape: any;
   name: string;
-  /** `#rrggbb` / `#rgb`; defaults to red like replicad's exporter. */
+  /** `#rrggbb` / `#rgb`. Without it the part is written with no colour. */
   color?: string;
 }
 
@@ -62,7 +63,7 @@ export interface StepAssemblyProduct {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   shape: any;
   name: string;
-  /** `#rrggbb` / `#rgb`; defaults to red like {@link StepAssemblyPart}. */
+  /** `#rrggbb` / `#rgb`. Without it the product is written with no colour. */
   color?: string;
   instances: readonly StepAssemblyInstance[];
 }
@@ -116,7 +117,17 @@ function withScope<T>(fn: (track: <V extends Deletable>(v: V) => V) => T): T {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[], fallbackColor?: string): void {
+function setColour(oc: any, track: <V extends Deletable>(v: V) => V, colorTool: any, label: any, hex: string | undefined): void {
+  // No colour stays no colour: a default here would put a colour in the file
+  // that the author never set, and a re-import would return it as theirs.
+  if (hex === undefined) return;
+  const [r, g, b] = linearRgbFromHex(hex);
+  const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
+  colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[]): void {
   withScope((track) => {
     const main = track(docHandle.get().Main());
     const shapeToolHandle = track(oc.XCAFDoc_DocumentTool.ShapeTool(main));
@@ -128,11 +139,7 @@ function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[], f
       shapeTool.SetShape(label, part.shape);
       const name = track(new oc.TCollection_ExtendedString_2(part.name, true));
       track(oc.TDataStd_Name.Set_1(label, name));
-      const hex = part.color ?? fallbackColor;
-      if (hex === undefined) continue;
-      const [r, g, b] = linearRgbFromHex(hex);
-      const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
-      colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
+      setColour(oc, track, colorTool, label, part.color);
     }
     shapeTool.UpdateAssemblies();
   });
@@ -178,9 +185,7 @@ function addProductTree(
       const label = track(shapeTool.NewShape());
       shapeTool.SetShape(label, product.shape);
       setName(oc, track, label, product.name);
-      const [r, g, b] = linearRgbFromHex(product.color ?? '#f00');
-      const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
-      colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
+      setColour(oc, track, colorTool, label, product.color);
       for (const instance of product.instances) {
         const m = instance.transform;
         assertRigid(m, instance.name);
@@ -251,15 +256,17 @@ function writeStepDocument(populate: (oc: any, docHandle: any) => void, opts: St
 }
 
 /**
- * Write `parts` as one STEP file with a named, coloured body per part.
- * Output matches `replicad.exportSTEP(shapes)` without unit overrides, except
- * that it is byte-reproducible (see `reproducibleOcctStep`).
+ * Write `parts` as one STEP file with a named body per part. A part's colour
+ * is written only when `part.color` is set. Output matches
+ * `replicad.exportSTEP(shapes)` without unit overrides, except that it is
+ * byte-reproducible (see `reproducibleOcctStep`) and a part without a colour
+ * is not written as red.
  */
 export function writeStepAssembly(
   parts: readonly StepAssemblyPart[],
   opts: StepWriteOptions = {},
 ): Uint8Array {
-  return writeStepDocument((oc, docHandle) => addParts(oc, docHandle, parts, '#f00'), opts);
+  return writeStepDocument((oc, docHandle) => addParts(oc, docHandle, parts), opts);
 }
 
 /**

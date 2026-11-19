@@ -51,5 +51,6 @@ file, and the demo shows no deployed behavior or hardware acceptance. The
 "imported file" in the video is the exported file with its colour entity text
 replaced, not a file from another CAD system. A project that an earlier
 kernelCAD version imported from STEP keeps the darker colour that version
-read. Alpha is unchanged. An assembly part without a colour is still written
-as red.
+read. Alpha is unchanged. At the time of this capture an assembly part without
+a colour was written as red; it is now written without a colour (see
+[`../step-uncoloured-parts/`](../step-uncoloured-parts/README.md)).
