@@ -10,6 +10,18 @@
   faces a `subtract` or `intersect` cutter leaves behind take the body's
   finish. Example: `examples/exports/servo-member-finishes.kcad.ts`.
 
+- `.fillet(r)` and `.chamfer(d)` with no edge selector now round a part
+  built from several joined primitives. The union keeps coplanar seams so
+  face history stays exact. The blend solver could not pass the vertex where
+  a seam split a convex edge, at any radius, so a six-operand bracket refused
+  `.fillet(1)` outright. A failed fillet or chamfer is now retried on the
+  same solid with same-domain faces merged, keeping face and edge lineage.
+  When the default every-edge form still has edges no radius builds on, for
+  example where a boss meets a plate's corner tangentially, the other edges
+  are rounded and `feature.edge-feature.unblendable-edges-skipped` (warn)
+  lists each skipped edge. An explicit selection that cannot be blended
+  still fails with `feature.kernel-failed`. Successful fillets run as before
+  (#1612).
 - The rest-pose joint check no longer reports `mechanism.joint-mesh-gap` for a
   connector that is inside its part and in the plane of one of its faces, for
   example a slide connector at the base of a rail that is one solid with its
@@ -18,7 +30,6 @@
   rail). A ray that meets a triangle edge is now repeated along a tilted
   direction. The DFM wall and moulding checks use the same test. Demo:
   `docs/demos/point-inside-face-plane-parity-20261119/`.
-
 - `faceSketch`, `sectionSketch`, the flat and section DXF profiles and the
   `inspect` section report keep a clockwise arc that sweeps less than 180°.
   Such an arc was returned as the opposite arc of the same circle, with no error: a
