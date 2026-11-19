@@ -11,6 +11,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from './occtBackend';
 import { writeStepBody, writeStepProductTree } from './stepAssemblyExport';
+import { hexFromLinearRgb, linearRgbFromHex } from './stepColour';
 import { importStepAssembly } from '../../import/stepAssemblyImport';
 
 const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
@@ -25,6 +26,27 @@ function expectChannels(actual: number[], expected: number[]): void {
   // 1/510 is half of one 8-bit step.
   actual.forEach((value, i) => expect(Math.abs(value - expected[i])).toBeLessThan(1 / 510));
 }
+
+describe('STEP colour conversion', () => {
+  it('matches the sRGB transfer curve at known points', () => {
+    expect(linearRgbFromHex('#000000')).toEqual([0, 0, 0]);
+    expect(linearRgbFromHex('#ffffff')).toEqual([1, 1, 1]);
+    const [r, g, b] = linearRgbFromHex('#3366cc');
+    expect(r).toBeCloseTo(0.033105, 6);
+    expect(g).toBeCloseTo(0.132868, 6);
+    expect(b).toBeCloseTo(0.603827, 6);
+    expect(linearRgbFromHex('#36c')).toEqual([r, g, b]);
+  });
+
+  it('returns all 256 levels unchanged through single-precision linear storage', () => {
+    for (let level = 0; level < 256; level++) {
+      const channel = level.toString(16).padStart(2, '0');
+      const hex = `#${channel}${channel}${channel}`;
+      const [r, g, b] = linearRgbFromHex(hex).map(Math.fround);
+      expect(hexFromLinearRgb(r, g, b)).toBe(hex);
+    }
+  });
+});
 
 describe('STEP colour space', () => {
   beforeAll(async () => {

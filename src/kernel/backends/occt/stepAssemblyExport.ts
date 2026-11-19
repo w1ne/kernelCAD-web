@@ -26,6 +26,7 @@
 
 import { getOC } from 'replicad';
 import { makeStepReproducible } from '../../export/stepReproducible';
+import { linearRgbFromHex } from './stepColour';
 
 export interface StepAssemblyPart {
   /** Raw TopoDS_Shape (replicad `shape.wrapped`). */
@@ -100,12 +101,6 @@ interface Deletable {
   delete(): void;
 }
 
-function rgbFromHex(hex: string): [number, number, number] {
-  let c = hex.startsWith('#') ? hex.slice(1) : hex;
-  if (c.length === 3) c = c.replace(/([0-9a-f])/gi, '$1$1');
-  return [0, 1, 2].map((i) => parseInt(c.slice(i * 2, i * 2 + 2), 16) / 255) as [number, number, number];
-}
-
 /** Run `fn` with a scope that deletes every tracked value afterwards, in reverse order. */
 function withScope<T>(fn: (track: <V extends Deletable>(v: V) => V) => T): T {
   const owned: Deletable[] = [];
@@ -135,7 +130,7 @@ function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[], f
       track(oc.TDataStd_Name.Set_1(label, name));
       const hex = part.color ?? fallbackColor;
       if (hex === undefined) continue;
-      const [r, g, b] = rgbFromHex(hex);
+      const [r, g, b] = linearRgbFromHex(hex);
       const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
       colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
     }
@@ -183,7 +178,7 @@ function addProductTree(
       const label = track(shapeTool.NewShape());
       shapeTool.SetShape(label, product.shape);
       setName(oc, track, label, product.name);
-      const [r, g, b] = rgbFromHex(product.color ?? '#f00');
+      const [r, g, b] = linearRgbFromHex(product.color ?? '#f00');
       const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
       colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
       for (const instance of product.instances) {

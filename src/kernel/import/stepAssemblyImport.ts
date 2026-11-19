@@ -8,6 +8,7 @@
 
 import { createHash, randomUUID } from 'node:crypto';
 import { getOcctRuntime, initOcct } from '../backends/occt/occtBackend';
+import { hexFromLinearRgb } from '../backends/occt/stepColour';
 import { Transform } from '../../shared/runtime/se3';
 import {
   StepAssemblyImportError,
@@ -118,10 +119,8 @@ function readLabelColor(oc: any, colorTool: any, label: any): StepComponentColor
 
 function componentColor(rgba: any, track: Track): StepComponentColor {
   const rgb = track(rgba.GetRGB());
-  const channel = (value: number): string => Math.max(0, Math.min(255, Math.round(value * 255)))
-    .toString(16).padStart(2, '0');
   return {
-    hex: `#${channel(rgb.Red())}${channel(rgb.Green())}${channel(rgb.Blue())}`,
+    hex: hexFromLinearRgb(rgb.Red(), rgb.Green(), rgb.Blue()),
     alpha: rgba.Alpha(),
   };
 }
