@@ -9,6 +9,9 @@
 // arm is now seated on a pedestal, the forearm laps the upper arm, and the
 // shoulder limit stops short of the band the sweep reports.
 //
+// Snippet 2 failed it with 27 errors: no link of the 6-DOF arm touched the
+// next one. Each mated pair now shares a face square to the joint axis.
+//
 // VERIFIED_REAL only grows. Add a snippet here when it is rebuilt.
 
 import { describe, expect, it } from 'vitest';
@@ -17,6 +20,7 @@ import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
 const COOKBOOK_DIR = 'src/agent/skills/kernelcad-kinematic/cookbook';
 const VERIFIED_REAL = [
   '01-swept-collision-shoulder.kcad.ts',
+  '02-reachable-with-seed.kcad.ts',
   '03-cantilever-beam-stress.kcad.ts',
   '04-scissor-jack-swept.kcad.ts',
 ];

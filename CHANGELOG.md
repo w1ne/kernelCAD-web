@@ -1,5 +1,12 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 2 (`02-reachable-with-seed.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 27 errors because no link of the 6-DOF arm touched the next one.
+  Each mated pair now shares a face square to the joint axis, with the
+  connector origin on that face. The header no longer claims the closed-form
+  solver: an arm built with `arm.mate(...)` uses the mate-graph numeric
+  solver.
 - Kinematic skill cookbook snippet 1 (`01-swept-collision-shoulder.kcad.ts`)
   now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
   it returned 10 errors. The arm sits on a pedestal, the forearm laps the

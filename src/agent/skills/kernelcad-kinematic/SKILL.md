@@ -337,8 +337,9 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 1. `01-swept-collision-shoulder.kcad.ts` — 2-DOF arm seated on a pedestal;
    a sweep past the mate limit finds the colliding band (K1), and a sweep
    across the limit proves the declared travel clear
-2. `02-reachable-with-seed.kcad.ts` — 6-DOF spherical-wrist arm reaching a
-   nearby target with a seed-pose hint
+2. `02-reachable-with-seed.kcad.ts` — 6-DOF spherical-wrist arm, seated
+   face to face at each joint, reaching a nearby target with a seed-pose
+   hint (mate-graph numeric solver)
 3. `03-cantilever-beam-stress.kcad.ts` — steel-vs-PLA cantilever beam stress
    (steel passes; PLA fires K6)
 4. `04-scissor-jack-swept.kcad.ts` — closed-loop scissor jack (two loops,
