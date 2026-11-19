@@ -287921,7 +287921,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-profile-template-rack.kcad.ts",
       "preview": "/assets/shipyard-hull-profile-template-rack.png",
-      "sourceSha256": "9912af07b57a636501b5304ece8b8945e59a8ed3de59c8ae44feeed509292eaa",
+      "sourceSha256": "6b98d08f2e9cfe9fa0619d0722a78ca803b90347e2d93faa7ca53c5a487f968c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287972,8 +287972,7 @@
           "color": "#8f795e",
           "parts": [
             "base-runner-0",
-            "base-runner-1",
-            "divider-0"
+            "base-runner-1"
           ],
           "param": "yardPaint"
         },
@@ -287981,6 +287980,7 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "divider-0",
             "divider-1",
             "divider-2",
             "divider-3",
