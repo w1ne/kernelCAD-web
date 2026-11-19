@@ -1,0 +1,51 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "checks": [
+    {
+      "asset": "mining/assay-sample-divider",
+      "sourceSha256": "7a7474b3ef9c0b8b6a26a8b93976a1ddc7a45c88dc82b60a7d0a1a2ef4407335",
+      "sourceHashMatches": true,
+      "preview": "/assets/mining-assay-sample-divider.png",
+      "previewPathExists": true,
+      "sourceHashChanged": true,
+      "geometryUnchanged": true
+    },
+    {
+      "asset": "mining/core-tray-rack",
+      "sourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+      "sourceHashMatches": true,
+      "preview": "/assets/mining-core-tray-rack.png",
+      "previewPathExists": true,
+      "sourceHashChanged": false,
+      "geometryUnchanged": true
+    },
+    {
+      "asset": "mining/mine-refuge-chamber",
+      "sourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+      "sourceHashMatches": true,
+      "preview": "/assets/mining-mine-refuge-chamber.png",
+      "previewPathExists": true,
+      "sourceHashChanged": false,
+      "geometryUnchanged": true
+    },
+    {
+      "asset": "mining/mine-survey-tripod",
+      "sourceSha256": "ce3d8d3ab62fc54ba07e01bc8310d8eb1500da6ea42cae554ad3f70aa9ff13cc",
+      "sourceHashMatches": true,
+      "preview": "/assets/mining-mine-survey-tripod.png",
+      "previewPathExists": true,
+      "sourceHashChanged": false,
+      "geometryUnchanged": true
+    },
+    {
+      "asset": "mining/mine-ventilation-fan",
+      "sourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+      "sourceHashMatches": true,
+      "preview": "/assets/mining-mine-ventilation-fan.png",
+      "previewPathExists": true,
+      "sourceHashChanged": false,
+      "geometryUnchanged": true
+    }
+  ]
+}

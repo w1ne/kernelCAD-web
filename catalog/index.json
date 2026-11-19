@@ -176585,7 +176585,7 @@
       "id": "assay-sample-divider",
       "kit": "mining",
       "title": "Assay sample divider",
-      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open sample jars partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Jar count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel, sample ore and jar plastic. weathered, labWhite and highVisibility presets.",
+      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open stainless sample buckets partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Bucket count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel and sample ore. weathered, labWhite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -176606,7 +176606,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/assay-sample-divider.kcad.ts",
       "preview": "/assets/mining-assay-sample-divider.png",
-      "sourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+      "sourceSha256": "7a7474b3ef9c0b8b6a26a8b93976a1ddc7a45c88dc82b60a7d0a1a2ef4407335",
       "triangleBudget": 4200,
       "params": [
         {
@@ -176637,12 +176637,6 @@
           "label": "Sample ore"
         },
         {
-          "name": "jarPlastic",
-          "type": "color",
-          "default": "#e4e1d4",
-          "label": "Jar plastic"
-        },
-        {
           "name": "divider",
           "type": "choice",
           "default": "rotary",
@@ -176667,20 +176661,17 @@
         "weathered": {
           "housingPaint": "#4f6577",
           "stainlessSteel": "#979d9c",
-          "sampleOre": "#6f5a46",
-          "jarPlastic": "#c9c3ae"
+          "sampleOre": "#6f5a46"
         },
         "labWhite": {
           "housingPaint": "#e6e6e0",
           "stainlessSteel": "#c3cacc",
-          "sampleOre": "#5d5b57",
-          "jarPlastic": "#3d6fa8"
+          "sampleOre": "#5d5b57"
         },
         "highVisibility": {
           "housingPaint": "#e48a1e",
           "stainlessSteel": "#c5ccca",
-          "sampleOre": "#9b5a3a",
-          "jarPlastic": "#f2efe2"
+          "sampleOre": "#9b5a3a"
         }
       },
       "stats": {
@@ -176749,6 +176740,14 @@
           "parts": [
             "turntable-hub",
             "turntable",
+            "sample-bucket-0",
+            "sample-bucket-1",
+            "sample-bucket-2",
+            "sample-bucket-3",
+            "sample-bucket-4",
+            "sample-bucket-5",
+            "sample-bucket-6",
+            "sample-bucket-7",
             "column",
             "hopper-arm",
             "hopper",
@@ -176757,32 +176756,17 @@
           "param": "stainlessSteel"
         },
         {
-          "name": "jarPlastic",
-          "color": "#e4e1d4",
-          "parts": [
-            "jar-0",
-            "jar-1",
-            "jar-2",
-            "jar-3",
-            "jar-4",
-            "jar-5",
-            "jar-6",
-            "jar-7"
-          ],
-          "param": "jarPlastic"
-        },
-        {
           "name": "sampleOre",
           "color": "#8a6a4c",
           "parts": [
-            "jar-ore-0",
-            "jar-ore-1",
-            "jar-ore-2",
-            "jar-ore-3",
-            "jar-ore-4",
-            "jar-ore-5",
-            "jar-ore-6",
-            "jar-ore-7",
+            "sample-bucket-ore-0",
+            "sample-bucket-ore-1",
+            "sample-bucket-ore-2",
+            "sample-bucket-ore-3",
+            "sample-bucket-ore-4",
+            "sample-bucket-ore-5",
+            "sample-bucket-ore-6",
+            "sample-bucket-ore-7",
             "hopper-ore",
             "feeder-ore"
           ],

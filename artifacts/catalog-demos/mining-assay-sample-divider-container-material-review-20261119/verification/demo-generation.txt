@@ -1,0 +1,2 @@
+Command: ffmpeg -hide_banner -loglevel warning -y -f concat -safe 0 -i /data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/ffmpeg-concat.txt -vf fps=24,format=yuv420p -c:v libx264 -preset medium -crf 25 -movflags +faststart /data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/review-demo.mp4
+[out_0_0 @ 0x648393182fc0] 100 buffers queued in out_0_0, something may be wrong.

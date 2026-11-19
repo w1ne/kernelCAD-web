@@ -120,3 +120,35 @@ with four existing below-gate assets in `standard-components`. Three rendered
 previews were reopened after rendering. The local review MP4 is linked from the
 bundle; it shows software previews and an exported-GLB regression only. The
 public site remains at its pre-change state because no deployment was made.
+
+## Mining sample — assay divider collection buckets
+
+PR #1258 was confirmed merged with all 17 recorded checks successful and no
+submitted review. Active catalog PR #1507 matched local pre-sample head
+`597aa8bfd`; its applicable checks were successful, it was draft and blocked,
+with no submitted review. Five rendered mining previews were clear of exact
+open issue/PR target overlap and the known fix branches: `assay-sample-divider`,
+`core-tray-rack`, `mine-refuge-chamber`, `mine-survey-tripod` and
+`mine-ventilation-fan`. Their public pages, sources and previews returned HTTP
+200 and matched the local pre-change baseline. The five-item ledger, hash
+capture, source snapshots and before/after previews are in the
+[handoff bundle](../../artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/README.md).
+
+The rotary sample divider's eight open collection buckets used the `jarPlastic`
+control while the adjacent carousel and feed surfaces used `stainlessSteel`.
+The buckets now use the existing stainless palette; the ore remains separate.
+Geometry, catalog envelope, triangle budget, preset names and divider/bucket
+choices are unchanged. Four other reviewed previews showed no supported
+material mismatch.
+
+The exported-GLB regression failed against the original material assignment and
+passes after the correction (1/1). Mining ESLint is clean, and the full catalog
+integration suite passed 161 files / 231 tests, including the exhaustive
+source/export/index freshness check. The mining quality scan passes 50/50
+(100%); the global scan is 2,398/2,402 (99.83%), with four unchanged
+below-gate assets in `standard-components`. The generated index row has a
+current source hash and existing preview path. The preview was re-rendered and
+three post-render previews were opened. The local demo is in the handoff
+bundle; it documents local software previews and the GLB regression only. The
+public page remains at the pre-change baseline because this branch is not
+deployed.

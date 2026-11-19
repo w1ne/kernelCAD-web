@@ -1,0 +1,28 @@
+{
+  "task": "Semantic preview audit and stainless sample-bucket material correction",
+  "checkedAtUtc": "2026-11-19",
+  "assets": [
+    "assay-sample-divider",
+    "core-tray-rack",
+    "mine-refuge-chamber",
+    "mine-survey-tripod",
+    "mine-ventilation-fan"
+  ],
+  "previewSource": "catalog/kits/mining/previews/*.png",
+  "video": {
+    "resolution": "1280x720",
+    "frameRate": 24,
+    "codec": "H.264 / libx264",
+    "pixelFormat": "yuv420p",
+    "secondsPerSlide": 1.6,
+    "slideCount": 8,
+    "audio": false
+  },
+  "claimLimits": [
+    "local software-rendered preview review",
+    "exported-GLB material regression only",
+    "no deployment claim",
+    "no simulation claim",
+    "no hardware acceptance claim"
+  ]
+}
