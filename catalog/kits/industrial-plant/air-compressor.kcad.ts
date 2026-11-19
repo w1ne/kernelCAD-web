@@ -109,7 +109,7 @@ add('pump-crankcase-end', alongX(26, 50, 14).translate(222, 0, pumpDeck + 65).co
 for (const [index, x] of headPositions.entries()) {
   add(`pump-barrel-${index}`, cylinder(112, 38, 14).translate(x, 0, pumpDeck + 102).color(pumpIron));
   for (let fin = 0; fin < 6; fin++) {
-    add(`pump-fin-${index}-${fin}`, cylinder(8, 45, 16).translate(x, 0, pumpDeck + 112 + fin * 15).color(receiverSteel));
+    add(`pump-fin-${index}-${fin}`, cylinder(8, 45, 16).translate(x, 0, pumpDeck + 112 + fin * 15).color(pumpIron));
   }
   add(`pump-head-${index}`, blk(x, 0, pumpDeck + 222, 82, 82, 46).color(pumpIron));
   add(`head-cap-${index}`, cylinder(12, 41, 14).translate(x, 0, pumpDeck + 245).color(pumpIron));

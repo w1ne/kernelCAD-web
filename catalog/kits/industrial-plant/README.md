@@ -92,6 +92,13 @@ unchanged at 254 triangles under a 1,400-triangle budget. The
 records the five-preview ledger, before/after images, GLB regression, catalog
 index refresh, local checks, and inspected MP4. The branch is not deployed.
 
+The Nov 19 air-compressor review assigns the twelve cooling fins on the two
+finned pump cylinders to the existing cast-iron control, matching the barrel
+and head parts. Geometry, envelope, material controls and presets are
+unchanged. The [pump-fin material handoff](../../../artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/README.md)
+records the five-preview ledger, before/after render, exported-GLB regression,
+fresh catalog index and inspected MP4. The branch is not deployed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |

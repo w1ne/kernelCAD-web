@@ -1,0 +1,15 @@
+air-compressor page 200
+air-compressor preview 200
+air-compressor source 200
+baghouse-dust-collector page 200
+baghouse-dust-collector preview 200
+baghouse-dust-collector source 200
+bucket-elevator page 200
+bucket-elevator preview 200
+bucket-elevator source 200
+forklift-truck page 200
+forklift-truck preview 200
+forklift-truck source 200
+weigh-hopper page 200
+weigh-hopper preview 200
+weigh-hopper source 200

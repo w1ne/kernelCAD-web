@@ -1,0 +1,31 @@
+## Selection and baseline
+python3 artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/verification/check_open_targets.py
+curl -L -sS -o <file> https://kernelcad.com/catalog/industrial-plant/<asset>/
+curl -L -sS -o <file> https://kernelcad.com/catalog/industrial-plant/<asset>/preview.png
+curl -L -sS -o <file> https://kernelcad.com/assets/industrial-plant-<asset>.kcad.ts
+
+## Regression and lint
+npx vitest run tests/integration/catalog/airCompressorPumpFinMaterial.test.ts
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/airCompressorPumpFinMaterial.test.ts
+
+## Re-render all 60 industrial-plant catalog previews
+id_args=()
+for source_file in catalog/kits/industrial-plant/*.kcad.ts; do
+  asset_id=${source_file##*/}
+  asset_id=${asset_id%.kcad.ts}
+  id_args+=("$asset_id")
+done
+npx tsx scripts/renderCatalogPreviews.ts "${id_args[@]}"
+
+## Generated catalog index and row verification
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/verification/verify_index_row.py
+
+## Required integration and semantic quality checks
+npx vitest run tests/integration/catalog/
+python3 scripts/checkCatalogQuality.py
+
+## Demo generation and inspection
+python3 artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/make_demo.py
+ffprobe -v error -show_streams -show_format -of json artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/review-demo.mp4
+python3 artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/inspect_video.py
