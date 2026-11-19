@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 import { loadScriptFeatures } from '../../../src/modeling/runtime/scriptLoader';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 
 describe('Meta glasses gallery example', () => {
   it('evaluates as a full smart-glasses model with temples and Meta cues', async () => {
@@ -23,14 +24,23 @@ describe('Meta glasses gallery example', () => {
     expect(source).toContain('right-privacy-LED-diffuser');
   });
 
-  // P3 physics-loop sweep (2026-06-01): meta-glasses is authored as 11
-  // decorative parts with no mate edges; the physics loop flags 10
-  // orphan-parts and 6 incidental interpenetrations. Tracked rebuild
-  // (single fused part OR mate-graph with topology connectors) in the
-  // issue below.
-  //
-  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/350
-  it.skip('passes the physics-grounded loop — see issues/350', () => {
-    // no body — the citation in the title is what the sweep test reads
-  });
+  // The P3 physics-loop sweep (2026-06-01, issue #350) flagged six
+  // interpenetrations: temples sunk 4 mm into the frame back, hinge barrels
+  // inside solid temples, a solid camera bezel around the camera glass and
+  // a touch strip embedded in the right temple. The model now seats each
+  // pair face to face (bore, ring and recess). Hosted here for the sweep
+  // gate (HOSTED_IN_DEDICATED_FILE in exampleSweepShared.ts).
+  it('examples/gallery/meta-glasses.kcad.ts passes the physics-grounded loop', async () => {
+    const result = await runValidateCli({
+      file: 'examples/gallery/meta-glasses.kcad.ts',
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+
+    expect(result.mechanismFailures ?? [], JSON.stringify(result.mechanismFailures ?? [])).toEqual([]);
+    expect(result.mechanism).toBe('real');
+  }, 120_000);
 });
