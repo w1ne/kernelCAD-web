@@ -8,8 +8,8 @@
 //      closed-form volume of the authored geometry;
 //   3. the named interfaces (pilot-hole diameter, depth, pitch and mouth
 //      height) are measured from the re-imported STEP, not from the source;
-//   4. Width and Depth edits through set_param's source rewrite recompute the
-//      solid and keep the hole pattern centred with the same pitch;
+//   4. Width, Depth and Floor edits through set_param's source rewrite
+//      recompute the solid and preserve the named interfaces;
 //   5. seeded defects (a moved boss, a missing USB-C opening) fail the gate.
 // Tolerances are this fixture's own: 0.1 % on volume (exact B-rep faces) and
 // 0.01 mm on positions and diameters.
@@ -106,6 +106,34 @@ describe('manufacturing benchmark 01: Pi 4 tray with M3 bosses and USB-C opening
     if (!edited.ok) throw new Error(edited.error);
     const solid = await buildAndReimport(edited.new_code);
     expect(trayFailures(solid, { ...DEFAULTS, depth: 92 })).toEqual([]);
+  }, 120_000);
+
+  it('a Floor edit keeps the blind pilots open at the boss tops', async () => {
+    const edited = setParamValue(SOURCE, 'Floor', 3.5);
+    if (!edited.ok) throw new Error(edited.error);
+    const solid = await buildAndReimport(edited.new_code);
+    expect(trayFailures(solid, { ...DEFAULTS, floor: 3.5 })).toEqual([]);
+  }, 120_000);
+
+  it('catches pilot holes left at the old height after a Floor edit', async () => {
+    const stale = inject(
+      SOURCE,
+      'cylinder(4, 1.25).translate(cx.add(dx), cy.add(dy), floor.add(1))',
+      'cylinder(4, 1.25).translate(cx.add(dx), cy.add(dy), floor.multiply(0).add(3))',
+    );
+    const edited = setParamValue(stale, 'Floor', 3.5);
+    if (!edited.ok) throw new Error(edited.error);
+    const failures = trayFailures(await buildAndReimport(edited.new_code), { ...DEFAULTS, floor: 3.5 });
+
+    // The stale cutter removes the same volume but leaves an enclosed 3–7 mm
+    // cavity. STEP reads its mouth at z=3 with the axis reversed; the expected
+    // top opening is z=8.5, even though bounds and volume still pass.
+    expect(failures).toEqual([
+      'pilot mouth z: 3 != 8.5', 'pilot axis z: 1 != -1',
+      'pilot mouth z: 3 != 8.5', 'pilot axis z: 1 != -1',
+      'pilot mouth z: 3 != 8.5', 'pilot axis z: 1 != -1',
+      'pilot mouth z: 3 != 8.5', 'pilot axis z: 1 != -1',
+    ]);
   }, 120_000);
 
   it('catches a hole pattern whose Y centre stays at the default tray depth', async () => {
