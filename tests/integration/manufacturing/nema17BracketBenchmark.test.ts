@@ -139,4 +139,17 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     expect(failures).toHaveLength(1);
     expect(failures[0]).toMatch(/^M3 centre x: 31(\.\d+)? != 30$/);
   }, 120_000);
+
+  it('catches one M5 base hole shifted off the 40 mm mounting pitch', async () => {
+    const code = inject(SOURCE, 'for (const dx of [-20, 20]) {', 'for (const dx of [-20, 21]) {');
+    const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
+
+    // A hole moving within the base leaves the solid volume and outer box
+    // unchanged, so the interface oracle must catch its 41 mm pitch and
+    // 0.5 mm center shift independently.
+    expect(failures).toHaveLength(2);
+    expect(failures.map((failure) => failure.split(':')[0])).toEqual(['M5 pitch', 'M5 centre x']);
+    expect(failures[0]).toMatch(/^M5 pitch: 41(\.\d+)? != 40$/);
+    expect(failures[1]).toMatch(/^M5 centre x: 30\.5 != 30$/);
+  }, 120_000);
 });
