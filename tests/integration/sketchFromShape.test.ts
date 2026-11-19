@@ -13,6 +13,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getOC } from 'replicad';
 import { initOcct, type OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
 import { isValidShape } from '../../src/kernel/backends/occt/booleanRecovery';
+import { extractFlatProfile } from '../../src/kernel/backends/occt/planarProfile';
+import { segmentsPerimeter, segmentsSignedArea } from '../../src/kernel/backends/occt/sketchFromShape';
 import { runScript } from '../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
@@ -153,6 +155,20 @@ describe('shape.faceSketch — planar face boundaries', () => {
     const prism = lastShape(shapes, records);
     expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
     expect(prism.volume()).toBeCloseTo(ROUNDED_AREA * 10, 3);
+  });
+
+  it('gives the flat DXF profile of the rounded plate its true area', async () => {
+    const { records, shapes } = await lowerScript(`return ${ROUNDED_PLATE};`);
+    const flat = extractFlatProfile(lastShape(shapes, records));
+    expect(flat.ok).toBe(true);
+    if (!flat.ok) return;
+    expect(flat.profile.loops).toHaveLength(1);
+    const outline = flat.profile.loops[0];
+    const bulges = outline.map(s => Math.abs(s.bulge ?? 0)).filter(b => b > 0);
+    expect(bulges).toHaveLength(4);
+    for (const b of bulges) expect(b).toBeCloseTo(Math.tan(Math.PI / 8), 6);
+    expect(Math.abs(segmentsSignedArea(outline))).toBeCloseTo(ROUNDED_AREA, 6);
+    expect(segmentsPerimeter(outline)).toBeCloseTo(2 * (34 + 14) + 2 * Math.PI * 3, 6);
   });
 
   it('refuses a cylindrical face with feature.face-sketch.non-planar', async () => {
