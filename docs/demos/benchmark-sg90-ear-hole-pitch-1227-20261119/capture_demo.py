@@ -90,7 +90,7 @@ def render() -> None:
         timeout=180,
     )
     VERIFICATION.mkdir(parents=True, exist_ok=True)
-    (VERIFICATION / "test-output.txt").write_text(result.stdout)
+    (VERIFICATION / "test-output.txt").write_text(result.stdout.rstrip() + "\n")
 
     frames = HERE / "frames"
     frames.mkdir(exist_ok=True)
