@@ -251,7 +251,7 @@ const numberCutters = digitCutter(0)
 const drum = cylinder(DRUM_H, DRUM_R, 96)
   .union(drumHub)
   .subtract(chambersL, outletsL, hornInserts, centralBore, mouthsL, sideScallops, numberCutters)
-  .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.08, transmission: 0.8, ior: 1.5, thickness: 2 });
+  .material({ baseColor: '#2a9d8f', metalness: 0, roughness: 0.35 });   // opaque teal carousel: reads against the clear shell and in the gallery poster
 
 // ── METER DISC ───────────────────────────────────────────────────────────────
 const meterPocket = cylinder(10, 4.5, 32).translate(PKT_X, PKT_Y, -1);
