@@ -479,7 +479,7 @@ export const ASSEMBLY_CODES = {
     nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A mate connector origin lies outside its part\'s modeled material by more than the support tolerance.',
+    description: 'A mate connector origin lies more than 6 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose; the mate\'s own fastened partner does not count). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.mate-contact-missing': {
     hintTemplate:
@@ -512,7 +512,7 @@ export const ASSEMBLY_CODES = {
     },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A revolute mate connector origin is outside the modeled support material of its part.',
+    description: 'A revolute mate connector origin lies more than 1 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.revolute-contact-missing': {
     hintTemplate:
