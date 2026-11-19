@@ -1,0 +1,5 @@
+Candidate source files checked against the open PR #1507 diff (git diff --name-only origin/develop...HEAD at b87cd5252): no matches.
+gh search issues and gh search prs "<id>" --repo w1ne/kernelCAD-web --state open returned zero results for each of the five candidate IDs.
+Open PRs at audit time: #1507 (this lane), #1598, #1597, #1309, #1253, #1094. None names a shipyard strongback, support frame, support stand, plate pallet or material skid asset.
+No earlier preview-review.md or README.md ledger under artifacts/catalog-demos/ names any of the five IDs.
+weld-fit-up-table was a first candidate; the ship-lift-cradle ledger of 17 November 2026 already reviews it, so low-profile-material-skid replaced it.

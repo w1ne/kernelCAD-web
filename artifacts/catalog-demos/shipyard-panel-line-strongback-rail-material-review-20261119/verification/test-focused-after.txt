@@ -1,0 +1,10 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/shipyardPanelLineStrongbackRailMaterial.test.ts (1 test) 644ms
+     ✓ keeps both longitudinal rails on the shared yard finish  327ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  16:21:25
+   Duration  8.35s (transform 6.21s, setup 143ms, import 7.43s, tests 644ms, environment 0ms)
+

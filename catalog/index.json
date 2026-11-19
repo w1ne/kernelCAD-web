@@ -289223,7 +289223,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/panel-line-strongback.kcad.ts",
       "preview": "/assets/shipyard-panel-line-strongback.png",
-      "sourceSha256": "50211fb7ab220dc1e2e0fcd52587a3bcbe3b85742ba49dc9a99f39b6706119a9",
+      "sourceSha256": "9263498d7a434758237e79eccda7259b291a71ee93523d42b10fdc10972089d4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -289281,7 +289281,8 @@
           "name": "yardPaint",
           "color": "#78867d",
           "parts": [
-            "longitudinal-rail-0"
+            "longitudinal-rail-0",
+            "longitudinal-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -289289,7 +289290,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "longitudinal-rail-1",
             "cross-rail-0",
             "cross-rail-1",
             "cross-rail-2",
