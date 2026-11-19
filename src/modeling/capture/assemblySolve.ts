@@ -624,6 +624,9 @@ export interface SolvedModelOptions {
    * mate-gap and joint-continuity checks remain active, as do collision
    * checks at sampled motion poses. A measured ignored rest overlap emits a
    * warning and leaves the physical mechanism verdict unverified.
+   * Two mates that always move together (a gear pair, mimic fingers) are
+   * not an ignore case: declare `arm.coupleMates(...)` so the sweep moves
+   * them together.
    *
    * This is the granular alternative to `validate: 'off'`. Use it when a
    * specific known-acceptable contact (e.g. a knuckle joint where two arm
