@@ -15,6 +15,19 @@
   `rotate` on a profile with a `smoothSpline` segment (its free end tangent
   is fixed to +X) and a `sketch.text` sketch. Demo:
   `docs/demos/sketch-transform/`.
+- Kinematic skill cookbook snippet 2 (`02-reachable-with-seed.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 27 errors because no link of the 6-DOF arm touched the next one.
+  Each mated pair now shares a face square to the joint axis, with the
+  connector origin on that face. The header no longer claims the closed-form
+  solver: an arm built with `arm.mate(...)` uses the mate-graph numeric
+  solver.
+- Kinematic skill cookbook snippet 1 (`01-swept-collision-shoulder.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 10 errors. The arm sits on a pedestal, the forearm laps the
+  upper arm at the elbow, and the shoulder limit is ±110°. The snippet sweeps
+  0° to 180° to find the colliding band (120° to 180°), then sweeps the
+  declared limits and expects no collision.
 - `Sketch.union(other)`, `Sketch.subtract(other)` and `Sketch.intersect(other)`
   combine closed 2D profiles into one new sketch; `await` them. `other` is
   one sketch or an array. Lines stay lines and arcs stay arcs, and a boundary
