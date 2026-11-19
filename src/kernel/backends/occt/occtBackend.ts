@@ -4,7 +4,6 @@ import * as replicad from 'replicad';
 import { optimalBoundsOf } from './backendBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
-import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
@@ -22,10 +21,8 @@ import { completeLoftFromLifted } from './polyhedralRuledLoft';
 import { cachedCollisionVertices } from './collisionVerticesCache';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
-import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { reproducibleOcctStep, writeStepAssembly } from './stepAssemblyExport';
+import { reproducibleOcctStep } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
@@ -1441,46 +1438,6 @@ export class OcctBackend implements ShapeBackend {
 
   dispose(): void {
     disposeOcctHandles(this, this.shape);
-  }
-}
-
-/**
- * Scene-aware STEP export. Builds a `replicad.ShapeConfig[]` from the
- * `SceneBackend`'s parts (apply each part's `worldTransform` to a fresh
- * clone of its local-frame OCCT shape), then routes through replicad's
- * XCAF STEP writer (`writeStepAssembly`) so the resulting STEP file ships a
- * separate named body per part with its role color attached via XCAFDoc /
- * STEP layers. (`replicad.exportSTEP` is not used: its GC finalizers
- * double-free the STEP work session and corrupt the wasm heap; see
- * stepAssemblyExport.ts.)
- *
- * Why a free function instead of a `Scene.exportSTEP()` method: the agent-
- * facing Scene surface stays lean (per the kernelCAD product strategy —
- * generic tools, not convenience methods). `runAndExport` calls this
- * directly when the script returns a Scene. Callers outside the runtime
- * (CLI, MCP, future Studio export panel) can import this free function.
- *
- * Lifecycle: clones every part shape before `applyTransform` because
- * replicad's translate/rotate mutate-and-destroy the source OCCT handle
- * (cf. commit 1d597dd). Color tokens (e.g. 'plate', 'gear') are resolved
- * to `#rrggbb` via the role palette before being passed to the writer.
- */
-export async function exportSceneToSTEPAsync(
-  sceneBackend: SceneBackend,
-): Promise<Uint8Array> {
-  // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
-  // owns the clone-before-transform contract for every multi-body exporter.
-  const worldParts = sceneToWorldFrameParts(sceneBackend);
-  try {
-    return await writeStepAssembly(
-      worldParts.map((p) => ({
-        shape: p.shape.getReplicadShape().wrapped,
-        name: p.name,
-        color: resolveColor(p.color),
-      })),
-    );
-  } finally {
-    releaseWorldFrameParts(worldParts);
   }
 }
 
