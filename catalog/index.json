@@ -75822,7 +75822,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-cable-ladder.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-cable-ladder.png",
-      "sourceSha256": "27899286652b62fb1b00930c4516de9cd65cead2602b4b8e217f5871438129a6",
+      "sourceSha256": "767d863b34595cf9f69c6311be9dd5389affe2f64b9d513810e5ecf4652fec70",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75888,8 +75888,7 @@
             "cross-rung-11",
             "cross-rung-12",
             "hanger-left",
-            "hanger-right",
-            "hanger-cap-right"
+            "hanger-right"
           ],
           "param": "steel"
         },
@@ -75897,7 +75896,8 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "hanger-cap-left"
+            "hanger-cap-left",
+            "hanger-cap-right"
           ],
           "param": "polymer"
         }
