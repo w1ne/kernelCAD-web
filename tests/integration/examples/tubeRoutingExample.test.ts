@@ -83,8 +83,14 @@ describe('tube-routing engine example', () => {
       const out = join(dir, 'engine-lines.step');
       vi.spyOn(console, 'log').mockImplementation(() => {});
       await exportCommand().parseAsync(['node', 'export', 'step', GOOD, '-o', out]);
-      // Seven parts and five tubes.
-      expect(readFileSync(out, 'utf8').match(/MANIFOLD_SOLID_BREP/g)).toHaveLength(12);
+      // Seven parts and five tubes: twelve placed instances. The two
+      // actuators are one product placed twice, so eleven solids are written.
+      const step = readFileSync(out, 'utf8');
+      expect(step.match(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\s*\(/g)).toHaveLength(12);
+      expect(step.match(/MANIFOLD_SOLID_BREP/g)).toHaveLength(11);
+      for (const tube of ['fuel-a', 'fuel-b', 'hyd-a', 'hyd-b', 'oil-feed']) {
+        expect(step).toMatch(new RegExp(`NEXT_ASSEMBLY_USAGE_OCCURRENCE\\s*\\(\\s*'\\d+'\\s*,\\s*'${tube}'`));
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
