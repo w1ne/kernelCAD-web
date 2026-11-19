@@ -90,7 +90,7 @@
     "proof:mates": "npm run proof:assembly-contract && npm test -- src/modeling/mates/ src/shared/numeric/ tests/unit/assemblies/solvedModelValidate.test.ts tests/unit/assemblies/solvedModelGroundingGates.test.ts tests/integration/examples/desktop3axisMates.test.ts tests/integration/examples/desktop3axisMates.interference.test.ts tests/integration/mcp/addConnector.test.ts tests/integration/mcp/addMate.test.ts tests/integration/mcp/listMates.test.ts tests/integration/mcp/validateAssembly.test.ts tests/integration/mcp/solveMates.test.ts tests/unit/cli/evaluateValidateGate.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.cli.json",
-    "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts examples/gallery/kspray-klift.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
+    "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts examples/gallery/kspray-klift.kcad.ts examples/gallery/kspray-facade-robot.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
     "qc:lint": "npm run lint && npm run cookbook:validate",
