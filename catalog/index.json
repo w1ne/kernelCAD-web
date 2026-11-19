@@ -125459,7 +125459,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-yard-barrier-section.kcad.ts",
       "preview": "/assets/grid-substation-substation-yard-barrier-section.png",
-      "sourceSha256": "a68df861a788242b9ef5c1beadc21d1b080ad6d7bd473e69482752ef6d7d0427",
+      "sourceSha256": "3522a8e37a142cb5585dea87b7fe83a007d1e43ac6cd9e86243bef19ec21acbd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -125520,7 +125520,6 @@
             "upright-2",
             "upright-3",
             "upright-4",
-            "foot-2",
             "diagonal-safety-brace"
           ],
           "param": "galvanizedSteel"
@@ -125537,7 +125536,8 @@
           "name": "concrete",
           "color": "#92938b",
           "parts": [
-            "foot"
+            "foot",
+            "foot-2"
           ],
           "param": "concrete"
         }

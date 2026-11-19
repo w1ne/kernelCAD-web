@@ -46,7 +46,8 @@ p.part("upright-2", box(120, 130, 713, true).translate(-390, 0, 586.50).scale(sc
 p.part("upright-3", box(120, 130, 713, true).translate(390, 0, 586.50).scale(scale).color(galvanizedSteel));
 p.part("upright-4", box(120, 130, 713, true).translate(1170, 0, 586.50).scale(scale).color(galvanizedSteel));
 p.part("foot", box(420, 420, 150, true).translate(-1040, 0, 75).scale(scale).color(concrete));
-p.part("foot-2", beveledPlate(420, 420, 150, 25.20).translate(1040, 0, 0).scale(scale).color(galvanizedSteel));
+// Both end feet are ballast blocks, so they share the concrete finish.
+p.part("foot-2", beveledPlate(420, 420, 150, 25.20).translate(1040, 0, 0).scale(scale).color(concrete));
 
 brace("diagonal-safety-brace", [-780, 0, 264.50], [780, 0, 713], 70);
 
