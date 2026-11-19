@@ -5,10 +5,14 @@
 // per use, not one unrelated copied solid per use. Checked by reading the
 // exported bytes back through the XCAF importer.
 import { describe, it, expect, beforeAll } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { importStepAssembly } from '../../../src/kernel/import/stepAssemblyImport';
 import type { StepAssemblySnapshot, StepImportOccurrence } from '../../../src/kernel/import/stepAssemblyTypes';
+import { writeStepBundle } from '../../../src/kernel/import/stepBundleWriter';
 
 const FIXTURE = `
   const pin = cylinder(8, 2).color('#3366cc');
@@ -141,5 +145,83 @@ describe('Scene STEP export keeps repeated parts as placed instances', () => {
     const pinDef = snapshot.definitions.find((d) => d.id === pin.definitionId)!;
     expect(pinDef.boundsMm.min[2]).toBeCloseTo(4, 3);
     expect(pin.color?.hex).toBe('#3366cc');
+  }, 120_000);
+
+  it('instances a part whose rigid placement is authored on the shape', async () => {
+    const snapshot = await roundTrip(`
+      const pin = cylinder(8, 2).color('#3366cc');
+      const asm = assembly('pins');
+      asm.part('pin_up', pin);
+      asm.part('pin_moved', pin.translate(10, 0, 0), { at: [0, 5, 0] });
+      asm.part('pin_side', pin.rotateY(90).translate(0, 20, 3));
+      asm.part('pin_pivot', pin.rotate([0, 0, 2], 90, [5, 0, 0]));
+      asm.part('pin_wide', pin.scale(1.5).translate(30, 0, 0));
+      return asm.model();
+    `);
+    const up = byName(snapshot, 'pin_up');
+    const moved = byName(snapshot, 'pin_moved');
+    const side = byName(snapshot, 'pin_side');
+    const pivot = byName(snapshot, 'pin_pivot');
+    const wide = byName(snapshot, 'pin_wide');
+
+    // The rigid placements are instances of the one authored pin; the scaled pin is its own product.
+    expect(snapshot.definitions).toHaveLength(2);
+    for (const instance of [moved, side, pivot]) expect(instance.definitionId).toBe(up.definitionId);
+    expect(wide.definitionId).not.toBe(up.definitionId);
+    const pinDef = snapshot.definitions.find((d) => d.id === up.definitionId)!;
+    expect(pinDef.volumeMm3).toBeCloseTo(Math.PI * 2 * 2 * 8, 3);
+    expect(pinDef.boundsMm.min.map((v) => Math.round(v * 1e6) / 1e6)).toEqual([-2, -2, 0]);
+    expect(pinDef.boundsMm.max.map((v) => Math.round(v * 1e6) / 1e6)).toEqual([2, 2, 8]);
+
+    // Shape translate and part \`at\` add up.
+    expect(translation(moved).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([10, 5, 0]);
+    expect(moved.transform[10]).toBeCloseTo(1, 9);
+    // rotateY(90) carries the pin axis (local +Z) onto world +X, then the translate applies.
+    expect(side.transform.slice(8, 11).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([1, 0, 0]);
+    expect(translation(side).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([0, 20, 3]);
+    // A quarter turn about Z through (5, 0, 0) carries the origin to (5, -5, 0).
+    expect(pivot.transform.slice(0, 3).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([0, 1, 0]);
+    expect(translation(pivot).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([5, -5, 0]);
+    expect(translation(wide)).toEqual([0, 0, 0]);
+  }, 120_000);
+
+  it('keeps instances through import-step and a second export', async () => {
+    const first = await runAndExport({ code: FIXTURE, fileName: 'scene-step-instances.kcad.ts', format: 'step' });
+    const imported = await importStepAssembly(first.bytes, 'pinned_plate.step');
+    const dir = mkdtempSync(join(tmpdir(), 'kcad-step-roundtrip-'));
+    try {
+      const bundle = await writeStepBundle({
+        inputName: 'pinned_plate.step',
+        inputBytes: first.bytes,
+        outDir: join(dir, 'bundle'),
+        assemblyName: 'pinned_plate',
+        snapshot: imported,
+      });
+      const second = await runAndExport({ code: readFileSync(bundle.script, 'utf8'), fileName: bundle.script, scriptDir: bundle.outDir, format: 'step' });
+      expect(second.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+      const snapshot = await importStepAssembly(second.bytes, 'pinned_plate.step');
+
+      expect(snapshot.occurrences).toHaveLength(3);
+      expect(snapshot.definitions).toHaveLength(2);
+      const find = (suffix: string) => {
+        const found = snapshot.occurrences.filter((o) => o.name.endsWith(suffix));
+        expect(found).toHaveLength(1);
+        return found[0];
+      };
+      const left = find('pin_left');
+      const right = find('pin_right');
+      const plate = find('plate');
+      expect(left.definitionId).toBe(right.definitionId);
+      expect(plate.definitionId).not.toBe(left.definitionId);
+      expect(translation(left).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([-12, 0, 4]);
+      expect(translation(right).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([12, 3, 4]);
+      expect([left.color?.hex, right.color?.hex, plate.color?.hex]).toEqual(['#3366cc', '#3366cc', '#cc6633']);
+      const pinDef = snapshot.definitions.find((d) => d.id === left.definitionId)!;
+      expect(pinDef.volumeMm3).toBeCloseTo(Math.PI * 2 * 2 * 8, 3);
+      expect(pinDef.boundsMm.min[2]).toBeCloseTo(0, 3);
+      expect(pinDef.boundsMm.max[2]).toBeCloseTo(8, 3);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   }, 120_000);
 });
