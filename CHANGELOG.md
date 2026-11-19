@@ -1,5 +1,12 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 1 (`01-swept-collision-shoulder.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 10 errors. The arm sits on a pedestal, the forearm laps the
+  upper arm at the elbow, and the shoulder limit is ±110°. The snippet sweeps
+  0° to 180° to find the colliding band (120° to 180°), then sweeps the
+  declared limits and expects no collision.
+
 - `union()` keeps each member's own `.finish()`, `.material()` or `.color()`
   on the faces that came from that member, in Studio, `render_preview`, an
   assembly part's mesh and GLB export. A servo with a dark ABS case, an
