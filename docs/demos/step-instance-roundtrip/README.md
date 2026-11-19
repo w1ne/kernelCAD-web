@@ -4,7 +4,7 @@
 `examples/bom/panel-with-fasteners.kcad.ts`. The example is exported to STEP
 (4 products, 9 placed instances), imported as a KernelCAD project, and exported
 to STEP again. The second file holds the same 4 products and 9 placed
-instances. The displayed geometry is one mesh per product of the second file,
+instances, and every instance has the part name it had in the first file. The displayed geometry is one mesh per product of the second file,
 drawn once for each instance placement.
 
 ## Replay and verification
@@ -24,6 +24,7 @@ It reads both STEP files back with the OCCT XCAF STEP reader and fails unless:
 - the product count and the instance count are equal in both files;
 - every product has the same instance count, solid count, volume and
   source-frame bounds in both files;
+- every instance is found by its exact part name in both files;
 - every instance has the same colour and the same placement matrix within
   1e-6 (measured largest difference: 0 after rounding to 1e-9).
 
@@ -44,8 +45,9 @@ a part that does not match is written as its own product.
 
 This is local API export, import and OCCT read-back. No other CAD system opened
 the files, and the demo shows no deployed behavior or hardware acceptance. The
-imported project names each part by its STEP path, so instance names gain the
-root name as a prefix (`standoff_0` becomes `panel__standoff_0`). The example
+imported project drops the root product name from each part name; a nested
+part is named by its sub-assembly path, and a name with characters other than
+letters, digits, `_` and `-` is changed and reported. The example
 sets no colours; its parts read back as `#ff0000` from the first export, and
 the imported project carries that as an explicit `.color(...)`. Hardware placed
 by a hole-driven helper is not instanced. The exported file hashes are valid for
