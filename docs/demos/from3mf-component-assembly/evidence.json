@@ -1,0 +1,77 @@
+{
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/from3mf-component-assembly/capture-demo.mts",
+  "script": "import-and-drill.kcad.ts",
+  "sourceSha256": "b1f7597b6b10d9b591bf00bd637dfe8fdd211fe3d88ffe88ed74a3e9d47c182f",
+  "implementation": {
+    "src/modeling/api.ts": "2b03d6c450b16a086c23655e23ebaaba6c42dbc55ffefb8cbaf958d8caab579b",
+    "src/modeling/apiPartsLib.ts": "e63fedb7353f99ef9c6f45e369cf2b8d0dac3e3a3943b5adfd3fd248c847416a",
+    "src/modeling/parts/fromMeshFormats.ts": "ebce31bc8508e64d13272010f08acd4b26a1c27566ceb0245436d4f82e3fdacf",
+    "src/kernel/backends/occt/import3mf.ts": "3835b7f99d50e0c25bc7a2245672cd9cee6e0ba1481e4de0b44e726ff2a23d7d"
+  },
+  "fixture": "two-block-assembly.3mf",
+  "fixtureSha256": "95485451d4ab1446f040ad5361694362857c119bb5c3f3acb1504092474b5b51",
+  "environment": {
+    "node": "v22.23.4",
+    "meshing": {
+      "toleranceMm": 0.05,
+      "angularToleranceRadians": 0.3
+    }
+  },
+  "input": {
+    "format": "3mf",
+    "unit": "millimeter",
+    "triangleCount": 24,
+    "componentInstances": 2
+  },
+  "assembly": {
+    "volumeMm3": 1999.9999999999993,
+    "boundsMm": {
+      "min": [
+        8,
+        4,
+        0
+      ],
+      "max": [
+        30,
+        14,
+        10
+      ]
+    },
+    "solidCount": 2,
+    "brepCheckValid": true
+  },
+  "boolean": {
+    "operation": "subtract a radius 2 mm cylinder through the first 10 mm cube",
+    "volumeMm3": 1874.3362938564082,
+    "removedVolumeMm3": 125.66370614359107,
+    "expectedRemovedVolumeMm3": 125.66370614359172,
+    "boundsMm": {
+      "min": [
+        8,
+        4,
+        0
+      ],
+      "max": [
+        30,
+        14,
+        10
+      ]
+    },
+    "solidCount": 2,
+    "brepCheckValid": true
+  },
+  "checks": {
+    "metadataPreserved": true,
+    "separateSolids": true,
+    "assemblyBrepValid": true,
+    "booleanBrepValid": true,
+    "noErrorDiagnostics": true,
+    "volumeMatches": true
+  },
+  "diagnostics": [],
+  "geometryFile": "geometry.json",
+  "deployed": false,
+  "simulationRun": false,
+  "hardwareAccepted": false
+}

@@ -10,6 +10,7 @@ import { createOcctLowerer } from './occtLowerer';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 
 const fixture = resolve(process.cwd(), 'docs/demos/3mf-resource-ids/generic-cube.3mf');
+const componentFixture = resolve(process.cwd(), 'docs/demos/from3mf-component-assembly/two-block-assembly.3mf');
 
 function validBrep(backend: OcctBackend): boolean {
   const oc = getOC() as any;
@@ -18,6 +19,22 @@ function validBrep(backend: OcctBackend): boolean {
     return Boolean(analyzer.IsValid_2());
   } finally {
     analyzer.delete?.();
+  }
+}
+
+function solidCount(backend: OcctBackend): number {
+  const oc = getOC() as any;
+  const explorer = new oc.TopExp_Explorer_2(
+    backend.getReplicadShape().wrapped,
+    oc.TopAbs_ShapeEnum.TopAbs_SOLID,
+    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  let count = 0;
+  try {
+    for (; explorer.More(); explorer.Next()) count++;
+    return count;
+  } finally {
+    explorer.delete?.();
   }
 }
 
@@ -53,6 +70,31 @@ describe('lib.from3MF', () => {
     expect(sourceBackend.volume()).toBeCloseTo(1000, 3);
     expect(sourceBackend.boundingBox()).toEqual({ min: [0, 0, 0], max: [10, 10, 10] });
     expect(drilledBackend.volume()).toBeCloseTo(1000 - 40 * Math.PI, 2);
+    expect(validBrep(sourceBackend as OcctBackend)).toBe(true);
+    expect(validBrep(drilledBackend as OcctBackend)).toBe(true);
+    expect(result.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toHaveLength(0);
+  });
+
+  it('imports nested component instances as separate valid solids that accept a boolean', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: dirname(componentFixture) });
+    const imported = await api.lib.from3MF(basename(componentFixture));
+    const drilled = imported.subtract(api.cylinder(10.2, 2).translate(13, 9, -0.1));
+    const result = await new RecomputeEngine(createOcctLowerer(session)).run(
+      session.getRecords(),
+      { paramTable: session.paramTable },
+    );
+    const sourceBackend = result.shapes.get(imported.id)!;
+    const drilledBackend = result.shapes.get(drilled.id)!;
+
+    const record = session.getRecords().find(candidate => candidate.id === imported.id)!;
+    expect(record.kind).toBe('importedStl');
+    expect(record.metadata).toMatchObject({ sourceFormat: '3mf', triangleCount: 24, isSolid: true, unit: 'millimeter' });
+    expect(sourceBackend.volume()).toBeCloseTo(2000, 3);
+    expect(sourceBackend.boundingBox()).toEqual({ min: [8, 4, 0], max: [30, 14, 10] });
+    expect(solidCount(sourceBackend as OcctBackend)).toBe(2);
+    expect(drilledBackend.volume()).toBeCloseTo(2000 - 40 * Math.PI, 2);
+    expect(solidCount(drilledBackend as OcctBackend)).toBe(2);
     expect(validBrep(sourceBackend as OcctBackend)).toBe(true);
     expect(validBrep(drilledBackend as OcctBackend)).toBe(true);
     expect(result.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toHaveLength(0);
