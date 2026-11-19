@@ -154,7 +154,7 @@ function sceneTwo(evidence: Evidence, geometry: ProductMesh[]): string {
     <text x="700" y="${252 + base}" fill="#f8fafc" font-family="Arial,sans-serif" font-size="19">${evidence.tree.productCount} products · ${evidence.tree.instanceCount} placed instances · ${evidence.step.bytes.toLocaleString('en-US')} bytes</text>
     <text x="700" y="${284 + base}" fill="#37d6b0" font-family="Arial,sans-serif" font-size="17">Instance counts, colours and product volumes are equal.</text>
     <text x="700" y="${312 + base}" fill="#37d6b0" font-family="Arial,sans-serif" font-size="17">Largest placement difference: ${evidence.checks.maxPlacementErrorMm} mm (limit ${evidence.checks.placementToleranceMm} mm).</text>
-    <text x="700" y="${340 + base}" fill="#9fb0c4" font-family="Arial,sans-serif" font-size="15">Instance names gain the root name as a prefix.</text>`;
+    <text x="700" y="${340 + base}" fill="#37d6b0" font-family="Arial,sans-serif" font-size="17">Every instance keeps its part name.</text>`;
   return shell('The second STEP export keeps the product tree', 'kernelcad export step panel-import/panel.kcad.ts: shape-placed parts are instances of one product.', content);
 }
 

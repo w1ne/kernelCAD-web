@@ -80,15 +80,15 @@ assert.equal(secondSnapshot.occurrences.length, firstSnapshot.occurrences.length
 let maxPlacementErrorMm = 0;
 const comparison = firstTree.map((product) => {
   const names = product.instances.map((instance) => instance.name);
-  // The imported project names each part by its STEP path: '<root>__<instance>'.
-  const match = secondTree.find((candidate) => candidate.instances.some((instance) => instance.name.endsWith(`__${names[0]}`)));
+  // The imported project keeps each part name, so instances match by exact name.
+  const match = secondTree.find((candidate) => candidate.instances.some((instance) => instance.name === names[0]));
   assert.ok(match, `no round-trip product holds '${names[0]}'`);
   assert.equal(match.instances.length, product.instances.length, `instance count for '${product.product}'`);
   assert.equal(match.solidCount, product.solidCount);
   assert.ok(Math.abs(match.volumeMm3 - product.volumeMm3) <= 1e-3, `volume for '${product.product}'`);
   assert.deepEqual(match.localBoundsMm, product.localBoundsMm, `source-frame bounds for '${product.product}'`);
   for (const instance of product.instances) {
-    const again = match.instances.find((candidate) => candidate.name.endsWith(`__${instance.name}`));
+    const again = match.instances.find((candidate) => candidate.name === instance.name);
     assert.ok(again, `instance '${instance.name}' is missing after the round trip`);
     assert.equal(again.color, instance.color, `colour of '${instance.name}'`);
     instance.matrixColumnMajor.forEach((value, index) => {
@@ -136,13 +136,13 @@ const evidence = {
   checks: {
     productCountsMatch: true,
     instanceCountsMatch: true,
+    instanceNamesMatch: true,
     coloursMatch: true,
     productVolumesAndBoundsMatch: true,
     placementToleranceMm: PLACEMENT_TOLERANCE_MM,
     maxPlacementErrorMm,
   },
   limits: [
-    "The imported project names each part by its STEP path ('panel__standoff_0'), so instance names gain the root name as a prefix after the round trip.",
     'Other CAD systems were not used to open the files.',
     'The file hashes are for this capture only: OCCT orders the colour style entities of a multi-colour scene differently between writes.',
   ],

@@ -211,7 +211,13 @@ product paths, units, placements, colors, and geometry measurements, and exact
 native OCCT BREP assets content-addressed by geometry. Byte-identical product
 definitions share an asset. The original STEP assembly hierarchy is recorded
 in the manifest; the current KernelCAD scene is flattened into independently
-placeable occurrences. Local STEP `DOCUMENT_FILE` dependencies are read
+placeable occurrences. Each part keeps its STEP name; the root product that
+holds every part is the assembly and is not part of the name (`pin_left`, not
+`panel__pin_left`), and a nested part is named by its sub-assembly path
+(`wrist__flange`). A name that is not usable as written (other characters than
+letters, digits, `_` and `-`, or a repeated name) is changed, reported as a
+warning, and listed as `renamedParts` in the `--json` result; `manifest.json`
+records the `partName` of every occurrence. Local STEP `DOCUMENT_FILE` dependencies are read
 recursively, included in the import provenance hashes, and must stay inside the
 input directory. Component colors are preserved; per-face color mapping is not
 part of this import. It does not infer mates, joints, motion, feature history,

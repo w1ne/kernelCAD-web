@@ -248,16 +248,17 @@ describe('Scene STEP export keeps repeated parts as placed instances', () => {
       expect(second.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
       const snapshot = await importStepAssembly(second.bytes, 'pinned_plate.step');
 
-      expect(snapshot.occurrences).toHaveLength(3);
+      // Part names survive both legs: no STEP-path prefix is added on import.
+      expect(readFileSync(bundle.script, 'utf8').match(/imported\.part\("[^"]*"/g)).toEqual([
+        'imported.part("plate"', 'imported.part("pin_left"', 'imported.part("pin_right"',
+      ]);
+      expect(snapshot.occurrences.map((o) => o.sourcePath)).toEqual([
+        ['pinned_plate', 'plate'], ['pinned_plate', 'pin_left'], ['pinned_plate', 'pin_right'],
+      ]);
       expect(snapshot.definitions).toHaveLength(2);
-      const find = (suffix: string) => {
-        const found = snapshot.occurrences.filter((o) => o.name.endsWith(suffix));
-        expect(found).toHaveLength(1);
-        return found[0];
-      };
-      const left = find('pin_left');
-      const right = find('pin_right');
-      const plate = find('plate');
+      const left = byName(snapshot, 'pin_left');
+      const right = byName(snapshot, 'pin_right');
+      const plate = byName(snapshot, 'plate');
       expect(left.definitionId).toBe(right.definitionId);
       expect(plate.definitionId).not.toBe(left.definitionId);
       expect(translation(left).map(micron)).toEqual([-12, 0, 4]);
