@@ -43,6 +43,25 @@ motor, guard and skid retain their distinct colors.
 Commands, outputs, PR status, index evidence, current public baseline, and
 preview refresh paths are retained in [`verification/`](verification/).
 
+## CI after push
+
+Commit `db70b474ed29450fe10a82d23ed8c04ca34759ce` is pushed to the open draft
+PR [#1507](https://github.com/w1ne/kernelCAD-web/pull/1507). Its GitHub PR run
+[#44434832985](https://github.com/w1ne/kernelCAD-web/actions/runs/44434832985)
+passed lint, build-and-checks, changed-file tests, and `test (draft-light)`;
+the workflow skips the full sharded suite and catalog-index job for a draft.
+The PR remains open and draft, with GitHub's merge state reported as `BLOCKED`.
+
+A separate full CI run
+[#44434710569](https://github.com/w1ne/kernelCAD-web/actions/runs/44434710569)
+passed build-and-checks, catalog-index freshness and preview gate, lint,
+geometry proofs, reference-parts, SolidCraft and external-tool validation.
+Seven of eight test shards passed. The remaining shard failed only the existing
+quality ratchet on `src/modeling/capture/proxy.ts` (file length above the
+820-line limit); that source file is unchanged by this round. The full-run
+result is therefore failed overall. Both run summaries and the exact ratchet
+failure are retained in [`verification/`](verification/).
+
 ## Demo source and inspection
 
 Recreate the video with [`make_demo.py`](make_demo.py). Canvas, duration, codec
