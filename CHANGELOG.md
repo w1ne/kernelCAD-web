@@ -6,8 +6,6 @@
   upper arm at the elbow, and the shoulder limit is ±110°. The snippet sweeps
   0° to 180° to find the colliding band (120° to 180°), then sweeps the
   declared limits and expects no collision.
-
-
 - `Sketch.union(other)`, `Sketch.subtract(other)` and `Sketch.intersect(other)`
   combine closed 2D profiles into one new sketch; `await` them. `other` is
   one sketch or an array. Lines stay lines and arcs stay arcs, and a boundary
