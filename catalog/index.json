@@ -85256,7 +85256,7 @@
       "id": "rfid-access-reader-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "RFID access reader pedestal",
-      "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and powder-coated metal, display glass and stainless steel color controls.",
+      "description": "Short access pedestal with a reader face, a green status lamp below it, and a floor plate. Knobs: overall scale and powder-coated metal, display glass, stainless steel and indicator polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -85277,7 +85277,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/rfid-access-reader-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
-      "sourceSha256": "6451c365b43c2d3b30e670b8783789ed70b8054c6edfae6a3590f060d2ac0221",
+      "sourceSha256": "ecf66af57248163d7a068d6845e7ee01ea0a128ece659de040dc906f3ce82609",
       "triangleBudget": 2400,
       "params": [
         {
@@ -85306,18 +85306,26 @@
           "type": "color",
           "default": "#b5c0c2",
           "label": "Stainless steel"
+        },
+        {
+          "name": "indicatorPolymer",
+          "type": "color",
+          "default": "#48b866",
+          "label": "Indicator polymer"
         }
       ],
       "presets": {
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
-          "stainlessSteel": "#c2c9c8"
+          "stainlessSteel": "#c2c9c8",
+          "indicatorPolymer": "#4fc06a"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
-          "stainlessSteel": "#c8cecd"
+          "stainlessSteel": "#c8cecd",
+          "indicatorPolymer": "#3ddc84"
         }
       },
       "stats": {
@@ -85345,7 +85353,6 @@
           "color": "#397f90",
           "parts": [
             "reader-face",
-            "status-lamp",
             "cap"
           ],
           "param": "powderCoat"
@@ -85357,6 +85364,14 @@
             "reader-window"
           ],
           "param": "displayGlass"
+        },
+        {
+          "name": "indicatorPolymer",
+          "color": "#48b866",
+          "parts": [
+            "status-lamp"
+          ],
+          "param": "indicatorPolymer"
         }
       ]
     },
