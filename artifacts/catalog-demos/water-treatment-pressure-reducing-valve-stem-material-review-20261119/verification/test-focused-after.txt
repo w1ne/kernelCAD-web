@@ -1,0 +1,7 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+ ✓ tests/integration/catalog/pressureReducingValveStemMaterial.test.ts (1 test) 2547ms
+     ✓ draws a stainless adjusting stem on a body that lies on the pipe axis  1669ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:47:58
+   Duration  23.29s (transform 16.81s, setup 553ms, import 19.83s, tests 2.55s, environment 0ms)

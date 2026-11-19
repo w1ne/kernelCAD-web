@@ -351438,7 +351438,7 @@
       "id": "pressure-reducing-valve-assembly",
       "kit": "water-treatment",
       "title": "Pressure reducing valve assembly",
-      "description": "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
+      "description": "Horizontal valve body between two pipe flanges, with a bonnet, actuator, stainless adjusting stem and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351457,7 +351457,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-reducing-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-pressure-reducing-valve-assembly.png",
-      "sourceSha256": "e1ed6f460253f0d6590dc2e1e3fb2e3f94beacb08cbaf71afda506516d5b35d7",
+      "sourceSha256": "e670dfcda13774787f13b5c0bbf0584a6ffe8dd893fd901bfd9e5b27b78fe689",
       "triangleBudget": 2200,
       "params": [
         {
@@ -351503,7 +351503,7 @@
       "stats": {
         "triangles": 532,
         "sizeM": [
-          0.38,
+          0.34,
           0.735,
           0.38
         ],
@@ -351517,8 +351517,7 @@
           "parts": [
             "body",
             "bonnet",
-            "actuator",
-            "stem"
+            "actuator"
           ],
           "param": "coatedSteel"
         },
@@ -351527,7 +351526,8 @@
           "color": "#b5c0c0",
           "parts": [
             "flange-left",
-            "flange-right"
+            "flange-right",
+            "stem"
           ],
           "param": "stainlessSteel"
         },
