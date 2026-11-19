@@ -7,13 +7,14 @@ import type { Sketch } from './sketch';
  * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
  * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
  * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette` /
- * `Sketch.offset` result should raise the actionable "missing await" diagnostic below.
+ * `Sketch.offset` / sketch boolean result should raise the actionable "missing await" diagnostic below.
  */
-const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect', 'offset']);
+const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect', 'offset', 'union', 'subtract', 'intersect']);
 
 /**
  * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
- * (`sectionSketch`, `faceSketch`, `silhouette`, `Sketch.offset`) so that the common agent
+ * (`sectionSketch`, `faceSketch`, `silhouette`, `Sketch.offset`, the sketch
+ * booleans) so that the common agent
  * mistake of chaining a Sketch method directly on the un-awaited result —
  * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
  * `feature.async-result.missing-await` diagnostic instead of the cryptic

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
-import { isValidAxisSpec, isValidEditableNumber } from '../../shared/intent/types';
+import { isValidAxisSpec } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
@@ -14,6 +14,7 @@ import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable } from '../../shared/runtime/paramRef';
 import { paramValue, toParam } from '../../shared/runtime/editableHelpers';
 import { offsetSketchOf, type SketchOffsetOptions } from './sketchOffset';
+import { booleanSketchOf } from './sketchBoolean';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
@@ -40,73 +41,8 @@ import {
 
 import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 import { ALLOWED_LOFT_KEYS, ALLOWED_LOFT_PLANE_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
+import { assertKnownKeys, assertEditableNumber, assertEditablePair } from './sketchOptionGuards';
 export type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
-
-/**
- * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
- * Shared by `extrude`'s and `sweep`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
- * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
- * every message/hint byte-identical to the hand-rolled guards this replaced.
- */
-function assertKnownKeys(
-  opts: object,
-  allowed: ReadonlySet<string>,
-  featureId: FeatureId,
-  unknownMessage: (key: string) => string,
-  accepts: string,
-): void {
-  for (const key of Object.keys(opts)) {
-    if (!allowed.has(key)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        unknownMessage(key),
-        featureId,
-        `${accepts} accepts ${[...allowed].join(', ')}.`,
-      );
-    }
-  }
-}
-
-/**
- * Reject a present-but-invalid `Editable<number>` option. Same
- * "must be a number or ParamRef" message/hint contract across
- * `extrude.twistAngle`, `loft.twistDeg`, and `loft.planes[i].rotationDeg`.
- */
-function assertEditableNumber(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (value !== undefined && !isValidEditableNumber(value)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a number or ParamRef; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
-
-/** Same contract for `[x, y]` Editable pairs (`loft.twistCenter`). */
-function assertEditablePair(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (
-    value !== undefined &&
-    (!Array.isArray(value) || value.length !== 2 || !value.every(isValidEditableNumber))
-  ) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
 
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
@@ -625,6 +561,54 @@ export class Sketch {
    */
   offset(distance: number, opts?: SketchOffsetOptions | null): Promise<Sketch> {
     return offsetSketchOf(this.id, this.session, distance, opts);
+  }
+
+  /**
+   * 2D union of this closed profile with one or more other profiles, as a new
+   * Sketch. AWAIT THIS — it returns `Promise<Sketch>`.
+   *
+   * A profile is the region inside its first loop and outside its hole loops.
+   * Lines stay lines and arcs stay arcs; a boundary shared by two profiles
+   * disappears. The sources are unchanged.
+   *
+   * Throws `feature.sketch-boolean.split` when the profiles do not overlap
+   * (the result would be several outlines) and `feature.invalid-args` for a
+   * spline profile, a param()-driven profile or a non-Sketch argument.
+   *
+   * @example
+   *   const keyhole = await slot.union(path().circle(0, 12, 6));
+   */
+  union(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'union', other);
+  }
+
+  /**
+   * 2D subtraction: this closed profile minus one or more other profiles, as
+   * a new Sketch. AWAIT THIS — it returns `Promise<Sketch>`. A removed profile
+   * that lies inside the outline becomes a hole.
+   *
+   * Throws `feature.sketch-boolean.empty` when nothing is left and
+   * `feature.sketch-boolean.split` when the result is cut into several pieces
+   * or touches itself at a point.
+   *
+   * @example
+   *   const plate = await outline.subtract([path().circle(10, 10, 3), path().circle(30, 10, 3)]);
+   */
+  subtract(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'subtract', other);
+  }
+
+  /**
+   * 2D intersection: the region this closed profile shares with every other
+   * profile, as a new Sketch. AWAIT THIS — it returns `Promise<Sketch>`.
+   *
+   * Throws `feature.sketch-boolean.empty` when the profiles do not overlap.
+   *
+   * @example
+   *   const lens = await path().circle(0, 0, 10).intersect(path().circle(12, 0, 10));
+   */
+  intersect(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'intersect', other);
   }
 }
 

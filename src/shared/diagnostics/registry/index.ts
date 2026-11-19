@@ -409,6 +409,9 @@ const LEGACY_CODE_ORDER = [
   'feature.sketch-offset.collapsed',
   'feature.sketch-offset.split',
   'feature.sketch-offset.failed',
+  'feature.sketch-boolean.empty',
+  'feature.sketch-boolean.split',
+  'feature.sketch-boolean.failed',
 ] as const satisfies readonly DiagnosticCode[];
 
 // LEGACY_CODE_ORDER may contain each code at most once. A duplicate would

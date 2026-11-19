@@ -77,33 +77,66 @@ function validateArgs(id: FeatureId, distance: unknown, opts: unknown): 'round' 
   return corners;
 }
 
-function sourceCommands(id: FeatureId, session: CaptureSession): SketchCommand[] {
+/** Wording of the `feature.invalid-args` refusals of `exactClosedProfile`. */
+export interface ExactProfileContext {
+  api: string;
+  example: string;
+  /** Path of the refused argument, e.g. `'sketch'` or `'other[1]'`. */
+  path: string;
+  /** Why a spline segment is refused, e.g. `'the parallel curve of a spline is not a spline'`. */
+  splineReason: string;
+  /** Noun for the operation in "the <noun> is computed when the script runs". */
+  operation: string;
+}
+
+/**
+ * Commands of sketch `id` when it is a closed profile of plain-number lines
+ * and circular arcs; otherwise a `feature.invalid-args` refusal. Shared by the
+ * capture-time sketch producers (`Sketch.offset`, the 2D sketch booleans).
+ */
+export function exactClosedProfile(
+  id: FeatureId,
+  session: CaptureSession,
+  ctx: ExactProfileContext,
+  featureId: FeatureId = id,
+): SketchCommand[] {
+  const { api, example, path } = ctx;
   const record = session.getRecords().find((r) => r.id === id);
   const commands = (record?.metadata as { commands?: SketchCommand[] } | undefined)?.commands;
   if (!Array.isArray(commands) || !commands.some((c) => c.kind === 'close')) {
     invalidArgs({
-      api: API, path: 'sketch', gotText: 'a sketch without a closed path profile (text, projected or open)',
+      api, path, gotText: 'a sketch without a closed path profile (text, projected or open)',
       requires: 'a closed profile from path()...close(), path().circle(), reflect, offset, sectionSketch, faceSketch, silhouette or a DXF/SVG import',
-      example: EXAMPLE, featureId: id,
+      example, featureId,
     });
   }
   const unsupported = commands.find((c) => !EXACT_KINDS.has(c.kind));
   if (unsupported !== undefined) {
     invalidArgs({
-      api: API, path: 'sketch', gotText: `a profile with a '${unsupported.kind}' segment`,
-      requires: 'a profile of straight lines and circular arcs only; the parallel curve of a spline is not a spline',
-      example: EXAMPLE, featureId: id,
+      api, path, gotText: `a profile with a '${unsupported.kind}' segment`,
+      requires: `a profile of straight lines and circular arcs only; ${ctx.splineReason}`,
+      example, featureId,
     });
   }
   if (hasParamRef(commands)) {
     invalidArgs({
-      api: API, path: 'sketch', gotText: 'a profile with param()-driven coordinates',
+      api, path, gotText: 'a profile with param()-driven coordinates',
       requires:
-        'plain-number coordinates: the offset is computed when the script runs and would not follow a later parameter edit',
-      example: EXAMPLE, featureId: id,
+        `plain-number coordinates: the ${ctx.operation} is computed when the script runs and would not follow a later parameter edit`,
+      example, featureId,
     });
   }
   return commands;
+}
+
+function sourceCommands(id: FeatureId, session: CaptureSession): SketchCommand[] {
+  return exactClosedProfile(id, session, {
+    api: API,
+    example: EXAMPLE,
+    path: 'sketch',
+    splineReason: 'the parallel curve of a spline is not a spline',
+    operation: 'offset',
+  });
 }
 
 /** Offset the closed profile of sketch `id` by `distance` mm. */

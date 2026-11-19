@@ -687,6 +687,13 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // corners: 'round' (default) joins an outward-moving corner with an arc of
 // radius |distance|; 'sharp' extends the neighbouring segments until they meet.
 .offset(distance: number, opts?: { corners?: 'round' | 'sharp' }): Promise<Sketch>
+
+// 2D booleans of closed profiles. ASYNC: await them. A profile is the region
+// inside its first loop and outside its hole loops. Lines stay lines, arcs
+// stay arcs, and a boundary shared by two profiles disappears.
+.union(other: Sketch | Sketch[]): Promise<Sketch>      // this plus every other profile
+.subtract(other: Sketch | Sketch[]): Promise<Sketch>   // this minus every other profile
+.intersect(other: Sketch | Sketch[]): Promise<Sketch>  // what this shares with every other profile
 ```
 
 **Offset a profile.** `offset` makes a wall, a clearance pocket or a groove from one outline, without a second hand-written path:
@@ -698,6 +705,18 @@ const tray = outline.extrude(20).subtract(cavity.extrude(18).translate(0, 0, 2))
 ```
 
 The offset is computed when the script runs. Thus `distance` and every coordinate of the source profile must be a plain number: a `param()` reference throws `feature.invalid-args`, because the result could not follow a later parameter edit. A spline segment also throws `feature.invalid-args`. A result that is not one profile is refused: `feature.sketch-offset.collapsed` when nothing is left (inset of half the narrowest width or more), `feature.sketch-offset.split` when a neck or gap closes, a hole reaches the boundary, or the result touches itself at exactly this distance. Use a smaller distance, or offset each region as its own sketch.
+
+**Combine profiles.** `union`, `subtract` and `intersect` build one outline from simple shapes, so you do not compute where a circle meets a line by hand:
+
+```ts
+const body = path().moveTo(-4, 0).lineTo(4, 0).lineTo(4, 14).lineTo(-4, 14).close();
+const keyhole = await body.union(path().circle(0, 18, 7));     // slot plus round head
+const plate = await path().moveTo(-15, -6).lineTo(15, -6).lineTo(15, 32).lineTo(-15, 32).close()
+  .subtract(keyhole);                                         // keyhole becomes a hole
+return plate.extrude(3);
+```
+
+The result is an ordinary sketch: extrude, revolve, loft, `offset` or combine it again. The boolean is computed when the script runs. Thus every coordinate of every profile must be a plain number: a `param()` reference throws `feature.invalid-args`, because the result could not follow a later parameter edit, and a spline segment also throws `feature.invalid-args`. For those profiles, extrude each sketch and combine the solids. A result that is not one outline with holes is refused: `feature.sketch-boolean.empty` when no area is left, `feature.sketch-boolean.split` when the result is several separate regions (a union of profiles that do not overlap, a subtract that cuts the profile in two) or touches itself at a point.
 
 **Twisted blades / staggered sections.** Two ways to twist a loft. `twistDeg` distributes an even total twist across the sections — first section at 0°, last section at `twistDeg`. A per-plane `planes[].rotationDeg` overrides the distributed angle for that section only (`rotationDeg ?? twistDeg * i / (N - 1)`). Both rotate in section space about `twistCenter` (default `[0, 0]` — the sketch-local origin of each section, NOT the 3D plane `origin` you passed in `planes`), which is how a turbine blade profile is rotated about its stacking axis. In non-rail lofts, sections built from NURBS path segments (`.spline` / `.nurbsSegment` / `.hermiteG2`) honor `plane`, `origin`, and rotation exactly like ordinary sections. The twist option name differs by operation: extrude twists with `twistAngle`, loft with `twistDeg`.
 

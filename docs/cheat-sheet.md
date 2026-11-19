@@ -121,6 +121,7 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 | Call | What it does |
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
+| `Sketch.subtract(other: Sketch \| Sketch[]) => Promise<Sketch>` | 2D subtraction: this closed profile minus one or more other profiles, as a new Sketch. |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
 | `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
 | `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?, clearance? } }) => Shape` | Drill N holes in one feature record. |
@@ -135,7 +136,9 @@ Merge or intersect solids, or group them without paying for a boolean.
 |---|---|
 | `union(...shapes) => Shape` | Boolean union of two or more shapes. |
 | `Shape.union(...others) => Shape` | Boolean union with one or more shapes. |
+| `Sketch.union(other: Sketch \| Sketch[]) => Promise<Sketch>` | 2D union of this closed profile with one or more other profiles, as a new Sketch. |
 | `Shape.intersect(...others) => Shape` | Boolean intersection. |
+| `Sketch.intersect(other: Sketch \| Sketch[]) => Promise<Sketch>` | 2D intersection: the region this closed profile shares with every other profile, as a new Sketch. |
 | `Curve3D.analytics.intersect(other: Curve3D \| Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] \| CurveSurfaceIntersection[]` | Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). |
 | `Shape.split(other: Shape, opts?: { keep?: 'parts' \| 'intersection' \| 'a_only' \| 'b_only' }) => Scene \| Shape` | Keep the overlap and both leftovers as named parts. |
 | `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
@@ -254,6 +257,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `Curve3D.analytics.derivatives(t: number, numDerivs?: number) => Vec3[]` | Evaluate the curve and its first `numDerivs` derivatives at `t ∈ [0, 1]`. |
 | `Curve3D.analytics.tessellate(opts?: { tolerance?: number }) => Vec3[]` | Adaptive polyline approximation of the curve at the given tolerance (mm). |
 | `Shape.intersect(...others) => Shape` | Boolean intersection. |
+| `Sketch.intersect(other: Sketch \| Sketch[]) => Promise<Sketch>` | 2D intersection: the region this closed profile shares with every other profile, as a new Sketch. |
 | `Curve3D.analytics.intersect(other: Curve3D \| Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] \| CurveSurfaceIntersection[]` | Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). |
 
 ## Measure & verify
@@ -300,6 +304,7 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 | `definePart({ shape, connectors? }) => Shape` | Publish the part solid and its numeric connector frames, and return that same shape. |
 | `ParamRef.add(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef plus `other`. |
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
+| `Sketch.subtract(other: Sketch \| Sketch[]) => Promise<Sketch>` | 2D subtraction: this closed profile minus one or more other profiles, as a new Sketch. |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
 | `ParamRef.multiply(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef times `other`. |
 | `ParamRef.divide(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef divided by `other`. |

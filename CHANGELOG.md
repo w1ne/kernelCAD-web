@@ -1,5 +1,18 @@
 # Unreleased
 
+- `Sketch.union(other)`, `Sketch.subtract(other)` and `Sketch.intersect(other)`
+  combine closed 2D profiles into one new sketch; `await` them. `other` is
+  one sketch or an array. Lines stay lines and arcs stay arcs, and a boundary
+  shared by two profiles disappears. A removed profile inside the outline
+  becomes a hole. For a 40 × 20 mm rectangle and a Ø16 disc centred on its
+  right edge: union 900.531 mm², subtract 699.469 mm², intersect
+  100.531 mm². The result is refused, not approximated, when it is not one
+  outline with holes: `feature.sketch-boolean.empty` (no area left),
+  `feature.sketch-boolean.split` (separate regions, or a result that touches
+  itself at a point) and `feature.sketch-boolean.failed`. The boolean is
+  computed when the script runs, so a `param()`-driven coordinate and a
+  spline segment throw `feature.invalid-args`. Demo:
+  `docs/demos/sketch-boolean/`.
 - `Sketch.offset(distance, { corners })` returns the parallel curve of a
   closed profile as a new sketch; `await` it. A positive distance grows the
   region (the outline moves outward and holes shrink), a negative distance
