@@ -1260,16 +1260,17 @@ export class OcctBackend implements ShapeBackend {
    * pipeline (relative-deflection whole-shape mesh, per-face absolute
    * fallback, position-key weld, crack stitch — see meshShapeForExport),
    * then runs the O(n) edge-adjacency verify on the exact mesh that is
-   * encoded, so the report describes the bytes written.
+   * encoded, so the report describes the bytes written. `watertightOnly`
+   * leaves `bytes` empty for a torn mesh the caller will not ship.
    */
-  async exportSTLWithReportAsync(deflection?: ExportMeshDeflection): Promise<{
+  async exportSTLWithReportAsync(deflection?: ExportMeshDeflection, watertightOnly = false): Promise<{
     bytes: Uint8Array;
     report: WatertightReport;
     triangleCount: number;
   }> {
     const mesh = meshShapeForExport(this.shape, deflection);
     const report = verifyWatertight(mesh);
-    const bytes = encodeBinaryStlBytes({ vertices: mesh.vertices, triangles: mesh.triangles });
+    const bytes = watertightOnly && !report.ok ? new Uint8Array() : encodeBinaryStlBytes(mesh);
     return { bytes, report, triangleCount: mesh.triangles.length / 3 };
   }
 

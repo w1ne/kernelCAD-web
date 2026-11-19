@@ -122,7 +122,8 @@ async function writeExportPayload(
       return undefined;
     }
     await mkdir(dirname(finalPath), { recursive: true });
-    await writeFile(finalPath, Buffer.from(result.bytes));
+    // The bytes are written as they are: a copy doubles a large STL in memory.
+    await writeFile(finalPath, result.bytes);
     // Robot-description exports (URDF / SDF) reference per-link mesh files
     // by relative path — write them next to the output file so the
     // document is consumable as-is.
