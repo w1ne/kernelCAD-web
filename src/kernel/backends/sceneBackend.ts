@@ -21,10 +21,11 @@ export interface SceneBackendPart {
    *  `pla`). Print exporters (3MF) use it as the named base material. */
   readonly materialName?: string;
   /** Provenance for repeated parts: `shape` is the source shape `sourceId`
-   *  translated by `offset`. Parts with the same `sourceId` share geometry,
-   *  so exporters with a product structure (STEP) can write one product and
-   *  one placed instance per part. Absent when the source is unknown. */
-  readonly prototype?: { readonly sourceId: string; readonly offset: readonly [number, number, number] };
+   *  moved by the rigid `placement`. Parts with the same `sourceId` share
+   *  geometry, so exporters with a product structure (STEP) can write one
+   *  product and one placed instance per part. Absent when the source is
+   *  unknown. */
+  readonly prototype?: { readonly sourceId: string; readonly placement: Transform };
 }
 
 export interface SceneBackend {

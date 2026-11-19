@@ -40,6 +40,25 @@ function translation(o: StepImportOccurrence): [number, number, number] {
   return [o.transform[12], o.transform[13], o.transform[14]];
 }
 
+/** Round to 1e-6 mm; `+ 0` turns -0 into 0. */
+function micron(value: number): number {
+  return Math.round(value * 1e6) / 1e6 + 0;
+}
+
+/** World-frame bounds of an occurrence: its definition's bounds corners moved by its placement. */
+function worldBounds(snapshot: StepAssemblySnapshot, o: StepImportOccurrence): number[] {
+  const { min, max } = snapshot.definitions.find((d) => d.id === o.definitionId)!.boundsMm;
+  const m = o.transform;
+  const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((bits) => {
+    const [x, y, z] = [0, 1, 2].map((axis) => ((bits >> axis) & 1 ? max : min)[axis]);
+    return [0, 1, 2].map((row) => m[row] * x + m[4 + row] * y + m[8 + row] * z + m[12 + row]);
+  });
+  return [
+    ...[0, 1, 2].map((axis) => micron(Math.min(...corners.map((c) => c[axis])))),
+    ...[0, 1, 2].map((axis) => micron(Math.max(...corners.map((c) => c[axis])))),
+  ];
+}
+
 describe('Scene STEP export keeps repeated parts as placed instances', () => {
   beforeAll(async () => { await initOcct(); }, 120_000);
 
@@ -170,19 +189,47 @@ describe('Scene STEP export keeps repeated parts as placed instances', () => {
     expect(wide.definitionId).not.toBe(up.definitionId);
     const pinDef = snapshot.definitions.find((d) => d.id === up.definitionId)!;
     expect(pinDef.volumeMm3).toBeCloseTo(Math.PI * 2 * 2 * 8, 3);
-    expect(pinDef.boundsMm.min.map((v) => Math.round(v * 1e6) / 1e6)).toEqual([-2, -2, 0]);
-    expect(pinDef.boundsMm.max.map((v) => Math.round(v * 1e6) / 1e6)).toEqual([2, 2, 8]);
+    expect(pinDef.boundsMm.min.map(micron)).toEqual([-2, -2, 0]);
+    expect(pinDef.boundsMm.max.map(micron)).toEqual([2, 2, 8]);
 
     // Shape translate and part \`at\` add up.
-    expect(translation(moved).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([10, 5, 0]);
+    expect(translation(moved).map(micron)).toEqual([10, 5, 0]);
     expect(moved.transform[10]).toBeCloseTo(1, 9);
     // rotateY(90) carries the pin axis (local +Z) onto world +X, then the translate applies.
-    expect(side.transform.slice(8, 11).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([1, 0, 0]);
-    expect(translation(side).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([0, 20, 3]);
+    expect(side.transform.slice(8, 11).map(micron)).toEqual([1, 0, 0]);
+    expect(translation(side).map(micron)).toEqual([0, 20, 3]);
     // A quarter turn about Z through (5, 0, 0) carries the origin to (5, -5, 0).
-    expect(pivot.transform.slice(0, 3).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([0, 1, 0]);
-    expect(translation(pivot).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([5, -5, 0]);
-    expect(translation(wide)).toEqual([0, 0, 0]);
+    expect(pivot.transform.slice(0, 3).map(micron)).toEqual([0, 1, 0]);
+    expect(translation(pivot).map(micron)).toEqual([5, -5, 0]);
+    // The scale is geometry; the translate after it is the scaled product's placement.
+    const wideDef = snapshot.definitions.find((d) => d.id === wide.definitionId)!;
+    expect(wideDef.volumeMm3).toBeCloseTo(Math.PI * 3 * 3 * 12, 3);
+    expect(wideDef.boundsMm.min.map(micron)).toEqual([-3, -3, 0]);
+    expect(translation(wide).map(micron)).toEqual([30, 0, 0]);
+  }, 120_000);
+
+  it('places shape-placed instances where the flat export puts the same bodies', async () => {
+    // An L-shaped bracket has no symmetry, so a wrong placement moves its bounds.
+    const scene = (colours: string[]) => `
+      const bracket = (c) => box(30, 8, 4).union(box(4, 8, 20)).color(c);
+      const asm = assembly('brackets');
+      asm.part('a', bracket('${colours[0]}'));
+      asm.part('b', bracket('${colours[1]}').rotateZ(90).translate(40, 0, 0), { at: [0, 0, 6] });
+      asm.part('c', bracket('${colours[2]}').rotate([1, 0, 0], 90, [0, 10, 5]).rotateY(-90).translate(-7, 3, 50));
+      asm.part('d', bracket('${colours[3]}').translate(0, 30, 0).rotate([1, 1, 0], 180));
+      return asm.model();
+    `;
+    const instanced = await roundTrip(scene(['#888888', '#888888', '#888888', '#888888']));
+    // Four colours keep four products, which is the flat world-frame body list.
+    const flat = await roundTrip(scene(['#888888', '#cc3333', '#33cc33', '#3333cc']));
+    expect(instanced.definitions).toHaveLength(1);
+    expect(flat.definitions).toHaveLength(4);
+    for (const name of ['a', 'b', 'c', 'd']) {
+      expect(flat.occurrences.find((o) => o.name === name)!.sourcePath).toEqual([name]);
+      expect(worldBounds(instanced, byName(instanced, name)), name).toEqual(worldBounds(flat, byName(flat, name)));
+    }
+    expect(worldBounds(instanced, byName(instanced, 'a'))).toEqual([0, 0, 0, 30, 8, 20]);
+    expect(worldBounds(instanced, byName(instanced, 'b'))).toEqual([32, 0, 6, 40, 30, 26]);
   }, 120_000);
 
   it('keeps instances through import-step and a second export', async () => {
@@ -213,8 +260,8 @@ describe('Scene STEP export keeps repeated parts as placed instances', () => {
       const plate = find('plate');
       expect(left.definitionId).toBe(right.definitionId);
       expect(plate.definitionId).not.toBe(left.definitionId);
-      expect(translation(left).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([-12, 0, 4]);
-      expect(translation(right).map((v) => Math.round(v * 1e6) / 1e6)).toEqual([12, 3, 4]);
+      expect(translation(left).map(micron)).toEqual([-12, 0, 4]);
+      expect(translation(right).map(micron)).toEqual([12, 3, 4]);
       expect([left.color?.hex, right.color?.hex, plate.color?.hex]).toEqual(['#3366cc', '#3366cc', '#cc6633']);
       const pinDef = snapshot.definitions.find((d) => d.id === left.definitionId)!;
       expect(pinDef.volumeMm3).toBeCloseTo(Math.PI * 2 * 2 * 8, 3);

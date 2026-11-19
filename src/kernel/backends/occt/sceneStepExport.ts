@@ -16,11 +16,26 @@ interface StepScenePart { part: SceneBackendPart; name: string; color?: string }
 
 const INSTANCE_MATCH_TOLERANCE_MM = 1e-6;
 
-/** Source-frame bounds and volume of a part: its shape minus its `at` offset. */
+/**
+ * Source-frame bounds and volume of a part: its shape with its prototype
+ * placement undone. A translation is subtracted from the bounds; a placement
+ * with a rotation is undone on a copy of the shape.
+ */
 function sourceFrameMeasure(part: SceneBackendPart): number[] {
-  const { min, max } = part.shape.boundingBox();
-  const offset = part.prototype?.offset ?? [0, 0, 0];
-  return [...min.map((v, i) => v - offset[i]), ...max.map((v, i) => v - offset[i]), part.shape.volume()];
+  const placement = part.prototype?.placement ?? Transform.identity();
+  const { translate, rotateDeg } = placement.decomposeToTranslateAndRotate();
+  if (rotateDeg === 0) {
+    const { min, max } = part.shape.boundingBox();
+    return [...min.map((v, i) => v - translate[i]), ...max.map((v, i) => v - translate[i]), part.shape.volume()];
+  }
+  // Clone before the transform: replicad's rotate consumes its source.
+  const local = (part.shape as OcctBackend).clone().applyTransform(placement.inverse());
+  try {
+    const { min, max } = local.boundingBox();
+    return [...min, ...max, local.volume()];
+  } finally {
+    releaseWorldFrameParts([{ shape: local }]);
+  }
 }
 
 /**
@@ -45,9 +60,9 @@ function splitMismatchedInstances(group: StepScenePart[]): StepScenePart[][] {
 
 /**
  * Write grouped scene parts as a STEP product tree. Each product's geometry
- * is the first part's shape moved back to the source frame (minus its `at`
- * offset); each instance placement is the part's world transform after its
- * own offset.
+ * is the first part's shape moved back to the source frame (its prototype
+ * placement undone); each instance placement is the part's world transform
+ * after its own prototype placement.
  */
 function writeSceneProductTree(
   assemblyName: string,
@@ -57,18 +72,18 @@ function writeSceneProductTree(
   try {
     return writeStepProductTree(assemblyName, groups.map((group) => {
       const first = group[0];
-      const [ox, oy, oz] = first.part.prototype?.offset ?? [0, 0, 0];
+      const placement = first.part.prototype?.placement ?? Transform.identity();
       // Clone before the transform: replicad's translate consumes its source.
-      const local = (first.part.shape as OcctBackend).clone().applyTransform(Transform.translation(-ox, -oy, -oz));
+      const local = (first.part.shape as OcctBackend).clone().applyTransform(placement.inverse());
       owned.push(local);
       return {
         shape: local.getReplicadShape().wrapped,
         name: first.name,
         color: first.color,
-        instances: group.map(({ part, name }) => {
-          const [x, y, z] = part.prototype?.offset ?? [0, 0, 0];
-          return { name, transform: part.worldTransform.compose(Transform.translation(x, y, z)).toMat4() };
-        }),
+        instances: group.map(({ part, name }) => ({
+          name,
+          transform: part.worldTransform.compose(part.prototype?.placement ?? Transform.identity()).toMat4(),
+        })),
       };
     }));
   } finally {
