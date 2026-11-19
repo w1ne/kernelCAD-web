@@ -22,9 +22,10 @@ and checks that the through-hole removes 40π mm³. The video is a replay of tha
 local model evaluation; it does not show a separate solver simulation, deployed
 behavior, slicer acceptance, or hardware acceptance.
 
-This initial importer handles core mesh objects placed in `<build>`, model
-units, and affine build-item transforms. It requires one closed, consistently
-oriented mesh shell per object. Required extensions, component assemblies,
-multi-shell objects, open meshes, non-manifold meshes, and material appearance
-are not imported. The result is faceted B-rep geometry, without analytic source
-surfaces or feature history.
+This capture uses one core mesh object placed in `<build>`. The importer also
+resolves nested component references made from core mesh leaves, applies their
+component/build transforms in the declared model units, and preserves each
+instance as a separate solid; see the [component assembly demo](../from3mf-component-assembly/README.md).
+Required extensions, non-mesh resources, multi-shell objects, open meshes,
+non-manifold meshes, and material appearance are not imported. The result is
+faceted B-rep geometry, without analytic source surfaces or feature history.

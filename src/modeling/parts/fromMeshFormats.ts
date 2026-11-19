@@ -136,14 +136,16 @@ export type From3MFOptions = Import3mfOptions;
 
 /**
  * `lib.from3MF(path, opts?)` — import core 3MF mesh objects as validated
- * faceted B-rep solids. The importer applies build-item transforms and the
- * model's declared unit (converted to mm). The resulting faces are planar
- * triangles; analytic CAD surfaces and feature history are not present.
+ * faceted B-rep solids. Nested `<components>` references are resolved, their
+ * transforms and build-item transforms are applied, and each mesh instance is
+ * preserved as a separate solid. Declared units are converted to mm. The
+ * resulting faces are planar triangles; analytic CAD surfaces and feature
+ * history are not present.
  *
- * Core mesh objects placed in `<build>` are supported. Component assemblies,
- * required extensions, and multi-shell objects are refused so geometry is
- * never silently omitted or reinterpreted. Every imported shell must close
- * into a BRepCheck-valid solid.
+ * Required extensions, non-mesh object resources, multi-shell objects, and
+ * open or non-manifold meshes are refused so geometry is never silently
+ * omitted or reinterpreted. Every imported mesh instance must become a
+ * BRepCheck-valid solid.
  */
 export async function from3MF(
   ctx: FromFileContext,
@@ -162,7 +164,7 @@ export async function from3MF(
     const detail = e instanceof Error ? e.message : String(e);
     const hint = e instanceof ThreeMfImportError && /import budget/.test(e.message)
       ? 'kernel-failed.lib.from3MF.too-many-triangles — decimate the mesh or pass { maxTriangles } to permit a slower import.'
-      : 'kernel-failed.lib.from3MF — provide a valid core 3MF file with closed, consistently oriented single-shell mesh objects; required extensions, component assemblies, multi-shell objects, open meshes and non-manifold meshes are not supported.';
+      : 'kernel-failed.lib.from3MF — provide a valid core 3MF file with closed, consistently oriented single-shell mesh objects; required extensions, non-mesh resources, multi-shell objects, open meshes and non-manifold meshes are not supported.';
     throw new KernelError(
       'feature.kernel-failed',
       `lib.from3MF: could not import ${absPath}: ${detail}`,

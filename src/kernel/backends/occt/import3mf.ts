@@ -28,6 +28,8 @@ export class ThreeMfImportError extends Error {
 export interface ThreeMfMesh {
   /** Nine double-precision coordinates per triangle, already scaled to mm. */
   positions: TriangleSoup;
+  /** One transformed mesh per component instance, as views into `positions`. */
+  bodies: TriangleSoup[];
   unit: string;
   triangleCount: number;
 }
@@ -63,6 +65,15 @@ interface ObjectMesh {
   vertices: number[];
   triangles: Array<[number, number, number]>;
 }
+
+interface ObjectComponent {
+  objectId: string;
+  transform: number[];
+}
+
+type ObjectResource = { kind: 'mesh'; mesh: ObjectMesh } | { kind: 'components'; components: ObjectComponent[] };
+
+const MAX_COMPONENT_DEPTH = 64;
 
 function meshShellCount(triangles: readonly [number, number, number][]): number {
   const parent = triangles.map((_triangle, index) => index);
@@ -126,12 +137,25 @@ function parseObjectTriangles(trianglesXml: string, vertexCount: number, objectI
   return triangles;
 }
 
-function parseObjectMesh(objectId: string, body: string, maxTriangles: number): ObjectMesh {
-  if (/<components\b/i.test(body)) {
-    throw new ThreeMfImportError('3MF component assemblies are not supported; export each body as a mesh object.');
-  }
+function parseObjectMesh(objectId: string, body: string, maxTriangles: number): ObjectResource {
   const mesh = /<mesh\b[^>]*>([\s\S]*?)<\/mesh\s*>/i.exec(body)?.[1];
-  if (!mesh) throw new ThreeMfImportError(`3MF object ${objectId} is not a core triangle mesh.`);
+  const componentsXml = /<components\b[^>]*>([\s\S]*?)<\/components\s*>/i.exec(body)?.[1];
+  if (mesh !== undefined && componentsXml !== undefined) {
+    throw new ThreeMfImportError(`3MF object ${objectId} contains both a mesh and components.`);
+  }
+  if (componentsXml !== undefined) {
+    const components: ObjectComponent[] = [];
+    const componentRe = /<component\b([^>]*)\/?\s*>/gi;
+    let component: RegExpExecArray | null;
+    while ((component = componentRe.exec(componentsXml)) !== null) {
+      const childObjectId = attribute(component[1], 'objectid');
+      if (!childObjectId) throw new ThreeMfImportError(`3MF component in object ${objectId} has no objectid.`);
+      components.push({ objectId: childObjectId, transform: parseTransform(attribute(component[1], 'transform')) });
+    }
+    if (components.length === 0) throw new ThreeMfImportError(`3MF object ${objectId} has no components.`);
+    return { kind: 'components', components };
+  }
+  if (mesh === undefined) throw new ThreeMfImportError(`3MF object ${objectId} is not a core triangle mesh or component object.`);
   const verticesXml = /<vertices\b[^>]*>([\s\S]*?)<\/vertices\s*>/i.exec(mesh)?.[1];
   const trianglesXml = /<triangles\b[^>]*>([\s\S]*?)<\/triangles\s*>/i.exec(mesh)?.[1];
   if (verticesXml === undefined || trianglesXml === undefined) {
@@ -139,11 +163,11 @@ function parseObjectMesh(objectId: string, body: string, maxTriangles: number): 
   }
   const vertices = parseObjectVertices(verticesXml, objectId);
   const triangles = parseObjectTriangles(trianglesXml, vertices.length / 3, objectId, maxTriangles);
-  return { vertices, triangles };
+  return { kind: 'mesh', mesh: { vertices, triangles } };
 }
 
-function parseObjectMeshes(xml: string, maxTriangles: number): Map<string, ObjectMesh> {
-  const objects = new Map<string, ObjectMesh>();
+function parseObjectMeshes(xml: string, maxTriangles: number): Map<string, ObjectResource> {
+  const objects = new Map<string, ObjectResource>();
   const re = /<object\b([^>]*)>([\s\S]*?)<\/object\s*>/gi;
   let object: RegExpExecArray | null;
   while ((object = re.exec(xml)) !== null) {
@@ -157,17 +181,46 @@ function parseObjectMeshes(xml: string, maxTriangles: number): Map<string, Objec
 
 function parseTransform(value: string | undefined): number[] {
   if (value === undefined) return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0];
-  const transform = value.trim().split(/\s+/).map(Number);
-  if (transform.length !== 12 || transform.some((number) => !Number.isFinite(number))) {
+  const values = value.trim().split(/\s+/).map(Number);
+  if (values.length !== 12 || values.some((number) => !Number.isFinite(number))) {
     throw new ThreeMfImportError('3MF build item has an invalid transform; expected 12 finite values.');
   }
-  return transform;
+  // 3MF serializes a row-vector 4×3 matrix. Normalize it to the 3×4
+  // column-vector form used by the mesh transform and composition helpers.
+  return [
+    values[0], values[3], values[6], values[9],
+    values[1], values[4], values[7], values[10],
+    values[2], values[5], values[8], values[11],
+  ];
+}
+
+function transformDeterminant(transform: number[]): number {
+  return transform[0] * (transform[5] * transform[10] - transform[6] * transform[9]) -
+    transform[1] * (transform[4] * transform[10] - transform[6] * transform[8]) +
+    transform[2] * (transform[4] * transform[9] - transform[5] * transform[8]);
+}
+
+/** Compose a child-to-parent transform with the parent-to-world transform. */
+function composeTransforms(parent: number[], child: number[]): number[] {
+  const result = new Array<number>(12).fill(0);
+  for (let row = 0; row < 3; row++) {
+    for (let column = 0; column < 3; column++) {
+      result[row * 4 + column] = parent[row * 4] * child[column]
+        + parent[row * 4 + 1] * child[4 + column]
+        + parent[row * 4 + 2] * child[8 + column];
+    }
+    result[row * 4 + 3] = parent[row * 4] * child[3]
+      + parent[row * 4 + 1] * child[7]
+      + parent[row * 4 + 2] * child[11]
+      + parent[row * 4 + 3];
+  }
+  return result;
 }
 
 interface ModelParts {
   unit: string;
   unitScale: number;
-  objects: Map<string, ObjectMesh>;
+  objects: Map<string, ObjectResource>;
   buildXml: string;
 }
 
@@ -186,11 +239,6 @@ function parseModelParts(xml: string, maxTriangles: number): ModelParts {
   const buildXml = /<build\b[^>]*>([\s\S]*?)<\/build\s*>/i.exec(xml)?.[1];
   if (buildXml === undefined) throw new ThreeMfImportError('3MF model part has no build element.');
   return { unit, unitScale, objects, buildXml };
-}
-
-interface BuildItemMesh {
-  positions: number[];
-  triangleCount: number;
 }
 
 function appendTransformedTriangle(
@@ -215,50 +263,85 @@ function appendTransformedTriangle(
   }
 }
 
-function transformBuildItem(
-  tag: string,
-  objects: Map<string, ObjectMesh>,
+interface BuildMeshState {
+  bodyPositions: number[][];
+  triangleCount: number;
+}
+
+function appendObjectInstances(
+  objectId: string,
+  objects: Map<string, ObjectResource>,
+  transform: number[],
   unitScale: number,
   maxTriangles: number,
-  currentTriangleCount: number,
-): BuildItemMesh {
-  const objectId = attribute(tag, 'objectid');
+  state: BuildMeshState,
+  ancestry: Set<string>,
+): void {
   const object = objectId === undefined ? undefined : objects.get(objectId);
-  if (!object) throw new ThreeMfImportError(`3MF build item references missing object '${objectId ?? ''}'.`);
-  const transform = parseTransform(attribute(tag, 'transform'));
-  const triangleCount = object.triangles.length;
-  if (currentTriangleCount + triangleCount > maxTriangles) {
-    throw new ThreeMfImportError(`3MF build has ${currentTriangleCount + triangleCount} triangles, past the ${maxTriangles} import budget.`);
+  if (!object) throw new ThreeMfImportError(`3MF references missing object '${objectId}'.`);
+  if (ancestry.has(objectId)) throw new ThreeMfImportError(`3MF component reference cycle includes object '${objectId}'.`);
+  if (ancestry.size >= MAX_COMPONENT_DEPTH) {
+    throw new ThreeMfImportError(`3MF component nesting exceeds the ${MAX_COMPONENT_DEPTH} object depth limit.`);
   }
-  const determinant =
-    transform[0] * (transform[5] * transform[10] - transform[6] * transform[9]) -
-    transform[1] * (transform[4] * transform[10] - transform[6] * transform[8]) +
-    transform[2] * (transform[4] * transform[9] - transform[5] * transform[8]);
-  if (determinant === 0) throw new ThreeMfImportError('3MF build item has a singular transform.');
-  const positions: number[] = [];
-  for (const triangle of object.triangles) {
-    appendTransformedTriangle(positions, object.vertices, triangle, transform, unitScale, determinant < 0);
+
+  ancestry.add(objectId);
+  try {
+    if (object.kind === 'components') {
+      for (const component of object.components) {
+        const componentTransform = composeTransforms(transform, component.transform);
+        if (transformDeterminant(componentTransform) === 0) {
+          throw new ThreeMfImportError(`3MF component in object '${objectId}' has a singular transform.`);
+        }
+        appendObjectInstances(component.objectId, objects, componentTransform, unitScale, maxTriangles, state, ancestry);
+      }
+      return;
+    }
+
+    const triangleCount = object.mesh.triangles.length;
+    const totalTriangleCount = state.triangleCount + triangleCount;
+    if (totalTriangleCount > maxTriangles) {
+      throw new ThreeMfImportError(`3MF build has ${totalTriangleCount} triangles, past the ${maxTriangles} import budget.`);
+    }
+    const determinant = transformDeterminant(transform);
+    if (determinant === 0) throw new ThreeMfImportError(`3MF mesh instance '${objectId}' has a singular transform.`);
+    const positions: number[] = [];
+    for (const triangle of object.mesh.triangles) {
+      appendTransformedTriangle(positions, object.mesh.vertices, triangle, transform, unitScale, determinant < 0);
+    }
+    state.bodyPositions.push(positions);
+    state.triangleCount = totalTriangleCount;
+  } finally {
+    ancestry.delete(objectId);
   }
-  return { positions, triangleCount };
 }
 
 /** Parse core 3MF mesh objects and build items into a double-precision triangle soup in mm. */
 export function parse3mfMesh(bytes: Uint8Array, maxTriangles = STL_DEFAULT_MAX_TRIANGLES): ThreeMfMesh {
   const xml = getModelXml(bytes);
   const model = parseModelParts(xml, maxTriangles);
-  const positions: number[] = [];
-  let triangleCount = 0;
+  const state: BuildMeshState = { bodyPositions: [], triangleCount: 0 };
   const itemRe = /<item\b([^>]*)\/?\s*>/gi;
   let item: RegExpExecArray | null;
   while ((item = itemRe.exec(model.buildXml)) !== null) {
-    const transformed = transformBuildItem(item[1], model.objects, model.unitScale, maxTriangles, triangleCount);
-    triangleCount += transformed.triangleCount;
-    for (const coordinate of transformed.positions) positions.push(coordinate);
+    const objectId = attribute(item[1], 'objectid');
+    if (!objectId) throw new ThreeMfImportError('3MF build item has no objectid.');
+    const transform = parseTransform(attribute(item[1], 'transform'));
+    if (transformDeterminant(transform) === 0) throw new ThreeMfImportError('3MF build item has a singular transform.');
+    appendObjectInstances(objectId, model.objects, transform, model.unitScale, maxTriangles, state, new Set());
+  }
+  const positionCount = state.bodyPositions.reduce((total, positions) => total + positions.length, 0);
+  const positions = new Float64Array(positionCount);
+  const bodies: TriangleSoup[] = [];
+  let offset = 0;
+  for (const bodyPositions of state.bodyPositions) {
+    positions.set(bodyPositions, offset);
+    bodies.push(positions.subarray(offset, offset + bodyPositions.length));
+    offset += bodyPositions.length;
   }
   if (positions.length === 0 || positions.some((coordinate) => !Number.isFinite(coordinate))) {
     throw new ThreeMfImportError('3MF build contains no usable finite mesh triangles.');
   }
-  return { positions: Float64Array.from(positions), unit: model.unit, triangleCount };
+  return { positions, bodies, unit: model.unit, triangleCount: state.triangleCount };
 }
 
 export interface Import3mfOptions {
@@ -308,19 +391,32 @@ export function import3mfBytes(bytes: Uint8Array, options: Import3mfOptions = {}
   const maxTriangles = options.maxTriangles ?? STL_DEFAULT_MAX_TRIANGLES;
   const mesh = parse3mfMesh(bytes, maxTriangles);
   const tolerance = options.tolerance ?? 1e-6;
-  const welded = weldTriangles(mesh.positions, tolerance);
-  if (!welded || welded.triangles.length / 3 !== mesh.triangleCount) {
-    throw new ThreeMfImportError('3MF mesh has invalid or degenerate triangles.');
+  const shells: unknown[] = [];
+  const solids: replicad.Shape3D[] = [];
+  let shape: unknown;
+  try {
+    for (const body of mesh.bodies) {
+      const triangleCount = body.length / 9;
+      const welded = weldTriangles(body, tolerance);
+      if (!welded || welded.triangles.length / 3 !== triangleCount) {
+        throw new ThreeMfImportError('3MF mesh instance has invalid or degenerate triangles.');
+      }
+      const topology = manifoldTopology(welded);
+      if (!topology) {
+        throw new ThreeMfImportError('3MF mesh instance is open, non-manifold, or inconsistently oriented; a closed solid is required.');
+      }
+      const built = buildManifoldShells(welded, topology);
+      if (!built) throw new ThreeMfImportError('OCCT could not construct all planar triangle faces from a 3MF mesh instance.');
+      const bodySolids = promoteShells(built.shells);
+      shells.push(...built.shells);
+      solids.push(...bodySolids);
+    }
+    shape = assembleSolids(solids, shells);
+  } catch (error) {
+    for (const shell of shells) (shell as { delete?: () => void }).delete?.();
+    for (const solid of solids) (solid as { delete?: () => void }).delete?.();
+    throw error;
   }
-  const topology = manifoldTopology(welded);
-  if (!topology) {
-    throw new ThreeMfImportError('3MF mesh is open, non-manifold, or inconsistently oriented; a closed solid is required.');
-  }
-  const built = buildManifoldShells(welded, topology);
-  if (!built) throw new ThreeMfImportError('OCCT could not construct all planar triangle faces from the 3MF mesh.');
-
-  const solids = promoteShells(built.shells);
-  const shape = assembleSolids(solids, built.shells);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = replicad.cast(shape as any) as replicad.Shape3D;
   return { backend: new OcctBackend(wrapped), isSolid: true, triangleCount: mesh.triangleCount, unit: mesh.unit };

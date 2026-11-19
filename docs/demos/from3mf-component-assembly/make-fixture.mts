@@ -19,12 +19,12 @@ const nestedAssembly = [
   '    <object id="3" type="model" name="two-block-subassembly">',
   '      <components>',
   '        <component objectid="1" />',
-  '        <component objectid="1" transform="1 0 0 12 0 1 0 0 0 0 1 0" />',
+  '        <component objectid="1" transform="-1 0 0 0 1 0 0 0 1 22 0 0" />',
   '      </components>',
   '    </object>',
   '    <object id="4" type="model" name="two-block-assembly">',
   '      <components>',
-  '        <component objectid="3" transform="1 0 0 3 0 1 0 4 0 0 1 0" />',
+  '        <component objectid="3" transform="1 0 0 0 1 0 0 0 1 3 4 0" />',
   '      </components>',
   '    </object>',
 ].join('\n');
@@ -34,7 +34,7 @@ if (!xml.includes('</resources>') || !xml.includes('<item objectid="1" />')) {
 }
 xml = xml
   .replace('</resources>', `${nestedAssembly}\n  </resources>`)
-  .replace('<item objectid="1" />', '<item objectid="4" transform="1 0 0 5 0 1 0 0 0 0 1 0" />');
+  .replace('<item objectid="1" />', '<item objectid="4" transform="1 0 0 0 1 0 0 0 1 5 0 0" />');
 files[modelPath] = strToU8(xml);
 await writeFile(outputPath, zipSync(files));
 console.log(`wrote ${outputPath}`);

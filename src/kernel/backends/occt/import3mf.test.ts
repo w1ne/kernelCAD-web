@@ -20,7 +20,7 @@ describe('core 3MF triangle mesh import', () => {
   it('applies model units and build-item transforms in double precision', () => {
     const bytes = cubeArchive((xml) => xml
       .replace('unit="millimeter"', 'unit="centimeter"')
-      .replace('<item objectid="1" />', '<item objectid="1" transform="1 0 0 2 0 1 0 0 0 0 1 0" />'));
+      .replace('<item objectid="1" />', '<item objectid="1" transform="1 0 0 0 1 0 0 0 1 2 0 0" />'));
     const mesh = parse3mfMesh(bytes);
     const xs = Array.from(mesh.positions).filter((_coordinate, index) => index % 3 === 0);
     const ys = Array.from(mesh.positions).filter((_coordinate, index) => index % 3 === 1);
@@ -44,6 +44,18 @@ describe('core 3MF triangle mesh import', () => {
     expect(() => parse3mfMesh(extension)).toThrow(/unsupported extensions/);
   });
 
+  it('refuses cyclic and unresolved component references', () => {
+    const cycle = cubeArchive((xml) => xml
+      .replace('</resources>', '<object id="3" type="model"><components><component objectid="3" /></components></object></resources>')
+      .replace('<item objectid="1" />', '<item objectid="3" />'));
+    expect(() => parse3mfMesh(cycle)).toThrow(/component reference cycle/);
+
+    const missing = cubeArchive((xml) => xml
+      .replace('</resources>', '<object id="3" type="model"><components><component objectid="99" /></components></object></resources>')
+      .replace('<item objectid="1" />', '<item objectid="3" />'));
+    expect(() => parse3mfMesh(missing)).toThrow(/references missing object '99'/);
+  });
+
   it('resolves nested component instances and applies each transform in model units', () => {
     const bytes = new Uint8Array(readFileSync(componentFixture));
     const mesh = parse3mfMesh(bytes);
@@ -56,7 +68,7 @@ describe('core 3MF triangle mesh import', () => {
     expect([Math.min(...xs), Math.max(...xs)]).toEqual([8, 30]);
     expect([Math.min(...ys), Math.max(...ys)]).toEqual([4, 14]);
     expect([Math.min(...zs), Math.max(...zs)]).toEqual([0, 10]);
-    expect(() => parse3mfMesh(bytes, 23)).toThrow(/23 triangle import budget/);
+    expect(() => parse3mfMesh(bytes, 23)).toThrow(/23 import budget/);
   });
 
   it('refuses disconnected shells in one mesh object instead of assuming independent solids', () => {
