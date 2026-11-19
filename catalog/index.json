@@ -159755,7 +159755,7 @@
       "id": "cleanroom-single-door-module",
       "kit": "lab-infrastructure",
       "title": "Cleanroom single-door module",
-      "description": "Cleanroom doorway assembly with a flush door leaf, side frame and overhead header. Editable material controls: enamel coating, tinted safety glass, structural steel; presets: cleanroom and high visibility.",
+      "description": "Cleanroom doorway assembly with a flush door leaf, vision panel, stainless push plate, side frame and overhead header. Editable material controls: enamel coating, tinted safety glass, stainless steel, structural steel; presets: cleanroom and high visibility.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -159774,7 +159774,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cleanroom-single-door-module.kcad.ts",
       "preview": "/assets/lab-infrastructure-cleanroom-single-door-module.png",
-      "sourceSha256": "ab7198be1c138a7bbba024b458f912e308a0c61a5920e1fc164d378974c861ec",
+      "sourceSha256": "c56ca7279a43a4a9dbf44ca5f53fab44a0e195c0e135ff56dcfd64e2233f6bcb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159799,6 +159799,12 @@
           "label": "Tinted safety glass"
         },
         {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c7ca",
+          "label": "Stainless steel"
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#53666e",
@@ -159809,11 +159815,13 @@
         "cleanroom": {
           "enamel": "#e7f0ed",
           "glass": "#8bd4dc",
+          "stainless": "#d0d9d8",
           "steel": "#75888d"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
           "glass": "#44d3e2",
+          "stainless": "#6f8488",
           "steel": "#33464d"
         }
       },
@@ -159822,7 +159830,7 @@
         "sizeM": [
           1.3,
           2.48,
-          0.1284
+          0.1266
         ],
         "minUpM": 0,
         "materials": 1
@@ -159842,8 +159850,7 @@
           "color": "#c9dedc",
           "parts": [
             "header",
-            "door-leaf",
-            "door-push-plate"
+            "door-leaf"
           ],
           "param": "enamel"
         },
@@ -159854,6 +159861,14 @@
             "door-vision-panel"
           ],
           "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c7ca",
+          "parts": [
+            "door-push-plate"
+          ],
+          "param": "stainless"
         }
       ]
     },
