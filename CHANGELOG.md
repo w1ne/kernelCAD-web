@@ -1,5 +1,14 @@
 # Unreleased
 
+- The rest-pose joint check no longer reports `mechanism.joint-mesh-gap` for a
+  connector that is inside its part and in the plane of one of its faces, for
+  example a slide connector at the base of a rail that is one solid with its
+  deck. The mesh point-in-solid test counted the faces its ray only touched
+  on an edge, so the connector read as outside the part (45.0 mm for a 90 mm
+  rail). A ray that meets a triangle edge is now repeated along a tilted
+  direction. The DFM wall and moulding checks use the same test. Demo:
+  `docs/demos/point-inside-face-plane-parity-20261119/`.
+
 - The refusal of a param in a `vec3` connector origin names a second way to
   follow the param: in a script, `Number(p)` gives the current value as a
   plain number, and an edit to the param runs the script again. The hint
