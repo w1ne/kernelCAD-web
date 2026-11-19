@@ -191,13 +191,16 @@ Move a body into position, mirror it, or repeat it.
 | Call | What it does |
 |---|---|
 | `Shape.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>) => Shape` | Translate by (x, y, z). |
+| `Sketch.translate(dx: Editable<number>, dy: Editable<number>) => Sketch` | Move this sketch by (dx, dy) mm in its own plane, returning a new Sketch. |
 | `Shape.rotate(axis: [Editable<number>, Editable<number>, Editable<number>], degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around `axis` (vector); pivot defaults to origin. |
+| `Sketch.rotate(angleDeg: number, center?: [Editable<number>, Editable<number>]) => Sketch` | Turn this sketch counter-clockwise by angleDeg in its own plane about `center` (default the sketch origin [0, 0]), returning a new Sketch. |
 | `Shape.rotateX(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world X axis. |
 | `Shape.rotateY(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world Y axis. |
 | `Shape.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world Z axis. |
 | `Shape.transform(t: Transform) => Shape` | Apply an SE(3) Transform. |
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
 | `Shape.scale(factor: Editable<number> \| [Editable<number>, Editable<number>, Editable<number>]) => Shape; (sx: Editable<number>, sy: Editable<number>, sz: Editable<number>) => Shape` | Scale this shape uniformly or per-axis. |
+| `Sketch.scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>]) => Sketch` | Resize this sketch uniformly by `factor` about `center` (default the sketch origin [0, 0]), returning a new Sketch. |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
