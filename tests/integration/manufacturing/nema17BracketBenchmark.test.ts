@@ -152,4 +152,14 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     expect(failures[0]).toMatch(/^M5 pitch: 41(\.\d+)? != 40$/);
     expect(failures[1]).toMatch(/^M5 centre x: 30\.5 != 30$/);
   }, 120_000);
+
+  it('catches the M5 base pair shifted together while preserving its 40 mm pitch', async () => {
+    const code = inject(SOURCE, 'for (const dx of [-20, 20]) {', 'for (const dx of [-19, 21]) {');
+    const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
+
+    // This defect preserves the pair's pitch, the solid volume and the outer
+    // box, so the independent centerline check must catch the +1 mm shift.
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatch(/^M5 centre x: 31 != 30$/);
+  }, 120_000);
 });
