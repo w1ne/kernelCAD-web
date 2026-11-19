@@ -56,3 +56,28 @@ mismatch.
 
 The source and preview correction is local to this feature branch. The public
 site remains at the pre-change baseline because no deployment was performed.
+
+## Mining sample — tailings stack conveyor
+
+The second five-preview audit checked `core-drill-rig`,
+`overland-conveyor-bridge`, `stacker-reclaimer-boom`,
+`tailings-stack-conveyor` and `ore-sorting-arch`. Their source and preview paths
+were clear of open issue/PR targets and the known fix branches. PR #1258 was
+merged with all 17 reported checks successful; PR #1507 was open with its
+applicable reported checks successful and GitHub's merge state `BLOCKED` at the
+pre-change check. The [mining review bundle](../../artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/README.md)
+retains the PR snapshot, live public baselines and five-item preview ledger.
+
+The tailings stacker's two crawler track bodies and eighteen grousers were
+assigned to the belt-rubber color control. All twenty now use the existing
+crawler-steel control. The conveyor belt and rubber-lagged head pulley stay on
+the rubber control; geometry and user-facing controls are unchanged.
+
+The exported-GLB regression passes (1/1), mining-kit ESLint is clean, and the
+full catalog integration suite passes 159 files / 229 tests, including the
+2,402-asset freshness check. The index row and source hash are current. The
+mining quality scan is 50/50 (100%); the global scan is 2,398/2,402 (99.83%),
+with four existing below-gate assets in `standard-components`. Three rendered
+previews were reopened after rendering. The local review MP4 is linked from the
+bundle; it shows software previews and an exported-GLB regression only. The
+public site remains at its pre-change state because no deployment was made.

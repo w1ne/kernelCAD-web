@@ -1,0 +1,5 @@
+Command: npx vitest run tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts
+Source: baseline commit 748cf3258c3ce7355d036658f3e64a5457310e50
+Expected baseline result: exit 1; 1 test failed.
+Observed failure: the exported catalog palette `crawlerSteel` contained the existing frame and sprocket parts, but not `track-0`, `track-1`, or any of the eighteen `grouser-*` parts. Those parts appeared under `beltRubber`.
+This failure was observed before changing the `.kcad.ts` source.

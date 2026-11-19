@@ -1,0 +1,386 @@
+{
+  "checkedAt": "2026-11-19T01:34:40.720043+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "branch": "feat/catalog-2000",
+  "localHead": "748cf3258c3ce7355d036658f3e64a5457310e50",
+  "featurePR1258": {
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "number": 1258,
+    "reviewDecision": "",
+    "reviews": [],
+    "state": "MERGED",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:00:26Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619125562",
+        "name": "changes",
+        "startedAt": "2026-11-14T23:00:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:01:23Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221255",
+        "name": "reference-parts",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:01:14Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221231",
+        "name": "solidcraft-ledger",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:02:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221249",
+        "name": "lint",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:07:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221264",
+        "name": "build-and-checks",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:09:14Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221265",
+        "name": "catalog-index",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:02:10Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221270",
+        "name": "geometry-proofs",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:03:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221429",
+        "name": "test-shard (1)",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:04:47Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221336",
+        "name": "test-shard (2)",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:07:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221347",
+        "name": "test-shard (3)",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:03:02Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221325",
+        "name": "test-shard (4)",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:04:55Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221499",
+        "name": "test-shard (5)",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:04:01Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221319",
+        "name": "test-shard (6)",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:04:09Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221483",
+        "name": "test-shard (7)",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:03:39Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221470",
+        "name": "test-shard (8)",
+        "startedAt": "2026-11-14T23:00:28Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:02:13Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132619221262",
+        "name": "external-tools",
+        "startedAt": "2026-11-14T23:00:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-14T23:09:19Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/43650967665/job/132621621620",
+        "name": "test",
+        "startedAt": "2026-11-14T23:09:16Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      }
+    ],
+    "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+  },
+  "activeCatalogPR1507": {
+    "headRefOid": "748cf3258c3ce7355d036658f3e64a5457310e50",
+    "mergeStateStatus": "BLOCKED",
+    "number": 1507,
+    "reviewDecision": "",
+    "reviews": [],
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265475735",
+        "name": "changes",
+        "startedAt": "2026-11-19T01:20:35Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265606581",
+        "name": "reference-parts",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265605798",
+        "name": "solidcraft-ledger",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:23:24Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265604132",
+        "name": "lint",
+        "startedAt": "2026-11-19T01:20:53Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:26:44Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265604013",
+        "name": "build-and-checks",
+        "startedAt": "2026-11-19T01:20:53Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265606196",
+        "name": "catalog-index",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265605674",
+        "name": "geometry-proofs",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265606759",
+        "name": "test-shard",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:22:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265604063",
+        "name": "changed-tests",
+        "startedAt": "2026-11-19T01:20:53Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:20:51Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135265607100",
+        "name": "external-tools",
+        "startedAt": "2026-11-19T01:20:52Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-19T01:22:52Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/w1ne/kernelCAD-web/actions/runs/44436165612/job/135266411894",
+        "name": "test (draft-light)",
+        "startedAt": "2026-11-19T01:22:50Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      }
+    ],
+    "url": "https://github.com/w1ne/kernelCAD-web/pull/1507"
+  },
+  "openPullRequestsChecked": [
+    1507,
+    1309,
+    1253,
+    1094
+  ],
+  "knownFixPullRequestsExcluded": [
+    {
+      "number": 1298,
+      "state": "closed",
+      "mergedAt": "2026-11-10T23:38:25Z",
+      "title": "Fix substation cable ladder floating rungs and misleading proportions"
+    },
+    {
+      "number": 1305,
+      "state": "closed",
+      "mergedAt": "2026-11-11T00:03:23Z",
+      "title": "Fix sanitary lobe pump missing cover fasteners and verify both orientations"
+    },
+    {
+      "number": 1307,
+      "state": "closed",
+      "mergedAt": "2026-11-11T00:17:30Z",
+      "title": "Fix duplicated storage array geometry with distinct 24-bay scene prop"
+    },
+    {
+      "number": 1308,
+      "state": "closed",
+      "mergedAt": "2026-11-11T12:40:22Z",
+      "title": "Repair missing split shaft collar clamp screw and opposed lugs"
+    }
+  ],
+  "candidates": [
+    {
+      "asset": "mining/core-drill-rig",
+      "sourcePath": "catalog/kits/mining/core-drill-rig.kcad.ts",
+      "previewPath": "catalog/kits/mining/previews/core-drill-rig.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "mining/overland-conveyor-bridge",
+      "sourcePath": "catalog/kits/mining/overland-conveyor-bridge.kcad.ts",
+      "previewPath": "catalog/kits/mining/previews/overland-conveyor-bridge.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "mining/stacker-reclaimer-boom",
+      "sourcePath": "catalog/kits/mining/stacker-reclaimer-boom.kcad.ts",
+      "previewPath": "catalog/kits/mining/previews/stacker-reclaimer-boom.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "mining/tailings-stack-conveyor",
+      "sourcePath": "catalog/kits/mining/tailings-stack-conveyor.kcad.ts",
+      "previewPath": "catalog/kits/mining/previews/tailings-stack-conveyor.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "mining/ore-sorting-arch",
+      "sourcePath": "catalog/kits/mining/ore-sorting-arch.kcad.ts",
+      "previewPath": "catalog/kits/mining/previews/ore-sorting-arch.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    }
+  ]
+}
