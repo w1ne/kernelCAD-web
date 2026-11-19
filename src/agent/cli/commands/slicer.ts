@@ -80,17 +80,17 @@ export async function runOpenSlicerCli(input: OpenSlicerCliInput): Promise<OpenS
     exitCode: 0,
     ok: true,
     result,
-    message: `Opened ${filePath} in ${result.binary}`,
+    message: `Requested ${result.binary} to open ${filePath}`,
   };
 }
 
 export function slicerCommand(): Command {
   const cmd = new Command('slicer')
-    .description('Open a STEP or 3MF file in an installed local slicer');
+    .description('Ask an installed local slicer to open a STEP or 3MF file');
 
   cmd
     .command('open')
-    .description('Open an already-exported STEP/3MF file in the detected local slicer')
+    .description('Ask the detected local slicer to open an already-exported STEP/3MF file')
     .argument('<file>', 'path to a .step, .stp, or .3mf file')
     .option('--json', 'emit the result as JSON')
     .action(async (file: string, opts: { json?: boolean }) => {

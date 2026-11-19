@@ -198,7 +198,7 @@ kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
 
-Open an already-exported STEP or 3MF in a locally installed slicer:
+Ask an installed slicer to open an already-exported STEP or 3MF:
 
 ```bash
 kernelcad slicer open model.step
@@ -207,8 +207,10 @@ kernelcad slicer open model.step
 
 The CLI detects OrcaSlicer, PrusaSlicer, Bambu Studio, or Cura on `PATH`; set
 `KERNELCAD_SLICER` to a binary path to override detection. It does not create or
-modify the export. If no slicer is installed or it cannot start, the command
-returns a non-zero exit code and leaves the file in place.
+modify the export. A successful exit code means the operating system reported
+that the slicer process started, not that the file is open in the GUI. If no
+slicer is installed, or it cannot start, the command returns a non-zero exit
+code and leaves the file in place.
 
 A script that returns one shape exports as one STEP product named after the
 script file (`model`), with the shape's `.color(...)` when it has one. An

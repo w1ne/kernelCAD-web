@@ -191,14 +191,30 @@ export interface OpenSlicerResult {
   message?: string;
 }
 
+export interface OpenFileInSlicerOptions {
+  /**
+   * Bounded safety wait for the operating-system spawn notification. The
+   * command fails closed if neither `spawn` nor `error` is reported within
+   * this window. Real systems resolve within a tick or two, but the host may
+   * be heavily loaded, so the default is generous.
+   */
+  launchTimeoutMs?: number;
+}
+
 /**
- * Open an already-exported STEP/3MF file in the locally installed slicer.
- * Detection prefers `KERNELCAD_SLICER`, then common binaries on PATH. The
- * process is launched detached and unreferenced so the CLI returns
- * immediately. If no slicer is found the result is typed
+ * Ask the locally installed slicer to open an already-exported STEP/3MF file.
+ * Detection prefers `KERNELCAD_SLICER`, then common binaries on PATH.
+ *
+ * The child process is launched detached and unreferenced after the operating
+ * system reports a successful `spawn`. A returned `{ ok: true }` means the
+ * spawn was reported, not that the slicer window is visible or that the file
+ * was loaded. If no slicer is found the result is typed
  * `{ ok: false, error: 'no-slicer' }` and the file is left untouched.
  */
-export async function openFileInSlicer(filePath: string): Promise<OpenSlicerResult> {
+export async function openFileInSlicer(
+  filePath: string,
+  options?: OpenFileInSlicerOptions,
+): Promise<OpenSlicerResult> {
   const binary = detectSlicer(OPEN_CANDIDATE_BINARIES);
   if (!binary) {
     return {
@@ -209,21 +225,35 @@ export async function openFileInSlicer(filePath: string): Promise<OpenSlicerResu
     };
   }
 
+  const launchTimeoutMs = options?.launchTimeoutMs ?? 30_000;
+
   try {
     const child = spawn(binary, [filePath], { detached: true, stdio: 'ignore' });
     const result = await new Promise<OpenSlicerResult>((resolve) => {
       let settled = false;
+      let timer: NodeJS.Timeout | undefined;
+
+      const cleanup = () => {
+        if (timer !== undefined) {
+          clearTimeout(timer);
+          timer = undefined;
+        }
+      };
+
       const done = (value: OpenSlicerResult) => {
         if (settled) return;
         settled = true;
+        cleanup();
         child.off('spawn', onSpawn);
         child.off('error', onError);
         resolve(value);
       };
+
       const onSpawn = () => {
         child.unref();
         done({ ok: true, file: filePath, binary });
       };
+
       const onError = (e: Error) => {
         // Do not unref a child that never started; report the async spawn failure.
         done({
@@ -234,16 +264,23 @@ export async function openFileInSlicer(filePath: string): Promise<OpenSlicerResu
           message: e instanceof Error ? e.message : String(e),
         });
       };
+
       child.once('spawn', onSpawn);
       child.once('error', onError);
-      // Defensive bounded wait: in pathological cases where neither 'spawn' nor
-      // 'error' fires, unref the child and treat the open as best-effort success
-      // so the CLI never hangs. Real systems resolve within a tick or two.
-      const t = setTimeout(() => {
-        child.unref();
-        done({ ok: true, file: filePath, binary });
-      }, 1_000);
-      t.unref?.();
+
+      // Defensive bounded wait: in the pathological case where neither
+      // `spawn` nor `error` fires, fail closed rather than hanging or
+      // pretending success. The timer is always cleared once an outcome is
+      // known so it cannot unref a child or resolve twice later.
+      timer = setTimeout(() => {
+        done({
+          ok: false,
+          file: filePath,
+          binary,
+          error: 'spawn-failed',
+          message: `Slicer launch timed out after ${launchTimeoutMs} ms without a spawn or error event`,
+        });
+      }, launchTimeoutMs);
     });
     return result;
   } catch (e) {

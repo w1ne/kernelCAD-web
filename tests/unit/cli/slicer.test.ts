@@ -56,7 +56,7 @@ describe('slicer open command', () => {
     });
     await slicerCommand().parseAsync(['open', file], { from: 'user' });
     expect(process.exitCode).toBe(0);
-    expect(logSpy.mock.calls.flat().join('\n')).toContain(`Opened ${file}`);
+    expect(logSpy.mock.calls.flat().join('\n')).toContain(`Requested /usr/bin/orca-slicer to open ${file}`);
   });
 
   it('emits a typed no-slicer result as JSON and exits 1', async () => {

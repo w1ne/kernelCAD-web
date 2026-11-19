@@ -25,6 +25,13 @@ function fakeChildProcess(opts: { error?: Error } = {}) {
   return child as unknown as ReturnType<typeof spawn>;
 }
 
+function fakeStalledChildProcess() {
+  const child = new EventEmitter() as ReturnType<typeof spawn> & EventEmitter;
+  child.unref = vi.fn();
+  // Never emits spawn or error so the launch timeout is exercised.
+  return child as unknown as ReturnType<typeof spawn>;
+}
+
 describe('openFileInSlicer', () => {
   const savedEnv = process.env.KERNELCAD_SLICER;
   const savedPath = process.env.PATH;
@@ -151,5 +158,121 @@ describe('openFileInSlicer', () => {
 
     await openFileInSlicer(model);
     expect(child.unref).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when neither spawn nor error is reported before the launch timeout', async () => {
+    const binary = join(tmpDir, 'fake-slicer');
+    writeFileSync(binary, '#!/bin/sh\n');
+    chmodSync(binary, 0o755);
+    process.env.KERNELCAD_SLICER = binary;
+
+    const model = join(tmpDir, 'part.step');
+    writeFileSync(model, 'ISO-10303-21;');
+
+    const child = fakeStalledChildProcess();
+    vi.mocked(spawn).mockReturnValueOnce(child);
+
+    const result = await openFileInSlicer(model, { launchTimeoutMs: 25 });
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe('spawn-failed');
+    expect(result.message).toContain('timed out');
+    expect(child.unref).not.toHaveBeenCalled();
+  });
+
+  describe('with fake timers', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: false });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    function makeControllableChild() {
+      const child = new EventEmitter() as ReturnType<typeof spawn> & EventEmitter;
+      child.unref = vi.fn();
+      return child;
+    }
+
+    it('reports success only on spawn and clears the launch timer', async () => {
+      const binary = join(tmpDir, 'fake-slicer');
+      writeFileSync(binary, '#!/bin/sh\n');
+      chmodSync(binary, 0o755);
+      process.env.KERNELCAD_SLICER = binary;
+
+      const model = join(tmpDir, 'part.step');
+      writeFileSync(model, 'ISO-10303-21;');
+
+      const child = makeControllableChild();
+      vi.mocked(spawn).mockReturnValueOnce(child as unknown as ReturnType<typeof spawn>);
+
+      const promise = openFileInSlicer(model, { launchTimeoutMs: 100 });
+      setTimeout(() => child.emit('spawn'), 10);
+      vi.advanceTimersByTime(10);
+      const result = await promise;
+
+      expect(result.ok).toBe(true);
+      expect(result.binary).toBe(binary);
+      expect(child.unref).toHaveBeenCalledTimes(1);
+
+      // Advancing well past the launch timeout must not call unref again or
+      // change the result, because the timer was cleared.
+      vi.advanceTimersByTime(200);
+      expect(child.unref).toHaveBeenCalledTimes(1);
+      expect(result.ok).toBe(true);
+    });
+
+    it('clears the launch timer when an async spawn error is reported', async () => {
+      const binary = join(tmpDir, 'fake-slicer');
+      writeFileSync(binary, '#!/bin/sh\n');
+      chmodSync(binary, 0o755);
+      process.env.KERNELCAD_SLICER = binary;
+
+      const model = join(tmpDir, 'part.3mf');
+      writeFileSync(model, '3MF');
+
+      const child = makeControllableChild();
+      vi.mocked(spawn).mockReturnValueOnce(child as unknown as ReturnType<typeof spawn>);
+
+      const promise = openFileInSlicer(model, { launchTimeoutMs: 100 });
+      const err = new Error('ENOENT');
+      setTimeout(() => child.emit('error', err), 10);
+      vi.advanceTimersByTime(10);
+      const result = await promise;
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('spawn-failed');
+      expect(child.unref).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(200);
+      expect(child.unref).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+    });
+
+    it('ignores a late error event after a successful spawn', async () => {
+      const binary = join(tmpDir, 'fake-slicer');
+      writeFileSync(binary, '#!/bin/sh\n');
+      chmodSync(binary, 0o755);
+      process.env.KERNELCAD_SLICER = binary;
+
+      const model = join(tmpDir, 'part.step');
+      writeFileSync(model, 'ISO-10303-21;');
+
+      const child = makeControllableChild();
+      vi.mocked(spawn).mockReturnValueOnce(child as unknown as ReturnType<typeof spawn>);
+
+      const promise = openFileInSlicer(model, { launchTimeoutMs: 100 });
+      setTimeout(() => child.emit('spawn'), 10);
+      setTimeout(() => child.emit('error', new Error('boom')), 50);
+      vi.advanceTimersByTime(10);
+      const result = await promise;
+
+      expect(result.ok).toBe(true);
+      expect(child.unref).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(100);
+      expect(child.unref).toHaveBeenCalledTimes(1);
+      expect(result.ok).toBe(true);
+    });
   });
 });
