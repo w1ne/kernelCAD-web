@@ -1,0 +1,17 @@
+{
+  "workflow": "case-02 NEMA 17 bracket Thickness parameter regression",
+  "fixture": "tests/fixtures/manufacturing/nema17-l-bracket.kcad.ts",
+  "test": "tests/integration/manufacturing/nema17BracketBenchmark.test.ts",
+  "edit": "set Thickness from 5 mm to 8 mm",
+  "mutation": "hold the upright-hole cutter at 7 mm after the parameter edit",
+  "result": "clean STEP preserves all through-hole interfaces; stale cutter leaves the motor bore and four M3 holes short and blind while outside bounds pass",
+  "toleranceMm": 0.01,
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-nema17-thickness-param-1227-20261119/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/nema17BracketBenchmark.test.ts -t 'Thickness edit|old cutter length' --reporter=dot",
+  "inspection": "python3 docs/demos/benchmark-nema17-thickness-param-1227-20261119/inspect_demo.py"
+}
