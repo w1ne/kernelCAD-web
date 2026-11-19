@@ -76007,7 +76007,7 @@
       "id": "overhead-power-busway",
       "kit": "data-center-infrastructure",
       "title": "Overhead power busway",
-      "description": "Enclosed busway segment with joined covers, hanger brackets, and end caps. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Enclosed steel busway segment with four matching sheet-steel joint covers, hanger bracket, and end caps. Knobs: overall scale; housing steel and joint-cover steel. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76027,7 +76027,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-power-busway.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-power-busway.png",
-      "sourceSha256": "4a301e802883fa8bcbd889cedb4e77db6443808f7c1b99629f3ef2efa5c00973",
+      "sourceSha256": "75e57a498475868e00725d4d70edcf868aa7f923927980641d39f0088c74e68b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76040,26 +76040,26 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "housingSteel",
           "type": "color",
           "default": "#4f7485",
-          "label": "Painted steel"
+          "label": "Painted steel housing and fittings"
         },
         {
-          "name": "polymer",
+          "name": "jointCoverSteel",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#4f7485",
+          "label": "Sheet-steel joint covers"
         }
       ],
       "presets": {
         "facilityStandard": {
-          "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "housingSteel": "#4f7485",
+          "jointCoverSteel": "#4f7485"
         },
         "highVisibility": {
-          "steel": "#d99b22",
-          "polymer": "#263e48"
+          "housingSteel": "#d99b22",
+          "jointCoverSteel": "#263e48"
         }
       },
       "stats": {
@@ -76074,10 +76074,11 @@
       },
       "palette": [
         {
-          "name": "steel",
+          "name": "housingSteel",
           "color": "#4f7485",
           "parts": [
             "busway-housing",
+            "cover-joint-0",
             "cover-joint-1",
             "cover-joint-2",
             "cover-joint-3",
@@ -76086,15 +76087,7 @@
             "hanger",
             "hanger-bolt"
           ],
-          "param": "steel"
-        },
-        {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "cover-joint-0"
-          ],
-          "param": "polymer"
+          "param": "housingSteel"
         }
       ]
     },

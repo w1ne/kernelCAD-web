@@ -1,0 +1,23 @@
+{
+  "asset": "overhead-power-busway",
+  "sourceSha256": "75e57a498475868e00725d4d70edcf868aa7f923927980641d39f0088c74e68b",
+  "preview": "/assets/data-center-infrastructure-overhead-power-busway.png",
+  "changedIndexRows": [
+    "overhead-power-busway"
+  ],
+  "triangleCount": 140,
+  "boundsM": [
+    2.51,
+    0.53,
+    0.56
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true
+  },
+  "passed": true
+}

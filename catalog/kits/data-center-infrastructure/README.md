@@ -16,6 +16,10 @@ The [condenser-pump-skid base review](../../../artifacts/catalog-demos/data-cent
 
 The [day-fuel-tank support-skid review](../../../artifacts/catalog-demos/data-center-day-fuel-tank-skid-material-review-20261116/README.md) moves the tank support skid from the `polymer` ("Engineering polymer") control to a new `skidSteel` ("Skid base steel") control. Generator day tanks stand on welded steel skids. Geometry, dimensions, and triangle count are unchanged.
 
+## Semantic material review — 19 November 2026
+
+The [overhead-power-busway joint-cover review](../../../artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/README.md) gives all four repeated sheet-steel covers one shared color control. Geometry, dimensions, and triangle count are unchanged.
+
 | id | asset | description | knobs | triangles |
 | --- | --- | --- | --- | ---: |
 | `air-cooled-chiller` | Air-cooled chiller | V-coil air-cooled chiller with six axial fans, copper headers, compressor and control enclosure, and flanged chilled-water nozzles. | Overall scale · Casing paint · Condenser coil fins · Fan guards and blades · Base frame · Chilled-water piping | 5,236 |
@@ -51,7 +55,7 @@ The [day-fuel-tank support-skid review](../../../artifacts/catalog-demos/data-ce
 | `open-frame-it-rack` | Open-frame IT rack | Four-post equipment rack with adjustable rails, cross-bracing, and base frame. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Rubber and elastomer | 304 |
 | `overhead-cable-ladder` | Overhead cable ladder | Suspended ladder tray with side rails, cross rungs, and ceiling hangers. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 292 |
 | `overhead-coolant-header` | Overhead coolant header | Suspended supply and return pipes with branch drops and hanger brackets. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 392 |
-| `overhead-power-busway` | Overhead power busway | Enclosed busway segment with joined covers, hanger brackets, and end caps. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 140 |
+| `overhead-power-busway` | Overhead power busway | Enclosed steel busway segment with four matching sheet-steel joint covers, hanger bracket, and end caps. | Overall scale · Painted steel housing and fittings · Sheet-steel joint covers | 140 |
 | `perforated-floor-tile` | Perforated floor tile | Airflow floor panel with a dense low-relief grille and four support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 340 |
 | `perimeter-precision-cooler` | Perimeter precision cooler | Perimeter cooling unit with a broad intake grille, top discharge fans, a service door, plinth, and pipe connections. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Rubber and elastomer | 412 |
 | `power-meter-pedestal` | Power meter pedestal | Utility metering pedestal with display head, service door, and cable riser. Knobs: overall scale; painted steel, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Glass and display lenses · Rubber and elastomer | 104 |
