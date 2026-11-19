@@ -3,6 +3,7 @@
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/backends/occt/lookupSourceColor';
+import { memberMaterialsByFace } from '../../../../kernel/backends/occt/memberMaterials';
 import type { SceneBackend, SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
 import type { RigConnector, RigMate, SolvedRigAssembly } from '../../../../kernel/export/rigHierarchy';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -392,6 +393,19 @@ function applyAssemblyModelFk(
 }
 
 /** Engineering-material name recorded on an `assemblyPart` record, if any. */
+/** Per-face finishes of a part whose source shape fused differently finished
+ *  members (`union(case.finish('abs'), horn.finish('aluminium'))`). */
+function partMemberMaterials(
+  partRec: FeatureRecord | undefined,
+  partShape: ShapeBackend,
+  records: readonly FeatureRecord[],
+): SceneBackendPart['materialByFaceIndex'] {
+  const ref = partRec?.inputs.shape;
+  if (ref === undefined || ref.kind !== 'feature') return undefined;
+  const source = records.find((rec) => rec.id === ref.id);
+  return memberMaterialsByFace(partShape, source, records);
+}
+
 function partMaterialName(partRec: FeatureRecord | undefined): string | undefined {
   const name = (partRec?.metadata as { materialName?: unknown } | undefined)?.materialName;
   return typeof name === 'string' ? name : undefined;
@@ -413,12 +427,14 @@ function buildAssemblyModelSceneParts(
     const material = partRec ? lookupSourceMaterial(partRec, records) : undefined;
     const materialName = partMaterialName(partRec);
     const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
       ...(prototype !== undefined ? { prototype } : {}),
     };
@@ -625,12 +641,14 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const material = lookupSourceMaterial(partRec, records);
     const materialName = partMaterialName(partRec);
     const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
       ...(prototype !== undefined ? { prototype } : {}),
     };
