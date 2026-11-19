@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-19",
+  "base": "origin/develop 3f97dc065",
+  "environment": "local Node, not a deployed runtime",
+  "junction": {
+    "solid": "slab 990 x 800 x 60 mm with a post 90 x 120 x 1000 mm on it",
+    "before": [
+      {
+        "point": [
+          420,
+          0,
+          0
+        ],
+        "expected": true,
+        "inside": false
+      },
+      {
+        "point": [
+          420,
+          -30,
+          0
+        ],
+        "expected": true,
+        "inside": false
+      },
+      {
+        "point": [
+          380,
+          55,
+          0
+        ],
+        "expected": true,
+        "inside": false
+      }
+    ],
+    "after": [
+      {
+        "point": [
+          420,
+          0,
+          0
+        ],
+        "expected": true,
+        "inside": true
+      },
+      {
+        "point": [
+          420,
+          -30,
+          0
+        ],
+        "expected": true,
+        "inside": true
+      },
+      {
+        "point": [
+          380,
+          55,
+          0
+        ],
+        "expected": true,
+        "inside": true
+      }
+    ]
+  },
+  "sphereLattice": {
+    "mesh": "sphere, radius 50 mm, 80 000 triangles",
+    "lattice": "2 mm, 61^3 points",
+    "before": {
+      "points": 226981,
+      "compared": 226831,
+      "wrong": 120,
+      "bestOf3Ms": 249
+    },
+    "after": {
+      "points": 226981,
+      "compared": 226831,
+      "wrong": 0,
+      "bestOf3Ms": 265
+    }
+  },
+  "railOnDeck": {
+    "test": "src/modeling/runtime/jointMeshContinuity.test.ts, rail on a deck",
+    "before": "mechanism.joint-mesh-gap, nearest solid 45.0 mm from the pivot origin",
+    "after": "no mechanism.joint-mesh-gap"
+  },
+  "klift": {
+    "file": "examples/gallery/kspray-klift.kcad.ts",
+    "tool": "evaluate_script",
+    "diagnosticsBefore": 33,
+    "diagnosticsAfter": 32,
+    "removed": [
+      {
+        "code": "mechanism.joint-mesh-gap",
+        "message": "Joint 'carriage-slide' parent body 'platform': nearest solid is 45.0mm from the pivot origin (allowed 1.0mm = clearance bore 0.0mm + 1.0mm margin)"
+      }
+    ],
+    "okAfter": false
+  }
+}

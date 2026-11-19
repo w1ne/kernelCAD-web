@@ -124,6 +124,68 @@ describe('TriangleBvh — OCCT export mesh (box)', () => {
   });
 });
 
+// A slab with a post on it, as one watertight solid: slab x 0..990,
+// y -400..400, z -60..0; post x 375..465, y -60..60, z 0..1000. A point where
+// the post meets the slab is inside the solid and in the plane of the slab top.
+function slabWithPost(): DfmMesh {
+  const rect = (x0: number, x1: number, y0: number, y1: number, z: number) =>
+    [x0, y0, z, x1, y0, z, x1, y1, z, x0, y1, z];
+  const vertices = [
+    ...rect(0, 990, -400, 400, -60),
+    ...rect(0, 990, -400, 400, 0),
+    ...rect(375, 465, -60, 60, 0),
+    ...rect(375, 465, -60, 60, 1000),
+  ];
+  const triangles = [0, 2, 1, 0, 3, 2, 12, 13, 14, 12, 14, 15];
+  // Quad strips: slab sides, slab top around the post, post sides.
+  for (const [lo, hi] of [[0, 4], [4, 8], [8, 12]]) {
+    for (let i = 0; i < 4; i++) {
+      const j = (i + 1) % 4;
+      triangles.push(lo + i, lo + j, hi + j, lo + i, hi + j, hi + i);
+    }
+  }
+  return { vertices, triangles };
+}
+
+describe('TriangleBvh — pointInside with the parity ray in a face plane', () => {
+  const bvh = new TriangleBvh(slabWithPost());
+
+  it('counts a point at the post-to-slab junction as inside', () => {
+    // The shortest extent is y, so the parity ray runs along +y in the plane
+    // of the slab top. It meets the post side and the slab side on an edge.
+    expect(bvh.pointInside([420, 0, 0])).toBe(true);
+    expect(bvh.pointInside([420, -30, 0])).toBe(true);
+    expect(bvh.pointInside([380, 55, 0])).toBe(true);
+  });
+
+  it('keeps points off that plane and points outside the solid correct', () => {
+    expect(bvh.pointInside([420, 0, 500])).toBe(true);
+    expect(bvh.pointInside([420, 0, -30])).toBe(true);
+    expect(bvh.pointInside([420, 200, 500])).toBe(false);
+    // Outside the solid, in the plane of the slab top.
+    expect(bvh.pointInside([420, 500, 0])).toBe(false);
+    expect(bvh.pointInside([420, -500, 0])).toBe(false);
+    // Outside the solid, in the plane of a post side.
+    expect(bvh.pointInside([375, -200, 500])).toBe(false);
+  });
+
+  it('gives the same answer after a rotation that leaves float noise', () => {
+    const c = Math.cos(0.3);
+    const s = Math.sin(0.3);
+    const spin = (p: readonly number[], sign: number): [number, number, number] =>
+      [c * p[0] + sign * s * p[2], p[1], -sign * s * p[0] + c * p[2]];
+    const mesh = slabWithPost();
+    const vertices: number[] = [];
+    for (let i = 0; i < mesh.vertices.length; i += 3) {
+      vertices.push(...spin(spin([mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2]], 1), -1));
+    }
+    const noisy = new TriangleBvh({ vertices, triangles: mesh.triangles });
+    expect(noisy.pointInside([420, 0, 0])).toBe(true);
+    expect(noisy.pointInside([420, -30, 0])).toBe(true);
+    expect(noisy.pointInside([420, 500, 0])).toBe(false);
+  });
+});
+
 describe('TriangleBvh — perf guard', () => {
   it('builds and queries a ~100k-triangle grid in under 1s', () => {
     // (n+1)^2 vertex grid over [0,n]^2 at z = 0, two triangles per cell.
