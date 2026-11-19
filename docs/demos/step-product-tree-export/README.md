@@ -38,9 +38,11 @@ repeated part is written as before: a flat list of named world-frame bodies.
 ## Limits
 
 This is local API export and OCCT re-import. No other CAD system opened the
-file, and the demo shows no deployed behavior or hardware acceptance. A placement
-that is baked into the shape before `part()` (for example `.translate(...)` or
-`.rotate(...)`, or hardware placed by a hole-driven helper) makes a separate
-product, so such parts are not instanced even when the BOM groups them. The
-exported file hash is valid for this capture only: OCCT orders the colour style
-entities of a multi-colour scene differently between writes.
+file, and the demo shows no deployed behavior or hardware acceptance. Hardware
+placed by a hole-driven helper makes a separate product, so such parts are not
+instanced even when the BOM groups them. At the time of this capture a
+`.translate(...)` or `.rotate(...)` on the shape before `part()` also made a
+separate product; that is now placement, see
+[step-instance-roundtrip](../step-instance-roundtrip/README.md). The exported
+file hash is valid for this capture only: OCCT orders the colour style entities
+of a multi-colour scene differently between writes.
