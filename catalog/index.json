@@ -357701,7 +357701,7 @@
       "id": "tower-section",
       "kit": "wind-energy",
       "title": "Tapered tower section",
-      "description": "Single steel tower segment with a flared lower collar and upper joint band. Controls: scale and painted steel, stainless steel; weathered and high-visibility presets.",
+      "description": "Single tapered steel tower segment with a painted shell, a flared lower flange collar, an upper joint band and an access door panel. Controls: scale and tower paint, flange steel, painted steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -357720,7 +357720,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-section.kcad.ts",
       "preview": "/assets/wind-energy-tower-section.png",
-      "sourceSha256": "af8e0476ffd4889602dde2b081e59147b13ab6f4f2e58caafe75bdd0ea425890",
+      "sourceSha256": "5ce2024e62485c0371df85f687a36a41452a6cd9ac06af5520d003c71b6e1a6b",
       "triangleBudget": 300,
       "params": [
         {
@@ -357733,22 +357733,29 @@
           "step": 0.05
         },
         {
+          "name": "towerPaint",
+          "type": "color",
+          "default": "#e2e5e3",
+          "label": "Tower paint"
+        },
+        {
+          "name": "flangeSteel",
+          "type": "color",
+          "default": "#7f8b8e",
+          "label": "Flange steel"
+        },
+        {
           "name": "paintedSteel",
           "type": "color",
           "default": "#53727c",
           "label": "Painted steel"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "stainlessSteel": "#c7d2d5"
+          "towerPaint": "#c8ccc7",
+          "flangeSteel": "#6f6a62",
+          "paintedSteel": "#415961"
         },
         "highVisibility": {
           "paintedSteel": "#d8a62b"
@@ -357766,14 +357773,21 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "towerPaint",
+          "color": "#e2e5e3",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "towerPaint"
+        },
+        {
+          "name": "flangeSteel",
+          "color": "#7f8b8e",
+          "parts": [
             "lower-collar",
             "upper-band"
           ],
-          "param": "stainlessSteel"
+          "param": "flangeSteel"
         },
         {
           "name": "paintedSteel",

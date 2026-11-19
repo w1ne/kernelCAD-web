@@ -1,0 +1,2 @@
+{"id":"tower-section","triangles":144,"budget":300,"sizeM":[0.36,1.75,0.36],"minUpM":0,"materials":1,"knobs":["scale:number","towerPaint:color","flangeSteel:color","paintedSteel:color"],"palette":["towerPaint=#e2e5e3","flangeSteel=#7f8b8e","paintedSteel=#53727c"]}
+wind-energy/tower-section: 144 tris
