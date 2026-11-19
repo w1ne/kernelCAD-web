@@ -8,6 +8,18 @@ import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import { solveMates } from './solver';
+import {
+  IDENTITY,
+  boxInPartFrame,
+  distanceOutsideExpandedBbox,
+  fastenedNeighbours,
+  formatPoint,
+  nearestSupportedOrigin,
+  transformBbox,
+  type NearestSupport,
+  type SupportBox,
+} from './connectorSupport';
+import { bearingProjectionSamples, closestSamples, minBearingAxialGapMm } from './revoluteBearingSamples';
 
 type Bbox = { min: Vec3; max: Vec3 };
 
@@ -54,6 +66,10 @@ export interface ConnectorNotInSolidDiagnostic {
   readonly connectorName: string;
   readonly connectorRef: string;
   readonly distanceMm: number;
+  /** Support tolerance (mm) the bounding boxes were grown by. */
+  readonly toleranceMm: number;
+  /** Nearest supported origin on the mate axis, part-local; absent when the axis misses every support box. */
+  readonly nearestSupportedOrigin?: Vec3;
   readonly bbox: Bbox;
 }
 
@@ -97,6 +113,10 @@ export interface RevoluteUnsupportedDiagnostic {
   readonly connectorName: string;
   readonly connectorRef: string;
   readonly distanceMm: number;
+  /** Support tolerance (mm) the bounding boxes were grown by. */
+  readonly toleranceMm: number;
+  /** Nearest supported origin on the mate axis, part-local; absent when the axis misses every support box. */
+  readonly nearestSupportedOrigin?: Vec3;
   readonly bbox: Bbox;
 }
 
@@ -122,7 +142,6 @@ export interface MechanicalPlausibilityResult {
 const CONNECTOR_SOLID_TOL_MM = 6;
 const REVOLUTE_SUPPORT_TOL_MM = 1;
 const REVOLUTE_BEARING_AXIAL_GAP_TOL_MM = 3;
-const REVOLUTE_BEARING_RADIAL_SAMPLE_RADIUS_MM = 24;
 const FASTENED_CONTACT_GAP_TOL_MM = 0.5;
 const MIN_FASTENED_CONTACT_AREA_MM2 = 0.25;
 // Treat visible/mechanical clearance gaps inside a single named part as
@@ -153,7 +172,9 @@ export async function connectorsInSolidDiagnostics(arm: Assembly): Promise<Conne
     }
     return bbox;
   };
-  const context = { partsByName, localBoundsFor };
+  let posesPromise: Promise<ReadonlyMap<string, Transform> | undefined> | undefined;
+  const restPoses = () => (posesPromise ??= solveMates(arm).then((r) => r.poses, () => undefined));
+  const context: SupportContext = { arm, partsByName, localBoundsFor, restPoses };
   const diagnostics: MechanicalPlausibilityDiagnostic[] = [];
   for (const mate of arm.__mates()) await checkMateConnectorsInSolid(context, mate, diagnostics);
   return diagnostics.filter((d): d is ConnectorNotInSolidDiagnostic => d.code === 'assembly.mechanical.connector-not-in-solid');
@@ -205,6 +226,7 @@ export async function reviewMechanicalPlausibility(
 
   const context: PlausibilityContext = {
     arm,
+    restPoses: async () => solved.poses,
     partsByName,
     partNameById,
     solved,
@@ -221,7 +243,16 @@ export async function reviewMechanicalPlausibility(
   return { diagnostics, checkedMateConnectorCount, checkedFastenedMateContactCount };
 }
 
-interface PlausibilityContext {
+/** What the connector-support rules need: part bounds and, for fastened
+ *  neighbours, the rest pose of every part. */
+interface SupportContext {
+  readonly arm: Assembly;
+  readonly partsByName: ReadonlyMap<string, AssemblyPartStored>;
+  readonly localBoundsFor: (partName: string) => Promise<Bbox | undefined>;
+  readonly restPoses: () => Promise<ReadonlyMap<string, Transform> | undefined>;
+}
+
+interface PlausibilityContext extends SupportContext {
   readonly arm: Assembly;
   readonly partsByName: ReadonlyMap<string, AssemblyPartStored>;
   readonly partNameById: ReadonlyMap<FeatureId, string>;
@@ -330,7 +361,7 @@ async function collectMateDiagnostics(
 }
 
 async function checkMateConnectorsInSolid(
-  context: Pick<PlausibilityContext, 'partsByName' | 'localBoundsFor'>,
+  context: SupportContext,
   mate: Mate,
   diagnostics: MechanicalPlausibilityDiagnostic[],
 ): Promise<number> {
@@ -344,9 +375,9 @@ async function checkMateConnectorsInSolid(
     checked += 1;
     const bbox = await context.localBoundsFor(part.name);
     if (bbox === undefined) continue;
-
-    const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, CONNECTOR_SOLID_TOL_MM);
-    if (distanceMm === 0) continue;
+    const miss = await unsupportedConnector(context, mate, part.name, connector.origin.value, connector.axis, CONNECTOR_SOLID_TOL_MM);
+    if (miss === undefined) continue;
+    const text = supportText(connectorRef, part.name, miss, CONNECTOR_SOLID_TOL_MM);
 
     diagnostics.push({
       code: 'assembly.mechanical.connector-not-in-solid',
@@ -355,13 +386,86 @@ async function checkMateConnectorsInSolid(
       partName: part.name,
       connectorName: parsed.connectorName,
       connectorRef,
-      distanceMm,
+      distanceMm: miss.distanceMm,
+      toleranceMm: CONNECTOR_SOLID_TOL_MM,
+      ...nearestField(miss.nearest),
       bbox,
-      message: `Mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm away from modeled material on part '${part.name}'.`,
-      hint: `mechanical-plausibility.connector-not-in-solid — move '${connectorRef}' onto the part's modeled bearing/bracket/knuckle, or add support geometry around that connector so the mate has a physical load path.`,
+      message: `Mate '${mate.name}' connector '${connectorRef}' is ${miss.distanceMm.toFixed(1)} mm away from modeled material on part '${part.name}'. ${text.where} ${text.nearest}`,
+      hint: `mechanical-plausibility.connector-not-in-solid — ${text.fix} so the mate has a physical load path.`,
     });
   }
   return checked;
+}
+
+interface UnsupportedConnector {
+  /** Distance (mm) from the origin to the nearest grown support box. */
+  readonly distanceMm: number;
+  readonly nearest: NearestSupport;
+  readonly neighbourCount: number;
+}
+
+/** undefined when the connector origin lies in the grown bounding box of its
+ *  part or of a part fastened to it (transitively), at the rest pose. The
+ *  mate being checked does not count: a fastened mate's partner sits on the
+ *  connector by construction, so it cannot vouch for it. */
+async function unsupportedConnector(
+  context: SupportContext,
+  mate: Mate,
+  partName: string,
+  origin: Vec3,
+  axis: Vec3 | undefined,
+  toleranceMm: number,
+): Promise<UnsupportedConnector | undefined> {
+  const own = await context.localBoundsFor(partName);
+  if (own === undefined) return undefined;
+  const boxes: SupportBox[] = [{ partName, bbox: own }];
+  if (distanceOutsideExpandedBbox(origin, own, toleranceMm) === 0) return undefined;
+  const neighbours = fastenedNeighbours(context.arm.__mates().filter((m) => m !== mate), partName);
+  const poses = neighbours.length > 0 ? await context.restPoses() : undefined;
+  if (poses !== undefined) {
+    const partPose = poses.get(partName) ?? IDENTITY;
+    for (const name of neighbours) {
+      const local = await context.localBoundsFor(name);
+      if (local === undefined) continue;
+      const bbox = boxInPartFrame(local, partPose, poses.get(name) ?? IDENTITY);
+      if (distanceOutsideExpandedBbox(origin, bbox, toleranceMm) === 0) return undefined;
+      boxes.push({ partName: name, bbox });
+    }
+  }
+  return {
+    distanceMm: Math.min(...boxes.map((b) => distanceOutsideExpandedBbox(origin, b.bbox, toleranceMm))),
+    nearest: nearestSupportedOrigin(origin, axis, boxes, toleranceMm),
+    neighbourCount: boxes.length - 1,
+  };
+}
+
+function nearestField(nearest: NearestSupport): { nearestSupportedOrigin?: Vec3 } {
+  return nearest.kind === 'point' ? { nearestSupportedOrigin: nearest.origin } : {};
+}
+
+function supportText(
+  connectorRef: string,
+  partName: string,
+  miss: UnsupportedConnector,
+  toleranceMm: number,
+): { where: string; nearest: string; fix: string } {
+  const region = `the bounding box of '${partName}'` +
+    (miss.neighbourCount > 0 ? ` or of the ${miss.neighbourCount} part(s) fastened to it` : '') +
+    `, grown by ${toleranceMm} mm`;
+  const where = `Support region: ${region} (part-local frame, rest pose).`;
+  if (miss.nearest.kind === 'axis-misses') {
+    return {
+      where,
+      nearest: 'No point on the mate axis lies in that region: move the axis onto supported material, or add a knuckle, bearing block, bracket or shaft support around it.',
+      fix: `move the '${connectorRef}' axis onto supported material, or add support geometry around it`,
+    };
+  }
+  const at = formatPoint(miss.nearest.origin);
+  return {
+    where,
+    nearest: `The nearest supported origin on the mate axis is ${at} (part-local, ${miss.nearest.moveMm.toFixed(1)} mm away).`,
+    fix: `move the '${connectorRef}' origin to ${at} (nearest supported point on its axis; the mated part follows the connector), or add support geometry around the current origin`,
+  };
 }
 
 async function checkRevoluteSupport(
@@ -394,18 +498,13 @@ async function checkRevoluteBearingGap(
     connectorB?.origin.kind === 'vec3' &&
     connectorA.axis !== undefined
   ) {
-    const backendA = await context.backendFor(partA.name);
-    const backendB = await context.backendFor(partB.name);
-    if (backendA !== undefined && backendB !== undefined) {
-      const axialGapMm = minBearingAxialGapMm(
-        backendA,
-        connectorA.origin.value,
-        connectorA.axis,
-        backendB,
-        connectorB.origin.value,
-        connectorA.axis,
-      );
-      if (axialGapMm > REVOLUTE_BEARING_AXIAL_GAP_TOL_MM) {
+    const axialGapMm = await revoluteAxialGapMm(
+      context,
+      { name: partA.name, origin: connectorA.origin.value },
+      { name: partB.name, origin: connectorB.origin.value },
+      connectorA.axis,
+    );
+    if (axialGapMm !== undefined && axialGapMm > REVOLUTE_BEARING_AXIAL_GAP_TOL_MM) {
         diagnostics.push({
           code: 'assembly.mechanical.revolute-contact-missing',
           severity: 'error',
@@ -415,10 +514,9 @@ async function checkRevoluteBearingGap(
           connectorARef: mate.a,
           connectorBRef: mate.b,
           axialGapMm,
-          message: `Revolute mate '${mate.name}' leaves ${axialGapMm.toFixed(1)} mm of air gap between bearing material on '${partA.name}' and '${partB.name}'.`,
+          message: `Revolute mate '${mate.name}' leaves ${axialGapMm.toFixed(1)} mm of air gap between bearing material on '${partA.name}' and '${partB.name}' (parts fastened to either side included).`,
           hint: `mechanical-plausibility.revolute-contact-missing — add interleaved hinge knuckles, a clevis tab, spacer, or bearing shoulder so '${partA.name}' and '${partB.name}' have modeled support faces within ${REVOLUTE_BEARING_AXIAL_GAP_TOL_MM} mm along the hinge axis.`,
         });
-      }
     }
   }
 }
@@ -435,18 +533,9 @@ async function checkRevoluteConnectorSupport(
     if (part === undefined || connector === undefined || connector.origin.kind !== 'vec3') continue;
     const bbox = await context.localBoundsFor(part.name);
     if (bbox === undefined) continue;
-
-    const distanceMm = distanceOutsideExpandedBbox(connector.origin.value, bbox, REVOLUTE_SUPPORT_TOL_MM);
-    if (distanceMm === 0) continue;
-
-    const worldPoint = (context.solved.poses.get(part.name) ?? Transform.identity()).point(connector.origin.value) as Vec3;
-    const fastenedSupport = await findFastenedSupportForPoint(
-      context.arm,
-      part.name,
-      worldPoint,
-      context.worldBoundsFor,
-    );
-    if (fastenedSupport !== undefined) continue;
+    const miss = await unsupportedConnector(context, mate, part.name, connector.origin.value, connector.axis, REVOLUTE_SUPPORT_TOL_MM);
+    if (miss === undefined) continue;
+    const text = supportText(connectorRef, part.name, miss, REVOLUTE_SUPPORT_TOL_MM);
 
     diagnostics.push({
       code: 'assembly.mechanical.revolute-unsupported',
@@ -455,10 +544,12 @@ async function checkRevoluteConnectorSupport(
       partName: part.name,
       connectorName: parsed.connectorName,
       connectorRef,
-      distanceMm,
+      distanceMm: miss.distanceMm,
+      toleranceMm: REVOLUTE_SUPPORT_TOL_MM,
+      ...nearestField(miss.nearest),
       bbox,
-      message: `Revolute mate '${mate.name}' connector '${connectorRef}' is ${distanceMm.toFixed(1)} mm outside modeled support material on part '${part.name}'.`,
-      hint: `mechanical-plausibility.revolute-unsupported — add a hinge knuckle, bearing block, bracket, or shaft support so '${connectorRef}' lies on modeled material, not just near a bounding box.`,
+      message: `Revolute mate '${mate.name}' connector '${connectorRef}' is ${miss.distanceMm.toFixed(1)} mm outside modeled support material on part '${part.name}'. ${text.where} ${text.nearest}`,
+      hint: `mechanical-plausibility.revolute-unsupported — ${text.fix} (a hinge knuckle, bearing block, bracket or shaft support).`,
     });
   }
 }
@@ -709,139 +800,55 @@ function bboxGap(a: Bbox, b: Bbox): number {
   return Math.hypot(axisGap(a, b, 0), axisGap(a, b, 1), axisGap(a, b, 2));
 }
 
-function minBearingAxialGapMm(
-  backendA: ShapeBackend,
-  originA: Vec3,
-  axisA: Vec3,
-  backendB: ShapeBackend,
-  originB: Vec3,
-  axisB: Vec3,
-): number {
-  const samplesA = bearingProjectionSamples(backendA, originA, axisA);
-  const samplesB = bearingProjectionSamples(backendB, originB, axisB);
-  if (samplesA.length === 0 || samplesB.length === 0) return Number.POSITIVE_INFINITY;
-
-  let best = Number.POSITIVE_INFINITY;
-  for (const a of samplesA) {
-    for (const b of samplesB) {
-      best = Math.min(best, Math.abs(a - b));
-    }
-  }
-  return best;
-}
-
-function bearingProjectionSamples(
-  backend: ShapeBackend,
-  origin: Vec3,
+/** Axial air gap (mm) between the two sides' bearing material along the
+ *  hinge axis. A servo joint bears servo output on horn: when the mated
+ *  parts alone leave a gap, each side also counts the parts fastened to it,
+ *  so two links that never touch still pass. */
+async function revoluteAxialGapMm(
+  context: PlausibilityContext,
+  a: { name: string; origin: Vec3 },
+  b: { name: string; origin: Vec3 },
   axis: Vec3,
-): number[] {
-  const normalizedAxis = normalize(axis);
-  if (normalizedAxis === undefined) return [];
-  const mesh = backend.getMesh();
-  const out: number[] = [];
-  for (let i = 0; i < mesh.positions.length; i += 3) {
-    const point: Vec3 = [mesh.positions[i], mesh.positions[i + 1], mesh.positions[i + 2]];
-    const rel = sub(point, origin);
-    const projection = dot(rel, normalizedAxis);
-    const closest = scale(normalizedAxis, projection);
-    const radial = length(sub(rel, closest));
-    if (radial <= REVOLUTE_BEARING_RADIAL_SAMPLE_RADIUS_MM) {
-      out.push(projection);
-    }
-  }
-  // Where the axis itself pierces the surface. A large flat face carries
-  // vertices only at its far-away corners, so vertex sampling alone sees no
-  // material on a pivot through the middle of a base plate (an "Infinity mm"
-  // gap between two parts stacked face to face on the hinge axis).
-  out.push(...axisPiercingProjections(mesh, origin, normalizedAxis));
-  return out;
+): Promise<number | undefined> {
+  const backendA = await context.backendFor(a.name);
+  const backendB = await context.backendFor(b.name);
+  if (backendA === undefined || backendB === undefined) return undefined;
+  const direct = minBearingAxialGapMm(backendA, a.origin, axis, backendB, b.origin, axis);
+  if (direct <= REVOLUTE_BEARING_AXIAL_GAP_TOL_MM) return direct;
+  return Math.min(direct, closestSamples(
+    await sideBearingSamples(context, a.name, a.origin, axis),
+    await sideBearingSamples(context, b.name, b.origin, axis),
+  ));
 }
 
-/** Axial positions (relative to `origin`) where the infinite line through
- *  `origin` along unit `axis` crosses a mesh triangle (Möller–Trumbore). */
-function axisPiercingProjections(
-  mesh: ReturnType<ShapeBackend['getMesh']>,
-  origin: Vec3,
-  axis: Vec3,
-): number[] {
-  const out: number[] = [];
-  const { positions, indices } = mesh;
-  for (let i = 0; i + 2 < indices.length; i += 3) {
-    const t = intersectLineTriangle(
-      origin,
-      axis,
-      readVertex(positions, indices[i]),
-      readVertex(positions, indices[i + 1]),
-      readVertex(positions, indices[i + 2]),
-    );
-    if (t !== undefined) out.push(t);
-  }
-  return out;
-}
-
-function intersectLineTriangle(origin: Vec3, dir: Vec3, v0: Vec3, v1: Vec3, v2: Vec3): number | undefined {
-  const e1 = sub(v1, v0);
-  const e2 = sub(v2, v0);
-  const p = cross(dir, e2);
-  const det = dot(e1, p);
-  if (Math.abs(det) < 1e-12) return undefined;
-  const inv = 1 / det;
-  const s = sub(origin, v0);
-  const u = dot(s, p) * inv;
-  if (u < -1e-9 || u > 1 + 1e-9) return undefined;
-  const q = cross(s, e1);
-  const v = dot(dir, q) * inv;
-  if (v < -1e-9 || u + v > 1 + 1e-9) return undefined;
-  return dot(e2, q) * inv;
-}
-
-function cross(a: Vec3, b: Vec3): Vec3 {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
-
-async function findFastenedSupportForPoint(
-  arm: Assembly,
+/** Axial bearing samples of one side of a revolute: its part plus every part
+ *  fastened to it (transitively), all measured along the connector axis in
+ *  that part's frame at the rest pose. */
+async function sideBearingSamples(
+  context: PlausibilityContext,
   partName: string,
-  worldPoint: Vec3,
-  worldBoundsFor: (partName: string) => Promise<Bbox | undefined>,
-): Promise<string | undefined> {
-  for (const mate of arm.__mates()) {
-    if (mate.type !== 'fastened') continue;
-    const a = parseConnectorRef(mate.a);
-    const b = parseConnectorRef(mate.b);
-    const supportPartName = a.partName === partName
-      ? b.partName
-      : b.partName === partName
-        ? a.partName
-        : undefined;
-    if (supportPartName === undefined) continue;
-    const supportBbox = await worldBoundsFor(supportPartName);
-    if (supportBbox === undefined) continue;
-    if (distanceOutsideExpandedBbox(worldPoint, supportBbox, REVOLUTE_SUPPORT_TOL_MM) === 0) {
-      return supportPartName;
-    }
+  origin: Vec3,
+  axis: Vec3,
+): Promise<number[]> {
+  const out: number[] = [];
+  const partPose = context.solved.poses.get(partName) ?? IDENTITY;
+  for (const name of [partName, ...fastenedNeighbours(context.arm.__mates(), partName)]) {
+    const backend = await context.backendFor(name);
+    if (backend === undefined) continue;
+    // Part frame -> member frame, so the member's own mesh is sampled.
+    const toMember = (context.solved.poses.get(name) ?? IDENTITY).inverse().compose(partPose);
+    out.push(...bearingProjectionSamples(backend, toMember.point(origin) as Vec3, toMember.axisDir(axis) as Vec3));
   }
-  return undefined;
+  return out;
 }
 
-function distanceOutsideExpandedBbox(
-  point: Vec3,
-  bbox: { min: Vec3; max: Vec3 },
-  toleranceMm: number,
-): number {
-  let d2 = 0;
-  for (let axis = 0; axis < 3; axis++) {
-    const min = bbox.min[axis] - toleranceMm;
-    const max = bbox.max[axis] + toleranceMm;
-    const value = point[axis];
-    if (value < min) {
-      d2 += (min - value) ** 2;
-    } else if (value > max) {
-      d2 += (value - max) ** 2;
-    }
-  }
-  return Math.sqrt(d2);
-}
+
+
+
+
+
+
+
 
 function analyzeFastenedContact(
   a: Bbox,
@@ -874,51 +881,8 @@ function axisGap(a: Bbox, b: Bbox, axis: number): number {
   return 0;
 }
 
-function normalize(v: Vec3): Vec3 | undefined {
-  const len = length(v);
-  if (len === 0) return undefined;
-  return [v[0] / len, v[1] / len, v[2] / len];
-}
 
-function sub(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
 
-function scale(v: Vec3, s: number): Vec3 {
-  return [v[0] * s, v[1] * s, v[2] * s];
-}
 
-function dot(a: Vec3, b: Vec3): number {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
 
-function length(v: Vec3): number {
-  return Math.hypot(v[0], v[1], v[2]);
-}
 
-function transformBbox(bbox: Bbox, transform: Transform): Bbox {
-  const localCorners: Vec3[] = [
-    [bbox.min[0], bbox.min[1], bbox.min[2]],
-    [bbox.min[0], bbox.min[1], bbox.max[2]],
-    [bbox.min[0], bbox.max[1], bbox.min[2]],
-    [bbox.min[0], bbox.max[1], bbox.max[2]],
-    [bbox.max[0], bbox.min[1], bbox.min[2]],
-    [bbox.max[0], bbox.min[1], bbox.max[2]],
-    [bbox.max[0], bbox.max[1], bbox.min[2]],
-    [bbox.max[0], bbox.max[1], bbox.max[2]],
-  ];
-  const corners = localCorners.map((corner) => transform.point(corner) as Vec3);
-
-  return {
-    min: [
-      Math.min(...corners.map((corner) => corner[0])),
-      Math.min(...corners.map((corner) => corner[1])),
-      Math.min(...corners.map((corner) => corner[2])),
-    ],
-    max: [
-      Math.max(...corners.map((corner) => corner[0])),
-      Math.max(...corners.map((corner) => corner[1])),
-      Math.max(...corners.map((corner) => corner[2])),
-    ],
-  };
-}
