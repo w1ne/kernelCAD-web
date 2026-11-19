@@ -1,0 +1,57 @@
+{
+  "checkedDate": "2026-11-18",
+  "selectedIds": [
+    "construction-equipment/asphalt-paver-screed",
+    "construction-equipment/rebar-bending-machine",
+    "construction-equipment/masonry-mixer",
+    "construction-equipment/jobsite-tile-saw",
+    "construction-equipment/portable-core-drill-stand"
+  ],
+  "openIssuesChecked": [
+    1568,
+    1321,
+    1295,
+    1272,
+    1271,
+    1259,
+    1227
+  ],
+  "openIssueIdOrTitleMatches": [],
+  "openPullRequestsChecked": [
+    1570,
+    1507,
+    1400,
+    1309,
+    1253,
+    1094
+  ],
+  "changedSourcePathMatchesAtSelection": [],
+  "pr1507": {
+    "state": "OPEN",
+    "head": "d1e2c36854b4f33b78726828ed7bb61cbdf60d65",
+    "reviewDecision": "",
+    "submittedReviews": 0,
+    "mergeStateStatus": "BLOCKED",
+    "applicableChecks": {
+      "changes": "SUCCESS",
+      "lint": "SUCCESS",
+      "build-and-checks": "SUCCESS",
+      "changed-tests": "SUCCESS",
+      "test (draft-light)": "SUCCESS"
+    }
+  },
+  "pr1258": {
+    "state": "MERGED",
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "reportedChecks": "all successful",
+    "submittedReviews": 0
+  },
+  "method": "Open issue title/body scan and paginated changed-file scan across all open PRs before editing.",
+  "previousFixPRsChecked": [
+    1298,
+    1305,
+    1307,
+    1308
+  ],
+  "previousFixPRSourcePathMatches": []
+}

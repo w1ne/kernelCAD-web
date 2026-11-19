@@ -1,0 +1,22 @@
+{
+  "workflow": "local catalog-preview semantic review and exported-GLB material regression",
+  "inputPreviews": [
+    "samples/previews/asphalt-paver-screed.png",
+    "samples/previews/rebar-bending-machine.png",
+    "samples/previews/masonry-mixer.png",
+    "samples/previews/jobsite-tile-saw.png",
+    "before/portable-core-drill-stand.png",
+    "after/portable-core-drill-stand.png"
+  ],
+  "canvas": {"width": 1280, "height": 720},
+  "durationSeconds": 15,
+  "frameRate": 24,
+  "codec": "H.264, yuv420p",
+  "captions": [
+    "five local rendered previews",
+    "before and after core-bit material assignment",
+    "source, triangle budget, regression result and scope"
+  ],
+  "invocation": "python3 artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/make_demo.py",
+  "claims": "Local software preview and GLB regression only; no deployment, simulation or hardware acceptance."
+}

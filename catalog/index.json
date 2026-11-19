@@ -65821,7 +65821,7 @@
       "id": "portable-core-drill-stand",
       "kit": "construction-equipment",
       "title": "Portable core drill stand",
-      "description": "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel for the stand, exposed structural steel for the carriage, feed handle and metal core-bit barrel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65840,7 +65840,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-core-drill-stand.kcad.ts",
       "preview": "/assets/construction-equipment-portable-core-drill-stand.png",
-      "sourceSha256": "287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a",
+      "sourceSha256": "65523ecd8560ed4cd256b1613e77c52e516a60399617b20cb574292f48fda633",
       "triangleBudget": 2200,
       "params": [
         {
@@ -65891,8 +65891,7 @@
           "color": "#e1a31b",
           "parts": [
             "drill-base",
-            "guide-column",
-            "core-bit"
+            "guide-column"
           ],
           "param": "equipmentPaintColor"
         },
@@ -65901,6 +65900,7 @@
           "color": "#89969a",
           "parts": [
             "drill-carriage",
+            "core-bit",
             "feed-handle"
           ],
           "param": "structuralSteelColor"

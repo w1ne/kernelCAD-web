@@ -163,3 +163,15 @@ change it. The [CI result and failure excerpt](../../artifacts/catalog-demos/shi
 are retained with the handoff bundle. The focused GLB regression, ESLint,
 shipyard asset-quality gate and local index build passed; the full CI suite is
 not claimed green.
+
+## Construction-equipment follow-up: core-drill barrel finish (18–19 November UTC)
+
+PR #1258 was checked first: it is merged, its 17 reported checks succeeded, and no review was submitted. At sample selection PR #1507 was open at `d1e2c36854b4f33b78726828ed7bb61cbdf60d65`; its applicable checks succeeded, it had no submitted review, and GitHub reported `BLOCKED`. Six open PR changed-file lists, seven open issue titles/bodies, and known fix PRs #1298/#1305/#1307/#1308 had no selected-ID/source-path overlap.
+
+The five rendered construction-equipment previews opened were `asphalt-paver-screed`, `rebar-bending-machine`, `masonry-mixer`, `jobsite-tile-saw`, and `portable-core-drill-stand`. Their object, material and envelope observations are in the [five-preview ledger](../../artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/preview-review.md). Four had no selected material mismatch. The screed preview still reads as a narrow beam and housing; the description claims folding wings and adjustment links that are not visible. That geometry/description gap is recorded but was not changed in this material-only round.
+
+In `portable-core-drill-stand`, `core-bit` used the yellow `equipmentPaintColor` control. It now uses the existing `structuralSteelColor`; the base and guide column remain painted, and the carriage and feed handle remain steel. No asset, kit, color parameter or preset was added. Geometry is unchanged at 92 triangles and 0.5616 × 1.1046 × 0.4000 m. The regenerated index changed only the target row's description, palette and source hash; its source SHA-256 matches disk and its rendered preview path exists.
+
+The new exported-GLB regression failed against the baseline palette assignment and passed after the correction. ESLint passed for the construction-equipment kit and regression. The structural quality gate reports 60/60 assets (100.00%); this is not a semantic realism score. The full catalog integration suite passed **157/157 files and 227/227 tests** (100%), including the full-catalog source/export/index-freshness check. The [handoff bundle](../../artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/README.md) retains before/after sources and previews, the five sample images, index evidence, checks, settings and an inspected 15-second MP4.
+
+Before editing, the public core-drill detail page, source and preview returned HTTP 200; the live source and preview matched the local baseline. The feature branch is not deployed. Verification covers local software previews and an exported-GLB material regression, not simulation or hardware acceptance. The dated official product, documentation and workflow comparison is retained privately in `kernelCAD-private`; this public record describes only native kernelCAD behavior.
