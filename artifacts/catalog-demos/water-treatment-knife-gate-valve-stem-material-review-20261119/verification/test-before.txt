@@ -1,0 +1,34 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/knifeGateValveStemMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2003[2mms[22m[39m
+[31m     [31m×[31m draws a stainless rising stem and horizontal pipe stubs on a seated body[39m[33m 1128[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/knifeGateValveStemMaterial.test.ts[2m > [22mwater-treatment/knife-gate-valve-assembly stem material[2m > [22mdraws a stainless rising stem and horizontal pipe stubs on a seated body
+[31m[1mAssertionError[22m: stem should use the stainless steel finish: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m expectFinish tests/integration/catalog/knifeGateValveStemMaterial.test.ts:[2m60:76[22m[39m
+    [90m 58| [39m        [35mconst[39m colors [33m=[39m [34mcolorsFor[39m(name)[33m;[39m
+    [90m 59| [39m        expect(colors.length, `${name} should render`).toBeGreaterThan…
+    [90m 60| [39m        expect(colors.every(matches(hex)), `${name} should use ${finis…
+    [90m   | [39m                                                                           [31m^[39m
+    [90m 61| [39m      }
+    [90m 62| [39m    }[33m;[39m
+[90m [2m❯[22m tests/integration/catalog/knifeGateValveStemMaterial.test.ts:[2m65:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 22:03:25
+[2m   Duration [22m 18.88s[2m (transform 13.64s, setup 355ms, import 16.09s, tests 2.00s, environment 0ms)[22m
+

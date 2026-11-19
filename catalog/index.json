@@ -351001,7 +351001,7 @@
       "id": "knife-gate-valve-assembly",
       "kit": "water-treatment",
       "title": "Knife gate valve assembly",
-      "description": "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
+      "description": "Process valve with a coated square gate body, a stainless rising stem, a handwheel and two stainless pipe stubs on the pipe run axis. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351020,7 +351020,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/knife-gate-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-knife-gate-valve-assembly.png",
-      "sourceSha256": "692cbf948bcfa69a459e18b8ed029f92902899cc9c4a3e79d6db45f0c5939d36",
+      "sourceSha256": "7c7c67683acb031952687a97d36b2eb4d94b657dff14d6153629623addbdab0b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -351087,8 +351087,7 @@
           "color": "#3d8589",
           "parts": [
             "gate-body",
-            "bonnet",
-            "stem"
+            "bonnet"
           ],
           "param": "coatedSteel"
         },
@@ -351097,7 +351096,8 @@
           "color": "#b5c0c0",
           "parts": [
             "pipe-left",
-            "pipe-right"
+            "pipe-right",
+            "stem"
           ],
           "param": "stainlessSteel"
         },
