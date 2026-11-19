@@ -1,0 +1,39 @@
+Local verification — 2026-11-19 UTC
+Base: origin/develop 58f3c250c6fa6b5fdad8d0429edec991828c5e25.
+
+Focused regression:
+  npx vitest run src/kernel/backends/occt/holeDetection.test.ts \
+    -t 'reports a through hole|measurable 0.1 mm end cap' --reporter=dot
+  Result: 2 passed, 20 skipped.
+
+Related suite:
+  npx vitest run src/kernel/backends/occt/holeDetection.test.ts --reporter=dot
+  Result: 22 passed.
+
+Typecheck:
+  npm run typecheck
+  Result: exit 0 (TypeScript project build and CLI TypeScript check).
+
+Lint:
+  npx eslint src/kernel/backends/occt/holeDetection.ts \
+    src/kernel/backends/occt/holeDetection.test.ts
+  Result: exit 0.
+
+Demo:
+  python3 docs/demos/step-bore-cap-classification-20261119/capture_demo.py
+  Result: focused test 2 passed, 20 skipped; 1280x720 H.264, yuv420p,
+  24 fps, 12 seconds.
+  python3 docs/demos/step-bore-cap-classification-20261119/inspect_demo.py
+  Result: sampled 1, 5 and 9 seconds; inspected the saved contact sheet.
+  Video SHA-256: 5ed9b06f2f5ba03b11525385800d438a4661c1ca9ef81338f142e115cd9e0ec2.
+  Video bytes: 91450.
+  Source SHA-256: cfd1f2c0f32636e8b56dc919fc8fa7d2dd59a5a6a23f6e56f4b6abdca94047c3.
+  Test SHA-256: 83e4a476685d263e4211d68af485f73462f3c5191c346dc276ff68c9ba53e5c4.
+
+Additional checks:
+  python3 -m py_compile capture_demo.py inspect_demo.py: passed.
+  python3 -m json.tool demo-settings.json: passed.
+  git diff --check: passed.
+
+Scope: local OCCT/B-rep classification and regression test only. No deployment,
+physical inspection, fit or hardware acceptance is established.
