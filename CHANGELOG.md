@@ -1,5 +1,14 @@
 # Unreleased
 
+- `faceSketch`, `sectionSketch`, the flat and section DXF profiles and
+  `inspect_section` keep a clockwise arc that sweeps less than 180°. Such an
+  arc was returned as the opposite arc of the same circle, with no error: a
+  90° corner became a 270° arc that cut into the part. `faceSketch('top')` of
+  a 60 × 40 mm cover plate with R5 corners extruded to a gasket 8.8 % low in
+  volume; it now matches the closed form. Lines, full circles,
+  counter-clockwise arcs and arcs of 180° or more are unchanged. A sketch or
+  DXF file made with an earlier version keeps the wrong arcs; run the script
+  or the export again. Demo: `docs/demos/face-sketch-clockwise-arcs/`.
 - STEP export writes no colour for an assembly part that has none. Every
   such part was written as red, and `import-step` then gave it an explicit
   `.color("#ff0000")`. The part is now written and read back without a
