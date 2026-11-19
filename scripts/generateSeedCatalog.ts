@@ -10,6 +10,7 @@
 // geometry licenses and provenance (see assets/reference-parts).
 
 import { sg90Families } from './sg90Catalog';
+import { servoFamilies } from './servoCatalog';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -1106,6 +1107,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   pinHeader(),
   jstXh(),
   ...sg90Families(),
+  ...servoFamilies(),
   ...FIXTURE_FAMILY_NAMES.map(fixtureSeedFamily),
 ];
 
