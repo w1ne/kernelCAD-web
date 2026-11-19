@@ -1,0 +1,39 @@
+
+ RUN  v4.1.12 /data/worktrees/hermes-kernelcad-web-qa-20261110
+
+--stdout | tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts > manufacturing benchmark 01: Pi 4 tray with M3 bosses and USB-C opening (#1227) > a Depth edit keeps the 49 mm hole pattern centred on the resized tray
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 0                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : blob.step(1700 ents)  Write  Done
+
+
+·stdout | tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts > manufacturing benchmark 01: Pi 4 tray with M3 bosses and USB-C opening (#1227) > catches a hole pattern whose Y centre stays at the default tray depth
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 0                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : blob.step(1700 ents)  Write  Done
+
+
+·--
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 4 skipped (6)
+   Start at  03:07:28
+   Duration  17.30s (transform 11.81s, setup 181ms, import 14.13s, tests 2.79s, environment 0ms)

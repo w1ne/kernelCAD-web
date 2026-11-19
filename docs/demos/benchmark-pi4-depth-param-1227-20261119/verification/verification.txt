@@ -1,0 +1,43 @@
+Local verification — 2026-11-19 UTC
+Base: origin/develop 2b4e4c1759a6feec66bb1c2b498f41789ecbd8f4
+
+Focused STEP regression:
+  npx vitest run tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts \
+    -t 'Depth edit|Y centre stays' --reporter=dot
+  Result: 2 passed, 4 skipped.
+
+Complete case 01 regression:
+  npx vitest run tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts \
+    --reporter=dot
+  Result: 6 passed.
+
+Measured interface from the re-imported STEP:
+  Default tray Depth: 66 mm; 49 mm hole pitch centered at Y=33 mm.
+  Edited tray Depth: 92 mm; 49 mm hole pitch centered at Y=46 mm.
+  Seeded stale-Y control: actual hole-pattern center Y=33 mm, expected 46 mm.
+  The stale control preserves tray bounds, volume, and hole pitch; the center
+  check reports only `pattern centre y: 33 != 46` at 0.01 mm tolerance.
+
+Type/lint and artifact checks:
+  npx eslint tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts
+  Result: exit 0.
+  npm run typecheck
+  Result: exit 0 (`tsc -b --noEmit` and CLI TypeScript check).
+  python3 -m py_compile docs/demos/benchmark-pi4-depth-param-1227-20261119/capture_demo.py \
+    docs/demos/benchmark-pi4-depth-param-1227-20261119/inspect_demo.py
+  Result: exit 0.
+  git diff --check
+  Result: exit 0.
+
+Demo:
+  python3 docs/demos/benchmark-pi4-depth-param-1227-20261119/capture_demo.py
+  Result: 1280x720, H.264, yuv420p, 24 fps, 12 seconds, 99,896 bytes.
+  Video SHA-256: 67d76ac4c184fb062496a9bddd085ffa1ff4155879fce84ef06437c61da75435.
+  Fixture SHA-256: e7f5ada6d4f0b654bf9315c4add9b5927c8f9880c2a708cab282b260465bc0a7.
+  Test SHA-256: 8eb59bdcebe00695c966476cdb2d230709aa7b81214f622c99fb5ba1d02615b7.
+  Inspection: ffprobe confirmed codec, size, duration and frame rate; sampled
+  frames at 1, 5 and 9 seconds and reviewed the final frame at full resolution.
+  Files: `video-inspection.json`, `video-contact-sheet.png`.
+
+Scope: local OCCT evaluation and STEP export/re-import regression only. No
+deployed behavior, production metrology, fit or hardware acceptance is claimed.
