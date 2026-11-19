@@ -18,7 +18,7 @@
 // that every slicer computes itself for parts that overlap.
 
 import { exportMeshDeflection, meshShapeForExport, type ExportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
-import { encodeBinaryStl, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
+import { encodeBinaryStlBytes, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
 import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -149,7 +149,7 @@ export function exportSceneStlAsShells(
     : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
   let mesh = meshPartsAsShells(worldParts, initialDeflection);
   let report = verifyWatertight(mesh);
-  let bytes: Uint8Array<ArrayBufferLike> = Uint8Array.from(encodeBinaryStl(mesh));
+  let bytes: Uint8Array<ArrayBufferLike> = encodeBinaryStlBytes(mesh);
   let mesh_deviation: MeshDeviationReport | undefined;
   if (requested !== undefined) {
     mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
@@ -160,7 +160,7 @@ export function exportSceneStlAsShells(
     if (mesh_deviation.measured_max_mm > requested * 1.05) {
       mesh = meshPartsAsShells(worldParts, exportMeshDeflection(options));
       report = verifyWatertight(mesh);
-      bytes = Uint8Array.from(encodeBinaryStl(mesh));
+      bytes = encodeBinaryStlBytes(mesh);
       mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
         worldParts.map(part => part.shape.getReplicadShape()),
         bytes,
@@ -242,12 +242,12 @@ function watertightSeamShells(
     : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
   let shells = meshPartsAsShells(worldParts, initialDeflection);
   if (!verifyWatertight(shells).ok) return undefined;
-  let bytes: Uint8Array = Uint8Array.from(encodeBinaryStl(shells));
+  let bytes: Uint8Array = encodeBinaryStlBytes(shells);
   let mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   if (deviationExceedsTolerance(mesh_deviation)) {
     shells = meshPartsAsShells(worldParts, exportMeshDeflection(options));
     if (!verifyWatertight(shells).ok) return undefined;
-    bytes = Uint8Array.from(encodeBinaryStl(shells));
+    bytes = encodeBinaryStlBytes(shells);
     mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   }
   if (tolerance !== undefined) bytes = stampStlMeshTolerance(bytes, tolerance);

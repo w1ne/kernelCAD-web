@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-19",
+  "scenario": "Peak RSS of one STL export, before and after the mesh read-back and heal moved to typed arrays",
+  "testCommand": "npx vitest run tests/integration/export/stlExportPeakMemory1585.test.ts tests/unit/kernel/backends/occt/meshHeal.test.ts tests/unit/kernel/backends/occt/assertWatertight.test.ts --reporter=dot",
+  "captureCommand": "python3 docs/demos/stl-export-peak-memory-20261119/capture_demo.py",
+  "baselineCommand": "python3 docs/demos/stl-export-peak-memory-20261119/capture_demo.py --measure before (with src/ of c8a11fc32)",
+  "inspectionCommand": "python3 docs/demos/stl-export-peak-memory-20261119/inspect_demo.py",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "frameRate": 24,
+    "durationSeconds": 15,
+    "slideDurationSeconds": 5,
+    "sampleSeconds": [2, 7, 12]
+  },
+  "scope": "Local vitest worker measurements and regression tests; no deployed runtime."
+}

@@ -12,7 +12,7 @@ import type { Shape3D } from 'replicad';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { exportDxf } from './exportDxf';
 import { meshShapeForExport } from './backendMesh';
-import { encodeBinaryStl, type MeshData } from './exportStlBinary';
+import { encodeBinaryStlBytes, type MeshData } from './exportStlBinary';
 import { stampStepOriginatingSystem } from '../../export/stepHeader';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import type { Region } from '../../../shared/intent/region';
@@ -60,7 +60,7 @@ export async function partStepBytes(shape: LowerablePartShape, name: string): Pr
  */
 export function partStlBytes(lowered: LoweredPartShape, mesh?: MeshData): Uint8Array {
   const m = mesh ?? meshShapeForExport(lowered.getReplicadShape());
-  return Uint8Array.from(encodeBinaryStl({ vertices: m.vertices, triangles: m.triangles }));
+  return encodeBinaryStlBytes({ vertices: m.vertices, triangles: m.triangles });
 }
 
 /**
