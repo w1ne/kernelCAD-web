@@ -148,6 +148,22 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     expect(failures.some((failure) => failure.startsWith('M3 kind:'))).toBe(true);
   }, 120_000);
 
+  it('catches base holes that keep their old cutter length after a Thickness edit', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(edited.new_code, 'cylinder(thickness.add(2), 2.75)', 'cylinder(7, 2.75)');
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, thickness: 8 });
+
+    // The M5 cutters start 1 mm below the base. A stale 7 mm length stops
+    // 2 mm inside the 8 mm plate while leaving the bracket's outside bounds
+    // unchanged; STEP depth, through-kind, and volume checks must reject it.
+    expect(failures).toHaveLength(5);
+    expect(failures.filter((failure) => failure.startsWith('M5 depth:'))).toHaveLength(2);
+    expect(failures.filter((failure) => failure.startsWith('M5 kind:'))).toHaveLength(2);
+    expect(failures.some((failure) => failure.startsWith('volume rel. error:'))).toBe(true);
+    expect(failures.every((failure) => !failure.startsWith('bbox.'))).toBe(true);
+  }, 120_000);
+
   it('catches base holes left at the default flange depth after a BaseDepth edit', async () => {
     const edited = setParamValue(SOURCE, 'BaseDepth', 60);
     if (!edited.ok) throw new Error(edited.error);
