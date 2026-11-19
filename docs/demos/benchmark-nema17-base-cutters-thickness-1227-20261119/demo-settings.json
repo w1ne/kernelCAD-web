@@ -1,0 +1,17 @@
+{
+  "workflow": "case-02 NEMA 17 bracket base-hole cutter regression",
+  "fixture": "tests/fixtures/manufacturing/nema17-l-bracket.kcad.ts",
+  "test": "tests/integration/manufacturing/nema17BracketBenchmark.test.ts",
+  "edit": "set Thickness from 5 mm to 8 mm",
+  "mutation": "hold the base M5-hole cutter at 7 mm after the parameter edit",
+  "result": "clean STEP passes; stale cutter leaves a 2 mm skin and fails M5 depth, through-kind, and volume checks while outer bounds pass",
+  "toleranceMm": 0.01,
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-nema17-base-cutters-thickness-1227-20261119/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/nema17BracketBenchmark.test.ts -t 'base holes that keep their old cutter length' --reporter=dot",
+  "inspection": "python3 docs/demos/benchmark-nema17-base-cutters-thickness-1227-20261119/inspect_demo.py"
+}
