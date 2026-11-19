@@ -47,13 +47,13 @@ export type SketchOffsetResult =
     }
   | { ok: false; reason: SketchOffsetFailure; detail: string };
 
-interface FaceLike {
+export interface FaceLike {
   wrapped: unknown;
   delete?: () => void;
 }
 
 /** Planar XY face of a closed command list (outer loop minus hole loops). */
-function faceOfCommands(commands: readonly SketchCommand[]): FaceLike {
+export function faceOfCommands(commands: readonly SketchCommand[]): FaceLike {
   type Lifted = { face?: () => FaceLike; sketches?: Lifted[] };
   let sketch = drawingFromCommands(commands).sketchOnPlane('XY') as unknown as Lifted;
   // A profile with exactly one hole comes back as a one-element `Sketches`.

@@ -113,6 +113,30 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A Sketch.offset source profile could not be built, or the kernel returned no closed offset curve.',
   },
+  'feature.sketch-boolean.empty': {
+    hintTemplate:
+      'The sketch boolean leaves no profile: the subtracted profiles cover the whole sketch, or the intersected profiles do not overlap. Move or resize a profile.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'Move or resize a profile so that the result keeps some area.' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.subtract or Sketch.intersect result has no area.',
+  },
+  'feature.sketch-boolean.split': {
+    hintTemplate:
+      'The sketch boolean is not one profile: the result is several separate regions, or it touches itself at a point. Overlap the profiles, or extrude each sketch and combine the solids.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'Overlap the profiles so that the result is one outline with holes, or extrude each sketch and combine the solids.' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.union, Sketch.subtract or Sketch.intersect result is several separate regions, or touches itself at a point, so it is not one outer loop with holes.',
+  },
+  'feature.sketch-boolean.failed': {
+    hintTemplate:
+      'The kernel could not combine these profiles. Check that every sketch is one closed, non-self-intersecting profile, or extrude the sketches and combine the solids.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A sketch boolean operand could not be built, or the kernel returned no closed boundary.',
+  },
   'feature.async-result.missing-await': {
     hintTemplate:
       'This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.',
