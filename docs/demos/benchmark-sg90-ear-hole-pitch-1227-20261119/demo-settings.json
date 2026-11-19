@@ -1,0 +1,16 @@
+{
+  "workflow": "case-08 SG90 ear-hole position regression",
+  "fixture": "tests/fixtures/manufacturing/sg90-lever-mount.kcad.ts",
+  "test": "tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts",
+  "mutation": "move m2Clearance.translate(0, -18.95, 0) to m2Clearance.translate(0, -17.95, 0)",
+  "result": "volume and outer bounds pass; re-imported STEP hole-axis check rejects the 1 mm datum shift",
+  "holePositionToleranceMm": 0.01,
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-sg90-ear-hole-pitch-1227-20261119/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts -t 're-imports from STEP|ear hole moved off' --reporter=dot",
+  "inspection": "python3 docs/demos/benchmark-sg90-ear-hole-pitch-1227-20261119/inspect_demo.py"
+}

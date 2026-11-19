@@ -21,7 +21,8 @@
 //      fastened mate on the axis connectors) fail. The pocket and wrong-mate
 //      defects are caught by the build itself.
 // Not verified: SG90 supplier variant, spline engagement, screws, stall
-// torque, and the ear-hole pitch (moving a hole keeps every volume and box).
+// torque. Ear-hole centers are checked separately from volume and boxes so
+// translating a clearance hole without changing either cannot false-pass.
 // Tolerances are this fixture's own: 0.1 % on volume, 0.01 mm on positions,
 // and 1e-6 mm / 1e-6 degrees on solver poses.
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
@@ -144,6 +145,27 @@ function stepFailures(solids: StepSolidReport[], reach: number): string[] {
   return failures;
 }
 
+/** Check the plate's two M2 ear-hole axes against the authored interface. */
+function earHoleFailures(solids: StepSolidReport[]): string[] {
+  if (solids.length !== 3) return [`solids: ${solids.length} != 3`];
+  const plate = [...solids].sort((a, b) => a.bboxExact.min[2] - b.bboxExact.min[2])[1];
+  const holes = plate.holes.filter((hole) =>
+    Math.abs(hole.diameterMm - 2.4) < 0.05 && Math.abs(Math.abs(hole.axisDirection[2]) - 1) < 1e-6,
+  );
+  const expectedCenters: Array<[number, number]> = [[0, -18.95], [0, 8.25]];
+  const failures: string[] = [];
+  if (holes.length !== expectedCenters.length) {
+    failures.push(`M2 ear holes: ${holes.length} != ${expectedCenters.length}`);
+  }
+  for (const [x, y] of expectedCenters) {
+    const matchingHole = holes.find((hole) =>
+      Math.hypot(hole.axisOrigin[0] - x, hole.axisOrigin[1] - y) < 0.01,
+    );
+    if (!matchingHole) failures.push(`missing M2 ear-hole axis at (${x}, ${y})`);
+  }
+  return failures;
+}
+
 /** Apply a literal source edit that must match exactly once. */
 function inject(code: string, from: string, to: string): string {
   expect(code.split(from)).toHaveLength(2);
@@ -167,7 +189,9 @@ describe('manufacturing benchmark 08: SG90 servo lever on a printed plate (#1227
   }, 180_000);
 
   it('re-imports from STEP as three solids with the expected volumes and boxes', async () => {
-    expect(stepFailures(await exportSolids(SOURCE), DEFAULT_REACH)).toEqual([]);
+    const solids = await exportSolids(SOURCE);
+    expect(stepFailures(solids, DEFAULT_REACH)).toEqual([]);
+    expect(earHoleFailures(solids)).toEqual([]);
   }, 120_000);
 
   it('rejects a flipped servo body even when mate poses alone still pass', async () => {
@@ -243,5 +267,17 @@ describe('manufacturing benchmark 08: SG90 servo lever on a printed plate (#1227
     const failures = stepFailures(await exportSolids(code), DEFAULT_REACH);
     // Only the plate volume changes; every box stays the same.
     expect(failures.map((f) => f.split(':')[0])).toEqual(['plate volume rel. error']);
+  }, 120_000);
+
+  it('catches an ear hole moved off its authored shaft axis', async () => {
+    const code = inject(SOURCE,
+      'm2Clearance.translate(0, -18.95, 0)',
+      'm2Clearance.translate(0, -17.95, 0)');
+    const solids = await exportSolids(code);
+
+    // The existing volume and bounding-box oracle cannot see a translated
+    // cylindrical cut. The independent interface check must still reject it.
+    expect(stepFailures(solids, DEFAULT_REACH)).toEqual([]);
+    expect(earHoleFailures(solids)).toContain('missing M2 ear-hole axis at (0, -18.95)');
   }, 120_000);
 });

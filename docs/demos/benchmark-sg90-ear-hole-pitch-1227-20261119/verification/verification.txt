@@ -1,0 +1,31 @@
+Local verification — 2026-11-19 UTC
+Branch base: origin/develop at efbd3c1db16ae7a3770d4fbbe14a43021a6f118c
+
+Focused STEP regression:
+  npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts \
+    -t 're-imports from STEP|ear hole moved off' --reporter=dot
+  Result: 2 passed, 12 skipped.
+  The clean fixture matches both authored 2.4 mm ear-hole axes. After moving
+  the low hole from y=-18.95 mm to y=-17.95 mm, the existing volume/bbox checks
+  still pass and the STEP hole-axis check reports the expected axis missing.
+
+Lint:
+  npx eslint tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts
+  Result: exit 0.
+
+Typecheck:
+  npm run typecheck
+  Result: exit 0 (`tsc -b --noEmit` and CLI TypeScript check).
+
+Demo:
+  python3 docs/demos/benchmark-sg90-ear-hole-pitch-1227-20261119/capture_demo.py
+  Result: 1280x720, H.264, yuv420p, 24 fps, 12 seconds, 99,767 bytes.
+  Video SHA-256: 71dd208e68803e9e5d3405c14d3751977abda8434ea6d4f1b1fa40e8be308a20.
+  Fixture SHA-256: 4339a782346d23de5b224ffe33860c2095d5c8591fa098ee7b93b932ecdb8c9a.
+  Test SHA-256: 28068c610bb3d41f987a6d64f4a003a8d1ea2633af3516299cb5c4fe7f0704b3.
+  Inspection: sampled frames at 1, 5, and 9 seconds; reviewed at full resolution.
+  Files: `video-inspection.json`, `video-contact-sheet.png`.
+
+Scope: local STEP export/re-import and benchmark-oracle validation only. No
+deployed behavior, metrology-device result, fit, or hardware acceptance is
+claimed.
