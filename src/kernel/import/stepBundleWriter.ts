@@ -112,6 +112,26 @@ function emitScript(assemblyName: string, occurrences: StepImportOccurrence[], n
   return lines.join('\n');
 }
 
+function manifestOccurrences(occurrences: StepImportOccurrence[], names: string[]): Array<Record<string, unknown>> {
+  return occurrences.map((occurrence, index) => {
+    const placement = decomposeStepTransform(occurrence.transform);
+    return {
+      id: occurrence.id,
+      originalName: occurrence.name,
+      partName: names[index],
+      sourcePath: occurrence.sourcePath,
+      definitionId: occurrence.definitionId,
+      transformMm: {
+        matrixColumnMajor: occurrence.transform,
+        translation: placement.translate,
+        rotationAxis: placement.axis,
+        rotationDegrees: placement.degrees,
+      },
+      ...(occurrence.color !== undefined ? { color: occurrence.color } : {}),
+    };
+  });
+}
+
 async function pathExists(path: string): Promise<boolean> {
   try {
     await lstat(path);
@@ -234,24 +254,6 @@ export async function writeStepBundle(input: WriteStepBundleInput): Promise<Writ
     for (const [hash, bytes] of assetByHash) await writeFile(join(partsDir, `${hash}.brep`), bytes, { flag: 'wx' });
 
     const { names, renamed } = stepPartNames(input.snapshot.occurrences);
-    const manifestOccurrences = input.snapshot.occurrences.map((occurrence, index) => {
-      const placement = decomposeStepTransform(occurrence.transform);
-      return {
-        id: occurrence.id,
-        originalName: occurrence.name,
-        partName: names[index],
-        sourcePath: occurrence.sourcePath,
-        definitionId: occurrence.definitionId,
-        transformMm: {
-          matrixColumnMajor: occurrence.transform,
-          translation: placement.translate,
-          rotationAxis: placement.axis,
-          rotationDegrees: placement.degrees,
-        },
-        ...(occurrence.color !== undefined ? { color: occurrence.color } : {}),
-      };
-    });
-
     const scriptPath = `${input.assemblyName}.kcad.ts`;
     const script = emitScript(input.assemblyName, input.snapshot.occurrences, names, hashByDefinition);
     const manifest = {
@@ -269,7 +271,7 @@ export async function writeStepBundle(input: WriteStepBundleInput): Promise<Writ
       sourceLengthUnits: input.snapshot.sourceLengthUnits,
       canonicalLengthUnit: 'mm',
       definitions: manifestDefinitions,
-      occurrences: manifestOccurrences,
+      occurrences: manifestOccurrences(input.snapshot.occurrences, names),
       warnings: [
         ...input.snapshot.warnings,
         ...renamed.map(renamedStepPartWarning),
