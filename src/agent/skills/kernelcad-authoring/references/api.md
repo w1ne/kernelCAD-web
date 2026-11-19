@@ -675,7 +675,25 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // symbolic: ParamRef coords (and a ParamRef offset) reflect to ParamRef
 // expressions, so the reflected sketch tracks param edits.
 .reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: Editable<number> }): Sketch
+
+// Parallel curve of this closed profile, `distance` mm away. ASYNC: await it.
+// The profile is the region inside the first loop and outside the hole loops.
+// distance > 0 grows the region (outline outward, holes smaller); distance < 0
+// shrinks it (outline inward, holes larger). Lines stay lines, arcs stay arcs.
+// corners: 'round' (default) joins an outward-moving corner with an arc of
+// radius |distance|; 'sharp' extends the neighbouring segments until they meet.
+.offset(distance: number, opts?: { corners?: 'round' | 'sharp' }): Promise<Sketch>
 ```
+
+**Offset a profile.** `offset` makes a wall, a clearance pocket or a groove from one outline, without a second hand-written path:
+
+```ts
+const outline = path().moveTo(0, 0).lineTo(60, 0).lineTo(60, 40).lineTo(0, 40).close();
+const cavity = await outline.offset(-2);                       // 2 mm wall all round
+const tray = outline.extrude(20).subtract(cavity.extrude(18).translate(0, 0, 2));
+```
+
+The offset is computed when the script runs. Thus `distance` and every coordinate of the source profile must be a plain number: a `param()` reference throws `feature.invalid-args`, because the result could not follow a later parameter edit. A spline segment also throws `feature.invalid-args`. A result that is not one profile is refused: `feature.sketch-offset.collapsed` when nothing is left (inset of half the narrowest width or more), `feature.sketch-offset.split` when a neck or gap closes, a hole reaches the boundary, or the result touches itself at exactly this distance. Use a smaller distance, or offset each region as its own sketch.
 
 **Twisted blades / staggered sections.** Two ways to twist a loft. `twistDeg` distributes an even total twist across the sections — first section at 0°, last section at `twistDeg`. A per-plane `planes[].rotationDeg` overrides the distributed angle for that section only (`rotationDeg ?? twistDeg * i / (N - 1)`). Both rotate in section space about `twistCenter` (default `[0, 0]` — the sketch-local origin of each section, NOT the 3D plane `origin` you passed in `planes`), which is how a turbine blade profile is rotated about its stacking axis. In non-rail lofts, sections built from NURBS path segments (`.spline` / `.nurbsSegment` / `.hermiteG2`) honor `plane`, `origin`, and rotation exactly like ordinary sections. The twist option name differs by operation: extrude twists with `twistAngle`, loft with `twistDeg`.
 

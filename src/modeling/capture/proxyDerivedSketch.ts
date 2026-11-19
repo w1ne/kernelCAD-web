@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { guardAsyncSketchResult } from './asyncSketchGuard';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isValidVec3, formatScalarForError } from '../../shared/intent/types';
 import type { Vec3 } from '../../shared/intent/types';
@@ -13,43 +14,6 @@ import type { CaptureSession } from './captureSession';
 import type { Sketch } from './sketch';
 import type { Curve3D } from './curveProxy';
 import { resolveFaceRefFaces } from '../../kernel/backends/occt/edgeSelection';
-
-/**
- * Public method names on `Sketch` (kept in sync with `SKETCH_METHODS` in
- * `src/agent/mcp/tools/listApi.ts`). Used only to decide which property
- * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette`
- * result should raise the actionable "missing await" diagnostic below.
- */
-const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect']);
-
-/**
- * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
- * (`sectionSketch`, `faceSketch`, `silhouette`) so that the common agent
- * mistake of chaining a Sketch method directly on the un-awaited result —
- * `part.sectionSketch('xy', 5).extrude(3)` — fails with an actionable
- * `feature.async-result.missing-await` diagnostic instead of the cryptic
- * `TypeError: sec.extrude is not a function`.
- *
- * `await`/`.then`/`.catch`/`.finally`/`Promise.all` etc. are untouched —
- * the Proxy forwards every property that isn't a Sketch method name to the
- * real Promise, bound to it.
- */
-function guardAsyncSketchResult(promise: Promise<Sketch>, methodName: string): Promise<Sketch> {
-  return new Proxy(promise, {
-    get(target, prop) {
-      if (typeof prop === 'string' && SKETCH_METHOD_NAMES.has(prop)) {
-        return () => {
-          throw new KernelError(
-            'feature.async-result.missing-await',
-            `${methodName}() is async — write \`(await shape.${methodName}(...)).${prop}(...)\`.`,
-          );
-        };
-      }
-      const value = Reflect.get(target, prop, target);
-      return typeof value === 'function' ? value.bind(target) : value;
-    },
-  }) as Promise<Sketch>;
-}
 
 /** Resolve the `sectionSketch` plane argument into a 2D frame. */
 function resolveSectionFrame(
