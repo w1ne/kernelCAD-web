@@ -246,6 +246,20 @@ function tallyShared(
   return { count, depth, at };
 }
 
+// Cubic cell and grid size for an AABB overlap. An axis thinner than the
+// cell still takes one cell, so on a slab (two wide faces in contact) the
+// volume-based cell leaves far more columns than the cap; grow the cell
+// until the grid fits.
+function overlapGrid(ext: [number, number, number]): { cell: number; dims: [number, number, number] } {
+  let cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
+  for (;;) {
+    const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+    const total = dims[0] * dims[1] * dims[2];
+    if (total <= MAX_CELLS_PER_PAIR) return { cell, dims };
+    cell *= Math.max(1.01, Math.cbrt(total / MAX_CELLS_PER_PAIR));
+  }
+}
+
 export function meshOverlapVolume(
   a: WorldMesh,
   b: WorldMesh,
@@ -257,14 +271,19 @@ export function meshOverlapVolume(
     ext[k] = Math.min(a.max[k], b.max[k]) - lo[k];
     if (ext[k] <= 0) return { volumeMm3: 0, thicknessMm: 0, at: lo, cellMm: 0 };
   }
-  const cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
-  const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+  const { cell, dims } = overlapGrid(ext);
+  // An axis thinner than the cell has one layer of grid points: put it on
+  // the mid-plane of the overlap (half a cell in can be outside it) and
+  // count the real extent, not a full cell, towards the volume.
+  const thin = dims.map((n, k) => n === 1 && ext[k] < cell);
+  const origin = lo.map((v, k) => (thin[k] ? v + (ext[k] - cell) / 2 : v)) as [number, number, number];
+  const pointVolume = ext.reduce((v, e, k) => v * (thin[k] ? e : cell), 1);
   const total = dims[0] * dims[1] * dims[2];
   const votesA = new Uint8Array(total);
   const votesB = new Uint8Array(total);
-  const thick = sharedThickness(a, b, lo, cell, dims, votesA, votesB);
-  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, lo, cell);
-  return { volumeMm3: count * cell * cell * cell, thicknessMm: depth, at, cellMm: cell };
+  const thick = sharedThickness(a, b, origin, cell, dims, votesA, votesB);
+  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, origin, cell);
+  return { volumeMm3: count * pointVolume, thicknessMm: depth, at, cellMm: cell };
 }
 
 function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {

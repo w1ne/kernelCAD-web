@@ -32,6 +32,25 @@ describe('rest-pose contact gate', () => {
     expect(meshOverlapVolume(a, touching).volumeMm3).toBe(0);
   });
 
+  it('keeps the voxel grid under its cell cap for a wide, thin overlap box', async () => {
+    await initOcct();
+    // Two 460 × 1200 mm plates whose faces meet with float noise or a thin
+    // skin between them: the AABB overlap is a slab far thinner than the
+    // 0.25 mm cell floor. The floor used to win, giving 1840 × 4800 columns.
+    const a = worldMesh(OcctBackend.box(460, 1200, 5), Transform.identity())!;
+    for (const sink of [3e-14, 0.2, 0.35, 0.6]) {
+      const b = worldMesh(OcctBackend.box(460, 1200, 5), Transform.translation(0, 0, 5 - sink))!;
+      const r = meshOverlapVolume(a, b);
+      const cells = [460, 1200, sink].reduce((n, e) => n * Math.max(1, Math.ceil(e / r.cellMm)), 1);
+      expect(cells).toBeLessThanOrEqual(96 * 96 * 96);
+      // The slab is thinner than the cell: its one layer of grid points must
+      // still land inside it, and count its real thickness.
+      const exact = 460 * 1200 * sink;
+      expect(Math.abs(r.volumeMm3 - exact)).toBeLessThanOrEqual(0.01 * exact + 1e-6);
+      if (sink > 0.1) expect(r.thicknessMm).toBeCloseTo(sink, 3);
+    }
+  });
+
   it('passes a wide contact sliver thinner than 0.3 mm, fails a 0.6 mm one', async () => {
     for (const [sink, broken] of [[0.2, false], [0.6, true]] as const) {
       const kcad = kcadApi();
