@@ -92,8 +92,9 @@ function sourceShapeRecord(
 export function lookupColorFromLineage(
   record: FeatureRecord,
   allRecords: readonly FeatureRecord[],
+  recordById?: ReadonlyMap<FeatureId, FeatureRecord>,
 ): string | undefined {
-  return walkLineage(record, allRecords, (r) => {
+  return walkLineage(record, recordById ?? allRecords, (r) => {
     const color = (r.metadata as { color?: unknown } | undefined)?.color;
     return typeof color === 'string' ? color : undefined;
   });
@@ -106,8 +107,9 @@ export function lookupColorFromLineage(
 export function lookupMaterialFromLineage(
   record: FeatureRecord,
   allRecords: readonly FeatureRecord[],
+  recordById?: ReadonlyMap<FeatureId, FeatureRecord>,
 ): PBRMaterial | undefined {
-  return walkLineage(record, allRecords, (r) => {
+  return walkLineage(record, recordById ?? allRecords, (r) => {
     const material = (r.metadata as { material?: unknown } | undefined)?.material;
     return isPBRMaterial(material) ? material : undefined;
   });
@@ -123,12 +125,12 @@ export function lookupMaterialFromLineage(
  */
 function walkLineage<T>(
   start: FeatureRecord,
-  allRecords: readonly FeatureRecord[],
+  records: readonly FeatureRecord[] | ReadonlyMap<FeatureId, FeatureRecord>,
   pick: (record: FeatureRecord) => T | undefined,
 ): T | undefined {
-  const recordById = new Map<FeatureId, FeatureRecord>(
-    allRecords.map((r) => [r.id, r]),
-  );
+  const recordById: ReadonlyMap<FeatureId, FeatureRecord> = isRecordMap(records)
+    ? records
+    : new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
 
   const seen = new Set<FeatureId>();
   let record: FeatureRecord | undefined = start;
@@ -144,6 +146,12 @@ function walkLineage<T>(
   }
 
   return undefined;
+}
+
+function isRecordMap(
+  records: readonly FeatureRecord[] | ReadonlyMap<FeatureId, FeatureRecord>,
+): records is ReadonlyMap<FeatureId, FeatureRecord> {
+  return !Array.isArray(records);
 }
 
 /**

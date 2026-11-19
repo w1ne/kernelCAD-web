@@ -467,13 +467,11 @@ shape, not a copy.
 //   // Stand a part upright on the build plate:
 //   (await bracket.seatOnFloor());
 
-// Tag this shape with a render-time role color (geometry unchanged). Booleans drop
-// the color so identity lives at leaf parts: a `.color()` call applied to a
-// composed/unioned shape silently has NO effect on the underlying leaf parts —
-// each part must be colored BEFORE it enters a boolean. Coloring the post-union
-// root is a no-op; don't infer from a uniform-grey render that "renderer ignores
-// .color()". Tokens: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' |
-// 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
+// Tag this shape with a render-time role color (geometry unchanged). Through
+// union() each member keeps its own color / finish on the faces it contributed;
+// a color on the union result covers every face; faces a subtract/intersect
+// cutter leaves behind take the body color. Tokens: 'servo' | 'gear' | 'beam' |
+// 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):

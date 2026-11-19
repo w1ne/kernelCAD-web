@@ -1,5 +1,15 @@
 # Unreleased
 
+- `union()` keeps each member's own `.finish()`, `.material()` or `.color()`
+  on the faces that came from that member, in Studio, `render_preview`, an
+  assembly part's mesh and GLB export. A servo with a dark ABS case, an
+  aluminium horn and steel screw heads is one body (or one assembly part)
+  instead of one part and one fastened mate per colour. Before, Studio drew
+  the fused body in the default grey and GLB export painted it with the base
+  operand's finish. A finish on the union result still covers every face;
+  faces a `subtract` or `intersect` cutter leaves behind take the body's
+  finish. Example: `examples/exports/servo-member-finishes.kcad.ts`.
+
 - The rest-pose joint check no longer reports `mechanism.joint-mesh-gap` for a
   connector that is inside its part and in the plane of one of its faces, for
   example a slide connector at the base of a rail that is one solid with its
