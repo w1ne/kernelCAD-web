@@ -29,6 +29,7 @@ import type { FeatureId, FeatureRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
 import { probeMaxFeasible } from './feasibilityProbe';
+import { limitingEdgeReport, withLimitingEdges } from './limitingEdges';
 import { resolveChamferLegs, type ChamferLegOp } from './asymmetricChamfer';
 
 // ---------------------------------------------------------------------------
@@ -556,7 +557,7 @@ function applyConstantEdgeFeature(
   if (filter.diagnostic?.severity === 'error') {
     // The length screen explains the refusal. It is not a feasible radius.
     // The same probe used for kernel-failed measures one on these edges.
-    ctx.diagnostics.push(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op));
+    ctx.diagnostics.push(nameLimitingEdges(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op), r, base, edges, op));
     return built(base);
   }
   if (filter.diagnostic && filter.kept.length > 0) {
@@ -566,8 +567,31 @@ function applyConstantEdgeFeature(
       return builtFromAttempt(base, subset.result, r.id);
     }
   }
-  ctx.diagnostics.push(edgeFailureDiagnostic(r, base, edges, op, full));
+  ctx.diagnostics.push(nameLimitingEdges(edgeFailureDiagnostic(r, base, edges, op, full), r, base, edges, op));
   return finished(base);
+}
+
+/** Name the edges that stop a larger value, tried alone at the smallest
+ *  value the feasibility probe saw fail. A refusal without a probe (the G2
+ *  continuity case) is returned unchanged. */
+function nameLimitingEdges(
+  diagnostic: CompilerDiagnostic,
+  r: FeatureRecord,
+  base: OcctBackend,
+  edges: Edge[],
+  op: EdgeOp,
+): CompilerDiagnostic {
+  const probeValue = diagnostic.details?.minInfeasibleValue;
+  if (typeof probeValue !== 'number') return diagnostic;
+  const baseRef = r.inputs.base;
+  const report = limitingEdgeReport(
+    edges,
+    (base.getReplicadShape() as unknown as { edges: Edge[] }).edges,
+    baseRef?.kind === 'feature' ? baseRef.id : undefined,
+    probeValue,
+    (edge, value) => edgeFeatureBuilds(base, [edge], { ...op, value }),
+  );
+  return withLimitingEdges(diagnostic, report, op.kind === 'fillet' ? 'radius' : 'distance', edges.length);
 }
 
 function edgeFailureDiagnostic(
@@ -769,7 +793,7 @@ function withVerifiedEdgeFeasible(
   op: EdgeOp,
 ): CompilerDiagnostic {
   const param = op.kind === 'fillet' ? 'radius' : 'distance';
-  const { maxFeasible, attempts } = probeMaxFeasible(
+  const { maxFeasible, attempts, minInfeasible } = probeMaxFeasible(
     op.value,
     (value) => edgeFeatureBuilds(base, edges, { ...op, value }),
     PROBE_ITERATIONS,
@@ -785,6 +809,7 @@ function withVerifiedEdgeFeasible(
       param,
       requestedValue: op.value,
       probeAttempts: attempts,
+      minInfeasibleValue: minInfeasible,
       edgeCount: edges.length,
       ...(verified === undefined ? {} : { maxFeasibleValue: verified, [key]: verified }),
     },
@@ -798,7 +823,7 @@ function withVerifiedEdgeFeasible(
  */
 export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDiagnostic {
   const param = f.kind === 'fillet' ? 'radius' : 'distance';
-  const { maxFeasible, attempts } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
+  const { maxFeasible, attempts, minInfeasible } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
   const edgesText = `${f.edgeCount === 1 ? 'this edge' : `these ${f.edgeCount} edges`}`;
   const featureLabel = `feature ${f.featureId}`;
   // Name the limiting edge selection + feature so refuse.try can steer agents
@@ -827,6 +852,7 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
         param,
         requestedValue: f.requested,
         probeAttempts: attempts,
+        minInfeasibleValue: minInfeasible,
         maxFeasibleValue: 0,
         edgeCount: f.edgeCount,
       },
@@ -844,6 +870,7 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
       maxFeasibleValue: maxFeasible,
       [key]: maxFeasible,
       probeAttempts: attempts,
+      minInfeasibleValue: minInfeasible,
       edgeCount: f.edgeCount,
     },
   };
