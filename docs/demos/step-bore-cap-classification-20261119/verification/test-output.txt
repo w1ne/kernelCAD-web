@@ -1,0 +1,9 @@
+
+ RUN  v4.1.12 /data/worktrees/hermes-kernelcad-web-qa-20261110
+
+-··-------------------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 20 skipped (22)
+   Start at  01:07:57
+   Duration  3.75s (transform 1.87s, setup 467ms, import 1.71s, tests 815ms, environment 0ms)

@@ -93,8 +93,9 @@ export const MIN_PARTIAL_COVERAGE_RAD = 4.0;
 /** Coverage (rad) above which a rejected concave cylinder is "ambiguous"
  *  rather than clearly a fillet / slot end. */
 const AMBIGUOUS_COVERAGE_RAD = Math.PI + 0.2;
-/** Near end-probe offset (mm) — catches flat caps just past the bore end. */
-const NEAR_PROBE_OFFSET_MM = 0.2;
+/** Near end-probe offset (mm) — two probe radii catches flat caps without
+ *  placing an open-end probe close enough to graze the exterior face. */
+const NEAR_PROBE_OFFSET_MM = 2 * PROBE_SPHERE_RADIUS_MM;
 /** Deep end-probe offset as a fraction of hole diameter — catches conical
  *  drill-tip bottoms (118° tip extends ≈ 0.29·d past the cylindrical wall). */
 const DEEP_PROBE_DIAMETER_FACTOR = 0.45;
@@ -472,7 +473,7 @@ function classifyBore(backend: OcctBackend, bore: BoreExtent): CylindricalHole {
 
 /**
  * An axial end is "closed" (material beyond it) when either the near probe
- * (end + 0.2 mm — flat caps) or the deep probe (end + 0.45·d — past a
+ * (end + two probe radii — flat caps) or the deep probe (end + 0.45·d — past a
  * conical drill-tip void) sits inside the solid. `outward` is the unit
  * vector pointing out of the bore at this end.
  */

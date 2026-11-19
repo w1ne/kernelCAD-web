@@ -1,0 +1,18 @@
+Reproduction on the unmodified origin/develop base (58f3c250c6fa6b5fdad8d0429edec991828c5e25):
+
+  npx vitest run src/kernel/backends/occt/holeDetection.test.ts \
+    -t 'measurable 0.1 mm end cap' --reporter=dot
+
+Fixture: a centered 20 x 20 x 10 mm plate with a 4 mm diameter bore starting
+at z = -4.9 mm and ending at z = 5 mm. The cylindrical wall measures 9.9 mm;
+0.1 mm of plate material remains at the lower face.
+
+Observed before the fix:
+
+  FAIL reports a bore with a measurable 0.1 mm end cap as blind
+  Expected: "blind"
+  Received: "through"
+
+The old 0.2 mm near-end probe crossed the 0.1 mm cap and its 0.05 mm probe
+radius no longer reached the remaining material. The deep probe was outside
+the solid as well, so the classifier treated both ends as open.
