@@ -12,6 +12,7 @@
 // sibling refactor.
 
 import type { MeshData } from './exportStlBinary';
+import { countEdgeUses } from './meshHeal';
 
 /** Cheap predicate — returns true when every undirected edge is shared by
  *  exactly two triangles. */
@@ -32,22 +33,8 @@ export function assertWatertight(mesh: MeshData): void {
 }
 
 function countNonManifoldEdges(mesh: MeshData): number {
-  const edgeCount = new Map<string, number>();
-  const triCount = Math.floor(mesh.triangles.length / 3);
-  for (let i = 0; i < triCount; i++) {
-    const a = mesh.triangles[i * 3];
-    const b = mesh.triangles[i * 3 + 1];
-    const c = mesh.triangles[i * 3 + 2];
-    for (const [u, v] of [
-      [a, b],
-      [b, c],
-      [c, a],
-    ] as [number, number][]) {
-      const key = u < v ? `${u}|${v}` : `${v}|${u}`;
-      edgeCount.set(key, (edgeCount.get(key) ?? 0) + 1);
-    }
-  }
+  const uses = countEdgeUses(mesh.triangles);
   let bad = 0;
-  for (const count of edgeCount.values()) if (count !== 2) bad++;
+  for (let i = 0; i < uses.count.length; i++) if (uses.count[i] !== 0 && uses.count[i] !== 2) bad++;
   return bad;
 }

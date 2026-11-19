@@ -1,0 +1,65 @@
+{
+  "tag": "before",
+  "headCommit": "c8a11fc3284f1241523f9167614dbcf67e3de1fb",
+  "parts": [
+    {
+      "part": "Supported arm assembly",
+      "source": "examples/robot-arm/compact-supported-arm.kcad.ts",
+      "startPeakRssMb": 261,
+      "peakRssMb": 648,
+      "wasmHeapMb": 58,
+      "seconds": 3.5,
+      "stlBytes": 3484484,
+      "triangles": 69688,
+      "headerTriangles": 69688,
+      "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+      "errorCodes": [],
+      "warningCodes": []
+    },
+    {
+      "part": "Planetary gear stage",
+      "source": "examples/gallery/gearfinity-planetary-stage.kcad.ts",
+      "startPeakRssMb": 266,
+      "peakRssMb": 798,
+      "wasmHeapMb": 207,
+      "seconds": 27.3,
+      "stlBytes": 2839184,
+      "triangles": 56782,
+      "headerTriangles": 56782,
+      "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+      "errorCodes": [],
+      "warningCodes": [
+        "export.geometry-quality.short-edges",
+        "export.mesh.fused-seam-fallback"
+      ]
+    },
+    {
+      "part": "Bracket with hole",
+      "source": "examples/bracket-with-hole.kcad.ts",
+      "startPeakRssMb": 271,
+      "peakRssMb": 555,
+      "wasmHeapMb": 40,
+      "seconds": 2,
+      "stlBytes": 4943284,
+      "triangles": 98864,
+      "headerTriangles": 98864,
+      "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+      "errorCodes": [],
+      "warningCodes": []
+    },
+    {
+      "part": "Dense plate, 36 spheres",
+      "source": "inline:sphere-plate",
+      "startPeakRssMb": 270,
+      "peakRssMb": 1284,
+      "wasmHeapMb": 69,
+      "seconds": 17.7,
+      "stlBytes": 31814284,
+      "triangles": 636284,
+      "headerTriangles": 636284,
+      "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+      "errorCodes": [],
+      "warningCodes": []
+    }
+  ]
+}
