@@ -8,9 +8,8 @@
 //      closed-form volume of the authored geometry;
 //   3. the named interfaces (pilot-hole diameter, depth, pitch and mouth
 //      height) are measured from the re-imported STEP, not from the source;
-//   4. a Width edit through set_param's source rewrite recomputes, grows the
-//      solid by exactly the width delta, and keeps the hole pattern centred
-//      with the same pitch;
+//   4. Width and Depth edits through set_param's source rewrite recompute the
+//      solid and keep the hole pattern centred with the same pitch;
 //   5. seeded defects (a moved boss, a missing USB-C opening) fail the gate.
 // Tolerances are this fixture's own: 0.1 % on volume (exact B-rep faces) and
 // 0.01 mm on positions and diameters.
@@ -100,6 +99,24 @@ describe('manufacturing benchmark 01: Pi 4 tray with M3 bosses and USB-C opening
     if (!edited.ok) throw new Error(edited.error);
     const solid = await buildAndReimport(edited.new_code);
     expect(trayFailures(solid, { ...DEFAULTS, width: 120 })).toEqual([]);
+  }, 120_000);
+
+  it('a Depth edit keeps the 49 mm hole pattern centred on the resized tray', async () => {
+    const edited = setParamValue(SOURCE, 'Depth', 92);
+    if (!edited.ok) throw new Error(edited.error);
+    const solid = await buildAndReimport(edited.new_code);
+    expect(trayFailures(solid, { ...DEFAULTS, depth: 92 })).toEqual([]);
+  }, 120_000);
+
+  it('catches a hole pattern whose Y centre stays at the default tray depth', async () => {
+    const staleY = inject(SOURCE, 'const cy = depth.divide(2);', 'const cy = depth.multiply(0).add(33);');
+    const edited = setParamValue(staleY, 'Depth', 92);
+    if (!edited.ok) throw new Error(edited.error);
+    const failures = trayFailures(await buildAndReimport(edited.new_code), { ...DEFAULTS, depth: 92 });
+
+    // The 49 mm pitch, tray bounds and solid volume still pass. Only the
+    // independent hole-center measurement exposes the stale Y datum.
+    expect(failures).toEqual(['pattern centre y: 33 != 46']);
   }, 120_000);
 
   it('catches a boss moved off the 58 mm pitch', async () => {
