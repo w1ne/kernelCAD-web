@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { makeStepReproducible, renumberStepAutoProductNames, STEP_REPRODUCIBLE_TIME_STAMP } from './stepReproducible';
+import {
+  makeStepReproducible,
+  renumberStepAutoProductNames,
+  renumberStepUsageOccurrenceIds,
+  STEP_REPRODUCIBLE_TIME_STAMP,
+} from './stepReproducible';
 
 const NAME = 'Open CASCADE STEP translator 7.6';
 const enc = (s: string) => new TextEncoder().encode(s);
@@ -45,5 +50,15 @@ describe('makeStepReproducible', () => {
     expect(renumberStepAutoProductNames(bytes, NAME)).toBe(bytes);
     const junk = enc('not a step file');
     expect(makeStepReproducible(junk, NAME)).toBe(junk);
+  });
+
+  it('shifts usage occurrence ids so the first one in the file is 1', () => {
+    const nauo = (a: number, b: number) =>
+      `#144 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('${a}','pin 7','',#5,#31,$);\n#150 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('${b}','pin_2','',#5,#31,$);\n`;
+    expect(dec(renumberStepUsageOccurrenceIds(enc(nauo(7, 8))))).toBe(nauo(1, 2));
+    const normalized = enc(nauo(1, 2));
+    expect(renumberStepUsageOccurrenceIds(normalized)).toBe(normalized);
+    const named = enc("#1 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('NAUO7','x','',#5,#31,$);");
+    expect(renumberStepUsageOccurrenceIds(named)).toBe(named);
   });
 });

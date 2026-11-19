@@ -25,7 +25,8 @@
 // part is independently selectable in downstream CAD viewers.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
-import { initOcct, exportSceneToSTEPAsync } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync } from '../../../src/kernel/backends/occt/sceneStepExport';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
