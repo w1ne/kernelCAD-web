@@ -30,6 +30,8 @@ import { built, finished, type LowerContext, type LowerOutcome } from './context
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
 import { probeMaxFeasible } from './feasibilityProbe';
 import { limitingEdgeReport, withLimitingEdges } from './limitingEdges';
+import { isEveryEdgeSelection, roundBlendableSubset, skippedEdgesDiagnostic } from './partialEdgeFeature';
+import { unifySameDomainForEdgeFeature } from '../../../../kernel/backends/occt/unifySameDomain';
 import { resolveChamferLegs, type ChamferLegOp } from './asymmetricChamfer';
 
 // ---------------------------------------------------------------------------
@@ -545,20 +547,30 @@ function builtFromAttempt(base: OcctBackend, result: EdgeFeatureHistoryResult, f
 function applyConstantEdgeFeature(
   ctx: LowerContext,
   r: FeatureRecord,
-  base: OcctBackend,
-  edges: Edge[],
+  input: OcctBackend,
+  inputEdges: Edge[],
   op: EdgeOp,
 ): LowerOutcome {
-  const full = attemptEdgeFeature(base, edges, op);
-  if (full.ok) return builtFromAttempt(base, full.result, r.id);
+  const full = attemptEdgeFeature(input, inputEdges, op);
+  if (full.ok) return builtFromAttempt(input, full.result, r.id);
+  // Booleans keep coplanar seams (historyAwareBooleans skips SimplifyResult),
+  // and the blend solver cannot pass a vertex where a seam meets the selected
+  // edges. Retry on the same solid with same-domain faces merged; everything
+  // after this works on the merged solid. The input stays the failure result.
+  const { base, edges } = mergedSeamsBase(input, inputEdges, op);
+  if (base !== input) {
+    const retry = attemptEdgeFeature(base, edges, op);
+    if (retry.ok) return builtFromAttempt(base, retry.result, r.id);
+  }
   const filter = filterEdgesByMinLength(edges, 2 * op.value * Math.max(1, op.endRatio ?? 1), {
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
+  const inputEdgeSet = (input.getReplicadShape() as unknown as { edges: Edge[] }).edges;
   if (filter.diagnostic?.severity === 'error') {
     // The length screen explains the refusal. It is not a feasible radius.
     // The same probe used for kernel-failed measures one on these edges.
-    ctx.diagnostics.push(nameLimitingEdges(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op), r, base, edges, op));
-    return built(base);
+    ctx.diagnostics.push(nameLimitingEdges(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op), r, base, edges, op, inputEdgeSet));
+    return built(input);
   }
   if (filter.diagnostic && filter.kept.length > 0) {
     const subset = attemptEdgeFeature(base, filter.kept, op);
@@ -567,26 +579,69 @@ function applyConstantEdgeFeature(
       return builtFromAttempt(base, subset.result, r.id);
     }
   }
-  ctx.diagnostics.push(nameLimitingEdges(edgeFailureDiagnostic(r, base, edges, op, full), r, base, edges, op));
-  return finished(base);
+  return refuseOrRoundPartial(ctx, r, { input, inputEdgeSet, base, edges }, op, full);
+}
+
+/**
+ * The refusal, except for the default every-edge form on a selection no size
+ * builds on: that rounds the edges that build together and reports the rest.
+ * An explicit selection, or one a smaller size would build, is refused.
+ */
+function refuseOrRoundPartial(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  on: { input: OcctBackend; inputEdgeSet: Edge[]; base: OcctBackend; edges: Edge[] },
+  op: EdgeOp,
+  full: { message: string },
+): LowerOutcome {
+  const { base, edges } = on;
+  const failure = edgeFailureDiagnostic(r, base, edges, op, full);
+  if (isEveryEdgeSelection(r) && failure.code === 'feature.kernel-failed' && failure.details?.maxFeasibleValue === 0) {
+    const partial = roundBlendableSubset(
+      edges,
+      (subset) => {
+        const a = attemptEdgeFeature(base, subset, op);
+        return a.ok ? a.result : undefined;
+      },
+      (result) => discardOcctShape(result.shape),
+    );
+    if (partial) {
+      ctx.diagnostics.push(skippedEdgesDiagnostic(r, op, edges.length, partial, on.inputEdgeSet));
+      return builtFromAttempt(base, partial.result, r.id);
+    }
+  }
+  ctx.diagnostics.push(nameLimitingEdges(failure, r, base, edges, op, on.inputEdgeSet));
+  return finished(on.input);
+}
+
+/** The merged-seam solid and the requested edges on it, or the input
+ *  unchanged when it has no same-domain seams. An asymmetric chamfer names
+ *  its reference face by hash, which a merge may replace, so it is left as is. */
+function mergedSeamsBase(base: OcctBackend, edges: Edge[], op: EdgeOp): { base: OcctBackend; edges: Edge[] } {
+  if (op.legs) return { base, edges };
+  const merged = unifySameDomainForEdgeFeature(base, edges);
+  if (!merged || merged.edges.length === 0) return { base, edges };
+  return { base: merged.base, edges: merged.edges };
 }
 
 /** Name the edges that stop a larger value, tried alone at the smallest
  *  value the feasibility probe saw fail. A refusal without a probe (the G2
- *  continuity case) is returned unchanged. */
+ *  continuity case) is returned unchanged. `describeOn` is the edge set of the
+ *  feature's input, so a selector is only offered for an edge that exists there. */
 function nameLimitingEdges(
   diagnostic: CompilerDiagnostic,
   r: FeatureRecord,
   base: OcctBackend,
   edges: Edge[],
   op: EdgeOp,
+  describeOn: readonly Edge[],
 ): CompilerDiagnostic {
   const probeValue = diagnostic.details?.minInfeasibleValue;
   if (typeof probeValue !== 'number') return diagnostic;
   const baseRef = r.inputs.base;
   const report = limitingEdgeReport(
     edges,
-    (base.getReplicadShape() as unknown as { edges: Edge[] }).edges,
+    describeOn,
     baseRef?.kind === 'feature' ? baseRef.id : undefined,
     probeValue,
     (edge, value) => edgeFeatureBuilds(base, [edge], { ...op, value }),

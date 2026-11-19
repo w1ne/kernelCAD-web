@@ -77,6 +77,9 @@ export interface RestMateGap {
   readonly a: string;
   readonly b: string;
   readonly gapMm: number;
+  /** Set for a moving mate: the smallest gap between the rigid groups on
+   *  its two sides (each mated part plus the parts fastened to it). */
+  readonly groupGapMm?: number;
 }
 
 /** Voxel edge bounds (mm) and the grid size cap per pair. */
@@ -394,27 +397,19 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
   return out;
 }
 
-/** Every mate whose two parts do not meet at rest. */
-function restPoseMateGapFor(
-  mate: MateRecord,
-  byName: Map<string, SceneBackend['parts'][number]>,
+type ScenePart = SceneBackend['parts'][number];
+
+/** Rest-pose distance (mm) between two scene parts: the analysis mesh, with
+ *  the exact BREP distance when the mesh reading sits near the tolerance.
+ *  Cached per unordered pair in `seen`. */
+function restPartGapMm(
+  pa: ScenePart,
+  pb: ScenePart,
   seen: Map<string, number | undefined>,
   toleranceMm: number,
-): RestMateGap | undefined {
-  let a: string;
-  let b: string;
-  try {
-    a = parseConnectorRef(mate.a).partName;
-    b = parseConnectorRef(mate.b).partName;
-  } catch {
-    return undefined;
-  }
-  if (a === b) return undefined;
-  const pa = byName.get(a);
-  const pb = byName.get(b);
-  if (pa === undefined || pb === undefined) return undefined;
+): number | undefined {
   if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) return undefined;
-  const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
+  const key = pa.name < pb.name ? `${pa.name}\u0000${pb.name}` : `${pb.name}\u0000${pa.name}`;
   if (!seen.has(key)) {
     const meshContact = restMeshContact(pa, pb, 'analysis');
     seen.set(key, meshContact !== undefined && Math.abs(meshContact.distanceMm - toleranceMm) > 0.25
@@ -424,9 +419,97 @@ function restPoseMateGapFor(
         analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
       ));
   }
-  const gap = seen.get(key);
-  if (gap !== undefined && gap > toleranceMm) return { mateName: mate.name, a, b, gapMm: gap };
-  return undefined;
+  return seen.get(key);
+}
+
+function mateParts(mate: MateRecord): [string, string] | undefined {
+  try {
+    return [parseConnectorRef(mate.a).partName, parseConnectorRef(mate.b).partName];
+  } catch {
+    return undefined;
+  }
+}
+
+/** Smallest rest gap between any member of `groupA` and any member of
+ *  `groupB` (parts fastened to each mated part count as that side). */
+function restGroupGapMm(
+  groupA: readonly string[],
+  groupB: readonly string[],
+  byName: Map<string, ScenePart>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+): number | undefined {
+  let best: number | undefined;
+  for (const a of groupA) {
+    for (const b of groupB) {
+      if (a === b) return 0;
+      const pa = byName.get(a);
+      const pb = byName.get(b);
+      if (pa === undefined || pb === undefined) continue;
+      const gap = restPartGapMm(pa, pb, seen, toleranceMm);
+      if (gap !== undefined && (best === undefined || gap < best)) best = gap;
+      if (best !== undefined && best <= toleranceMm) return best;
+    }
+  }
+  return best;
+}
+
+/** Every mate whose two parts do not meet at rest. A moving mate (anything
+ *  but fastened) is judged across the rigid groups: in a servo joint the
+ *  revolute links two printed parts that never touch, while the servo on
+ *  one and the horn on the other carry the load. */
+function restPoseMateGapFor(
+  mate: MateRecord,
+  byName: Map<string, ScenePart>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+  groups: ReadonlyMap<string, readonly string[]> | undefined,
+): RestMateGap | undefined {
+  const ends = mateParts(mate);
+  if (ends === undefined) return undefined;
+  const [a, b] = ends;
+  if (a === b) return undefined;
+  const pa = byName.get(a);
+  const pb = byName.get(b);
+  if (pa === undefined || pb === undefined) return undefined;
+  const gap = restPartGapMm(pa, pb, seen, toleranceMm);
+  if (gap === undefined || gap <= toleranceMm) return undefined;
+  if (mate.type === 'fastened' || groups === undefined) return { mateName: mate.name, a, b, gapMm: gap };
+  const groupGap = restGroupGapMm(groups.get(a) ?? [a], groups.get(b) ?? [b], byName, seen, toleranceMm);
+  if (groupGap !== undefined && groupGap <= toleranceMm) return undefined;
+  return { mateName: mate.name, a, b, gapMm: gap, groupGapMm: groupGap ?? gap };
+}
+
+/**
+ * Rigid groups at rest: parts joined transitively by fastened mates whose
+ * two parts actually touch (gap within `toleranceMm`). A part fastened to a
+ * host it floats away from is not held by it, so it does not join the
+ * group. Returns part name -> every member of its group (itself included).
+ */
+export function restFastenedGroups(
+  arm: Assembly,
+  scene: SceneBackend,
+  toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
+): Map<string, string[]> {
+  const byName = new Map(scene.parts.map((p) => [p.name, p]));
+  const seen = new Map<string, number | undefined>();
+  const parent = new Map<string, string>(scene.parts.map((p) => [p.name, p.name]));
+  const find = (name: string): string => {
+    let root = name;
+    while (parent.get(root) !== root) root = parent.get(root)!;
+    return root;
+  };
+  for (const mate of arm.__mates()) {
+    if (mate.type !== 'fastened') continue;
+    const ends = mateParts(mate);
+    if (ends === undefined || !parent.has(ends[0]) || !parent.has(ends[1])) continue;
+    const gap = restPartGapMm(byName.get(ends[0])!, byName.get(ends[1])!, seen, toleranceMm);
+    if (gap === undefined || gap > toleranceMm) continue;
+    parent.set(find(ends[0]), find(ends[1]));
+  }
+  const members = new Map<string, string[]>();
+  for (const name of parent.keys()) members.set(find(name), [...(members.get(find(name)) ?? []), name]);
+  return new Map([...parent.keys()].map((name) => [name, members.get(find(name))!]));
 }
 
 export function restPoseMateGaps(
@@ -434,13 +517,14 @@ export function restPoseMateGaps(
   scene: SceneBackend,
   toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
   includeMate: (mate: MateRecord) => boolean = () => true,
+  groups?: ReadonlyMap<string, readonly string[]>,
 ): RestMateGap[] {
   const byName = new Map(scene.parts.map((p) => [p.name, p]));
   const out: RestMateGap[] = [];
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
     if (!includeMate(mate)) continue;
-    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm);
+    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm, groups);
     if (gap !== undefined) out.push(gap);
   }
   return out;

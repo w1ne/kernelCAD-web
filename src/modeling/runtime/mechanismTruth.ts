@@ -67,12 +67,14 @@ import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import { coupledMateSuggestion } from './coupledMateSuggestion';
 import { estimateSweepWork, type SweepWorkEstimate } from './sweepWork';
 import { checkMotionIntent, hasMotionIntent } from './motionIntent';
 import { checkMotionLimits } from './motionLimits';
 import { checkMateClosure, type ClosureSample } from './mateClosure';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
+  restFastenedGroups,
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
@@ -837,16 +839,31 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
       `${p.cellMm > 0 ? `${p.cellMm.toFixed(2)} mm voxels` : 'no voxels'}). Seated parts share faces, not volume.`,
     ));
   }
-  out.push(...restPoseMateGaps(arm, scene).map(mateGapFailure));
+  out.push(...restPoseMateGaps(arm, scene, REST_MATE_CONTACT_TOLERANCE_MM, () => true, restGroupsFor(arm, scene)).map(mateGapFailure));
   return out;
 }
 
 function mateGapFailure(g: RestMateGap): CompilerDiagnostic {
+  const groups = g.groupGapMm === undefined ? '' :
+    ` Counting the parts fastened to each side (a servo on one link, its horn on the other), ` +
+    `the two sides are still ${g.groupGapMm.toFixed(2)} mm apart.`;
   return makeFailure(
     'mechanism.mate-gap',
     `Mate '${g.mateName}': parts '${g.a}' and '${g.b}' are ${g.gapMm.toFixed(2)} mm apart at the rest pose ` +
-    `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.`,
+    `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.` + groups,
   );
+}
+
+/** Rest-pose rigid groups (touching fastened mates), shared by the joint
+ *  continuity and mate-contact criteria of one rest scene. */
+const REST_GROUPS = new WeakMap<SceneBackend, Map<string, string[]>>();
+function restGroupsFor(arm: Assembly, scene: SceneBackend): Map<string, string[]> {
+  let groups = REST_GROUPS.get(scene);
+  if (groups === undefined) {
+    groups = restFastenedGroups(arm, scene);
+    REST_GROUPS.set(scene, groups);
+  }
+  return groups;
 }
 
 /**
@@ -932,12 +949,17 @@ async function checkInterpenetration(
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. ` +
-        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.`,
+        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.` +
+        suggestionSuffix(coupledMateSuggestion(arm, s.sample.mateName, pair.a, pair.b)),
       ));
     }
   }
 
   return out;
+}
+
+function suggestionSuffix(text: string | undefined): string {
+  return text === undefined ? '' : ` ${text}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1113,7 +1135,7 @@ async function checkJointMeshContinuityCriterion(
   const results = checkJointMeshContinuity(arm, {
     transforms: rest.transforms,
     scene,
-  });
+  }, restGroupsFor(arm, scene));
 
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
@@ -1141,7 +1163,7 @@ async function checkJointMeshContinuityCriterion(
     // constrained by material away from the axis, not floating.
     if (r.bearingGapMm !== undefined && r.bearingGapMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
     const bearingNote = r.bearingGapMm !== undefined
-      ? ` Nearest contact between the two mated bodies is ` +
+      ? ` Nearest contact between the two sides (each mated part plus the parts fastened to it) is ` +
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
       : '';
@@ -1153,7 +1175,8 @@ async function checkJointMeshContinuityCriterion(
     const failure = makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
-      `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
+      `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin, counting '${r.partName}' and the parts fastened to it` +
+      `${r.supportPartName === undefined ? '' : ` (nearest: '${r.supportPartName}')`} (allowed ` +
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
