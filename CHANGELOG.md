@@ -1,5 +1,11 @@
 # Unreleased
 
+- The refusal of a param in a `vec3` connector origin names a second way to
+  follow the param: in a script, `Number(p)` gives the current value as a
+  plain number, and an edit to the param runs the script again. The hint
+  named only the `at` path, which does not move a connector along its own
+  part. The `kernelcad-assemblies` skill has the same rule.
+
 - STEP export writes no colour for an assembly part that has none. Every
   such part was written as red, and `import-step` then gave it an explicit
   `.color("#ff0000")`. The part is now written and read back without a

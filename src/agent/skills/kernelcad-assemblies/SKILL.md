@@ -60,6 +60,11 @@ Each `.part(...)` adds to the same assembly (identical to calling `arm.part(...)
 Connector origins use an explicit vector record:
 `origin: { kind: 'vec3', value: [x, y, z] }`, or a supported topology reference.
 Do not pass a bare `[x, y, z]` to `part.connector(...)`; the runtime rejects it.
+The three values are plain numbers; a `param()` there is refused. To move a
+connector with a param, place the part with the param in `at`. For a connector
+that is not at a fixed point of its part (a seat on a face that a param
+moves), write `Number(p)` for the value: it is the current value of the
+param, and an edit to the param runs the script again.
 For `arm.mate`, register typed connectors with `partRef.connector(name, opts)`.
 The legacy `part(..., { connectors, connect })` options belong to the legacy
 connection API and do not register mate-style connector names.
