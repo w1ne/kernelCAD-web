@@ -1,0 +1,40 @@
+{
+  "invocation": "node --import tsx docs/demos/step-colour-space/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 5,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "10.000000",
+      "size": "101403"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "238c8e9ec7c5665381f53c0bdb5687b7a8ccd790b1bdc5133ab6cc1af318b91d",
+  "videoSha256": "7ab16cb1b4c13af82eb520cd51653a0273ca96cd322c49f74caf05c5f7f1f376",
+  "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
+  "scope": "Local kernelCAD Node API: STEP export of a coloured part, text check of the colour entity, and read-back through the OCCT XCAF STEP reader.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

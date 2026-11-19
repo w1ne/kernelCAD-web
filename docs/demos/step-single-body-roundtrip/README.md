@@ -45,8 +45,6 @@ colour. The geometry in the file is unchanged.
 This is local API export, import and OCCT read-back. No other CAD system opened
 the files, and the demo shows no deployed behavior or hardware acceptance. A
 script cannot set a product name other than its file name for a bare shape.
-The colour entity in the file is `COLOUR_RGB('',0.4845,0.6652,0.9063)`: OCCT
-applies its sRGB transfer curve to the channel values `0.2, 0.4, 0.8` that
-kernelCAD passes, and the OCCT reader applies the inverse. The same applies to
-assembly STEP export. A different CAD system can therefore show a lighter
-colour than `#3366cc`; this was not measured.
+The colour entity in the file holds the sRGB channels of the script colour
+(`0.2, 0.4, 0.8` for `#3366cc`); see
+[`../step-colour-space/`](../step-colour-space/README.md).

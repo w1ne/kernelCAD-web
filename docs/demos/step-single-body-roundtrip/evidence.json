@@ -5,7 +5,7 @@
   "sourceSha256": "538a7067968b3aedee2c736088eaab98477f3aea9d188f7118fc8f677edc4ed9",
   "implementationSha256": {
     "src/kernel/backends/occt/singleBodyStepExport.ts": "dbf602504a9df2d73ce81bae24735f51a476b4d9c941f1bf7b2f74c2f2268c65",
-    "src/kernel/backends/occt/stepAssemblyExport.ts": "43441f790c7d45b3c357a155521dd55d6e9e34387338be77f9f0de964fb253bf",
+    "src/kernel/backends/occt/stepAssemblyExport.ts": "f2e1ca9e0af2a60908f3484758481b527fa3002d6f8c105af565ef66e15e2a5b",
     "src/agent/script-runtime/exportPhases.ts": "d686a1c53fbf67f59103b9b2c939355648f5ac54d5bd5197b4f3d726d199c9ba"
   },
   "expected": {
@@ -16,12 +16,12 @@
   "step": {
     "file": "motor-plate.step",
     "bytes": 48932,
-    "sha256": "022c65c37109457db04a3fd54893d1c343e416281e549008fb5205b554608a9e",
+    "sha256": "436498b19c6f7d6d53b82cb09ab87ae859f5fa832713ce25c5d2357a07015363",
     "productLines": [
       "#7 = PRODUCT('motor-plate','motor-plate','',(#8));"
     ],
     "colourLines": [
-      "#1115 = COLOUR_RGB('',0.484529207832,0.665185089102,0.906331759313);"
+      "#1115 = COLOUR_RGB('',0.199999998682,0.399999997426,0.800000010877);"
     ]
   },
   "firstExport": {
@@ -81,7 +81,7 @@
   },
   "secondExport": {
     "bytes": 48932,
-    "sha256": "1d091711f1e36a2d32523fd73aae694ed7ffa5659af571f8c310e7d5caf6cbb1",
+    "sha256": "8524ffdb231018ed69bcf227bc92c37ae0163d04bd5994e52bfc1816d091c678",
     "name": "motor-plate",
     "path": [
       "motor-plate"

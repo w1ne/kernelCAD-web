@@ -200,7 +200,9 @@ kernelcad export stl model.kcad.ts -o model.stl
 
 A script that returns one shape exports as one STEP product named after the
 script file (`model`), with the shape's `.color(...)` when it has one. An
-assembly exports one named, coloured body per part.
+assembly exports one named, coloured body per part. A hex colour is written to STEP
+`COLOUR_RGB` as the same sRGB channels (`#3366cc` is `0.2, 0.4, 0.8`), and
+`import-step` reads a STEP colour back as the same hex value.
 
 Translate an assembly exported from SolidWorks or another CAD application as
 STEP into a KernelCAD project:

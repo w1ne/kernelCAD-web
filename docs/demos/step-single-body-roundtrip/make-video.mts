@@ -126,8 +126,8 @@ function sceneOne(evidence: Evidence, source: string[]): string {
     ${codeLines([...evidence.step.productLines, ...evidence.step.colourLines], 98, 452)}
     <rect x="72" y="546" width="1136" height="108" rx="14" fill="#142235" stroke="#29445c"/>
     <text x="98" y="584" fill="#37d6b0" font-family="Arial,sans-serif" font-size="19">The STEP product has the script file name. The shape colour is in the file.</text>
-    <text x="98" y="616" fill="#f8fafc" font-family="Arial,sans-serif" font-size="17">OCCT writes the colour channels with its sRGB transfer curve; the OCCT reader returns ${xml(evidence.firstExport.color ?? 'none')}.</text>
-    <text x="98" y="642" fill="#f8fafc" font-family="Arial,sans-serif" font-size="17">A different CAD system can show a lighter colour than the script colour.</text>`;
+    <text x="98" y="616" fill="#f8fafc" font-family="Arial,sans-serif" font-size="17">The colour entity holds the sRGB channels of the script colour; the OCCT reader returns ${xml(evidence.firstExport.color ?? 'none')}.</text>
+    <text x="98" y="642" fill="#f8fafc" font-family="Arial,sans-serif" font-size="17">No other CAD system opened the file.</text>`;
   return shell('Export one part to STEP with its name and colour', `Source: ${evidence.source}`, content);
 }
 

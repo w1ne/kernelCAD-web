@@ -1,5 +1,14 @@
 # Unreleased
 
+- STEP colours use the correct colour space. Export wrote a hex colour to
+  `COLOUR_RGB` with the sRGB curve applied a second time (`#3366cc` became
+  `0.4845, 0.6652, 0.9063`, about `#7caae7`), and `import-step` read a file
+  colour of `0.2, 0.4, 0.8` as `#08229a`. Export now writes `0.2, 0.4, 0.8`
+  and import reads `#3366cc`, for single-part and assembly STEP. A kernelCAD
+  export then import returned the same hex before and still does. A project
+  imported from STEP with an earlier version keeps the darker colour that
+  version read; import the file again to correct it. Demo:
+  `docs/demos/step-colour-space/`.
 - Params work in plain JS math: `param('w', 60) + 4`, `Math.tan(a * Math.PI / 180)`,
   loops and point lists (numeric coercion used to throw). An edit to such a
   param rewrites its default in the source and rebuilds with dependency-aware
