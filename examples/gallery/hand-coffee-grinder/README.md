@@ -84,3 +84,17 @@ Bearing balls and cage are fused into the races (one solid per bearing); the
 inner burr is fixed to the shaft without a modeled key; the detent spring
 action is implied (ridges + notches); knob is fastened, not a revolute; the
 knurl is a straight knurl crossed by grooves, not a rolled diamond knurl.
+
+## Mate seats
+
+Each fastened mate puts both connectors on one seat point: a point on the face
+the two parts share (bearing race in its bore, circlip on its groove floor, hex
+flat in the crank socket). `evaluate_script` returns `ok: true` with 0
+`assembly.mechanical.connector-not-in-solid` errors at the default parameters;
+before 2026-11-19 all connectors were at the world origin and it returned 35.
+Coverage: `tests/integration/examples/handCoffeeGrinderConnectorSeats.test.ts`.
+
+Limit: a connector origin is a plain number, so the seats are the default
+contact points. The pose stays correct for every parameter value, but the
+connector check reports the moved parts when `bodyLength`, `crankLength` or
+`explode` leave their defaults (11 errors at `bodyLength = 200`).
