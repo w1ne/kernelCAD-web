@@ -84,6 +84,10 @@ export interface StandardParts {
   /** Community reference geometry, CC-BY-SA-4.0; exact supplier fit unverified. */
   sg90(): Promise<Shape>;
   sg90HornSingleArm(): Promise<Shape>;
+  /** Datasheet-modelled envelope (not a manufacturer model); also covers MG996R. */
+  mg995(): Promise<Shape>;
+  /** Datasheet-modelled envelope (not a manufacturer model). */
+  mg90s(): Promise<Shape>;
   nema17(): Promise<Shape>;
   nema23(): Promise<Shape>;
   pinHeader254(args: {
@@ -130,6 +134,8 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
     bearing6800: () => fetch('bearing-6800'),
     sg90: () => fetch('sg90-servo'),
     sg90HornSingleArm: () => fetch('sg90-horn-single-arm'),
+    mg995: () => fetch('mg995-servo'),
+    mg90s: () => fetch('mg90s-servo'),
     nema17: () => fetch('nema-17'),
     nema23: () => fetch('nema-23'),
     pinHeader254: ({ pins, angle }) =>

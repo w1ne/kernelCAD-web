@@ -78,6 +78,8 @@ const washer  = await lib.standard.washerFlat({ thread: 'M3' });
 const bearing = await lib.standard.bearing608();
 const stepper = await lib.standard.nema17();
 const header  = await lib.standard.pinHeader254({ pins: 8 });
+const servo   = await lib.standard.mg995();   // also MG996R; datasheet envelope, no ear holes/spline/horn
+const mini    = await lib.standard.mg90s();   // datasheet envelope; see attributes.notModelled
 const conn    = await lib.standard.jstXH({ pins: 4 });
 
 // 3. Table-driven fasteners (lib.part / lib.stack) and hole-driven insert.

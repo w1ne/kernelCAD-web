@@ -806,6 +806,8 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (
 | `assembly.loop.unclosed` | mate validator — reserved |
 | `assembly.solver.did-not-converge` | mate validator — a closed loop does not close (loop solver lockup / over-driven) |
 | `assembly.connector.topology-not-resolvable` | connector declaration — unresolvable topology query |
+| `assembly.mechanical.connector-not-in-solid` | evaluate_script + review_cad — a mate connector origin is more than 6 mm outside the bounding box of its part and of every part fastened to it (transitively, rest pose; the mate's own fastened partner does not count). The message gives the nearest supported origin on the mate axis in part-local coordinates; move the origin there or add material. |
+| `assembly.mechanical.revolute-unsupported` | review_cad — same rule with 1 mm for a revolute connector: a roll axis on a servo screwed to the link is supported by that servo. |
 | `assembly.transmission.missing-for-coupled-mate` | review_cad — coupled mate without transmission |
 | `assembly.transmission.path-disconnected` | review_cad — transmission path has air gap |
 | `assembly.pose.out-of-limits` | pose-envelope — sample fell outside declared mate limits |
