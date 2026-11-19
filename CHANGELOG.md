@@ -1,5 +1,11 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors because the beam was inside the wall block and inside the
+  bracket through the ±90° shoulder travel. The beam now laps the bracket
+  side face, with the joint origin on that face, and the returned model no
+  longer needs an `ignore` pair.
 - Kinematic skill cookbook snippet 5 (`05-clamshell-hinge-swept.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 4 errors. The table is fastened under the base, the lid sits
