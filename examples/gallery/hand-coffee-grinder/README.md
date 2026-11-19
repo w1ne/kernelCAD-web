@@ -94,7 +94,8 @@ flat in the crank socket). `evaluate_script` returns `ok: true` with 0
 before 2026-11-19 all connectors were at the world origin and it returned 35.
 Coverage: `tests/integration/examples/handCoffeeGrinderConnectorSeats.test.ts`.
 
-Limit: a connector origin is a plain number, so the seats are the default
-contact points. The pose stays correct for every parameter value, but the
-connector check reports the moved parts when `bodyLength`, `crankLength` or
-`explode` leave their defaults (11 errors at `bodyLength = 200`).
+A connector origin is a plain number, so each seat reads the current parameter
+values with `Number(...)`. A parameter edit runs the script again and the seats
+move with the parts (before this, `bodyLength = 200` gave 11 errors). Limit:
+the seats are the contact points of the assembled state, so the connector
+check reports the moved parts when `explode` is not 0.

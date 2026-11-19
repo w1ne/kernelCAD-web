@@ -34,20 +34,17 @@
 //   npx tsx src/agent/cli/index.ts render examples/gallery/hand-coffee-grinder.kcad.ts --section y=0 --section-flip --pose 0,6 -o section.png --no-watermark
 
 // --- Editable parameters -----------------------------------------------------
-// Defaults are named because the mate seat points (see Assembly) are plain
-// numbers computed from them.
-const DEFAULT = { bodyDiameter: 58, bodyLength: 140, burrDiameter: 40, grindSetting: 0.6, crankLength: 85 };
-const bodyDiameter = param('bodyDiameter', DEFAULT.bodyDiameter, {
+const bodyDiameter = param('bodyDiameter', 58, {
   min: 58,
   max: 72,
   description: 'Outer diameter of the body tube, cup and lid (mm). Range keeps >= 3 mm outer-burr wall for every burrDiameter.',
 });
-const bodyLength = param('bodyLength', DEFAULT.bodyLength, {
+const bodyLength = param('bodyLength', 140, {
   min: 110,
   max: 200,
   description: 'Body tube length from the cup seam to the lid seat (mm); sets hopper volume.',
 });
-const burrDiameter = param('burrDiameter', DEFAULT.burrDiameter, {
+const burrDiameter = param('burrDiameter', 40, {
   min: 34,
   max: 44,
   description: 'Inner burr cutting diameter at its widest (mm). 44 max against the 58 min body keeps the burr wall >= 3 mm.',
@@ -56,12 +53,12 @@ const bearingSize = param('bearingSize', '608', {
   choices: ['608', '688', '626', '6000'],
   description: 'Deep-groove ball bearing used top AND bottom (608 = 8x22x7).',
 });
-const grindSetting = param('grindSetting', DEFAULT.grindSetting, {
+const grindSetting = param('grindSetting', 0.6, {
   min: 0,
   max: 2,
   description: 'Axial drop of the shaft + inner burr set by the threaded adjust nut (mm); 0 = finest.',
 });
-const crankLength = param('crankLength', DEFAULT.crankLength, {
+const crankLength = param('crankLength', 85, {
   min: 60,
   max: 120,
   description: 'Crank arm length, shaft axis to knob axis (mm).',
@@ -541,8 +538,10 @@ type Seat = [number, number, number];
 // identity, so both connectors of a mate share one world point: the fastened
 // zero pose is the authored pose. That point is the pair's seat, a point on
 // the face the two parts share, so each connector sits on its own part's
-// material. A connector origin is a plain number, so the seats are the contact
-// points of the default parameters with explode = 0.
+// material. A connector origin is a plain number, so each seat reads the
+// current parameter values with Number(...). A parameter edit then runs the
+// script again and the seats move with the parts. The seats are the contact
+// points of the assembled state (explode = 0).
 function fixed(parent: PartRef, name: string, shape: PartShape, seat: Seat): PartRef {
   const child = grinder.part(name, shape);
   const slot = ++fastenSeq;
@@ -552,15 +551,15 @@ function fixed(parent: PartRef, name: string, shape: PartShape, seat: Seat): Par
   return child;
 }
 
-// Default-parameter stations for the seats. Seats on revolved contacts sit on
+// Current-parameter stations for the seats. Seats on revolved contacts sit on
 // the +y ray, in the half that `cutaway` keeps.
-const dR = DEFAULT.bodyDiameter / 2;
-const dRi = dR - WALL;
-const dTop = DEFAULT.bodyLength + zCupTop;
-const dDrop = -DEFAULT.grindSetting;
-const dArm = dTop + 9 + 1; // zArm
-const dArmTop = dArm + hexLen - 1;
-const dCrank = DEFAULT.crankLength;
+const dR = Number(R);
+const dRi = Number(Ri);
+const dTop = Number(zTop);
+const dDrop = Number(drop);
+const dArm = Number(zArm);
+const dArmTop = Number(zArmTop);
+const dCrank = Number(crankLength);
 const ySeat = (r: number, z: number): Seat => [0, r, z];
 
 const body = grinder.part('body-tube', bodyTube);
