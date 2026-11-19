@@ -13,6 +13,17 @@
   computed when the script runs, so a `param()`-driven coordinate and a
   spline segment throw `feature.invalid-args`. Demo:
   `docs/demos/sketch-boolean/`.
+- `union()` keeps each member's own `.finish()`, `.material()` or `.color()`
+  on the faces that came from that member, in Studio, `render_preview`, an
+  assembly part's mesh and GLB export. A servo with a dark ABS case, an
+  aluminium horn and steel screw heads is one body (or one assembly part)
+  instead of one part and one fastened mate per colour. Before, Studio drew
+  the fused body in the default grey and GLB export painted it with the base
+  operand's finish. A finish on the union result still covers every face.
+  A bore wall or fillet blend takes the finish of the faces around it when
+  they agree, else the body's, never the cutter's. Example:
+  `examples/exports/servo-member-finishes.kcad.ts`.
+
 - `Sketch.offset(distance, { corners })` returns the parallel curve of a
   closed profile as a new sketch; `await` it. A positive distance grows the
   region (the outline moves outward and holes shrink), a negative distance

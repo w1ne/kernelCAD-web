@@ -13,6 +13,7 @@ import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportP
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
+import { memberMaterialsByFace } from '../../kernel/backends/occt/memberMaterials';
 import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
@@ -885,11 +886,16 @@ async function exportSingleGlb(
   const partMaterial = tailRecord
     ? lookupMaterialFromLineage(tailRecord, run.records)
     : undefined;
+  // Faces that came from a differently finished `union()` member keep that
+  // member's finish (see memberMaterialsByFace); the lineage material above
+  // is the body default for every other face.
+  const memberFaces = memberMaterialsByFace(shape, tailRecord, run.records);
   const part: WorldFramePart = {
     name: 'part',
     shape,
     ...(partColor !== undefined ? { color: partColor } : {}),
     ...(partMaterial !== undefined ? { material: partMaterial } : {}),
+    ...(memberFaces !== undefined ? { materialByFaceIndex: memberFaces } : {}),
   };
   try {
     const bytes = await exportGlbAsync([part], optsGlb);

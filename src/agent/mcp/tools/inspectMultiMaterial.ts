@@ -51,15 +51,15 @@ export async function inspectMultiMaterialTool(
       shadowingFeatureKind: head.kind,
       leafMaterial: leaf.metadata?.material,
       headMaterial: head.metadata?.material,
-      rewrite: `const arm = assembly('multi-material');\narm.part(${leafIdLiteral}, /* operand with id ${leaf.id.replace(/\*\//g, '')} */); // preserve this operand's material\n// Keep the remaining fused body as its own arm.part(...) and return arm.model().`,
+      rewrite: `// ${head.id} carries its own material, which covers every face of the fused body.\n// Remove that .finish()/.material() call: union() keeps ${leafIdLiteral}'s material on the faces it contributed.\n// Use arm.part(...) for ${leafIdLiteral} only when it moves relative to the body.`,
     });
   }
   return {
     ok: true,
     shadowedLeaves,
     limitations: [
-      'This reports explicit .material() metadata on boolean descendants; it does not attribute faces or change the static mesh.',
-      'Rewrite snippets are templates: authors must name/retain the source operands and choose assembly placements appropriate to their model.',
+      'This reports explicit .material() metadata on boolean descendants; it does not attribute faces or change the static mesh. Without a material on the union result, each member already keeps its material on its own faces.',
+      'Rewrite snippets are templates: authors must find the named calls in their source.',
       'Named .finish() values currently compile to material metadata when captured; this report does not infer materials from unrecorded runtime state.',
     ],
   };
