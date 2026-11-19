@@ -38,6 +38,7 @@ import * as THREE from 'three';
 // `three-stdlib` path is the documented backup; we use the backup since Node
 // is the runtime.
 import { GLTFExporter } from 'three-stdlib';
+import * as replicad from 'replicad';
 import { createRequire } from 'node:module';
 import { Document, NodeIO } from '@gltf-transform/core';
 import sharp from 'sharp';
@@ -218,10 +219,8 @@ function meshPartsForGlb(
 ): { meshed: MeshedGlbPart[]; layout: ExportSceneLayout; stats: GlbStats } {
   const style = options.style ?? 'pbr';
   const deflection = style === 'lowpoly' ? lowPolyDeflection(options.lowpoly) : undefined;
-  const meshed = parts.map((p): MeshedGlbPart =>
-    hasMesh(p)
-      ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape(), deflection) },
+  const meshed = parts.flatMap((p): MeshedGlbPart[] =>
+    hasMesh(p) ? [p] : meshPartForGlb(p, deflection),
   );
   const layout: ExportSceneLayout = {
     axis: options.axis ?? 'y-up',
@@ -514,6 +513,53 @@ function injectAssetExtras(
   out.set(newJsonBytes, 20);
   // BIN chunk (copy as-is — header + payload + any padding the original had).
   out.set(binBytes, 20 + newJsonBytes.byteLength);
+  return out;
+}
+
+/**
+ * Mesh one part. A part whose faces carry `union()` member finishes
+ * (`materialByFaceIndex`) is meshed once per distinct finish: each face group
+ * becomes its own primitive with its own material under the part's name, so
+ * a dark case keeps its metal horn in the file. The first entry is the body
+ * default (faces not listed, `material` / `color` of the part).
+ */
+function meshPartForGlb(
+  p: WorldFramePart,
+  deflection: Parameters<typeof meshShapeForExport>[1],
+): MeshedGlbPart[] {
+  const byFace = p.materialByFaceIndex;
+  const shape = p.shape.getReplicadShape();
+  if (byFace === undefined || Object.keys(byFace).length === 0) {
+    return [{ ...p, mesh: meshShapeForExport(shape, deflection) }];
+  }
+  const faces = shape.faces;
+  const groups = new Map<string, { material?: PBRMaterial; faces: replicad.Face[] }>([['', { faces: [] }]]);
+  faces.forEach((face, index) => {
+    const material = byFace[index];
+    const key = material === undefined ? '' : JSON.stringify(material);
+    let group = groups.get(key);
+    if (group === undefined) {
+      group = { material, faces: [] };
+      groups.set(key, group);
+    }
+    group.faces.push(face);
+  });
+  const out: MeshedGlbPart[] = [];
+  for (const [key, group] of groups) {
+    if (group.faces.length === 0) continue;
+    const compound = replicad.makeCompound(group.faces) as unknown as replicad.Shape3D;
+    const mesh = meshShapeForExport(compound, deflection);
+    if (key === '') {
+      out.push({ ...p, mesh });
+    } else {
+      // A member group renders with the member's own finish only: drop the
+      // body's colour so it cannot shadow the member material.
+      const member: MeshedGlbPart = { ...p, material: group.material, mesh };
+      delete (member as { color?: string }).color;
+      delete (member as { colorParamName?: string }).colorParamName;
+      out.push(member);
+    }
+  }
   return out;
 }
 

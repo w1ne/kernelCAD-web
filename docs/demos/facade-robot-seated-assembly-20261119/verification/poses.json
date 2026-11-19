@@ -1,0 +1,106 @@
+[
+ {
+  "index": 0,
+  "label": "working pose (defaults)",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 2.25,
+   "outriggerDeploy": 1,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": -8
+  }
+ },
+ {
+  "index": 1,
+  "label": "carriage low, nozzle down",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 0.4,
+   "outriggerDeploy": 1,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": -30
+  }
+ },
+ {
+  "index": 2,
+  "label": "carriage high, nozzle up",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 2.7,
+   "outriggerDeploy": 1,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": 30
+  }
+ },
+ {
+  "index": 3,
+  "label": "service arms out and up",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 2.25,
+   "outriggerDeploy": 1,
+   "armReach": 1.15,
+   "armYawDeg": 55,
+   "armPitchDeg": 20,
+   "wristTiltDeg": -8
+  }
+ },
+ {
+  "index": 4,
+  "label": "service arms in and down",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 2.25,
+   "outriggerDeploy": 1,
+   "armReach": 1.15,
+   "armYawDeg": -10,
+   "armPitchDeg": -35,
+   "wristTiltDeg": -8
+  }
+ },
+ {
+  "index": 5,
+  "label": "outriggers tucked",
+  "params": {
+   "mastFoldAngle": 0,
+   "carriageHeight": 0.4,
+   "outriggerDeploy": 0,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": -8
+  }
+ },
+ {
+  "index": 6,
+  "label": "mast half folded",
+  "params": {
+   "mastFoldAngle": 45,
+   "carriageHeight": 0.4,
+   "outriggerDeploy": 0,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": -8
+  }
+ },
+ {
+  "index": 7,
+  "label": "folded for transport",
+  "params": {
+   "mastFoldAngle": 90,
+   "carriageHeight": 0.4,
+   "outriggerDeploy": 0,
+   "armReach": 1,
+   "armYawDeg": 18,
+   "armPitchDeg": -14,
+   "wristTiltDeg": -8
+  }
+ }
+]

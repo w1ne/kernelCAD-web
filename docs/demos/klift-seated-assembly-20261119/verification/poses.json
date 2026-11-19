@@ -1,0 +1,142 @@
+[
+ {
+  "index": 0,
+  "atMs": 0,
+  "label": "start, boom folded",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -104,
+   "platformRelDeg": 34,
+   "carriageMm": 260,
+   "extX": 0,
+   "gripY": 664,
+   "maskProgress": 0,
+   "tapeTopP": 0,
+   "tapeBottomP": 0,
+   "peelTopP": 0,
+   "peelBottomP": 0,
+   "foamLowerP": 0,
+   "foamUpperP": 0
+  }
+ },
+ {
+  "index": 1,
+  "atMs": 2400,
+  "label": "mask film sprayed",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -40,
+   "platformRelDeg": -30,
+   "carriageMm": 550,
+   "extX": 0,
+   "gripY": 664,
+   "maskProgress": 1,
+   "tapeTopP": 0,
+   "tapeBottomP": 0,
+   "peelTopP": 0,
+   "peelBottomP": 0,
+   "foamLowerP": 0,
+   "foamUpperP": 0
+  }
+ },
+ {
+  "index": 2,
+  "atMs": 3600,
+  "label": "top tape, half applied",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -40,
+   "platformRelDeg": -30,
+   "carriageMm": 642,
+   "extX": 954,
+   "gripY": 0,
+   "maskProgress": 1,
+   "tapeTopP": 0.5,
+   "tapeBottomP": 0,
+   "peelTopP": 0,
+   "peelBottomP": 0,
+   "foamLowerP": 0,
+   "foamUpperP": 0
+  }
+ },
+ {
+  "index": 3,
+  "atMs": 6400,
+  "label": "bottom tape, half applied",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -83,
+   "platformRelDeg": 13,
+   "carriageMm": 297,
+   "extX": 715,
+   "gripY": 0,
+   "maskProgress": 1,
+   "tapeTopP": 1,
+   "tapeBottomP": 0.5,
+   "peelTopP": 0,
+   "peelBottomP": 0,
+   "foamLowerP": 0,
+   "foamUpperP": 0
+  }
+ },
+ {
+  "index": 4,
+  "atMs": 11600,
+  "label": "foam pass complete",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -40,
+   "platformRelDeg": -30,
+   "carriageMm": 760,
+   "extX": 0,
+   "gripY": 664,
+   "maskProgress": 1,
+   "tapeTopP": 1,
+   "tapeBottomP": 1,
+   "peelTopP": 0,
+   "peelBottomP": 0,
+   "foamLowerP": 1,
+   "foamUpperP": 1
+  }
+ },
+ {
+  "index": 5,
+  "atMs": 12800,
+  "label": "top tape, half peeled",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -40,
+   "platformRelDeg": -30,
+   "carriageMm": 642,
+   "extX": 954,
+   "gripY": 0,
+   "maskProgress": 1,
+   "tapeTopP": 1,
+   "tapeBottomP": 1,
+   "peelTopP": 0.5,
+   "peelBottomP": 0,
+   "foamLowerP": 1,
+   "foamUpperP": 1
+  }
+ },
+ {
+  "index": 6,
+  "atMs": 17800,
+  "label": "end, tape peeled",
+  "params": {
+   "lowerDeg": 70,
+   "upperRelDeg": -104,
+   "platformRelDeg": 34,
+   "carriageMm": 260,
+   "extX": 0,
+   "gripY": 664,
+   "maskProgress": 1,
+   "tapeTopP": 1,
+   "tapeBottomP": 1,
+   "peelTopP": 1,
+   "peelBottomP": 1,
+   "foamLowerP": 1,
+   "foamUpperP": 1
+  }
+ }
+]

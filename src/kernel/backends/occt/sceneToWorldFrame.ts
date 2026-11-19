@@ -34,6 +34,10 @@ export interface WorldFramePart {
   readonly colorParamName?: string;
   /** Engineering-material name (e.g. `pla`) from `arm.part(..., { material })`. */
   readonly materialName?: string;
+  /** Finishes of differently finished `union()` members by face index
+   *  (replicad `shape.faces` order, which a clone + rigid transform keeps).
+   *  Faces not listed take `material` / `color`. */
+  readonly materialByFaceIndex?: Readonly<Record<number, PBRMaterial>>;
   /** Identity of the world-frame geometry: the untransformed source shape
    *  plus a key of the transform applied to it. Two parts with the same
    *  `source.shape` object and `source.transformKey` are the same geometry,
@@ -75,6 +79,9 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
     }
     if (p.materialName !== undefined) {
       (entry as { materialName?: string }).materialName = p.materialName;
+    }
+    if (p.materialByFaceIndex !== undefined) {
+      (entry as { materialByFaceIndex?: Readonly<Record<number, PBRMaterial>> }).materialByFaceIndex = p.materialByFaceIndex;
     }
     return entry;
   });

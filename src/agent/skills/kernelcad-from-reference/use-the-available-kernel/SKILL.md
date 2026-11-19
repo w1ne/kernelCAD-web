@@ -131,8 +131,9 @@ reference has specular highlights. The role-token shortcuts (`.color('servo')`,
 `.color('frame')`, etc.) are for schematic coloring in mechanisms — not for
 photorealistic product surfaces.
 
-Material must be applied BEFORE the shape enters a boolean. Coloring the
-post-union root is a no-op; see `kernelcad-authoring` Conventions.
+Finish each differently coloured member before `union()`; each keeps its
+finish on its own faces. A finish on the union result recolours the whole
+body. See `kernelcad-authoring` materials reference.
 
 ## Rule 7 — Reference photo → referenceImage overlay
 

@@ -22,7 +22,7 @@ describe('inspect multi-material analysis', () => {
     const result = await inspectMultiMaterialTool({ code: 'const result = body.union(insert);' });
     expect(result.shadowedLeaves).toHaveLength(1);
     expect(result.shadowedLeaves[0]).toMatchObject({ leafFeatureId: 'insert', shadowingFeatureId: 'fuse' });
-    expect(result.shadowedLeaves[0].rewrite).toContain('arm.part("insert"');
+    expect(result.shadowedLeaves[0].rewrite).toContain('Remove that .finish()/.material() call');
     expect(result.limitations[0]).toContain('does not attribute faces');
   });
 

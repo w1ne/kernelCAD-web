@@ -419,6 +419,8 @@ export const STANDARD_PART_RANGE_REMAINING: ReadonlyArray<StandardPartMember> = 
   'bearing6800',
   'sg90',
   'sg90HornSingleArm',
+  'mg995',
+  'mg90s',
   'nema17',
   'nema23',
   'pinHeader254',

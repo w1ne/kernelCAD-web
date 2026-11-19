@@ -2,274 +2,386 @@
 // Z-up, millimetres. The chassis and stabilizers are a low-speed, braked
 // positioning base; this is a concept model, not a certified lifting device.
 // K0 references: 210 mm wheel diameter; 165 mm deck; 164.9 x 124.3 mm screen.
+//
+// Seated kinematic build:
+//   - no two parts share volume; a part that rides on another touches it on a
+//     flat face or runs in a clearance bore or pocket
+//   - every part is mated: the mast folds on a pinned hinge, the gun carriage
+//     and the four outriggers slide, the gun wrist and the two service arms
+//     turn on pins, and every other part is fastened to the part that carries
+//     it at a seat on the face the two parts share
+//   - the pose params drive the mates, not part transforms
 
 const mastFoldAngle = param('mastFoldAngle', 0, {
-  min: 0, max: 90, description: 'Hinge angle: 0 = upright, 90 = folded for transport.',
+  min: 0, max: 90, description: 'Hinge angle: 0 = upright, 90 = folded back for transport.',
 });
 const carriageHeight = param('carriageHeight', 2.25, {
-  min: 0.2, max: 3, description: 'Gun carriage height above hinge (m).',
+  min: 0.4, max: 2.7, description: 'Gun carriage height above the mast foot (m).',
 });
 const outriggerDeploy = param('outriggerDeploy', 1, {
   min: 0, max: 1,
-  description: 'Outrigger deployment: 0 = tucked for travel, 1 = full stance.',
+  description: 'Outrigger deployment: 0 = tucked for travel, 1 = full 1.94 m stance.',
 });
 const armReach = param('armReach', 1, {
   min: 0.65, max: 1.15,
-  description: 'SO-101-inspired arm extension scale; nominal reach about 440 mm.',
+  description: 'SO-101-inspired arm link length scale; nominal reach about 240 mm.',
 });
-const armYawDeg = param('armYawDeg', -18, {
-  min: -55, max: 55, description: 'Shoulder yaw pose (degrees).',
+const armYawDeg = param('armYawDeg', 18, {
+  min: -10, max: 55, description: 'Shoulder yaw of both service arms, positive = outward (degrees).',
 });
 const armPitchDeg = param('armPitchDeg', -14, {
-  min: -35, max: 35, description: 'Upper arm pitch pose (degrees).',
+  min: -35, max: 20, description: 'Upper arm pitch of both service arms, positive = up (degrees).',
+});
+const wristTiltDeg = param('wristTiltDeg', -8, {
+  min: -30, max: 30, description: 'Single spray-gun wrist tilt, positive = nozzle up (degrees).',
 });
 
 const C = {
   frame: '#27343d', dark: '#18232a', orange: '#f0782f', amber: '#f6b23b',
   gunBlue: '#1769aa', gunSilver: '#c5cdd1',
   ivory: '#e8e4d9', alu: '#aeb8bd', black: '#15191c', rubber: '#202326',
-  red: '#d7222b', blue: '#315c72', glass: '#78aab5', hose: '#282d31',
-};
-const deckZ = 165;
-const wheelD = 210;
-const baseL = 920;
-const baseW = 700;
-const mastX = -20;
-const mastZ0 = deckZ;
-const mastLength = 3000;
-const foldDeg = mastFoldAngle.value ?? 0;
-const foldRad = foldDeg * Math.PI / 180;
-const carriageAlong = (carriageHeight.value ?? 2.25) * 1000;
-const headWidth = 205;
-const headHeight = 158;
-const armScale = armReach;
+  red: '#d7222b', blue: '#315c72', glass: '#78aab5',
+} as const;
+type Hex = `#${string}`;
+type Vec3 = [number, number, number];
+type Solid = ReturnType<typeof box>;
+
+// ---- layout constants -----------------------------------------------------
+const DECK_TOP = 172;          // chassis deck top
+const WHEEL_R = 105;           // 210 mm wheel
+const WHEEL_X = 310;
+const WHEEL_Y = 436;           // casters stand outboard of the chassis sides
+const OUT_Y = 250;             // outrigger beam centreline
+const OUT_Z = 78;
+const OUT_POCKET_X0 = 30;      // pocket inner end wall
+const OUT_STROKE = 300;
+const OUT_FIT = 0.3;           // running clearance per side in the pocket
+const HINGE: Vec3 = [-20, 0, 310];   // mast hinge pin axis (along Y)
+const HINGE_HUB_R = 14.7;
+const HINGE_BORE_R = 15;
+const MAST_TOP = 3000;         // mast frame: origin on the hinge axis, +Z up the mast
+const MAST_FOOT = 20;          // mast foot face; the carriage height datum
+const MAST_HALF_Y = 45;        // the carriage cheeks bear on the mast sides
+const HEAD_PLATE_Z0 = 3036;
+const HEAD_PLATE_Z1 = 3048;
+const SHOULDER_X = 45;         // service-arm yaw axis, in the mast frame
+const SHOULDER_Y = 84;
+const YAW_Z = 2988;
+const YAW_HUB_R = 7.7;
+const YAW_BORE_R = 8;
+const PITCH_X = 44;            // pitch pin, in the turret frame
+const PITCH_HUB_R = 6.7;
+const PITCH_BORE_R = 7;
+const WRIST_X = 128;           // gun wrist pin, in the carriage frame
+const WRIST_HUB_R = 7.7;
+const WRIST_BORE_R = 8;
 
 setCameraTarget(0, 0, 1750);
 
-function zCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
-  return cylinder(h, r, 40).translate(x, y, z).color(color);
+// ---- shape helpers (all centred on the given point) -------------------------
+function zCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
+  return cylinder(h, r, 40).translate(x, y, z - h / 2).color(color);
 }
-function yCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
-  return cylinder(h, r, 40).alongAxis([0, 1, 0]).translate(x, y, z).color(color);
+function yCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
+  return cylinder(h, r, 40).alongAxis([0, 1, 0]).translate(x, y - h / 2, z).color(color);
 }
-function roundedBox(x: number, y: number, z: number, r: number, cx: number, cy: number, cz: number, color: string) {
+function xCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
+  return cylinder(h, r, 40).alongAxis([1, 0, 0]).translate(x - h / 2, y, z).color(color);
+}
+// A ring: a cylinder with a drilled clearance bore for the pin it turns on.
+function yRing(h: number, r: number, boreR: number, x: number, y: number, z: number, color: Hex) {
+  return cylinder(h, r, 40).hole('top', { u: 0, v: 0, diameter: boreR * 2, depth: 'through' })
+    .alongAxis([0, 1, 0]).translate(x, y - h / 2, z).color(color);
+}
+function zRing(h: number, r: number, boreR: number, x: number, y: number, z: number, color: Hex) {
+  return cylinder(h, r, 40).hole('top', { u: 0, v: 0, diameter: boreR * 2, depth: 'through' })
+    .translate(x, y, z - h / 2).color(color);
+}
+function block(x: number, y: number, z: number, cx: number, cy: number, cz: number, color: Hex) {
   return box(x, y, z, true).translate(cx, cy, cz).color(color);
 }
 
 const robot = assembly('K-Spray façade coating robot concept');
+type Part = ReturnType<typeof robot.part>;
 
-// Low-profile welded chassis with rounded bumper rails and recessed deck.
-const chassis = roundedBox(baseL, baseW, 115, 24, 0, 0, 100, C.frame)
-  .union(roundedBox(baseL - 50, baseW - 50, 22, 5, 0, 0, 161, C.alu))
-  .union(roundedBox(790, 36, 46, 8, 0, -baseW / 2 + 18, 90, C.dark))
-  .union(roundedBox(790, 36, 46, 8, 0, baseW / 2 - 18, 90, C.dark));
-robot.part('welded-chassis-frame-and-perimeter-bumpers', chassis);
+// A fastened mate joins two frame connectors at one seat point. `seat` is in
+// the parent's frame; `childSeat` is the same point in the child's frame when
+// the two frames differ.
+function fasten(child: Part, parent: Part, seat: Vec3, childSeat: Vec3 = seat) {
+  parent.connector(`${child.name}-seat`, { type: 'frame', origin: { kind: 'vec3', value: seat } });
+  child.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: childSeat } });
+  robot.mate(`${child.name}-fastened`, `${parent.name}.${child.name}-seat`, `${child.name}.seat`, 'fastened');
+}
+function axisConnector(origin: Vec3, axis: Vec3, jointClearanceRadius?: number) {
+  return {
+    type: 'axis' as const,
+    origin: { kind: 'vec3' as const, value: origin },
+    axis,
+    ...(jointClearanceRadius === undefined ? {} : { jointClearanceRadius }),
+  };
+}
 
-// Four pneumatic/caster wheels, swivel forks, visible hubs and mechanical brakes.
+// ===========================================================================
+// BASE — world frame. Welded chassis with a recessed deck, side bumper rails
+// and four outrigger pockets open at the chassis ends.
+// ===========================================================================
+let chassisGeom: Solid = block(920, 700, 115, 0, 0, 100, C.frame)
+  .union(block(870, 650, 22, 0, 0, DECK_TOP - 11, C.alu))
+  .union(block(790, 24, 46, 0, -354, 90, C.dark))
+  .union(block(790, 24, 46, 0, 354, 90, C.dark));
 for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-  const x = sx * 310;
-  const y = sy * 365;
-  const wheel = yCylinder(88, wheelD / 2, x, y - 44, 105, C.rubber)
-    .union(yCylinder(92, 51, x, y - 46, 105, C.dark))
-    .union(yCylinder(94, 34, x, y - 47, 105, C.alu))
-    .union(yCylinder(98, 12, x, y - 49, 105, C.orange));
-  robot.part(`wheel-${sx > 0 ? 'right' : 'left'}-${sy > 0 ? 'rear' : 'front'}-pneumatic-210mm-hub`, wheel);
-  const fork = roundedBox(115, 138, 24, 8, x, y, 214, C.alu)
-    .union(zCylinder(78, 26, x, y, 223, C.dark))
-    .union(roundedBox(16, 75, 54, 5, x, y - 31, 175, C.frame))
-    .union(roundedBox(16, 75, 54, 5, x, y + 31, 175, C.frame))
-    .union(roundedBox(48, 22, 15, 5, x + sx * 45, y - sy * 32, 228, C.red));
-  robot.part(`caster-fork-brake-${sx}_${sy}`, fork);
-}
-
-// Battery/control enclosure on forward deck: removable lid, louvers, latch and E-stop.
-const control = roundedBox(315, 255, 310, 22, 205, 0, 335, C.blue)
-  .union(roundedBox(300, 240, 24, 8, 205, 0, 501, C.alu))
-  .union(roundedBox(276, 8, 92, 2, 205, -130, 350, C.dark))
-  .union(roundedBox(276, 8, 92, 2, 205, 130, 350, C.dark));
-let vents = control;
-for (let i = 0; i < 6; i++) {
-  vents = vents.union(roundedBox(210, 3, 5, 1, 205, -135, 318 + i * 12, C.alu));
-}
-vents = vents.union(roundedBox(54, 22, 16, 3, 335, -65, 504, C.dark));
-robot.part('sealed-battery-and-control-enclosure-with-vents-latch-and-E-stop', vents);
-robot.part('base-emergency-stop-mushroom', zCylinder(22, 29, 205, 0, 500, C.dark)
-  .union(zCylinder(30, 24, 205, 0, 520, C.red))
-  .union(zCylinder(8, 28, 205, 0, 544, '#f2433c')));
-
-// Hinged 3 m 40-series extrusion with belt, end pulley and base stepper brake.
-const hingeX = mastX, hingeZ = mastZ0 + 68;
-function placeOnMast<T extends ReturnType<typeof box>>(
-  name: string,
-  localShape: T,
-  along: number,
-  localX = 0,
-  localY = 0,
-) {
-  // Every local shape is centred about its mount coordinates. Rotate once
-  // about its local origin, then apply the mast station and base hinge offset.
-  const rotated = localShape.rotate([0, 1, 0], -foldDeg);
-  const world = rotated.translate(
-    mastX + along * Math.sin(foldRad) + localX * Math.cos(foldRad),
-    localY,
-    mastZ0 + along * Math.cos(foldRad) - localX * Math.sin(foldRad),
+  // 1 mm run-out through the chassis end face
+  const depth = 460 - OUT_POCKET_X0 + 1;
+  chassisGeom = chassisGeom.subtract(
+    box(depth, 82 + 2 * OUT_FIT, 58 + 2 * OUT_FIT, true)
+      .translate(sx * (OUT_POCKET_X0 + depth / 2), sy * OUT_Y, OUT_Z),
   );
-  robot.part(name, world);
 }
-placeOnMast('series40-aluminium-extrusion-rail', box(80, 90, mastLength, true), mastLength / 2);
-placeOnMast('belt-cover-and-return-track', box(9, 20, mastLength - 100, true).translate(46, 0, 0), mastLength / 2, 0, -8);
-placeOnMast('linear-axis-hinged-head-yoke', box(190, 172, 70, true).color(C.orange), 45);
-robot.part('base-hinge-yoke-and-bearing-pins', roundedBox(185, 200, 110, 12, hingeX, 0, hingeZ, C.frame)
-  .union(yCylinder(210, 48, hingeX, -105, hingeZ, C.dark))
-  .union(yCylinder(212, 34, hingeX, -106, hingeZ, C.orange)));
-robot.part('braked-stepper-with-reduction-gearbox', roundedBox(110, 110, 104, 8, mastX - 90, -90, mastZ0 + 55, C.dark)
-  .union(yCylinder(30, 39, mastX - 35, -112, mastZ0 + 55, C.alu)));
-placeOnMast('mast-3m-timing-belt-and-top-idler',
-  box(8, 13, mastLength - 120, true).color(C.black), mastLength / 2, 43, -34);
-robot.part('hinge-stop-and-lock-pin', yCylinder(94, 13, hingeX + 45, -47, hingeZ, C.red));
-// Carriage rises on four guide rollers and carries a single tilt joint gun bracket.
-const carriage = roundedBox(164, 156, 122, 12, 0, 0, 0, C.dark)
-  .union(roundedBox(132, 20, 86, 6, 70, 0, 0, C.orange))
-  .union(roundedBox(44, 24, 48, 6, 122, 0, -48, C.alu))
-  .union(roundedBox(90, 20, 86, 6, 160, 0, -48, C.alu));
-placeOnMast('belt-driven-carriage-and-single-axis-gun-wrist', carriage, carriageAlong);
+const chassis = robot.part('welded-chassis-frame-and-perimeter-bumpers', chassisGeom);
 
-// Outriggers extend to a 1.95 m stance and land on swiveling rubber pads.
+// Four braked casters. The fork stands on the deck edge and carries the wheel
+// outboard of the chassis on an axle in a clearance bore.
 for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-  const bx = sx * 340;
-  const by = sy * 250;
-  const deployment = outriggerDeploy.value ?? 1;
-  const extension = deployment * 625;
-  const legLen = 230 + extension;
-  const jackX = bx + sx * 600;
-  const startX = sx < 0 ? bx - extension / 2 : bx + extension / 2;
-  const beam = box(legLen, 82, 58, true).translate(
-    startX, by, 78,
-  ).color(C.orange)
-    .union(box(legLen - 28, 24, 18, true).translate(
-      startX, by, 110,
-    ).color(C.alu))
-    .union(zCylinder(150, 25, jackX, by, 0, C.dark))
-    .union(roundedBox(165, 145, 26, 8, jackX, by, 14, C.rubber))
-    .union(roundedBox(134, 115, 8, 15, jackX, by, 29, C.alu));
-  robot.part(`stabilizer-jack-pad-${sx}_${sy}`, beam);
+  const x = sx * WHEEL_X;
+  const y = sy * WHEEL_Y;
+  const corner = `${sx > 0 ? 'right' : 'left'}-${sy > 0 ? 'rear' : 'front'}`;
+  const fork = robot.part(`caster-fork-brake-${corner}`,
+    block(115, 212, 24, x, sy * 396, 228, C.alu)                       // top plate
+      .union(block(80, 35, 45, x, sy * 307.5, DECK_TOP + 22.5, C.alu))   // riser on the deck
+      .union(block(60, 16, 132, x, y - 56, 151, C.frame))                // cheeks
+      .union(block(60, 16, 132, x, y + 56, 151, C.frame))
+      .union(yCylinder(128, 12, x, y, WHEEL_R, C.dark))                  // axle
+      .union(zCylinder(31, 26, x, sy * 396, 254.5, C.dark))              // swivel boss
+      .union(block(48, 22, 15, x + sx * 30, sy * 470, 246.5, C.red)));   // brake tab
+  fasten(fork, chassis, [x, sy * 307.5, DECK_TOP]);
+  const wheel = robot.part(`wheel-${corner}-pneumatic-210mm-hub`,
+    yRing(88, WHEEL_R, 12.3, x, y, WHEEL_R, C.rubber)
+      .union(yRing(92, 51, 12.3, x, y, WHEEL_R, C.dark)));
+  // seat: the lowest point of the axle, inside the hub bore
+  fasten(wheel, fork, [x, y, WHEEL_R - 12]);
 }
 
-// Pump connection and deliberately visible, clipped pressure hose down the mast.
-const hosePort = yCylinder(46, 22, 410, -125, 118, C.alu)
-  .union(yCylinder(28, 17, 410, -148, 118, C.orange))
-  .union(yCylinder(24, 12, 410, -164, 118, C.dark));
-robot.part('airless-pump-hose-stub-and-quick-coupling', hosePort);
-const hoseClips = roundedBox(110, 26, 20, 5, mastX + 10, -82, mastZ0 + 220, C.dark);
-robot.part('lower-hose-strain-relief-clamp', hoseClips);
-for (let i = 0; i < 12; i++) {
-  const along = 220 + i * 235;
-  const x = mastX + along * Math.sin(foldRad), z = mastZ0 + along * Math.cos(foldRad);
-  robot.part(`mast-hose-clip-${i + 1}`, roundedBox(110, 26, 20, 5, x + 10, -82, z, C.dark));
-  robot.part(`mast-hose-clip-latch-${i + 1}`, roundedBox(18, 16, 26, 4, x + 28, -100, z, C.amber));
+// Battery/control enclosure on the forward deck: lid, side panels, louvers,
+// latch, and the base E-stop on the lid.
+let controlGeom: Solid = block(315, 255, 310, 205, 0, DECK_TOP + 155, C.blue)
+  .union(block(300, 240, 24, 205, 0, 492, C.alu))
+  .union(block(276, 8, 92, 205, -130, 342, C.dark))
+  .union(block(276, 8, 92, 205, 130, 342, C.dark));
+for (let i = 0; i < 6; i++) {
+  controlGeom = controlGeom.union(block(210, 3, 5, 205, -135, 310 + i * 12, C.alu));
 }
-// Flexible service bundle rides in a dark drag-chain channel beside the extrusion.
-const chainLen = Math.max(400, carriageAlong);
-placeOnMast('drag-chain-channel', box(72, 34, chainLen, true).color(C.dark), chainLen / 2, -67, -92);
-placeOnMast('carriage-hose-strain-relief-loop', roundedBox(175, 22, 22, 8, -85, -85, 0, C.hose), carriageAlong, 0, 0);
+controlGeom = controlGeom.union(block(54, 22, 16, 335, -65, 508, C.dark));
+const control = robot.part('sealed-battery-and-control-enclosure-with-vents-latch', controlGeom);
+fasten(control, chassis, [205, 0, DECK_TOP]);
+const baseStop = robot.part('base-emergency-stop-mushroom',
+  zCylinder(30, 24, 205, 0, 540, C.red)
+    .union(zCylinder(22, 29, 205, 0, 515, C.dark))
+    .union(zCylinder(8, 28, 205, 0, 558, C.red)));
+fasten(baseStop, control, [205, 0, 504]);
 
-// K0/K1 top subassembly. All pieces below are authored in a single head-local
-// frame and receive one shared mast placement at the mast-top mount.
-const headAlong = mastLength + 125;
-const headLocal = roundedBox(142, headWidth, headHeight, 24, 0, 0, 0, C.ivory)
-  .union(roundedBox(12, 166, 124.3, 8, -77, 0, 2, C.dark))
-  .union(roundedBox(5, 150, 108, 4, -85, 0, 2, C.glass));
-placeOnMast('K0-head-shell-and-display', headLocal, headAlong);
-// Head bounds are X=-71..71, Y=-102.5..102.5, Z=-79..79.
-// This face is toward the façade (+X); the 26 mm bar overlaps the shell by 1 mm.
-const stereoBar = roundedBox(26, 128, 34, 6, 83, 0, -12, C.dark)
-  .union(roundedBox(4, 148, 10, 2, 70, 0, -12, C.alu));
-placeOnMast('bolted-stereo-depth-camera-bar-overlapping-head-front', stereoBar, headAlong);
+// Hinge yoke: base plate on the deck, two cheeks and the hinge pin. The mast
+// foot turns between the cheeks with 8 mm side clearance.
+const yoke = robot.part('base-hinge-yoke-and-bearing-pin',
+  block(120, 170, 28, HINGE[0], 0, DECK_TOP + 14, C.frame)
+    .union(block(70, 20, 141, HINGE[0], -75, 269.5, C.frame))
+    .union(block(70, 20, 141, HINGE[0], 75, 269.5, C.frame))
+    .union(yCylinder(190, HINGE_HUB_R, HINGE[0], 0, HINGE[2], C.orange)));
+fasten(yoke, chassis, [HINGE[0], 0, DECK_TOP]);
+yoke.connector('hinge', axisConnector(HINGE, [0, -1, 0], HINGE_HUB_R));
+const stepper = robot.part('braked-stepper-with-reduction-gearbox',
+  block(110, 110, 104, HINGE[0], -145, DECK_TOP + 52, C.dark));
+fasten(stepper, chassis, [HINGE[0], -145, DECK_TOP]);
+const lockPin = robot.part('hinge-stop-and-lock-pin', yCylinder(24, 10, 5, 97, 250, C.red));
+fasten(lockPin, yoke, [5, 85, 250]);
+
+// Pump connection on the chassis front face.
+const hosePort = robot.part('airless-pump-hose-stub-and-quick-coupling',
+  xCylinder(46, 22, 483, -125, 118, C.alu)
+    .union(xCylinder(28.5, 17, 519.75, -125, 118, C.orange))
+    .union(xCylinder(24.5, 12, 545.75, -125, 118, C.dark)));
+fasten(hosePort, chassis, [460, -125, 118]);
+
+// Outriggers: each beam slides in its chassis pocket and carries the jack
+// column and the rubber pad. Beam frame: origin at the beam's inner end face.
+for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+  const corner = `${sx > 0 ? 'right' : 'left'}-${sy > 0 ? 'rear' : 'front'}`;
+  const beam = robot.part(`stabilizer-jack-pad-${corner}`,
+    block(700, 82, 58, sx * 350, 0, 0, C.orange)
+      .union(zCylinder(132, 25, sx * 640, 0, 6, C.dark))
+      .union(block(165, 145, 26, sx * 640, 0, -65, C.rubber))
+      .union(block(134, 115, 8, sx * 640, 0, -48, C.alu)));
+  chassis.connector(`outrigger-${corner}`,
+    axisConnector([sx * OUT_POCKET_X0, sy * OUT_Y, OUT_Z], [sx, 0, 0]));
+  beam.connector('slide', axisConnector([0, 0, 0], [sx, 0, 0]));
+  robot.mate(`outrigger-${corner}-slide`, `${chassis.name}.outrigger-${corner}`, `${beam.name}.slide`, 'prismatic', {
+    pose: outriggerDeploy.multiply(OUT_STROKE),
+    limitsMm: [0, OUT_STROKE],
+  });
+}
+
+// ===========================================================================
+// MAST — mast frame: origin on the hinge axis, +Z up the mast, +X toward the
+// façade. 40-series extrusion with a collar in a clearance bore on the pin.
+// ===========================================================================
+const mast = robot.part('series40-aluminium-extrusion-rail',
+  block(80, 90, MAST_TOP - MAST_FOOT, 0, 0, (MAST_TOP + MAST_FOOT) / 2, C.alu)
+    .union(yRing(110, 32, HINGE_BORE_R, 0, 0, 0, C.alu)));
+mast.connector('hinge', axisConnector([0, 0, 0], [0, -1, 0], HINGE_BORE_R));
+mast.connector('rail', axisConnector([0, 0, MAST_FOOT], [0, 0, 1]));
+robot.mate('mast-fold-hinge', `${yoke.name}.hinge`, `${mast.name}.hinge`, 'revolute', {
+  pose: mastFoldAngle,
+  limitsDeg: [0, 90],
+});
+
+// Clamp sleeve around the mast foot.
+const footSleeve = robot.part('mast-foot-clamp-sleeve',
+  block(104, 114, 70, 0, 0, 75, C.orange).subtract(block(80, 90, 72, 0, 0, 75, C.orange)));
+fasten(footSleeve, mast, [40, 0, 75]);
+
+// Timing belt and its cover on the front face; the carriage plate runs clear
+// of both.
+const belt = robot.part('mast-3m-timing-belt', block(8, 13, 2820, 44, -34, 1530, C.black));
+fasten(belt, mast, [40, -34, 1530]);
+const beltCover = robot.part('belt-cover-and-return-track', block(9, 20, 2820, 44.5, -8, 1530, C.dark));
+fasten(beltCover, mast, [40, -8, 1530]);
+
+// Drag-chain channel with twelve hose clips on the back face, behind the
+// carriage, and an amber latch on each clip.
+let chainGeom: Solid = block(34, 60, 2800, -57, 0, 1520, C.dark);
+const clipStations: number[] = [];
+for (let i = 0; i < 12; i++) clipStations.push(220 + i * 235);
+for (const along of clipStations) chainGeom = chainGeom.union(block(16, 70, 20, -81, 0, along, C.dark));
+const chain = robot.part('drag-chain-channel-and-hose-clips', chainGeom);
+fasten(chain, mast, [-40, 0, 1520]);
+clipStations.forEach((along, i) => {
+  const latch = robot.part(`mast-hose-clip-latch-${i + 1}`, block(10, 16, 26, -94, -27, along, C.amber));
+  fasten(latch, chain, [-89, -27, along]);
+});
+
+// ---- K0 head on the mast top ----------------------------------------------
+const riser = robot.part('mast-end-riser-and-bolted-K0-head-plate',
+  block(86, 92, 40, 0, 0, MAST_TOP + 20, C.alu)
+    .union(block(160, 220, HEAD_PLATE_Z1 - HEAD_PLATE_Z0, 0, 0, (HEAD_PLATE_Z0 + HEAD_PLATE_Z1) / 2, C.dark)));
+fasten(riser, mast, [0, 0, MAST_TOP]);
+// Head shell 142 x 205 x 158: X = -71..71, Y = -102.5..102.5.
+const HEAD_Z = HEAD_PLATE_Z1 + 79;
+const head = robot.part('K0-head-shell', block(142, 205, 158, 0, 0, HEAD_Z, C.ivory));
+fasten(head, riser, [0, 0, HEAD_PLATE_Z1]);
+const display = robot.part('K0-head-display',
+  block(12, 166, 124.3, -77, 0, HEAD_Z, C.dark).union(block(3, 150, 108, -84, 0, HEAD_Z, C.glass)));
+fasten(display, head, [-71, 0, HEAD_Z]);
+// The stereo bar is on the head face toward the façade (+X).
+const CAMERA_Z = HEAD_Z - 12;
+const stereoBar = robot.part('bolted-stereo-depth-camera-bar-on-head-front', block(26, 128, 34, 84, 0, CAMERA_Z, C.dark));
+fasten(stereoBar, head, [71, 0, CAMERA_Z]);
 for (const side of [-1, 1]) {
   const cy = side * 40;
-  const camera = roundedBox(36, 32, 32, 5, 100, cy, -12, C.dark)
-    .union(roundedBox(8, 20, 20, 4, 121, cy, -12, C.black))
-    .union(roundedBox(3, 14, 14, 2, 126, cy, -12, C.glass));
-  placeOnMast(`stereo-camera-${side < 0 ? 'left' : 'right'}-bolted-to-front-bar`, camera, headAlong);
+  const camera = robot.part(`stereo-camera-${side < 0 ? 'left' : 'right'}-bolted-to-front-bar`,
+    block(36, 32, 32, 115, cy, CAMERA_Z, C.black)
+      .union(block(8, 20, 20, 136.5, cy, CAMERA_Z, C.glass)));
+  fasten(camera, stereoBar, [97, cy, CAMERA_Z]);
 }
-placeOnMast('head-top-inspection-camera', roundedBox(34, 30, 22, 5, 10, 0, 88, C.dark)
-  .union(roundedBox(20, 19, 3, 2, 10, 0, 100, C.glass)), headAlong);
-placeOnMast('head-emergency-stop-mushroom', zCylinder(12, 16, 25, 0, 72, C.dark)
-  .union(zCylinder(20, 13, 25, 0, 82, C.red)), headAlong);
-const topYoke = roundedBox(86, 92, 118, 10, 0, 0, 66, C.alu)
-  .union(roundedBox(120, 176, 30, 7, 0, 0, 64, C.dark))
-  .union(yCylinder(190, 13, 0, -95, 64, C.orange));
-placeOnMast('mast-end-riser-and-bolted-K0-head-plate', topYoke, headAlong);
+const HEAD_TOP = HEAD_Z + 79;
+const topCamera = robot.part('head-top-inspection-camera',
+  block(34, 30, 22, -30, 0, HEAD_TOP + 11, C.dark).union(block(20, 19, 3, -30, 0, HEAD_TOP + 23, C.glass)));
+fasten(topCamera, head, [-30, 0, HEAD_TOP]);
+const headStop = robot.part('head-emergency-stop-mushroom',
+  zCylinder(20, 13, 35, 0, HEAD_TOP + 21, C.red).union(zCylinder(12, 16, 35, 0, HEAD_TOP + 6, C.dark)));
+fasten(headStop, head, [35, 0, HEAD_TOP]);
 
-// Compact SO-101-inspired two-link service arm fixed to the head-local yoke.
-const armYaw = (armYawDeg.value ?? -18) * Math.PI / 180;
-const armPitch = (armPitchDeg.value ?? -14) * Math.PI / 180;
-const l1 = 76 * (armScale.value ?? 1), l2 = 62 * (armScale.value ?? 1);
-function link(a: [number, number, number], b: [number, number, number], color: string, thick: number) {
-  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
-  const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-  const tilt = Math.atan2(dz, Math.sqrt(dx * dx + dy * dy)) * 180 / Math.PI;
-  const yawD = Math.atan2(dy, dx) * 180 / Math.PI;
-  return roundedBox(len + 24, thick, thick, 8, 0, 0, 0, color)
-    .rotate([0, 1, 0], -tilt).rotate([0, 0, 1], yawD)
-    .translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
-}
-const headArmPart = (name: string, shape: ReturnType<typeof box>, at: [number, number, number]) =>
-  placeOnMast(name, shape.translate(at[0], at[1], at[2]), headAlong);
-// A shared 120 x 176 plate overlaps the head underside. Two mirrored compact
-// 2-link service arms fold down close to the shell edges.
-const armPlate = roundedBox(104, 176, 18, 5, 0, 0, -83, C.alu)
-  .union(roundedBox(18, 150, 26, 4, 0, 0, -65, C.dark));
-placeOnMast('bolted-service-arm-mount-plate-under-K0-head', armPlate, headAlong);
+// ---- two SO-101-inspired service arms under the head plate -----------------
+// Shoulder servo with a vertical yaw pin, a turret on the pin with a pitch
+// pin, and the upper link, elbow servo, fore link and wrist servo as one
+// rigid chain on the pitch pin. Both arms follow the same two params; the
+// left yaw axis is reversed so the arms mirror.
+const reach = Number(armReach);
+const l1 = 76 * reach;
+const l2 = 62 * reach;
 for (const side of [-1, 1]) {
-  const shoulder: [number, number, number] = [12, side * 104, -72];
-  const elbow: [number, number, number] = [
-    shoulder[0] + l1 * Math.cos(armPitch) * Math.cos(armYaw),
-    shoulder[1] + side * l1 * 0.45,
-    shoulder[2] - l1 * Math.sin(Math.abs(armPitch)),
-  ];
-  const wrist: [number, number, number] = [elbow[0] + l2 * 0.3, elbow[1] + side * l2 * 0.28, elbow[2] - l2 * 0.35];
-  const sideLabel = side < 0 ? 'left' : 'right';
-  headArmPart(`SO101-${sideLabel}-shoulder-servo-bolted-to-plate`, roundedBox(52, 54, 48, 9, shoulder[0], shoulder[1], shoulder[2], C.dark)
-    .union(yCylinder(58, 19, shoulder[0], shoulder[1] - side * 27, shoulder[2], C.orange)), [0, 0, 0]);
-  headArmPart(`SO101-${sideLabel}-upper-link`, link(shoulder, elbow, C.ivory, 30), [0, 0, 0]);
-  headArmPart(`SO101-${sideLabel}-elbow-servo`, roundedBox(44, 44, 42, 8, elbow[0], elbow[1], elbow[2], C.dark)
-    .union(yCylinder(46, 16, elbow[0], elbow[1] - side * 22, elbow[2], C.orange)), [0, 0, 0]);
-  headArmPart(`SO101-${sideLabel}-fore-link`, link(elbow, wrist, C.ivory, 26), [0, 0, 0]);
-  headArmPart(`SO101-${sideLabel}-wrist-tool-servo`, roundedBox(38, 38, 36, 7, wrist[0], wrist[1], wrist[2], C.dark), [0, 0, 0]);
+  const label = side < 0 ? 'left' : 'right';
+  const y = side * SHOULDER_Y;
+  const yawAxis: Vec3 = [0, 0, side];
+  const shoulder = robot.part(`SO101-${label}-shoulder-servo-bolted-to-plate`,
+    block(44, 44, 30, SHOULDER_X, y, HEAD_PLATE_Z0 - 15, C.dark)
+      .union(zCylinder(36.5, YAW_HUB_R, SHOULDER_X, y, 2988.25, C.dark))
+      .union(zCylinder(4.5, 13, SHOULDER_X, y, 2968.25, C.dark)));
+  fasten(shoulder, riser, [SHOULDER_X, y, HEAD_PLATE_Z0]);
+  shoulder.connector('yaw', axisConnector([SHOULDER_X, y, YAW_Z], yawAxis, YAW_HUB_R));
+
+  // Turret frame: origin on the yaw axis, +X along the arm.
+  const turret = robot.part(`SO101-${label}-shoulder-turret`,
+    zRing(14, 18, YAW_BORE_R, 0, 0, 0, C.orange)
+      .union(block(14, 40, 14, 17, 0, 0, C.orange))
+      .union(block(30, 6, 14, 37, -17, 0, C.orange))
+      .union(block(30, 6, 14, 37, 17, 0, C.orange))
+      .union(yCylinder(40, PITCH_HUB_R, PITCH_X, 0, 0, C.orange)));
+  turret.connector('yaw', axisConnector([0, 0, 0], yawAxis, YAW_BORE_R));
+  turret.connector('pitch', axisConnector([PITCH_X, 0, 0], [0, -1, 0], PITCH_HUB_R));
+  robot.mate(`SO101-${label}-shoulder-yaw`, `${shoulder.name}.yaw`, `${turret.name}.yaw`, 'revolute', {
+    pose: armYawDeg,
+    limitsDeg: [-10, 55],
+  });
+
+  // Link frame: origin on the pitch axis, +X along the arm.
+  const upper = robot.part(`SO101-${label}-upper-link`,
+    block(l1 - 8, 22, 22, (l1 + 8) / 2, 0, 0, C.ivory)
+      .union(yRing(22, 13, PITCH_BORE_R, 0, 0, 0, C.ivory)));
+  upper.connector('pitch', axisConnector([0, 0, 0], [0, -1, 0], PITCH_BORE_R));
+  robot.mate(`SO101-${label}-shoulder-pitch`, `${turret.name}.pitch`, `${upper.name}.pitch`, 'revolute', {
+    pose: armPitchDeg,
+    limitsDeg: [-35, 20],
+  });
+  const elbow = robot.part(`SO101-${label}-elbow-servo`, block(30, 30, 30, l1 + 15, 0, 0, C.dark));
+  fasten(elbow, upper, [l1, 0, 0]);
+  const fore = robot.part(`SO101-${label}-fore-link`, block(l2, 20, 20, l1 + 30 + l2 / 2, 0, 0, C.ivory));
+  fasten(fore, elbow, [l1 + 30, 0, 0]);
+  const wrist = robot.part(`SO101-${label}-wrist-tool-servo`, block(26, 26, 26, l1 + 30 + l2 + 13, 0, 0, C.dark));
+  fasten(wrist, fore, [l1 + 30 + l2, 0, 0]);
 }
 
-// Graco AL-5-style light gun on carriage; the short K0 arm does not carry it.
-const wristTiltDeg = param('wristTiltDeg', -8, { min: -30, max: 30, description: 'Single spray-gun wrist tilt (degrees).' });
-const gunLocal = roundedBox(112, 60, 42, 10, 0, 0, 0, C.gunBlue)
-  .union(roundedBox(58, 44, 48, 10, -74, 0, 0, C.gunSilver))
-  .union(zCylinder(58, 20, -88, 0, 0, C.dark))
-  .union(zCylinder(42, 16, -88, 0, -34, C.gunSilver))
-  .union(roundedBox(38, 34, 78, 8, -22, 0, -56, C.gunBlue))
-  .union(roundedBox(9, 8, 42, 3, 0, 0, -47, C.gunSilver))
-  .union(roundedBox(76, 24, 22, 6, 85, 0, 0, C.gunSilver))
-  .union(roundedBox(46, 16, 16, 5, 142, 0, 0, C.dark))
-  .union(roundedBox(10, 58, 62, 7, 168, 0, 0, C.gunBlue))
-  .union(roundedBox(9, 38, 46, 5, 173, 0, 0, C.black))
-  .union(roundedBox(26, 10, 10, 3, 190, 0, 0, C.gunSilver));
-const wristTilt = wristTiltDeg.value ?? -8;
-// Carriage plate is at local X=160..205. Gun's heel is attached at X=195;
-// body extends outward in +X, away from the mast and toward the façade.
-const gunMountLocal = roundedBox(32, 54, 30, 6, 194, 78, -48, C.alu)
-  .union(yCylinder(58, 18, 194, 48, -48, C.dark))
-  .union(roundedBox(38, 56, 24, 5, 212, 78, -48, C.orange))
-  .union(roundedBox(90, 88, 22, 6, 160, 34, -48, C.alu));
-// Tool axis faces +Y (façade direction); pivot is fixed inside the wrist fork.
-const gunLocalTilted = gunLocal.rotate([0, 0, 1], 90)
-  .translate(194, 180, -48)
-  .rotate([1, 0, 0], wristTilt, [194, 78, -48]);
-placeOnMast('carriage-wrist-pin-and-gun-mount', gunMountLocal, carriageAlong);
-placeOnMast('recognisable-airless-gun-body-grip-cylinder-tip-guard', gunLocalTilted, carriageAlong);
+// ===========================================================================
+// CARRIAGE — carriage frame: origin on the mast axis at the carriage centre.
+// A C-channel whose cheeks bear on the mast sides; the plate runs in front of
+// the belt. The gun turns on a single wrist pin.
+// ===========================================================================
+const carriage = robot.part('belt-driven-carriage',
+  block(105, 20, 122, 22.5, -(MAST_HALF_Y + 10), 0, C.dark)
+    .union(block(105, 20, 122, 22.5, MAST_HALF_Y + 10, 0, C.dark))
+    .union(block(20, 130, 122, 65, 0, 0, C.dark)));
+// The slide axis runs up the centre of the open channel: the mast fills the
+// channel, so the declared clearance is the mast half-width to the cheeks.
+carriage.connector('slide', axisConnector([0, 0, 0], [0, 0, 1], MAST_HALF_Y));
+robot.mate('carriage-slide', `${mast.name}.rail`, `${carriage.name}.slide`, 'prismatic', {
+  pose: carriageHeight.multiply(1000),
+  limitsMm: [400, 2700],
+});
+const carriagePlate = robot.part('carriage-front-plate', block(8, 100, 86, 79, 0, 0, C.orange));
+fasten(carriagePlate, carriage, [75, 0, 0]);
+const gunMount = robot.part('carriage-wrist-pin-and-gun-mount',
+  block(12, 70, 60, 89, 0, 0, C.alu)
+    .union(block(48, 8, 24, 118, -28, 0, C.alu))
+    .union(block(48, 8, 24, 118, 28, 0, C.alu))
+    .union(yCylinder(64, WRIST_HUB_R, WRIST_X, 0, 0, C.dark)));
+fasten(gunMount, carriagePlate, [83, 0, 0]);
+gunMount.connector('wrist', axisConnector([WRIST_X, 0, 0], [0, -1, 0], WRIST_HUB_R));
 
-// Laser/depth standoff unit alongside nozzle with glass window and two-point mount.
-const standoffLocal = roundedBox(46, 40, 34, 7, 158, 244, -20, C.dark)
-  .union(roundedBox(24, 4, 22, 3, 158, 265, -20, C.glass))
-  .union(roundedBox(22, 34, 14, 4, 158, 214, -33, C.alu));
-placeOnMast('laser-depth-standoff-sensor-adjacent-to-spray-tip', standoffLocal, carriageAlong);
+// Graco AL-5-style light gun. Gun frame: origin on the wrist axis, nozzle
+// along +X toward the façade.
+const gun = robot.part('recognisable-airless-gun-body-grip-barrel-tip-guard',
+  block(110, 40, 42, 65, 0, 0, C.gunBlue)
+    .union(yRing(36, 16, WRIST_BORE_R, 0, 0, 0, C.gunBlue))
+    .union(block(34, 30, 78, 50, 0, -56, C.gunBlue))
+    .union(block(61, 24, 22, 150, 0, 0, C.gunSilver))
+    .union(block(30.5, 16, 16, 195, 0, 0, C.dark))
+    .union(block(10, 58, 62, 214, 0, 0, C.gunBlue)));
+gun.connector('wrist', axisConnector([0, 0, 0], [0, -1, 0], WRIST_BORE_R));
+robot.mate('gun-wrist-tilt', `${gunMount.name}.wrist`, `${gun.name}.wrist`, 'revolute', {
+  pose: wristTiltDeg,
+  limitsDeg: [-30, 30],
+});
+// Laser/depth standoff unit on the gun body, looking along the spray axis.
+const standoff = robot.part('laser-depth-standoff-sensor-on-gun-body',
+  block(46, 34, 30, 83, 0, 36, C.dark).union(block(4, 22, 20, 107, 0, 36, C.glass)));
+fasten(standoff, gun, [83, 0, 21]);
 
 return robot.model();
