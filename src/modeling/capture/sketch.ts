@@ -13,6 +13,7 @@ import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type Helix
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable } from '../../shared/runtime/paramRef';
 import { paramValue, toParam } from '../../shared/runtime/editableHelpers';
+import { offsetSketchOf, type SketchOffsetOptions } from './sketchOffset';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
@@ -598,6 +599,32 @@ export class Sketch {
       params: {},
       metadata: { commands: newCommands },
     });
+  }
+
+  /**
+   * Parallel curve of this closed profile, `distance` mm away. AWAIT THIS —
+   * it returns `Promise<Sketch>`.
+   *
+   * The profile is the region inside the first loop and outside the hole
+   * loops. A positive distance grows that region (the outline moves outward,
+   * holes shrink); a negative distance shrinks it (the outline moves inward,
+   * holes grow). Lines stay lines and arcs stay arcs. The source is unchanged.
+   *
+   * @param distance signed offset in mm, a plain non-zero number.
+   * @param opts.corners `'round'` (default) joins an outward-moving corner
+   *   with an arc of radius `|distance|`; `'sharp'` extends the neighbouring
+   *   segments until they meet.
+   *
+   * Throws `feature.sketch-offset.collapsed` when nothing is left,
+   * `feature.sketch-offset.split` when the result is not one profile (a neck
+   * closes, a hole reaches the boundary), and `feature.invalid-args` for a
+   * spline profile or a param()-driven profile or distance.
+   *
+   * @example
+   *   const wall = (await outline.offset(-2)).extrude(5);
+   */
+  offset(distance: number, opts?: SketchOffsetOptions | null): Promise<Sketch> {
+    return offsetSketchOf(this.id, this.session, distance, opts);
   }
 }
 
