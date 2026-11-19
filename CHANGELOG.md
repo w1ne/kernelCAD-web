@@ -1,5 +1,11 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 5 (`05-clamshell-hinge-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors. The table is fastened under the base, the lid sits
+  between two hinge ears, and the hinge limit is [0°, 135°]. The snippet
+  sweeps -15° to 135° to find the colliding band (-15° to -1°), then sweeps
+  the declared limits and expects no collision.
 - Kinematic skill cookbook snippet 2 (`02-reachable-with-seed.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 27 errors because no link of the 6-DOF arm touched the next one.
