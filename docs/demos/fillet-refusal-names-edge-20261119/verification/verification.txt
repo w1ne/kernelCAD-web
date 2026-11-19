@@ -1,0 +1,25 @@
+Date: 2026-11-19. Scope: local OCCT evaluation. No deployed runtime is claimed.
+
+Part: examples/drafting-review/mounting-plate.kcad.ts (100 x 70 x 12 mm).
+Measured values are in refusals.json, written by capture_demo.py.
+
+1. Clean plate: exitCode 0, no error, no failingEdge facts.
+2. .chamfer(20, '@kc[fillet_1/edge/s254a3cdbec0aae67]'): refused on chamfer_1.
+   The refusal names that selector, locator "LINE, 58 mm long, midpoint
+   (100, 35, 12)" and 5.93 mm. Retry at 5.93 mm on the selector: exitCode 0.
+3. .fillet(20, '@kc[fillet_1/edge/sf01fece2b729022e]'): refused on fillet_2.
+   The refusal names that selector, locator "LINE, 88 mm long, midpoint
+   (50, 70, 12)" and 11.9 mm. Retry at 11.9 mm on the selector: exitCode 0.
+4. .chamfer(20, four top-perimeter edges): 4 of 4 edges named; each fails
+   alone at 6.016 mm; the set limit is 5.93 mm.
+5. .fillet(40, four vertical corner edges): failingEdgeStatus 'interaction'.
+   Each edge builds alone at 35 mm, so no edge is named; set limit 34.8 mm.
+6. A stale stable edge ID is refused with feature.invalid-args (regression
+   test); no neighbouring edge is blended.
+
+Tests: 10 passed in the two focused files (test-output.txt).
+Video: demo.mp4 inspected at 2 s, 7 s and 12 s (video-contact-sheet.png).
+
+Limits: the solo probe tries at most 32 edges, shortest first; untried edges
+are counted in details.failingEdgeUnprobed. Variable-radius fillets and the G2
+continuity refusal are unchanged. The v6 arm was not checked.

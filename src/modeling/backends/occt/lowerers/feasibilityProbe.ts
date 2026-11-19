@@ -18,6 +18,9 @@ export interface FeasibilityProbeResult {
   maxFeasible: number | undefined;
   /** Kernel attempts spent. */
   attempts: number;
+  /** Smallest value known to fail: `requested`, or a lower value the
+   *  bisection saw rejected. The limit lies in [maxFeasible, minInfeasible). */
+  minInfeasible: number;
 }
 
 /** Round `v` down to 3 significant figures (2.3456 → 2.34, 0.012345 → 0.0123). */
@@ -45,11 +48,11 @@ export function probeMaxFeasible(
     if (tryValue(mid)) lo = mid;
     else hi = mid;
   }
-  if (lo <= 0) return { maxFeasible: undefined, attempts };
+  if (lo <= 0) return { maxFeasible: undefined, attempts, minInfeasible: hi };
   const readable = Number(floorToReadable(lo).toPrecision(3));
   if (readable > 0 && readable !== lo) {
     attempts++;
-    if (tryValue(readable)) return { maxFeasible: readable, attempts };
+    if (tryValue(readable)) return { maxFeasible: readable, attempts, minInfeasible: hi };
   }
-  return { maxFeasible: lo, attempts };
+  return { maxFeasible: lo, attempts, minInfeasible: hi };
 }
