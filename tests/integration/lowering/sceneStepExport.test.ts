@@ -24,6 +24,11 @@
 // agent-built assemblies (Task 14 onwards) ship STEP files where each
 // part is independently selectable in downstream CAD viewers.
 import { describe, it, expect, beforeAll } from 'vitest';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { importStepAssembly } from '../../../src/kernel/import/stepAssemblyImport';
+import { writeStepBundle } from '../../../src/kernel/import/stepBundleWriter';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { exportSceneToSTEPAsync } from '../../../src/kernel/backends/occt/sceneStepExport';
@@ -85,6 +90,38 @@ describe('Scene STEP export preserves part names + colors', () => {
     expect(text).toContain('rotor');
     expect(text).toContain('stator');
   });
+
+  it('leaves the uncoloured parts of a real assembly without a colour through STEP export and import', async () => {
+    // The example sets no colours. Its parts used to be written as red, and
+    // import-step then gave every part an explicit `.color('#ff0000')`.
+    const source = 'examples/bom/panel-with-fasteners.kcad.ts';
+    const result = await runAndExport({ code: await readFile(source, 'utf8'), fileName: source, format: 'step' });
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(new TextDecoder().decode(result.bytes)).not.toMatch(/COLOUR_RGB|PRE_DEFINED_COLOUR/);
+
+    const snapshot = await importStepAssembly(result.bytes, 'panel.step');
+    expect(snapshot.definitions).toHaveLength(4);
+    expect(snapshot.occurrences).toHaveLength(9);
+    expect(snapshot.occurrences.filter((o) => o.color !== undefined)).toEqual([]);
+    const plate = snapshot.definitions.find((d) => d.name === 'plate');
+    expect(plate?.volumeMm3).toBeCloseTo(200 * 120 * 3, 3);
+
+    const workDir = await mkdtemp(join(tmpdir(), 'kcad-step-uncoloured-'));
+    try {
+      const bundle = await writeStepBundle({
+        inputName: 'panel.step',
+        inputBytes: result.bytes,
+        outDir: join(workDir, 'panel-import'),
+        assemblyName: 'panel',
+        snapshot,
+      });
+      const script = await readFile(bundle.script, 'utf8');
+      expect(script).toContain('standoff_2');
+      expect(script).not.toContain('.color(');
+    } finally {
+      await rm(workDir, { recursive: true, force: true });
+    }
+  }, 120_000);
 
   it('STL export of a Scene auto-fuses world-frame parts into one mesh', async () => {
     // Studio header STL on multi-part assemblies (keycap body + inlays, etc.)
