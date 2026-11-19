@@ -268,7 +268,7 @@
    ]
   },
   "plate": {
-   "source": "evaluator-harness/sphere-plate.kcad.ts",
+   "source": "evaluator-harness/sphere-plate.txt",
    "base": [
     {
      "exportPeakRssMb": 813,
