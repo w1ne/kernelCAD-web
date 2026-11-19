@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { parse3mfMesh, ThreeMfImportError } from './import3mf';
 
 const fixture = resolve(process.cwd(), 'docs/demos/3mf-resource-ids/generic-cube.3mf');
+const componentFixture = resolve(process.cwd(), 'docs/demos/from3mf-component-assembly/two-block-assembly.3mf');
 
 function cubeArchive(rewrite: (xml: string) => string): Uint8Array {
   const files = unzipSync(readFileSync(fixture));
@@ -37,13 +38,25 @@ describe('core 3MF triangle mesh import', () => {
     expect(() => parse3mfMesh(bytes, 11)).toThrow(/11 triangle import budget/);
   });
 
-  it('refuses required extensions and component assemblies instead of dropping them', () => {
+  it('refuses required extensions instead of dropping them', () => {
     const extension = cubeArchive((xml) => xml.replace('<model unit=', '<model requiredextensions="vendor-ext" unit='));
     expect(() => parse3mfMesh(extension)).toThrow(ThreeMfImportError);
     expect(() => parse3mfMesh(extension)).toThrow(/unsupported extensions/);
+  });
 
-    const components = cubeArchive((xml) => xml.replace('</object>', '<components><component objectid="1" /></components></object>'));
-    expect(() => parse3mfMesh(components)).toThrow(/component assemblies are not supported/);
+  it('resolves nested component instances and applies each transform in model units', () => {
+    const bytes = new Uint8Array(readFileSync(componentFixture));
+    const mesh = parse3mfMesh(bytes);
+    const xs = Array.from(mesh.positions).filter((_coordinate, index) => index % 3 === 0);
+    const ys = Array.from(mesh.positions).filter((_coordinate, index) => index % 3 === 1);
+    const zs = Array.from(mesh.positions).filter((_coordinate, index) => index % 3 === 2);
+
+    expect(mesh.unit).toBe('millimeter');
+    expect(mesh.triangleCount).toBe(24);
+    expect([Math.min(...xs), Math.max(...xs)]).toEqual([8, 30]);
+    expect([Math.min(...ys), Math.max(...ys)]).toEqual([4, 14]);
+    expect([Math.min(...zs), Math.max(...zs)]).toEqual([0, 10]);
+    expect(() => parse3mfMesh(bytes, 23)).toThrow(/23 triangle import budget/);
   });
 
   it('refuses disconnected shells in one mesh object instead of assuming independent solids', () => {
