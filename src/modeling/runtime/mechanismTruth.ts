@@ -67,6 +67,7 @@ import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import { coupledMateSuggestion } from './coupledMateSuggestion';
 import { estimateSweepWork, type SweepWorkEstimate } from './sweepWork';
 import { checkMotionIntent, hasMotionIntent } from './motionIntent';
 import { checkMotionLimits } from './motionLimits';
@@ -948,12 +949,17 @@ async function checkInterpenetration(
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. ` +
-        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.`,
+        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.` +
+        suggestionSuffix(coupledMateSuggestion(arm, s.sample.mateName, pair.a, pair.b)),
       ));
     }
   }
 
   return out;
+}
+
+function suggestionSuffix(text: string | undefined): string {
+  return text === undefined ? '' : ` ${text}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────

@@ -6,10 +6,11 @@
 //     + cheek plates + flange. All clearances are rotation-invariant
 //     (surfaces of revolution about the joint axis, or Y-band plates),
 //     so the mechanism stays collision-free across every pose.
-//   - the gun carriage rides the workcell rail on a prismatic mate with a
-//     clearance fit
-//   - every part is mated: scene parts fastened, chain revolute, carriage
-//     prismatic — no floating parts
+//   - the gun carriage rides the workcell rail on a prismatic mate; the
+//     channel cheeks bear on the rail sides
+//   - every part is mated: chain revolute, carriage prismatic, and each scene
+//     part fastened to the part that carries it at a seat on their shared
+//     face — no floating parts
 //
 // The lift is a generic Genie/Terex-class boom — a certified access machine.
 // Komatachi builds only the workcell. Concept model, not a certified device.
@@ -35,7 +36,7 @@ const carriageMm = param('carriageMm', 450, {
 // ---- application-sequence parameters (drive geometry directly) ------------
 const extX = param('extX', 0, {
   min: 0, max: 1000,
-  description: 'Robot-hand reach toward the facade (mm). 0 = stowed, ~920 = at the wall for tape work.',
+  description: 'Robot-hand reach toward the facade (mm). 0 = stowed, ~950 = at the wall for tape work.',
 });
 const gripY = param('gripY', 664, {
   min: -700, max: 700,
@@ -79,7 +80,9 @@ const C = {
   windowFrame: '#ffffff', sill: '#e8e2d6', glassDeep: '#141f27', maskBlue: '#8fcbe8', reveal: '#4a4a45',
   foam: '#b98a2e', tape: '#d4a53c',
   fork: '#7d8290', pin: '#262a31',
-};
+} as const;
+type Hex = `#${string}`;
+type Dim = number | typeof extX;   // a size or centre that may follow a param
 
 // ---- scene constants ------------------------------------------------------
 const WALL_X = 3700;
@@ -88,10 +91,12 @@ const L1 = 2600;                                        // lower boom length
 const L2 = 2200;                                        // upper boom length
 const RAIL_X = 420;                                     // workcell rail x on the platform
 const RAIL_BASE_Z = -125;                               // rail base (deck top) in platform frame
+const RAIL_HALF_Y = 60;                                 // rail half-width; the carriage cheeks bear on it
 
-// Shared hinge hardware. The pattern keeps 5 mm radial clearance between the
-// pin hub and the collar bore, and 5-25 mm Y-band clearance everywhere else.
-const HUB_R = 95;          // parent pin hub radius (contains the pivot point)
+// Shared hinge hardware. The pattern keeps 0.5 mm radial clearance between
+// the pin hub and the collar bore (a running fit the mate check accepts as
+// contact), and 5-25 mm Y-band clearance everywhere else.
+const HUB_R = 99.5;        // parent pin hub radius (contains the pivot point)
 const BORE_R = 100;        // child collar bore (joint clearance, declared to the mate)
 const COLLAR_R = 140;      // child collar outer radius
 const HUB_Y = 200;         // pin hub half-width (spans the cheek plates)
@@ -101,23 +106,23 @@ const BEAM_GAP = 150;      // beam ends stop this far short of the pivot
 setCameraTarget(1100, 0, 2700);
 
 // ---- shape helpers --------------------------------------------------------
-function zCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
+function zCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
   return cylinder(h, r, 40).translate(x, y, z - h / 2).color(color);
 }
-function yCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
+function yCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
   return cylinder(h, r, 40).alongAxis([0, 1, 0]).translate(x, y - h / 2, z).color(color);
 }
-function xCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
+function xCylinder(h: number, r: number, x: number, y: number, z: number, color: Hex) {
   return cylinder(h, r, 40).alongAxis([1, 0, 0]).translate(x - h / 2, y, z).color(color);
 }
-function roundedBox(x: number, y: number, z: number, r: number, cx: number, cy: number, cz: number, color: string) {
+function roundedBox(x: Dim, y: Dim, z: Dim, r: number, cx: Dim, cy: Dim, cz: Dim, color: Hex) {
   return box(x, y, z, true).translate(cx, cy, cz).color(color);
 }
 function frameConnector(origin: [number, number, number]) {
-  return { type: 'frame', origin: { kind: 'vec3', value: origin } };
+  return { type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin } };
 }
 function axisConnector(origin: [number, number, number], axis: [number, number, number]) {
-  return { type: 'axis', origin: { kind: 'vec3', value: origin }, axis };
+  return { type: 'axis' as const, origin: { kind: 'vec3' as const, value: origin }, axis };
 }
 // Child-side hinge hardware in the CHILD's part-local frame (origin = pivot,
 // beam along +X): collar + cheek plates + flange, all unioned with the body.
@@ -168,7 +173,9 @@ for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
     .union(roundedBox(300, 300, 16, 4, fx, fy, 12, C.orange));
 }
 const base = lift.part('base', baseGeom);
-base.connector('groundFace', frameConnector([0, 0, 0]));
+// Ground seat: the underside of the front-left outrigger pad.
+const BASE_SEAT: [number, number, number] = [1580, 1080, 0];
+base.connector('groundFace', frameConnector(BASE_SEAT));
 base.connector('lowerPivot', {
   type: 'axis',
   origin: { kind: 'vec3', value: P0 },
@@ -248,7 +255,7 @@ upperBoom.connector('platformPivot', {
 let platformGeom = childHinge(
   roundedBox(990, 800, 60, 16, 635, 0, -155, C.alu)
     .union(roundedBox(1140, 36, 36, 10, 595, 0, -192, C.dark))
-    .union(roundedBox(90, 120, 1000, 12, RAIL_X, 0, 375, C.dark))
+    .union(roundedBox(90, RAIL_HALF_Y * 2, 1000, 12, RAIL_X, 0, 375, C.dark))
     .union(roundedBox(290, 300, 300, 30, 305, -240, 25, C.blue))
     .union(roundedBox(270, 280, 24, 8, 305, -240, 187, C.alu))
     .union(zCylinder(24, 30, 430, -240, 187, C.red)),
@@ -317,7 +324,14 @@ const carriage = lift.part('carriage',
     .union(roundedBox(20, 100, 80, 8, armPalmCx, gripY, 0, C.orange))
     .union(roundedBox(20, 30, 36, 6, armProngCx, gripY.subtract(30), 0, C.orange))
     .union(roundedBox(20, 30, 36, 6, armProngCx, gripY.add(30), 0, C.orange)));
-carriage.connector('slideAxis', axisConnector([0, 0, 0], [0, 0, 1]));
+// The slide axis runs up the centre of the open channel: the rail fills the
+// channel, so the declared clearance is the rail half-width to the cheeks.
+carriage.connector('slideAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 0, 1],
+  jointClearanceRadius: RAIL_HALF_Y,
+});
 
 // ===========================================================================
 // PART: tape-applicator — robotic taping head (compliant roller + tape spool
@@ -339,82 +353,120 @@ tapeApplicator.connector('mountFace', frameConnector([0, 0, 0]));
 // ===========================================================================
 // SCENE PARTS — ground, wall, and the window protection stack. Unioned
 // multi-colour geometry renders single-tone in this kernel, so every colour
-// group is its OWN mated part: frame, glass, mask film, the four tape-ring
-// strips and the two foam zones. All share the wall coordinate frame
-// (connectors at the origin, mated fastened to the ground). The window is
-// centred on y = 0 so the robot hand's lateral stroke can wrap the tape ring.
+// group is its OWN part: frame, glass, mask film, the two tape strips and the
+// two foam zones. All are authored in the wall coordinate frame (origin at
+// the wall foot, wall face at x = 0, lift side at -x) and each is fastened
+// to the part that carries it, at a seat on the face the two parts share.
+// The window is centred on y = 0 so the robot hand's lateral stroke can wrap
+// the tape ring.
 // ===========================================================================
-const ground = lift.part('ground', roundedBox(7600, 4400, 60, 30, 900, 0, -30, C.ground));
-ground.connector('baseFace', frameConnector([0, 0, 0]));
-ground.connector('wallFoot', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootFrame', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootGlass', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootFilm', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootTapeT', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootTapeB', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootFoamLower', frameConnector([WALL_X, 0, 0]));
-ground.connector('wallFootFoamUpper', frameConnector([WALL_X, 0, 0]));
+const WALL_FACE_X = 0;      // facade face toward the lift
+const FRAME_FRONT_X = -165; // frame bars stand this proud of the wall
+const SILL_FRONT_X = -195;  // sill front, carries the mask film
+const SILL_Z0 = 3315;       // sill underside
+const OPEN_Y = 900;         // frame opening width (glass seat)
+const OPEN_Z0 = 3470;       // frame opening bottom
+const OPEN_Z1 = 4930;       // frame opening top
+const TAPE_Y0 = -620;       // tape strips start here and run to +620
+const TAPE_T = 8;
+const TAPE_W = 60;
+const TAPE_TOP_Z0 = 5130;
+const TAPE_BOTTOM_Z0 = 3190;
+const FOAM_T = 20;
+const FOAM_LOWER_Z0 = 2400;
+const FOAM_UPPER_Z1 = 5300;
+const FILM_T = 16;
 
-// geometry drivers — every one of these tracks its tool in the animation
-const hFilm = maskProgress.multiply(1780).add(4);                          // 3300 -> 5080
+const ground = lift.part('ground', roundedBox(7600, 4400, 60, 30, 900, 0, -30, C.ground));
+ground.connector('baseFace', frameConnector(BASE_SEAT));
+ground.connector('wallFoot', frameConnector([WALL_X + 60, 0, 0]));
+
+// geometry drivers — every one of these tracks its tool in the animation.
+// Each grown box is anchored at a fixed corner and only its size takes the
+// param, so the part stays put on its fastened seat while it grows.
+const hFilm = maskProgress.multiply(1780).add(4);                          // 3315 -> 5099
 const lenTapeTop = tapeTopP.multiply(peelTopP.negate().add(1)).multiply(1240).add(4);
 const lenTapeBottom = tapeBottomP.multiply(peelBottomP.negate().add(1)).multiply(1240).add(4);
-const hFoamLower = foamLowerP.multiply(890).add(4);                        // 2400 -> 3290
-const hFoamUpper = foamUpperP.multiply(190).add(4);                        // 5110 -> 5300
+// The foam zones stop at the tape lines: the tape masks the wall next to the
+// window, so the bands meet the strips edge to edge instead of covering them.
+const hFoamLower = foamLowerP.multiply(TAPE_BOTTOM_Z0 - FOAM_LOWER_Z0 - 4).add(4);              // 2400 -> 3190
+const hFoamUpper = foamUpperP.multiply(FOAM_UPPER_Z1 - (TAPE_TOP_Z0 + TAPE_W) - 4).add(4);      // 5190 -> 5300
 
 const facade = lift.part('facade', roundedBox(120, 3600, 5600, 6, 60, 0, 2800, C.wall)
   .union(roundedBox(100, 3560, 5480, 4, 55, 0, 2800, C.wallFace)));
-facade.connector('wallFoot', frameConnector([0, 0, 0]));
+facade.connector('wallFoot', frameConnector([60, 0, 0]));   // centre of the wall footing
 
-// proud white window frame (4 bars + sill), centred on y = 0
+// proud white window frame (4 bars + sill), centred on y = 0, bedded on the
+// wall face
 const frame = lift.part('frame',
-  roundedBox(110, 1120, 110, 8, -110, 0, 4985, C.windowFrame)
-    .union(roundedBox(110, 1120, 110, 8, -110, 0, 3415, C.windowFrame))
-    .union(roundedBox(110, 110, 1520, 8, -110, -505, 4200, C.windowFrame))
-    .union(roundedBox(110, 110, 1520, 8, -110, 505, 4200, C.windowFrame))
-    .union(roundedBox(150, 1120, 60, 10, -120, 0, 3345, C.sill)));
-frame.connector('wallFoot', frameConnector([0, 0, 0]));
+  roundedBox(-FRAME_FRONT_X, 1120, 110, 8, FRAME_FRONT_X / 2, 0, 4985, C.windowFrame)
+    .union(roundedBox(-FRAME_FRONT_X, 1120, 110, 8, FRAME_FRONT_X / 2, 0, 3415, C.windowFrame))
+    .union(roundedBox(-FRAME_FRONT_X, 110, 1520, 8, FRAME_FRONT_X / 2, -505, 4200, C.windowFrame))
+    .union(roundedBox(-FRAME_FRONT_X, 110, 1520, 8, FRAME_FRONT_X / 2, 505, 4200, C.windowFrame))
+    .union(roundedBox(-SILL_FRONT_X, 1120, 60, 10, SILL_FRONT_X / 2, 0, SILL_Z0 + 30, C.sill)));
 
-// near-black glass pane inside the frame opening
-const glass = lift.part('glass', roundedBox(26, 880, 1400, 8, -65, 0, 4200, C.glassDeep));
-glass.connector('wallFoot', frameConnector([0, 0, 0]));
+// near-black glass pane filling the frame opening
+const glass = lift.part('glass',
+  roundedBox(26, OPEN_Y, OPEN_Z1 - OPEN_Z0, 8, -65, 0, (OPEN_Z0 + OPEN_Z1) / 2, C.glassDeep));
 
 // peelable mask film covering the WHOLE window (frame + sill), bottom-up,
-// growing exactly with the spray pass
+// growing exactly with the spray pass; it starts on the sill front
 const film = lift.part('film',
-  roundedBox(16, 1200, hFilm, 6, -207, 0, hFilm.divide(2).add(3300), C.maskBlue));
-film.connector('wallFoot', frameConnector([0, 0, 0]));
+  box(FILM_T, 1200, hFilm).translate(SILL_FRONT_X - FILM_T, -600, SILL_Z0).color(C.maskBlue));
 
 // masking tape strips AROUND the window, ON THE WALL (not on the frame) —
 // one part per strip; the robot hand applies and later peels each strip
 const tapeTop = lift.part('tape-top',
-  roundedBox(8, lenTapeTop, 60, 3, -35, lenTapeTop.divide(2).subtract(620), 5160, C.tape));
-tapeTop.connector('wallFoot', frameConnector([0, 0, 0]));
+  box(TAPE_T, lenTapeTop, TAPE_W).translate(WALL_FACE_X - TAPE_T, TAPE_Y0, TAPE_TOP_Z0).color(C.tape));
 const tapeBottom = lift.part('tape-bottom',
-  roundedBox(8, lenTapeBottom, 60, 3, -35, lenTapeBottom.divide(2).subtract(620), 3220, C.tape));
-tapeBottom.connector('wallFoot', frameConnector([0, 0, 0]));
+  box(TAPE_T, lenTapeBottom, TAPE_W).translate(WALL_FACE_X - TAPE_T, TAPE_Y0, TAPE_BOTTOM_Z0).color(C.tape));
 
 // spray-foam zones: band below the window (top edge grows with the climbing
 // gun) and the strip above it (appears as the gun exits the masked zone)
 const foamLower = lift.part('foam-lower',
-  roundedBox(20, 3200, hFoamLower, 6, -15, 0, hFoamLower.divide(2).add(2400), C.foam));
-foamLower.connector('wallFoot', frameConnector([0, 0, 0]));
+  box(FOAM_T, 3200, hFoamLower).translate(WALL_FACE_X - FOAM_T, -1600, FOAM_LOWER_Z0).color(C.foam));
 const foamUpper = lift.part('foam-upper',
-  roundedBox(20, 3200, hFoamUpper, 6, -15, 0, hFoamUpper.divide(2).add(5110), C.foam));
-foamUpper.connector('wallFoot', frameConnector([0, 0, 0]));
+  box(FOAM_T, 3200, hFoamUpper).translate(WALL_FACE_X - FOAM_T, -1600, TAPE_TOP_Z0 + TAPE_W).color(C.foam));
+
+// Seats, in the wall frame. Each is a point on the face the two parts share,
+// inside the smallest (rest) size of a grown part.
+const seat = (x: number, y: number, z: number): [number, number, number] => [x, y, z];
+const SEATS = {
+  frame: seat(WALL_FACE_X, 0, SILL_Z0 + 30),
+  glass: seat(-65, 0, OPEN_Z0),
+  film: seat(SILL_FRONT_X, 0, SILL_Z0 + 2),
+  tapeTop: seat(WALL_FACE_X, TAPE_Y0 + 2, TAPE_TOP_Z0 + TAPE_W / 2),
+  tapeBottom: seat(WALL_FACE_X, TAPE_Y0 + 2, TAPE_BOTTOM_Z0 + TAPE_W / 2),
+  foamLower: seat(WALL_FACE_X, 0, FOAM_LOWER_Z0 + 2),
+  foamUpper: seat(WALL_FACE_X, 0, TAPE_TOP_Z0 + TAPE_W + 2),
+};
+facade.connector('frameSeat', frameConnector(SEATS.frame));
+frame.connector('wallSeat', frameConnector(SEATS.frame));
+frame.connector('glassSeat', frameConnector(SEATS.glass));
+glass.connector('frameSeat', frameConnector(SEATS.glass));
+frame.connector('filmSeat', frameConnector(SEATS.film));
+film.connector('sillSeat', frameConnector(SEATS.film));
+facade.connector('tapeTopSeat', frameConnector(SEATS.tapeTop));
+tapeTop.connector('wallSeat', frameConnector(SEATS.tapeTop));
+facade.connector('tapeBottomSeat', frameConnector(SEATS.tapeBottom));
+tapeBottom.connector('wallSeat', frameConnector(SEATS.tapeBottom));
+facade.connector('foamLowerSeat', frameConnector(SEATS.foamLower));
+foamLower.connector('wallSeat', frameConnector(SEATS.foamLower));
+facade.connector('foamUpperSeat', frameConnector(SEATS.foamUpper));
+foamUpper.connector('wallSeat', frameConnector(SEATS.foamUpper));
 
 // ===========================================================================
 // MATES — full kinematic graph.
 // ===========================================================================
 lift.mate('base-on-ground', 'base.groundFace', 'ground.baseFace', 'fastened');
 lift.mate('facade-on-ground', 'ground.wallFoot', 'facade.wallFoot', 'fastened');
-lift.mate('frame-on-ground', 'ground.wallFootFrame', 'frame.wallFoot', 'fastened');
-lift.mate('glass-on-ground', 'ground.wallFootGlass', 'glass.wallFoot', 'fastened');
-lift.mate('film-on-ground', 'ground.wallFootFilm', 'film.wallFoot', 'fastened');
-lift.mate('tape-top-on-ground', 'ground.wallFootTapeT', 'tape-top.wallFoot', 'fastened');
-lift.mate('tape-bottom-on-ground', 'ground.wallFootTapeB', 'tape-bottom.wallFoot', 'fastened');
-lift.mate('foam-lower-on-ground', 'ground.wallFootFoamLower', 'foam-lower.wallFoot', 'fastened');
-lift.mate('foam-upper-on-ground', 'ground.wallFootFoamUpper', 'foam-upper.wallFoot', 'fastened');
+lift.mate('frame-on-facade', 'facade.frameSeat', 'frame.wallSeat', 'fastened');
+lift.mate('glass-in-frame', 'frame.glassSeat', 'glass.frameSeat', 'fastened');
+lift.mate('film-on-sill', 'frame.filmSeat', 'film.sillSeat', 'fastened');
+lift.mate('tape-top-on-facade', 'facade.tapeTopSeat', 'tape-top.wallSeat', 'fastened');
+lift.mate('tape-bottom-on-facade', 'facade.tapeBottomSeat', 'tape-bottom.wallSeat', 'fastened');
+lift.mate('foam-lower-on-facade', 'facade.foamLowerSeat', 'foam-lower.wallSeat', 'fastened');
+lift.mate('foam-upper-on-facade', 'facade.foamUpperSeat', 'foam-upper.wallSeat', 'fastened');
 lift.mate('lower-boom-pivot', 'base.lowerPivot', 'lower-boom.basePivot', 'revolute', {
   pose: lowerDeg,
   limitsDeg: [68, 72],
@@ -514,20 +566,20 @@ animationView({
       keys: [
         { atMs: 0, value: 0 },
         { atMs: 2700, value: 0 },
-        { atMs: 2900, value: 923, ease: 'easeInOut' },
-        { atMs: 4100, value: 923 },
+        { atMs: 2900, value: 954, ease: 'easeInOut' },
+        { atMs: 4100, value: 954 },
         { atMs: 4500, value: 0, ease: 'easeInOut' },
         { atMs: 5500, value: 0 },
-        { atMs: 5700, value: 684, ease: 'easeInOut' },
-        { atMs: 7200, value: 684 },
+        { atMs: 5700, value: 715, ease: 'easeInOut' },
+        { atMs: 7200, value: 715 },
         { atMs: 7600, value: 0, ease: 'easeInOut' },
         { atMs: 11900, value: 0 },
-        { atMs: 12100, value: 923, ease: 'easeInOut' },
-        { atMs: 13300, value: 923 },
+        { atMs: 12100, value: 954, ease: 'easeInOut' },
+        { atMs: 13300, value: 954 },
         { atMs: 13500, value: 0, ease: 'easeInOut' },
         { atMs: 14700, value: 0 },
-        { atMs: 14900, value: 684, ease: 'easeInOut' },
-        { atMs: 16100, value: 684 },
+        { atMs: 14900, value: 715, ease: 'easeInOut' },
+        { atMs: 16100, value: 715 },
         { atMs: 16400, value: 0, ease: 'easeInOut' },
         { atMs: 17800, value: 0 },
       ],
