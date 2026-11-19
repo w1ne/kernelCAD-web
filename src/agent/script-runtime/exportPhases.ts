@@ -3,6 +3,7 @@
 import { runScript } from '../../composition/runScript';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportSceneToSTEPAsync } from '../../kernel/backends/occt/sceneStepExport';
+import { exportShapeToSTEPAsync, stepBodyName } from '../../kernel/backends/occt/singleBodyStepExport';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { exportSceneDxf } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
@@ -744,7 +745,7 @@ export async function exportSingleShape(
     case 'gcode':
       return exportSingleGcode(input, shape, targetId, run, diagnostics, featureCount);
     case 'step':
-      return exportSingleStep(input, shape, targetId, diagnostics, featureCount);
+      return exportSingleStep(input, shape, targetId, run, diagnostics, featureCount);
     case 'dxf':
       return exportShapeDxf(shape, targetId, input.options, run, diagnostics, featureCount);
     case '3mf':
@@ -791,10 +792,18 @@ async function exportSingleStep(
   input: ExportInput,
   shape: OcctBackend,
   targetId: string,
+  run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
+  // One named product, with the colour from the target's lineage (the same
+  // precedence as the single-shape GLB export below).
+  const tailRecord = run.records.find((rec) => rec.id === targetId);
+  const color = tailRecord ? lookupColorFromLineage(tailRecord, run.records) : undefined;
+  const bytes = stampStepOriginatingSystem(
+    await exportShapeToSTEPAsync(shape, stepBodyName(input.fileName), color),
+    attributionGenerator(),
+  );
   const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
   const failure = verify ? stepShapeVerifyFailure(shape, targetId) : undefined;
   return { bytes, featureCount, diagnostics: failure ? [...diagnostics, failure] : diagnostics };

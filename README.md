@@ -198,6 +198,10 @@ kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
 
+A script that returns one shape exports as one STEP product named after the
+script file (`model`), with the shape's `.color(...)` when it has one. An
+assembly exports one named, coloured body per part.
+
 Translate an assembly exported from SolidWorks or another CAD application as
 STEP into a KernelCAD project:
 

@@ -1,0 +1,39 @@
+{
+  "invocation": "node --import tsx docs/demos/step-single-body-roundtrip/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 5,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "10.000000",
+      "size": "134425"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "9a55b28ba5294258139279d109af2464800fc5406dea78455322f00b73b2244d",
+  "videoSha256": "63c1bc5f95a9867dadd4d4cf64399cbcf67c2d0c8076f354f8b406b57823d819",
+  "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
+  "scope": "Local kernelCAD Node API: STEP export of a bare shape, import as a KernelCAD project, second STEP export. Both files are read back through the OCCT XCAF STEP reader.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
