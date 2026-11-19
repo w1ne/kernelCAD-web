@@ -20,7 +20,7 @@
 // via `--layer-height 0.2` rather than a JSON blob. `--load-filaments` for
 // material profiles works normally and is used as designed.
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -31,6 +31,13 @@ import {
 } from './profiles';
 
 const CANDIDATE_BINARIES = ['orca-slicer', 'prusa-slicer', 'PrusaSlicer'];
+
+/** Slicer binaries that are valid for the "open a STEP/3MF file" action.
+ *  Kept separate from {@link CANDIDATE_BINARIES} so the gcode slicing path
+ *  keeps its Orca/Prusa-specific CLI contract. */
+const OPEN_CANDIDATE_BINARIES = [
+  'orca-slicer', 'prusa-slicer', 'PrusaSlicer', 'bambu-studio', 'BambuStudio', 'cura',
+];
 
 function isExecutableOnPath(bin: string): string | undefined {
   const pathDirs = (process.env.PATH ?? '').split(':').filter(Boolean);
@@ -49,8 +56,11 @@ function isExecutableOnPath(bin: string): string | undefined {
 /**
  * Locate the slicer binary to invoke. Returns `undefined` if none is
  * available (env var unset/invalid and no candidate on PATH).
+ *
+ * @param candidates - Binary names to search on PATH. Defaults to the
+ *   Orca/Prusa candidates used by the gcode slicing path.
  */
-export function detectSlicer(): string | undefined {
+export function detectSlicer(candidates: readonly string[] = CANDIDATE_BINARIES): string | undefined {
   const envSlicer = process.env.KERNELCAD_SLICER;
   if (envSlicer) {
     try {
@@ -61,7 +71,7 @@ export function detectSlicer(): string | undefined {
       if (onPath) return onPath;
     }
   }
-  for (const bin of CANDIDATE_BINARIES) {
+  for (const bin of candidates) {
     const found = isExecutableOnPath(bin);
     if (found) return found;
   }
@@ -166,5 +176,83 @@ export async function withTempStl<T>(bytes: Uint8Array, fn: (path: string) => Pr
     return await fn(path);
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
+
+/** Fail-closed error tag for {@link openFileInSlicer}. */
+export type OpenSlicerError = 'no-slicer' | 'spawn-failed';
+
+/** Result of asking a locally installed slicer to open a STEP/3MF file. */
+export interface OpenSlicerResult {
+  ok: boolean;
+  file: string;
+  binary?: string;
+  error?: OpenSlicerError;
+  message?: string;
+}
+
+/**
+ * Open an already-exported STEP/3MF file in the locally installed slicer.
+ * Detection prefers `KERNELCAD_SLICER`, then common binaries on PATH. The
+ * process is launched detached and unreferenced so the CLI returns
+ * immediately. If no slicer is found the result is typed
+ * `{ ok: false, error: 'no-slicer' }` and the file is left untouched.
+ */
+export async function openFileInSlicer(filePath: string): Promise<OpenSlicerResult> {
+  const binary = detectSlicer(OPEN_CANDIDATE_BINARIES);
+  if (!binary) {
+    return {
+      ok: false,
+      file: filePath,
+      error: 'no-slicer',
+      message: 'No slicer found. Set KERNELCAD_SLICER or install OrcaSlicer, PrusaSlicer, Bambu Studio, or Cura.',
+    };
+  }
+
+  try {
+    const child = spawn(binary, [filePath], { detached: true, stdio: 'ignore' });
+    const result = await new Promise<OpenSlicerResult>((resolve) => {
+      let settled = false;
+      const done = (value: OpenSlicerResult) => {
+        if (settled) return;
+        settled = true;
+        child.off('spawn', onSpawn);
+        child.off('error', onError);
+        resolve(value);
+      };
+      const onSpawn = () => {
+        child.unref();
+        done({ ok: true, file: filePath, binary });
+      };
+      const onError = (e: Error) => {
+        // Do not unref a child that never started; report the async spawn failure.
+        done({
+          ok: false,
+          file: filePath,
+          binary,
+          error: 'spawn-failed',
+          message: e instanceof Error ? e.message : String(e),
+        });
+      };
+      child.once('spawn', onSpawn);
+      child.once('error', onError);
+      // Defensive bounded wait: in pathological cases where neither 'spawn' nor
+      // 'error' fires, unref the child and treat the open as best-effort success
+      // so the CLI never hangs. Real systems resolve within a tick or two.
+      const t = setTimeout(() => {
+        child.unref();
+        done({ ok: true, file: filePath, binary });
+      }, 1_000);
+      t.unref?.();
+    });
+    return result;
+  } catch (e) {
+    return {
+      ok: false,
+      file: filePath,
+      binary,
+      error: 'spawn-failed',
+      message: e instanceof Error ? e.message : String(e),
+    };
   }
 }
