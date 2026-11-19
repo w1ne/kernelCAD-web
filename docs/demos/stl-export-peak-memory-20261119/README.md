@@ -30,6 +30,24 @@ The "before" file was written by `capture_demo.py --measure before` with the
 `src/` tree of commit `c8a11fc32` (the parent of the fix). To repeat it, check
 out that commit's `src/`, run the command, and restore `src/`.
 
+## Evaluator-like measurement
+
+`evaluator-harness/` runs the export tool in a forked Node child with the
+vendor evaluator flags (768 MB heap limit) and records the child's peak RSS:
+
+```sh
+node docs/demos/stl-export-peak-memory-20261119/evaluator-harness/build.mjs .
+SKIP_EVAL=1 node docs/demos/stl-export-peak-memory-20261119/evaluator-harness/parent.mjs \
+  . turbojet examples/gallery/turbojet-engine.kcad.ts /tmp/turbojet.json
+rm -r .tmp-eval1585
+```
+
+The turbojet assembly (3 611 538 triangles) aborted at the heap limit on the
+base commit, peaked at 1224 to 1227 MB after the first fix, and peaks at 826 to
+837 MB now. Results are in
+[evaluator-measurements.json](verification/evaluator-measurements.json). The
+MP4 shows the first set of measurements only.
+
 This is local measurement and test evidence, not a deployed-runtime claim. See
 the [verification record](verification/verification.txt) and the
 [video inspection contact sheet](verification/video-contact-sheet.png).

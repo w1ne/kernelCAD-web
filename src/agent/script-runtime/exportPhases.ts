@@ -20,6 +20,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
 import { validateExportMeshToleranceOptions } from '../../kernel/backends/occt/backendMesh';
+import type { WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
@@ -667,18 +668,9 @@ async function exportFusedSceneStl(
   featureCount: number,
   options?: Extract<ExportOptions, { format: 'stl' }>,
 ): Promise<ExportResult> {
-  const exported = await exportStlWithOptions(fused, options);
+  const exported = await exportStlWithOptions(fused, options, options?.verify === false);
   if (options?.verify !== false && !exported.report.ok) {
-    return exportFusedSeamFallback(
-      worldParts,
-      exported.bytes,
-      exported.report,
-      targetId,
-      diagnostics,
-      featureCount,
-      options,
-      exported.mesh_deviation,
-    );
+    return fusedSeamFallback(worldParts, fused, exported.report, targetId, diagnostics, featureCount, options);
   }
   const toleranceFailure = meshToleranceFailure(exported.mesh_deviation, targetId);
   return {
@@ -687,6 +679,22 @@ async function exportFusedSceneStl(
     diagnostics: [...diagnostics, ...(toleranceFailure === undefined ? [] : [toleranceFailure])],
     ...(exported.mesh_deviation === undefined ? {} : { mesh_deviation: exported.mesh_deviation }),
   };
+}
+
+/** The fallback meshes every part again, so the torn fused STL is released
+ *  first. It is written again only when the per-part shells do not close either. */
+function fusedSeamFallback(
+  worldParts: WorldFramePart[],
+  fused: OcctBackend,
+  fusedReport: WatertightReport,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  options?: Extract<ExportOptions, { format: 'stl' }>,
+): Promise<ExportResult> {
+  return exportFusedSeamFallback(
+    worldParts, () => exportStlWithOptions(fused, options), fusedReport, targetId, diagnostics, featureCount, options,
+  );
 }
 
 function disposeIntermediateShapes(temps: readonly OcctBackend[]): void {

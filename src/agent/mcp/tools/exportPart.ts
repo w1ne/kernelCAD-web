@@ -96,7 +96,7 @@ async function writeExportedParts(
     const finalPath = pathCheck.resolved!;
     try {
       await mkdir(dirname(finalPath), { recursive: true });
-      await writeFile(finalPath, Buffer.from(p.bytes));
+      await writeFile(finalPath, p.bytes);
     } catch (e) {
       return `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`;
     }
