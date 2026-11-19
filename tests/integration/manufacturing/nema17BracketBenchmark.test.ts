@@ -127,6 +127,23 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     expect(bracketFailures(solid, { ...DEFAULTS, width: 80 })).toEqual([]);
   }, 120_000);
 
+  it('catches base holes left at the default flange depth after a BaseDepth edit', async () => {
+    const edited = setParamValue(SOURCE, 'BaseDepth', 60);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(
+      edited.new_code,
+      'const baseHoleY = thickness.add(baseDepth.subtract(thickness).divide(2));',
+      'const baseHoleY = 22.5;',
+    );
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, baseDepth: 60 });
+
+    // A stale 22.5 mm coordinate still cuts valid through-holes and leaves
+    // volume and bounds unchanged. The STEP interface oracle must catch that
+    // both holes missed the new 32.5 mm flange midpoint.
+    expect(failures).toHaveLength(2);
+    expect(failures).toEqual(['M5 y: 22.5 != 32.5', 'M5 y: 22.5 != 32.5']);
+  }, 120_000);
+
   it('catches M3 tap-drill holes where the motor needs clearance holes', async () => {
     const code = inject(SOURCE, 'throughUpright(1.7)', 'throughUpright(1.25)');
     const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
