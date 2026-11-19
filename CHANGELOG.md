@@ -14,6 +14,15 @@
   offset is computed when the script runs, so a `param()` distance, a
   `param()`-driven coordinate and a spline segment throw
   `feature.invalid-args`. Demo: `docs/demos/sketch-offset/`.
+- The rest-pose joint check no longer reports `mechanism.joint-mesh-gap` for a
+  connector that is inside its part and in the plane of one of its faces, for
+  example a slide connector at the base of a rail that is one solid with its
+  deck. The mesh point-in-solid test counted the faces its ray only touched
+  on an edge, so the connector read as outside the part (45.0 mm for a 90 mm
+  rail). A ray that meets a triangle edge is now repeated along a tilted
+  direction. The DFM wall and moulding checks use the same test. Demo:
+  `docs/demos/point-inside-face-plane-parity-20261119/`.
+
 - `faceSketch`, `sectionSketch`, the flat and section DXF profiles and the
   `inspect` section report keep a clockwise arc that sweeps less than 180°.
   Such an arc was returned as the opposite arc of the same circle, with no error: a
