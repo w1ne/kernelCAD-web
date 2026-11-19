@@ -43,7 +43,7 @@ describe('standard-part range declarations (S3)', () => {
 
   it('lists the remaining standard parts instead of claiming them verified', () => {
     const covered = new Set(STANDARD_PART_RANGES.map((d) => d.member));
-    expect(STANDARD_PART_RANGE_REMAINING).toHaveLength(12);
+    expect(STANDARD_PART_RANGE_REMAINING).toHaveLength(14);
     for (const member of STANDARD_PART_RANGE_REMAINING) {
       expect(covered.has(member as never)).toBe(false);
     }
