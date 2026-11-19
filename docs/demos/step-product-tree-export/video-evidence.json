@@ -1,0 +1,39 @@
+{
+  "invocation": "node --import tsx docs/demos/step-product-tree-export/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 5,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "10.000000",
+      "size": "118214"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "2713e837d7019b3d295f6b3f599dd308f2068716bf52c6e181b9c90b8b98a391",
+  "videoSha256": "7faf546d999793b86e9f684914c04d79fbf774579f96b3d7ec98b2ae0a8cc688",
+  "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
+  "scope": "Local kernelCAD Node API export, then re-import of the written bytes through the OCCT XCAF STEP reader.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

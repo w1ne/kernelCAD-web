@@ -1,0 +1,276 @@
+{
+  "scope": "Local kernelCAD Node API export, then re-import of the written bytes through the OCCT XCAF STEP reader.",
+  "invocation": "node --import tsx docs/demos/step-product-tree-export/capture-demo.mts",
+  "source": "examples/bom/panel-with-fasteners.kcad.ts",
+  "sourceSha256": "ca93d6b276e6fac27a10ebd45442642e32e5537c955e9cfaf5639205d7f797bd",
+  "implementationSha256": {
+    "src/kernel/backends/occt/sceneStepExport.ts": "af63bae1a26f55b309f202fcd26fdc22a511e2d651d61fff4f133c898ab93d8b",
+    "src/kernel/backends/occt/stepAssemblyExport.ts": "6b696c4204246dfd29289db44aeb548bd0e5df1cb7a952499bd344e378aae5a8",
+    "src/kernel/export/stepReproducible.ts": "02b39ad2c720c207b936a6bde145d4be7ce99e466041abf56904e6797ce90051",
+    "src/modeling/backends/occt/lowerers/partPrototype.ts": "0471da8717955a80e2a9089fe71c3cb05b3d2293ac3f278bb2bd06f3f873e460"
+  },
+  "step": {
+    "file": "panel.step",
+    "bytes": 52332,
+    "sha256": "13fe9b37804e799f86c750687cd725d97b1856669e83663f58f62dbcb8730d43"
+  },
+  "tree": {
+    "productCount": 4,
+    "instanceCount": 9,
+    "placedVolumeMm3": 81823.295,
+    "importWarnings": [],
+    "products": [
+      {
+        "product": "plate",
+        "solidCount": 1,
+        "volumeMm3": 72000,
+        "localBoundsMm": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            200,
+            120,
+            3
+          ]
+        },
+        "instances": [
+          {
+            "name": "plate",
+            "path": [
+              "panel",
+              "plate"
+            ],
+            "translationMm": [
+              0,
+              0,
+              0
+            ],
+            "color": "#ff0000"
+          }
+        ]
+      },
+      {
+        "product": "standoff_0",
+        "solidCount": 1,
+        "volumeMm3": 2827.433,
+        "localBoundsMm": {
+          "min": [
+            -15,
+            -15,
+            0
+          ],
+          "max": [
+            15,
+            15,
+            4
+          ]
+        },
+        "instances": [
+          {
+            "name": "standoff_0",
+            "path": [
+              "panel",
+              "standoff_0"
+            ],
+            "translationMm": [
+              20,
+              10,
+              3
+            ],
+            "color": "#ff0000"
+          },
+          {
+            "name": "standoff_1",
+            "path": [
+              "panel",
+              "standoff_1"
+            ],
+            "translationMm": [
+              80,
+              10,
+              3
+            ],
+            "color": "#ff0000"
+          },
+          {
+            "name": "standoff_2",
+            "path": [
+              "panel",
+              "standoff_2"
+            ],
+            "translationMm": [
+              140,
+              10,
+              3
+            ],
+            "color": "#ff0000"
+          }
+        ]
+      },
+      {
+        "product": "bracket",
+        "solidCount": 1,
+        "volumeMm3": 1200,
+        "localBoundsMm": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            30,
+            10,
+            4
+          ]
+        },
+        "instances": [
+          {
+            "name": "bracket",
+            "path": [
+              "panel",
+              "bracket"
+            ],
+            "translationMm": [
+              0,
+              90,
+              3
+            ],
+            "color": "#ff0000"
+          }
+        ]
+      },
+      {
+        "product": "screw_0",
+        "solidCount": 1,
+        "volumeMm3": 35.249,
+        "localBoundsMm": {
+          "min": [
+            -1.9,
+            -1.9,
+            -4
+          ],
+          "max": [
+            1.9,
+            1.9,
+            2
+          ]
+        },
+        "instances": [
+          {
+            "name": "screw_0",
+            "path": [
+              "panel",
+              "screw_0"
+            ],
+            "translationMm": [
+              20,
+              110,
+              3
+            ],
+            "color": "#ff0000"
+          },
+          {
+            "name": "screw_1",
+            "path": [
+              "panel",
+              "screw_1"
+            ],
+            "translationMm": [
+              80,
+              110,
+              3
+            ],
+            "color": "#ff0000"
+          },
+          {
+            "name": "screw_2",
+            "path": [
+              "panel",
+              "screw_2"
+            ],
+            "translationMm": [
+              140,
+              110,
+              3
+            ],
+            "color": "#ff0000"
+          },
+          {
+            "name": "screw_3",
+            "path": [
+              "panel",
+              "screw_3"
+            ],
+            "translationMm": [
+              200,
+              110,
+              3
+            ],
+            "color": "#ff0000"
+          }
+        ]
+      }
+    ]
+  },
+  "bom": {
+    "rows": [
+      {
+        "name": "plate",
+        "quantity": 1,
+        "kind": "fabricated",
+        "instances": [
+          "plate"
+        ]
+      },
+      {
+        "name": "standoff_0",
+        "quantity": 3,
+        "kind": "fabricated",
+        "instances": [
+          "standoff_0",
+          "standoff_1",
+          "standoff_2"
+        ]
+      },
+      {
+        "name": "bracket",
+        "quantity": 1,
+        "kind": "fabricated",
+        "instances": [
+          "bracket"
+        ]
+      },
+      {
+        "name": "screw_0",
+        "quantity": 4,
+        "kind": "purchased",
+        "instances": [
+          "screw_0",
+          "screw_1",
+          "screw_2",
+          "screw_3"
+        ]
+      }
+    ],
+    "totals": {
+      "partCount": 9,
+      "uniquePartCount": 4,
+      "totalMassG": 204.918
+    }
+  },
+  "checks": {
+    "bomQuantitiesMatchStepInstanceCounts": true,
+    "placementsMatchScript": true
+  },
+  "limits": [
+    "Parts are grouped only when their source feature content is identical; a placement baked into the shape (translate/rotate before part()) makes a separate product.",
+    "Other CAD systems were not used to open the file.",
+    "The file hash is for this capture only: OCCT orders the colour style entities of a multi-colour scene differently between writes."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
