@@ -16,10 +16,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateScript } from '../../../src/composition/scriptEvaluation';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
-import { inspectStepBuffer, type StepSolidReport } from '../../../src/kernel/import/inspectStep';
+import { importStepShape, inspectStepBuffer, type StepSolidReport } from '../../../src/kernel/import/inspectStep';
 import { setParamValue } from '../../../src/modeling/edits/setParamValue';
 
 const FIXTURE = join(__dirname, '../../fixtures/manufacturing/pcb-enclosure-m3.kcad.ts');
@@ -38,7 +38,7 @@ function expectedVolume(p: TrayParams): number {
   return shell + bosses - pilots - usbC;
 }
 
-async function buildAndReimport(code: string): Promise<StepSolidReport> {
+async function exportStepBytes(code: string): Promise<Buffer> {
   const evaluated = await evaluateScript({ code, scriptDir: join(__dirname, '../../fixtures/manufacturing') });
   expect(evaluated.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   expect(evaluated.exitCode).toBe(0);
@@ -46,9 +46,18 @@ async function buildAndReimport(code: string): Promise<StepSolidReport> {
 
   const exported = await runAndExport({ code, fileName: 'pcb-enclosure-m3.kcad.ts', format: 'step' });
   expect(exported.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-  const report = await inspectStepBuffer(Buffer.from(exported.bytes), 'pcb-enclosure-m3.step');
+  return Buffer.from(exported.bytes);
+}
+
+async function buildAndInspect(code: string): Promise<{ bytes: Buffer; solid: StepSolidReport }> {
+  const bytes = await exportStepBytes(code);
+  const report = await inspectStepBuffer(bytes, 'pcb-enclosure-m3.step');
   expect(report.solidCount).toBe(1);
-  return report.solids[0];
+  return { bytes, solid: report.solids[0] };
+}
+
+async function buildAndReimport(code: string): Promise<StepSolidReport> {
+  return (await buildAndInspect(code)).solid;
 }
 
 /** Every gate failure for `solid` against the authored tray `p`; [] is a pass. */
@@ -87,18 +96,63 @@ function inject(code: string, from: string, to: string): string {
   return code.replace(from, to);
 }
 
+/** Check the USB-C cut from the re-imported STEP using small volumes inside the front wall. */
+async function usbOpeningFailures(bytes: Buffer, p: TrayParams): Promise<string[]> {
+  const shape = await importStepShape(bytes);
+  const probeVolume = (x: number, z: number): number => {
+    const unplaced = OcctBackend.box(0.2, p.wall - 0.5, 0.2);
+    const probe = unplaced.translate(x - 0.1, 0.25, z - 0.1);
+    unplaced.dispose();
+    try {
+      return shape.intersectionVolume(probe);
+    } finally {
+      probe.dispose();
+    }
+  };
+
+  try {
+    const cx = p.width / 2;
+    const cz = p.floor + 6.6 + 1.8;
+    const failures: string[] = [];
+    if (probeVolume(cx, cz) > 1e-4) failures.push('USB-C expected centre is still solid');
+    if (probeVolume(cx - 5, cz) < 1e-4) failures.push('USB-C opening extends past its expected left edge');
+    if (probeVolume(cx + 5, cz) < 1e-4) failures.push('USB-C opening extends past its expected right edge');
+    return failures;
+  } finally {
+    shape.dispose();
+  }
+}
+
 describe('manufacturing benchmark 01: Pi 4 tray with M3 bosses and USB-C opening (#1227)', () => {
   beforeAll(async () => { await initOcct(); }, 60_000);
 
   it('re-imports from STEP as one solid with the closed-form volume and the authored interfaces', async () => {
-    expect(trayFailures(await buildAndReimport(SOURCE), DEFAULTS)).toEqual([]);
+    const { bytes, solid } = await buildAndInspect(SOURCE);
+    expect(trayFailures(solid, DEFAULTS)).toEqual([]);
+    expect(await usbOpeningFailures(bytes, DEFAULTS)).toEqual([]);
   }, 120_000);
 
   it('a Width edit grows the solid by the width delta and keeps the hole pattern centred', async () => {
     const edited = setParamValue(SOURCE, 'Width', 120);
     if (!edited.ok) throw new Error(edited.error);
-    const solid = await buildAndReimport(edited.new_code);
+    const { bytes, solid } = await buildAndInspect(edited.new_code);
     expect(trayFailures(solid, { ...DEFAULTS, width: 120 })).toEqual([]);
+    expect(await usbOpeningFailures(bytes, { ...DEFAULTS, width: 120 })).toEqual([]);
+  }, 120_000);
+
+  it('catches the USB-C opening left at its default X after a Width edit', async () => {
+    const staleX = inject(SOURCE, 'cx.subtract(4.7)', 'cx.multiply(0).add(42.8)');
+    const edited = setParamValue(staleX, 'Width', 120);
+    if (!edited.ok) throw new Error(edited.error);
+    const { bytes, solid } = await buildAndInspect(edited.new_code);
+
+    // The shifted port removes the same volume and leaves every bounding box
+    // and circular interface unchanged; only a local STEP probe at the new
+    // tray centre sees that solid still blocks the expected connector opening.
+    expect(trayFailures(solid, { ...DEFAULTS, width: 120 })).toEqual([]);
+    expect(await usbOpeningFailures(bytes, { ...DEFAULTS, width: 120 })).toEqual([
+      'USB-C expected centre is still solid',
+    ]);
   }, 120_000);
 
   it('a Depth edit keeps the 49 mm hole pattern centred on the resized tray', async () => {

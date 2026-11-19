@@ -1,0 +1,2 @@
+Command: npx eslint tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts
+Result: passed (exit code 0; no diagnostics)

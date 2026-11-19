@@ -1,0 +1,24 @@
+USB-C opening after Width edit — local regression evidence
+
+Fixture: tests/fixtures/manufacturing/pcb-enclosure-m3.kcad.ts
+Test: tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts
+Edit: Width 95 mm -> 120 mm
+Target opening: x=55.3..64.7 mm, z=8.6..12.2 mm, through the 2.5 mm front wall
+Probe section: x/z sample volume 0.2 x 0.2 mm; y=0.25..2.0 mm
+
+The positive STEP export/re-import checks the opening center at x=60 mm is
+clear and samples the expected wall at x=55 and x=65 mm. The seeded mutation
+holds the opening's left edge at its original 42.8 mm datum, so its center
+stays at x=47.5 mm after the tray widens. Existing volume, bounding-box, and
+circular boss-hole checks remain passing; the new expected-center probe finds
+material in the connector opening and rejects the mutant.
+
+Focused command: 3 passed, 6 skipped. Full case file: 9 passed, 0 failed.
+ESLint on the modified TypeScript test passed with exit code 0. `npm run
+typecheck` passed with exit code 0. See `test-output.txt`,
+`full-test-output.txt`, `lint-output.txt`, and `typecheck-output.txt` for
+captured results.
+
+Evidence scope: local OCCT evaluation and STEP export/re-import. This does not
+claim deployed behavior, physical board fit, machining inspection, or hardware
+acceptance.
