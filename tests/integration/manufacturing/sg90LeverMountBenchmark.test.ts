@@ -21,8 +21,8 @@
 //      fastened mate on the axis connectors) fail. The pocket and wrong-mate
 //      defects are caught by the build itself.
 // Not verified: SG90 supplier variant, spline engagement, screws, stall
-// torque. Ear-hole centers are checked separately from volume and boxes so
-// translating a clearance hole without changing either cannot false-pass.
+// torque. Ear-hole centers and through-depth are checked separately from
+// volume and boxes so a misplaced or blind clearance hole cannot false-pass.
 // Tolerances are this fixture's own: 0.1 % on volume, 0.01 mm on positions,
 // and 1e-6 mm / 1e-6 degrees on solver poses.
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
@@ -145,7 +145,7 @@ function stepFailures(solids: StepSolidReport[], reach: number): string[] {
   return failures;
 }
 
-/** Check the plate's two M2 ear-hole axes against the authored interface. */
+/** Check the plate's M2 ear-hole axes and cylindrical depth against the authored interface. */
 function earHoleFailures(solids: StepSolidReport[]): string[] {
   if (solids.length !== 3) return [`solids: ${solids.length} != 3`];
   const plate = [...solids].sort((a, b) => a.bboxExact.min[2] - b.bboxExact.min[2])[1];
@@ -162,6 +162,9 @@ function earHoleFailures(solids: StepSolidReport[]): string[] {
       Math.hypot(hole.axisOrigin[0] - x, hole.axisOrigin[1] - y) < 0.01,
     );
     if (!matchingHole) failures.push(`missing M2 ear-hole axis at (${x}, ${y})`);
+    else if (Math.abs(matchingHole.depthMm - 4) >= 0.01) {
+      failures.push(`M2 ear hole at (${x}, ${y}) depth ${matchingHole.depthMm.toFixed(2)} mm != 4.00 mm`);
+    }
   }
   return failures;
 }
@@ -279,5 +282,27 @@ describe('manufacturing benchmark 08: SG90 servo lever on a printed plate (#1227
     // cylindrical cut. The independent interface check must still reject it.
     expect(stepFailures(solids, DEFAULT_REACH)).toEqual([]);
     expect(earHoleFailures(solids)).toContain('missing M2 ear-hole axis at (0, -18.95)');
+  }, 120_000);
+
+  it('catches M2 ear holes that stop 0.1 mm short of the plate surface', async () => {
+    const code = inject(SOURCE,
+      'const m2Clearance = cylinder(20, 1.2);',
+      'const m2Clearance = cylinder(3.9, 1.2).translate(0, 0, 11.9);');
+    const solids = await exportSolids(code);
+    const plate = [...solids].sort((a, b) => a.bboxExact.min[2] - b.bboxExact.min[2])[1];
+    const m2Holes = plate.holes.filter((hole) => Math.abs(hole.diameterMm - 2.4) < 0.05);
+
+    // This defect leaves the plate volume, outside box, hole diameter and axes
+    // unchanged within their existing tolerances. The STEP oracle must inspect
+    // the actual bore extent instead of accepting the short bore as clearance.
+    // Hole detection reports kind='through' here because its end probe skips
+    // the 0.1 mm cap; depthMm still measures the 3.9 mm cylindrical wall.
+    expect(stepFailures(solids, DEFAULT_REACH)).toEqual([]);
+    expect(m2Holes).toHaveLength(2);
+    expect(m2Holes.every((hole) => Math.abs(hole.depthMm - 3.9) < 0.01)).toBe(true);
+    expect(earHoleFailures(solids)).toEqual([
+      'M2 ear hole at (0, -18.95) depth 3.90 mm != 4.00 mm',
+      'M2 ear hole at (0, 8.25) depth 3.90 mm != 4.00 mm',
+    ]);
   }, 120_000);
 });

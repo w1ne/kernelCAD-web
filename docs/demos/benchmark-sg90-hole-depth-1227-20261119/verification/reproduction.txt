@@ -1,0 +1,19 @@
+Baseline reproduction — 2026-11-19 UTC
+
+Command:
+  npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts \
+    -t 'stop 0.1 mm' --reporter=dot
+
+Seeded defect:
+  Replace cylinder(20, 1.2) with cylinder(3.9, 1.2).translate(0, 0, 11.9).
+  This leaves a 0.1 mm cap over each ear bore.
+
+Measured STEP result:
+  Both bores retain Ø2.4 mm and their authored axes.
+  Both report kind='through' and depthMm=3.9000000000000004.
+  The prior volume/bounding-box gate passes, and the prior earHoleFailures
+  returns [] despite the 0.1 mm cap.
+
+The regression first failed at the depth acceptance assertion, proving that the
+old oracle accepted the mutation. The fixed check rejects both bores because
+their cylindrical depth is 3.90 mm instead of 4.00 mm.
