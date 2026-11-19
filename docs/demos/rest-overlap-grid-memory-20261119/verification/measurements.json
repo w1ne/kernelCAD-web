@@ -1,0 +1,102 @@
+{
+ "date": "2026-11-19",
+ "method": "One forked Node child per run with the vendor evaluator flags (--max-old-space-size=768 --no-wasm-tier-up --no-wasm-dynamic-tiering, KERNELCAD_MCP_MODE=hosted) loads an esbuild bundle of src/agent/mcp/toolRegistry.ts and runs callMcpTool('evaluate_script'). peakRssMb is VmHWM of the child; sampledPeakRssMb is the highest 250 ms /proc statm sample. The three 'after' runs ran at the same time on one 16-core host, so their seconds are longer than a single run (about 260 s).",
+ "heapCapMb": 768,
+ "rssCapMb": 1024,
+ "sources": {
+  "before": "9b7ba3241 (origin/develop)",
+  "after": "9579c7d05"
+ },
+ "plateGrid": {
+  "scenario": "meshOverlapVolume of two 460 x 1200 x 5 mm boxes, the second moved up by 5 - 3e-14 mm (vitest worker)",
+  "overlapBoxMm": "460 x 1200 x 3e-14",
+  "before": {
+   "cells": 8832000,
+   "cellMm": 0.25,
+   "milliseconds": 14538,
+   "heapUsedAfterMb": 1658
+  },
+  "after": {
+   "cells": 874290,
+   "cellMm": 0.7947277522035769,
+   "milliseconds": 212,
+   "heapGrowthMb": 3,
+   "arrayBuffersGrowthMb": 35
+  }
+ },
+ "turbojet": {
+  "source": "examples/gallery/turbojet-engine.kcad.ts",
+  "parts": 42,
+  "worstPairBefore": {
+   "dims": [
+    1840,
+    1,
+    4800
+   ],
+   "overlapBoxMm": [
+    460,
+    2.8e-14,
+    1200
+   ],
+   "cells": 8832000,
+   "seconds": 12.7,
+   "heapMb": 1617,
+   "note": "Measured with a 4000 MB heap limit and a log line added to the bundle."
+  },
+  "before": {
+   "completed": false,
+   "seconds": 147.7,
+   "sampledPeakRssMb": 1383,
+   "signal": "SIGABRT",
+   "failure": "JavaScript heap out of memory"
+  },
+  "beforeWith6000MbHeap": {
+   "completed": true,
+   "peakRssMb": 3389,
+   "diagnosticCount": 50,
+   "diagnosticsSha256Prefix": "ea33d882c5c1b1de"
+  },
+  "after": [
+   {
+    "completed": true,
+    "seconds": 370.1,
+    "peakRssMb": 783,
+    "sampledPeakRssMb": 746,
+    "underCap": true,
+    "evaluateOk": false,
+    "mechanism": "broken",
+    "diagnosticCount": 50,
+    "diagnosticsSha256": "ea33d882c5c1b1de72357c5f579ca4c2c7013e0a402e26d3c38a907a2996cfb2"
+   },
+   {
+    "completed": true,
+    "seconds": 374.1,
+    "peakRssMb": 728,
+    "sampledPeakRssMb": 715,
+    "underCap": true,
+    "evaluateOk": false,
+    "mechanism": "broken",
+    "diagnosticCount": 50,
+    "diagnosticsSha256": "ea33d882c5c1b1de72357c5f579ca4c2c7013e0a402e26d3c38a907a2996cfb2"
+   },
+   {
+    "completed": true,
+    "seconds": 372.8,
+    "peakRssMb": 778,
+    "sampledPeakRssMb": 742,
+    "underCap": true,
+    "evaluateOk": false,
+    "mechanism": "broken",
+    "diagnosticCount": 50,
+    "diagnosticsSha256": "ea33d882c5c1b1de72357c5f579ca4c2c7013e0a402e26d3c38a907a2996cfb2"
+   }
+  ],
+  "diagnosticCount": 50
+ },
+ "test": {
+  "name": "restPoseContactGate: wide, thin overlap box",
+  "result": "31 files, 201 tests passed, 17 skipped",
+  "command": "npx vitest run tests/unit/assemblies/restPoseContactGate.test.ts"
+ },
+ "scope": "Local measurement and regression tests. Not a deployed-runtime result."
+}
