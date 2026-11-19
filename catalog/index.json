@@ -74191,7 +74191,7 @@
       "id": "emergency-power-off-station",
       "kit": "data-center-infrastructure",
       "title": "Emergency power-off station",
-      "description": "Wall-mounted protected control station with actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Wall-mounted protected control station with a red mushroom actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer, actuator polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -74211,7 +74211,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/emergency-power-off-station.kcad.ts",
       "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
-      "sourceSha256": "3070d3bf8b68ab9171cbfbf9e43dd35feccba7f345256d6a12fa656101fcc512",
+      "sourceSha256": "a7c1ddd8ad61e695da3cb28f9805134cdccc74793d180addbc7cc4ce5c40e61d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -74234,16 +74234,24 @@
           "type": "color",
           "default": "#f0c330",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "actuatorPolymer",
+          "type": "color",
+          "default": "#d42a20",
+          "label": "Actuator polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#b43b31",
-          "polymer": "#f0c330"
+          "polymer": "#f0c330",
+          "actuatorPolymer": "#d42a20"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "polymer": "#263e48",
+          "actuatorPolymer": "#e02a1c"
         }
       },
       "stats": {
@@ -74251,7 +74259,7 @@
         "sizeM": [
           0.32,
           0.42,
-          0.2895
+          0.2675
         ],
         "minUpM": 0,
         "materials": 1
@@ -74263,7 +74271,6 @@
           "parts": [
             "back-plate",
             "guard-hood",
-            "actuator-base",
             "label-panel"
           ],
           "param": "steel"
@@ -74273,9 +74280,17 @@
           "color": "#f0c330",
           "parts": [
             "control-body",
-            "push-button"
+            "actuator-base"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "actuatorPolymer",
+          "color": "#d42a20",
+          "parts": [
+            "push-button"
+          ],
+          "param": "actuatorPolymer"
         }
       ]
     },
