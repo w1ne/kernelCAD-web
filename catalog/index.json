@@ -357540,7 +357540,7 @@
       "id": "tower-base-flange",
       "kit": "wind-energy",
       "title": "Tower base flange",
-      "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
+      "description": "Circular tower base flange with a raised shell stub and eight galvanized anchor studs with nuts on the bolt circle. Controls: scale and structural steel, galvanized anchor steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -357559,8 +357559,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-base-flange.kcad.ts",
       "preview": "/assets/wind-energy-tower-base-flange.png",
-      "sourceSha256": "24f909a3410721c9843b2c59b7437e408ff41aad0aec4e001170d927d6b0a3e2",
-      "triangleBudget": 900,
+      "sourceSha256": "c99d92b1523eb30e802361caa3f25fb343ce16659b17895fc46051721b2c0ff3",
+      "triangleBudget": 1100,
       "params": [
         {
           "name": "scale",
@@ -357578,23 +357578,23 @@
           "label": "Structural steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "anchorSteel",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#a9b6b7",
+          "label": "Galvanized anchor steel"
         }
       ],
       "presets": {
         "weathered": {
           "structuralSteel": "#425258",
-          "stainlessSteel": "#c7d2d5"
+          "anchorSteel": "#8c9896"
         },
         "highVisibility": {
           "structuralSteel": "#d8a62b"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 792,
         "sizeM": [
           0.62,
           0.63,
@@ -357614,19 +357614,27 @@
           "param": "structuralSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "anchorSteel",
+          "color": "#a9b6b7",
           "parts": [
             "anchor-0",
+            "anchor-nut-0",
             "anchor-1",
+            "anchor-nut-1",
             "anchor-2",
+            "anchor-nut-2",
             "anchor-3",
+            "anchor-nut-3",
             "anchor-4",
+            "anchor-nut-4",
             "anchor-5",
+            "anchor-nut-5",
             "anchor-6",
-            "anchor-7"
+            "anchor-nut-6",
+            "anchor-7",
+            "anchor-nut-7"
           ],
-          "param": "stainlessSteel"
+          "param": "anchorSteel"
         }
       ]
     },
