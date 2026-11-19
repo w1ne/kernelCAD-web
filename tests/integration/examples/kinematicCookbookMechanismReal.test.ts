@@ -21,6 +21,13 @@
 // inside the bracket through the ±90° shoulder travel. The beam now laps the
 // bracket in the adjacent Y slab, with the joint origin on the shared face.
 //
+// Snippet 6 failed it with 16 errors: the latch parts sat in separate Y
+// layers 4 mm apart, the keeper had no bearing face on the housing, and the
+// [-60°, 130°] handle limit ran through the over-center point, where the
+// pinned loop cannot close. Mated parts now share a face on the pin plane,
+// the keeper rides a housing rail, and the mate limits are the latched-side
+// travel.
+//
 // VERIFIED_REAL only grows. Add a snippet here when it is rebuilt.
 
 import { describe, expect, it } from 'vitest';
@@ -33,6 +40,7 @@ const VERIFIED_REAL = [
   '03-cantilever-beam-stress.kcad.ts',
   '04-scissor-jack-swept.kcad.ts',
   '05-clamshell-hinge-swept.kcad.ts',
+  '06-over-center-latch-reachable.kcad.ts',
   '07-static-hold-servo-arm.kcad.ts',
 ];
 

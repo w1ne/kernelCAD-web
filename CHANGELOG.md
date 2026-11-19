@@ -1,5 +1,11 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 16 errors. Mated latch parts share a face on the pin plane, the
+  keeper rides a housing rail, and the mate limits are the latched-side travel
+  (handle -60° to -10°). The sweep still runs past the limits and reports the
+  over-center point as `kinematic.loop.branch-flip`.
 - Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 4 errors because the beam was inside the wall block and inside the
