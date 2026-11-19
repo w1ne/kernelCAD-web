@@ -241118,7 +241118,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/conveyor-transfer-tower.kcad.ts",
       "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
-      "sourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+      "sourceSha256": "6a13c36fc6a56b433d8d46a01ad88f99a6ce04d8e7358ac94b06ac19f896fa5b",
       "triangleBudget": 4400,
       "params": [
         {
@@ -241215,8 +241215,10 @@
             "rib-side-7",
             "rib-front-8",
             "rib-side-8",
+            "roof",
             "roof-vent",
-            "tail-house"
+            "tail-house",
+            "tail-house-roof"
           ],
           "param": "cladding"
         },
@@ -241230,7 +241232,6 @@
             "column-rb",
             "girt-2000",
             "girt-4000",
-            "roof",
             "roof-vent-cap",
             "roof-vent-stay-a",
             "roof-vent-stay-b",
@@ -241244,7 +241245,6 @@
             "gallery-frame-5",
             "gallery-frame-6",
             "gallery-collar",
-            "tail-house-roof",
             "trestle-leg-f-a",
             "trestle-leg-f-b",
             "trestle-leg-b-a",

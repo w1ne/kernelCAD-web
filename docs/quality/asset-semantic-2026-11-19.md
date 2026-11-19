@@ -54,6 +54,45 @@ mismatch.
   checks. It does not show deployment, pump performance, simulation or hardware
   acceptance.
 
+## Recycling transfer-tower review — 19 November
+
+PR [#1258](https://github.com/w1ne/kernelCAD-web/pull/1258) was checked first;
+it is merged with all 17 reported CI checks successful and no submitted review.
+The active catalog PR
+[#1507](https://github.com/w1ne/kernelCAD-web/pull/1507) was open at pre-sample
+head `51075320d0`; its applicable checks were successful, no review had been
+submitted, and GitHub reported `BLOCKED`.
+
+Reviewed five rendered `recycling-facility` previews:
+`conveyor-transfer-tower`, `conveyor-transfer-chute`, `color-sorter-camera`,
+`inclined-belt-conveyor`, and `magnet-cleanout-drum`. Exact open issue and PR
+path checks found no selected target overlap, including the known fix branches
+#1298, #1305, #1307 and #1308. All five live page/source/preview routes returned
+HTTP 200 and their source and preview hashes matched the local baseline.
+Observations and hashes are in the
+[five-preview ledger](../../artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/preview-review.md).
+
+The transfer tower's main roof and tail-house roof sheets used the `structure`
+finish even though the enclosure uses the existing `cladding` control. Both
+roof sheets now use `cladding`; columns, access steel and the vent cap stay on
+`structure`. The model remains at 2,054 triangles, with its envelope, controls,
+presets and budget unchanged. The private dated reference comparison is in
+`kernelCAD-private/docs/competitors/2026-11-19-recycling-transfer-tower-roof-material-review.md`.
+
+The exported-GLB regression failed against the baseline palette and passes after
+the correction (1/1); recycling-facility ESLint is clean. The full catalog
+integration suite passed 160 files / 230 tests, including source/export/index
+freshness. The kit quality scan passes 153/153 (100%); the global scan reports
+2,398/2,402 (99.83%), with four unchanged below-gate assets in
+`standard-components`. Re-rendered all 153 kit previews, reopened three, and
+regenerated the index; only the transfer-tower row changed and its source SHA
+matches. The 15-second local MP4 is in the
+[handoff bundle](../../artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/README.md).
+
+The public site still serves the baseline preview because this branch is not
+deployed. The demo shows local software previews and regression only, not
+deployment, equipment performance, simulation or hardware acceptance.
+
 The source and preview correction is local to this feature branch. The public
 site remains at the pre-change baseline because no deployment was performed.
 

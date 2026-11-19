@@ -1,0 +1,325 @@
+{
+  "id": "conveyor-transfer-tower",
+  "kit": "recycling-facility",
+  "title": "Conveyor transfer tower",
+  "description": "Enclosed conveyor transfer tower at about real size: clad square tower on corner columns with mono-pitch roof, roof vent and louvre band, inclined clad conveyor gallery with window strip arriving from a tail house over a braced trestle, outgoing open conveyor with load and head pulley at the base, personnel door with steps, caged ladder to a railed landing. Material controls: cladding, structure, gallery and belts. plant, weathered, highVisibility and oxide presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "recycling",
+    "conveyor",
+    "transfer tower",
+    "conveyor gallery",
+    "trestle",
+    "cladding",
+    "materials recovery",
+    "waste management",
+    "sorting",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "recycling-facility",
+    "materials-recovery",
+    "waste-management",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/recycling-facility/conveyor-transfer-tower.kcad.ts",
+  "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
+  "sourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+  "triangleBudget": 4400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "cladding",
+      "type": "color",
+      "default": "#b9c2c4",
+      "label": "Tower cladding (profiled sheet)"
+    },
+    {
+      "name": "structure",
+      "type": "color",
+      "default": "#e0a526",
+      "label": "Structure, ladder and rails (paint)"
+    },
+    {
+      "name": "gallery",
+      "type": "color",
+      "default": "#5d7f8c",
+      "label": "Gallery cladding"
+    },
+    {
+      "name": "belts",
+      "type": "color",
+      "default": "#24272a",
+      "label": "Belts (rubber)"
+    }
+  ],
+  "presets": {
+    "plant": {
+      "cladding": "#b9c2c4",
+      "structure": "#e0a526",
+      "gallery": "#5d7f8c",
+      "belts": "#24272a"
+    },
+    "weathered": {
+      "cladding": "#9a9690",
+      "structure": "#8a7a52",
+      "gallery": "#6e6a62",
+      "belts": "#2c2a28"
+    },
+    "highVisibility": {
+      "cladding": "#e2e4e2",
+      "structure": "#f0c419",
+      "gallery": "#2f6b8f",
+      "belts": "#1c1d1e"
+    },
+    "oxide": {
+      "cladding": "#8a3a2c",
+      "structure": "#3a3d40",
+      "gallery": "#b9c2c4",
+      "belts": "#24272a"
+    }
+  },
+  "stats": {
+    "triangles": 2054,
+    "sizeM": [
+      17.83,
+      6.8,
+      3.902507
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "cladding",
+      "color": "#b9c2c4",
+      "parts": [
+        "tower-body",
+        "rib-front-0",
+        "rib-side-0",
+        "rib-front-1",
+        "rib-side-1",
+        "rib-front-2",
+        "rib-side-2",
+        "rib-front-3",
+        "rib-side-3",
+        "rib-front-4",
+        "rib-side-4",
+        "rib-front-5",
+        "rib-side-5",
+        "rib-front-6",
+        "rib-side-6",
+        "rib-front-7",
+        "rib-side-7",
+        "rib-front-8",
+        "rib-side-8",
+        "roof-vent",
+        "tail-house"
+      ],
+      "param": "cladding"
+    },
+    {
+      "name": "structure",
+      "color": "#e0a526",
+      "parts": [
+        "column-lf",
+        "column-rf",
+        "column-lb",
+        "column-rb",
+        "girt-2000",
+        "girt-4000",
+        "roof",
+        "roof-vent-cap",
+        "roof-vent-stay-a",
+        "roof-vent-stay-b",
+        "louvre-frame",
+        "gallery-roof-trim",
+        "gallery-frame-0",
+        "gallery-frame-1",
+        "gallery-frame-2",
+        "gallery-frame-3",
+        "gallery-frame-4",
+        "gallery-frame-5",
+        "gallery-frame-6",
+        "gallery-collar",
+        "tail-house-roof",
+        "trestle-leg-f-a",
+        "trestle-leg-f-b",
+        "trestle-leg-b-a",
+        "trestle-leg-b-b",
+        "trestle-brace-a-1",
+        "trestle-brace-a-2",
+        "trestle-brace-b-1",
+        "trestle-brace-b-2",
+        "trestle-head",
+        "out-stringer-f",
+        "out-stringer-b",
+        "out-head-pulley",
+        "out-leg-2600-f",
+        "out-leg-2600-b",
+        "out-leg-tie-2600",
+        "out-leg-4400-f",
+        "out-leg-4400-b",
+        "out-leg-tie-4400",
+        "out-leg-6400-f",
+        "out-leg-6400-b",
+        "out-leg-tie-6400",
+        "out-rail-post-2600",
+        "out-rail-post-4400",
+        "out-rail-post-6400",
+        "out-rail",
+        "door-frame",
+        "ladder-stile-l",
+        "ladder-stile-r",
+        "ladder-rung-0",
+        "ladder-rung-1",
+        "ladder-rung-2",
+        "ladder-rung-3",
+        "ladder-rung-4",
+        "ladder-rung-5",
+        "ladder-rung-6",
+        "ladder-rung-7",
+        "ladder-rung-8",
+        "ladder-rung-9",
+        "ladder-rung-10",
+        "ladder-rung-11",
+        "ladder-rung-12",
+        "ladder-rung-13",
+        "ladder-rung-14",
+        "cage-hoop-0",
+        "cage-hoop-1",
+        "cage-hoop-2",
+        "cage-hoop-3",
+        "cage-hoop-4",
+        "cage-hoop-5",
+        "cage-strap-l",
+        "cage-strap-c",
+        "cage-strap-r",
+        "ladder-bracket-1500",
+        "ladder-bracket-3000",
+        "landing-post--150",
+        "landing-post-450",
+        "landing-post-1350",
+        "landing-rail",
+        "landing-midrail"
+      ],
+      "param": "structure"
+    },
+    {
+      "name": "plinth",
+      "color": "#a39f96",
+      "parts": [
+        "plinth",
+        "trestle-foot-f",
+        "trestle-foot-b",
+        "step-0",
+        "step-1"
+      ]
+    },
+    {
+      "name": "louvre-0",
+      "color": "#3a3d40",
+      "parts": [
+        "louvre-0",
+        "louvre-1",
+        "louvre-2",
+        "louvre-3",
+        "louvre-4",
+        "louvre-5"
+      ]
+    },
+    {
+      "name": "gallery",
+      "color": "#5d7f8c",
+      "parts": [
+        "gallery-shell",
+        "tail-house-door",
+        "door",
+        "landing-door"
+      ],
+      "param": "gallery"
+    },
+    {
+      "name": "gallery-windows",
+      "color": "#2a3a44",
+      "parts": [
+        "gallery-windows"
+      ]
+    },
+    {
+      "name": "belts",
+      "color": "#24272a",
+      "parts": [
+        "out-belt"
+      ],
+      "param": "belts"
+    },
+    {
+      "name": "out-load-0",
+      "color": "#9a8f7a",
+      "parts": [
+        "out-load-0",
+        "out-load-3",
+        "out-load-6"
+      ]
+    },
+    {
+      "name": "out-load-1",
+      "color": "#8a7f68",
+      "parts": [
+        "out-load-1",
+        "out-load-4",
+        "out-load-7"
+      ]
+    },
+    {
+      "name": "out-load-2",
+      "color": "#a89a7c",
+      "parts": [
+        "out-load-2",
+        "out-load-5",
+        "out-load-8"
+      ]
+    },
+    {
+      "name": "out-drive",
+      "color": "#3a5c8a",
+      "parts": [
+        "out-drive"
+      ]
+    },
+    {
+      "name": "out-walkway",
+      "color": "#7d8285",
+      "parts": [
+        "out-walkway",
+        "landing"
+      ]
+    },
+    {
+      "name": "door-handle",
+      "color": "#1c1d1e",
+      "parts": [
+        "door-handle"
+      ]
+    },
+    {
+      "name": "door-sign",
+      "color": "#2f7a46",
+      "parts": [
+        "door-sign"
+      ]
+    }
+  ]
+}

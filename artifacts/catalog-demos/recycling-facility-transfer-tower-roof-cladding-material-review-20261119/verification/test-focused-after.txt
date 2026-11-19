@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts (1 test) 4240ms
+     ✓ keeps the sheet roof on cladding and the access steel on structure  3468ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:49:21
+   Duration  21.92s (transform 13.46s, setup 363ms, import 16.88s, tests 4.24s, environment 0ms)
