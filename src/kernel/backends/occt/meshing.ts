@@ -833,7 +833,12 @@ function tryGetVolume(shape: unknown): number | undefined {
  * edge in `edgeRanges` order, used by feature meshing to attribute edges to
  * features. It is never serialized to the viewer.
  */
-export type MeshedShape = GeometryResult & { edgeHashes?: number[] };
+export type MeshedShape = GeometryResult & {
+  edgeHashes?: number[];
+  /** BREP faces of the meshed shape. A face with no triangles is missing
+   *  from the display mesh (`faces` holds fewer triangulated entries). */
+  brepFaceCount?: number;
+};
 
 /** Split replicad's `meshEdges` groups into the wire `edgeRanges` pairs and
  *  the matching per-edge hashes. Returns undefined when any group is
@@ -1022,6 +1027,7 @@ export function meshShape(
     faces: faceGeometries,
     volume,
     edges,
+    ...(Array.isArray(faces) ? { brepFaceCount: faces.length } : {}),
     ...(edgeGroups !== undefined ? { edgeRanges: edgeGroups.edgeRanges, edgeHashes: edgeGroups.edgeHashes } : {}),
     ...(edgeGroups !== undefined ? { edgeStableIds: stableIdsForEdgeGroups(shape, edgeGroups.edgeHashes) } : {}),
   };

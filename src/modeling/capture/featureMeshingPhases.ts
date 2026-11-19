@@ -370,6 +370,7 @@ function resolveScenePartMesh(
     );
     return undefined;
   }
+  warnOnUntriangulatedPartFaces(featureId, part.name, meshed);
   const faces = meshed.faces;
   const volume = meshed.volume;
   const solidCount = solidCountOf(part.shape);
@@ -393,6 +394,23 @@ function resolveScenePartMesh(
       });
   }
   return { faces, volume, solidCount, edges, link, fromCache: false, partCache: nextCache };
+}
+
+/** A part whose display mesh leaves BREP faces without triangles renders with
+ *  holes. Say so instead of drawing it silently. */
+function warnOnUntriangulatedPartFaces(
+  featureId: FeatureId,
+  partName: string,
+  meshed: { faces: readonly FaceGeometry[]; brepFaceCount?: number },
+): void {
+  if (meshed.brepFaceCount === undefined) return;
+  const covered = new Set<number>();
+  for (const face of meshed.faces) if (face.indices.length > 0) covered.add(face.faceId);
+  const missing = meshed.brepFaceCount - covered.size;
+  if (missing <= 0) return;
+  console.warn(
+    `meshFeaturesPerFeature: assembly '${featureId}' part '${partName}' display mesh is missing ${missing} of ${meshed.brepFaceCount} BREP face(s) (no triangles) — the part will render with holes`,
+  );
 }
 
 function isDisplayMeshBackend(
