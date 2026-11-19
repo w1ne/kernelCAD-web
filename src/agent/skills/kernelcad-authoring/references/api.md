@@ -493,6 +493,10 @@ shape, not a copy.
 // Edge features:
 // Simple form — single radius applied to matching edges:
 .fillet(radius: number, edges?: EdgeSelector): Shape
+// No `edges` = every sharp edge. Coplanar seams a union left behind are merged
+// before a retry. Edges no radius builds on together with the rest are skipped,
+// the rest is rounded, and feature.edge-feature.unblendable-edges-skipped (warn)
+// lists them in details.skippedEdgeIds. An explicit selector still fails loudly.
 // Variable-radius form — one group per blend region:
 .fillet([{ edges: EdgeSelector, radius: number }, ...]): Shape
 // Tapered round: radius at each edge's low end (lower coordinate on the axis the
