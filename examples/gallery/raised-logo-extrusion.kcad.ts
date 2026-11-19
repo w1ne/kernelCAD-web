@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Gallery copy of eval/tasks/raised-logo-extrusion/solution-expert.kcad.ts as a two-tone
 // plate and logo. The geometry is identical to the eval solution; here the plate and the
-// raised "KC" are separate parts so each carries its own colour.
+// raised "KC" are separate parts so each carries its own colour (a single union() with two
+// finishes still renders one colour in the headless publish render).
 const plate = extrudeRect(60, 60, 2).finish('anodized', { color: '#1d3557' });
 const logo = sketch
   .text('KC', { size: 20, align: 'center', position: [0, 0], rotation: 15 })
