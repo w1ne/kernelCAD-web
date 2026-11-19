@@ -255,7 +255,7 @@ describe('joint-mesh-continuity helper (P8)', () => {
     expect(gaps.length).toBeGreaterThanOrEqual(1);
     // The fallback ran and reported the true rigid-group clearance in
     // the diagnostic, so the agent sees both distances.
-    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the two mated bodies'));
+    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the two sides'));
     expect(withBearing).toBeDefined();
     expect(result.mechanism).toBe('broken');
   }, 90000);
