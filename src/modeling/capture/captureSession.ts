@@ -19,7 +19,7 @@ import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord'
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
-import { ShapeVersions, type VersionedOp } from './shapeVersions';
+import { ShapeVersions, appendTransformInPlace, type VersionedOp } from './shapeVersions';
 export type { VersionedOp } from './shapeVersions';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -813,7 +813,7 @@ export class CaptureSession {
     // O(n) lookup is deliberate v0.1 simplicity; revisit if profiling shows it.
     const r = this.records.find(x => x.id === id);
     if (!r) throw new Error(`Feature '${id}' not registered`);
-    r.transforms.push(t);
+    appendTransformInPlace(r, t, [this.cachedShapes, this.cachedFeatureMeshes]);
     // Slice-5: Param-typed translate/rotateAxis transforms can carry ParamRefs.
     // Merge any new refs into metadata.paramRefs so `params.update`'s
     // first-affected scan invalidates this record when the named param edits.
