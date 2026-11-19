@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { verifyWatertight, stitchCracks } from '../../../../../src/kernel/backends/occt/meshHeal';
+import { verifyWatertight, stitchCracks, countEdgeUses, dropDegenerateTriangles, measureMeshDefects } from '../../../../../src/kernel/backends/occt/meshHeal';
 
 /** Closed tetrahedron — watertight. */
 const tetra = () => ({
@@ -98,5 +98,53 @@ describe('stitchCracks', () => {
     const m = tetra();
     expect(stitchCracks(m, 0.05)).toBe(0);
     expect(verifyWatertight(m).ok).toBe(true);
+  });
+});
+
+describe('edge-use table (#1585)', () => {
+  /** Edge uses by the string-keyed map the table replaced. */
+  const referenceUses = (triangles: number[]): Map<string, number> => {
+    const use = new Map<string, number>();
+    for (let t = 0; t < triangles.length; t += 3) {
+      const [a, b, c] = [triangles[t], triangles[t + 1], triangles[t + 2]];
+      for (const [u, v] of [[a, b], [b, c], [c, a]]) {
+        const key = u < v ? `${u}|${v}` : `${v}|${u}`;
+        use.set(key, (use.get(key) ?? 0) + 1);
+      }
+    }
+    return use;
+  };
+
+  it('counts every edge of a pseudo-random triangle soup like the string-keyed map', () => {
+    let seed = 1585;
+    const next = (): number => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) % 400;
+    const triangles = Array.from({ length: 3 * 5000 }, next);
+    const reference = referenceUses(triangles);
+    const table = countEdgeUses(triangles);
+    const counted = new Map<string, number>();
+    for (let i = 0; i < table.count.length; i++) {
+      if (table.count[i] !== 0) counted.set(`${table.lo[i]}|${table.hi[i]}`, table.count[i]);
+    }
+    expect(counted).toEqual(reference);
+    const defects = measureMeshDefects({ vertices: [], triangles });
+    const proper = [...reference].filter(([key]) => key.split('|')[0] !== key.split('|')[1]);
+    expect(defects.edges).toBe(proper.length);
+    expect(defects.openEdges).toBe(proper.filter(([, n]) => n === 1).length);
+    expect(defects.nonManifoldEdges).toBe(proper.filter(([, n]) => n > 2).length);
+  });
+
+  it('reports an edge shared by 300 triangles as one non-manifold edge', () => {
+    // A fan of 300 triangles around edge (0,1): the use count passes 255.
+    const triangles: number[] = [];
+    for (let k = 0; k < 300; k++) triangles.push(0, 1, 2 + k);
+    const r = verifyWatertight({ vertices: new Array(302 * 3).fill(0), triangles });
+    expect(r.nonManifoldEdgeCount).toBe(1);
+    expect(r.openEdgeCount).toBe(600);
+  });
+
+  it('dropDegenerateTriangles returns a clean array as is and filters a dirty one', () => {
+    const clean = [0, 1, 2, 2, 1, 3];
+    expect(dropDegenerateTriangles(clean)).toBe(clean);
+    expect(dropDegenerateTriangles([0, 1, 2, 4, 4, 5, 2, 1, 3])).toEqual([0, 1, 2, 2, 1, 3]);
   });
 });

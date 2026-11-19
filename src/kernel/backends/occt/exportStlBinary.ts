@@ -137,20 +137,27 @@ export function encodeBinaryStl(
   return buf;
 }
 
-/** Stamp an agent-requested tolerance into the existing binary STL header.
- *  This changes only bytes 0..79; triangle bytes and the default export path
- *  remain untouched. STL defines this field as an 80-byte free-form header. */
+/** `encodeBinaryStl` as a plain `Uint8Array` over the encoder's own buffer.
+ *  A view, not a copy: the STL of a dense part is tens of megabytes. */
+export function encodeBinaryStlBytes(mesh: MeshData, header?: string): Uint8Array {
+  const buf = encodeBinaryStl(mesh, header);
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
+/** Stamp an agent-requested tolerance into the binary STL header, in place,
+ *  and return the same array. This changes only bytes 0..79; triangle bytes
+ *  and the default export path remain untouched. STL defines this field as an
+ *  80-byte free-form header. */
 export function stampStlMeshTolerance(
   bytes: Uint8Array,
   toleranceMm: number,
 ): Uint8Array {
   if (bytes.byteLength < HEADER_SIZE) throw new Error('Cannot stamp an incomplete binary STL header.');
-  const stamped = Uint8Array.from(bytes);
-  stamped.fill(0, 0, HEADER_SIZE);
+  bytes.fill(0, 0, HEADER_SIZE);
   const isoDate = new Date().toISOString().slice(0, 10);
   const compactAttribution = attributionGenerator().split(' (')[0]!;
   const header = `${compactAttribution} ${isoDate} requested-mesh-tolerance=${String(toleranceMm)}mm`;
   const headerBytes = Buffer.from(header.slice(0, HEADER_SIZE), 'ascii');
-  stamped.set(headerBytes, 0);
-  return stamped;
+  bytes.set(headerBytes, 0);
+  return bytes;
 }

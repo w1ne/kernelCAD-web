@@ -12,7 +12,7 @@ import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { drawingFromCommands } from './sketchToDrawing';
-import { encodeBinaryStl } from './exportStlBinary';
+import { encodeBinaryStlBytes } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
@@ -1269,8 +1269,8 @@ export class OcctBackend implements ShapeBackend {
   }> {
     const mesh = meshShapeForExport(this.shape, deflection);
     const report = verifyWatertight(mesh);
-    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
-    return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
+    const bytes = encodeBinaryStlBytes({ vertices: mesh.vertices, triangles: mesh.triangles });
+    return { bytes, report, triangleCount: mesh.triangles.length / 3 };
   }
 
   exportSTEP(): Uint8Array {
