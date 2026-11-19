@@ -53,6 +53,35 @@ describe('sketchFromShape — bulge reconstruction', () => {
   it('returns null for collinear points', () => {
     expect(bulgeThroughThreePoints([0, 0], [1, 0], [2, 0])).toBeNull();
   });
+
+  it('gives -tan(pi/8) for a clockwise quarter circle', () => {
+    // (1,0) -> (cos45, -sin45) -> (0,-1): clockwise sweep = -π/2. The
+    // complementary counter-clockwise 270° arc would be +tan(3π/8).
+    const s = Math.SQRT1_2;
+    const b = bulgeThroughThreePoints([1, 0], [s, -s], [0, -1]);
+    expect(b).toBeCloseTo(-Math.tan(Math.PI / 8), 9);
+  });
+
+  it('recovers the signed sweep for every start angle, sweep and direction', () => {
+    // bulge = tan(sweep / 4) must hold for minor and major arcs in both
+    // directions, wherever the arc starts on the circle.
+    const cx = 12.5;
+    const cy = -7.25;
+    const r = 3;
+    const at = (t: number): [number, number] => [cx + r * Math.cos(t), cy + r * Math.sin(t)];
+    const sweepsDeg = [10, 45, 90, 135, 179, 181, 225, 270, 315, 350];
+    for (let startDeg = 0; startDeg < 360; startDeg += 15) {
+      for (const magnitude of sweepsDeg) {
+        for (const direction of [1, -1]) {
+          const start = (startDeg * Math.PI) / 180;
+          const sweep = (direction * magnitude * Math.PI) / 180;
+          const b = bulgeThroughThreePoints(at(start), at(start + sweep / 2), at(start + sweep));
+          expect(b, `start ${startDeg}°, sweep ${direction * magnitude}°`).not.toBeNull();
+          expect(b as number, `start ${startDeg}°, sweep ${direction * magnitude}°`).toBeCloseTo(Math.tan(sweep / 4), 6);
+        }
+      }
+    }
+  });
 });
 
 describe('sketchFromShape — area & perimeter', () => {

@@ -132,22 +132,16 @@ export function bulgeThroughThreePoints(a: Pt2, m: Pt2, b: Pt2): number | null {
   const a0 = ang(a);
   const am = ang(m);
   const a1 = ang(b);
-  const norm = (x: number): number => {
-    let y = x;
-    while (y <= -Math.PI) y += 2 * Math.PI;
-    while (y > Math.PI) y -= 2 * Math.PI;
-    return y;
+  // Counter-clockwise angle from the start, in [0, 2π).
+  const ccwFromStart = (x: number): number => {
+    const y = (x - a0) % (2 * Math.PI);
+    return y < 0 ? y + 2 * Math.PI : y;
   };
-  const ccwToMid = norm(am - a0);
-  const ccwToEnd = norm(a1 - a0);
-  // Sweep CCW from a to b if the midpoint is reached before the end (both in
-  // [0, 2π)); otherwise the arc runs clockwise.
-  let sweep: number;
-  if (ccwToMid > 0 && ccwToMid < ccwToEnd) {
-    sweep = ccwToEnd;
-  } else {
-    sweep = ccwToEnd - 2 * Math.PI;
-  }
+  const ccwToMid = ccwFromStart(am);
+  const ccwToEnd = ccwFromStart(a1);
+  // Going counter-clockwise from a, the arc is counter-clockwise when the
+  // midpoint comes before the end; otherwise it runs clockwise.
+  const sweep = ccwToMid < ccwToEnd ? ccwToEnd : ccwToEnd - 2 * Math.PI;
   return Math.tan(sweep / 4);
 }
 

@@ -29,8 +29,7 @@ export const SHARD_COUNT = 4;
 // they're kinematic-API smokes that intentionally exit non-zero to
 // exercise diagnostic paths. The loop reports `mechanism: 'unverified'`
 // on these — acceptable. Pre-existing legacy-API breakage (pocket-watch
-// uses the deleted `arm.fixed(...)` API; scissor-lift has an illegal
-// part-name with spaces) is captured here too because the P0/P1/P2/P3
+// uses the deleted `arm.fixed(...)` API) is captured here too because the P0/P1/P2/P3
 // physics-loop workstream didn't introduce those failures and they
 // have nothing to do with mechanism truth.
 export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
@@ -114,11 +113,6 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/portfolio/pocket-watch/build.kcad.ts',
   'examples/portfolio/pocket-watch-v2/build.kcad.ts',
   'examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts',
-  // Decorative pose-only hero: every part is fastened to the base frame at a
-  // representative open pose. It evaluates cleanly, but the crossed arms,
-  // through pins and far fastened mates are not a mechanism, so
-  // `validate --include-interference` reports mechanism: broken.
-  'examples/gallery/scissor-lift.kcad.ts',
 ]);
 
 // Issue-tracked broken examples. Each must have a corresponding test
