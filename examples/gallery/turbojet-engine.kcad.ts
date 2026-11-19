@@ -598,25 +598,33 @@ const engine = assembly('kernelCAD v0.17 turbojet');
 // lines 254-279): the v0.5 `fixed(label, parent, child, {origin})` shortcut
 // was removed in favor of the mate vocabulary. Every shape here is authored
 // in WORLD coordinates and the part placement is identity, so both frame
-// connectors sit at the shared world origin — the fastened zero pose is the
-// authored pose.
+// connectors of a mate share one world point — the fastened zero pose is the
+// authored pose. That point is the pair's seat (`seat`): a point on the face
+// the two parts share, so each connector sits on its own part's material and
+// the connector-in-solid gate has a real load path to check.
 function frameConnector(origin: [number, number, number]) {
   return { type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin } };
 }
 let fastenSeq = 0;
 type PartRef = ReturnType<typeof engine.part>;
 type PartShape = Parameters<typeof engine.part>[1];
-function fixedMate(parent: PartRef, child: PartRef) {
+type Seat = [number, number, number];
+function fixedMate(parent: PartRef, child: PartRef, seat: Seat) {
   const slot = ++fastenSeq;
-  parent.connector(`fastener-${slot}-parent`, frameConnector([0, 0, 0]));
-  child.connector(`fastener-${slot}-child`, frameConnector([0, 0, 0]));
+  parent.connector(`fastener-${slot}-parent`, frameConnector(seat));
+  child.connector(`fastener-${slot}-child`, frameConnector(seat));
   engine.mate(`fixed-${slot}`, `${parent.name}.fastener-${slot}-parent`, `${child.name}.fastener-${slot}-child`, 'fastened');
 }
-function fixed(parent: PartRef, name: string, shape: PartShape): PartRef {
+function fixed(parent: PartRef, name: string, shape: PartShape, seat: Seat): PartRef {
   const child = engine.part(name, shape);
-  fixedMate(parent, child);
+  fixedMate(parent, child, seat);
   return child;
 }
+// Seat points. The lower casing half keeps y < 0, so its guests seat at the
+// bottom of the bore (-y); the spool parts and the combustor chain seat on
+// the +x ray, where the first blade of every row and the first can sit.
+const lowerSeat = (r: number, z: number): Seat => [0, -r, z];
+const axisSeat = (r: number, z: number): Seat => [r, 0, z];
 
 // Task 10 staging arrays consumed by position: casingHalves = [lower, upper],
 // bearingHousings = [front, rear].
@@ -639,37 +647,50 @@ const drilledCombustorCans = combustorCans.subtract(fuelManifold);
 
 // Ground: lower casing half + its half of the convergent nozzle.
 const ground = engine.part('casing-lower-half', casingLower.union(nozzleLower));
-const casingUpperPart = fixed(ground, 'casing-upper-half', casingUpper.union(nozzleUpper));
+// The halves meet on the y = 0 split plane; z = 0 is barrel wall between the
+// S7 band groove (z -20..-10) and the R8 station.
+const casingUpperPart = fixed(ground, 'casing-upper-half', casingUpper.union(nozzleUpper),
+  axisSeat((CASING_BORE_R + CASING_BARREL_R) / 2, 0));
 
 // Merged static vane units: `row.union(band)` keeps the row as the boolean
 // base, so lookupSourceColor resolves the part to the row's color — alloy for
 // the IGV and compressor stators, hot for the NGVs. Discs and blade rows stay
 // separate parts so steel vs alloy/hot both survive.
 const statorUnitNames = ['stator-ring-igv'];
-fixed(ground, 'stator-ring-igv', statorRings[0].union(statorBands[0]));
+// Each band rim (r218) bottoms in its casing groove.
+fixed(ground, 'stator-ring-igv', statorRings[0].union(statorBands[0]), lowerSeat(STATOR_BAND_RIM_R, igvRow.z));
 for (let i = 1; i < statorRings.length; i++) {
   const name = `stator-ring-${i}`;
   statorUnitNames.push(name);
-  fixed(ground, name, statorRings[i].union(statorBands[i]));
+  fixed(ground, name, statorRings[i].union(statorBands[i]), lowerSeat(STATOR_BAND_RIM_R, statorZ[i - 1]));
 }
-fixed(ground, 'ngv-1', ngvRows[0].union(ngvBands[0]));
-fixed(ground, 'ngv-2', ngvRows[1].union(ngvBands[1]));
+fixed(ground, 'ngv-1', ngvRows[0].union(ngvBands[0]), lowerSeat(STATOR_BAND_RIM_R, hotNgvStages[0].z));
+fixed(ground, 'ngv-2', ngvRows[1].union(ngvBands[1]), lowerSeat(STATOR_BAND_RIM_R, hotNgvStages[1].z));
 
 // Remaining static parts, fastened to the half/neighbour they actually
 // touch. Task 10 staging array mounts = [front crown (+y), rear crown (-y)]:
 // the front mount embeds in the upper half's barrel, so it hangs off
-// casing-upper-half, not the ground lower half.
-const bearingFrontPart = fixed(ground, 'bearing-front', bearingFront);
-fixed(ground, 'bearing-rear', bearingRear.union(exhaustCone)); // Task 12 merge 2
-fixed(casingUpperPart, 'mount-front', mounts[0]);
-fixed(ground, 'mount-rear', mounts[1]);
+// casing-upper-half, not the ground lower half. Seats: the bearing rims
+// (r214) in their casing grooves, the mount plate inner faces (r217) on their
+// barrel pocket floors.
+const bearingFrontPart = fixed(ground, 'bearing-front', bearingFront, lowerSeat(BEARING_RIM_R, BEARING_FRONT_Z));
+fixed(ground, 'bearing-rear', bearingRear.union(exhaustCone), // Task 12 merge 2
+  lowerSeat(BEARING_RIM_R, BEARING_REAR_Z));
+fixed(casingUpperPart, 'mount-front', mounts[0], [0, MOUNT_PLATE_R0, MOUNT_FRONT_Z]);
+fixed(ground, 'mount-rear', mounts[1], lowerSeat(MOUNT_PLATE_R0, MOUNT_REAR_Z));
 // Combustor chain: outer casing rides the barrel bore, liner rides the outer
 // casing bore, cans ride the liner bore, manifold is buried in the can
 // snouts — each mate partner is material-connected (line-to-line contacts).
-const combustorOuterPart = fixed(ground, 'combustor-outer', combustorOuterCasing);
-const combustorLinerPart = fixed(combustorOuterPart, 'combustor-liner', combustorLiner);
-const combustorCansPart = fixed(combustorLinerPart, 'combustor-cans', drilledCombustorCans);
-fixed(combustorCansPart, 'fuel-manifold', fuelManifold);
+// Each seat is a point on that contact: mid-length of the shared bore for the
+// shells and cans, the first injector line end face on its drilled snout floor.
+const combustorOuterPart = fixed(ground, 'combustor-outer', combustorOuterCasing,
+  lowerSeat(COMBUSTOR_CASING_R, (COMBUSTOR_CASING_FRONT_Z + COMBUSTOR_CASING_AFT_Z) / 2));
+const combustorLinerPart = fixed(combustorOuterPart, 'combustor-liner', combustorLiner,
+  axisSeat(COMBUSTOR_LINER_R, (COMBUSTOR_LINER_FRONT_Z + COMBUSTOR_LINER_AFT_Z) / 2));
+const combustorCansPart = fixed(combustorLinerPart, 'combustor-cans', drilledCombustorCans,
+  axisSeat(COMBUSTOR_LINER_BORE_R, (CAN_BODY_FRONT_Z + COMBUSTOR_LINER_AFT_Z) / 2));
+fixed(combustorCansPart, 'fuel-manifold', fuelManifold,
+  axisSeat(CANS_R, FUEL_LINE_AFT_Z));
 
 // The single revolute: the shaft's front land turns in the front bearing
 // housing (fastened to the lower casing half) on the engine axis, +Z. The
@@ -697,15 +718,19 @@ engine.mate('spool', 'bearing-front.spool-axis', 'shaft.spool-axis', 'revolute',
 // Rotor stack. Discs are fastened to the shaft (each rides its drum collar);
 // blade rows are fastened to the disc they root into, not to the shaft —
 // the root embed is the real joint, and the shaft never reaches blade radii.
-fixed(shaft, 'nose-cone', boredNoseCone);
+// Seats: the shaft nose face on the spinner bore floor, each disc bore on its
+// drum collar, and each row's first blade root on its rim slot floor.
+fixed(shaft, 'nose-cone', boredNoseCone, axisSeat(0, SHAFT_FRONT_Z));
 for (let i = 0; i < rotorDiscs.length; i++) {
-  const discPart = fixed(shaft, `compressor-disc-${i + 1}`, slottedRotorDiscs[i]);
-  fixed(discPart, `compressor-blades-${i + 1}`, rotorRows[i]);
+  const stage = rotorStages[i];
+  const discPart = fixed(shaft, `compressor-disc-${i + 1}`, slottedRotorDiscs[i], axisSeat(stage.hubR, stage.z));
+  fixed(discPart, `compressor-blades-${i + 1}`, rotorRows[i], axisSeat(stage.rimR - ROOT_EMBED_MM, stage.z));
 }
-const turbineDisc1 = fixed(shaft, 'turbine-disc-1', slottedTurbineDiscs[0]);
-const turbineDisc2 = fixed(shaft, 'turbine-disc-2', slottedTurbineDiscs[1]);
-fixed(turbineDisc1, 'turbine-blade-1', turbineRows[0]);
-fixed(turbineDisc2, 'turbine-blade-2', turbineRows[1]);
+const [turbineStage1, turbineStage2] = hotTurbineStages;
+const turbineDisc1 = fixed(shaft, 'turbine-disc-1', slottedTurbineDiscs[0], axisSeat(TURBINE_HUB_R, turbineStage1.z));
+const turbineDisc2 = fixed(shaft, 'turbine-disc-2', slottedTurbineDiscs[1], axisSeat(TURBINE_HUB_R, turbineStage2.z));
+fixed(turbineDisc1, 'turbine-blade-1', turbineRows[0], axisSeat(turbineStage1.rimR - ROOT_EMBED_MM, turbineStage1.z));
+fixed(turbineDisc2, 'turbine-blade-2', turbineRows[1], axisSeat(turbineStage2.rimR - ROOT_EMBED_MM, turbineStage2.z));
 
 // Seated contacts (the Task 13 table). Each guest now sits in a pocket cut
 // in its host (see "Seats" above), so the pairs share faces, not volume, and
