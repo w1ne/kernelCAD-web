@@ -1,0 +1,11 @@
+# npx vitest run <31 related files>, source 9579c7d05
+}
+
+ Test Files  31 passed (31)
+      Tests  201 passed | 17 skipped (218)
+   Start at  18:27:28
+   Duration  74.44s (transform 357.78s, setup 12.00s, import 583.87s, tests 317.07s, environment 14ms)
+
+
+# npx vitest run tests/unit/assemblies/restPoseContactGate.test.ts on 9b7ba3241 src with the new test
+AssertionError: expected 8832000 to be less than or equal to 884736

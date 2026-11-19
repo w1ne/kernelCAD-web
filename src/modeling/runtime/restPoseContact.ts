@@ -108,8 +108,18 @@ function cellRange(lo: number, hi: number, origin: number, jitter: number, cell:
   ];
 }
 
-// Records where the axis-k rays through the grid columns cross one triangle.
-function rasterTriangle(g: RayGrid, P: Float64Array, a: number, b: number, c: number, hits: number[][]): void {
+// Finds where the axis-k rays through the grid columns cross one triangle.
+// Without `depth` it counts the crossings of each column in `cursor`; with
+// `depth` it stores each crossing at its column's `cursor` and advances it.
+function rasterTriangle(
+  g: RayGrid,
+  P: Float64Array,
+  a: number,
+  b: number,
+  c: number,
+  cursor: Uint32Array,
+  depth?: Float64Array,
+): void {
   const { u, v, k } = g;
   const au = P[a + u], av = P[a + v], ak = P[a + k];
   const bu = P[b + u], bv = P[b + v], bk = P[b + k];
@@ -127,15 +137,35 @@ function rasterTriangle(g: RayGrid, P: Float64Array, a: number, b: number, c: nu
       const w2 = ((cu - pu) * (av - pv) - (au - pu) * (cv - pv)) / det;
       const w3 = 1 - w1 - w2;
       if (w1 < 0 || w2 < 0 || w3 < 0) continue;
-      (hits[i * g.nv + j] ??= []).push(w1 * ak + w2 * bk + w3 * ck);
+      const column = i * g.nv + j;
+      if (depth === undefined) cursor[column]++;
+      else depth[cursor[column]++] = w1 * ak + w2 * bk + w3 * ck;
     }
   }
 }
 
-// Walks one sorted ray: every cell centre after an odd number of crossings
-// is inside; it gets a vote and, when asked, its inside-interval bounds.
+// Sorts depth[from..to) ascending in place. A ray has a few crossings, so
+// most ranges take the insertion sort and allocate nothing.
+function sortRange(depth: Float64Array, from: number, to: number): void {
+  if (to - from > 24) {
+    depth.subarray(from, to).sort();
+    return;
+  }
+  for (let i = from + 1; i < to; i++) {
+    const x = depth[i];
+    let j = i - 1;
+    for (; j >= from && depth[j] > x; j--) depth[j + 1] = depth[j];
+    depth[j + 1] = x;
+  }
+}
+
+// Walks one ray, crossings depth[from..to): every cell centre after an odd
+// number of crossings is inside; it gets a vote and, when asked, its
+// inside-interval bounds.
 function voteColumn(
-  list: number[],
+  depth: Float64Array,
+  from: number,
+  to: number,
   base: number,
   strideK: number,
   nk: number,
@@ -144,17 +174,17 @@ function voteColumn(
   votes: Uint8Array,
   bounds?: { lo: Float32Array; hi: Float32Array },
 ): void {
-  list.sort((x, y) => x - y);
-  let h = 0;
+  sortRange(depth, from, to);
+  let h = from;
   for (let s = 0; s < nk; s++) {
     const pk = originK + (s + 0.5) * cell;
-    while (h < list.length && list[h] < pk) h++;
-    if ((h & 1) === 0) continue;
+    while (h < to && depth[h] < pk) h++;
+    if (((h - from) & 1) === 0) continue;
     const idx = base + s * strideK;
     votes[idx]++;
     if (bounds !== undefined) {
-      bounds.lo[idx] = list[h - 1];
-      bounds.hi[idx] = h < list.length ? list[h] : Infinity;
+      bounds.lo[idx] = depth[h - 1];
+      bounds.hi[idx] = h < to ? depth[h] : Infinity;
     }
   }
 }
@@ -171,17 +201,28 @@ function castAxis(
   const u = ((k + 1) % 3) as 0 | 1 | 2;
   const v = ((k + 2) % 3) as 0 | 1 | 2;
   const g: RayGrid = { u, v, k, nu: dims[u], nv: dims[v], origin, cell, ju: cell * 0.00137, jv: cell * 0.00211 };
-  const hits: number[][] = new Array(g.nu * g.nv);
+  const columns = g.nu * g.nv;
   const I = mesh.indices;
+  // Two passes over the triangles: count the crossings of each column, then
+  // store them in one flat array, column c at depth[start[c]..start[c + 1]).
+  // A list per column costs about 200 bytes each on a wide grid.
+  const cursor = new Uint32Array(columns);
   for (let t = 0; t < I.length; t += 3) {
-    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], hits);
+    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], cursor);
+  }
+  const start = new Uint32Array(columns + 1);
+  for (let c = 0; c < columns; c++) start[c + 1] = start[c] + cursor[c];
+  cursor.set(start.subarray(0, columns));
+  const depth = new Float64Array(start[columns]);
+  for (let t = 0; t < I.length; t += 3) {
+    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], cursor, depth);
   }
   const stride: [number, number, number] = [dims[1] * dims[2], dims[2], 1];
   for (let i = 0; i < g.nu; i++) {
     for (let j = 0; j < g.nv; j++) {
-      const list = hits[i * g.nv + j];
-      if (list === undefined) continue;
-      voteColumn(list, i * stride[u] + j * stride[v], stride[k], dims[k], origin[k], cell, votes, bounds);
+      const c = i * g.nv + j;
+      if (start[c] === start[c + 1]) continue;
+      voteColumn(depth, start[c], start[c + 1], i * stride[u] + j * stride[v], stride[k], dims[k], origin[k], cell, votes, bounds);
     }
   }
 }
@@ -246,6 +287,20 @@ function tallyShared(
   return { count, depth, at };
 }
 
+// Cubic cell and grid size for an AABB overlap. An axis thinner than the
+// cell still takes one cell, so on a slab (two wide faces in contact) the
+// volume-based cell leaves far more columns than the cap; grow the cell
+// until the grid fits.
+function overlapGrid(ext: [number, number, number]): { cell: number; dims: [number, number, number] } {
+  let cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
+  for (;;) {
+    const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+    const total = dims[0] * dims[1] * dims[2];
+    if (total <= MAX_CELLS_PER_PAIR) return { cell, dims };
+    cell *= Math.max(1.01, Math.cbrt(total / MAX_CELLS_PER_PAIR));
+  }
+}
+
 export function meshOverlapVolume(
   a: WorldMesh,
   b: WorldMesh,
@@ -257,14 +312,19 @@ export function meshOverlapVolume(
     ext[k] = Math.min(a.max[k], b.max[k]) - lo[k];
     if (ext[k] <= 0) return { volumeMm3: 0, thicknessMm: 0, at: lo, cellMm: 0 };
   }
-  const cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
-  const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+  const { cell, dims } = overlapGrid(ext);
+  // An axis thinner than the cell has one layer of grid points: put it on
+  // the mid-plane of the overlap (half a cell in can be outside it) and
+  // count the real extent, not a full cell, towards the volume.
+  const thin = dims.map((n, k) => n === 1 && ext[k] < cell);
+  const origin = lo.map((v, k) => (thin[k] ? v + (ext[k] - cell) / 2 : v)) as [number, number, number];
+  const pointVolume = ext.reduce((v, e, k) => v * (thin[k] ? e : cell), 1);
   const total = dims[0] * dims[1] * dims[2];
   const votesA = new Uint8Array(total);
   const votesB = new Uint8Array(total);
-  const thick = sharedThickness(a, b, lo, cell, dims, votesA, votesB);
-  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, lo, cell);
-  return { volumeMm3: count * cell * cell * cell, thicknessMm: depth, at, cellMm: cell };
+  const thick = sharedThickness(a, b, origin, cell, dims, votesA, votesB);
+  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, origin, cell);
+  return { volumeMm3: count * pointVolume, thicknessMm: depth, at, cellMm: cell };
 }
 
 function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {
