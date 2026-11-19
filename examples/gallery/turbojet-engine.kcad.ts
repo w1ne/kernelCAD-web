@@ -173,7 +173,7 @@ const rotorStages = [
 ];
 
 const rotorDiscs = [];
-const rotorRows = [];
+const rotorRows: ReturnType<typeof bladeRow>[] = [];
 for (const stage of rotorStages) {
   rotorDiscs.push(disc(stage.hubR, stage.rimR, DISC_WEB_T_MM, stage.z).color(COLOR_STEEL));
   rotorRows.push(bladeRow(BLADE_COUNT, {
@@ -457,7 +457,7 @@ for (const stage of hotNgvStages) {
 }
 
 const turbineDiscs = [];
-const turbineRows = [];
+const turbineRows: ReturnType<typeof bladeRow>[] = [];
 for (const stage of hotTurbineStages) {
   turbineDiscs.push(disc(TURBINE_HUB_R, stage.rimR, DISC_WEB_T_MM, stage.z).color(COLOR_STEEL));
   turbineRows.push(bladeRow(BLADE_COUNT, {
