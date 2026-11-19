@@ -71,6 +71,5 @@ stdout | tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts > manuf
 
  Test Files  1 passed (1)
       Tests  2 passed | 12 skipped (14)
-   Start at  00:13:16
-   Duration  14.86s (transform 8.38s, setup 232ms, import 9.85s, tests 4.43s, environment 0ms)
-
+   Start at  00:33:08
+   Duration  44.87s (transform 29.16s, setup 617ms, import 31.41s, tests 12.25s, environment 0ms)
