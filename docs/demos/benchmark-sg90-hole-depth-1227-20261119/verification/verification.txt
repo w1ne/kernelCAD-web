@@ -1,0 +1,38 @@
+Local verification — 2026-11-19 UTC
+Base: origin/develop at 433d80e72 (after the #1572 merge).
+
+Focused STEP regressions:
+  npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts \
+    -t 're-imports from STEP|ear hole moved off|stop 0.1 mm' --reporter=dot
+  Result: 3 passed, 12 skipped.
+  The clean plate reports two 4.00 mm bores. A 1 mm center shift is rejected;
+  a 3.90 mm bore with a 0.10 mm cap still passes volume, box, diameter and axis
+  checks, but is rejected by the measured-depth check. The STEP inspector
+  reports the capped bore as kind='through'; depthMm is the distinguishing
+  measurement.
+
+Lint:
+  npx eslint tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts
+  Result: exit 0.
+
+Typecheck:
+  npm run typecheck
+  Result: exit 0 (TypeScript project build and CLI TypeScript check).
+
+Demo:
+  python3 docs/demos/benchmark-sg90-hole-depth-1227-20261119/capture_demo.py
+  Result: 3 passed, 12 skipped; 1280x720 H.264, yuv420p, 24 fps, 12 seconds.
+  python3 docs/demos/benchmark-sg90-hole-depth-1227-20261119/inspect_demo.py
+  Result: sampled 1, 5 and 9 seconds; reviewed full-size frames and contact sheet.
+  Video SHA-256: 98fcbfffcab0575f7976bb953e70583f843c361317c4c70d234af443cf7211c6.
+  Fixture SHA-256: 4339a782346d23de5b224ffe33860c2095d5c8591fa098ee7b93b932ecdb8c9a.
+  Test SHA-256: 3b0730fa2e6b3fb21c255fba10744d2d9b46c3dc0d09508dac63c5c48d1aafdd.
+
+Additional checks:
+  python3 -m py_compile capture_demo.py inspect_demo.py: passed.
+  python3 -m json.tool demo-settings.json: passed.
+  git diff --check: passed.
+
+Scope: local STEP export/re-import and benchmark-oracle validation only. This
+does not establish deployed behavior, physical inspection, fit, or hardware
+acceptance.
