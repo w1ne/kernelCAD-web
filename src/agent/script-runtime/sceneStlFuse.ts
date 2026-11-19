@@ -18,8 +18,8 @@
 // that every slicer computes itself for parts that overlap.
 
 import { exportMeshDeflection, meshShapeForExport, type ExportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
-import { encodeBinaryStlBytes, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
-import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
+import { encodeBinaryStlShellsBytes, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
+import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
@@ -76,20 +76,35 @@ export function freeformFuseOverBudget(parts: readonly WorldFramePart[]): Freefo
   return worst;
 }
 
-/** Mesh every part on its own and concatenate the meshes (index-offset). */
+/** One closed mesh per part, in part order. */
+export type PartShells = readonly { vertices: Float64Array; triangles: Uint32Array }[];
+
+/**
+ * Mesh every part on its own. The shells stay separate typed arrays: a part
+ * shares no vertex with another part, so the STL and the watertight report of
+ * the list equal those of the index-offset concatenation, which a dense
+ * assembly cannot afford to hold next to the STL bytes.
+ */
 export function meshPartsAsShells(
   parts: readonly WorldFramePart[],
   deflection?: ExportMeshDeflection,
-): { vertices: number[]; triangles: number[] } {
-  const vertices: number[] = [];
-  const triangles: number[] = [];
-  for (const p of parts) {
+): PartShells {
+  return parts.map((p) => {
     const m = meshShapeForExport(p.shape.getReplicadShape(), deflection);
-    const offset = vertices.length / 3;
-    for (const v of m.vertices) vertices.push(v);
-    for (const t of m.triangles) triangles.push(t + offset);
-  }
-  return { vertices, triangles };
+    return { vertices: Float64Array.from(m.vertices), triangles: Uint32Array.from(m.triangles) };
+  });
+}
+
+/** `verifyWatertight` over all shells: counts summed, the 5 largest clusters kept. */
+export function verifyShellsWatertight(shells: PartShells): WatertightReport {
+  const reports = shells.map(shell => verifyWatertight(shell));
+  if (reports.every(report => report.ok)) return { ok: true, openEdgeCount: 0, nonManifoldEdgeCount: 0, clusters: [] };
+  return {
+    ok: false,
+    openEdgeCount: reports.reduce((n, report) => n + report.openEdgeCount, 0),
+    nonManifoldEdgeCount: reports.reduce((n, report) => n + report.nonManifoldEdgeCount, 0),
+    clusters: reports.flatMap(report => report.clusters).sort((x, y) => y.edgeCount - x.edgeCount).slice(0, 5),
+  };
 }
 
 function shapeBox(p: WorldFramePart): Box | undefined {
@@ -148,8 +163,8 @@ export function exportSceneStlAsShells(
     ? exportMeshDeflection(options)
     : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
   let mesh = meshPartsAsShells(worldParts, initialDeflection);
-  let report = verifyWatertight(mesh);
-  let bytes: Uint8Array<ArrayBufferLike> = encodeBinaryStlBytes(mesh);
+  let report = verifyShellsWatertight(mesh);
+  let bytes: Uint8Array<ArrayBufferLike> = encodeBinaryStlShellsBytes(mesh);
   let mesh_deviation: MeshDeviationReport | undefined;
   if (requested !== undefined) {
     mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
@@ -159,8 +174,8 @@ export function exportSceneStlAsShells(
     );
     if (mesh_deviation.measured_max_mm > requested * 1.05) {
       mesh = meshPartsAsShells(worldParts, exportMeshDeflection(options));
-      report = verifyWatertight(mesh);
-      bytes = encodeBinaryStlBytes(mesh);
+      report = verifyShellsWatertight(mesh);
+      bytes = encodeBinaryStlShellsBytes(mesh);
       mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
         worldParts.map(part => part.shape.getReplicadShape()),
         bytes,
@@ -189,16 +204,18 @@ export function exportSceneStlAsShells(
   return { bytes, featureCount, diagnostics: out, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
 }
 
-export function exportFusedSeamFallback(
+/** `exportFused` writes the torn fused STL again. It runs only when the
+ *  per-part shells do not close, so the fused bytes are not held while the
+ *  shells are meshed. */
+export async function exportFusedSeamFallback(
   worldParts: readonly WorldFramePart[],
-  fusedBytes: Uint8Array,
+  exportFused: () => Promise<{ bytes: Uint8Array; mesh_deviation?: MeshDeviationReport }>,
   fusedReport: ReturnType<typeof verifyWatertight>,
   targetId: string,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
   options?: ExportMeshToleranceOptions,
-  fusedDeviation?: MeshDeviationReport,
-): ExportResult {
+): Promise<ExportResult> {
   const seams = describeCrackSeams(crackSeams(
     fusedReport,
     worldParts.map(part => ({ name: part.name, bbox: part.shape.boundingBox() })),
@@ -218,6 +235,7 @@ export function exportFusedSeamFallback(
     };
   }
   const base = stlNotWatertightDiagnostic(fusedReport, targetId);
+  const { bytes: fusedBytes, mesh_deviation: fusedDeviation } = await exportFused();
   const toleranceFailure = meshToleranceFailure(fusedDeviation, targetId);
   return {
     bytes: fusedBytes,
@@ -241,13 +259,13 @@ function watertightSeamShells(
     ? exportMeshDeflection(options)
     : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
   let shells = meshPartsAsShells(worldParts, initialDeflection);
-  if (!verifyWatertight(shells).ok) return undefined;
-  let bytes: Uint8Array = encodeBinaryStlBytes(shells);
+  if (!verifyShellsWatertight(shells).ok) return undefined;
+  let bytes: Uint8Array = encodeBinaryStlShellsBytes(shells);
   let mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   if (deviationExceedsTolerance(mesh_deviation)) {
     shells = meshPartsAsShells(worldParts, exportMeshDeflection(options));
-    if (!verifyWatertight(shells).ok) return undefined;
-    bytes = encodeBinaryStlBytes(shells);
+    if (!verifyShellsWatertight(shells).ok) return undefined;
+    bytes = encodeBinaryStlShellsBytes(shells);
     mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
   }
   if (tolerance !== undefined) bytes = stampStlMeshTolerance(bytes, tolerance);
