@@ -1,8 +1,8 @@
 # Unreleased
 
-- `faceSketch`, `sectionSketch`, the flat and section DXF profiles and
-  `inspect_section` keep a clockwise arc that sweeps less than 180°. Such an
-  arc was returned as the opposite arc of the same circle, with no error: a
+- `faceSketch`, `sectionSketch`, the flat and section DXF profiles and the
+  `inspect` section report keep a clockwise arc that sweeps less than 180°.
+  Such an arc was returned as the opposite arc of the same circle, with no error: a
   90° corner became a 270° arc that cut into the part. `faceSketch('top')` of
   a 60 × 40 mm cover plate with R5 corners extruded to a gasket 8.8 % low in
   volume; it now matches the closed form. Lines, full circles,

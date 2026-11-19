@@ -113,7 +113,7 @@ function sceneTwo(evidence: Evidence): string {
     ${table}
     <rect x="72" y="458" width="1136" height="196" rx="14" fill="#142235" stroke="#29445c"/>
     <text x="98" y="494" fill="#f8fafc" font-family="Arial,sans-serif" font-size="19">Same cause, same correction</text>
-    <text x="98" y="528" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="17">faceSketch, sectionSketch, the flat and section DXF profiles and inspect_section read arcs through one function.</text>
+    <text x="98" y="528" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="17">faceSketch, sectionSketch, the flat and section DXF profiles and the inspect section report read arcs through one function.</text>
     <text x="98" y="556" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="17">An arc that runs clockwise in the sketch frame and sweeps less than 180° got the bulge of the opposite arc.</text>
     <text x="98" y="584" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="17">Lines, full circles, counter-clockwise arcs and arcs of 180° or more were correct before and are unchanged.</text>
     <text x="98" y="626" fill="#9fb0c4" font-family="monospace" font-size="16">kernelcad export dxf cover-gasket.kcad.ts  →  ${now.dxf.bytes} bytes; flat profile: ${now.flatLoops} loops</text>`;

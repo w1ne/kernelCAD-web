@@ -26,12 +26,12 @@
     ],
     "format": {
       "duration": "10.000000",
-      "size": "119718"
+      "size": "120183"
     }
   },
   "poster": "poster.png",
   "posterSha256": "0f68c2b0eaf69b7c0810e77bfbc46b5cc9266298f5a62359a3d0d90f91acd8e8",
-  "videoSha256": "53119f29a70169a2414b10df4d66ae79e178613eda1d01690fc1e0fa6362fe37",
+  "videoSha256": "065e9339b961449fa17fb6475411583d89dd0d8f28319e2663c4a86d545372af",
   "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
   "scope": "Local kernelCAD Node API: faceSketch of the top face of a rounded cover plate, extrude to a gasket, OCCT volume and validity check, and the flat DXF profile of the gasket.",
   "simulationRun": false,

@@ -35,7 +35,7 @@ picture of the solid that the old version built.
 ## Behavior
 
 `faceSketch`, `sectionSketch`, the flat and section DXF profiles and
-`inspect_section` read each circular edge through `edgeToSegments`
+the `inspect` section report read each circular edge through `edgeToSegments`
 (`src/kernel/backends/occt/sketchFromShape.ts`). For an open arc, it computes
 a DXF bulge from the start, middle and end points. An arc that runs clockwise
 in the sketch frame and sweeps less than 180° got the bulge of the opposite
