@@ -1,0 +1,35 @@
+Local verification — 2026-11-19 UTC
+Base: origin/develop 8d8351c477fca1e1c92c7d2a55d39d15a908aad0
+
+Focused STEP regression:
+  npx vitest run tests/integration/manufacturing/nema17BracketBenchmark.test.ts \
+    -t 'Thickness edit|old cutter length' --reporter=dot
+  Result: 2 passed, 7 skipped.
+
+Complete NEMA 17 bracket benchmark:
+  npx vitest run tests/integration/manufacturing/nema17BracketBenchmark.test.ts \
+    --reporter=dot
+  Result: 9 passed.
+
+Focused lint:
+  npx eslint tests/integration/manufacturing/nema17BracketBenchmark.test.ts
+  Result: passed.
+
+The clean Thickness edit sets the authored parameter to 8 mm. STEP re-import
+retains the 22.5 mm motor bore, four 3.4 mm M3 holes, and two 5.5 mm M5 holes
+as through holes with measured depth 8 mm. The seeded stale upright cutter is
+7 mm long; the test oracle reports 10 depth/kind failures across the bore and
+four M3 holes while checking the rest of the interface set.
+
+The demo was rendered from three 1280x720 frames at 24 fps, H.264/yuv420p,
+12.0 seconds, without audio. `inspect_demo.py` probed the encoded video and
+extracted frames at 1, 5, and 9 seconds for visual inspection. The contact
+sheet was inspected locally.
+
+SHA-256:
+  fixture: 40631d3092a43448b64b54fa95a2690dfb05fee01581c354340e93bfadc6508f
+  test:    4578152dc6e7d6c40e41e2b8a855cc72cdcc3becabe5bad48f4c7649fd93f35a
+  video:   c14991d6a8f52e72f53e955d07ced0b77d2d8c5c8713628f0be3019c406ae7fd
+
+This evidence covers local CAD evaluation and STEP round-trip only. It does
+not claim deployed behavior, machining inspection, fit, or hardware acceptance.

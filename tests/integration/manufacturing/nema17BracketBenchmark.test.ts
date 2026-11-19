@@ -9,9 +9,8 @@
 //   3. the named interfaces (pilot bore, M3 square, M5 base pair: diameter,
 //      axis, through-length and position) are measured from the re-imported
 //      STEP, not from the source;
-//   4. a Width edit through set_param's source rewrite recomputes, grows the
-//      solid by exactly the width delta, and keeps the motor and base holes
-//      centred with the same pitch;
+//   4. Width and Thickness edits through set_param's source rewrite recompute
+//      the solid while preserving the motor and base hole interfaces;
 //   5. seeded defects (M3 tap-drill size instead of clearance, a motor
 //      pattern shifted off the bore) fail the gate.
 // Tolerances are this fixture's own: 0.1 % on volume (exact B-rep faces) and
@@ -125,6 +124,28 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     if (!edited.ok) throw new Error(edited.error);
     const solid = await buildAndReimport(edited.new_code);
     expect(bracketFailures(solid, { ...DEFAULTS, width: 80 })).toEqual([]);
+  }, 120_000);
+
+  it('a Thickness edit keeps the motor and mounting holes through the thicker plates', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const solid = await buildAndReimport(edited.new_code);
+    expect(bracketFailures(solid, { ...DEFAULTS, thickness: 8 })).toEqual([]);
+  }, 120_000);
+
+  it('catches upright holes that keep their old cutter length after a Thickness edit', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(edited.new_code, 'cylinder(thickness.add(2), radius)', 'cylinder(7, radius)');
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, thickness: 8 });
+
+    // The old 7 mm cutter stops inside the new 8 mm upright. It preserves
+    // the outside box, but the imported motor holes are blind and too short.
+    expect(failures.filter((failure) => failure.startsWith('bore ') || failure.startsWith('M3 '))).toHaveLength(10);
+    expect(failures.some((failure) => failure.startsWith('bore depth:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('bore kind:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('M3 depth:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('M3 kind:'))).toBe(true);
   }, 120_000);
 
   it('catches base holes left at the default flange depth after a BaseDepth edit', async () => {
