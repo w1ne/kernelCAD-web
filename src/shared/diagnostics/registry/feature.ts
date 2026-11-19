@@ -89,6 +89,30 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A shape.faceSketch target face is non-planar or produced no closed boundary loops.',
   },
+  'feature.sketch-offset.collapsed': {
+    hintTemplate:
+      'The inward offset is at least half the narrowest width of the profile, so nothing is left. Use a smaller distance.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'offset-distance', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset distance removes the whole profile.',
+  },
+  'feature.sketch-offset.split': {
+    hintTemplate:
+      'The offset is not one profile: a neck or gap closes, or a hole reaches the boundary. Use a smaller distance, or offset each region as its own sketch.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'offset-distance', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset result is several separate regions, or touches itself at the requested distance, so it is not one outer loop with holes.',
+  },
+  'feature.sketch-offset.failed': {
+    hintTemplate:
+      "The kernel could not offset this profile. Try corners: 'round', a smaller distance, or a simpler profile.",
+    nextAction: { kind: 'fix-arg', field: 'offset.distance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset source profile could not be built, or the kernel returned no closed offset curve.',
+  },
   'feature.async-result.missing-await': {
     hintTemplate:
       'This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.',

@@ -1,5 +1,19 @@
 # Unreleased
 
+- `Sketch.offset(distance, { corners })` returns the parallel curve of a
+  closed profile as a new sketch; `await` it. A positive distance grows the
+  region (the outline moves outward and holes shrink), a negative distance
+  shrinks it. Lines stay lines and arcs stay arcs. `corners: 'round'`
+  (default) joins an outward-moving corner with an arc; `'sharp'` extends the
+  segments until they meet. A 40 × 20 mm rectangle offset by 2 mm encloses
+  1052.566 mm² (round) or 1056 mm² (sharp); offset by −2 mm it encloses
+  576 mm². The result is refused, not approximated, when it is not one
+  profile: `feature.sketch-offset.collapsed`, `feature.sketch-offset.split`
+  (a neck or gap closes, a hole reaches the boundary, or the profile touches
+  itself at exactly that distance) and `feature.sketch-offset.failed`. The
+  offset is computed when the script runs, so a `param()` distance, a
+  `param()`-driven coordinate and a spline segment throw
+  `feature.invalid-args`. Demo: `docs/demos/sketch-offset/`.
 - `.fillet(r)` and `.chamfer(d)` with no edge selector now round a part
   built from several joined primitives. The union keeps coplanar seams so
   face history stays exact. The blend solver could not pass the vertex where

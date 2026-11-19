@@ -1,0 +1,45 @@
+{
+  "invocation": "node --import tsx docs/demos/sketch-offset/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 5,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "10.000000",
+      "size": "117093"
+    }
+  },
+  "section": {
+    "file": "section.png",
+    "invocation": "kernelcad render docs/demos/sketch-offset/tray-and-lid.kcad.ts -o section.png --section y=0 --section-flip --pose 12,18 --width 1000 --height 640",
+    "sha256": "3a9714e7c3b0bbf31676d0ac67f9bc6f1d595a26de90f5e3744272fa11a28799"
+  },
+  "poster": "poster.png",
+  "posterSha256": "26a8ef86ced991503d8e993a639a65ebfefc397c62e81738a04ca653ce715718",
+  "videoSha256": "38658a483281bea262d710fee5212672cc9772432f7d1ac3f0682eb0803260e4",
+  "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
+  "scope": "Local kernelCAD Node API: Sketch.offset of a rounded outline, extrude and boolean to a tray and a lid, OCCT volume, validity, overlap and distance measurement.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
