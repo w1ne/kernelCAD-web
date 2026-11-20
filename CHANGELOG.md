@@ -1,5 +1,14 @@
 # Unreleased
 
+- Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  12 `mechanism.orphan-part` errors because only the bolts and the two shaft
+  clusters had mates. The posts are fastened to the base, the rib to the
+  cover, each shaft turns in the base on a revolute mate, and each bolt is
+  fastened to the cover and to the base. Part geometry is unchanged. The
+  assembly sequence planner now reports four fastened clusters and 21 steps
+  for this example (before: two clusters, 19 steps);
+  `docs/demos/assembly-sequence-planner/` is recaptured.
 - `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
   `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
   draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
@@ -21,6 +30,7 @@
   table with face contact and the hinge opens from 0° to 135°. The table is
   still declared first, and mate-axis explode still moves the lid 300 mm
   along the hinge axis.
+
 - Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
   16 errors. Mated parts share a face on the y=0 pin plane, the stop is seated
@@ -507,6 +517,13 @@
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
+
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
 
 # v0.17.4 — 2026-10-31
 

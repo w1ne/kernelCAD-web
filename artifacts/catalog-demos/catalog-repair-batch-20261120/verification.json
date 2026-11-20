@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-20",
+  "geometry_repairs": 8,
+  "catalog_sources_changed": 13,
+  "changed_entries": [
+    "apiary/beekeeper-veil-hood",
+    "construction-equipment/drywall-panel-lift",
+    "construction-equipment/pipe-roller-stand",
+    "construction-equipment/rebar-cage",
+    "grid-substation/substation-fire-suppression-cylinder-bank",
+    "grid-substation/substation-portable-hv-test-divider",
+    "hydroponics/deep-water-culture-bed",
+    "industrial-plant/plate-heat-exchanger",
+    "industrial-plant/roller-conveyor-line",
+    "industrial-plant/vertical-cage-ladder",
+    "retail-store/shopping-bag-dispenser",
+    "travel-gear/garment-bag",
+    "water-treatment/uv-disinfection-channel"
+  ],
+  "focused_tests_passed": 37,
+  "native_geometry_tests_included": 29,
+  "preview_gate_assets": 13,
+  "preview_gate_max_pixel_difference": 0,
+  "native_compatibility_before_after_cases": 7,
+  "native_compatibility_geometry_and_colors_equal": true,
+  "catalog_source_hash_coverage": 2402,
+  "catalog_source_hash_mismatches": [],
+  "new_controls": {
+    "industrial-plant/plate-heat-exchanger": [
+      "plateCount",
+      "plateHeight"
+    ],
+    "grid-substation/substation-fire-suppression-cylinder-bank": [
+      "cylinderCount"
+    ],
+    "industrial-plant/vertical-cage-ladder": [
+      "sectionHeight"
+    ]
+  },
+  "hosted_browser_status_at_local_commit": "Backend publication fix in separate private server change; not deployed or accepted here",
+  "scope": "Generic CC0 visual assets and editable geometry; no manufacturing or physical-safety acceptance"
+}

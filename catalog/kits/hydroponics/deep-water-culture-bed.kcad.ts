@@ -66,7 +66,7 @@ add("water", blk(0, 0, ZB + 40, L - 110, W - 110, ZW - ZB - 40).color('#2f5b52')
 
 // Three raft boards with a planting grid; a few holes left empty after harvest.
 const cols = 4, rows = 4, pitchX = 200, pitchY = 270;
-const empty = new Set(['0-1-3', '1-2-0', '2-0-2']);
+const empty = ['0-1-3', '1-2-0', '2-0-2'];
 const boardL = (L - 130) / 3;
 for (let bIx = 0; bIx < 3; bIx++) {
   const bx = -L / 2 + 65 + boardL * (bIx + 0.5);
@@ -76,7 +76,7 @@ for (let bIx = 0; bIx < 3; bIx++) {
     for (let j = 0; j < rows; j++) {
       const hx = bx + (i - (cols - 1) / 2) * pitchX;
       const hy = (j - (rows - 1) / 2) * pitchY;
-      const isEmpty = empty.has(`${bIx}-${i}-${j}`);
+      const isEmpty = empty.includes(`${bIx}-${i}-${j}`);
       holes.push([hx, hy, isEmpty]);
       if (isEmpty) board = board.subtract(cylZ(hx, hy, ZW - 10, 80, 40, 10));
     }
