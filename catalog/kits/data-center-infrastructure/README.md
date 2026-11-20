@@ -79,7 +79,7 @@ The [panelboard breaker review](../../../artifacts/catalog-demos/data-center-pan
 | `switchgear-lineup` | Switchgear lineup | Joined electrical bays with breaker doors, instrument panels, and bus compartment. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 332 |
 | `top-of-rack-network-switch` | Top-of-rack network switch | Rack switch body with a repeated front port row, indicator strip, and mounting ears. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 1060 |
 | `vertical-cable-manager` | Vertical cable manager | Rack-side cable channel with repeated fingers, covers, and mounting rails. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Rubber and elastomer | 260 |
-| `wall-mount-network-cabinet` | Wall-mount network cabinet | Compact wall cabinet with framed door, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Rubber and elastomer | 288 |
+| `wall-mount-network-cabinet` | Wall-mount network cabinet | Compact wall cabinet with a painted-steel framed door with a tempered glass panel, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, tempered glass, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Tempered glass · Rubber and elastomer | 336 |
 
 ## Rebuild and verify
 
