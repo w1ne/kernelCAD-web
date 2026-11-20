@@ -84954,7 +84954,7 @@
       "id": "parking-cable-protection-ramp",
       "kit": "ev-charging-infrastructure",
       "title": "Parking cable protection ramp",
-      "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
+      "description": "Moulded rubber drive-over cable bridge with sloped flanks, two high-visibility polymer lids, sloped end caps, and bolt-down ground anchors. Knobs: overall scale and moulded rubber, polymer lid and anchor steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -84975,7 +84975,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/parking-cable-protection-ramp.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
-      "sourceSha256": "a8da51f1170bbe77c0aa17309e60fb343104e53b5f7a8655d3b4a907db809bc0",
+      "sourceSha256": "48c4b63ae6144fafada81dbc9fd359bba1f68a7b3991f0695003882f2db2006c",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84988,60 +84988,77 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "rampElastomer",
           "type": "color",
-          "default": "#397f90",
-          "label": "Powder-coated metal"
+          "default": "#474b50",
+          "label": "Moulded rubber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "coverPolymer",
+          "type": "color",
+          "default": "#f2b824",
+          "label": "High-visibility polymer lid"
+        },
+        {
+          "name": "anchorSteel",
           "type": "color",
           "default": "#b5c0c2",
-          "label": "Stainless steel"
+          "label": "Galvanized anchor steel"
         }
       ],
       "presets": {
         "fleetReady": {
-          "powderCoat": "#28765f",
-          "stainlessSteel": "#c2c9c8"
+          "rampElastomer": "#3f4a45",
+          "coverPolymer": "#f07a1a",
+          "anchorSteel": "#c2c9c8"
         },
         "nightService": {
-          "powderCoat": "#3f5059",
-          "stainlessSteel": "#c8cecd"
+          "rampElastomer": "#52565c",
+          "coverPolymer": "#e3e23c",
+          "anchorSteel": "#c8cecd"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 240,
         "sizeM": [
-          1.33,
-          0.15,
-          0.36
+          1.24,
+          0.078,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c2",
+          "name": "rampElastomer",
+          "color": "#474b50",
           "parts": [
             "ramp-base",
-            "anchor-left",
-            "anchor-right"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#397f90",
-          "parts": [
-            "cover-left",
-            "cover-right",
             "center-divider",
             "end-slope-left",
             "end-slope-right"
           ],
-          "param": "powderCoat"
+          "param": "rampElastomer"
+        },
+        {
+          "name": "coverPolymer",
+          "color": "#f2b824",
+          "parts": [
+            "cover-left",
+            "cover-right"
+          ],
+          "param": "coverPolymer"
+        },
+        {
+          "name": "anchorSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "anchor-left",
+            "anchor-right",
+            "anchor-left-rear",
+            "anchor-right-rear"
+          ],
+          "param": "anchorSteel"
         }
       ]
     },
