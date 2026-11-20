@@ -169,19 +169,21 @@ function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replica
 }
 
 /** Build the prism tool by extruding the profile along the bore axis from
- *  the entry face plane. */
+ *  the entry face plane. Like `hole()`, the tool starts OVERSHOOT outside the
+ *  entry face; only a tool that must leave the body (`through`, or the long
+ *  tool that `upToFace` trims) also runs OVERSHOOT past `effectiveDepth`. A
+ *  blind or symmetric floor stays at exactly `effectiveDepth`. */
 function buildPrismTool(
   entry: ResolvedEntry,
   commands: readonly SketchCommand[],
   effectiveDepth: number,
-  symmetric: boolean,
+  mode: 'blind' | 'symmetric' | 'exit',
 ): replicad.Shape3D {
   const OVERSHOOT = 0.01;
-  const totalDepth = symmetric ? effectiveDepth * 2 + OVERSHOOT * 2 : effectiveDepth + OVERSHOOT * 2;
-  // For symmetric: start the plane offset by +effectiveDepth in the outward
-  // normal direction, then extrude inward by total. For blind: start at the
-  // entry face (offset by +OVERSHOOT outward), extrude inward by depth+2ε.
-  const startOffset = symmetric ? effectiveDepth : OVERSHOOT;
+  // Symmetric: start effectiveDepth outside the entry face and extrude
+  // 2*effectiveDepth inward.
+  const startOffset = mode === 'symmetric' ? effectiveDepth : OVERSHOOT;
+  const totalDepth = startOffset + effectiveDepth + (mode === 'exit' ? OVERSHOOT : 0);
   const planeOrigin: Vec3 = [
     entry.centroid[0] + entry.normalOutward[0] * startOffset,
     entry.centroid[1] + entry.normalOutward[1] * startOffset,
@@ -333,11 +335,11 @@ function tryBuildPrismTool(
   entry: ResolvedEntry,
   commands: readonly SketchCommand[],
   effectiveDepth: number,
-  symmetric: boolean,
+  mode: 'blind' | 'symmetric' | 'exit',
   featureId: string,
 ): replicad.Shape3D | { error: CompilerDiagnostic } {
   try {
-    return buildPrismTool(entry, commands, effectiveDepth, symmetric);
+    return buildPrismTool(entry, commands, effectiveDepth, mode);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -363,7 +365,8 @@ function buildDepthTool(
   const depthRes = resolveCutoutDepth(feature, target, entry);
   if ('error' in depthRes) return depthRes;
   const { effectiveDepth, through, symmetric } = depthRes;
-  const tool = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  const mode = through ? 'exit' : symmetric ? 'symmetric' : 'blind';
+  const tool = tryBuildPrismTool(entry, commands, effectiveDepth, mode, feature.id);
   if ('error' in tool) return tool;
   return { tool, effectiveDepth, through };
 }
@@ -466,7 +469,7 @@ export function lowerCutout(
   void profileBackend;
 
   const toolRes = feature.inputs.upToFace
-    ? buildUpToFaceTool(feature, target, records, entry, (depth) => buildPrismTool(entry, commands, depth, false))
+    ? buildUpToFaceTool(feature, target, records, entry, (depth) => buildPrismTool(entry, commands, depth, 'exit'))
     : buildDepthTool(feature, target, entry, commands);
   if ('error' in toolRes) {
     diagnostics.push(toolRes.error);
