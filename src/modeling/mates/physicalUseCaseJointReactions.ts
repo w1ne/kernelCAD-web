@@ -14,7 +14,7 @@ import {
   type PhysicalUseCaseStaticCertificate,
   type PhysicalUseCaseStaticContactForce,
 } from './physicalUseCaseStatics';
-import { solveMates } from './solver';
+import { solveMates, withUnmatedPartPlacements } from './solver';
 import {
   CERTIFICATE_NUMERIC_TOLERANCE,
   add,
@@ -168,12 +168,13 @@ export async function reviewPhysicalUseCaseJointReactions(
       `Static certificate poses returned mate solver status '${solved.status}'.`,
     );
   }
+  const placements = withUnmatedPartPlacements(arm, solved.poses);
   const exactPoseIssue = await validateCertificateAtSolvedPose(
     arm,
     useCase,
     certificate,
     contacts,
-    solved.poses,
+    placements,
   );
   if (exactPoseIssue !== undefined) return inputFailure(useCase.name, exactPoseIssue);
 
@@ -185,7 +186,7 @@ export async function reviewPhysicalUseCaseJointReactions(
 
     const frameByEdge = new Map<ArticulatedEdge, ResolvedJointFrame>();
     for (const entry of oriented) {
-      const frame = await resolveJointFrame(arm, solved.poses, entry);
+      const frame = await resolveJointFrame(arm, placements, entry);
       if (typeof frame === 'string') return inputFailure(useCase.name, frame);
       frameByEdge.set(entry.edge, frame);
     }

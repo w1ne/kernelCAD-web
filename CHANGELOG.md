@@ -1,5 +1,13 @@
 # Unreleased
 
+- Physical use-case checks (contact reachability, static perturbation and
+  joint reactions) now read a contact or load connector on a part in no mate
+  where the part's `at` puts it. Before, such a part (for example a held
+  `role: 'contact-target'` object placed only by `at`) was read at the world
+  origin, so a grasp that touches it was reported as
+  `contact-unreachable`. In the regression rig the held contact moved from
+  [-2, 0, 0] to [10, 0, 0] mm and the 10.2 mm false miss is now 0 mm.
+
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported
