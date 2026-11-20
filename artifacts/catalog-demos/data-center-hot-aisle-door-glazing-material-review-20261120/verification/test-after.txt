@@ -1,0 +1,7 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+ ✓ tests/integration/catalog/hotAisleDoorGlazingMaterial.test.ts (1 test) 1081ms
+     ✓ builds each door leaf as a painted-steel frame around a clear panel  581ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  07:58:58
+   Duration  13.63s (transform 10.11s, setup 164ms, import 12.10s, tests 1.08s, environment 0ms)

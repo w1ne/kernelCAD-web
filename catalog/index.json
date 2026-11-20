@@ -74936,7 +74936,7 @@
       "id": "hot-aisle-containment-door",
       "kit": "data-center-infrastructure",
       "title": "Hot-aisle containment door",
-      "description": "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Aisle-end door assembly with uprights, two painted-steel door frames with clear polycarbonate panels, and pull handle. Knobs: overall scale; painted steel, clear polycarbonate glazing, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -74956,7 +74956,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/hot-aisle-containment-door.kcad.ts",
       "preview": "/assets/data-center-infrastructure-hot-aisle-containment-door.png",
-      "sourceSha256": "5c7e71cc89ae6975b12bf7328a7ee076fad24f672b977f7b14c330fd6a8e90df",
+      "sourceSha256": "736d3412a4de1c2b5d340f4e78dde6a70be125c413b8022cd71ed3c0ff76ae59",
       "triangleBudget": 2200,
       "params": [
         {
@@ -74975,6 +74975,12 @@
           "label": "Painted steel"
         },
         {
+          "name": "glazing",
+          "type": "color",
+          "default": "#9fd3dc",
+          "label": "Clear polycarbonate glazing"
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#c99b35",
@@ -74984,15 +74990,17 @@
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
+          "glazing": "#9fd3dc",
           "polymer": "#c99b35"
         },
         "highVisibility": {
           "steel": "#d99b22",
+          "glazing": "#c4e8ee",
           "polymer": "#263e48"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 212,
         "sizeM": [
           1.32,
           2.25,
@@ -75009,11 +75017,26 @@
             "left-jamb",
             "right-jamb",
             "header",
-            "door-panel-left",
-            "door-panel-right",
+            "door-stile-left-outer",
+            "door-stile-left-inner",
+            "door-rail-left-bottom",
+            "door-rail-left-top",
+            "door-stile-right-outer",
+            "door-stile-right-inner",
+            "door-rail-right-bottom",
+            "door-rail-right-top",
             "hinge-top"
           ],
           "param": "steel"
+        },
+        {
+          "name": "glazing",
+          "color": "#9fd3dc",
+          "parts": [
+            "door-glazing-left",
+            "door-glazing-right"
+          ],
+          "param": "glazing"
         },
         {
           "name": "polymer",
