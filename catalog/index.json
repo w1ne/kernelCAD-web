@@ -132472,7 +132472,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
-      "sourceSha256": "13cd13f53c9e932b00c9524cd9aaa135b07bfbae111518b19aeb680258c87088",
+      "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
       "triangleBudget": 8000,
       "params": [
         {
@@ -132525,7 +132525,8 @@
           "frame": "#3a6f9e",
           "gutters": "#f0f0ea",
           "foliage": "#86bb4c",
-          "lights": "#f6f2ff"
+          "lights": "#f6f2ff",
+          "crop": "lettuce"
         },
         "basil": {
           "frame": "#3a6f9e",
@@ -132547,7 +132548,7 @@
         }
       },
       "stats": {
-        "triangles": 6266,
+        "triangles": 7400,
         "sizeM": [
           2.98,
           2.1,
