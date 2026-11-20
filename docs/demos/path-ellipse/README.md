@@ -78,7 +78,7 @@ ellipse. Extrude, revolve, loft, sweep, `translate`, `rotate`, `scale` and
   runs, so a `param()` value throws `feature.invalid-args`.
 - Radii too small to join the two points throw `feature.invalid-args` with
   the smallest pair that fits. SVG scales the radii without a message.
-- `Sketch.offset`, the sketch booleans and `cutout()` do not take a profile
-  with a `nurbsSegment`. For an elliptical hole, subtract an extruded ellipse.
+- `Sketch.offset` and the sketch booleans do not take a profile with a
+  `nurbsSegment`. `cutout()` takes one; see `docs/demos/cutout-nurbs-profile/`.
 - The default `boundingBox()` of a NURBS edge is the box of its control
   polygon. For a turned ellipse use `boundingBox({ exact: true })`.

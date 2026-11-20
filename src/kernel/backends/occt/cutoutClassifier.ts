@@ -50,7 +50,8 @@ export function classifyCutoutFace(face: Face, frame: CutoutFrame): CutoutRefNam
   const center: Vec3 = [c.x, c.y, c.z];
   const axis = normalize(frame.axisIntoBody);
 
-  if (surfaceType === 'PLANE' || surfaceType === 'CYLINDRE') {
+  // A spline or NURBS profile edge sweeps an EXTRUSION_SURFACE side face.
+  if (surfaceType === 'PLANE' || surfaceType === 'CYLINDRE' || surfaceType === 'EXTRUSION_SURFACE') {
     const along = distanceAlongAxis(center, frame.entryPoint, axis);
 
     // floor: planar perpendicular face at floor depth (blind only).
