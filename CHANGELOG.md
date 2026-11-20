@@ -1,5 +1,23 @@
 # Unreleased
 
+- A script that calls `kinematic.suggestJointRanges`, `checkSweptCollision`,
+  `checkStaticHold` or `motionLoad` no longer gets a second copy of every
+  assembly part in its model. Each query lowered a probe scene and left that
+  scene in the feature list, fixed at the probe pose, so `kernelcad animate`
+  and the viewer drew the moving part twice: at the probe pose and at the
+  current pose. The probe scene is now removed after the query has read it.
+  The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
+  one showed the carriage stretched from its start to the wall.
+
+- A `union()` member that carries no face lineage, such as a sketch extrude
+  or extruded text, now keeps its finish too. `union(plate, logo)` with a
+  navy plate and orange raised text rendered all navy in `kernelcad render`,
+  `render_preview` and GLB export, because the per-face finishes were read
+  from naming lineage that sketch extrudes do not write. Every boolean now
+  records which operand each result face came from, from the kernel's own
+  boolean history. `examples/gallery/raised-logo-extrusion.kcad.ts` is one
+  body again instead of two parts and a fastened mate (#1639).
+
 - Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
   now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
   it returned 16 errors. Mated latch parts share a face on the pin plane, the

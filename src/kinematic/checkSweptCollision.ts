@@ -296,6 +296,7 @@ async function lowerAssemblySceneForPoses(
     seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const sourceId = scene.__sourceFeatureId();
+  arm.__session().discardProbeRecord(sourceId);
   if (sourceId === undefined) return undefined;
   const lowered = result.shapes.get(sourceId);
   if (!lowered || !isSceneBackend(lowered)) return undefined;

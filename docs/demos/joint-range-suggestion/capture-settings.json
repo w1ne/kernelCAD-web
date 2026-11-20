@@ -1,11 +1,14 @@
 {
-  "date": "2026-11-17",
+  "date": "2026-11-20",
   "source": "examples/kinematic/joint-range-suggestion-motion.kcad.ts",
   "output": "docs/demos/joint-range-suggestion/joint-range-suggestion.mp4",
-  "command": "PLAYWRIGHT_BROWSERS_PATH=/Volumes/LabWired/.cache/playwright-kernelcad npx tsx src/agent/cli/index.ts animate examples/kinematic/joint-range-suggestion-motion.kcad.ts docs/demos/joint-range-suggestion/joint-range-suggestion.mp4 --fps 12 --pose 0,8 --lock-frame --backdrop white --json",
-  "playerBuild": "npm run build:player",
+  "command": "PW_CDP_URL=http://127.0.0.1:1 node dist/cli/index.js animate examples/kinematic/joint-range-suggestion-motion.kcad.ts docs/demos/joint-range-suggestion/joint-range-suggestion.mp4 --fps 12 --pose 0,8 --lock-frame --backdrop white --json",
+  "playerBuild": "node scripts/build-cli.mjs && npm run build:player",
   "stopMm": 9.693750000000001,
-  "pair": ["carriage", "wall"],
+  "pair": [
+    "carriage",
+    "wall"
+  ],
   "resolutionMm": 0.02656250000000071,
   "clearanceMm": 0.3,
   "analyticStopMm": 9.7,
@@ -17,9 +20,18 @@
   "pose": "0,8",
   "lockFrame": true,
   "backdrop": "white",
-  "cameraTarget": [36, 12, 10],
+  "cameraTarget": [
+    36,
+    12,
+    10
+  ],
   "cameraDistance": 48,
-  "animateWallSeconds": 80.28,
-  "verify": { "ok": true, "verified": true, "collisions": [] },
-  "kind": "local kinematic replay of one animationView timeline"
+  "animateWallSeconds": 344.69,
+  "verify": {
+    "ok": true,
+    "verified": true,
+    "collisions": []
+  },
+  "kind": "local kinematic replay of one animationView timeline",
+  "recapture": "Replaces the 2026-11-17 capture, which drew the suggestJointRanges probe scene as a second carriage fixed at slide 0.1."
 }
