@@ -11,7 +11,6 @@
   `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
   give `unknown` for the range, not pass.
 
-
 - `feaStudy` types now accept `param()` refs inside `fixed`, `loads[].faces`
   and `loadsFrom.faces` face queries (`{ atZ: wall }`, `boundingBoxIn:
   { xMax: wall.add(1) }`). The runtime already kept these refs symbolic and
