@@ -76904,7 +76904,7 @@
       "id": "raised-floor-tile",
       "kit": "data-center-infrastructure",
       "title": "Raised floor tile",
-      "description": "Square access-floor panel with support pedestals and edge stringers. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Square access-floor panel: a painted-steel tile with polymer edge trim and corner hold-down screws, carried 150 mm above the slab on four steel pedestals joined by stringers under its edges. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76924,7 +76924,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/raised-floor-tile.kcad.ts",
       "preview": "/assets/data-center-infrastructure-raised-floor-tile.png",
-      "sourceSha256": "bd9f6d395619f2fff73014c8c1761513e43c9d72475e2f4ff2625e97851d1ced",
+      "sourceSha256": "2051977f161a7e18152a4f9c32fce1fd70b0692f8cba2f50584a264dcfd031a4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76945,14 +76945,14 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#c99b35",
+          "default": "#2f3438",
           "label": "Engineering polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "polymer": "#2f3438"
         },
         "highVisibility": {
           "steel": "#d99b22",
@@ -76960,10 +76960,10 @@
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 460,
         "sizeM": [
           0.6,
-          0.173,
+          0.188,
           0.6
         ],
         "minUpM": 0,
@@ -76971,27 +76971,35 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "tile-panel"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
-            "edge-frame",
             "pedestal-0",
             "pedestal-1",
             "pedestal-2",
             "pedestal-3",
-            "stringer-x",
-            "stringer-y",
-            "corner-fastener"
+            "stringer-front",
+            "stringer-rear",
+            "stringer-left",
+            "stringer-right",
+            "tile-panel",
+            "corner-fastener-0",
+            "corner-fastener-1",
+            "corner-fastener-2",
+            "corner-fastener-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#2f3438",
+          "parts": [
+            "edge-trim-front",
+            "edge-trim-rear",
+            "edge-trim-left",
+            "edge-trim-right"
+          ],
+          "param": "polymer"
         }
       ]
     },
