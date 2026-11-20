@@ -1,11 +1,23 @@
 # Unreleased
 
+- A created face ref that names a slot its feature never wrote, such as
+  `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
+  with `feature.face-ref.not-resolvable`, and the hint lists the slots the
+  feature does carry. Before, the geometry-snapshot fallback took the
+  fingerprint of the first face of the feature, so `fillet`, `chamfer` and
+  `shell` silently ran on an unrelated face: `chamfer(0.3, { face:
+  'pilot.entry-rim' })` gave the same 15915.1204 mm³ solid as `'pilot.wall'`.
+  The fallback now uses only the fingerprint of the requested slot. `hole()`
+  never wrote `entry-rim`, `floor-rim` or `wall-back-rim`; the skill docs no
+  longer list them and show an edge query for a rim-only fillet instead.
+
 - The `upToFace` option of `hole`, `holes` and `cutout` now has the type of
   every form the runtime accepts: a FaceRef, a face name, a label, a
   `{ face }` selector, a FaceQuery such as `{ containsPoint: [x, y, z] }` or
   a Query DSL value. Before, the type allowed only a FaceRef, so
   `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
   check with TS2353 although it runs. Runtime behaviour is unchanged.
+
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
