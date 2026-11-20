@@ -350,8 +350,10 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
    ([-15°, -1°], lid into base and table), then the [0°, 135°] limits
    sweep clean
 6. `06-over-center-latch-reachable.kcad.ts` — over-center draw latch as a
-   closed slider-crank: IK drives only the handle; a `loopMode` pin makes
-   the over-center point (4.41°) a `kinematic.loop.branch-flip` finding
+   closed slider-crank, mated parts sharing a face on the pin plane and the
+   mate limits set to the latched-side travel: IK drives only the handle; a
+   `loopMode` pin makes the over-center point (4.41°) a
+   `kinematic.loop.branch-flip` finding in a sweep run past the limits
 7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint, beam
    lapped on the bracket side face with the joint origin on that face;
    generous actuator passes, undersized actuator fires
