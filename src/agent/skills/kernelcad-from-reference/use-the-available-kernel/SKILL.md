@@ -83,6 +83,9 @@ const contour = path()
 
 Each `smoothSpline(x, y)` inherits its start tangent from the previous segment,
 so chained calls interpolate smoothly through many points without C0 kinks.
+Each segment arrives travelling along the sketch +X direction unless you state
+the direction: `smoothSpline(x, y, { endTangent: [dx, dy] })`. State it where
+the outline turns back (a right-to-left run needs `endTangent: [-1, 0]`).
 
 **Why this matters:** chained `sagittaArc` segments hit the fillet solver
 cliffs at sub-arc joins — the tangent discontinuity at each join becomes a

@@ -288,17 +288,15 @@ describe('Sketch transforms — composition and refusals', () => {
     expect(ty).toBeCloseTo(1 + 1.5 * (ry - 1) - 3, digits);
   });
 
-  // smoothSpline has no tangent field: its free end tangent is the sketch +X
-  // direction. A move or a resize keeps that direction; a turn does not.
-  it('moves and resizes a smoothSpline profile and refuses to turn it', async () => {
+  // The free end tangent of a smoothSpline is the sketch +X direction. Every
+  // transform writes the mapped direction into the command, so the curve
+  // keeps its shape (tests/integration/smoothSplineTangent.test.ts).
+  it('moves, resizes and turns a smoothSpline profile', async () => {
     const source = `path().moveTo(0, 0).lineTo(20, 0).smoothSpline(24, 8).smoothSpline(20, 14).lineTo(0, 14).close()`;
     const plain = await lowerScript(`return ${source}.extrude(2);`);
-    const { solid } = await lowerScript(`return ${source}.scale(1.5, [-2, 1]).translate(7, -3).extrude(2);`);
+    const { solid } = await lowerScript(`return ${source}.scale(1.5, [-2, 1]).translate(7, -3).rotate(30).extrude(2);`);
     const expected = plain.solid.volume() * 2.25;
     expect(Math.abs(solid.volume() - expected) / expected).toBeLessThan(1e-9);
-    const err = await captureError(`return ${source}.rotate(30).extrude(2);`);
-    expect(err.code).toBe('feature.invalid-args');
-    expect(err.message).toMatch(/smoothSpline/);
   });
 
   it('keeps segment labels', async () => {
