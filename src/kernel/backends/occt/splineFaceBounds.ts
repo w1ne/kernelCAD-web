@@ -6,6 +6,9 @@
 // across instead of 6 x 6 mm. `BRepBndLib.AddOptimal` is exact but costs
 // about 1 s on that rod. This reads the poles of only the faces that can
 // move the box and refines them in JS (geometry/rationalPatchBounds.ts).
+// Extruded spline faces follow their curve's pole hull too: a straight
+// spline prism read 52.2 mm wide instead of 29.6 mm. Their exact box costs
+// under 5 ms, so they use it.
 
 import { getOC } from 'replicad';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -37,8 +40,8 @@ export function withSplineFaceBounds(shape: unknown, box: { min: Vec3; max: Vec3
 }
 
 /** Conservative AABB of the raw `TopoDS_Shape` that is tighter than the
- *  default box on B-spline faces. Undefined when the shape has no B-spline
- *  face or OCCT cannot read it; callers keep their default box then. */
+ *  default box on B-spline and extruded faces. Undefined when the shape has
+ *  neither or OCCT cannot read it; callers keep their default box then. */
 export function splineFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
   try {
     return readSplineFaceBounds(shape);
@@ -51,6 +54,7 @@ function readSplineFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefi
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const splineType = oc.GeomAbs_SurfaceType.GeomAbs_BSplineSurface;
+  const extrusionType = oc.GeomAbs_SurfaceType.GeomAbs_SurfaceOfExtrusion;
   // Surface points known so far: every vertex lies on the shape.
   const inner = vertexBox(oc, shape);
   const budget = { splits: SPLIT_BUDGET };
@@ -63,11 +67,13 @@ function readSplineFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefi
       const box = defaultFaceBox(oc, face);
       const adaptor = new oc.BRepAdaptor_Surface_2(face, false);
       try {
-        const spline = adaptor.GetType() === splineType;
-        sawSpline ||= spline;
+        const type = adaptor.GetType();
+        const spline = type === splineType;
+        sawSpline ||= spline || type === extrusionType;
         if (exceeds(box, inner, REFINE_TOL)) {
-          // Other faces (e.g. the planar end caps of a thread) are bounded
-          // by the pole hulls of their B-spline edges; their exact box is cheap.
+          // Other faces (e.g. extruded splines, or the planar end caps of a
+          // thread or prism) are bounded by the pole hulls of their B-spline
+          // edges; their exact box is cheap.
           const tight = spline ? refinedFaceBox(oc, adaptor, face, inner, budget) : exactFaceBox(face);
           if (tight) {
             for (let a = 0; a < 3; a++) {

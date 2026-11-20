@@ -5,7 +5,8 @@
 // near 1, so the exact-box gate for strongly rational faces skips them. The
 // default `Bnd_Box` then follows their pole hull: an M6 rod read 6.70 x 7.32
 // mm across instead of 6 x 6 mm. B-spline faces are now refined to 1e-3 mm,
-// and the result must still contain OCCT's exact box.
+// and the result must still contain OCCT's exact box. Extruded spline faces
+// had the same fault: a straight spline prism read 52.2 mm wide, not 29.6.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getOC } from 'replicad';
@@ -92,4 +93,22 @@ describe('bounding box of threaded rods', () => {
     const { min, max } = (await lower('return box(40, 30, 10).fillet(2);')).boundingBox();
     expect([0, 1, 2].map((a) => max[a] - min[a])).toEqual([40, 30, 10]);
   });
+});
+
+describe('bounding box of extruded splines', () => {
+  const prism = 'return path().moveTo(0, -5).spline([[0, -5], [30, -5], [30, 5], [0, 5]]).close().extrude(60);';
+
+  it('a straight spline prism reads its outline, not the pole hull', async () => {
+    const shape = await lower(prism);
+    const { min, max } = shape.boundingBox();
+    // Exact extremes of the cubic through the four points: x 30.625, y +/-14.789.
+    expect(max[0]).toBeCloseTo(30.625, 3);
+    expect(max[1] - min[1]).toBeCloseTo(29.578, 2);
+    expect(max[2] - min[2]).toBeCloseTo(60, 6);
+    expectTightOuter(shape);
+  }, 60_000);
+
+  it('a rotated, moved prism still contains the exact box', async () => {
+    expectTightOuter(await lower(prism.replace(/;$/, '.rotate([1, 0, 1], 25).translate(-4, 9, 2);')));
+  }, 60_000);
 });
