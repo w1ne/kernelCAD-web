@@ -28,6 +28,13 @@
 // the keeper rides a housing rail, and the mate limits are the latched-side
 // travel.
 //
+// Snippet 9 failed it: the four-bar links sat in separate Y layers joined by
+// pins that touched no mating part, the stop was fastened at the world
+// origin, and the full-turn limits ran through the stop and the poses where
+// the rocker reverses. Mated parts now share a face on the pin plane, the
+// stop is seated on the ground bar, and the mate limits are the crank travel
+// short of the stop.
+//
 // VERIFIED_REAL only grows. Add a snippet here when it is rebuilt.
 
 import { describe, expect, it } from 'vitest';
@@ -42,6 +49,7 @@ const VERIFIED_REAL = [
   '05-clamshell-hinge-swept.kcad.ts',
   '06-over-center-latch-reachable.kcad.ts',
   '07-static-hold-servo-arm.kcad.ts',
+  '09-four-bar-loop-swept.kcad.ts',
 ];
 
 describe('kinematic skill cookbook scripts pass evaluate_script', () => {

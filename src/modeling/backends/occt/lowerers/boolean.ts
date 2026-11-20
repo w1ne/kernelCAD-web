@@ -56,6 +56,55 @@ export function wrapBooleanResult(
   return out;
 }
 
+/** One operand of a boolean, with the record it came from. */
+interface Operand {
+  readonly shape: OcctBackend;
+  readonly id: string | undefined;
+}
+
+/**
+ * Record which operand each result face came from (`OcctBackend.memberOrigin`),
+ * from the OCCT boolean history itself: a face kept as is keeps its hash, a
+ * trimmed or split face is listed in `faceHistory`. This does not depend on
+ * the operands carrying face lineage, so a sketch extrude or extruded text
+ * member is traced like a primitive. Only `sources` contribute: every operand
+ * of a union, the base side of a cut or intersection. Faces a cutter leaves
+ * behind get no origin.
+ */
+function stampMemberOrigin(
+  out: OcctBackend,
+  sources: readonly Operand[],
+  result: BooleanHistoryResult,
+  featureId: string,
+): void {
+  const resultHashes = new Set(out.faceHashes());
+  const origin = new Map<string, readonly string[]>();
+  for (const { shape, id } of sources) {
+    for (const hash of shape.faceHashes()) {
+      const chain = shape.memberOrigin?.get(hash) ?? (id !== undefined ? [id] : undefined);
+      if (chain === undefined || result.deletedFaces.has(hash)) continue;
+      const modified = result.faceHistory.get(hash);
+      const targets = modified !== undefined && modified.length > 0 ? modified : [hash];
+      for (const t of targets) {
+        if (!resultHashes.has(t) || origin.has(t)) continue;
+        // A pairwise fold (intersection) passes its own earlier result back
+        // in: its chain already ends with this record.
+        origin.set(t, chain[chain.length - 1] === featureId ? chain : [...chain, featureId]);
+      }
+    }
+  }
+  if (origin.size > 0) out.memberOrigin = origin;
+}
+
+/** Appearance provenance is only worth computing when some record in the
+ *  script carries a finish, material or colour. */
+function scriptHasAppearance(ctx: LowerContext): boolean {
+  return (ctx.allRecords ?? []).some((r) => {
+    const meta = r.metadata as { material?: unknown; color?: unknown } | undefined;
+    return meta?.material !== undefined || meta?.color !== undefined;
+  });
+}
+
 /** Fold the tools one at a time, merging lineage pair by pair (intersection). */
 function foldPairwise(
   acc: OcctBackend,
@@ -64,6 +113,8 @@ function foldPairwise(
   r: FeatureRecord,
   ctx: LowerContext,
 ): OcctBackend {
+  const trace = scriptHasAppearance(ctx);
+  let source: Operand = { shape: acc, id: refIdOf(r, 'base') };
   for (const c of cutters) {
     const result = intersectWithHistory(acc, c);
     const recovered = booleanRecoveryDiagnostic(r.id, `boolean ${op}`, result);
@@ -74,6 +125,9 @@ function foldPairwise(
       mergeEdges([acc.edgeHistoryMap, c.edgeHistoryMap], result),
       r.id,
     );
+    if (trace) stampMemberOrigin(acc, [source], result, r.id);
+    // The next step's base is this result; its faces already carry origins.
+    source = { shape: acc, id: undefined };
   }
   return acc;
 }
@@ -98,7 +152,25 @@ function runManyToolBoolean(
     [acc.historyMap, ...cutters.map((c) => c.historyMap)],
     result,
   );
-  return wrapBooleanResult(result, newMap, mergeEdges([acc.edgeHistoryMap, ...cutters.map((c) => c.edgeHistoryMap)], result), r.id);
+  const out = wrapBooleanResult(result, newMap, mergeEdges([acc.edgeHistoryMap, ...cutters.map((c) => c.edgeHistoryMap)], result), r.id);
+  if (scriptHasAppearance(ctx)) {
+    const base: Operand = { shape: acc, id: refIdOf(r, 'base') };
+    const tools: Operand[] = opKind === 'fuse'
+      ? cutterKeys(ctx).map((key) => ({ shape: ctx.inputs.byKey[key] as OcctBackend, id: refIdOf(r, key) }))
+      : [];
+    stampMemberOrigin(out, [base, ...tools], result, r.id);
+  }
+  return out;
+}
+
+function refIdOf(r: FeatureRecord, key: string): string | undefined {
+  const ref = r.inputs[key];
+  return ref !== undefined && ref.kind === 'feature' ? ref.id : undefined;
+}
+
+/** Tool keys in the order `lowerBoolean` passes them to the kernel. */
+function cutterKeys(ctx: LowerContext): string[] {
+  return Object.keys(ctx.inputs.byKey).filter((k) => k.startsWith('cutter_')).sort((a, b) => a.localeCompare(b));
 }
 
 /** `boolean` — folds every `cutter_*` input into `base` with the history-aware
