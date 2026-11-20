@@ -571,7 +571,9 @@ export interface SolvedModelOptions {
    * distance. Only the declared pairs are probed, so the cost scales with
    * the declaration count rather than the full part-pair matrix. Overlap and
    * sub-minimum gaps are `assembly.clearance.violated`; unmeasurable pairs
-   * are `assembly.clearance.unresolved`.
+   * are `assembly.clearance.unresolved`. With `posesGate: 'envelope'` the
+   * same minima are also checked at every envelope sample
+   * (`assembly.pose-envelope.clearance-violated`).
    */
   clearances?: readonly PairClearanceTolerance[];
   /**
@@ -900,6 +902,7 @@ function gatherSolvedModelGateInputs(
           ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
           ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
           ...(opts?.contacts !== undefined ? { contactTolerances: opts.contacts } : {}),
+          ...(opts?.clearances !== undefined ? { declaredClearances: opts.clearances } : {}),
           includeInterference: true,
         })
       : Promise.resolve(undefined);

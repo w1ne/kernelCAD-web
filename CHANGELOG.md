@@ -1,5 +1,18 @@
 # Unreleased
 
+- `solvedModel({}, { posesGate: 'envelope', clearances })` (#1590) now
+  checks each declared per-pair minimum clearance at every envelope sample,
+  not only at rest. A pair that goes under its `minMm` inside the joint
+  range is `assembly.pose-envelope.clearance-violated` (error, so the build
+  fails under `validate: 'error'`); an unmeasured pair is
+  `assembly.pose-envelope.clearance-unresolved` (warning). The default gate
+  stays rest-only. On a carriage that slides toward a stop (20 mm gap at
+  rest, limits `[0, 15]`), `minMm: 10` now fails at `slide:max` with 5 mm
+  and `minMm: 4` passes. On `examples/robot-arm/compact-supported-arm` with
+  `yaw-turret`/`upper-link` declared at 3 mm, the gate reports 0.186 mm at
+  `shoulder-pitch:max`, the same value as `verify({ check:
+  'clearance-range' })`.
+
 - `verify({ check: 'clearance-range' })` (#1590) reports, for each mating
   pair, the actual vs the planned minimum clearance at rest and across the
   declared joint range, with `pass | fail | unknown` per row. Planned values
