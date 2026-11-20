@@ -7,6 +7,13 @@
   reserved host identifiers and unsupported collection construction without
   changing their exported geometry or public parameter keys.
 
+- Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  16 errors. Mated parts share a face on the y=0 pin plane, the stop is seated
+  on the ground bar, and the mate limits are the crank travel from 40° to
+  130°. The 0° to 200° sweep still finds the first rocker-to-stop contact at
+  crank 164°, equal to the closed form.
+
 - Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
   and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
