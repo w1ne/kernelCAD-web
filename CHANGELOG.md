@@ -1,5 +1,15 @@
 # Unreleased
 
+- `mechanism.tendon-body-intersect` now reads tendon anchors, via points and
+  wrap geoms on a part in no mate (for example a legacy-joint participant) at
+  the part's `at` placement. Before, it read them as if the part were at the
+  origin, so the cable it checked did not match the rendered tendon. Example
+  `examples/kinematic/jointed-tendon-anchor-at.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real` (before: one
+  `mechanism.tendon-body-intersect` error); its hook and eye are on the
+  facing ends of the two parts (tendon from x=90 to x=10 mm), and
+  `docs/demos/tendon-jointed-anchor-at/` is recaptured.
+
 - Physical use-case checks (contact reachability, static perturbation and
   joint reactions) now read a contact or load connector on a part in no mate
   where the part's `at` puts it. Before, such a part (for example a held
