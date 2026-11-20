@@ -5,6 +5,7 @@ import type { AxisSpec, Param } from '../../shared/intent/types';
 import { type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { paramExpr, paramFromExpr, toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
+import { mapSmoothSplineTangents } from '../../shared/capture/smoothSplineTangents';
 import type { TangentEntitySpec, TangentNearSpec } from '../../shared/capture/tangency';
 
 /** Coordinate/derivative reflection closures shared by the command handlers. */
@@ -88,7 +89,7 @@ export function reflectSketchCommands(commands: SketchCommand[], axis: AxisSpec)
   };
 
   const context: SketchReflectContext = { reflectXY, reflectVec, negateScalar, reflectEntity, reflectNear };
-  return commands.map(cmd => reflectSketchCommand(cmd, context));
+  return commands.map((cmd, i) => reflectSketchCommand(cmd, context, commands[i - 1]));
 }
 
 /** Command-family routing. The lookup is exhaustive over `SketchCommand['kind']`
@@ -110,10 +111,14 @@ const REFLECT_GROUP_BY_KIND: Record<SketchCommand['kind'], 'point' | 'arc' | 'cu
   close: 'close',
 };
 
-function reflectSketchCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+function reflectSketchCommand(
+  cmd: SketchCommand,
+  ctx: SketchReflectContext,
+  prev: SketchCommand | undefined,
+): SketchCommand {
   switch (REFLECT_GROUP_BY_KIND[cmd.kind]) {
     case 'point':
-      return reflectPointCommand(cmd, ctx);
+      return reflectPointCommand(cmd, ctx, prev);
     case 'arc':
       return reflectArcCommand(cmd, ctx);
     case 'curve':
@@ -125,7 +130,11 @@ function reflectSketchCommand(cmd: SketchCommand, ctx: SketchReflectContext): Sk
   }
 }
 
-function reflectPointCommand(cmd: SketchCommand, ctx: SketchReflectContext): SketchCommand {
+function reflectPointCommand(
+  cmd: SketchCommand,
+  ctx: SketchReflectContext,
+  prev: SketchCommand | undefined,
+): SketchCommand {
   switch (cmd.kind) {
     case 'moveTo': {
       const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
@@ -145,12 +154,13 @@ function reflectPointCommand(cmd: SketchCommand, ctx: SketchReflectContext): Ske
       return { ...cmd, x, y, midX, midY };
     }
     case 'smoothSpline': {
-      // smoothSpline inherits its start tangent from the prior segment
-      // (which is also reflected here), so we only flip the endpoint.
-      // The end tangent is auto-chosen by replicad; reflection of the
-      // surrounding context picks the correct mirrored tangent.
+      // An inherited start tangent follows the prior segment, which is
+      // reflected here too. The end tangent, and a start tangent with no
+      // prior segment, default to the sketch +X direction: the mirror image
+      // of that direction is written into the command, or a reflection
+      // across 'y' would change the curve.
       const [x, y] = ctx.reflectXY(cmd.x, cmd.y);
-      return { ...cmd, x, y };
+      return { ...cmd, x, y, ...mapSmoothSplineTangents(cmd, prev, ctx.reflectVec) };
     }
     default:
       return cmd;
@@ -180,11 +190,21 @@ function reflectCurveCommand(cmd: SketchCommand, ctx: SketchReflectContext): Ske
   switch (cmd.kind) {
     case 'spline': {
       // Reflect every waypoint; tension is a scalar magnitude (no flip).
+      // Tangent constraints are directions: reflected without the offset.
       const newPoints = cmd.points.map(p => {
         const [x, y] = ctx.reflectXY(p.x, p.y);
         return { x, y };
       });
-      return { ...cmd, points: newPoints };
+      const reflectTangent = (t: { x: Param; y: Param }): { x: Param; y: Param } => {
+        const [x, y] = ctx.reflectVec(t.x, t.y);
+        return { x, y };
+      };
+      return {
+        ...cmd,
+        points: newPoints,
+        ...(cmd.startTangent ? { startTangent: reflectTangent(cmd.startTangent) } : {}),
+        ...(cmd.endTangent ? { endTangent: reflectTangent(cmd.endTangent) } : {}),
+      };
     }
     case 'nurbsSegment': {
       // Reflect every control point; degree, weights, and knots are

@@ -29,7 +29,20 @@ export type SketchCommand =
   // is smooth), and the end tangent is chosen automatically by replicad's
   // smoothSplineTo. Useful for organic outlines (Wayfarer brow, ergonomic
   // grips) where chained arcs hit OCCT BlendChain solver cliffs.
-  | { kind: 'smoothSpline'; x: Param; y: Param }
+  //
+  // `endTangent` (optional) is the direction of travel at (x, y); without it
+  // the segment arrives along the sketch +X direction. `startTangent`
+  // (optional) replaces the inherited start direction. Both are direction
+  // vectors: only the direction matters. Command-list transforms write them
+  // so a turned or mirrored segment keeps its shape (see
+  // `smoothSplineTangents.ts`).
+  | {
+      kind: 'smoothSpline';
+      x: Param;
+      y: Param;
+      startTangent?: { x: Param; y: Param };
+      endTangent?: { x: Param; y: Param };
+    }
   // NURBS Slice D — 2D path NURBS authoring.
   //
   // `spline` — N-waypoint interpolation. `points[0]` MUST match the current

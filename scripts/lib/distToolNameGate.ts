@@ -30,6 +30,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'render',
   'sandbox',
   'skill',
+  'slicer',
   'stats',
   'telemetry',
   'validate',

@@ -118,6 +118,7 @@ Bundled HDRI presets work. A URL `environment` is refused.
 | `kernelcad mcp --cloud` | Proxies every call to the hosted API. |
 | `kernelcad stats` | Admin telemetry API. |
 | `kernelcad print send`, MCP `send_to_printer` | Uploads to a network printer. |
+| `kernelcad slicer open` | Launches a local GUI binary outside the in-process guard. |
 | `kernelcad install` | Writes MCP client configs in your home directory and runs other agent CLIs. |
 | `kernelcad telemetry enable` / `reset` | Telemetry is forced off. |
 
@@ -173,10 +174,10 @@ replace OS isolation against hostile native code. These are not covered by the
 in-process guard:
 
 - Child processes other than Chromium (`ffmpeg`, CalculiX/gmsh, OpenFOAM (native,
-  or a Docker container that always runs with `--network none`), slicer CLIs,
-  `git` for `collab check`). They inherit the sandbox environment, including
-  the dead proxy, `TMPDIR` and `KERNELCAD_SANDBOX=1`, but not the patched
-  modules.
+  or a Docker container that always runs with `--network none`), slicer CLIs used
+  for G-code slicing, `git` for `collab check`). They inherit the
+  sandbox environment, including the dead proxy, `TMPDIR` and
+  `KERNELCAD_SANDBOX=1`, but not the patched modules.
 - Native addons that do their own I/O.
 - File descriptors opened before the guard was installed. The CLI installs it
   as its first import, so in practice there are none.

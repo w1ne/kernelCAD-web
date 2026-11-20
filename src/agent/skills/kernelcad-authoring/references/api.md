@@ -685,9 +685,8 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // about the origin, then moves. rotate is counter-clockwise; center defaults
 // to the sketch origin [0, 0]. dx, dy, factor, center and ParamRef coordinates
 // stay symbolic. angleDeg must be a plain number (parameter expressions have
-// no sin/cos). factor must be > 0. rotate refuses a profile with a smoothSpline
-// segment (its free end tangent is fixed to +X). A sketch.text sketch is
-// refused: use its position / rotation / size options.
+// no sin/cos). factor must be > 0. A sketch.text sketch is refused: use its
+// position / rotation / size options.
 .translate(dx: Editable<number>, dy: Editable<number>): Sketch
 .rotate(angleDeg: number, center?: [Editable<number>, Editable<number>]): Sketch
 .scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>]): Sketch
@@ -759,7 +758,7 @@ const blade = root.loft(tip, {
 .sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>): PathBuilder  // Arc by chord + perpendicular bulge. Sign chooses side.
 .bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
 .radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
-.smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
+.smoothSpline(x: Editable<number>, y: Editable<number>, opts?: { startTangent?: [Editable<number>, Editable<number>]; endTangent?: [Editable<number>, Editable<number>] }): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent. Arrives along opts.endTangent (an [x, y] direction of travel); default is the sketch +X direction. opts.startTangent replaces the inherited direction. reflect / translate / rotate / scale keep the curve shape. Unknown option keys and zero-length tangents throw feature.invalid-args at capture.
 .spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number>; startTangent?: [Editable<number>, Editable<number>]; endTangent?: [Editable<number>, Editable<number>] }): PathBuilder    // Include current pen position as points[0]. Unknown option keys throw feature.invalid-args at capture. Verify the resulting bounds: dense sharp turns can overshoot; use bounded piecewise Bezier curves for dimension-controlled silhouettes. See kernelcad-nurbs.
 .nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen; unknown option keys throw feature.invalid-args at capture. See kernelcad-nurbs.
 .bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
