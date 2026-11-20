@@ -1,0 +1,110 @@
+{
+  "scope": "Before/after native GLB world-space triangles and colors; not engineering acceptance",
+  "records": [
+    {
+      "slug": "apiary/beekeeper-veil-hood",
+      "variant": "default",
+      "before_source_sha256": "f2dd01d318f1bc02fa082d4f9bee50295c57342e7d0d44df295ff674bcee4158",
+      "after_source_sha256": "793fb23f6237a084d2a06834a9a1324181ae0940134eb66ffa4c907db67e7832",
+      "before": {
+        "triangles": 2368,
+        "world_triangle_color_sha256": "449225cd8e5887827fdb7aeedb3ff74d3420104f862619f845a4cca91cec49ca"
+      },
+      "after": {
+        "triangles": 2368,
+        "world_triangle_color_sha256": "449225cd8e5887827fdb7aeedb3ff74d3420104f862619f845a4cca91cec49ca"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "apiary/beekeeper-veil-hood",
+      "variant": "fencing",
+      "before_source_sha256": "f2dd01d318f1bc02fa082d4f9bee50295c57342e7d0d44df295ff674bcee4158",
+      "after_source_sha256": "793fb23f6237a084d2a06834a9a1324181ae0940134eb66ffa4c907db67e7832",
+      "before": {
+        "triangles": 1172,
+        "world_triangle_color_sha256": "1e8e2e28f5c8f9af591960db14b2b0e6595467ce0371de808ad94e4dfde09cad"
+      },
+      "after": {
+        "triangles": 1172,
+        "world_triangle_color_sha256": "1e8e2e28f5c8f9af591960db14b2b0e6595467ce0371de808ad94e4dfde09cad"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "retail-store/shopping-bag-dispenser",
+      "variant": "default",
+      "before_source_sha256": "ae038ecd1161e5af962ab89e87e51c1790191ebd6cacb0926752a0992410c56a",
+      "after_source_sha256": "785abc907283ada26a6cab7b67fcd053ea1ba1f067411c45776849d1a18482ea",
+      "before": {
+        "triangles": 584,
+        "world_triangle_color_sha256": "16c69dd6cb2f8589c29035b4306ba70ae05a6e23816fd429a6ab1922be7461c5"
+      },
+      "after": {
+        "triangles": 584,
+        "world_triangle_color_sha256": "16c69dd6cb2f8589c29035b4306ba70ae05a6e23816fd429a6ab1922be7461c5"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "travel-gear/garment-bag",
+      "variant": "default",
+      "before_source_sha256": "2e220c661921cda2d6efa10a42611437ce1580b64e5f77c9181bce4e26448c99",
+      "after_source_sha256": "aebd1a10c54ccf998b639f7a485c33991f5cefb66445e02c5df7a23dca70665c",
+      "before": {
+        "triangles": 2196,
+        "world_triangle_color_sha256": "51151a170b218b88908fe286ffa6485b6ea9abf5c1c49c5c1d3e2b2dfad694b0"
+      },
+      "after": {
+        "triangles": 2196,
+        "world_triangle_color_sha256": "51151a170b218b88908fe286ffa6485b6ea9abf5c1c49c5c1d3e2b2dfad694b0"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "water-treatment/uv-disinfection-channel",
+      "variant": "default",
+      "before_source_sha256": "aa3676d7a0a4a0ba39e689a0bcf63a49bb5ea699effa9e7f99d30cae33c4d056",
+      "after_source_sha256": "7b8d4ccbe09b4b9e15e35185c03d5b63dc8ddc9acd2fdef41c5bbd17bfeda04d",
+      "before": {
+        "triangles": 2328,
+        "world_triangle_color_sha256": "5873c69e7bc442a46923935a906093f6103abfed0926eb64a6538475d1ef864f"
+      },
+      "after": {
+        "triangles": 2328,
+        "world_triangle_color_sha256": "5873c69e7bc442a46923935a906093f6103abfed0926eb64a6538475d1ef864f"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "hydroponics/deep-water-culture-bed",
+      "variant": "default",
+      "before_source_sha256": "384956756c7c7cd2cbbe0b58e87dd35cab9ce2ab1aaef410c145412d1b903e69",
+      "after_source_sha256": "1466572d4b1b6d97c2c1c0017a3e1827b1418dae5f8837d99c4948809d6b9070",
+      "before": {
+        "triangles": 5514,
+        "world_triangle_color_sha256": "1f056e8450a80717f964bb943a169391784410025f3aa48f3546241923f9b811"
+      },
+      "after": {
+        "triangles": 5514,
+        "world_triangle_color_sha256": "1f056e8450a80717f964bb943a169391784410025f3aa48f3546241923f9b811"
+      },
+      "unchanged": true
+    },
+    {
+      "slug": "hydroponics/deep-water-culture-bed",
+      "variant": "seedling",
+      "before_source_sha256": "384956756c7c7cd2cbbe0b58e87dd35cab9ce2ab1aaef410c145412d1b903e69",
+      "after_source_sha256": "1466572d4b1b6d97c2c1c0017a3e1827b1418dae5f8837d99c4948809d6b9070",
+      "before": {
+        "triangles": 4752,
+        "world_triangle_color_sha256": "c47d52e4ebda1f8ab35301b71a127f33230af130c44fb0825cffc838f2b6cfb7"
+      },
+      "after": {
+        "triangles": 4752,
+        "world_triangle_color_sha256": "c47d52e4ebda1f8ab35301b71a127f33230af130c44fb0825cffc838f2b6cfb7"
+      },
+      "unchanged": true
+    }
+  ]
+}

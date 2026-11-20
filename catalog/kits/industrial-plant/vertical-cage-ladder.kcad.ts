@@ -4,7 +4,7 @@ meta({
   name: 'vertical-cage-ladder',
   license: 'CC0-1.0',
   title: 'Vertical cage ladder',
-  description: 'Adjustable 900 to 1800 mm schematic ladder section, default 1035 mm, with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: overall scale, steel, safety paint.',
+  description: 'Adjustable 900 to 1800 mm schematic ladder section, default 1035 mm, with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: section height, overall scale, steel, safety paint.',
   tags: ['industrial plant', 'factory', 'process equipment', 'low poly', 'CC0'],
   kit: 'industrial-plant',
   category: 'structure',

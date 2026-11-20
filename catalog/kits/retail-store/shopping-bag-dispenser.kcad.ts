@@ -52,8 +52,8 @@ add("post", cylinder(900, 30, 12).translate(0, 0, 60).color(post));
 // Housing with a window onto the folded bag stack.
 const HZ = 940;
 const HH = 440;
-const window = blk(0, -130, HZ + 60, 360, 50, 300);
-add("housing", blk(0, -40, HZ, 460, 180, HH).subtract(window).color(housing));
+const bagWindow = blk(0, -130, HZ + 60, 360, 50, 300);
+add("housing", blk(0, -40, HZ, 460, 180, HH).subtract(bagWindow).color(housing));
 add("bag-stack", blk(0, -96, HZ + 60, 360, 20, 300).color(bags));
 for (let i = 0; i < 9; i++) add(`bag-fold-${i}`, blk(0, -107, HZ + 80 + i * 30, 340, 4, 4).color('#c9c4b4'));
 add("bag-logo", blk(0, -109, HZ + 160, 120, 4, 90).color(housing));

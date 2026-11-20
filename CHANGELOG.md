@@ -1,5 +1,12 @@
 # Unreleased
 
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
+
 - Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
   and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
