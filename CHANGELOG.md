@@ -12,7 +12,17 @@
   `feature.material.value-clamped` warning was not visible either.
   `examples/fastener-installation/l-bracket-mount.kcad.ts` now uses
   `.finish('steel')` and `'#ffa500'`, and the `.color()` hint example uses
-  `'#ff0000'` instead of `'red'`.
+  `'#ff0000'` instead of `'red'`. Three cookbook snippets, the mechanism
+  smoke script and the robot-arm eval solution used `.color('actuator')`,
+  which is not a role token and rendered grey; they now use `'servo'`.
+- `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
+  now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
+  runtime already selected every edge of the matched face, but the public
+  type accepted only `{ face: 'top' | <label> }`, so scripts such as
+  `examples/selector-binding-drift.kcad.ts` and
+  `examples/cookbook-parity/gridfinity-bin.kcad.ts` failed `TS2345` in the
+  editor. Full-tree `typecheck:examples:all`: 367 errors in 41 files before,
+  363 in 40 after (4 `TS2345` removed, no new errors).
 
 - `hole`, `holes` and `cutout` now keep the edge lineage of the body they
   cut, as `subtract` already did. Before, their result had no edge history,
