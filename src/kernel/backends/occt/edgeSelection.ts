@@ -42,6 +42,7 @@ import { resolveStableEdgeId } from './edgeIdentity';
 import {
   parseFaceSelector,
   findLineageMatches,
+  findRefMatches,
   availableRefNames,
   notResolvableHint,
   findFallbackSnapshot,
@@ -247,6 +248,12 @@ function pickEdgesFromLabelHistoryMap(
       return collectFaceEdges(faces);
     }
   }
+  // Rim refs (`pilot.entry-rim`) live on edge lineage, not on a face.
+  const rimEdges = edgesWithRef(base, parsed);
+  if (rimEdges.length > 0) {
+    reportBinding(record, base, 'edges', rimEdges);
+    return rimEdges;
+  }
   // Slice-2 snapshot fallback for named/ordinal selectors.
   if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
     const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
@@ -279,11 +286,32 @@ function pickEdgesFromLabelHistoryMap(
         featureId: record.id,
         severity: 'error',
         message: `'${labelName}' did not resolve.`,
-        hint: notResolvableHint(labelName, availableRefNames(base.historyMap, parsed)),
+        hint: notResolvableHint(labelName, [
+          ...new Set([
+            ...availableRefNames(base.historyMap, parsed),
+            ...availableRefNames(base.edgeHistoryMap ?? new Map(), parsed),
+          ]),
+        ].sort()),
       },
     };
   }
   return null;
+}
+
+/** Edges on the current shape whose lineage carries the selector's ref. */
+function edgesWithRef(base: OcctBackend, parsed: ReturnType<typeof parseFaceSelector>): EdgeList {
+  if (!base.edgeHistoryMap) return [];
+  const wanted = new Set(findRefMatches(base.edgeHistoryMap, parsed));
+  if (wanted.size === 0) return [];
+  const out: Edge[] = [];
+  const seen = new Set<string>();
+  for (const edge of (base.getReplicadShape() as unknown as { edges: Edge[] }).edges) {
+    const hash = edgeHashHex(edge);
+    if (hash === undefined || !wanted.has(hash) || seen.has(hash)) continue;
+    seen.add(hash);
+    out.push(edge);
+  }
+  return out;
 }
 
 function pickEdgesFromLabelMetadata(

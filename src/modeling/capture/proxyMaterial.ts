@@ -12,6 +12,7 @@ import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
 import type { TypedParamRef } from '../../shared/runtime/paramRef';
 import { isTypedParamRef } from '../../shared/runtime/paramRef';
+import { normalizeColor } from '../../shared/runtime/paramColor';
 import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
 import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { CaptureSession } from './captureSession';
@@ -299,6 +300,29 @@ export function cleanPbrMaterial(opts: PBRMaterial, owner: string, warnings: Sof
   const textures = cleanMaterialTextures(opts, owner);
   if (textures !== undefined) state.cleaned.textures = textures;
   return state.cleaned;
+}
+
+/**
+ * `.color()` stores any string, but every exporter and the viewer resolve it
+ * with `resolveColor()` (role token or `#hex`); anything else silently
+ * falls back to the default colour. Warn and name the call that does the job.
+ */
+export function unresolvedColorWarning(value: unknown, id: string): SoftWarning | undefined {
+  if (typeof value !== 'string' || resolveColor(value) !== undefined) return undefined;
+  const hex = normalizeColor(value);
+  const material = isFinishToken(value) || tryResolveMaterial(value).ok;
+  const fix = hex !== undefined
+    ? `use '${hex}'`
+    : material
+      ? `use .finish('${value}') for a material look`
+      : 'use a role token (servo, gear, beam, shaft, plate, pin, frame, tool) or a #rrggbb hex';
+  return {
+    code: 'feature.color.unresolved',
+    hint: `Shape.color() takes a role token or a #rrggbb hex; ${fix}.`,
+    message: `Shape.color('${value}') is not a role token or #rrggbb hex, so renders and exports fall back to the default colour; ${fix}.`,
+    recordId: id,
+    phase: 'build',
+  };
 }
 
 /**
