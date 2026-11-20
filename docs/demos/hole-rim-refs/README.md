@@ -28,11 +28,10 @@ demo (`thruHole.entry-rim`) failed the same way.
 
 ## Limits
 
-- A later `fillet` or `chamfer` does not keep the labels of the edges it
-  leaves alone. This is also true of box edge labels such as
-  `top-perimeter`, and it is not changed here. After the plate chamfer, no
-  rim label is left (`rimLabelsAfterChamfer` in `evidence.json`). Break all
-  the rims you need in one edge feature.
+- At the time of this demo, a later `fillet` or `chamfer` did not keep the
+  labels of the edges it left alone (`rimLabelsAfterChamfer` in
+  `evidence.json` is empty). This is fixed; see
+  [`../edge-labels-through-chamfer/`](../edge-labels-through-chamfer/).
 - `cutout()` writes no rim refs.
 - No other CAD system opened the model, and no plate was made.
 
