@@ -4,8 +4,10 @@ import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/e
 import type { BuiltModel } from '../../../composition/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { reviewClearanceRange, type ClearanceRangeReport } from '../../../modeling/mates/clearanceRange';
+import { clearanceRangeRequirementEntries } from '../../../modeling/requirements/assemblyLedger';
 import { pairKey } from '../../../modeling/runtime/detectInterferences';
 import { findDfmSpec } from '../../../modeling/runtime/dfm/runDfmChecks';
+import { ledgerFromEntries, type RequirementsLedger } from '../../../shared/intent/requirementRecord';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface CheckClearanceRangeInput extends EvaluateInput {
@@ -18,7 +20,7 @@ export interface CheckClearanceRangeInput extends EvaluateInput {
 }
 
 export type CheckClearanceRangeOutput =
-  | (ClearanceRangeReport & { source: 'local'; assembly: string })
+  | (ClearanceRangeReport & { source: 'local'; assembly: string; requirements: RequirementsLedger })
   | { ok: false; source: 'local'; error: string; errorCode?: string };
 
 const DEFAULT_SAMPLES_PER_MATE = 5;
@@ -54,7 +56,12 @@ async function reviewModel(model: BuiltModel, input: CheckClearanceRangeInput): 
   if (report.rows.length === 0) {
     return refusal(`verify clearance-range: assembly '${arm.name}' has no planned clearance. Declare solvedModel({}, { clearances: [{ parts: [a, b], minMm }] }), dfmSpec({ minClearance }), or pass min_clearance_mm for its movable mate pairs.`);
   }
-  return { ...report, source: 'local', assembly: arm.name };
+  return {
+    ...report,
+    source: 'local',
+    assembly: arm.name,
+    requirements: ledgerFromEntries(clearanceRangeRequirementEntries(report)),
+  };
 }
 
 function refusal(error: string): CheckClearanceRangeOutput {

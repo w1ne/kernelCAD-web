@@ -9,7 +9,9 @@
   `clearances` gate. On a carriage that slides toward a stop (20 mm gap at
   rest, 5 mm planned): limits `[0, 10]` pass at 10.000 mm; limits
   `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
-  give `unknown` for the range, not pass.
+  give `unknown` for the range, not pass. Each row also enters the
+  requirements ledger as `assembly.clearance.<rest|range>.<a>~<b>`; an
+  `unknown` row is `not-evaluated`.
 
 - `feaStudy` types now accept `param()` refs inside `fixed`, `loads[].faces`
   and `loadsFrom.faces` face queries (`{ atZ: wall }`, `boundingBoxIn:
