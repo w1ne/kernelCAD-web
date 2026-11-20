@@ -1,5 +1,14 @@
 # Unreleased
 
+- A script that calls `kinematic.suggestJointRanges`, `checkSweptCollision`,
+  `checkStaticHold` or `motionLoad` no longer gets a second copy of every
+  assembly part in its model. Each query lowered a probe scene and left that
+  scene in the feature list, fixed at the probe pose, so `kernelcad animate`
+  and the viewer drew the moving part twice: at the probe pose and at the
+  current pose. The probe scene is now removed after the query has read it.
+  The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
+  one showed the carriage stretched from its start to the wall.
+
 - A `union()` member that carries no face lineage, such as a sketch extrude
   or extruded text, now keeps its finish too. `union(plate, logo)` with a
   navy plate and orange raised text rendered all navy in `kernelcad render`,

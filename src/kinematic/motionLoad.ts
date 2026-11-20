@@ -293,6 +293,7 @@ async function lowerRestScene(arm: Assembly): Promise<SceneBackend | undefined> 
     seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const id: FeatureId | undefined = solved.__sourceFeatureId();
+  arm.__session().discardProbeRecord(id);
   const lowered = id === undefined ? undefined : result.shapes.get(id);
   return lowered !== undefined && isSceneBackend(lowered) ? lowered : undefined;
 }
