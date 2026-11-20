@@ -1,0 +1,25 @@
+== mobile-fast-charge-cart
+[]
+[]
+0
+0
+== coiled-charging-cable-reel
+[]
+[]
+0
+0
+== charger-cable-retractor
+[]
+[]
+0
+0
+== ev-metering-pedestal
+[]
+[]
+0
+0
+== home-ac-wallbox
+[]
+[]
+0
+0

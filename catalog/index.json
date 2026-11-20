@@ -84094,7 +84094,7 @@
       "id": "mobile-fast-charge-cart",
       "kit": "ev-charging-infrastructure",
       "title": "Mobile fast-charge cart",
-      "description": "Portable charging cart with a compact power enclosure, cable reel, handle, and casters. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Portable charging cart with a compact power enclosure on a low chassis, four rubber-tyred wheels on painted hubs, a push handle, and a cable reel. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and wheel tyre rubber color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -84115,7 +84115,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/mobile-fast-charge-cart.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
-      "sourceSha256": "bd45d11c537cfab8b99002db6d40d62c74c74ad8b7b74e5afc411747cc54600d",
+      "sourceSha256": "4a69a1e32b2214f00f51e122dcaf253673afade8a4b197ba846f2c5fdcff791b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84150,6 +84150,12 @@
           "type": "color",
           "default": "#f0b13c",
           "label": "Safety-colored polymer"
+        },
+        {
+          "name": "tyreRubber",
+          "type": "color",
+          "default": "#23282b",
+          "label": "Wheel tyre rubber"
         }
       ],
       "presets": {
@@ -84157,21 +84163,23 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "cableElastomer": "#1a2522",
-          "safetyPolymer": "#f3bd2f"
+          "safetyPolymer": "#f3bd2f",
+          "tyreRubber": "#1c2421"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "cableElastomer": "#111719",
-          "safetyPolymer": "#ffbf24"
+          "safetyPolymer": "#ffbf24",
+          "tyreRubber": "#3a4044"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 672,
         "sizeM": [
-          0.82,
+          0.956,
           1.182,
-          1.178
+          1.05
         ],
         "minUpM": 0,
         "materials": 1
@@ -84189,8 +84197,12 @@
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
-            "left-wheel",
-            "right-wheel",
+            "left-wheel-hub",
+            "right-wheel-hub",
+            "rear-left-wheel-hub",
+            "rear-right-wheel-hub",
+            "handle-bracket-left",
+            "handle-bracket-right",
             "push-handle",
             "cable-reel"
           ],
@@ -84212,6 +84224,17 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "tyreRubber",
+          "color": "#23282b",
+          "parts": [
+            "left-wheel",
+            "right-wheel",
+            "rear-left-wheel",
+            "rear-right-wheel"
+          ],
+          "param": "tyreRubber"
         },
         {
           "name": "cableElastomer",

@@ -1,0 +1,156 @@
+{
+  "id": "mobile-fast-charge-cart",
+  "kit": "ev-charging-infrastructure",
+  "title": "Mobile fast-charge cart",
+  "description": "Portable charging cart with a compact power enclosure on a low chassis, four rubber-tyred wheels on painted hubs, a push handle, and a cable reel. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and wheel tyre rubber color controls.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "EV charging",
+    "electric vehicle",
+    "charging station",
+    "low poly",
+    "scene prop",
+    "CC0"
+  ],
+  "compat": [
+    "ev-charging",
+    "parking",
+    "fleet",
+    "electric-vehicle",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/ev-charging-infrastructure/mobile-fast-charge-cart.kcad.ts",
+  "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+  "sourceSha256": "4a69a1e32b2214f00f51e122dcaf253673afade8a4b197ba846f2c5fdcff791b",
+  "triangleBudget": 2400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "powderCoat",
+      "type": "color",
+      "default": "#397f90",
+      "label": "Powder-coated metal"
+    },
+    {
+      "name": "displayGlass",
+      "type": "color",
+      "default": "#79cfda",
+      "label": "Display glass"
+    },
+    {
+      "name": "cableElastomer",
+      "type": "color",
+      "default": "#1b2427",
+      "label": "Cable elastomer"
+    },
+    {
+      "name": "safetyPolymer",
+      "type": "color",
+      "default": "#f0b13c",
+      "label": "Safety-colored polymer"
+    },
+    {
+      "name": "tyreRubber",
+      "type": "color",
+      "default": "#23282b",
+      "label": "Wheel tyre rubber"
+    }
+  ],
+  "presets": {
+    "fleetReady": {
+      "powderCoat": "#28765f",
+      "displayGlass": "#46b8c4",
+      "cableElastomer": "#1a2522",
+      "safetyPolymer": "#f3bd2f",
+      "tyreRubber": "#1c2421"
+    },
+    "nightService": {
+      "powderCoat": "#3f5059",
+      "displayGlass": "#11bfd0",
+      "cableElastomer": "#111719",
+      "safetyPolymer": "#ffbf24",
+      "tyreRubber": "#3a4044"
+    }
+  },
+  "stats": {
+    "triangles": 672,
+    "sizeM": [
+      0.956,
+      1.182,
+      1.05
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "powderCoat",
+      "color": "#397f90",
+      "parts": [
+        "cart-chassis",
+        "main-enclosure",
+        "top-cap",
+        "front-door",
+        "vent-slot-1",
+        "vent-slot-2",
+        "vent-slot-3",
+        "vent-slot-4",
+        "left-wheel-hub",
+        "right-wheel-hub",
+        "rear-left-wheel-hub",
+        "rear-right-wheel-hub",
+        "handle-bracket-left",
+        "handle-bracket-right",
+        "push-handle",
+        "cable-reel"
+      ],
+      "param": "powderCoat"
+    },
+    {
+      "name": "displayGlass",
+      "color": "#79cfda",
+      "parts": [
+        "display-bezel",
+        "display-window"
+      ],
+      "param": "displayGlass"
+    },
+    {
+      "name": "safetyPolymer",
+      "color": "#f0b13c",
+      "parts": [
+        "status-button"
+      ],
+      "param": "safetyPolymer"
+    },
+    {
+      "name": "tyreRubber",
+      "color": "#23282b",
+      "parts": [
+        "left-wheel",
+        "right-wheel",
+        "rear-left-wheel",
+        "rear-right-wheel"
+      ],
+      "param": "tyreRubber"
+    },
+    {
+      "name": "cableElastomer",
+      "color": "#1b2427",
+      "parts": [
+        "cable-tail"
+      ],
+      "param": "cableElastomer"
+    }
+  ]
+}
