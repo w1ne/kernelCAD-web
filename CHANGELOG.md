@@ -1,5 +1,11 @@
 # Unreleased
 
+- `examples/kinematic/tendon-finger.kcad.ts` now passes `evaluate_script`
+  with `ok: true` and `mechanism: real`; before, it returned 5 errors. Each
+  phalanx is 2 mm narrower than the fork that holds it, the three pins are on
+  the finger centre line, and the two strap anchors are 2 mm off the palm
+  faces instead of inside the palm. The finger also stays collision-free with
+  all three joints at their flexed limits together.
 - A mirrored or turned `smoothSpline` profile keeps its shape. The free end
   tangent of a `smoothSpline` segment is the sketch +X direction, and the
   segment stored no tangent, so `Sketch.reflect('y')` built a different
