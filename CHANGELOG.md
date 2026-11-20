@@ -1,5 +1,12 @@
 # Unreleased
 
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  one `mechanism.interpenetration` error (6914.65 mm3) because both plates
+  were placed at the origin with no mate. The motor plate is fastened on the
+  bracket top face, and the seat follows `plateT`. The parameters and the
+  `hole-pattern` requirement are unchanged, so `kernelcad collab check`
+  results are unchanged.
 - Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
   12 `mechanism.orphan-part` errors because only the bolts and the two shaft
