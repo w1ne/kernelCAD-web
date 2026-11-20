@@ -208,4 +208,16 @@ export const KINEMATIC_CODES = {
     description:
       'A driven closed loop started from a rank-deficient (singular) as-built pose with no loopMode pin, so the branch it follows is the solver\'s choice.',
   },
+  'kinematic.collision.swept.unmeasured': {
+    hintTemplate:
+      'Swept-collision could not measure one or more sampled poses: the pose could not be lowered, or the exact interference boolean failed for a pair. These poses are not shown clear. Inspect result.walks[].unknown, then simplify the named parts near that pose or re-run with a different step.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'simplify the parts named in result.walks[].unknown or change the sweep step, then re-run checkSweptCollision',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'A swept-collision sample produced no measurement (pose not lowered or exact boolean failed); the sweep reports it unknown instead of clear.',
+  },
 } as const satisfies Record<`kinematic.${string}`, DiagnosticCodeSpec>;

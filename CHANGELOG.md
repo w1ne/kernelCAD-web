@@ -9,6 +9,199 @@
   `mechanism.tendon-body-intersect` error); its hook and eye are on the
   facing ends of the two parts (tendon from x=90 to x=10 mm), and
   `docs/demos/tendon-jointed-anchor-at/` is recaptured.
+
+- `Shape.boundingBox()` now contains thickened curved surfaces. On a
+  curved surface, `thicken()` makes an offset-surface face. OCCT's default
+  box bounds that face by its basis surface and stores the offset distance
+  as the box gap, and the box then removed the gap as tolerance. The box
+  fell inside the solid: the pocket-watch crystal (`thicken(0.4)`) read
+  z max 3.2 mm instead of 3.6 mm, and the imported pocket-watch STEP read
+  y min -8.5 mm instead of -8.899 mm. Shapes with an offset face now take
+  the exact box of each offset face and the gap-free default box of the
+  other faces (64 to 97 ms on the 768-face pocket-watch STEP).
+- `Shape.surfaceArea()` (and the area in `getShapeInfo`, part stats and the
+  BOM) is now close to the true area of non-uniformly scaled curved solids.
+  The fixed-order OCCT area integration read their rational B-spline faces
+  0.05 to 0.39 % high: `sphere(1).scale([1, 1, 2])` measured 21.5618 mm²
+  instead of 21.4784 mm². Shapes with a face whose B-spline weights spread
+  by more than 1.25 now take OCCT's adaptive integration (1 to 11 ms). The
+  residual depends on the shape: 1e-9 on that spheroid, about 4e-6 on an
+  elliptic cylinder. Other shapes keep the fixed-order result.
+- `Shape.boundingBox()` and the MCP `sceneSummary.size` now report the true
+  size of non-uniformly scaled curved solids. A non-uniform scale turns
+  circles into rational B-spline faces, and the default OCCT box followed
+  their control hull: `cylinder(1, 1).scale([2, 1, 1])` read 6 x 3.46 x 1 mm
+  instead of 4 x 2 x 1 mm, and `torus(10, 2).scale([1, 1, 2])` read
+  36 x 41.6 x 8 mm instead of 24 x 24 x 8 mm. When a face's B-spline
+  weights spread by more than 1.25, the box now comes from OCCT's exact,
+  tolerance-inclusive bounds (1 to 35 ms on these shapes).
+- `Shape.boundingBox()` and `sceneSummary.size` of threaded rods now read
+  the major diameter. Their helical faces are rational B-splines with
+  weights near 1, so the exact-box gate above skipped them, and the default
+  box followed their control hull: `threadedRod({ spec: 'M6', length: 20 })`
+  read 6.70 x 7.32 mm across instead of 6 x 6 mm. B-spline faces whose
+  default box extends past the shape's known surface points are now split
+  into Bezier patches and bisected in JS until each side is within 1e-3 mm;
+  other faces past those points (such as the flat thread ends, which have
+  B-spline edges) take OCCT's exact face box. The box stays an outer bound.
+  An M6 x 20 rod now reads 6.0012 x 6.0012 x 20 mm in 80 to 150 ms (M20 x
+  60: 126 ms), against about 1.1 s for the exact OCCT box.
+- Spatial and geometry filters inside `q.face(...)` now select faces on
+  plain primitives. Face lineage on `box(...)` and `cylinder(...)` (and most
+  faces derived from them) has no geometry snapshot and no surface type, so
+  `q.face(q.closestTo(p))` returned the first face by name (`back`) for any
+  `p`, and `q.face(q.geometryType('PLANE'))` selected nothing. When lineage
+  has no value, the filters now read the face area centroid and surface type
+  from the body. `box(40, 30, 10).shell(2, { face: q.face(q.closestTo([20,
+  15, -5])) })` now opens the bottom face and builds to 4 512 mm³, equal to
+  the closed form. Faces that carry a lineage snapshot are unchanged.
+- `kinematic.checkSweptCollision` and `verify({ check: 'swept-collision' })`
+  (#1680) now return `walks[]`: for each swept joint, every overlapping
+  pair with its overlap stretches, the largest measured overlap volume,
+  the pose where it occurs and a witness point. Where a pair changes
+  between overlap and clear from one sample to the next, the step is
+  bisected (`refineRounds`, default 6, i.e. step / 64) and each stretch
+  end carries the bracket width left. A sample that could not be lowered,
+  or whose exact boolean failed, was read as clear; it is now listed in
+  `walks[].unknown` and fails the check with
+  `kinematic.collision.swept.unmeasured`. On the clamshell-hinge cookbook
+  (1 deg step) the lid/base stretch ends at -0.578 deg and the lid/table
+  stretch at -4.031 deg; the closed-form contact angles are -0.573 deg and
+  -4.016 deg, inside the 0.0156 deg bracket. Explicit pose lists are not
+  refined.
+  Each walk also counts `movingPairs` and `fixedPairs`: a BRep pair whose
+  relative pose (the overlap memo's key) is the same at every measured
+  sample is left out of `overlaps` and left to the static interference
+  check. `collidingPoses` is unchanged. On the clamshell hinge, base/table
+  is the one fixed pair; lid/base and lid/table are the two moving pairs.
+
+- Spatial and geometry filters inside `q.edge(...)` now select edges.
+  `closestTo` and `containsPoint` read the edge midpoint (the centroid that
+  edge fingerprints report) and `geometryType` reads the edge curve type
+  (`LINE`, `CIRCLE`, ...). Before, `q.edge(q.closestTo(p))` and
+  `q.edge(q.geometryType('CIRCLE'))` selected nothing, and
+  `q.edge().and(q.closestTo(p))` returned an arbitrary edge. A spatial
+  filter after the first term narrows the earlier terms, so
+  `rod.fillet(1, q.edge(q.geometryType('CIRCLE'), q.closestTo([0, 0, 20])))`
+  fillets only the top rim. Face spatial filters are unchanged.
+- Filters written inside `q.edge(...)` now select edges. A bare
+  `withLabel`, `withFeatureName` or `createdBy` filter defaulted to faces,
+  and the edge narrowing then dropped every face, so
+  `box(60, 60, 6).chamfer(0.5, q.edge(q.withLabel('top-perimeter')))` failed
+  with no edge to chamfer. It now chamfers the four top edges and builds to
+  21 570.166667 mm³, equal to the closed form. `withFeatureName` also reads
+  the owners of edges.
+- `solvedModel({}, { posesGate: 'envelope', clearances })` (#1590) now
+  checks each declared per-pair minimum clearance at every envelope sample,
+  not only at rest. A pair that goes under its `minMm` inside the joint
+  range is `assembly.pose-envelope.clearance-violated` (error, so the build
+  fails under `validate: 'error'`); an unmeasured pair is
+  `assembly.pose-envelope.clearance-unresolved` (warning). The default gate
+  stays rest-only. On a carriage that slides toward a stop (20 mm gap at
+  rest, limits `[0, 15]`), `minMm: 10` now fails at `slide:max` with 5 mm
+  and `minMm: 4` passes. On `examples/robot-arm/compact-supported-arm` with
+  `yaw-turret`/`upper-link` declared at 3 mm, the gate reports 0.186 mm at
+  `shoulder-pitch:max`, the same value as `verify({ check:
+  'clearance-range' })`.
+- `fillet` and `chamfer` now keep the birth labels of the edges they leave
+  alone. OCCT's `BRepFilletAPI_MakeChamfer`/`MakeFillet` report the untouched
+  edges of a rebuilt face as deleted although the result keeps them, so
+  after `box(60, 60, 6).chamfer(0.5, { face: 'bottom' })` the four
+  `top-perimeter` labels were gone and a later
+  `q.edge(q.createdBy(stock.id)).and(q.withLabel('top-perimeter'))` failed
+  with `query.empty`. The same drop hit hole rim labels: on a NEMA 17 plate,
+  `chamfer(0.5, entry rims).chamfer(0.3, exit rims)` failed; it now builds
+  to 18 847.615286 mm³, equal to the closed form. An input sub-shape that
+  the result still contains is now kept, whatever `IsDeleted()` reports.
+  Demo: `docs/demos/edge-labels-through-chamfer/`.
+- `verify({ check: 'clearance-range' })` (#1590) reports, for each mating
+  pair, the actual vs the planned minimum clearance at rest and across the
+  declared joint range, with `pass | fail | unknown` per row. Planned values
+  come from `solvedModel({}, { clearances })` and, for movable mate pairs,
+  from `min_clearance_mm` or `dfmSpec({ minClearance })`. It reuses the
+  pose-envelope samples and the exact BREP distance of the rest-pose
+  `clearances` gate. On a carriage that slides toward a stop (20 mm gap at
+  rest, 5 mm planned): limits `[0, 10]` pass at 10.000 mm; limits
+  `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
+  give `unknown` for the range, not pass. Each row also enters the
+  requirements ledger as `assembly.clearance.<rest|range>.<a>~<b>`; an
+  `unknown` row is `not-evaluated`.
+
+- `feaStudy` types now accept `param()` refs inside `fixed`, `loads[].faces`
+  and `loadsFrom.faces` face queries (`{ atZ: wall }`, `boundingBoxIn:
+  { xMax: wall.add(1) }`). The runtime already kept these refs symbolic and
+  resolved them before binding faces (`resolveStudyParams`), but the
+  `FaceQuery` type rejected them, so `examples/fea/shelf-bracket-fea.kcad.ts`
+  and `examples/fea/stress-graded-infill-bracket.kcad.ts` failed
+  `npm run typecheck:examples:all` with TS2322. A non-number, non-param
+  value (`{ atX: '0' }`) is still a type error.
+- `Shape.color()` with a string that is not a role token or a `#rrggbb` hex
+  (for example `'orange'` or `'steel'`) now raises a `feature.color.unresolved`
+  warning. Before, the value was stored with no diagnostic; 3MF, PLY, USD and
+  the demo player used the default grey, STEP wrote no colour, and GLB passed
+  the raw string through. The warning gives
+  the hex for a CSS colour name (`'orange'` -> `'#ffa500'`) or points to
+  `.finish('steel')` for a material name. `evaluate_script` and the CLI
+  evaluate now return the soft warnings a script raises while it runs as
+  `warn` diagnostics; before, they were dropped, so the existing
+  `feature.material.value-clamped` warning was not visible either.
+  `examples/fastener-installation/l-bracket-mount.kcad.ts` now uses
+  `.finish('steel')` and `'#ffa500'`, and the `.color()` hint example uses
+  `'#ff0000'` instead of `'red'`. Three cookbook snippets, the mechanism
+  smoke script and the robot-arm eval solution used `.color('actuator')`,
+  which is not a role token and rendered grey; they now use `'servo'`.
+- `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
+  now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
+  runtime already selected every edge of the matched face, but the public
+  type accepted only `{ face: 'top' | <label> }`, so scripts such as
+  `examples/selector-binding-drift.kcad.ts` and
+  `examples/cookbook-parity/gridfinity-bin.kcad.ts` failed `TS2345` in the
+  editor. Full-tree `typecheck:examples:all`: 367 errors in 41 files before,
+  363 in 40 after (4 `TS2345` removed, no new errors).
+
+- `hole`, `holes` and `cutout` now keep the edge lineage of the body they
+  cut, as `subtract` already did. Before, their result had no edge history,
+  so a lineage edge query after them failed: on a 60 × 40 × 5 mm plate with
+  one Ø4 through-hole, `fillet(3, q.edge(q.createdBy(plate.id))
+  .and(q.withLabel('corner')))` raised `query.unsupported-entity-type`
+  instead of rounding the four corners. Kept and split edges keep their
+  birth labels (`corner`, `top-perimeter`, `bottom-perimeter`); the new rim
+  and seam edges are born on the hole or cutout.
+
+- `scripts/typecheckExamples.ts` (`npm run typecheck:examples`) now declares
+  `kinematic` and types `kc` as the composed `ScriptApi`; before, every
+  script that called `kinematic.*` failed with `TS2304 Cannot find name
+  'kinematic'`, although the runtime injects it. Full-tree run
+  (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
+  (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
+- `hole` and `holes` now name the rim edges they create: `entry-rim`,
+  `exit-rim` (through) and `floor-rim` (blind). `chamfer(0.5, { face:
+  'thru.entry-rim' })` on a Ø6 through hole in a 100 × 60 × 20 block breaks
+  only the top edge (the 119 434.5 mm³ drilled block loses the 2.487 mm³
+  chamfer ring; the chamfer cone spans z 19.5 to 20). Before, every rim selector failed
+  with `feature.face-ref.not-resolvable`, so the v0.6.3 created-refs demo
+  (`thruHole.entry-rim`) errored. `holes1.entry-rim` selects every entry rim
+  of a `holes()` call. Limit: `cutout` has no rim refs yet.
+  Demo: `docs/demos/hole-rim-refs/`.
+
+- A created face ref that names a slot its feature never wrote, such as
+  `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
+  with `feature.face-ref.not-resolvable`, and the hint lists the slots the
+  feature does carry. Before, the geometry-snapshot fallback took the
+  fingerprint of the first face of the feature, so `fillet`, `chamfer` and
+  `shell` silently ran on an unrelated face: `chamfer(0.3, { face:
+  'pilot.entry-rim' })` gave the same 15915.1204 mm³ solid as `'pilot.wall'`.
+  The fallback now uses only the fingerprint of the requested slot. `hole()`
+  never wrote `entry-rim`, `floor-rim` or `wall-back-rim`; the skill docs no
+  longer list them and show an edge query for a rim-only fillet instead.
+
+- The `upToFace` option of `hole`, `holes` and `cutout` now has the type of
+  every form the runtime accepts: a FaceRef, a face name, a label, a
+  `{ face }` selector, a FaceQuery such as `{ containsPoint: [x, y, z] }` or
+  a Query DSL value. Before, the type allowed only a FaceRef, so
+  `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
+  check with TS2353 although it runs. Runtime behaviour is unchanged.
+
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³

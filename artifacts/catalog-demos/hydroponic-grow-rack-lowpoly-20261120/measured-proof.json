@@ -1,0 +1,706 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-20T16:26:20.143017+00:00",
+  "asset": "hydroponics/hydroponic-grow-rack",
+  "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+  "testedSourceCommit": "986fdfd08b5405e7ff83b2cd078dc1d81e451164",
+  "testedExportCommit": "bebd30f4c0e801ab451b32bcad69c9bdf55e778a",
+  "scope": "Load, authored triangle-budget, fresh-shape ownership and lettuce-preset repair. No mechanism or manufacturing acceptance.",
+  "changes": {
+    "headRepresentation": "Independent twelve-sided ruled solids, 48 triangles each; no shared mutable Shape handles.",
+    "headVolumeMm3": "2.4 * radius^3",
+    "headVolumeChangePercent": -4.5070341448628,
+    "headExtents": "Same center and +/-radius X/Y, +/-0.6*radius Z as the prior analytic ellipsoid.",
+    "pipes": "Explicit authored polygon segment counts.",
+    "preset": "lettuce now explicitly restores crop=lettuce; four existing colors and other style presets retained.",
+    "declaredControls": 6,
+    "declaredPresets": 4,
+    "triangleBudget": 8000
+  },
+  "publicNativeExports": {
+    "status": "COMPLETE_CLEAN_PUBLIC_EXPORT_PASS",
+    "cases": [
+      {
+        "id": "grow-rack.default",
+        "values": {},
+        "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+        "glbSha256": "7ece2fd071bc5cb473aed0199fe894177204a6031981425a60bff9a3f95d0c52",
+        "partCount": 272,
+        "triangleCount": 7400,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "checkedHeads": 108,
+        "peakSampledRssMiB": 457,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 0,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 0
+        }
+      },
+      {
+        "id": "grow-rack.lettuce.scale-0.7",
+        "values": {
+          "crop": "lettuce",
+          "scale": 0.7
+        },
+        "sourceSha256": "c1ed8a16cd70cbe8ce4e943bbc8f50b7b626402d3e7d3568367a66f386ffb092",
+        "glbSha256": "db097887e0d883b949a035a12af7a8c212dea6fbaffa0225f423b7106085e3bc",
+        "partCount": 272,
+        "triangleCount": 7400,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "checkedHeads": 108,
+        "peakSampledRssMiB": 431,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.lettuce.scale-1.3",
+        "values": {
+          "crop": "lettuce",
+          "scale": 1.3
+        },
+        "sourceSha256": "5e6e95f96fe9b397578090fdeb967a58558d31bec085c91a4a81393f5d63be1f",
+        "glbSha256": "77a1e01715875a8e09768fbe1cd604cefeb3f357fda9c4193d5fb27fb23056e1",
+        "partCount": 272,
+        "triangleCount": 7400,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "checkedHeads": 108,
+        "peakSampledRssMiB": 442,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.empty.scale-0.7",
+        "values": {
+          "crop": "empty",
+          "scale": 0.7
+        },
+        "sourceSha256": "7e2e8e9226c354f675aa3b723d766b0de8dbfd864f3f16e29ddf2a64d88e9aee",
+        "glbSha256": "e4c9212968c2cb77cd47aee806d72c01f7a3832e977d888904fcb76ffb3c22a8",
+        "partCount": 272,
+        "triangleCount": 5240,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 419,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.empty.scale-1",
+        "values": {
+          "crop": "empty",
+          "scale": 1
+        },
+        "sourceSha256": "d1540424a5af2993f6a621926f2f071acfae869abdc9ef31940d7f778b05c296",
+        "glbSha256": "66d144b34dd0381214114efaa0b1c456c5d871edc11781dade4ab0bb199172fb",
+        "partCount": 272,
+        "triangleCount": 5240,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 424,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.empty.scale-1.3",
+        "values": {
+          "crop": "empty",
+          "scale": 1.3
+        },
+        "sourceSha256": "066ba9282c7a2cf2862df70e0119a9794ddb046b47720a12110d695c22722aee",
+        "glbSha256": "754554beeda24d54f19bf82d786441651b615c31bde48884448e6186491198ff",
+        "partCount": 272,
+        "triangleCount": 5240,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 426,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.microgreens.scale-0.7",
+        "values": {
+          "crop": "microgreens",
+          "scale": 0.7
+        },
+        "sourceSha256": "1e49197cd3102f47d7ad5e9fb5c195a3ccdb59a2135f952b92eea9e2ae2b3a28",
+        "glbSha256": "76b24a96c6863b657c108bb9bd9bc344b548dfa1c554346d0d182885e622b156",
+        "partCount": 224,
+        "triangleCount": 2936,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 410,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.microgreens.scale-1",
+        "values": {
+          "crop": "microgreens",
+          "scale": 1
+        },
+        "sourceSha256": "3dd88514d4ae6fefd5d148ad08d6ab2ee144ef9238a9a112815af6af7ea85859",
+        "glbSha256": "187403948416c2d2c824efb39493267ab1de047ed7384eae2c87d41ba004396a",
+        "partCount": 224,
+        "triangleCount": 2936,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 368,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.microgreens.scale-1.3",
+        "values": {
+          "crop": "microgreens",
+          "scale": 1.3
+        },
+        "sourceSha256": "57e710450b1b5c676d64b1276c156948c0693edc3df94a1d32ce9c9ec9b9fb13",
+        "glbSha256": "fc7cbcbdc990e03012707b7bc3b75753b6fccf6514dd1518f696f486415d2e9c",
+        "partCount": 224,
+        "triangleCount": 2936,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "checkedHeads": 0,
+        "peakSampledRssMiB": 418,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      },
+      {
+        "id": "grow-rack.four-colors",
+        "values": {
+          "frame": "#a3476f",
+          "gutters": "#4a9fc2",
+          "foliage": "#b7e154",
+          "lights": "#e5742a",
+          "crop": "lettuce",
+          "scale": 1
+        },
+        "sourceSha256": "9bd9c27bda23c6291a8cead9fa99babf2725780681a677f3a7d67da77bc431c0",
+        "glbSha256": "fb601d0a7859b2d3f80038758859742a7421dcb8ee00910eea0d795a7d633400",
+        "partCount": 272,
+        "triangleCount": 7400,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "checkedHeads": 108,
+        "peakSampledRssMiB": 411,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 1,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 1
+        }
+      }
+    ],
+    "caseCount": 10,
+    "workerRssLimitMiB": 896,
+    "workerHeapMiB": 768,
+    "nativeJobMemoryMiB": 864,
+    "normalDistinctSourceFreshStarts": 9,
+    "retryCount": 0,
+    "geometryNegatives": [
+      "missing head rejected",
+      "displaced head bounds rejected",
+      "zero-area triangle rejected"
+    ],
+    "sourceMetadata": "Canonical source matches all six controls and all four presets in the tracked contract.",
+    "scope": "Literal parameter variants built/exported independently through the public catalog API. This is not an incremental edit or live Studio UI test.",
+    "resultSha256": "7a16d9dc2f2f3acac3ef8a13fcbd5ac0c6aee708cb9869651e6e2fe706455b9b",
+    "finalAccountingSha256": "5561db0e6eae4c407c830c5eb7fc845c82cbfae3ab4094d592d580f8bba77cb5"
+  },
+  "normalSandboxLoads": {
+    "status": "PASS_THREE_CLEAN_NORMAL_REMOTE_LOADS",
+    "imageId": "sha256:6535e724b1b4c7a84420c47ed403dd75b087495fe94a768bb24fe25d4cdb5714",
+    "runtimeSourceCommit": "b26919518b4bc374907d3f1dd2ecffe932cd2e3b",
+    "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+    "cases": [
+      {
+        "name": "grow-rack-default.kcad.ts",
+        "requestedParams": {},
+        "status": "clean_pass",
+        "geometry": {
+          "featureCount": 272,
+          "triangleCount": 7400,
+          "zeroAreaTriangles": 0,
+          "bounds": {
+            "min": [
+              -1360,
+              -440,
+              0
+            ],
+            "max": [
+              1620,
+              440,
+              2100
+            ]
+          },
+          "numericBufferElements": 212148,
+          "numericMeshSha256": "bd8c301af1f1157c443f01bb5e125f9171895438fc15795c027c9ce76b0def81",
+          "partNamesInOrderSha256": "a2ca4d7b2a2492db77c2fa434482b89f377e470615d406de5debaa2b6b1a46bc"
+        },
+        "checkedHeadCount": 108,
+        "peakCachedSupervisorRssMiB": 773,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 0,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 0
+        }
+      },
+      {
+        "name": "grow-rack-maximum.kcad.ts",
+        "requestedParams": {
+          "scale": 1.3
+        },
+        "status": "clean_pass",
+        "geometry": {
+          "featureCount": 272,
+          "triangleCount": 7400,
+          "zeroAreaTriangles": 0,
+          "bounds": {
+            "min": [
+              -1768,
+              -572,
+              0
+            ],
+            "max": [
+              2106,
+              572,
+              2730
+            ]
+          },
+          "numericBufferElements": 212148,
+          "numericMeshSha256": "0693abd1e203956e79d2d5705489ea3fde7ebf4d5badd24a9eb655ca2bfe1dca",
+          "partNamesInOrderSha256": "a2ca4d7b2a2492db77c2fa434482b89f377e470615d406de5debaa2b6b1a46bc"
+        },
+        "checkedHeadCount": 108,
+        "peakCachedSupervisorRssMiB": 798,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 0,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 0
+        }
+      },
+      {
+        "name": "grow-rack-recovery.kcad.ts",
+        "requestedParams": {
+          "frame": "#3a6f9e",
+          "gutters": "#f0f0ea",
+          "foliage": "#86bb4c",
+          "lights": "#f6f2ff",
+          "crop": "lettuce",
+          "scale": 1
+        },
+        "status": "clean_pass",
+        "geometry": {
+          "featureCount": 272,
+          "triangleCount": 7400,
+          "zeroAreaTriangles": 0,
+          "bounds": {
+            "min": [
+              -1360,
+              -440,
+              0
+            ],
+            "max": [
+              1620,
+              440,
+              2100
+            ]
+          },
+          "numericBufferElements": 212148,
+          "numericMeshSha256": "bd8c301af1f1157c443f01bb5e125f9171895438fc15795c027c9ce76b0def81",
+          "partNamesInOrderSha256": "a2ca4d7b2a2492db77c2fa434482b89f377e470615d406de5debaa2b6b1a46bc"
+        },
+        "checkedHeadCount": 108,
+        "peakCachedSupervisorRssMiB": 781,
+        "guardDelta": {
+          "kills.memory": 0,
+          "kills.time": 0,
+          "kills.crash": 0,
+          "kills.oom": 0,
+          "kills.cancelled": 0,
+          "budgetStops.memory": 0,
+          "budgetStops.time": 0,
+          "budgetStops.timeKilled": 0,
+          "budgetStops.retried": 0,
+          "respawns": 0,
+          "recycles": 0,
+          "idleRecycles": 0,
+          "freshStarts": 0
+        }
+      }
+    ],
+    "sandboxGiB": 3,
+    "workerRssLimitMiB": 896,
+    "workerHeapMiB": 768,
+    "nativeJobMemoryMiB": 864,
+    "postReplyObservationSeconds": 2,
+    "allDriverLauncherExits": 0,
+    "defaultResetGeometryEvidenceIdentical": true,
+    "finalAccountingSha256": "7436985d511a2e9981c775b141accc943acefeb551e0cc8e346496c735690bc7",
+    "scope": "Three actual normal remote sandbox loads on the separately bound historical runtime: default, scale=1.3, actual lettuce preset plus scale=1. Full per-child source attestation and current deployed Studio UI are not claimed."
+  },
+  "trackedOwnershipRegression": {
+    "test": "tests/unit/catalog/hydroponicGrowRackShapeOwnership.test.ts",
+    "casesPassed": 11,
+    "negativeFixture": "tests/fixtures/catalog/hydroponicGrowRackSharedHeads.kcad.ts",
+    "negativeFixtureSha256": "e8e4d180bb5ed55b2c95e1e8b3595e461989c6a69bd54c1c8ad6999682dc8690",
+    "scope": "Pure full-source mutable/immutable expression and ownership checks; no native geometry in this test."
+  },
+  "hostedMechanismObservation": {
+    "serverBuild": "0.1.0+194d7b1460e1@2026-11-20T13:16:10.829Z",
+    "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+    "renderReturned": true,
+    "boundsMm": {
+      "min": [
+        -1360,
+        -440,
+        0
+      ],
+      "max": [
+        1620,
+        440,
+        2100
+      ]
+    },
+    "mechanism": "broken",
+    "diagnosticCount": 402,
+    "diagnosticCodes": [
+      "mechanism.interpenetration"
+    ],
+    "responseSha256": "b2fd020bc111bde770ec3de8445edf8cfbe9988d8155d799fb52b9d67b479f23",
+    "rootImageInspectionSha256": "1c38eaa0bc2942cd09870760cabfa1de9f538274dff32477c18648b36479baa2",
+    "scope": "Separate hosted render. All 402 interpenetration diagnostics remain visible/unresolved; this repair does not claim mechanical readiness."
+  },
+  "catalogArtifacts": {
+    "changedIndexRows": 1,
+    "changedFields": [
+      "presets",
+      "sourceSha256",
+      "stats"
+    ],
+    "previewSha256": "aefa60441ae851e08e10e2d3f2466130ddf1418e05ce6304bbc03373b1665fe3",
+    "previewRendererSha256": "21be8dcfe98c02559df0a8875a0e6a05b3fc9d3b6bd7866a77c7df8c120a13c0",
+    "defaultGlbSha256": "7ece2fd071bc5cb473aed0199fe894177204a6031981425a60bff9a3f95d0c52",
+    "previewInspectionSha256": "4d686b81bd33eba3e232114de18307f4e313cc5759b94444f3c57bf90f5a17db"
+  },
+  "visuals": {
+    "inspectionSha256": "ef3f82991fe3d7337bbce9982e888a2729aa390a2d1d5427e5fa2230c9f3d260",
+    "orbitSeconds": 4,
+    "orbitFrames": 48,
+    "orbitFps": 12,
+    "orbitResolution": [
+      768,
+      768
+    ],
+    "beforeScope": "Archived exact-source published PNG, different renderer/camera. The historical 6266-triangle low-poly record is distinct from the earlier 1985052-triangle ordinary display mesh. Original source was not rerun.",
+    "files": [
+      {
+        "file": "grow-rack-orbit.mp4",
+        "sha256": "974f53779c13c4a7e235b3ca099a2bf64add506fb37ce790c4ec13d0e0f16cf9",
+        "bytes": 1059243
+      },
+      {
+        "file": "comparison.webp",
+        "sha256": "dadcbbf70548bbb06b2494b4dbdb93d079df669ff0c70e30f4e3fb085442249d",
+        "bytes": 129924
+      },
+      {
+        "file": "default-views.webp",
+        "sha256": "ba127d13264afd89210cf8d9418c5443c22009c73de5461c44ac7f545af3a048",
+        "bytes": 97210
+      },
+      {
+        "file": "branches-four-views.webp",
+        "sha256": "04434749904c5cded5f896ba761a8d90e97cae0306698c14739bdfcfa2bc99cb",
+        "bytes": 164626
+      },
+      {
+        "file": "states-contact.webp",
+        "sha256": "7eae5e0abae84581630dec65653416c9d50e85e9e3794b66896b1e52caa088c1",
+        "bytes": 185904
+      },
+      {
+        "file": "decoded-orbit-contact.webp",
+        "sha256": "d860d69989234b8655b62950aff06e49f74d51293d09a210b9b77d29bd275195",
+        "bytes": 173782
+      },
+      {
+        "file": "head-views.webp",
+        "sha256": "7972e57b39eaff8b4775acadfdcaab71ed8c11f5e78e93aeac33110e23b47afb",
+        "bytes": 20438
+      },
+      {
+        "file": "default.glb",
+        "sha256": "7ece2fd071bc5cb473aed0199fe894177204a6031981425a60bff9a3f95d0c52",
+        "bytes": 1033988
+      }
+    ]
+  },
+  "unverified": [
+    "No manufacturing or mechanism acceptance.",
+    "No current production Studio interaction was performed by this repair packet.",
+    "No post-change full-catalog rerun.",
+    "No direct per-child full-source attestation from the historical sandbox API."
+  ]
+}

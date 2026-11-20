@@ -1,0 +1,15 @@
+{
+  "startedAt": "2026-11-20T13:33:00.235Z",
+  "scope": "Canonical render-inspect shared browser bootstrap only; no CAD model evaluation",
+  "cdp": "http://127.0.0.1:9222",
+  "requireCdpAttachment": true,
+  "freshBrowserFallback": false,
+  "baseUrl": "http://127.0.0.1:42219",
+  "status": "UNAVAILABLE",
+  "error": {
+    "name": "TimeoutError",
+    "message": "browserType.connectOverCDP: Timeout 30000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222\n  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/af217bc9-0f33-451b-a95a-2329317bd672\n  - <ws connected> ws://127.0.0.1:9222/devtools/browser/af217bc9-0f33-451b-a95a-2329317bd672\n",
+    "stack": "browserType.connectOverCDP: Timeout 30000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222\n  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/af217bc9-0f33-451b-a95a-2329317bd672\n  - <ws connected> ws://127.0.0.1:9222/devtools/browser/af217bc9-0f33-451b-a95a-2329317bd672\n\n    at openDemoPlayerPage (/data/worktrees/kernelcad-catalog-five-connections-20261120/src/agent/render/headlessRender.ts:288:34)\n    at async <anonymous> (/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/canonical-inspect-environment/check.mts:10:6)"
+  },
+  "finishedAt": "2026-11-20T13:33:30.567Z"
+}
