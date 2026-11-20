@@ -24,7 +24,7 @@ const length = param('length', 'suit', { choices: ['suit', 'dress'], label: 'Bag
 const fabric = param('fabric', '#33383f', { label: 'Bag (nylon fabric)' });
 const trim = param('trim', '#8a6a44', { label: 'Piping and handles (trim)' });
 const chrome = param('chrome', '#c9ced2', { label: 'Hanger hook and zip pull (chrome)' });
-const window = param('window', '#d7e4ea', { label: 'ID window (clear vinyl)' });
+const windowColor = param('window', '#d7e4ea', { label: 'ID window (clear vinyl)' });
 presets({
   charcoalSuit: { fabric: '#2b2e33', trim: '#1b1d20', chrome: '#c9ced2', window: '#cfdbe0' },
   weddingIvory: { fabric: '#ece6da', trim: '#c2a874', chrome: '#e0d3b0', window: '#f3f1ea' },
@@ -63,7 +63,7 @@ add('zip-pull', box(14, 6, 46, true).translate(0, -T / 2 - 6, H - SH - 40).color
 
 // Clear ID window with a card behind it, upper left of the front.
 add('id-frame', extrudeRoundedRect(150, 100, 10, 4, { axis: 'y' }).translate(-W * 0.26, -T / 2 - 3, H * 0.62).color(trim));
-add('id-window', extrudeRoundedRect(130, 80, 6, 4, { axis: 'y' }).translate(-W * 0.26, -T / 2 - 5, H * 0.62).color(window));
+add('id-window', extrudeRoundedRect(130, 80, 6, 4, { axis: 'y' }).translate(-W * 0.26, -T / 2 - 5, H * 0.62).color(windowColor));
 
 // Webbing carry handles across the middle, stitched at both ends.
 for (const sx of [-1, 1]) {

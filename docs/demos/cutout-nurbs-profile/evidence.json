@@ -1,0 +1,55 @@
+{
+  "scope": "Local kernelCAD Node API: an instrument enclosure lid with an elliptical through-window and a spline-bounded blind thumb recess, both made with Shape.cutout(). OCCT volume, validity, face and created-ref checks against a closed form and against the same lid built from explicit booleans.",
+  "invocation": "node --import tsx docs/demos/cutout-nurbs-profile/capture-demo.mts",
+  "source": "docs/demos/cutout-nurbs-profile/instrument-lid.kcad.ts",
+  "sourceSha256": "10cff96e892aebf3536b9aebe0ea3356f1e4068c82bad193d3786493f8c93a17",
+  "implementationSha256": {
+    "src/kernel/backends/occt/cutoutLowerer.ts": "222484d8a189534c519bcabf1ffc0a1291606a2a70452f85c6631a88552d29aa",
+    "src/kernel/backends/occt/cutoutClassifier.ts": "85538ada7a7ade13438e3869b0b0016d86eb63d3a939f3dc67664ce3364d0c16"
+  },
+  "dimensionsMm": {
+    "length": 120,
+    "depth": 80,
+    "thickness": 6,
+    "windowRx": 30,
+    "windowRy": 15,
+    "recessDepth": 2.5
+  },
+  "expected": {
+    "basis": "an elliptical through-window removes π·rx·ry·t; the whole lid equals box − extruded window − extruded recess placed at the top-face frame, with the 0.01 mm cutout overshoot",
+    "windowRemovedMm3": 8482.300165,
+    "explicitBooleanVolumeMm3": 48617.135206,
+    "wallRefs": {
+      "displayWindow": 4,
+      "thumbRecess": 2
+    }
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "brepValid": true,
+    "volumeMm3": 48617.135206,
+    "windowRemovedMm3": 8482.299755,
+    "faces": 13,
+    "surfaceTypes": {
+      "PLANE": 8,
+      "EXTRUSION_SURFACE": 5
+    },
+    "wallRefs": {
+      "displayWindow": 4,
+      "thumbRecess": 2
+    }
+  },
+  "before": {
+    "commit": "0f6b97032",
+    "result": "feature.kernel-failed: cutout prism construction failed: drawingFromCommands: unsupported segment kind 'nurbsSegment' (the spline recess alone fails with segment kind 'spline')"
+  },
+  "limits": [
+    "The value under \"before\" is recorded from a run on the named commit; this script does not measure it again.",
+    "A blind cutout overshoots its depth by 0.01 mm, as it does for a polyline profile; the recess floor is at 3.49 mm, not 3.5 mm.",
+    "The cutout floor does not get the \"floor\" created ref because of that overshoot; this is not changed here.",
+    "No other CAD system opened the model, and no lid was made."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
