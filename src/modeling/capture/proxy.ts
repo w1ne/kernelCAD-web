@@ -1102,6 +1102,7 @@ export class Shape {
    *   `wall-back` (through or upToFace to an exit face),
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
+   * Rim edge refs: `entry-rim`, `exit-rim` (through), `floor-rim` (blind).
    */
   hole(face: FaceSelector | CanonicalFace | string, opts: HoleCallOpts, carriedSpec: string | undefined = undefined): Shape {
     return captureHole(this.session, this.id, face, opts, carriedSpec);

@@ -24,6 +24,18 @@
   'kinematic'`, although the runtime injects it. Full-tree run
   (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
   (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
+- `hole` and `holes` now name the rim edges they create: `entry-rim`,
+  `exit-rim` (through) and `floor-rim` (blind). `chamfer(0.5, { face:
+  'thru.entry-rim' })` on a Ø6 through hole in a 100 × 60 × 20 block breaks
+  only the top edge (the 119 434.5 mm³ drilled block loses the 2.487 mm³
+  chamfer ring; the chamfer cone spans z 19.5 to 20). Before, every rim selector failed
+  with `feature.face-ref.not-resolvable`, so the v0.6.3 created-refs demo
+  (`thruHole.entry-rim`) errored. `holes1.entry-rim` selects every entry rim
+  of a `holes()` call. Limits: `cutout` has no rim refs yet, and a later
+  `fillet` or `chamfer` drops the labels of edges it leaves alone (as it
+  already did for box edge labels), so break all rims in one edge feature.
+  Demo: `docs/demos/hole-rim-refs/`.
+
 - A created face ref that names a slot its feature never wrote, such as
   `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
   with `feature.face-ref.not-resolvable`, and the hint lists the slots the
