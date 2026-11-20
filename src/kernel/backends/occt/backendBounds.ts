@@ -26,8 +26,8 @@ export function toleranceInclusiveBounds(shape: unknown): { min: Vec3; max: Vec3
  *  B-spline face; otherwise undefined. On those faces the default `Bnd_Box`
  *  follows the weighted control hull: `cylinder(1, 1).scale([2, 1, 1])` read
  *  6 x 3.46 x 1 mm instead of 4 x 2 x 1 mm. The exact box costs 1 to 35 ms
- *  on such shapes. Thread faces are not gated: the hull is 10 to 22 % large
- *  there, but the exact box costs 0.45 to 1.1 s. */
+ *  on such shapes. Thread faces are not gated: the exact box costs 0.45 to
+ *  1.1 s there; splineFaceBounds.ts tightens them instead. */
 export function rationalFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
   try {
     return hasStronglyRationalFace(shape) ? toleranceInclusiveBounds(shape) : undefined;

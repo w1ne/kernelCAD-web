@@ -15,9 +15,18 @@
   instead of 4 x 2 x 1 mm, and `torus(10, 2).scale([1, 1, 2])` read
   36 x 41.6 x 8 mm instead of 24 x 24 x 8 mm. When a face's B-spline
   weights spread by more than 1.25, the box now comes from OCCT's exact,
-  tolerance-inclusive bounds (1 to 35 ms on these shapes). Threaded rods
-  keep the hull box (10 to 22 % large); the exact box costs 0.45 to 1.1 s
-  there.
+  tolerance-inclusive bounds (1 to 35 ms on these shapes).
+- `Shape.boundingBox()` and `sceneSummary.size` of threaded rods now read
+  the major diameter. Their helical faces are rational B-splines with
+  weights near 1, so the exact-box gate above skipped them, and the default
+  box followed their control hull: `threadedRod({ spec: 'M6', length: 20 })`
+  read 6.70 x 7.32 mm across instead of 6 x 6 mm. B-spline faces whose
+  default box extends past the shape's known surface points are now split
+  into Bezier patches and bisected in JS until each side is within 1e-3 mm;
+  other faces past those points (such as the flat thread ends, which have
+  B-spline edges) take OCCT's exact face box. The box stays an outer bound.
+  An M6 x 20 rod now reads 6.0012 x 6.0012 x 20 mm in 80 to 150 ms (M20 x
+  60: 126 ms), against about 1.1 s for the exact OCCT box.
 - Spatial and geometry filters inside `q.face(...)` now select faces on
   plain primitives. Face lineage on `box(...)` and `cylinder(...)` (and most
   faces derived from them) has no geometry snapshot and no surface type, so
