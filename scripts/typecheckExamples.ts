@@ -9,13 +9,15 @@
 // the model from a top-level `return` (see `runScriptCore.ts` and
 // `kernel/backends/occt/worker.ts`). No tsconfig can include them directly, so
 // this script generates a temporary wrapper per target that
-//   - imports the real `KernelCadApi` member types,
+//   - imports the real composed `ScriptApi` member types (`KernelCadApi` plus
+//     the `kinematic` namespace attached by `src/composition/scriptApi.ts`),
 //   - declares every injected global with the matching member type,
 //   - embeds the script source in an async IIFE (top-level `return`/`await` are
 //     valid inside it),
 // and then runs ONE `tsc --noEmit` over the generated batch. The wrapper
 // preamble is generated from the sources of truth instead of copied by hand:
-// the API global names are parsed out of the `KernelCadApi` interface, and the
+// the API global names are parsed out of the `KernelCadApi` interface and the
+// `ScriptApi` type alias, and the
 // browser worker's extra shim globals are parsed out of the `new Function`
 // argument list + `createUserGlobals`. A unit test
 // (`tests/unit/scripts/typecheckExamplesGlobals.test.ts`) fails if the worker
@@ -35,13 +37,14 @@ import { findTopLevelImport, normalizeUserScript } from '../src/shared/runtime/n
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const API_SOURCE_PATH = join(REPO_ROOT, 'src/modeling/api.ts');
+export const SCRIPT_API_SOURCE_PATH = join(REPO_ROOT, 'src/composition/scriptApi.ts');
 export const WORKER_SOURCE_PATH = join(REPO_ROOT, 'src/kernel/backends/occt/worker.ts');
 export const USER_GLOBALS_SOURCE_PATH = join(REPO_ROOT, 'src/shared/worker/userGlobals.ts');
 
 /**
  * Type aliases `.kcad.ts` scripts are allowed to reference in annotations.
  * The runtime erases them, so they are not values injected as globals — but a
- * script can only be typechecked if these names resolve. `KernelCadApi` is
+ * script can only be typechecked if these names resolve. `ScriptApi` is
  * imported separately (the globals are declared from its members).
  */
 export const TYPE_IMPORTS: ReadonlyArray<{ module: string; names: readonly string[] }> = [
@@ -79,6 +82,29 @@ export function parseKernelCadApiGlobals(apiSource: string): string[] {
         if (member.name && ts.isIdentifier(member.name)) names.push(member.name.text);
       }
     }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return [...new Set(names)];
+}
+
+/** Members the composition root adds on top of `KernelCadApi`: the property
+ *  names of the type literal in the `ScriptApi` type alias (`kinematic`). The
+ *  node runtime spreads the composed API onto the script scope, so these are
+ *  bare globals too. */
+export function parseScriptApiGlobals(scriptApiSource: string): string[] {
+  const sourceFile = ts.createSourceFile('scriptApi.ts', scriptApiSource, ts.ScriptTarget.Latest, true);
+  const names: string[] = [];
+  const collect = (type: ts.TypeNode): void => {
+    if (ts.isIntersectionTypeNode(type)) type.types.forEach(collect);
+    else if (ts.isTypeLiteralNode(type)) {
+      for (const member of type.members) {
+        if (member.name && ts.isIdentifier(member.name)) names.push(member.name.text);
+      }
+    }
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isTypeAliasDeclaration(node) && node.name.text === 'ScriptApi') collect(node.type);
     ts.forEachChild(node, visit);
   };
   visit(sourceFile);
@@ -172,7 +198,7 @@ function importSpecifier(wrapperDir: string, modulePath: string): string {
 }
 
 /**
- * Build the wrapper preamble. API members get their real `KernelCadApi` member
+ * Build the wrapper preamble. API members get their real `ScriptApi` member
  * type; the browser worker's v0.1-shim-only globals have no API equivalent yet
  * and are intentionally `any` with a TODO naming each one.
  */
@@ -185,13 +211,13 @@ export function buildWrapperPreamble(apiGlobalNames: readonly string[], wrapperD
   for (const entry of TYPE_IMPORTS) {
     lines.push(`import type { ${entry.names.join(', ')} } from '${importSpecifier(wrapperDir, entry.module)}';`);
   }
-  lines.push(`import type { KernelCadApi } from '${importSpecifier(wrapperDir, 'src/modeling/api')}';`);
+  lines.push(`import type { ScriptApi } from '${importSpecifier(wrapperDir, 'src/composition/scriptApi')}';`);
   lines.push('');
   lines.push('// DSL globals injected by the runtime (`runScriptCore.ts` spreads every');
-  lines.push('// KernelCadApi member onto the script scope and aliases the API as `kc`).');
-  lines.push('declare const kc: KernelCadApi;');
+  lines.push('// composed ScriptApi member onto the script scope and aliases the API as `kc`).');
+  lines.push('declare const kc: ScriptApi;');
   for (const name of apiNames) {
-    lines.push(`declare const ${name}: KernelCadApi['${name}'];`);
+    lines.push(`declare const ${name}: ScriptApi['${name}'];`);
   }
   if (anyGlobals.length > 0) {
     lines.push('');
@@ -323,7 +349,10 @@ export async function runTypecheck(targets: string[]): Promise<number> {
   const apiSource = readFileSync(API_SOURCE_PATH, 'utf8');
   const workerSource = readFileSync(WORKER_SOURCE_PATH, 'utf8');
   const userGlobalsSource = readFileSync(USER_GLOBALS_SOURCE_PATH, 'utf8');
-  const apiGlobalNames = parseKernelCadApiGlobals(apiSource);
+  const scriptApiSource = readFileSync(SCRIPT_API_SOURCE_PATH, 'utf8');
+  const apiGlobalNames = [
+    ...new Set([...parseKernelCadApiGlobals(apiSource), ...parseScriptApiGlobals(scriptApiSource)]),
+  ];
   const workerShimNames = parseWorkerShimGlobals(workerSource, userGlobalsSource);
 
   // Drift sentinel: the worker executing browser `.kcad.ts` snippets injects

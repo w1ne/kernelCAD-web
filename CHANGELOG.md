@@ -1,5 +1,12 @@
 # Unreleased
 
+- `scripts/typecheckExamples.ts` (`npm run typecheck:examples`) now declares
+  `kinematic` and types `kc` as the composed `ScriptApi`; before, every
+  script that called `kinematic.*` failed with `TS2304 Cannot find name
+  'kinematic'`, although the runtime injects it. Full-tree run
+  (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
+  (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
+
 - `examples/kinematic/joint-range-suggestion.kcad.ts` and
   `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, each returned
