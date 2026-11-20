@@ -13,6 +13,7 @@ import { checkSweptCollision } from '../../../kinematic';
 import type {
   SweptCollidingPose,
   SweptCollisionOpts,
+  SweptWalkReport,
   KinematicDiagnostic,
 } from '../../../kinematic/types';
 
@@ -33,6 +34,7 @@ export type CheckSweptCollisionOutput =
       source: 'local';
       posesSampled: number;
       collidingPoses: ReadonlyArray<SweptCollidingPose>;
+      walks?: ReadonlyArray<SweptWalkReport>;
       diagnostics: ReadonlyArray<KinematicDiagnostic>;
     }
   | { ok: false; source: 'local'; error: string; errorCode?: string };
@@ -76,6 +78,7 @@ export async function checkSweptCollisionTool(
     source: result.source,
     posesSampled: result.posesSampled,
     collidingPoses: result.collidingPoses,
+    ...(result.walks === undefined ? {} : { walks: result.walks }),
     diagnostics: result.diagnostics,
   };
 }

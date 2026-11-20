@@ -9,6 +9,26 @@
   from the body. `box(40, 30, 10).shell(2, { face: q.face(q.closestTo([20,
   15, -5])) })` now opens the bottom face and builds to 4 512 mm³, equal to
   the closed form. Faces that carry a lineage snapshot are unchanged.
+- `kinematic.checkSweptCollision` and `verify({ check: 'swept-collision' })`
+  (#1680) now return `walks[]`: for each swept joint, every overlapping
+  pair with its overlap stretches, the largest measured overlap volume,
+  the pose where it occurs and a witness point. Where a pair changes
+  between overlap and clear from one sample to the next, the step is
+  bisected (`refineRounds`, default 6, i.e. step / 64) and each stretch
+  end carries the bracket width left. A sample that could not be lowered,
+  or whose exact boolean failed, was read as clear; it is now listed in
+  `walks[].unknown` and fails the check with
+  `kinematic.collision.swept.unmeasured`. On the clamshell-hinge cookbook
+  (1 deg step) the lid/base stretch ends at -0.578 deg and the lid/table
+  stretch at -4.031 deg; the closed-form contact angles are -0.573 deg and
+  -4.016 deg, inside the 0.0156 deg bracket. Explicit pose lists are not
+  refined.
+  Each walk also counts `movingPairs` and `fixedPairs`: a BRep pair whose
+  relative pose (the overlap memo's key) is the same at every measured
+  sample is left out of `overlaps` and left to the static interference
+  check. `collidingPoses` is unchanged. On the clamshell hinge, base/table
+  is the one fixed pair; lid/base and lid/table are the two moving pairs.
+
 - Spatial and geometry filters inside `q.edge(...)` now select edges.
   `closestTo` and `containsPoint` read the edge midpoint (the centroid that
   edge fingerprints report) and `geometryType` reads the edge curve type

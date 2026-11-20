@@ -35,6 +35,8 @@ const KINEMATIC_CODES = [
   'kinematic.loop.lockup',
   'kinematic.loop.mobility-mismatch',
   'kinematic.loop.branch-ambiguous',
+  // #1680: a swept sample that could not be measured is not clear.
+  'kinematic.collision.swept.unmeasured',
 ] as const;
 
 // Per the cumulative-findings discipline (item #56), every nextAction kind
@@ -55,7 +57,7 @@ const CANONICAL_NEXT_ACTION_KINDS = new Set([
 ]);
 
 describe('kinematic-grounding diagnostic codes', () => {
-  it('registers exactly 18 kinematic.* codes', () => {
+  it('registers exactly 19 kinematic.* codes', () => {
     const kinCodes = Object.keys(DIAGNOSTIC_REGISTRY).filter((c) =>
       c.startsWith('kinematic.'),
     );
