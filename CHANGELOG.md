@@ -19,6 +19,13 @@
   B-spline edges) take OCCT's exact face box. The box stays an outer bound.
   An M6 x 20 rod now reads 6.0012 x 6.0012 x 20 mm in 80 to 150 ms (M20 x
   60: 126 ms), against about 1.1 s for the exact OCCT box.
+- `Shape.boundingBox()` of extruded splines now reads the outline, not the
+  spline's control hull. The side face of a straight spline prism is an
+  extrusion surface, not a B-spline surface, so the refinement above
+  skipped it: `path().moveTo(0, -5).spline([[0, -5], [30, -5], [30, 5],
+  [0, 5]]).close().extrude(60)` read 40.83 x 52.18 x 60 mm instead of
+  30.63 x 29.58 x 60 mm. Extrusion faces past the shape's known surface
+  points now take OCCT's exact face box (0.2 to 5 ms per face).
 - Spatial and geometry filters inside `q.face(...)` now select faces on
   plain primitives. Face lineage on `box(...)` and `cylinder(...)` (and most
   faces derived from them) has no geometry snapshot and no surface type, so
