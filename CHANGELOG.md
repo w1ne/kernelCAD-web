@@ -1,13 +1,21 @@
 # Unreleased
 
+- Spatial and geometry filters inside `q.edge(...)` now select edges.
+  `closestTo` and `containsPoint` read the edge midpoint (the centroid that
+  edge fingerprints report) and `geometryType` reads the edge curve type
+  (`LINE`, `CIRCLE`, ...). Before, `q.edge(q.closestTo(p))` and
+  `q.edge(q.geometryType('CIRCLE'))` selected nothing, and
+  `q.edge().and(q.closestTo(p))` returned an arbitrary edge. A spatial
+  filter after the first term narrows the earlier terms, so
+  `rod.fillet(1, q.edge(q.geometryType('CIRCLE'), q.closestTo([0, 0, 20])))`
+  fillets only the top rim. Face spatial filters are unchanged.
 - Filters written inside `q.edge(...)` now select edges. A bare
   `withLabel`, `withFeatureName` or `createdBy` filter defaulted to faces,
   and the edge narrowing then dropped every face, so
   `box(60, 60, 6).chamfer(0.5, q.edge(q.withLabel('top-perimeter')))` failed
   with no edge to chamfer. It now chamfers the four top edges and builds to
   21 570.166667 mm³, equal to the closed form. `withFeatureName` also reads
-  the owners of edges. Spatial and geometry filters inside `q.edge(...)`
-  still read faces.
+  the owners of edges.
 - `solvedModel({}, { posesGate: 'envelope', clearances })` (#1590) now
   checks each declared per-pair minimum clearance at every envelope sample,
   not only at rest. A pair that goes under its `minMm` inside the joint
