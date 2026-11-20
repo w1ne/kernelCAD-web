@@ -9,6 +9,13 @@
   export is unchanged (`rotate`, range [-35, 75]). The demo in
   `docs/demos/glb-rig/` is recaptured from the new geometry.
 
+
+- Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
+  and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
+  returned 2 errors. In each snippet the child part sits on the top face of
+  the parent and both connectors of the fastened mate are on that shared
+  face.
 - A mirrored or turned `smoothSpline` profile keeps its shape. The free end
   tangent of a `smoothSpline` segment is the sketch +X direction, and the
   segment stored no tangent, so `Sketch.reflect('y')` built a different
