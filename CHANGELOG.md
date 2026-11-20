@@ -23,6 +23,13 @@
   and `cutout()` do not take a NURBS profile, so an elliptical hole is an
   extruded ellipse subtracted from the solid. Demo:
   `docs/demos/path-ellipse/`.
+- Example `examples/exploded/clamshell-table-first.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  4 errors (orphan `table`, lid through base and table at the -15° hinge
+  limit, `dof-mismatch` at the closed pose). The base is fastened on the
+  table with face contact and the hinge opens from 0° to 135°. The table is
+  still declared first, and mate-axis explode still moves the lid 300 mm
+  along the hinge axis.
 
 - Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
