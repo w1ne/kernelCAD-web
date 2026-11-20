@@ -9,6 +9,13 @@
   The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
   one showed the carriage stretched from its start to the wall.
 
+- Kinematic skill cookbook snippet 9 (`09-four-bar-loop-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 15 errors. Mated four-bar parts share a face on the pin plane, the
+  stop is seated on the ground bar, and the mate limits are the crank travel
+  short of the stop (40° to 130°). The sweep still runs past the limits and
+  finds the first rocker-to-stop contact at crank 164°, equal to the closed
+  form.
 - A `union()` member that carries no face lineage, such as a sketch extrude
   or extruded text, now keeps its finish too. `union(plate, logo)` with a
   navy plate and orange raised text rendered all navy in `kernelcad render`,
