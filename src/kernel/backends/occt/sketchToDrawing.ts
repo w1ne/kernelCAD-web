@@ -28,6 +28,7 @@
 
 import * as replicad from 'replicad';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { smoothSplineConfig } from '../../../shared/capture/smoothSplineTangents';
 import { resolveTangency } from './tangencySolver';
 
 /** Split a command list into `moveTo … close` groups. */
@@ -62,7 +63,7 @@ function applySegment(
   if (c.kind === 'sagittaArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
   if (c.kind === 'bulgeArc') return pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
   if (c.kind === 'radiusArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], radiusArcSagitta(c, currentX, currentY));
-  if (c.kind === 'smoothSpline') return pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
+  if (c.kind === 'smoothSpline') return pen.smoothSplineTo([c.x.evaluated, c.y.evaluated], smoothSplineConfig(c));
   throw new Error(`drawingFromCommands: unsupported segment kind '${(c as { kind: string }).kind}'`);
 }
 
