@@ -34,12 +34,18 @@ plate.fillet(0.2, { face: 'pilotHole.floor' });
 ```
 
 Slots written by `hole`: `wall`, `floor`, `wall-back`, `counterbore-wall`,
-`counterbore-floor`, `countersink-cone`, `entry-rim`, `floor-rim`,
-`wall-back-rim`. Slots written by `cutout`: see `cutoutClassifier`.
+`counterbore-floor`, `countersink-cone`. Slots written by `cutout`: see
+`cutoutClassifier`. These are face slots; there is no rim (edge) slot. To
+round only the entry rim of a bore, select the edge by query, for example
+`.fillet(0.3, { atZ: 20, ofCurveType: 'CIRCLE' })` on a 20 mm plate. A slot
+the feature never wrote (`pilotHole.entry-rim`, a typo) fails with
+`feature.face-ref.not-resolvable`; the hint lists the slots that feature
+does carry.
 
 When an upstream op rewrites enough topology that the slot-by-name lookup
 loses the face, the resolver falls back to a geometry-snapshot match
-(centroid + normal + area + surfaceType from the create-time fingerprint).
+(centroid + normal + area + surfaceType from the create-time fingerprint of
+that same slot; never the fingerprint of another face of the feature).
 Successful fallback emits `feature.created-ref.fallback-used` (warning,
 not error) — the downstream feature still resolves. Lock the ref against
 future edits by naming the upstream feature with `.name()` and addressing
