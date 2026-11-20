@@ -43,10 +43,19 @@ interface GlbKernelcadExtras {
 
 export class CatalogBuildError extends Error {}
 
-/** Build every kit under `<repoRoot>/catalog/kits`. */
-export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex> {
+/** Every kit directory id under `<repoRoot>/catalog/kits`, sorted. */
+export function listCatalogKitIds(repoRoot: string): string[] {
   const kitsDir = join(repoRoot, 'catalog', 'kits');
-  const kitIds = readdirSync(kitsDir).filter((name) => statSync(join(kitsDir, name)).isDirectory()).sort();
+  return readdirSync(kitsDir).filter((name) => statSync(join(kitsDir, name)).isDirectory()).sort();
+}
+
+/**
+ * Build the kits under `<repoRoot>/catalog/kits`: all of them, or only
+ * `onlyKits` (used to split the full-catalog freshness check across runners).
+ */
+export async function buildCatalogIndex(repoRoot: string, onlyKits?: readonly string[]): Promise<CatalogIndex> {
+  const kitsDir = join(repoRoot, 'catalog', 'kits');
+  const kitIds = listCatalogKitIds(repoRoot).filter((id) => onlyKits === undefined || onlyKits.includes(id));
   const kits: CatalogIndex['kits'] = [];
   const assets: CatalogAsset[] = [];
   for (const [kitIndex, kitId] of kitIds.entries()) {
