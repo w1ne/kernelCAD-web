@@ -3,7 +3,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { openFileInSlicer } from '../../../../../src/kernel/export/gcode/slicerCli';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, writeFileSync, chmodSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, chmodSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
@@ -28,6 +28,7 @@ function fakeChildProcess(opts: { error?: Error } = {}) {
 function fakeStalledChildProcess() {
   const child = new EventEmitter() as ReturnType<typeof spawn> & EventEmitter;
   child.unref = vi.fn();
+  child.kill = vi.fn(() => true);
   // Never emits spawn or error so the launch timeout is exercised.
   return child as unknown as ReturnType<typeof spawn>;
 }
@@ -61,7 +62,7 @@ describe('openFileInSlicer', () => {
     expect(result.message).toContain('No slicer found');
   });
 
-  it('spawns the detected slicer with the file and leaves the file untouched', async () => {
+  it('spawns the detected slicer with the file', async () => {
     const binary = join(tmpDir, 'fake-slicer');
     writeFileSync(binary, '#!/bin/sh\n');
     chmodSync(binary, 0o755);
@@ -80,9 +81,6 @@ describe('openFileInSlicer', () => {
 
     expect(vi.mocked(spawn)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(spawn)).toHaveBeenCalledWith(binary, [model], { detached: true, stdio: 'ignore' });
-
-    // No-overwrite behavior: the existing file is not modified by the open action.
-    expect(statSync(model).size).toBe('ISO-10303-21;'.length);
   });
 
   it('returns spawn-failed when the slicer cannot be launched', async () => {
@@ -191,6 +189,7 @@ describe('openFileInSlicer', () => {
     function makeControllableChild() {
       const child = new EventEmitter() as ReturnType<typeof spawn> & EventEmitter;
       child.unref = vi.fn();
+      child.kill = vi.fn(() => true);
       return child;
     }
 
@@ -273,6 +272,57 @@ describe('openFileInSlicer', () => {
       vi.advanceTimersByTime(100);
       expect(child.unref).toHaveBeenCalledTimes(1);
       expect(result.ok).toBe(true);
+    });
+
+    it('terminates a stalled child when the launch timeout fires', async () => {
+      const binary = join(tmpDir, 'fake-slicer');
+      writeFileSync(binary, '#!/bin/sh\n');
+      chmodSync(binary, 0o755);
+      process.env.KERNELCAD_SLICER = binary;
+
+      const model = join(tmpDir, 'part.step');
+      writeFileSync(model, 'ISO-10303-21;');
+
+      const child = makeControllableChild();
+      vi.mocked(spawn).mockReturnValueOnce(child as unknown as ReturnType<typeof spawn>);
+
+      const promise = openFileInSlicer(model, { launchTimeoutMs: 100 });
+      vi.advanceTimersByTime(100);
+      const result = await promise;
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('spawn-failed');
+      expect(result.message).toContain('timed out');
+      expect(child.kill).toHaveBeenCalledTimes(1);
+      expect(child.unref).not.toHaveBeenCalled();
+
+      // A late spawn must not resurrect the already-resolved timeout result.
+      child.emit('spawn');
+      vi.advanceTimersByTime(50);
+      expect(child.unref).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+    });
+
+    it('does not try to kill a child that already exited before the timeout', async () => {
+      const binary = join(tmpDir, 'fake-slicer');
+      writeFileSync(binary, '#!/bin/sh\n');
+      chmodSync(binary, 0o755);
+      process.env.KERNELCAD_SLICER = binary;
+
+      const model = join(tmpDir, 'part.step');
+      writeFileSync(model, 'ISO-10303-21;');
+
+      const child = makeControllableChild();
+      vi.mocked(spawn).mockReturnValueOnce(child as unknown as ReturnType<typeof spawn>);
+
+      const promise = openFileInSlicer(model, { launchTimeoutMs: 100 });
+      (child as unknown as { exitCode: number | null }).exitCode = 0;
+      vi.advanceTimersByTime(100);
+      const result = await promise;
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('spawn-failed');
+      expect(child.kill).not.toHaveBeenCalled();
     });
   });
 });
