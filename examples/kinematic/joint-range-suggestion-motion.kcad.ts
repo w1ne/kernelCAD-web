@@ -10,9 +10,11 @@
 const slideMm = param('slideMm', 0.1, { min: 0.1, max: 9.8 });
 
 const arm = assembly('joint-range-suggestion-motion');
-const rail = arm.part('rail', box(10, 30, 20).color('#8d939c'));
+// The rail is one part: an end block and the bed the carriage slides on.
+const rail = arm.part('rail', box(10, 30, 20).union(box(50, 30, 4).translate(0, 0, -4)).color('#8d939c'));
 const carriage = arm.part('carriage', box(20, 16, 12).color('#d97706'));
-arm.part('wall', box(10, 12, 20).translate(40, 0, 0).color('#1e3a5f'));
+// The wall stands on the bed and is fastened to it at the shared face z = 0.
+const wall = arm.part('wall', box(10, 12, 20).translate(40, 0, 0).color('#1e3a5f'));
 
 rail.connector('track', {
   type: 'axis',
@@ -21,13 +23,22 @@ rail.connector('track', {
 });
 carriage.connector('slide', {
   type: 'axis',
-  origin: { kind: 'vec3', value: [0, 8, 6] },
+  origin: { kind: 'vec3', value: [0, 8, 10] },
   axis: [1, 0, 0],
+});
+rail.connector('wallSeat', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [45, 6, 0] },
+});
+wall.connector('seat', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [45, 6, 0] },
 });
 arm.mate('slide', 'rail.track', 'carriage.slide', 'prismatic', {
   pose: slideMm,
   limitsMm: [0.1, 9.8],
 });
+arm.mate('wallMount', 'rail.wallSeat', 'wall.seat', 'fastened');
 
 const suggested = await kinematic.suggestJointRanges(arm, {
   joint: 'slide',
