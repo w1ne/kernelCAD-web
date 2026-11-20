@@ -32,7 +32,7 @@ const lights = param('lights', '#f6f2ff', { label: 'LED grow lights (diffuser gl
 const crop = param('crop', 'lettuce', { choices: ['lettuce', 'microgreens', 'empty'], label: 'Crop in the gutters' });
 
 presets({
-  lettuce: { frame: '#3a6f9e', gutters: '#f0f0ea', foliage: '#86bb4c', lights: '#f6f2ff' },
+  lettuce: { frame: '#3a6f9e', gutters: '#f0f0ea', foliage: '#86bb4c', lights: '#f6f2ff', crop: 'lettuce' },
   basil: { frame: '#3a6f9e', gutters: '#f0f0ea', foliage: '#3f8a34', lights: '#f6f2ff' },
   purpleLight: { frame: '#2e3236', gutters: '#e8e8e2', foliage: '#7aa848', lights: '#d982e0' },
   weathered: { frame: '#5f6e78', gutters: '#d4d0c2', foliage: '#93a65a', lights: '#e8e2d0' },
@@ -41,8 +41,31 @@ presets({
 const p = assembly("hydroponic-grow-rack");
 const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
-const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateY(90).translate(x, y, z);
-const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).translate(x, y, z);
+// Explicit polygon edges keep the authored segment counts at every scale.
+const polygon = (r: number, segments: number) => {
+  const section = path().moveTo(r, 0);
+  for (let i = 1; i < segments; i++) {
+    const angle = 2 * Math.PI * i / segments;
+    section.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return section.close();
+};
+const facetedCylinder = (len: number, r: number, segments: number) => polygon(r, segments).extrude(len);
+const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12) => facetedCylinder(len, r, seg).rotateY(90).translate(x, y, z);
+const cylZ = (x: number, y: number, z: number, len: number, r: number, seg = 12) => facetedCylinder(len, r, seg).translate(x, y, z);
+
+// A flattened, faceted head retains the former ellipsoid's full extents.
+// Aligned polygon rings and point ends give planar ruled faces (48 triangles).
+// Each placement gets its own solid: older runtimes mutate Shape transforms.
+const lettuceHead = (r: number) => polygon(r, 12).loft(polygon(r, 12), {
+  ruled: true,
+  planes: [
+    { plane: 'XY', origin: [0, 0, -0.3 * r] },
+    { plane: 'XY', origin: [0, 0, 0.3 * r] },
+  ],
+  startPoint: [0, 0, -0.6 * r],
+  endPoint: [0, 0, 0.6 * r],
+});
 
 const L = 2400, W = 760, H = 2100;
 const tierZ = [280, 950, 1620]; // gutter underside per tier
@@ -82,8 +105,9 @@ tierZ.forEach((z, t) => {
       const x = (h - (holes - 1) / 2) * pitch;
       const k = t * 100 + g * 10 + h;
       if (crop.value === 'lettuce') {
-        const r = 78 + ((h * 5 + g * 3 + t) % 3) * 8;
-        add(`head-${k}`, sphere(r).scale([1, 1, 0.6]).translate(x, y, z + 70 + r * 0.38).color(foliage));
+        const variant = (h * 5 + g * 3 + t) % 3;
+        const r = 78 + variant * 8;
+        add(`head-${k}`, lettuceHead(r).translate(x, y, z + 70 + r * 0.38).color(foliage));
       } else if (crop.value === 'empty') {
         add(`cup-${k}`, cylZ(x, y, z + 70, 8, 32, 8).color('#25282a'));
       }
@@ -96,7 +120,7 @@ tierZ.forEach((z, t) => {
   });
 
   // Feed riser (-X end) with a drip tube into every gutter head.
-  add(`feed-header-${t}`, cylinder(W - 60, 16, 10).rotateX(90).translate(-L / 2 - 120, W / 2 - 30, z + 120).color('#2f6fa8'));
+  add(`feed-header-${t}`, facetedCylinder(W - 60, 16, 10).rotateX(90).translate(-L / 2 - 120, W / 2 - 30, z + 120).color('#2f6fa8'));
   for (const y of gutterY) add(`drip-tube-${t}-${y}`, box(8, 8, 110, true).rotateY(-40).translate(-L / 2 - 85, y, z + 80).color('#1d2023'));
   // Return collector across the gutter tails (+X end).
   add(`return-collector-${t}`, blk(L / 2 + 120, 0, z - 60, 140, W - 20, 110).subtract(blk(L / 2 + 120, 0, z - 40, 110, W - 50, 120)).color('#c9cbc4'));
