@@ -9,6 +9,33 @@
   boolean history. `examples/gallery/raised-logo-extrusion.kcad.ts` is one
   body again instead of two parts and a fastened mate (#1639).
 
+- `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
+  `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
+  profile and return a new sketch; the source is unchanged, so one profile
+  can be placed several times. They are synchronous. Every loop is
+  transformed, holes included, and arcs stay exact arcs: a 30 × 10 mm slot
+  turned 90° has the same 278.540 mm² area and the same face count, and at
+  `scale(2)` its R5 ends are R10. Before, a profile could only be mirrored;
+  a sketch from `offset`, a sketch boolean, `sectionSketch`, `faceSketch`,
+  `silhouette` or a DXF/SVG import could not be moved at all. `dx`, `dy`,
+  `factor`, `center` and `param()` coordinates stay symbolic and follow
+  `set_param`. Refused with `feature.invalid-args`: a `param()` rotation
+  angle (parameter expressions have no sin/cos), a factor that is not > 0,
+  `rotate` on a profile with a `smoothSpline` segment (its free end tangent
+  is fixed to +X) and a `sketch.text` sketch. Demo:
+  `docs/demos/sketch-transform/`.
+- Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors because the beam was inside the wall block and inside the
+  bracket through the ±90° shoulder travel. The beam now laps the bracket
+  side face, with the joint origin on that face, and the returned model no
+  longer needs an `ignore` pair.
+- Kinematic skill cookbook snippet 5 (`05-clamshell-hinge-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors. The table is fastened under the base, the lid sits
+  between two hinge ears, and the hinge limit is [0°, 135°]. The snippet
+  sweeps -15° to 135° to find the colliding band (-15° to -1°), then sweeps
+  the declared limits and expects no collision.
 - Kinematic skill cookbook snippet 2 (`02-reachable-with-seed.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 27 errors because no link of the 6-DOF arm touched the next one.

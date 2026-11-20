@@ -12,6 +12,15 @@
 // Snippet 2 failed it with 27 errors: no link of the 6-DOF arm touched the
 // next one. Each mated pair now shares a face square to the joint axis.
 //
+// Snippet 5 failed it with 4 errors: the table had no mate, and the -15°
+// hinge limit put the lid inside the base and the table. The table is now
+// fastened under the base, the lid sits between two hinge ears, and the hinge
+// limit starts at 0°.
+//
+// Snippet 7 failed it with 4 errors: the beam was inside the wall block and
+// inside the bracket through the ±90° shoulder travel. The beam now laps the
+// bracket in the adjacent Y slab, with the joint origin on the shared face.
+//
 // VERIFIED_REAL only grows. Add a snippet here when it is rebuilt.
 
 import { describe, expect, it } from 'vitest';
@@ -23,6 +32,8 @@ const VERIFIED_REAL = [
   '02-reachable-with-seed.kcad.ts',
   '03-cantilever-beam-stress.kcad.ts',
   '04-scissor-jack-swept.kcad.ts',
+  '05-clamshell-hinge-swept.kcad.ts',
+  '07-static-hold-servo-arm.kcad.ts',
 ];
 
 describe('kinematic skill cookbook scripts pass evaluate_script', () => {

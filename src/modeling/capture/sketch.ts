@@ -19,6 +19,7 @@ import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
+import { rotateSketchOf, scaleSketchOf, translateSketchOf } from './sketchTransform';
 import { circleCommands } from './pathCircle';
 import { checkSweepSection } from './sweepSection';
 import { symmetricParam } from './symmetricOption';
@@ -535,6 +536,43 @@ export class Sketch {
       params: {},
       metadata: { commands: newCommands },
     });
+  }
+
+  /**
+   * Move this sketch by `(dx, dy)` mm, returning a new Sketch. The source is
+   * unchanged, so one profile can be placed several times. ParamRef deltas
+   * and coordinates stay symbolic.
+   *
+   * @example
+   *   const hole = path().circle(0, 0, 3);
+   *   const plate = await outline.subtract([hole.translate(10, 10), hole.translate(30, 10)]);
+   */
+  translate(dx: Editable<number>, dy: Editable<number>): Sketch {
+    return translateSketchOf(this.id, this.session, dx, dy);
+  }
+
+  /**
+   * Turn this sketch counter-clockwise by `angleDeg` about `center` (default
+   * the sketch origin), returning a new Sketch. Arcs stay exact arcs.
+   * `angleDeg` must be a plain number; `center` accepts ParamRefs.
+   *
+   * @example
+   *   const diagonal = slot.rotate(45, [20, 10]);
+   */
+  rotate(angleDeg: number, center?: [Editable<number>, Editable<number>] | null): Sketch {
+    return rotateSketchOf(this.id, this.session, angleDeg, center);
+  }
+
+  /**
+   * Resize this sketch uniformly by `factor` (> 0) about `center` (default
+   * the sketch origin), returning a new Sketch. Every length scales by
+   * `factor`, so arcs stay exact arcs. `factor` and `center` accept ParamRefs.
+   *
+   * @example
+   *   const larger = profile.scale(1.5, [20, 10]);
+   */
+  scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>] | null): Sketch {
+    return scaleSketchOf(this.id, this.session, factor, center);
   }
 
   /**

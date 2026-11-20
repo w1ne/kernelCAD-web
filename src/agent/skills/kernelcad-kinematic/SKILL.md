@@ -345,12 +345,15 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 4. `04-scissor-jack-swept.kcad.ts` — closed-loop scissor jack (two loops,
    mobility 1) swept over the lift angle; platform height checked against
    `L·sin(lift)`
-5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge across
-   [0°, 135°]; K1 fires when the lid touches the table
+5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge, lid seated
+   between two hinge ears; a sweep past closed finds the K1 band
+   ([-15°, -1°], lid into base and table), then the [0°, 135°] limits
+   sweep clean
 6. `06-over-center-latch-reachable.kcad.ts` — over-center draw latch as a
    closed slider-crank: IK drives only the handle; a `loopMode` pin makes
    the over-center point (4.41°) a `kinematic.loop.branch-flip` finding
-7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint;
+7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint, beam
+   lapped on the bracket side face with the joint origin on that face;
    generous actuator passes, undersized actuator fires
    `assembly.joint.static-hold.exceeded`; the same script feeds the worst
    motion pose into `feaStudy({ loadsFrom })` and reports the bracket safety

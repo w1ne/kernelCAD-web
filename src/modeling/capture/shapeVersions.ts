@@ -16,6 +16,25 @@ import type { FeatureId, FeatureKind } from '../../shared/intent/types';
 import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureRecord';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 
+/**
+ * Append `t` to `record` in place and drop the record's entries from the
+ * session's per-id lowering caches (`cachedShapes`, `cachedFeatureMeshes`).
+ * Those caches carry no transform count, and the meshing pass seeds assembly
+ * parts from `cachedShapes` by id alone, so a solid lowered before the append
+ * (e.g. by `await shape.boundingBox()`) would otherwise be rendered without
+ * the transform. Only this record is affected: an op is applied in place only
+ * while nothing has consumed the record (see the header). `lastFullLower`
+ * validates transform counts itself.
+ */
+export function appendTransformInPlace(
+  record: FeatureRecord,
+  t: ShapeTransform,
+  caches: ReadonlyArray<Map<string, unknown>>,
+): void {
+  record.transforms.push(t);
+  for (const cache of caches) cache.delete(record.id);
+}
+
 /** An op a Shape handle applies through `CaptureSession.applyVersionedOp`. */
 export type VersionedOp =
   | { kind: 'transform'; t: ShapeTransform }

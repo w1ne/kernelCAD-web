@@ -104,4 +104,32 @@ describe('meshFeaturesPerFeature — assembly all-parts-skip handling', () => {
     const partMeshes = features.filter((f) => f.assemblyFeatureId === assemblyId);
     expect(partMeshes).toHaveLength(1);
   });
+
+  it('warns when a part display mesh leaves BREP faces without triangles', async () => {
+    // Each part reports two BREP faces but only one carries triangles.
+    meshShapeBehavior = () => ({ ...fakeTriangleMesh(), brepFaceCount: 2 }) as GeometryResult;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { records, assemblyId } = await twoPartAssemblyRecords();
+      const { failedFeatureIds } = await meshFeaturesPerFeature(records);
+      expect(failedFeatureIds).not.toContain(assemblyId);
+      const messages = warn.mock.calls.map((call) => String(call[0]));
+      expect(messages.filter((m) => /missing 1 of 2 BREP face/.test(m))).toHaveLength(2);
+      expect(messages.some((m) => m.includes(`part 'base'`))).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when every BREP face has triangles', async () => {
+    meshShapeBehavior = () => ({ ...fakeTriangleMesh(), brepFaceCount: 1 }) as GeometryResult;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { records } = await twoPartAssemblyRecords();
+      await meshFeaturesPerFeature(records);
+      expect(warn.mock.calls.map((call) => String(call[0])).filter((m) => /BREP face/.test(m))).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
 });
