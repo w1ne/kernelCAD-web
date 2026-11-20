@@ -10,6 +10,14 @@
   facing ends of the two parts (tendon from x=90 to x=10 mm), and
   `docs/demos/tendon-jointed-anchor-at/` is recaptured.
 
+- Physical use-case checks (contact reachability, static perturbation and
+  joint reactions) now read a contact or load connector on a part in no mate
+  where the part's `at` puts it. Before, such a part (for example a held
+  `role: 'contact-target'` object placed only by `at`) was read at the world
+  origin, so a grasp that touches it was reported as
+  `contact-unreachable`. In the regression rig the held contact moved from
+  [-2, 0, 0] to [10, 0, 0] mm and the 10.2 mm false miss is now 0 mm.
+
 - `Shape.boundingBox()` now contains thickened curved surfaces. On a
   curved surface, `thicken()` makes an offset-surface face. OCCT's default
   box bounds that face by its basis surface and stores the offset distance
