@@ -42,6 +42,8 @@ import { resolveStableEdgeId } from './edgeIdentity';
 import {
   parseFaceSelector,
   findLineageMatches,
+  availableRefNames,
+  notResolvableHint,
   findFallbackSnapshot,
   resolveBySnapshot,
 } from '../../naming/selectorParser';
@@ -277,7 +279,7 @@ function pickEdgesFromLabelHistoryMap(
         featureId: record.id,
         severity: 'error',
         message: `'${labelName}' did not resolve.`,
-        hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
+        hint: notResolvableHint(labelName, availableRefNames(base.historyMap, parsed)),
       },
     };
   }
