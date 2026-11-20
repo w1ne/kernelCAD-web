@@ -11,6 +11,16 @@
   to 18 847.615286 mm³, equal to the closed form. An input sub-shape that
   the result still contains is now kept, whatever `IsDeleted()` reports.
   Demo: `docs/demos/edge-labels-through-chamfer/`.
+- `verify({ check: 'clearance-range' })` (#1590) reports, for each mating
+  pair, the actual vs the planned minimum clearance at rest and across the
+  declared joint range, with `pass | fail | unknown` per row. Planned values
+  come from `solvedModel({}, { clearances })` and, for movable mate pairs,
+  from `min_clearance_mm` or `dfmSpec({ minClearance })`. It reuses the
+  pose-envelope samples and the exact BREP distance of the rest-pose
+  `clearances` gate. On a carriage that slides toward a stop (20 mm gap at
+  rest, 5 mm planned): limits `[0, 10]` pass at 10.000 mm; limits
+  `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
+  give `unknown` for the range, not pass.
 
 - `feaStudy` types now accept `param()` refs inside `fixed`, `loads[].faces`
   and `loadsFrom.faces` face queries (`{ atZ: wall }`, `boundingBoxIn:
