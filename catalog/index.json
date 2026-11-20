@@ -75131,7 +75131,7 @@
       "id": "leak-detection-module",
       "kit": "data-center-infrastructure",
       "title": "Leak detection module",
-      "description": "Water-leak monitor enclosure with probe terminals and floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+      "description": "Water-leak monitor enclosure with probe terminals and a moulded polymer floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75151,7 +75151,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/leak-detection-module.kcad.ts",
       "preview": "/assets/data-center-infrastructure-leak-detection-module.png",
-      "sourceSha256": "091628b97e4c7cb484671a99ebfb8aa9ecfba1f0aa492c14461ad68504cb1f64",
+      "sourceSha256": "d0b2d7ffec72fa28fcc2b575873233d9626f7b173aa67f6e3491cf8f8441c255",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75211,8 +75211,7 @@
           "parts": [
             "monitor-box",
             "probe-terminal-left",
-            "probe-terminal-right",
-            "floor-sensor-puck"
+            "probe-terminal-right"
           ],
           "param": "steel"
         },
@@ -75220,7 +75219,8 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "control-face"
+            "control-face",
+            "floor-sensor-puck"
           ],
           "param": "polymer"
         },

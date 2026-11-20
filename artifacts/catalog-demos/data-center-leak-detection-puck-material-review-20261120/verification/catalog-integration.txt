@@ -1,0 +1,6 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/catalogFreshShapes.test.ts > no catalogue model derives several copies from one shape handle
+ Test Files  1 failed | 191 passed (192)
+      Tests  1 failed | 283 passed (284)
+   Duration  1222.04s (transform 463.68s, setup 45.58s, import 3414.97s, tests 3768.42s, environment 82ms)
+rc=1
