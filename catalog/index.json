@@ -75971,7 +75971,7 @@
       "id": "overhead-coolant-header",
       "kit": "data-center-infrastructure",
       "title": "Overhead coolant header",
-      "description": "Suspended supply and return pipes with branch drops and hanger brackets. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Suspended supply and return pipes with branch drops, polymer-grip isolation valve levers, and painted-steel hanger brackets at both ends. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75991,7 +75991,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-coolant-header.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
-      "sourceSha256": "9252d10b8b18ee52062bcbfbbe5c8136eb496493826845e7f91d6e6d600f5d53",
+      "sourceSha256": "130fb6085de1b5867e379ca114ec0c4073bf40659c11f8e2c4da92c065f58335",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76027,7 +76027,7 @@
         }
       },
       "stats": {
-        "triangles": 392,
+        "triangles": 452,
         "sizeM": [
           1.9,
           0.45,
@@ -76038,17 +76038,10 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "hanger-left"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
+            "hanger-left",
             "hanger-right",
             "supply-main",
             "return-main",
@@ -76064,6 +76057,18 @@
             "pipe-clamp-4"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4"
+          ],
+          "param": "polymer"
         }
       ]
     },
