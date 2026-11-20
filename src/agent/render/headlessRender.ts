@@ -15,7 +15,7 @@ import type { Browser, Page } from 'playwright';
 import { isSandboxEnabled } from '../../shared/sandbox/config';
 import { hardenSandboxBrowserContext, sandboxChromiumArgs } from './sandboxBrowser';
 import sharp from 'sharp';
-import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
+import { loadScriptFeatures } from '../../composition/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import { CANONICAL_VIEWS, SHEET_VIEWS, type RenderView } from '../../shared/render/views';
