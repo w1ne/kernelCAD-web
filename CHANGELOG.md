@@ -6,6 +6,21 @@
   on the ground bar, and the mate limits are the crank travel from 40° to
   130°. The 0° to 200° sweep still finds the first rocker-to-stop contact at
   crank 164°, equal to the closed form.
+- `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
+  `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
+  profile and return a new sketch; the source is unchanged, so one profile
+  can be placed several times. They are synchronous. Every loop is
+  transformed, holes included, and arcs stay exact arcs: a 30 × 10 mm slot
+  turned 90° has the same 278.540 mm² area and the same face count, and at
+  `scale(2)` its R5 ends are R10. Before, a profile could only be mirrored;
+  a sketch from `offset`, a sketch boolean, `sectionSketch`, `faceSketch`,
+  `silhouette` or a DXF/SVG import could not be moved at all. `dx`, `dy`,
+  `factor`, `center` and `param()` coordinates stay symbolic and follow
+  `set_param`. Refused with `feature.invalid-args`: a `param()` rotation
+  angle (parameter expressions have no sin/cos), a factor that is not > 0,
+  `rotate` on a profile with a `smoothSpline` segment (its free end tangent
+  is fixed to +X) and a `sketch.text` sketch. Demo:
+  `docs/demos/sketch-transform/`.
 - Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 4 errors because the beam was inside the wall block and inside the

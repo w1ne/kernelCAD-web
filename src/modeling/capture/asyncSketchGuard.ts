@@ -9,7 +9,7 @@ import type { Sketch } from './sketch';
  * accesses on an un-awaited `sectionSketch` / `faceSketch` / `silhouette` /
  * `Sketch.offset` / sketch boolean result should raise the actionable "missing await" diagnostic below.
  */
-const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect', 'offset', 'union', 'subtract', 'intersect']);
+const SKETCH_METHOD_NAMES = new Set(['extrude', 'revolve', 'sweep', 'loft', 'reflect', 'translate', 'rotate', 'scale', 'offset', 'union', 'subtract', 'intersect']);
 
 /**
  * Wrap the Promise<Sketch> returned by an async Shape->Sketch producer
