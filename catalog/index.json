@@ -83617,7 +83617,7 @@
       "id": "high-power-charge-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "High-power charge dispenser",
-      "description": "Tall high-power dispenser with a broad screen, paired cable outlets, and service plinth. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Tall high-power dispenser with a broad screen in a black polymer bezel, paired cable outlets, and service plinth. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -83638,7 +83638,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/high-power-charge-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
-      "sourceSha256": "ac819ef56edb43bcea64a9c840bdf8dbe5a6926b56f25f35becce35aad0d5e2b",
+      "sourceSha256": "2432b4059bde79c83b69b9c1dfa0741d7a5a4e372b669c3b71090467d8822874",
       "triangleBudget": 2400,
       "params": [
         {
@@ -83663,6 +83663,12 @@
           "label": "Display glass"
         },
         {
+          "name": "bezelPolymer",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Screen bezel (black polymer)"
+        },
+        {
           "name": "cableElastomer",
           "type": "color",
           "default": "#1b2427",
@@ -83679,12 +83685,14 @@
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
+          "bezelPolymer": "#18201e",
           "cableElastomer": "#1a2522",
           "safetyPolymer": "#f3bd2f"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
+          "bezelPolymer": "#111618",
           "cableElastomer": "#111719",
           "safetyPolymer": "#ffbf24"
         }
@@ -83721,10 +83729,17 @@
           "param": "powderCoat"
         },
         {
+          "name": "bezelPolymer",
+          "color": "#1f2427",
+          "parts": [
+            "display-bezel"
+          ],
+          "param": "bezelPolymer"
+        },
+        {
           "name": "displayGlass",
           "color": "#79cfda",
           "parts": [
-            "display-bezel",
             "display-window"
           ],
           "param": "displayGlass"
