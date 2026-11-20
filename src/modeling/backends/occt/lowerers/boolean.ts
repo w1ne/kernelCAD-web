@@ -17,30 +17,15 @@ import { intersectionEmptyDiagnostic } from '../additiveNoOp';
 import { subtractiveNoOpDiagnostic } from '../subtractiveNoOp';
 import { built, type LowerContext, type LowerOutcome } from './context';
 import { stampSolid } from '../../../../kernel/naming/operationLineage';
+import { mergeEdges } from '../../../../kernel/backends/occt/edgeLineage';
 import type { EdgeHistoryMap, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
+
+export { mergeEdges } from '../../../../kernel/backends/occt/edgeLineage';
 
 /** Wrap a history-aware boolean result back into an `OcctBackend` with the
  *  merged face/edge lineage. `replicad.cast` downcasts the raw TopoDS_Shape to
  *  the correct OCCT subtype (Solid or Compound) and wraps it in the matching
  *  Replicad class; boolean ops always yield a 3D solid or compound. */
-export function mergeEdges(
-  inputMaps: readonly (EdgeHistoryMap | undefined)[],
-  result: BooleanHistoryResult,
-): EdgeHistoryMap {
-  const out: EdgeHistoryMap = new Map();
-  for (const inputMap of inputMaps) {
-    if (!inputMap) continue;
-    for (const [hash, lineage] of inputMap) {
-      if (result.deletedEdges.has(hash)) continue;
-      const children = result.edgeHistory.get(hash);
-      if (children && children.length > 0) {
-        for (const child of children) if (!out.has(child)) out.set(child, lineage);
-      } else if (!out.has(hash)) out.set(hash, lineage);
-    }
-  }
-  return out;
-}
-
 export function wrapBooleanResult(
   result: BooleanHistoryResult,
   faceMap: HistoryMap,
