@@ -75238,7 +75238,7 @@
       "id": "liquid-cooling-manifold",
       "kit": "data-center-infrastructure",
       "title": "Liquid-cooling manifold",
-      "description": "Supply and return headers with evenly spaced branch outlets and support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Supply and return headers on two painted-steel support saddles, with five branch drops whose ball valves carry polymer lever grips. Knobs: overall scale; painted steel, valve lever polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75258,7 +75258,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/liquid-cooling-manifold.kcad.ts",
       "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
-      "sourceSha256": "678d7898e0b3bfad6dc7466e2642a39807e74495dd762420ab8baba7382587e8",
+      "sourceSha256": "79ba41e922abf5f693e51c134f4cdc147122636ba58e26d40c1082e2837ba342",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75280,7 +75280,7 @@
           "name": "polymer",
           "type": "color",
           "default": "#c99b35",
-          "label": "Engineering polymer"
+          "label": "Valve lever grips (engineering polymer)"
         }
       ],
       "presets": {
@@ -75294,7 +75294,7 @@
         }
       },
       "stats": {
-        "triangles": 552,
+        "triangles": 612,
         "sizeM": [
           1.7,
           0.74,
@@ -75305,17 +75305,10 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "support-base-left"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
+            "support-base-left",
             "support-base-right",
             "supply-header",
             "return-header",
@@ -75331,6 +75324,18 @@
             "branch-valve-4"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4"
+          ],
+          "param": "polymer"
         }
       ]
     },
