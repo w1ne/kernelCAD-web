@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Fixed vertical access ladder with evenly spaced rungs, side rails and a wraparound safety cage.
+// Short 1035 mm schematic ladder section with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design.
 meta({
   name: 'vertical-cage-ladder',
   license: 'CC0-1.0',
   title: 'Vertical cage ladder',
-  description: 'Fixed vertical access ladder with evenly spaced rungs, side rails and a wraparound safety cage. Controls: overall scale, steel, safety paint.',
+  description: 'Short 1035 mm schematic ladder section with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: overall scale, steel, safety paint.',
   tags: ['industrial plant', 'factory', 'process equipment', 'low poly', 'CC0'],
   kit: 'industrial-plant',
   category: 'structure',
@@ -31,14 +31,22 @@ p.part('rung-4', box(193.2, 26, 18, true).translate(0, 0, 526.4).scale(scale).co
 p.part('rung-5', box(193.2, 26, 18, true).translate(0, 0, 649.3).scale(scale).color(safetyPaint));
 p.part('rung-6', box(193.2, 26, 18, true).translate(0, 0, 772.1).scale(scale).color(safetyPaint));
 p.part('rung-7', box(193.2, 26, 18, true).translate(0, 0, 895).scale(scale).color(safetyPaint));
-p.part('safety-hoop-0', cylinder(160, 151.2, 8).rotate([1, 0, 0], 90).translate(0, 80, 325.5).scale(scale).color(safetyPaint));
-p.part('hoop-support-0', box(16, 118.4, 16, true).translate(0, 0, 325.5).scale(scale).color(steel));
-p.part('safety-hoop-1', cylinder(160, 151.2, 8).rotate([1, 0, 0], 90).translate(0, 80, 465).scale(scale).color(safetyPaint));
-p.part('hoop-support-1', box(16, 118.4, 16, true).translate(0, 0, 465).scale(scale).color(steel));
-p.part('safety-hoop-2', cylinder(160, 151.2, 8).rotate([1, 0, 0], 90).translate(0, 80, 604.5).scale(scale).color(safetyPaint));
-p.part('hoop-support-2', box(16, 118.4, 16, true).translate(0, 0, 604.5).scale(scale).color(steel));
-p.part('safety-hoop-3', cylinder(160, 151.2, 8).rotate([1, 0, 0], 90).translate(0, 80, 744).scale(scale).color(safetyPaint));
-p.part('hoop-support-3', box(16, 118.4, 16, true).translate(0, 0, 744).scale(scale).color(steel));
+// Open U-shaped straps wrap around the clear climbing corridor in the XY plane.
+// The ends overlap the ladder rails; the centre stays empty through every hoop.
+const cageStrap = () => path()
+  .moveTo(-100.2, -12).lineTo(-167.2, 96).lineTo(-167.2, 216)
+  .lineTo(-108, 296).lineTo(108, 296).lineTo(167.2, 216)
+  .lineTo(167.2, 96).lineTo(100.2, -12)
+  .lineTo(88.2, 0).lineTo(151.2, 100).lineTo(151.2, 210)
+  .lineTo(100, 280).lineTo(-100, 280).lineTo(-151.2, 210)
+  .lineTo(-151.2, 100).lineTo(-88.2, 0).close().extrude(16);
+for (const [i, z] of [325.5, 465, 604.5, 744].entries()) {
+  p.part(`safety-hoop-${i}`, cageStrap().translate(0, 0, z - 8).scale(scale).color(safetyPaint));
+}
+for (const [i, [x, y]] of [[-159.2, 155], [159.2, 155], [0, 288]].entries()) {
+  p.part(`cage-upright-${i}`, box(16, 16, 434.5, true)
+    .translate(x, y, 534.75).scale(scale).color(safetyPaint));
+}
 p.part('top-grab-left', box(18, 22, 110, true).translate(-88.2, 0, 980).scale(scale).color(safetyPaint));
 p.part('top-grab-right', box(18, 22, 110, true).translate(88.2, 0, 980).scale(scale).color(safetyPaint));
 
