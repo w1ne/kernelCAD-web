@@ -24,6 +24,10 @@
 //               as exact rational/non-rational NURBS sketch commands
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
 //
+// ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the Object
+// Coordinate System of their extrusion direction: -Z is mirrored into world
+// X, and a direction off the Z axis is refused (dxfOcs.ts).
+//
 // The bulge on a polyline vertex is `tan(includedAngle / 4)` — the same
 // number, same sign convention, that `SketchCommand.bulgeArc` carries. It is
 // copied across verbatim rather than converted into sagitta or a chord
@@ -50,25 +54,11 @@ import {
   type ImportedRegion,
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
+import { mirrorSegments, ocsSign } from './dxfOcs';
+import { DxfParseError, entityVector, get, num, require, type Pair } from './dxfPairs';
+
+export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
-
-export type DxfParseFailure =
-  | 'empty'
-  | 'not-dxf'
-  | 'no-entities'
-  | 'unsupported-entity'
-  | 'malformed-entity'
-  | 'bad-units'
-  | 'contour';
-
-export class DxfParseError extends Error {
-  readonly reason: DxfParseFailure;
-  constructor(reason: DxfParseFailure, message: string) {
-    super(message);
-    this.reason = reason;
-    this.name = 'DxfParseError';
-  }
-}
 
 export interface ImportDxfOptions {
   /**
@@ -128,13 +118,6 @@ const ANNOTATION_ENTITIES = new Set([
   'POINT', 'ATTDEF', 'ATTRIB', 'VIEWPORT', 'IMAGE', 'WIPEOUT', 'RAY', 'XLINE',
 ]);
 
-interface Pair {
-  code: number;
-  value: string;
-  /** 1-based physical line number of the CODE line, for diagnostics. */
-  line: number;
-}
-
 function tokenize(text: string): Pair[] {
   const lines = text.split(/\r\n|\r|\n/);
   const pairs: Pair[] = [];
@@ -151,17 +134,6 @@ function tokenize(text: string): Pair[] {
     pairs.push({ code, value: lines[i + 1] ?? '', line: i + 1 });
   }
   return pairs;
-}
-
-function num(p: Pair, entity: string, code: number): number {
-  const v = Number(p.value.trim());
-  if (!Number.isFinite(v)) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `${entity} at line ${p.line}: group code ${code} must be a finite number, got '${p.value.trim()}'.`,
-    );
-  }
-  return v;
 }
 
 /** Resolve the millimetres-per-coordinate scale from `opts` or `$INSUNITS`. */
@@ -241,21 +213,6 @@ function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
     }
   }
   return blocks;
-}
-
-function get(body: readonly Pair[], code: number): Pair | undefined {
-  return body.find(p => p.code === code);
-}
-
-function require(body: readonly Pair[], code: number, entity: string, line: number): Pair {
-  const p = get(body, code);
-  if (!p) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `${entity} at line ${line}: required group code ${code} is missing.`,
-    );
-  }
-  return p;
 }
 
 function values(body: readonly Pair[], code: number, entity: string): number[] {
@@ -670,17 +627,10 @@ function hatchPathCountIndex(b: EntityBlock): number {
   return pathCountIndex;
 }
 
-function hatchVector(header: readonly Pair[], codes: readonly number[], defaults: readonly number[]): number[] {
-  return codes.map((code, index) => {
-    const pair = get(header, code);
-    return pair ? num(pair, 'HATCH', code) : defaults[index];
-  });
-}
-
 function validateHatchPlane(b: EntityBlock, pathCountIndex: number): void {
   const header = b.body.slice(0, pathCountIndex);
-  const elevation = hatchVector(header, [10, 20, 30], [0, 0, 0]);
-  const extrusion = hatchVector(header, [210, 220, 230], [0, 0, 1]);
+  const elevation = entityVector(header, 'HATCH', [10, 20, 30], [0, 0, 0]);
+  const extrusion = entityVector(header, 'HATCH', [210, 220, 230], [0, 0, 1]);
   const zeroVector = (vector: number[]) => vector.every(value => Math.abs(value) <= 1e-9);
   const positiveZ = Math.abs(extrusion[0]) <= 1e-9 && Math.abs(extrusion[1]) <= 1e-9 &&
     Math.abs(extrusion[2] - 1) <= 1e-9;
@@ -823,9 +773,9 @@ function segmentsForSimpleEntity(
       return { closed: [], open: [{ x0, y0, x1, y1, source: `LINE (line ${b.line})` }] };
     }
     case 'ARC':
-      return { closed: [], open: arcSegments(b.body, b.line, scale) };
+      return { closed: [], open: mirrorSegments(arcSegments(b.body, b.line, scale), ocsSign(b.body, b.type, b.line)) };
     case 'CIRCLE':
-      return { closed: [circleSegments(b.body, b.line, scale)], open: [] };
+      return { closed: [mirrorSegments(circleSegments(b.body, b.line, scale), ocsSign(b.body, b.type, b.line))], open: [] };
     case 'ELLIPSE':
       return ellipseSegments(b, scale);
     case 'HATCH':
@@ -834,7 +784,7 @@ function segmentsForSimpleEntity(
       const verts = lwpolylineVertices(b.body, b.line, scale);
       const flags = get(b.body, 70);
       const isClosed = flags !== undefined && (Number(flags.value.trim()) & 1) === 1;
-      const segs = polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line);
+      const segs = mirrorSegments(polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line), ocsSign(b.body, b.type, b.line));
       return isClosed ? { closed: [segs], open: [] } : { closed: [], open: segs };
     }
     default:
@@ -867,7 +817,7 @@ function consumePolyline(blocks: readonly EntityBlock[], i: number, scale: numbe
   }
   if (j < blocks.length && blocks[j].type === 'SEQEND') j++;
   const isClosed = (flagVal & 1) === 1;
-  const segs = polylineSegments(verts, isClosed, 'POLYLINE', b.line);
+  const segs = mirrorSegments(polylineSegments(verts, isClosed, 'POLYLINE', b.line), ocsSign(b.body, b.type, b.line));
   return { closed: isClosed ? [segs] : [], open: isClosed ? [] : segs, nextIndex: j - 1 };
 }
 

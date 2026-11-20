@@ -25,7 +25,7 @@ import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { reproducibleOcctStep } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
-import { integrateVolume } from './volumeIntegration';
+import { integrateArea, integrateVolume } from './volumeIntegration';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
@@ -1187,7 +1187,8 @@ export class OcctBackend implements ShapeBackend {
   }
 
   surfaceArea(): number {
-    return replicad.measureArea(this.shape);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return integrateArea((this.shape as any).wrapped);
   }
 
   isEmpty(): boolean {

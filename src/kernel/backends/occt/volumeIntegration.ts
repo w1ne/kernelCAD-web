@@ -56,6 +56,40 @@ export function integrateVolume(shape: unknown): number {
   }
 }
 
+/**
+ * Surface area (mm²) of the raw `TopoDS_Shape` `shape`. The fixed-order
+ * `BRepGProp::SurfaceProperties` has the same weakness as the volume on
+ * strongly rational faces: `sphere(1).scale([1, 1, 2])` measured
+ * 21.5618 mm² instead of 21.4784 mm² (0.39 % high), so those shapes are
+ * integrated adaptively. The adaptive area does not reach the volume's
+ * accuracy: 1e-9 on that ellipsoid, but about 4e-6 on an elliptic cylinder
+ * or a three-axis ellipsoid, although OCCT's own estimate reports ~1e-14.
+ */
+export function integrateArea(shape: unknown): number {
+  if (hasStronglyRationalFace(shape)) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return measureSurface((oc: any, props) => oc.BRepGProp.SurfaceProperties_2(shape, props, VOLUME_RELATIVE_EPS, false));
+    } catch {
+      // Fall through to the fixed-order integration.
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return measureSurface((oc: any, props) => oc.BRepGProp.SurfaceProperties_1(shape, props, false, false));
+}
+
+function measureSurface(fill: (oc: unknown, props: unknown) => void): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const props = new oc.GProp_GProps_1();
+  try {
+    fill(oc, props);
+    return props.Mass();
+  } finally {
+    props.delete();
+  }
+}
+
 /** True when a B-spline face of the raw `TopoDS_Shape` `shape` has pole
  *  weights that spread by more than `RATIONAL_WEIGHT_SPREAD`. */
 export function hasStronglyRationalFace(shape: unknown): boolean {

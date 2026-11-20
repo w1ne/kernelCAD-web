@@ -539,10 +539,10 @@ describe('tendon anchors and fastened-drift boxes of posed parts with `at`', () 
     const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');
     expect(tendon).toBeDefined();
     const { from, to } = tendonEnds(tendon!.faces[0].vertices);
-    expect(from[0]).toBeCloseTo(110, 3);
+    expect(from[0]).toBeCloseTo(90, 3);
     expect(from[1]).toBeCloseTo(0, 3);
     expect(from[2]).toBeCloseTo(0, 3);
-    expect(to[0]).toBeCloseTo(-10, 3);
+    expect(to[0]).toBeCloseTo(10, 3);
     expect(to[1]).toBeCloseTo(0, 3);
     expect(to[2]).toBeCloseTo(0, 3);
   });

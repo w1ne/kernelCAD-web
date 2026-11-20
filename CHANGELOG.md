@@ -1,5 +1,40 @@
 # Unreleased
 
+- `mechanism.tendon-body-intersect` now reads tendon anchors, via points and
+  wrap geoms on a part in no mate (for example a legacy-joint participant) at
+  the part's `at` placement. Before, it read them as if the part were at the
+  origin, so the cable it checked did not match the rendered tendon. Example
+  `examples/kinematic/jointed-tendon-anchor-at.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real` (before: one
+  `mechanism.tendon-body-intersect` error); its hook and eye are on the
+  facing ends of the two parts (tendon from x=90 to x=10 mm), and
+  `docs/demos/tendon-jointed-anchor-at/` is recaptured.
+
+- Physical use-case checks (contact reachability, static perturbation and
+  joint reactions) now read a contact or load connector on a part in no mate
+  where the part's `at` puts it. Before, such a part (for example a held
+  `role: 'contact-target'` object placed only by `at`) was read at the world
+  origin, so a grasp that touches it was reported as
+  `contact-unreachable`. In the regression rig the held contact moved from
+  [-2, 0, 0] to [10, 0, 0] mm and the 10.2 mm false miss is now 0 mm.
+
+- `Shape.boundingBox()` now contains thickened curved surfaces. On a
+  curved surface, `thicken()` makes an offset-surface face. OCCT's default
+  box bounds that face by its basis surface and stores the offset distance
+  as the box gap, and the box then removed the gap as tolerance. The box
+  fell inside the solid: the pocket-watch crystal (`thicken(0.4)`) read
+  z max 3.2 mm instead of 3.6 mm, and the imported pocket-watch STEP read
+  y min -8.5 mm instead of -8.899 mm. Shapes with an offset face now take
+  the exact box of each offset face and the gap-free default box of the
+  other faces (64 to 97 ms on the 768-face pocket-watch STEP).
+- `Shape.surfaceArea()` (and the area in `getShapeInfo`, part stats and the
+  BOM) is now close to the true area of non-uniformly scaled curved solids.
+  The fixed-order OCCT area integration read their rational B-spline faces
+  0.05 to 0.39 % high: `sphere(1).scale([1, 1, 2])` measured 21.5618 mm²
+  instead of 21.4784 mm². Shapes with a face whose B-spline weights spread
+  by more than 1.25 now take OCCT's adaptive integration (1 to 11 ms). The
+  residual depends on the shape: 1e-9 on that spheroid, about 4e-6 on an
+  elliptic cylinder. Other shapes keep the fixed-order result.
 - `Shape.boundingBox()` and the MCP `sceneSummary.size` now report the true
   size of non-uniformly scaled curved solids. A non-uniform scale turns
   circles into rational B-spline faces, and the default OCCT box followed

@@ -34,7 +34,7 @@ const cleanPoint = (point: [number, number, number]) => point.map((value) =>
 );
 const fromMm = cleanPoint(ringCenter(vertices, 0));
 const toMm = cleanPoint(ringCenter(vertices, 16));
-const expected = { fromMm: [110, 0, 0], toMm: [-10, 0, 0] } as const;
+const expected = { fromMm: [90, 0, 0], toMm: [10, 0, 0] } as const;
 for (const [label, actual, target] of [
   ['fromMm', fromMm, expected.fromMm],
   ['toMm', toMm, expected.toMm],
