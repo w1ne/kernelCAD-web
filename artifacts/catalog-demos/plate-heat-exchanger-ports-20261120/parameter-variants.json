@@ -1,0 +1,68 @@
+{
+  "method": "Native export after parameter edits with existing setParamValue; identical fixed image scale",
+  "cases": [
+    {
+      "plateCount": 5,
+      "plateHeightMm": 480,
+      "triangles": 1288,
+      "boundsMetres_X_Yup_Zdepth": [
+        [
+          -0.19630000305175782,
+          0.17989999389648437
+        ],
+        [
+          -2.4424906541753444e-17,
+          0.48
+        ],
+        [
+          -0.11,
+          0.11000000000000011
+        ]
+      ],
+      "sourceSha256": "83e26f2c37dd1d0a309b5be56a97da5a818ba3c7d2c05ed5dcead1b9df565585",
+      "preview": "plates-5-height-480.png"
+    },
+    {
+      "plateCount": 9,
+      "plateHeightMm": 620,
+      "triangles": 1336,
+      "boundsMetres_X_Yup_Zdepth": [
+        [
+          -0.26279998779296876,
+          0.24639999389648437
+        ],
+        [
+          -2.4424906541753444e-17,
+          0.62
+        ],
+        [
+          -0.11,
+          0.11000000000000014
+        ]
+      ],
+      "sourceSha256": "575fc0c0724e60a03cc06e565493c102a41778ae2d023a5c9596c24467394ee2",
+      "preview": "plates-9-height-620.png"
+    },
+    {
+      "plateCount": 13,
+      "plateHeightMm": 800,
+      "triangles": 1384,
+      "boundsMetres_X_Yup_Zdepth": [
+        [
+          -0.32929998779296876,
+          0.3128999938964844
+        ],
+        [
+          -2.4424906541753444e-17,
+          0.8
+        ],
+        [
+          -0.11,
+          0.11000000000000018
+        ]
+      ],
+      "sourceSha256": "a1b916106bf7ae63d25ac3af3376166cdded4e06e58b319f16e8617990d5d57c",
+      "preview": "plates-13-height-800.png"
+    }
+  ]
+}
