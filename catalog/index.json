@@ -315226,7 +315226,7 @@
       "id": "antenna-sector-frame",
       "kit": "telecom-infrastructure",
       "title": "Sector antenna frame",
-      "description": "Triangular sector panel support frame with three vertical rails and top and bottom braces. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Triangular sector antenna frame: three galvanized mounting pipes at the corners of a triangle, joined by galvanized top and bottom braces and a rear mid-brace, with polymer pipe caps, a stand-off arm and a stainless pole clamp. Knobs: overall scale; galvanized steel, stainless steel clamp, polymer pipe caps.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -315245,7 +315245,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/antenna-sector-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-antenna-sector-frame.png",
-      "sourceSha256": "443b0461855285faa572e9c131343d7a5d34031d4aa3a2baff28545ea7bbe1c0",
+      "sourceSha256": "251f500390bc28136a4f0251d4199c4b633d8a63770db01b2d0fec0d2a9f711b",
       "triangleBudget": 900,
       "params": [
         {
@@ -315261,39 +315261,39 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Galvanized steel frame"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "Stainless steel pole clamp"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22282b",
+          "label": "Polymer pipe caps"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 372,
         "sizeM": [
-          0.5,
-          1.15,
-          0.465
+          0.534333,
+          1.114,
+          0.802
         ],
         "minUpM": 0,
         "materials": 1
@@ -315306,18 +315306,26 @@
             "rail-a",
             "rail-b",
             "rail-c",
-            "bottom",
+            "top-brace-ab",
+            "bottom-brace-ab",
+            "top-brace-bc",
+            "bottom-brace-bc",
+            "top-brace-ca",
+            "bottom-brace-ca",
+            "mid-brace-bc",
             "mount-arm"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "polymer",
+          "color": "#22282b",
           "parts": [
-            "top"
+            "pipe-cap-a",
+            "pipe-cap-b",
+            "pipe-cap-c"
           ],
-          "param": "powderCoat"
+          "param": "polymer"
         },
         {
           "name": "stainlessSteel",
