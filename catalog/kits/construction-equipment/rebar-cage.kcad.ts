@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Short reinforcing cage assembled from longitudinal bars and repeating ties.
+// Reinforcing cage scene prop with two bar layers inside closed rectangular ties.
+// Generic low-poly geometry in millimetres; not a structural reinforcement schedule.
 meta({
   name: "rebar-cage",
   license: 'CC0-1.0',
   title: "Reinforcing bar cage",
-  description: "Short reinforcing cage assembled from longitudinal bars and repeating ties. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+  description: "Short reinforcing cage with twelve distinct longitudinal bars in two layers and eight closed rectangular ties seated on support saddles. Generic visualization prop, not structural design or manufacturing CAD. Material controls: equipment enamel paint and structural steel; weathered and highVisibility presets.",
   tags: ['construction equipment', 'roadworks', 'jobsite', 'low poly', 'CC0'],
   kit: 'construction-equipment',
   category: 'structure',
@@ -25,25 +26,30 @@ const add = (name, shape, finish = equipmentPaintColor) => p.part(name, shape.sc
 add('assembly-skid', box(1260, 558, 35, true).translate(0, 0, 17.5), equipmentPaintColor);
 add('support-saddle--1', box(1176, 35, 111.6, true).translate(0, -235.6, 90.8), structuralSteelColor);
 add('support-saddle-1', box(1176, 35, 111.6, true).translate(0, 235.6, 90.8), structuralSteelColor);
-add('longitudinal-bar--1-0', cylinder(1148, 18, 6).rotateY(90).translate(-574, -260.4, 372), equipmentPaintColor);
-add('longitudinal-bar--1-1', cylinder(1148, 18, 6).rotateY(90).translate(-574, -156.24, 372), equipmentPaintColor);
-add('longitudinal-bar--1-2', cylinder(1148, 18, 6).rotateY(90).translate(-574, -52.08, 372), equipmentPaintColor);
-add('longitudinal-bar--1-3', cylinder(1148, 18, 6).rotateY(90).translate(-574, 52.08, 372), equipmentPaintColor);
-add('longitudinal-bar--1-4', cylinder(1148, 18, 6).rotateY(90).translate(-574, 156.24, 372), equipmentPaintColor);
-add('longitudinal-bar--1-5', cylinder(1148, 18, 6).rotateY(90).translate(-574, 260.4, 372), equipmentPaintColor);
-add('longitudinal-bar-1-0', cylinder(1148, 18, 6).rotateY(90).translate(-574, -260.4, 372), equipmentPaintColor);
-add('longitudinal-bar-1-1', cylinder(1148, 18, 6).rotateY(90).translate(-574, -156.24, 372), equipmentPaintColor);
-add('longitudinal-bar-1-2', cylinder(1148, 18, 6).rotateY(90).translate(-574, -52.08, 372), equipmentPaintColor);
-add('longitudinal-bar-1-3', cylinder(1148, 18, 6).rotateY(90).translate(-574, 52.08, 372), equipmentPaintColor);
-add('longitudinal-bar-1-4', cylinder(1148, 18, 6).rotateY(90).translate(-574, 156.24, 372), equipmentPaintColor);
-add('longitudinal-bar-1-5', cylinder(1148, 18, 6).rotateY(90).translate(-574, 260.4, 372), equipmentPaintColor);
-add('tie-ring-0', cylinder(446.4, 16, 8).rotateX(90).translate(-532, 223.2, 372), structuralSteelColor);
-add('tie-ring-1', cylinder(446.4, 16, 8).rotateX(90).translate(-380, 223.2, 372), structuralSteelColor);
-add('tie-ring-2', cylinder(446.4, 16, 8).rotateX(90).translate(-228, 223.2, 372), structuralSteelColor);
-add('tie-ring-3', cylinder(446.4, 16, 8).rotateX(90).translate(-76, 223.2, 372), structuralSteelColor);
-add('tie-ring-4', cylinder(446.4, 16, 8).rotateX(90).translate(76, 223.2, 372), structuralSteelColor);
-add('tie-ring-5', cylinder(446.4, 16, 8).rotateX(90).translate(228, 223.2, 372), structuralSteelColor);
-add('tie-ring-6', cylinder(446.4, 16, 8).rotateX(90).translate(380, 223.2, 372), structuralSteelColor);
-add('tie-ring-7', cylinder(446.4, 16, 8).rotateX(90).translate(532, 223.2, 372), structuralSteelColor);
+// The lower layer rests inside the ties; the upper layer closes the cage volume.
+// Keeping separate Z coordinates prevents coincident duplicate longitudinal bars.
+const barLength = 1148;
+const barRadius = 18;
+const layerHeights = [180.6, 372];
+const barOffsets = [-236, -141.6, -47.2, 47.2, 141.6, 236];
+for (const [layer, z] of layerHeights.entries()) {
+  for (const [index, y] of barOffsets.entries()) {
+    add(`longitudinal-bar-${layer === 0 ? 'lower' : 'upper'}-${index}`,
+      cylinder(barLength, barRadius, 6).rotateY(90).translate(-barLength / 2, y, z),
+      structuralSteelColor);
+  }
+}
+
+// Each tie is one closed YZ frame with an open centre, not a transverse rod.
+// Its underside sits at z = 146.6 mm, the top of both support saddles.
+const tieBottom = 146.6;
+const tieTop = 406;
+const tieHeight = tieTop - tieBottom;
+for (const [index, x] of [-532, -380, -228, -76, 76, 228, 380, 532].entries()) {
+  const tie = box(16, 540, tieHeight, true)
+    .subtract(box(18, 508, tieHeight - 32, true))
+    .translate(x, 0, (tieBottom + tieTop) / 2);
+  add(`tie-ring-${index}`, tie, structuralSteelColor);
+}
 
 return p.model();

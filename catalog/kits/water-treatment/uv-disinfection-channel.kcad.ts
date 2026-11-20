@@ -76,7 +76,7 @@ add('water-upstream', blk(-4200, -HW, 0, 3150, HW, WL).color(water));
 add('water-downstream', blk(3350, -HW, 0, 4200, HW, 700).color(water));
 
 // ---- Lamp banks: eight vertical modules across the flow ----
-const module = (tag, x0, x1, y, zBase, lamps) => {
+const lampModule = (tag, x0, x1, y, zBase, lamps) => {
   for (const x of [x0, x1]) add(`${tag}-leg-${x}`, blk(x - 25, y - 25, zBase, x + 25, y + 25, zBase + 1550).color(stainlessSteel));
   add(`${tag}-head`, blk(x0 - 60, y - 55, zBase + 1450, x1 + 60, y + 55, zBase + 1650).color(stainlessSteel));
   add(`${tag}-ballast-cap`, blk(x0 + 80, y - 45, zBase + 1650, x0 + 380, y + 45, zBase + 1720).color(dark));
@@ -92,7 +92,7 @@ const banks = [[-2600, -1000], [-200, 1400]];
 banks.forEach(([x0, x1], b) => {
   for (let i = 0; i < 8; i++) {
     const y = -HW + 75 + i * ((2 * HW - 150) / 7);
-    module(`bank-${b}-module-${i}`, x0, x1, y, 0, false);
+    lampModule(`bank-${b}-module-${i}`, x0, x1, y, 0, false);
   }
   for (const x of [x0 - 120, x1 + 120]) add(`bank-${b}-rail-${x}`, blk(x - 50, -HW - WT, D - 120, x + 50, HW + WT, D).color(stainlessSteel));
   add(`bank-${b}-cable-drop`, tube([(x0 + x1) / 2, HW + 600, D + 900], [(x0 + x1) / 2, HW - 80, 1700], 40, 6).color(dark));
@@ -127,8 +127,8 @@ add('level-sensor-head', rod(90, D + 650, D + 900, 10).translate(2350, -HW + 180
   add('service-rack-base', blk(x0 - 200, y0 - 500, D, x1 + 200, y0 + 500, D + 120).color(cabinet));
   for (const x of [x0 - 150, x1 + 150]) add(`service-rack-upright-${x}`, blk(x - 40, y0 - 40, D + 120, x + 40, y0 + 40, D + 1900).color(cabinet));
   add('service-rack-top', blk(x0 - 190, y0 - 40, D + 1900, x1 + 190, y0 + 40, D + 1980).color(cabinet));
-  module('lifted-module-a', x0, x1, y0 - 160, D + 120, true);
-  module('lifted-module-b', x0, x1, y0 + 160, D + 120, true);
+  lampModule('lifted-module-a', x0, x1, y0 - 160, D + 120, true);
+  lampModule('lifted-module-b', x0, x1, y0 + 160, D + 120, true);
 }
 
 // ---- Handrail along the -Y deck edge ----
