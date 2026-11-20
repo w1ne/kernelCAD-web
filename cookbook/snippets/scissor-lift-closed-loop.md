@@ -108,7 +108,7 @@ base.connector('actuator-mount', {
 
 const actuator = arm.part(
   'lift-actuator',
-  box(28, 22, 18, true).translate(0, 0, 21).color('actuator'),
+  box(28, 22, 18, true).translate(0, 0, 21).color('servo'),
 );
 actuator.connector('mount', {
   type: 'frame',

@@ -26,6 +26,12 @@
 //     (carries pose context + element=jointName for the swept joint).
 //   - K2 kinematic.collision.swept.sample-density-warning — one warn per
 //     joint whose (range, step) fell below the D3 safe floor.
+//   - kinematic.collision.swept.unmeasured       — one error when a sampled
+//     pose could not be lowered or a pair's exact check failed.
+//
+// Refinement (#1680): each single-joint walk bisects the step where a pair
+// changes between overlap and clear (`sweptOverlapRefine`), and
+// `result.walks[]` reports stretch ends, the worst overlap and its pose.
 
 import type { Assembly } from '../modeling/capture/assembly';
 import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
@@ -34,9 +40,9 @@ import { reposedLoweredAssemblyScene } from '../modeling/mates/loweredAssemblySc
 import { solveMates } from '../modeling/mates/solver';
 import type { Transform } from '../shared/runtime/se3';
 import { detectInterferences } from '../modeling/runtime/detectInterferences';
-import { buildSweepProxies } from '../modeling/runtime/sweepCollisionProxy';
+import { buildSweepProxies, relativePoseKey } from '../modeling/runtime/sweepCollisionProxy';
 import { proxyPairsNeedingExactConfirm } from '../modeling/runtime/convexHullBroadphase';
-import { initOcct } from '../kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import {
   DIAGNOSTIC_REGISTRY,
@@ -45,6 +51,15 @@ import {
 import { enumeratePoses } from './sweptPoseEnumeration';
 import { LoopContinuation } from './loopContinuation';
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses as FullPoses } from '../modeling/capture/forwardKinematics';
+import {
+  DEFAULT_REFINE_ROUNDS,
+  pairKey,
+  refineWalk,
+  type MeasureAt,
+  type PairHit,
+  type PairState,
+  type WalkSample,
+} from './sweptOverlapRefine';
 import type {
   KinematicDiagnostic,
   NumericPoses,
@@ -52,6 +67,7 @@ import type {
   SweptCollisionContact,
   SweptCollisionOpts,
   SweptCollisionResult,
+  SweptWalkReport,
 } from './types';
 
 /**
@@ -100,8 +116,10 @@ export async function checkSweptCollision(
   }
 
   const epsilon = opts?.collisionToleranceMm3 ?? 0.01;
-  const { collidingPoses, posesSampled, loopDiagnostics } = await sweepWalks(arm, walks, epsilon);
+  const { collidingPoses, posesSampled, loopDiagnostics, reports, unknownPoses } =
+    await sweepWalks(arm, walks, epsilon, refineOptions(opts));
   diagnostics.push(...loopDiagnostics);
+  if (unknownPoses.length > 0) diagnostics.push(buildUnmeasuredError(unknownPoses, opts));
 
   // K1 — one error record. Carries the worst-pose context (first colliding
   // pose encountered; collidingPoses[] holds the full list for the agent).
@@ -110,9 +128,10 @@ export async function checkSweptCollision(
   }
 
   return {
-    ok: collidingPoses.length === 0 && !loopDiagnostics.some((d) => d.severity === 'error'),
+    ok: collidingPoses.length === 0 && unknownPoses.length === 0 && !loopDiagnostics.some((d) => d.severity === 'error'),
     collidingPoses,
     posesSampled,
+    ...(reports.length > 0 ? { walks: reports } : {}),
     diagnostics,
     source: 'local',
   };
@@ -146,89 +165,184 @@ function loopPose(arm: Assembly, coords: Readonly<Record<string, number | readon
   return out;
 }
 
+/** Bisection settings; explicit samples have no joint axis to bisect along. */
+function refineOptions(
+  opts: SweptCollisionOpts | undefined,
+): { readonly rounds: number; readonly step?: number } | undefined {
+  if (opts?.samples !== undefined && opts.samples.length > 0) return undefined;
+  return { rounds: Math.max(0, Math.floor(opts?.refineRounds ?? DEFAULT_REFINE_ROUNDS)), step: opts?.range?.[2] };
+}
+
+/** Lowered scene and broadphase proxies shared by every sample of a sweep. */
+interface SweepCache {
+  scene?: SceneBackend;
+  proxies?: ReturnType<typeof buildSweepProxies>;
+}
+
+interface SweepContext {
+  readonly arm: Assembly;
+  readonly defaults: FullPoses;
+  readonly hasMates: boolean;
+  readonly epsilon: number;
+  readonly cache: SweepCache;
+}
+
 /** Walk each pose group with closed-loop continuation. A loop finding
  *  (branch flip, lockup, over-driven) ends that walk at the pose it names;
- *  poses after it are not sampled. */
+ *  poses after it are not sampled. A single-joint walk is then refined
+ *  between samples where a pair changes state (#1680). */
 async function sweepWalks(
   arm: Assembly,
   walks: ReadonlyArray<ReadonlyArray<NumericPoses>>,
   epsilon: number,
-): Promise<{ collidingPoses: SweptCollidingPose[]; posesSampled: number; loopDiagnostics: KinematicDiagnostic[] }> {
+  refine: { readonly rounds: number; readonly step?: number } | undefined,
+): Promise<{
+  collidingPoses: SweptCollidingPose[];
+  posesSampled: number;
+  loopDiagnostics: KinematicDiagnostic[];
+  reports: SweptWalkReport[];
+  unknownPoses: NumericPoses[];
+}> {
   const collidingPoses: SweptCollidingPose[] = [];
   const loopDiagnostics: KinematicDiagnostic[] = [];
-  const defaults = jointPoseDefaults(arm);
+  const reports: SweptWalkReport[] = [];
+  const unknownPoses: NumericPoses[] = [];
+  const ctx: SweepContext = {
+    arm,
+    defaults: jointPoseDefaults(arm),
+    hasMates: (arm.__mates?.() ?? []).length > 0,
+    epsilon,
+    cache: {},
+  };
   const continuation = new LoopContinuation(arm);
-  const hasMates = (arm.__mates?.() ?? []).length > 0;
   let posesSampled = 0;
-  // One lowered scene's part BREPs are local-frame geometry. Later samples
-  // only swap world transforms; a missing transform falls back to a full
-  // lower so a partial FK result cannot silently skip a pose.
-  let cachedScene: SceneBackend | undefined;
-  let proxies: ReturnType<typeof buildSweepProxies> | undefined;
   for (const walk of walks) {
     continuation.reset();
-    for (const pose of walk) {
-      const sample = await sampleSweepPose(
-        arm, pose, defaults, continuation, hasMates, cachedScene, proxies, epsilon,
-      );
-      if (sample.stop !== undefined) {
-        loopDiagnostics.push(sample.stop);
-        break;
-      }
-      posesSampled++;
-      cachedScene = sample.cachedScene;
-      proxies = sample.proxies;
-      if (sample.contacts !== undefined) {
-        collidingPoses.push({ pose: { ...pose }, contacts: sample.contacts });
-      }
+    const joint = refine === undefined ? undefined : singleJoint(walk);
+    const run = await walkSamples(ctx, walk, continuation, joint);
+    posesSampled += run.posesSampled;
+    collidingPoses.push(...run.collidingPoses);
+    unknownPoses.push(...run.unknownPoses);
+    if (run.stop !== undefined) loopDiagnostics.push(run.stop);
+    if (joint !== undefined && refine !== undefined) {
+      reports.push(await refineSweptWalk(ctx, joint, run.samples, refine));
     }
   }
   loopDiagnostics.unshift(...continuation.advisories());
-  return { collidingPoses, posesSampled, loopDiagnostics };
+  return { collidingPoses, posesSampled, loopDiagnostics, reports, unknownPoses };
 }
 
-/** Solve one walk sample and measure it against the cached scene. */
-async function sampleSweepPose(
-  arm: Assembly,
-  pose: NumericPoses,
-  defaults: FullPoses,
+/** Sample one walk in order; a loop stop ends it. */
+async function walkSamples(
+  ctx: SweepContext,
+  walk: ReadonlyArray<NumericPoses>,
   continuation: LoopContinuation,
-  hasMates: boolean,
-  cachedScene: SceneBackend | undefined,
-  proxies: ReturnType<typeof buildSweepProxies> | undefined,
-  epsilon: number,
+  joint: string | undefined,
 ): Promise<{
+  posesSampled: number;
+  collidingPoses: SweptCollidingPose[];
+  unknownPoses: NumericPoses[];
+  samples: WalkSample<LoopContinuation>[];
   stop?: KinematicDiagnostic;
-  cachedScene?: SceneBackend;
-  proxies?: ReturnType<typeof buildSweepProxies>;
-  contacts?: SweptCollisionContact[];
 }> {
+  const collidingPoses: SweptCollidingPose[] = [];
+  const unknownPoses: NumericPoses[] = [];
+  const samples: WalkSample<LoopContinuation>[] = [];
+  let posesSampled = 0;
+  for (const pose of walk) {
+    const { state, stop } = await sampleSweepPose(ctx, pose, continuation);
+    if (state === undefined) return { posesSampled, collidingPoses, unknownPoses, samples, stop };
+    posesSampled++;
+    if (state.unknownReason !== undefined || state.unknownPairs.size > 0) unknownPoses.push({ ...pose });
+    if (state.hits.size > 0) collidingPoses.push({ pose: { ...pose }, contacts: contactsOf(state) });
+    if (joint !== undefined) samples.push({ ...state, value: Number(pose[joint]), seed: continuation.fork() });
+  }
+  return { posesSampled, collidingPoses, unknownPoses, samples };
+}
+
+/** Bisect a single-joint walk between samples; each step continues from
+ *  the loop state of the lower bracket end. */
+async function refineSweptWalk(
+  ctx: SweepContext,
+  joint: string,
+  samples: ReadonlyArray<WalkSample<LoopContinuation>>,
+  refine: { readonly rounds: number; readonly step?: number },
+): Promise<SweptWalkReport> {
+  const step = refine.step ?? (samples.length > 1 ? samples[1].value - samples[0].value : 0);
+  const measure: MeasureAt<LoopContinuation> = async (value, seed) => {
+    const next = seed.fork();
+    const sample = await sampleSweepPose(ctx, { [joint]: value }, next);
+    return sample.state === undefined ? undefined : { state: sample.state, seed: next };
+  };
+  return refineWalk(joint, step, samples, measure, refine.rounds);
+}
+
+/** The one joint a walk varies, or undefined for an explicit pose list. */
+function singleJoint(walk: ReadonlyArray<NumericPoses>): string | undefined {
+  const keys = walk.length === 0 ? [] : Object.keys(walk[0]);
+  if (keys.length !== 1) return undefined;
+  const [joint] = keys;
+  return walk.every((p) => Object.keys(p).length === 1 && typeof p[joint] === 'number') ? joint : undefined;
+}
+
+function contactsOf(state: PairState): SweptCollisionContact[] {
+  return [...state.hits.values()].map((p) => ({ partA: p.a, partB: p.b, volumeMm3: p.volumeMm3 }));
+}
+
+/** Solve one walk sample and measure it against the cached scene. A pose
+ *  the lowerer cannot build, or a pair whose exact check fails, is
+ *  reported unknown, not clear. */
+async function sampleSweepPose(
+  ctx: SweepContext,
+  pose: NumericPoses,
+  continuation: LoopContinuation,
+): Promise<{ stop?: KinematicDiagnostic; state?: PairState }> {
+  const { arm, cache } = ctx;
   let lowerPose: FullPoses = pose;
-  if (hasMates) {
+  if (ctx.hasMates) {
     const step = await continuation.step(pose);
-    if (step.stop !== undefined) return { stop: step.stop, cachedScene, proxies };
+    if (step.stop !== undefined) return { stop: step.stop };
     // Lower exactly the configuration continuation solved: every loop
     // coordinate is passed, so the lowerer's loop solve is already
     // closed and cannot pick another branch.
     lowerPose = { ...pose, ...loopPose(arm, step.result.loop?.coordinates) };
   }
-  const scene = await posedSceneForSweep(arm, { ...defaults, ...lowerPose }, cachedScene);
-  const nextScene = cachedScene ?? scene;
-  const nextProxies = proxies ?? (scene === undefined ? undefined : buildSweepProxies(scene));
-  const explicit = scene === undefined || nextProxies === undefined
-    ? undefined
-    : proxyPairsNeedingExactConfirm(nextProxies, scene);
-  const pairs = scene === undefined
-    ? []
-    : detectInterferences(scene, epsilon, new Set(), [], undefined, explicit).pairs;
-  const contacts = pairs.length === 0
-    ? undefined
-    : pairs.map((p) => ({
-      partA: p.a,
-      partB: p.b,
+  const scene = await posedSceneForSweep(arm, { ...ctx.defaults, ...lowerPose }, cache.scene);
+  if (scene === undefined) {
+    return { state: { hits: new Map(), unknownPairs: new Map(), unknownReason: 'pose could not be lowered' } };
+  }
+  cache.scene ??= scene;
+  cache.proxies ??= buildSweepProxies(scene);
+  const explicit = proxyPairsNeedingExactConfirm(cache.proxies, scene);
+  const result = detectInterferences(scene, ctx.epsilon, new Set(), [], undefined, explicit);
+  const hits = new Map<string, PairHit>();
+  for (const p of result.pairs) {
+    hits.set(pairKey(p.a, p.b), {
+      a: p.a,
+      b: p.b,
       volumeMm3: p.volumeMm3,
-    }));
-  return { cachedScene: nextScene, proxies: nextProxies, contacts };
+      ...(p.overlapBounds === undefined ? {} : { overlapBounds: p.overlapBounds }),
+    });
+  }
+  const unknownPairs = new Map<string, { a: string; b: string }>();
+  // Display-mesh pairs are never BREP-checked at any pose; they stay out of
+  // the per-pose unknown list, as in the static check.
+  for (const p of result.unconfirmedPairs ?? []) {
+    unknownPairs.set(pairKey(p.a, p.b), { a: p.a, b: p.b });
+  }
+  return { state: { hits, unknownPairs, poseKeys: pairPoseKeys(scene) } };
+}
+
+/** Relative pose key of every BRep part pair in one posed scene. */
+function pairPoseKeys(scene: SceneBackend): Map<string, string> {
+  const parts = scene.parts.filter((p) => p.shape instanceof OcctBackend);
+  const keys = new Map<string, string>();
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      keys.set(pairKey(parts[i].name, parts[j].name), relativePoseKey(parts[i].worldTransform, parts[j].worldTransform));
+    }
+  }
+  return keys;
 }
 
 /** Re-pose the cached lowered scene, or lower the feature tree once. */
@@ -350,6 +464,28 @@ function buildSweptCollisionError(
     return { ...diag, element: opts.joint };
   }
   return diag;
+}
+
+/** A sampled position whose overlap could not be measured is not clear. */
+function buildUnmeasuredError(
+  unknownPoses: ReadonlyArray<NumericPoses>,
+  opts: SweptCollisionOpts | undefined,
+): KinematicDiagnostic {
+  const code: DiagnosticCode = 'kinematic.collision.swept.unmeasured';
+  const entry = DIAGNOSTIC_REGISTRY[code];
+  const diag: KinematicDiagnostic = {
+    code,
+    severity: 'error',
+    message:
+      `Swept-collision could not measure ${unknownPoses.length} sampled pose(s) ` +
+      `(first: ${formatPose(unknownPoses[0])}). These poses are not shown clear; ` +
+      'inspect result.walks[].unknown.',
+    hint: entry.hintTemplate,
+    nextAction: entry.nextAction,
+    source: 'local',
+    poseContext: { ...unknownPoses[0] },
+  };
+  return opts?.joint ? { ...diag, element: opts.joint } : diag;
 }
 
 function formatPose(pose: NumericPoses): string {

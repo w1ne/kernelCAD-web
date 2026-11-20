@@ -13,7 +13,7 @@ import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
 import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
-import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
+import { contactAccepts, contactMap, measureDeclaredClearances, type PairClearanceTolerance, type PairContactTolerance } from '../runtime/pairTolerances';
 import { expandCoupledPoses, type MateCouplingRecord } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
@@ -97,6 +97,10 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   /** Per-pair intended-contact budgets. A sample's overlap is accepted only
    *  while it stays inside the declared budget for that pair. */
   readonly contactTolerances?: readonly PairContactTolerance[];
+  /** Per-pair declared minimum clearances (`solvedModel({ clearances })`),
+   *  checked at every non-rest sample. The rest pose stays with the
+   *  solvedModel clearance gate. */
+  readonly declaredClearances?: readonly PairClearanceTolerance[];
   /**
    * A fully lowered scene from the same evaluated assembly. When its part set
    * matches, pose review reuses each LOCAL-frame BREP and replaces only the
@@ -400,6 +404,10 @@ export async function reviewPoseEnvelope(
       );
     }
 
+    if (opts.declaredClearances !== undefined && opts.declaredClearances.length > 0 && sample.name !== REST_SAMPLE) {
+      await reviewPoseEnvelopeSampleDeclaredClearance(arm, sample, opts.declaredClearances, opts.loweredScene, solvedPoses, diagnostics);
+    }
+
     if (!includeInterference) continue;
     await reviewPoseEnvelopeSampleInterference(arm, sample, epsilon, reportInterference);
   }
@@ -508,6 +516,49 @@ async function solvePoseEnvelopeSample(
     });
   }
   return solvedPoses;
+}
+
+const REST_SAMPLE = 'current';
+
+/** Declared per-pair minimum clearances at one sample: a sub-minimum gap or
+ *  overlap is an error; an unmeasured pair is a warning, never a pass. */
+async function reviewPoseEnvelopeSampleDeclaredClearance(
+  arm: Assembly,
+  sample: PoseEnvelopeSample,
+  declared: readonly PairClearanceTolerance[],
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+  diagnostics: PoseEnvelopeDiagnostic[],
+): Promise<void> {
+  const scene = await posedSceneAt(arm, sample.poses, loweredScene, solvedPoses);
+  const results = scene === undefined
+    ? declared.map((d) => ({ a: d.parts[0], b: d.parts[1], minMm: d.minMm, distanceMm: Number.NaN, status: 'unknown' as const }))
+    : measureDeclaredClearances(scene, declared);
+  for (const r of results) {
+    if (r.status === 'ok') continue;
+    const base = {
+      sampleName: sample.name,
+      sampleStrategy: classifySampleStrategy(sample.name),
+      partA: r.a,
+      partB: r.b,
+      minClearanceMm: r.minMm,
+    };
+    diagnostics.push(r.status === 'violated'
+      ? {
+          ...base,
+          code: 'assembly.pose-envelope.clearance-violated',
+          severity: 'error',
+          message: `Pose-envelope sample '${sample.name}' leaves ${r.distanceMm.toFixed(3)} mm between parts '${r.a}' and '${r.b}', below their declared ${r.minMm} mm minimum clearance.`,
+          hint: `invalid-args.assembly.pose-envelope-clearance-violated — increase clearance between '${r.a}' and '${r.b}', reduce mate travel, or lower the declared clearances[].minMm only if the planned clearance was wrong.`,
+        }
+      : {
+          ...base,
+          code: 'assembly.pose-envelope.clearance-unresolved',
+          severity: 'warning',
+          message: `Pose-envelope sample '${sample.name}' could not measure the declared ${r.minMm} mm clearance between parts '${r.a}' and '${r.b}'.`,
+          hint: `invalid-args.assembly.pose-envelope-clearance-unresolved — repair degenerate geometry or the lowering path, then re-run the envelope gate.`,
+        });
+  }
 }
 
 async function reviewPoseEnvelopeSampleClearance(
@@ -739,17 +790,27 @@ async function checkClearanceAtPose(
   loweredScene: SceneBackend | undefined,
   solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
 ): Promise<ClearancePairReport[]> {
+  const scene = await posedSceneAt(arm, poses, loweredScene, solvedPoses);
+  if (scene === undefined) return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+  try {
+    return checkClearance(scene, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+  } catch {
+    return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+  }
+}
+
+/** The assembly placed at one sample: the cached lowered scene re-posed when
+ *  possible, else a full solve and lower at those poses. */
+async function posedSceneAt(
+  arm: Assembly,
+  poses: NumericPoses,
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+): Promise<SceneBackend | undefined> {
   const reposedScene = solvedPoses === undefined
     ? undefined
     : reposedLoweredAssemblyScene(arm, loweredScene, solvedPoses);
-  if (reposedScene !== undefined) {
-    try {
-      return checkClearance(reposedScene, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
-    } catch {
-      return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
-    }
-  }
-
+  if (reposedScene !== undefined) return reposedScene;
   try {
     await initOcct();
     const scene = await arm.solvedModel(poses, { validate: 'off' });
@@ -760,10 +821,9 @@ async function checkClearanceAtPose(
     });
     const sourceId = scene.__sourceFeatureId();
     const lowered = sourceId === undefined ? undefined : result.shapes.get(sourceId);
-    if (!isSceneBackend(lowered)) return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
-    return checkClearance(lowered, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+    return isSceneBackend(lowered) ? lowered : undefined;
   } catch {
-    return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+    return undefined;
   }
 }
 

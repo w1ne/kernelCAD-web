@@ -1,0 +1,218 @@
+{
+  "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
+  "sourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
+  "savedDefault": {
+    "path": "default.glb",
+    "sha256": "f4d810982b88c6016d203f4f49a05aa68d050f9e5e4bd5f6c04c708a74bf39d8",
+    "bytes": 1080304
+  },
+  "nativeRequestsForRendering": 0,
+  "canonicalRenderer": {
+    "path": "scripts/lib/glbSoftwareRender.ts",
+    "sha256": "21be8dcfe98c02559df0a8875a0e6a05b3fc9d3b6bd7866a77c7df8c120a13c0",
+    "modified": false
+  },
+  "canonicalPreview": {
+    "path": "canonical-preview.png",
+    "options": {
+      "label": "Hydroponic grow rack · 7832 tris"
+    },
+    "defaults": {
+      "size": 512,
+      "yawDeg": 35,
+      "pitchDeg": 22
+    }
+  },
+  "qaRenderer": {
+    "sha256": "2912baaf9bdcbecb92b17aebfc8c80ee4ce3c87b1fd9bef3123e7d0273bbae66",
+    "cameraOnlyPatchSha256": "f43f0e1f1923ab26ef21a23de0b1abef1c1805b549d7470cd3d94e076edce0d3",
+    "changes": [
+      "Optional named-node selection for detail views.",
+      "Camera focus point override."
+    ],
+    "fullDefaultTriangleArrayMatchesCanonical": true
+  },
+  "defaultViews": {
+    "sheet": "default-views.webp",
+    "columns": 2,
+    "tilePixels": 640,
+    "panels": [
+      {
+        "name": "default-front",
+        "options": {
+          "size": 768,
+          "yawDeg": 0,
+          "pitchDeg": 0,
+          "label": "Grow rack / front"
+        },
+        "triangles": 7832
+      },
+      {
+        "name": "default-right",
+        "options": {
+          "size": 768,
+          "yawDeg": 90,
+          "pitchDeg": 0,
+          "label": "Grow rack / right"
+        },
+        "triangles": 7832
+      },
+      {
+        "name": "default-top",
+        "options": {
+          "size": 768,
+          "yawDeg": 0,
+          "pitchDeg": 90,
+          "label": "Grow rack / top"
+        },
+        "triangles": 7832
+      },
+      {
+        "name": "default-iso",
+        "options": {
+          "size": 768,
+          "yawDeg": 35,
+          "pitchDeg": 22,
+          "label": "Grow rack / iso"
+        },
+        "triangles": 7832
+      }
+    ]
+  },
+  "geometryDetails": {
+    "sheet": "geometry-details.webp",
+    "columns": 2,
+    "tilePixels": 640,
+    "panels": [
+      {
+        "name": "lid-slot-top",
+        "options": {
+          "size": 768,
+          "yawDeg": 0,
+          "pitchDeg": 90,
+          "label": "Slotted lid / selected actual GLB part"
+        },
+        "triangles": 32,
+        "selectionScope": "Only gutter-lid-2-0; selection reveals the annular opening. Geometry unchanged."
+      },
+      {
+        "name": "channel-end",
+        "options": {
+          "size": 768,
+          "yawDeg": 90,
+          "pitchDeg": 0,
+          "label": "Open channel end / selected actual GLB part"
+        },
+        "triangles": 28,
+        "selectionScope": "Only gutter-2-0; orthogonal view reveals U section. Geometry unchanged."
+      },
+      {
+        "name": "plant-slot-detail",
+        "options": {
+          "size": 768,
+          "yawDeg": 20,
+          "pitchDeg": 55,
+          "frameHeightM": 0.3,
+          "focusM": [
+            0,
+            1.7,
+            0.27
+          ],
+          "label": "Planting slot / selected parts, camera crop"
+        },
+        "triangles": 108,
+        "selectionScope": "Only head-204,gutter-2-0,gutter-lid-2-0; camera crop at middle planting station. No geometry repositioned."
+      },
+      {
+        "name": "knee-brace-detail",
+        "options": {
+          "size": 768,
+          "yawDeg": 90,
+          "pitchDeg": 0,
+          "frameHeightM": 0.55,
+          "focusM": [
+            -1.2,
+            0.26,
+            0.29
+          ],
+          "label": "Knee brace below gutter / selected parts"
+        },
+        "triangles": 108,
+        "selectionScope": "Only end-brace--1200-120,end-tie--1200-120,upright--1200--380,beam-0--380,gutter-0-0,gutter-lid-0-0; camera crop at left front knee. Frame intersections remain visible."
+      },
+      {
+        "name": "post-leaf-top",
+        "options": {
+          "size": 768,
+          "yawDeg": 0,
+          "pitchDeg": 90,
+          "frameHeightM": 0.32,
+          "focusM": [
+            0,
+            0.42,
+            0.32
+          ],
+          "label": "Middle post and crop / selected parts"
+        },
+        "triangles": 120,
+        "selectionScope": "Only upright-0--380,head-4,gutter-0-0,gutter-lid-0-0; top camera crop. Source/mesh checks establish clearance; image is supporting visual evidence."
+      },
+      {
+        "name": "default-iso",
+        "options": {
+          "size": 768,
+          "yawDeg": 35,
+          "pitchDeg": 22,
+          "label": "Grow rack / iso"
+        },
+        "triangles": 7832,
+        "selectionScope": "All default triangles."
+      }
+    ]
+  },
+  "parameterStates": {
+    "sheet": "parameter-states.webp",
+    "camera": {
+      "size": 512,
+      "yawDeg": 35,
+      "pitchDeg": 22,
+      "frameHeightM": 4.2,
+      "focusM": [
+        0.169,
+        1.365,
+        0
+      ]
+    },
+    "autoFit": false,
+    "all10FullSceneExtractorHashesMatch": true,
+    "allVerticesWithinImageAndAboveLabel": true,
+    "scope": "Ten accepted saved GLBs; fixed focus, projection and frame height; no per-state fit."
+  },
+  "orbit": {
+    "path": "grow-rack-orbit.mp4",
+    "size": 640,
+    "frames": 48,
+    "fps": 8,
+    "durationSeconds": 6,
+    "yawStartDeg": 35,
+    "yawStepDeg": 7.5,
+    "pitchDeg": 22,
+    "frameHeightM": 3.8,
+    "focusM": [
+      0.13,
+      1.05,
+      0
+    ],
+    "label": "Grow rack - 7832 tris - saved GLB",
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "decodedReviewFrames": [
+      0,
+      12,
+      24,
+      36
+    ],
+    "decodedReviewSheet": "decoded-orbit.webp"
+  },
+  "scope": "Saved-GLB software renders. Detail views select parts and change camera only. Geometry, world transforms and colors are unchanged. Canonical preview uses the repository renderer without the camera extension."
+}

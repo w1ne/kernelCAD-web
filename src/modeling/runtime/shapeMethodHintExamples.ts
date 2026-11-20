@@ -31,7 +31,7 @@ export const SHAPE_METHOD_HINT_EXAMPLES: Readonly<Record<string, string>> = {
   mirror: "plate = plate.mirror({ plane: 'yz', offset: -1 })",
   patternLinear: 'plate = plate.patternLinear({ count: 3, direction: [1, 0, 0], spacing: 50 })',
   patternCircular: 'plate = plate.patternCircular({ count: 4, axis: [0, 0, 1] })',
-  color: "plate = plate.color('red')",
+  color: "plate = plate.color('#ff0000')",
   finish: "plate = plate.finish('pla')",
 };
 
