@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
-import { optimalBoundsOf } from './backendBounds';
+import { optimalBoundsOf, rationalFaceBounds } from './backendBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
@@ -1120,12 +1120,15 @@ export class OcctBackend implements ShapeBackend {
       if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
+    const rational = rationalFaceBounds(this.shape.wrapped);
+    if (rational) return rational;
     const bb = this.shape.boundingBox;
     const [minP, maxP] = bb.bounds;
     // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
     // exact-axis-aligned primitives report integral coordinates. NOTE: even
     // gap-corrected, Bnd_Box stays padded on curved B-spline faces (control-
-    // point hull); pass { exact: true } for a tessellation-tight box.
+    // point hull; strongly rational faces are measured exactly above); pass
+    // { exact: true } for a tessellation-tight box.
     const wrapped = (bb as unknown as { wrapped?: { GetGap?: () => number } }).wrapped;
     const gap =
       wrapped && typeof wrapped.GetGap === 'function' ? wrapped.GetGap() : 0;

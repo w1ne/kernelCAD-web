@@ -7,6 +7,7 @@
 
 import { getOC } from 'replicad';
 import type { Vec3 } from '../../../shared/intent/types';
+import { hasStronglyRationalFace } from './volumeIntegration';
 
 /** Optimal AABB of a raw TopoDS shape, or undefined when OCCT cannot build
  *  one. Bounds are diagnostic sugar: a failure must not fail the caller. */
@@ -19,6 +20,20 @@ export function optimalBoundsOf(shape: unknown): { min: Vec3; max: Vec3 } | unde
  *  A tessellated hull can fall inside a curved face; this call does not. */
 export function toleranceInclusiveBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
   return readOptimalBox(shape, true);
+}
+
+/** Exact, tolerance-inclusive AABB when the raw shape has a strongly rational
+ *  B-spline face; otherwise undefined. On those faces the default `Bnd_Box`
+ *  follows the weighted control hull: `cylinder(1, 1).scale([2, 1, 1])` read
+ *  6 x 3.46 x 1 mm instead of 4 x 2 x 1 mm. The exact box costs 1 to 35 ms
+ *  on such shapes. Thread faces are not gated: the hull is 10 to 22 % large
+ *  there, but the exact box costs 0.45 to 1.1 s. */
+export function rationalFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
+  try {
+    return hasStronglyRationalFace(shape) ? toleranceInclusiveBounds(shape) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function readOptimalBox(
