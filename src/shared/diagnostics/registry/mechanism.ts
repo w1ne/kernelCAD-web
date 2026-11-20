@@ -23,7 +23,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.interpenetration': {
     hintTemplate:
-      "Two parts overlap at a sampled pose. Remove this pair from the solvedModel ignore list, then add clearance, reduce mate travel, or correct the geometry so every sampled pose stays collision-free. An ignore declaration does not waive the mechanism collision check.",
+      "Two parts overlap at a sampled pose. The sweep moves each uncoupled mate on its own; if the two parts ride on mates that are geared or linked to move together, declare arm.coupleMates(driven, { source, ratio, offset? }) so every sample moves them together. Otherwise remove this pair from the solvedModel ignore list, then add clearance, reduce mate travel, or correct the geometry so every sampled pose stays collision-free. An ignore declaration does not waive the mechanism collision check.",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
@@ -122,7 +122,7 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A joint pivot lies outside its mated body BREP surface at rest pose and the mated rigid groups have no bearing contact within tolerance anywhere — the link is floating on the joint it pivots on.',
+    description: 'At rest, a joint pivot is more than 1 mm (plus any declared clearance bore) from the material of one side, and the two sides have no bearing contact within 1 mm near the axis — the link is floating on the joint it pivots on. Each side is a rigid group: the mated part plus the parts fastened to it that touch it, so a servo on one link and its horn on the other carry a servo joint.',
   },
   'mechanism.joint-mesh-unverified': {
     hintTemplate:
@@ -203,7 +203,7 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'At the rest pose the two parts joined by a mate are separated by more than the contact tolerance — the joint is declared but nothing physically seats one part on the other.',
+    description: 'At the rest pose the two parts joined by a mate are separated by more than the 1 mm contact tolerance — the joint is declared but nothing physically seats one part on the other. A moving mate is measured between rigid groups (each mated part plus the parts fastened to it that touch it); a fastened mate between its own two parts.',
   },
   // Motion-load study (`src/kinematic/motionLoad.ts`, verify({ check: 'motion-load' })).
   'mechanism.load.torque-exceeded': {

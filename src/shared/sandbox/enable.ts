@@ -167,7 +167,7 @@ function scriptAssetCheck(requested: string, absPath: string): void {
   const verdict = checkSandboxPath(absPath, 'read', cfg);
   if (verdict.allowed) return;
   throw sandboxPathArgError({
-    api: 'script asset (lib.fromSTEP / fromSTL / fromDXF / referenceImage / font)',
+    api: 'script asset (lib.fromSTEP / fromSTL / from3MF / fromDXF / referenceImage / font)',
     arg: 'path',
     got: requested,
     detail: shortRefusal(verdict),

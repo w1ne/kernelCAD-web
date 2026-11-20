@@ -47,6 +47,12 @@ export interface StandardParts {
     lengthMm: number;
     detail?: FastenerDetail;
   }): Promise<Shape>;
+  /** ISO 4014 partial-thread hexagon head bolt. Lengths below the standard's minimum are ISO 4017 (`boltHex`). */
+  boltHexPartial(args: {
+    thread: 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: number;
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
   setScrew(args: {
     thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
     lengthMm: number;
@@ -78,6 +84,10 @@ export interface StandardParts {
   /** Community reference geometry, CC-BY-SA-4.0; exact supplier fit unverified. */
   sg90(): Promise<Shape>;
   sg90HornSingleArm(): Promise<Shape>;
+  /** Datasheet-modelled envelope (not a manufacturer model); also covers MG996R. */
+  mg995(): Promise<Shape>;
+  /** Datasheet-modelled envelope (not a manufacturer model). */
+  mg90s(): Promise<Shape>;
   nema17(): Promise<Shape>;
   nema23(): Promise<Shape>;
   pinHeader254(args: {
@@ -100,6 +110,8 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
       placePart(ctx, { family: 'flat-head-countersunk', thread, lengthMm, detail }),
     boltHex: ({ thread, lengthMm, detail }) =>
       placePart(ctx, { family: 'hex-head-bolt', thread, lengthMm, detail }),
+    boltHexPartial: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'hex-head-bolt-partial', thread, lengthMm, detail }),
     setScrew: ({ thread, lengthMm, detail }) =>
       placePart(ctx, { family: 'set-screw', thread, lengthMm, detail }),
     rodThreaded: ({ thread, lengthMm, detail }) =>
@@ -122,6 +134,8 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
     bearing6800: () => fetch('bearing-6800'),
     sg90: () => fetch('sg90-servo'),
     sg90HornSingleArm: () => fetch('sg90-horn-single-arm'),
+    mg995: () => fetch('mg995-servo'),
+    mg90s: () => fetch('mg90s-servo'),
     nema17: () => fetch('nema-17'),
     nema23: () => fetch('nema-23'),
     pinHeader254: ({ pins, angle }) =>

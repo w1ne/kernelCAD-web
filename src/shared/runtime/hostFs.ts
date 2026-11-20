@@ -5,7 +5,7 @@
 //
 // A handful of modeling features are only meaningful when the script runs next
 // to a real filesystem: `referenceImage()` checks the image exists and reads
-// its pixel dimensions, `lib.fromSTEP` / `lib.fromSTL` read part files,
+// its pixel dimensions, `lib.fromSTEP` / `lib.fromSTL` / `lib.from3MF` read part files,
 // `sketch.text({ font: fontPath(...) })` reads a TTF. Those code paths used to
 // `import { existsSync } from 'node:fs'` DIRECTLY, which dragged `node:fs` into
 // the static import graph of `src/modeling/api.ts` — i.e. into every browser

@@ -3,6 +3,7 @@
 // src/agent/mcp/edits/projectCurve.test.ts
 import { describe, it, expect } from 'vitest';
 import { addProjectCurve } from './projectCurve';
+import type { ProjectCurveSourcePlane } from '../../../shared/intent/projectCurveRecord';
 
 const SQUARE = [
   { kind: 'moveTo' as const, x: 0, y: 0 },
@@ -10,6 +11,10 @@ const SQUARE = [
   { kind: 'lineTo' as const, x: 2, y: 2 },
   { kind: 'lineTo' as const, x: 0, y: 2 },
   { kind: 'close' as const },
+];
+const OPEN_LINE = [
+  { kind: 'moveTo' as const, x: -4, y: 0 },
+  { kind: 'lineTo' as const, x: 4, y: 0 },
 ];
 
 describe('addProjectCurve serializer', () => {
@@ -57,21 +62,52 @@ describe('addProjectCurve serializer', () => {
     expect(res.error ?? '').toMatch(/commands/i);
   });
 
-  it('rejects asEdge: true as unimplemented rather than emitting non-evaluating code', () => {
+  it('emits an awaited open projection with explicit placement and direction', () => {
     const res = addProjectCurve({
       code: 'return cylinder(20, 5);',
       target: 'body',
-      commands: SQUARE,
+      commands: OPEN_LINE,
       face: 'top',
       asEdge: true,
+      sourcePlane: { origin: [0, 0, 50], normal: [0, 0, 1], xAxis: [1, 0, 0] },
+      direction: [0, 0, -1],
+      bindAs: 'edges',
     });
+    expect(res.ok).toBe(true);
+    expect(res.new_code).toContain('const edges = await body.projectCurve({');
+    expect(res.new_code).toContain('asEdge: true');
+    expect(res.new_code).toContain('sourcePlane: { origin: [0, 0, 50], normal: [0, 0, 1], xAxis: [1, 0, 0] }');
+    expect(res.new_code).toContain('direction: [0, 0, -1]');
+  });
+
+  it('requires open commands and explicit placement for asEdge', () => {
+    const missingPlacement = addProjectCurve({
+      code: 'return cylinder(20, 5);', target: 'body', commands: OPEN_LINE, face: 'top', asEdge: true,
+    });
+    expect(missingPlacement.ok).toBe(false);
+    expect(missingPlacement.error ?? '').toMatch(/sourcePlane and direction/i);
+
+    const closedCommands = addProjectCurve({
+      code: 'return cylinder(20, 5);', target: 'body', commands: SQUARE, face: 'top', asEdge: true,
+      sourcePlane: { origin: [0, 0, 50], normal: [0, 0, 1], xAxis: [1, 0, 0] },
+      direction: [0, 0, -1],
+    });
+    expect(closedCommands.ok).toBe(false);
+    expect(closedCommands.error ?? '').toMatch(/must not include close/i);
+  });
+
+  it('rejects malformed runtime placement objects without throwing', () => {
+    const res = addProjectCurve({
+      code: 'return cylinder(20, 5);',
+      target: 'body',
+      commands: OPEN_LINE,
+      face: 'top',
+      asEdge: true,
+      sourcePlane: null as unknown as ProjectCurveSourcePlane,
+      direction: [0, 0, -1],
+    });
+
     expect(res.ok).toBe(false);
-    expect(res.error ?? '').toMatch(/asEdge/i);
-    expect(res.error ?? '').toMatch(/not implemented/i);
-    // The rejection must not blame OCCT. `BRepProj_Projection` ships in
-    // kcad-v0.25.0 and is verified callable by
-    // `tests/unit/backends/occt/projectionBindingAvailable.test.ts`. Telling an
-    // agent the kernel lacks the symbol sends it to rewrite the wrong layer.
-    expect(res.error ?? '').not.toMatch(/not bundled|BRepProj/i);
+    expect(res.error).toMatch(/sourcePlane vectors and direction must be finite Vec3/i);
   });
 });

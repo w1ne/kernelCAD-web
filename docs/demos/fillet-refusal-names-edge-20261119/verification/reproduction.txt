@@ -1,0 +1,15 @@
+Base: origin/develop 280384613, 2026-11-19.
+
+Before the change, a refused fillet gave one size for the whole selection and
+no edge. Observed refusal for
+  box(100, 70, 12).subtract(box(20, 70, 6).translate(0, 0, 3)).fillet(5)
+
+  code:    feature.kernel-failed (fillet_1)
+  message: OCCT fillet failed (radius 5 mm): non-Error C++ exception during
+           Build. The largest radius that builds on these 24 edges is 1.48 mm.
+  details: param, requestedValue, maxFeasibleValue, maxFeasibleRadius,
+           probeAttempts, edgeCount
+
+No edge ID, selector or locator was present in the message, the hint, the
+details or refuse.location. The mounting plate with .fillet(40, corner edges)
+gave the same shape of refusal (short-edges-skipped, 34.8 mm, 4 edges).

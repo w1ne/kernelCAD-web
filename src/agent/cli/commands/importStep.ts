@@ -9,7 +9,7 @@ import { Command } from 'commander';
 import { importStepAssembly } from '../../../kernel/import/stepAssemblyImport';
 import { StepAssemblyImportError } from '../../../kernel/import/stepAssemblyTypes';
 import { readStepExternalDocuments } from '../../../kernel/import/stepExternalDocuments';
-import { validateStepBundleName, writeStepBundle, type WrittenStepBundle } from '../../../kernel/import/stepBundleWriter';
+import { renamedStepPartWarning, validateStepBundleName, writeStepBundle, type WrittenStepBundle } from '../../../kernel/import/stepBundleWriter';
 
 export interface ImportStepCliInput {
   file: string;
@@ -64,7 +64,7 @@ export async function runImportStepCli(input: ImportStepCliInput): Promise<Impor
       assemblyName,
       snapshot,
     });
-    return { exitCode: 0, ok: true, bundle, warnings: snapshot.warnings };
+    return { exitCode: 0, ok: true, bundle, warnings: [...snapshot.warnings, ...bundle.renamedParts.map(renamedStepPartWarning)] };
   } catch (error) {
     if (error instanceof StepAssemblyImportError) {
       return failure(1, `step.${error.reason}`, error.message, error.sourcePath);

@@ -55,6 +55,8 @@ export interface Connector {
   readonly jointClearanceRadius?: number;
   /** Fluid port data; only valid on `axis` connectors. */
   readonly port?: FluidPort;
+  /** Set when the owning part was instanced from a named configuration. */
+  readonly configuration?: { readonly source: string; readonly name: string };
 }
 
 export interface MakeConnectorInput {
@@ -111,7 +113,8 @@ function assertNumericOrigin(value: unknown): void {
     gotText: Array.isArray(value) ? `[${value.map(describeOriginComponent).join(', ')}]` : describeOriginComponent(value),
     requires: "three finite numbers [x, y, z] in the part's own frame",
     example: VEC3_ORIGIN_EXAMPLE,
-    hint: 'A connector origin cannot hold a param. To move a connector with a param, build the part in its own frame and place it with a param in `at`: asm.part(name, shape, { at: [x, 0, 0] }).',
+    hint: 'A connector origin cannot hold a param. To move a connector with a param, build the part in its own frame and place it with a param in `at`: asm.part(name, shape, { at: [x, 0, 0] }). ' +
+      'In a .kcad.ts script, Number(x) gives the current value of the param as a plain number; an edit to the param then runs the script again.',
   });
 }
 

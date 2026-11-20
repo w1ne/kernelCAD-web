@@ -54,7 +54,7 @@ let bracket: Awaited<ReturnType<typeof exportPdf>>;
 beforeAll(async () => {
   await initOcct();
   dir = mkdtempSync(join(tmpdir(), 'kernelcad-pdf-drawing-'));
-  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B' });
+  bracket = await exportPdf(BRACKET, { title: 'L mounting bracket', partName: 'BRK-001', material: 'AlMg3', revision: 'B', autoAnnotate: true });
 }, 180_000);
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -198,6 +198,19 @@ describe('pdf-drawing: views and annotations', () => {
     expect(hidden[0].dash.map(d => Math.round(d * 100) / 100)).toEqual([1.6, 0.8]);
   });
 
+  it('suppresses hidden paths in the exported PDF when requested', async () => {
+    const standard = await exportPdf(BRACKET);
+    const clean = await exportPdf(BRACKET, { hiddenLines: false });
+    const isVisible = (path: PdfPageVectors['paths'][number]) =>
+      path.stroked && Math.abs(path.widthMm - 0.5) < 1e-3 && path.dash.length === 0;
+    const isHidden = (path: PdfPageVectors['paths'][number]) =>
+      path.stroked && Math.abs(path.widthMm - 0.25) < 1e-3 && path.dash.length > 0;
+    expect(clean.page.paths.filter(isHidden)).toHaveLength(0);
+    expect(standard.page.paths.filter(isHidden).length).toBeGreaterThan(0);
+    expect(clean.page.paths.filter(isVisible)).toEqual(standard.page.paths.filter(isVisible));
+    expect(textsOf(clean.page)).toEqual(textsOf(standard.page));
+  });
+
   it('carries the automatic dimensions, hole callouts and GD&T', () => {
     const texts = textsOf(bracket.page).join(' | ');
     expect(texts).toContain('4× Ø6.6 THRU');
@@ -216,6 +229,16 @@ describe('pdf-drawing: views and annotations', () => {
     expect(report.overlapped).toBe(0);
     expect(report.placed).toBe(report.annotations.length);
     expect(bracket.diagnostics.filter(d => d.code === 'drawing.annotation.overlap')).toEqual([]);
+  });
+
+  it('draws 90 model millimetres as 18 paper millimetres at 1:5', async () => {
+    const { page } = await exportPdf(BRACKET, { views: ['front'], scale: 0.2 });
+    expect(textsOf(page)).toContain('1:5');
+    const label = textAt(page, '90');
+    const dimensionLines = page.paths.filter(p => p.points.length === 2
+      && Math.abs(p.points[0][1] - p.points[1][1]) < 1e-6
+      && Math.abs(p.points[0][1] - label.y) < 3);
+    expect(dimensionLines.some(p => Math.abs(Math.abs(p.points[1][0] - p.points[0][0]) - 18) < 0.1)).toBe(true);
   });
 
   it('prints the scale the views were drawn at: the 90 mm base is 90 mm long on a 1:1 sheet', () => {
@@ -313,7 +336,7 @@ describe('pdf-drawing: public entry points', () => {
       file: BRACKET_FILE,
       format: 'pdf-drawing',
       output_path: out,
-      options: { format: 'pdf-drawing', revision: 'C', date: DATE },
+      options: { format: 'pdf-drawing', revision: 'C', date: DATE, autoAnnotate: true },
     }) as { ok: boolean; byte_count: number; format: string; drawing_report?: { placed: number } };
     expect(r.ok).toBe(true);
     expect(r.format).toBe('pdf-drawing');

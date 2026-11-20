@@ -1,0 +1,69 @@
+Date: 2026-11-19. Scope: local measurement. No deployed runtime is claimed.
+
+Method: capture_demo.py runs one STL export per vitest worker process through
+runAndExport and reads process.resourceUsage().maxRSS. The worker starts at
+about 267 MB. Before = src/ of c8a11fc32. After = 8aa4fa5cc.
+
+Peak RSS, before -> after (measurements.before.json, measurements.after.json):
+
+1. examples/robot-arm/compact-supported-arm.kcad.ts, fused assembly,
+   69 688 triangles: 648 MB -> 587 MB.
+2. examples/gallery/gearfinity-planetary-stage.kcad.ts, 56 782 triangles:
+   798 MB -> 684 MB. Both runs carry the same two warnings
+   (export.geometry-quality.short-edges, export.mesh.fused-seam-fallback).
+3. examples/bracket-with-hole.kcad.ts, 98 864 triangles: 555 MB -> 390 MB.
+4. Dense plate with 36 spheres (source in capture_demo.py), 636 284
+   triangles, 31.8 MB STL: 1284 MB -> 765 MB. The OCCT wasm heap is 69 MB in
+   both runs.
+
+Validity: each export has no error diagnostic, the header triangle count
+equals the record count, and the SHA-256 of the triangle data (bytes 80 to
+end) is equal before and after for all four parts.
+
+Regression test: stlExportPeakMemory1585.test.ts meshes a 644 040-triangle
+compound and limits the extra peak RSS to 300 MB. Three runs each on one
+machine: 459, 603 and 755 MB before; 83, 178 and 197 MB after. A second test
+proves the new read-back and weld give the same vertices and triangles as
+replicad's Face.triangulation() and the string-keyed weld.
+
+Tests: 14 passed in the three focused files (test-output.txt).
+Video: demo.mp4 inspected at 2 s, 7 s and 12 s (video-contact-sheet.png).
+
+Limits: peak RSS depends on garbage-collection timing; repeated runs of the
+dense plate after the fix gave 716 to 781 MB. The numbers are from a vitest
+worker, not from the production evaluator, whose start RSS and heap flags
+differ. The v6 arm is not in this repository and was not checked.
+examples/robot-arm/so100/so100-arm.kcad.ts fails before and after with "This
+shape has not type, it is null" and was not used. The fuse of a multi-part
+Scene and the lowering step are unchanged; their memory is outside this fix.
+
+Addendum, 2026-11-19: evaluator-like measurement and second fix.
+
+Method: evaluator-harness/ forks one Node child per run with the vendor
+evaluator flags (--max-old-space-size=768 --no-wasm-tier-up
+--no-wasm-dynamic-tiering, KERNELCAD_MCP_MODE=hosted). The child loads an
+esbuild bundle of src/agent/mcp/toolRegistry.ts and runs callMcpTool, as the
+evaluator child does. Peak RSS is VmHWM of the child. This is a local copy of
+the evaluator process settings, not the deployed evaluator. All values are in
+evaluator-measurements.json. Base = c8a11fc32, first fix = 758f4cac7.
+
+Real assembly: examples/gallery/turbojet-engine.kcad.ts, STL export through
+the export tool, 3 611 538 triangles, 180.6 MB STL, fused-seam fallback path.
+- Base: the child aborted at the JavaScript heap limit; highest sample 1269 MB.
+- First fix: export succeeded; peak 1224 and 1227 MB (above the 1024 MB cap).
+- Final: export succeeded; peak 827, 826 and 837 MB in three runs.
+- Triangle data SHA-256 is equal for the first fix and the final commit.
+
+Where the memory went (trace of the first fix): the export tool copied the
+180 MB STL before the write; the fallback held the torn fused STL while it
+meshed the parts again; the shells were boxed arrays, then one concatenated
+copy.
+
+Other parts, final commit, one run each (evaluate_script, then export):
+arm 367 MB, gear stage 495 MB, bracket 291 MB, dense plate 474 MB,
+desktop-3axis-mates (562 804 triangles) 506 MB, kspray-klift 483 MB,
+pocket-watch-v2 421 MB. Triangle data SHA-256 equals the first fix for each.
+
+Open finding, not fixed here: evaluate_script of the turbojet example aborts
+at the 768 MB heap limit (highest sample 1373 MB) on the base and on the first
+fix. This is the evaluate step, not the STL export.

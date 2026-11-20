@@ -13,10 +13,11 @@ import type { Vec3, Vec3Param } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
-import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type RecomputeOptions } from '../compute/recomputeEngine';
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
+import { resolveFeatureAppearance } from './featureAppearance';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, wrapArcPoints, writeHelixTubeRings, type WrapCylinderWorld } from './tendonSweepMesh';
 import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
@@ -38,7 +39,6 @@ import {
   planFreshLoweredSeeds, releaseBorrowedTriangulation,
   type FreshLowerSession,
   reEmitSeededFeatureMeshes,
-  resolvePerFaceMaterialOverrides,
   splitConnectorRef,
   uniqueStrings,
   type MeshBoundsAccumulator,
@@ -178,15 +178,10 @@ export type ShadowedAttribute = 'material' | 'color';
  *  `npm run capture-demo`). The leaf attribution IS visible during the staged
  *  build animation while predecessor groups are still fading.
  *
- *  Authors who want a multi-material/multi-color static render today must
- *  either:
- *    (a) split the construction so the attributed leaf is not unioned
- *        into a parent that also carries its own attribution, OR
- *    (b) author the leaf as a separate `assemblyPart` (assembly fan-out path
- *        preserves per-part attribution in the static render).
- *
- *  Tracked as a follow-up code fix in
- *  `docs/specs/per-leaf-material-survives-static-render.md`. */
+ *  Without an attribution on the head, a union keeps each member's own
+ *  material/color on the faces that came from it (`memberMaterialsByFace`),
+ *  so the fix is to drop the head's attribution, not to split the body into
+ *  one assembly part per colour. */
 export interface AttributeShadowingWarning {
   /** Which attribute was shadowed. Lets a single consumer render both. */
   attribute: ShadowedAttribute;
@@ -1137,27 +1132,9 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
 
-  const color = ctx.colorByFeatureId.get(event.featureId);
-  const material = ctx.materialByFeatureId.get(event.featureId);
-
-  // Per-face material resolution. For each label in materialByLabel,
-  // resolve label → Face via the same machinery the edge-feature
-  // lowerers use (resolveFaceLabelToFace), hash the matched face, then
-  // walk `shape.faces` (the iteration source for meshShape's faceId
-  // integer) to find the index whose hash matches. Attach the PBR to
-  // that integer index. Unresolved labels surface a soft warning;
-  // unmatched faces fall back to the shape-level `material`.
-  let materialByFaceId: Record<number, PBRMaterial> | undefined;
-  const perFaceMap = ctx.materialByLabelByFeatureId.get(event.featureId);
-  if (perFaceMap !== undefined && event.shape instanceof OcctBackend) {
-    materialByFaceId = resolvePerFaceMaterialOverrides(
-      event.featureId,
-      event.shape,
-      perFaceMap,
-      ctx.records,
-      ctx.warnings,
-    );
-  }
+  // Whole-body appearance plus per-face overrides: union() member finishes
+  // and `.material({ face })` labels (see featureAppearance.ts).
+  const { color, material, materialByFaceId } = resolveFeatureAppearance(event.featureId, event.shape, ctx);
 
   attachMaterialUVs(meshed.faces, material);
   attachPlanarUVs(meshed.faces);

@@ -8,6 +8,12 @@ import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { resolveColor } from '../../shared/render/palette';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
+import type { TextureProjection } from '../../shared/intent/textureProjection';
+import { isTextureProjection } from '../../shared/intent/textureProjection';
+import type { TypedParamRef } from '../../shared/runtime/paramRef';
+import { isTypedParamRef } from '../../shared/runtime/paramRef';
+import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
+import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { CaptureSession } from './captureSession';
 
 type MaterialCallOpts = PBRMaterial & { face?: string };
@@ -293,4 +299,75 @@ export function cleanPbrMaterial(opts: PBRMaterial, owner: string, warnings: Sof
   const textures = cleanMaterialTextures(opts, owner);
   if (textures !== undefined) state.cleaned.textures = textures;
   return state.cleaned;
+}
+
+/**
+ * Expand a `.finish()` name to PBR. A finish token wins when the name is both
+ * (steel, pla, abs, nylon map to the identically named token anyway).
+ * Otherwise an engineering material name applies its registry default finish,
+ * so one material vocabulary covers mass, FEA and appearance. `expandFinish`
+ * throws `feature.finish.unknown-token` (with this shape's id) for an unknown
+ * name.
+ */
+export function resolveFinishPbr(
+  name: string,
+  color: string | TypedParamRef<string> | undefined,
+  id: string,
+): PBRMaterial {
+  let token = name;
+  if (!isFinishToken(name)) {
+    const resolved = tryResolveMaterial(name);
+    if (resolved.ok) {
+      if (resolved.material.finish === undefined) {
+        throw new KernelError(
+          'feature.finish.unknown-token',
+          unknownFinishMessage(name),
+          id,
+          `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
+            'Pass a finish token such as plastic-glossy, or set the look with .color().',
+        );
+      }
+      token = resolved.material.finish;
+    }
+  }
+  return expandFinish(token, color !== undefined ? { color: isTypedParamRef(color) ? color.value : color } : undefined, id);
+}
+
+export function assertWrapTextureArgs(imageRef: unknown, projection: unknown, id: string): void {
+  if (!isTextureRef(imageRef)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
+      id,
+      'Pass { path: "<file-or-url>" } as the first argument.',
+    );
+  }
+  if (!isTextureProjection(projection)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
+      id,
+      "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
+    );
+  }
+}
+
+/** Existing `metadata.material.baseColor` on a record, so a texture wrap keeps the tint. */
+export function existingMaterialBaseColor(session: CaptureSession, id: string): string | undefined {
+  const record = session.getRecords().find(r => r.id === id);
+  return (record?.metadata as { material?: PBRMaterial } | undefined)?.material?.baseColor;
+}
+
+/** Attach a wrap projection next to the albedo texture `.material()` just wrote. */
+export function attachTextureProjection(session: CaptureSession, id: string, projection: TextureProjection): void {
+  const record = session.getRecords().find(r => r.id === id);
+  if (record === undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: feature record '${id}' not found in session.`,
+      id,
+      'Call .wrapTexture() on a Shape produced by the current session.',
+    );
+  }
+  (record.metadata as { material: PBRMaterial }).material.textureProjection = projection;
 }

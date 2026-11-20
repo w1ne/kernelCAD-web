@@ -62,7 +62,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ' +
         'ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet "auto" / "auto-ansi" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; ' +
         'projection "third" (default) or "first" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, ' +
-        'settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). ' +
+        'settable through options.title / partName / material / revision / date; overall dimensions are the default; request inferred callouts and tolerances explicitly with options.autoAnnotate). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
@@ -107,7 +107,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           options: {
             type: 'object',
             description:
-              "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
+              "target:'model' — optional per-format options bag. The top-level format selects these options. If supplied, options.format must match it. " +
               'step: { unit?: "mm"|"cm"|"in", verify?: boolean } (verify defaults to true and checks B-rep validity plus mesh watertightness; false skips both). ' +
               'stl: { verify?: boolean, tolerance?: mm (finite, >= 0.001; absolute sampled chord-deviation target), angularToleranceDeg?: degrees }. ' +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance?, section?: { axis: "x"|"y"|"z", at: mm }, layout?: "per-part"|"sheet" }. ' +
@@ -119,7 +119,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'obj: { tolerance?: mm (finite, >= 0.001), angularToleranceDeg?: degrees }; usd writes ASCII USDA (millimeter, Z-up). ' +
               'ply: { encoding?: "binary"|"ascii" (default "binary" = binary_little_endian), normals?: boolean (default true; vertices split at creases over 30°), colors?: "vertex"|"face"|"none" (default "vertex": uchar red/green/blue per vertex; "face" puts them on the face element) }; any other key or value fails with export.ply.invalid-options. ' +
               'svg-drawing: { views?: ["front"], sheet?: "a4"|"a3" (or any pdf-drawing sheet), layoutRepair?: boolean, projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
-              'views:["front"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. ' +
+              'Pass views:["front"], ["top"], or ["left"] for one centred orthographic view in SVG or PDF; omit views for four views. Single-view sheets require annotations on the selected view and reject isometric balloons and exploded overlays. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '

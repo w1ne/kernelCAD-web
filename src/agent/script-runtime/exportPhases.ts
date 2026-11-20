@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync } from '../../kernel/backends/occt/sceneStepExport';
+import { exportShapeToSTEPAsync, stepBodyName } from '../../kernel/backends/occt/singleBodyStepExport';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { exportSceneDxf } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
@@ -11,6 +13,7 @@ import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportP
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
+import { memberMaterialsByFace } from '../../kernel/backends/occt/memberMaterials';
 import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
@@ -19,6 +22,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
 import { validateExportMeshToleranceOptions } from '../../kernel/backends/occt/backendMesh';
+import type { WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
@@ -666,18 +670,9 @@ async function exportFusedSceneStl(
   featureCount: number,
   options?: Extract<ExportOptions, { format: 'stl' }>,
 ): Promise<ExportResult> {
-  const exported = await exportStlWithOptions(fused, options);
+  const exported = await exportStlWithOptions(fused, options, options?.verify === false);
   if (options?.verify !== false && !exported.report.ok) {
-    return exportFusedSeamFallback(
-      worldParts,
-      exported.bytes,
-      exported.report,
-      targetId,
-      diagnostics,
-      featureCount,
-      options,
-      exported.mesh_deviation,
-    );
+    return fusedSeamFallback(worldParts, fused, exported.report, targetId, diagnostics, featureCount, options);
   }
   const toleranceFailure = meshToleranceFailure(exported.mesh_deviation, targetId);
   return {
@@ -686,6 +681,22 @@ async function exportFusedSceneStl(
     diagnostics: [...diagnostics, ...(toleranceFailure === undefined ? [] : [toleranceFailure])],
     ...(exported.mesh_deviation === undefined ? {} : { mesh_deviation: exported.mesh_deviation }),
   };
+}
+
+/** The fallback meshes every part again, so the torn fused STL is released
+ *  first. It is written again only when the per-part shells do not close either. */
+function fusedSeamFallback(
+  worldParts: WorldFramePart[],
+  fused: OcctBackend,
+  fusedReport: WatertightReport,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  options?: Extract<ExportOptions, { format: 'stl' }>,
+): Promise<ExportResult> {
+  return exportFusedSeamFallback(
+    worldParts, () => exportStlWithOptions(fused, options), fusedReport, targetId, diagnostics, featureCount, options,
+  );
 }
 
 function disposeIntermediateShapes(temps: readonly OcctBackend[]): void {
@@ -743,7 +754,7 @@ export async function exportSingleShape(
     case 'gcode':
       return exportSingleGcode(input, shape, targetId, run, diagnostics, featureCount);
     case 'step':
-      return exportSingleStep(input, shape, targetId, diagnostics, featureCount);
+      return exportSingleStep(input, shape, targetId, run, diagnostics, featureCount);
     case 'dxf':
       return exportShapeDxf(shape, targetId, input.options, run, diagnostics, featureCount);
     case '3mf':
@@ -790,10 +801,18 @@ async function exportSingleStep(
   input: ExportInput,
   shape: OcctBackend,
   targetId: string,
+  run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
+  // One named product, with the colour from the target's lineage (the same
+  // precedence as the single-shape GLB export below).
+  const tailRecord = run.records.find((rec) => rec.id === targetId);
+  const color = tailRecord ? lookupColorFromLineage(tailRecord, run.records) : undefined;
+  const bytes = stampStepOriginatingSystem(
+    await exportShapeToSTEPAsync(shape, stepBodyName(input.fileName), color),
+    attributionGenerator(),
+  );
   const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
   const failure = verify ? stepShapeVerifyFailure(shape, targetId) : undefined;
   return { bytes, featureCount, diagnostics: failure ? [...diagnostics, failure] : diagnostics };
@@ -867,11 +886,16 @@ async function exportSingleGlb(
   const partMaterial = tailRecord
     ? lookupMaterialFromLineage(tailRecord, run.records)
     : undefined;
+  // Faces that came from a differently finished `union()` member keep that
+  // member's finish (see memberMaterialsByFace); the lineage material above
+  // is the body default for every other face.
+  const memberFaces = memberMaterialsByFace(shape, tailRecord, run.records);
   const part: WorldFramePart = {
     name: 'part',
     shape,
     ...(partColor !== undefined ? { color: partColor } : {}),
     ...(partMaterial !== undefined ? { material: partMaterial } : {}),
+    ...(memberFaces !== undefined ? { materialByFaceIndex: memberFaces } : {}),
   };
   try {
     const bytes = await exportGlbAsync([part], optsGlb);

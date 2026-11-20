@@ -27801,7 +27801,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/beekeeper-veil-hood.kcad.ts",
       "preview": "/assets/apiary-beekeeper-veil-hood.png",
-      "sourceSha256": "f2dd01d318f1bc02fa082d4f9bee50295c57342e7d0d44df295ff674bcee4158",
+      "sourceSha256": "793fb23f6237a084d2a06834a9a1324181ae0940134eb66ffa4c907db67e7832",
       "triangleBudget": 2600,
       "params": [
         {
@@ -63989,7 +63989,7 @@
       "id": "drywall-panel-lift",
       "kit": "construction-equipment",
       "title": "Drywall panel lift",
-      "description": "Foldable panel lift with telescoping mast, tilting cradle, tripod legs and casters. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Static drywall panel lift with a nested mast, connected support cradle and three radial caster legs. CC0 visualization geometry, not manufacturer CAD or a load-rated or kinematically verified lift. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64008,7 +64008,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/drywall-panel-lift.kcad.ts",
       "preview": "/assets/construction-equipment-drywall-panel-lift.png",
-      "sourceSha256": "6b4cb71d64146dfff4c03b7a551a6c5c3e3e131613e478808a3703f685f0a3eb",
+      "sourceSha256": "c7a6ea5d43c548dc53ba850a2ef2c68a6575f095dff2ab838aec44242ffe5ce4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -64052,11 +64052,11 @@
         }
       },
       "stats": {
-        "triangles": 380,
+        "triangles": 620,
         "sizeM": [
-          0.8,
-          1.533,
-          0.736
+          0.863,
+          1.38,
+          0.904743
         ],
         "minUpM": 0,
         "materials": 1
@@ -64066,35 +64066,48 @@
           "name": "structuralSteelColor",
           "color": "#89969a",
           "parts": [
-            "base-crossbar",
-            "caster--1-hub--1",
-            "caster--1-hub-1",
-            "caster-1-hub--1",
-            "caster-1-hub-1",
+            "base-hub",
+            "caster-bridge-0",
+            "caster-axle-0",
+            "caster-fork-0--1",
+            "caster-fork-0-1",
+            "caster-bridge-1",
+            "caster-axle-1",
+            "caster-fork-1--1",
+            "caster-fork-1-1",
+            "caster-bridge-2",
+            "caster-axle-2",
+            "caster-fork-2--1",
+            "caster-fork-2-1",
             "mast",
+            "mast-extension",
             "mast-collar",
             "cradle-crossbar"
           ],
           "param": "structuralSteelColor"
         },
         {
-          "name": "tireRubberColor",
-          "color": "#252a2d",
-          "parts": [
-            "caster--1",
-            "caster-1"
-          ],
-          "param": "tireRubberColor"
-        },
-        {
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
+            "base-leg-0",
+            "base-leg-1",
+            "base-leg-2",
             "tilt-cradle",
-            "base-leg-left",
-            "base-leg-right"
+            "cradle-arm--1",
+            "cradle-arm-1"
           ],
           "param": "equipmentPaintColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#252a2d",
+          "parts": [
+            "caster-0",
+            "caster-1",
+            "caster-2"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },
@@ -65486,7 +65499,7 @@
       "id": "pipe-roller-stand",
       "kit": "construction-equipment",
       "title": "Pipe roller stand",
-      "description": "Adjustable pipe support stand with paired rollers, screw post and tripod feet. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Illustrative pipe support stand with three splayed tripod legs, a height-adjuster envelope and paired parallel rollers carried on shafts and bored brackets. No load rating or adjustment mechanism. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65505,7 +65518,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/pipe-roller-stand.kcad.ts",
       "preview": "/assets/construction-equipment-pipe-roller-stand.png",
-      "sourceSha256": "1c37bcaa18520af234e41c4b188ccd931ccd7225b8cadc9acc8a5a3464c75ec8",
+      "sourceSha256": "9c0940a5fd3613386f50735f9a3a1b1ebd9a63e64ee1c9a3a3fc79a99c38a7d3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -65541,11 +65554,11 @@
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 672,
         "sizeM": [
-          0.231,
-          0.886,
-          0.389
+          0.457477,
+          0.865,
+          0.396187
         ],
         "minUpM": 0,
         "materials": 1
@@ -65558,7 +65571,13 @@
             "tripod-leg-0",
             "tripod-leg-1",
             "tripod-leg-2",
-            "upright-post"
+            "tripod-hub",
+            "upright-post",
+            "roller-head-plate",
+            "roller-left-front-bracket",
+            "roller-left-rear-bracket",
+            "roller-right-front-bracket",
+            "roller-right-rear-bracket"
           ],
           "param": "equipmentPaintColor"
         },
@@ -65567,7 +65586,9 @@
           "color": "#89969a",
           "parts": [
             "roller-left",
-            "roller-right"
+            "roller-left-axle",
+            "roller-right",
+            "roller-right-axle"
           ],
           "param": "structuralSteelColor"
         }
@@ -66508,7 +66529,7 @@
       "id": "rebar-cage",
       "kit": "construction-equipment",
       "title": "Reinforcing bar cage",
-      "description": "Short reinforcing cage assembled from longitudinal bars and repeating ties. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Short reinforcing cage with twelve distinct longitudinal bars in two layers and eight closed rectangular ties seated on support saddles. Generic visualization prop, not structural design or manufacturing CAD. Material controls: equipment enamel paint and structural steel; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -66527,7 +66548,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/rebar-cage.kcad.ts",
       "preview": "/assets/construction-equipment-rebar-cage.png",
-      "sourceSha256": "b8717c35db49985f06fec4dac90ac2195ed45ea1050b29a8780a439f2fbb58f1",
+      "sourceSha256": "3af39024a7c4bbbf8e6dec37cc89b69ea2520cc5c79766e9e4d79b03500604bb",
       "triangleBudget": 2200,
       "params": [
         {
@@ -66563,10 +66584,10 @@
         }
       },
       "stats": {
-        "triangles": 916,
+        "triangles": 820,
         "sizeM": [
           1.26,
-          0.39,
+          0.406,
           0.558
         ],
         "minUpM": 0,
@@ -66577,19 +66598,7 @@
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
-            "assembly-skid",
-            "longitudinal-bar--1-0",
-            "longitudinal-bar--1-1",
-            "longitudinal-bar--1-2",
-            "longitudinal-bar--1-3",
-            "longitudinal-bar--1-4",
-            "longitudinal-bar--1-5",
-            "longitudinal-bar-1-0",
-            "longitudinal-bar-1-1",
-            "longitudinal-bar-1-2",
-            "longitudinal-bar-1-3",
-            "longitudinal-bar-1-4",
-            "longitudinal-bar-1-5"
+            "assembly-skid"
           ],
           "param": "equipmentPaintColor"
         },
@@ -66599,6 +66608,18 @@
           "parts": [
             "support-saddle--1",
             "support-saddle-1",
+            "longitudinal-bar-lower-0",
+            "longitudinal-bar-lower-1",
+            "longitudinal-bar-lower-2",
+            "longitudinal-bar-lower-3",
+            "longitudinal-bar-lower-4",
+            "longitudinal-bar-lower-5",
+            "longitudinal-bar-upper-0",
+            "longitudinal-bar-upper-1",
+            "longitudinal-bar-upper-2",
+            "longitudinal-bar-upper-3",
+            "longitudinal-bar-upper-4",
+            "longitudinal-bar-upper-5",
             "tie-ring-0",
             "tie-ring-1",
             "tie-ring-2",
@@ -118876,7 +118897,7 @@
       "id": "substation-fire-suppression-cylinder-bank",
       "kit": "grid-substation",
       "title": "Fire suppression cylinder bank",
-      "description": "Grouped suppression cylinders held in a rack with a shared manifold header. Material controls: galvanized steel, safety red, brass; finish presets: weathered and maintenance.",
+      "description": "Selectable three- or five-cylinder bank seated within one rack and connected to a shared manifold header. Static CC0 visualization, not pressure-rated manufacturer CAD. Material controls: galvanized steel, safety red, brass; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -118895,9 +118916,19 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts",
       "preview": "/assets/grid-substation-substation-fire-suppression-cylinder-bank.png",
-      "sourceSha256": "bac0bddafb089123925e1ca7c1c5ece1a188f57f5a36fa082b09c1ec15ce1907",
+      "sourceSha256": "967fc5925d97c0f23f83ef1350eaaa03dbcd0664aed45cd2123ffa692d595891",
       "triangleBudget": 1800,
       "params": [
+        {
+          "name": "cylinderCount",
+          "type": "choice",
+          "default": "5",
+          "label": "Cylinder count",
+          "choices": [
+            "3",
+            "5"
+          ]
+        },
         {
           "name": "scale",
           "type": "number",
@@ -118937,10 +118968,10 @@
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 636,
         "sizeM": [
-          3.9344,
-          1.862,
+          2.2,
+          1.792,
           0.9
         ],
         "minUpM": 0,
@@ -118952,8 +118983,20 @@
           "color": "#7f8c92",
           "parts": [
             "rack-base",
-            "top-retainer",
-            "manifold-header"
+            "manifold-branch-1",
+            "manifold-branch-2",
+            "manifold-branch-3",
+            "manifold-branch-4",
+            "manifold-branch-5",
+            "manifold-header",
+            "rack-post--1--1",
+            "rack-post--1-1",
+            "retainer--1-650",
+            "retainer--1-1280",
+            "rack-post-1--1",
+            "rack-post-1-1",
+            "retainer-1-650",
+            "retainer-1-1280"
           ],
           "param": "galvanizedSteel"
         },
@@ -122437,7 +122480,7 @@
       "id": "substation-portable-hv-test-divider",
       "kit": "grid-substation",
       "title": "Portable HV test divider",
-      "description": "Portable measurement divider on a tripod base with a stepped insulated column. Material controls: galvanized steel, porcelain, copper; finish presets: weathered and maintenance.",
+      "description": "Illustrative portable measurement divider on three splayed tripod legs with a supported insulated column and six sheds. No electrical or structural rating. Material controls: galvanized steel, porcelain, copper; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -122456,7 +122499,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-portable-hv-test-divider.kcad.ts",
       "preview": "/assets/grid-substation-substation-portable-hv-test-divider.png",
-      "sourceSha256": "e399945456469d62e1047e4bf12785194653d873ddaca764654e1cf44cb82792",
+      "sourceSha256": "41b37400c9e882b0e22f5be065bb8b6163b4d7b8523770ada4c8eaadb56ca5b5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -122498,11 +122541,11 @@
         }
       },
       "stats": {
-        "triangles": 1560,
+        "triangles": 1784,
         "sizeM": [
-          1.358,
+          1.27127,
           2.55,
-          0.953472
+          1.383679
         ],
         "minUpM": 0,
         "materials": 1
@@ -122514,6 +122557,7 @@
           "parts": [
             "tripod-leg-1",
             "tripod-leg-2",
+            "tripod-leg-3",
             "tripod-hub"
           ],
           "param": "galvanizedSteel"
@@ -122522,13 +122566,7 @@
           "name": "porcelain",
           "color": "#e6dfcb",
           "parts": [
-            "divider-column",
-            "divider-shed-1",
-            "divider-shed-2",
-            "divider-shed-3",
-            "divider-shed-4",
-            "divider-shed-5",
-            "divider-shed-6"
+            "divider-column"
           ],
           "param": "porcelain"
         },
@@ -127800,7 +127838,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/deep-water-culture-bed.kcad.ts",
       "preview": "/assets/hydroponics-deep-water-culture-bed.png",
-      "sourceSha256": "384956756c7c7cd2cbbe0b58e87dd35cab9ce2ab1aaef410c145412d1b903e69",
+      "sourceSha256": "1466572d4b1b6d97c2c1c0017a3e1827b1418dae5f8837d99c4948809d6b9070",
       "triangleBudget": 6000,
       "params": [
         {
@@ -145952,7 +145990,7 @@
       "id": "plate-heat-exchanger",
       "kit": "industrial-plant",
       "title": "Plate heat exchanger",
-      "description": "Compact plate heat exchanger with a pack of cooling plates, tie bars and four connection ports. Controls: overall scale, steel, safety paint.",
+      "description": "Compact plate heat exchanger with a pack of cooling plates, tie bars and four open face-mounted connection ports. Illustrative CC0 scene geometry; internal flow, pressure rating and manufacturing details are not verified. Controls: plate count, plate height, overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -145971,7 +146009,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plate-heat-exchanger.kcad.ts",
       "preview": "/assets/industrial-plant-plate-heat-exchanger.png",
-      "sourceSha256": "924064ce5cd082e0d0787864353ce624d5dff9a7817c86b0507e059016afe0e3",
+      "sourceSha256": "575fc0c0724e60a03cc06e565493c102a41778ae2d023a5c9596c24467394ee2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145982,6 +146020,27 @@
           "min": 0.65,
           "max": 1.35,
           "step": 0.05
+        },
+        {
+          "name": "plateCount",
+          "type": "choice",
+          "default": "9",
+          "label": "Plate count",
+          "choices": [
+            "5",
+            "9",
+            "13"
+          ]
+        },
+        {
+          "name": "plateHeight",
+          "type": "number",
+          "default": 620,
+          "label": "Plate height",
+          "unit": "mm",
+          "min": 480,
+          "max": 800,
+          "step": 10
         },
         {
           "name": "steel",
@@ -146006,9 +146065,9 @@
         }
       },
       "stats": {
-        "triangles": 344,
+        "triangles": 1336,
         "sizeM": [
-          0.4928,
+          0.5092,
           0.62,
           0.22
         ],
@@ -146025,7 +146084,9 @@
             "tie-bar-0",
             "tie-bar-1",
             "port-0",
-            "port-1"
+            "port-1",
+            "port-2",
+            "port-3"
           ],
           "param": "safetyPaint"
         },
@@ -146043,8 +146104,10 @@
             "heat-plate-6",
             "heat-plate-7",
             "heat-plate-8",
-            "port-flange-0",
-            "port-flange-1"
+            "port-0",
+            "port-1",
+            "port-2",
+            "port-3"
           ],
           "param": "steel"
         }
@@ -146768,7 +146831,7 @@
       "id": "roller-conveyor-line",
       "kit": "industrial-plant",
       "title": "Roller conveyor line",
-      "description": "Straight gravity conveyor with transverse steel rollers, side rails and three support stations. Controls: overall scale, structural steel, roller steel and safety paint.",
+      "description": "Gravity roller conveyor section with nine separate transverse rollers on axles, connected side frames, six support feet and two end stops. Generic visualization prop, not load-rated manufacturing CAD. Controls: overall scale, steel and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -146787,7 +146850,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts",
       "preview": "/assets/industrial-plant-roller-conveyor-line.png",
-      "sourceSha256": "73f08e9078e5b1d312ad85d13a375f8115c928c4530270126886aef7c167d430",
+      "sourceSha256": "deda6a87c5237a32a60c6d9bee3ec22c28f9d6ce0261aade0eaf44ee232e06ab",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146806,12 +146869,6 @@
           "label": "Structural steel"
         },
         {
-          "name": "rollerSteel",
-          "type": "color",
-          "default": "#b7c1c3",
-          "label": "Roller steel"
-        },
-        {
           "name": "safetyPaint",
           "type": "color",
           "default": "#e4ab47",
@@ -146821,7 +146878,6 @@
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "rollerSteel": "#7d8583",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
@@ -146829,10 +146885,10 @@
         }
       },
       "stats": {
-        "triangles": 652,
+        "triangles": 1020,
         "sizeM": [
           0.92,
-          0.345,
+          0.356,
           0.4012
         ],
         "minUpM": 0,
@@ -146843,14 +146899,16 @@
           "name": "safetyPaint",
           "color": "#e4ab47",
           "parts": [
-            "side-rail-left",
-            "foot-left-front",
-            "foot-left-middle",
-            "foot-left-rear",
-            "side-rail-right",
-            "foot-right-front",
-            "foot-right-middle",
-            "foot-right-rear"
+            "side-frame--1",
+            "foot--1-0",
+            "foot--1-1",
+            "foot--1-2",
+            "side-frame-1",
+            "foot-1-0",
+            "foot-1-1",
+            "foot-1-2",
+            "end-stop--1",
+            "end-stop-1"
           ],
           "param": "safetyPaint"
         },
@@ -146858,32 +146916,35 @@
           "name": "steel",
           "color": "#707f84",
           "parts": [
-            "support-left-front",
-            "support-left-middle",
-            "support-left-rear",
-            "support-right-front",
-            "support-right-middle",
-            "support-right-rear"
+            "support--1-0",
+            "support--1-1",
+            "support--1-2",
+            "support-1-0",
+            "support-1-1",
+            "support-1-2",
+            "cross-tie-0",
+            "cross-tie-1",
+            "cross-tie-2",
+            "roller-0",
+            "roller-axle-0",
+            "roller-1",
+            "roller-axle-1",
+            "roller-2",
+            "roller-axle-2",
+            "roller-3",
+            "roller-axle-3",
+            "roller-4",
+            "roller-axle-4",
+            "roller-5",
+            "roller-axle-5",
+            "roller-6",
+            "roller-axle-6",
+            "roller-7",
+            "roller-axle-7",
+            "roller-8",
+            "roller-axle-8"
           ],
           "param": "steel"
-        },
-        {
-          "name": "rollerSteel",
-          "color": "#b7c1c3",
-          "parts": [
-            "roller-0",
-            "roller-1",
-            "roller-2",
-            "roller-3",
-            "roller-4",
-            "roller-5",
-            "roller-6",
-            "roller-7",
-            "roller-8",
-            "roller-9",
-            "roller-10"
-          ],
-          "param": "rollerSteel"
         }
       ]
     },
@@ -147842,7 +147903,7 @@
       "id": "vertical-cage-ladder",
       "kit": "industrial-plant",
       "title": "Vertical cage ladder",
-      "description": "Fixed vertical access ladder with evenly spaced rungs, side rails and a wraparound safety cage. Controls: overall scale, steel, safety paint.",
+      "description": "Adjustable 900 to 1800 mm schematic ladder section, default 1035 mm, with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: section height, overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -147861,9 +147922,19 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vertical-cage-ladder.kcad.ts",
       "preview": "/assets/industrial-plant-vertical-cage-ladder.png",
-      "sourceSha256": "965cc1b20e9167f21aec5c59033ad7a1dfee18f422fc55fc057bea8c4e2c5e92",
+      "sourceSha256": "481685aaf8820d1d9ea9a9296125054bea11036989cf6266a44afa04ab6de8d0",
       "triangleBudget": 1400,
       "params": [
+        {
+          "name": "sectionHeight",
+          "type": "number",
+          "default": 1035,
+          "label": "Section height",
+          "unit": "mm",
+          "min": 900,
+          "max": 1800,
+          "step": 5
+        },
         {
           "name": "scale",
           "type": "number",
@@ -147896,11 +147967,11 @@
         }
       },
       "stats": {
-        "triangles": 368,
+        "triangles": 420,
         "sizeM": [
-          0.3024,
+          0.3344,
           1.035,
-          0.16
+          0.309
         ],
         "minUpM": 0,
         "materials": 1
@@ -147911,11 +147982,7 @@
           "color": "#6f7f85",
           "parts": [
             "ladder-rail--1",
-            "ladder-rail-1",
-            "hoop-support-0",
-            "hoop-support-1",
-            "hoop-support-2",
-            "hoop-support-3"
+            "ladder-rail-1"
           ],
           "param": "steel"
         },
@@ -147935,6 +148002,9 @@
             "safety-hoop-1",
             "safety-hoop-2",
             "safety-hoop-3",
+            "cage-upright-0",
+            "cage-upright-1",
+            "cage-upright-2",
             "top-grab-left",
             "top-grab-right"
           ],
@@ -282453,7 +282523,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-bag-dispenser.kcad.ts",
       "preview": "/assets/retail-store-shopping-bag-dispenser.png",
-      "sourceSha256": "ae038ecd1161e5af962ab89e87e51c1790191ebd6cacb0926752a0992410c56a",
+      "sourceSha256": "785abc907283ada26a6cab7b67fcd053ea1ba1f067411c45776849d1a18482ea",
       "triangleBudget": 1800,
       "params": [
         {
@@ -304728,7 +304798,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/american-football.kcad.ts",
       "preview": "/assets/sports-american-football.png",
-      "sourceSha256": "854ab53efb387cebae3bb63860b0f7206f0a000a770806c9e0811f7a29b23215",
+      "sourceSha256": "83c79cdc75a8f385b792316ac4e476a4ed21257d4eec3e86c648e783b30b0978",
       "triangleBudget": 600,
       "params": [
         {
@@ -305264,7 +305334,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball-glove.kcad.ts",
       "preview": "/assets/sports-baseball-glove.png",
-      "sourceSha256": "2f8b38dcf97e501316626f05ddcfa629d08fe759e218fef9c19c7565fc0e4344",
+      "sourceSha256": "dae89b58d13004e44ef6d83dd1c49a228ff1da3f57020f3c6225ba316a34529d",
       "triangleBudget": 600,
       "params": [
         {
@@ -305371,7 +305441,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball.kcad.ts",
       "preview": "/assets/sports-baseball.png",
-      "sourceSha256": "439a76bcfaa24275a1b9c8412f535a56ac9bff59a803a12acd18e454f75423af",
+      "sourceSha256": "3a662c6ecca14fc4e623527467c67b6895c12fa57f41ad0266dd3d36667e0597",
       "triangleBudget": 800,
       "params": [
         {
@@ -305456,7 +305526,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
       "preview": "/assets/sports-basketball-hoop.png",
-      "sourceSha256": "749a3289ebca06a27cd79335dbfbf04c98568b201b17928de32d609b441eb981",
+      "sourceSha256": "01d2bad85819b02096a187f580fb102c636082559c72d6f18bc602f503a5b225",
       "triangleBudget": 900,
       "params": [
         {
@@ -305581,7 +305651,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball.kcad.ts",
       "preview": "/assets/sports-basketball.png",
-      "sourceSha256": "2a00f927d515c8957ee51a244a1219fa7beaf32093e454f886ab6c362f94c124",
+      "sourceSha256": "e347d3eb7be85f4150e3b93d7eacd17d61263b97b2252ddf5dde8c5315d23888",
       "triangleBudget": 800,
       "params": [
         {
@@ -306310,7 +306380,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/exercise-ball.kcad.ts",
       "preview": "/assets/sports-exercise-ball.png",
-      "sourceSha256": "f30ef621591ac5562960bdb4221ffa226531d4bbca8149d5ef9298c0716b2095",
+      "sourceSha256": "6437d7c4e06491b6568a4b6a9899f785e24a474dbac1f1b742909b70fefd7080",
       "triangleBudget": 600,
       "params": [
         {
@@ -306408,7 +306478,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/foam-roller.kcad.ts",
       "preview": "/assets/sports-foam-roller.png",
-      "sourceSha256": "0ca8020eec2d1b970e82dd510332c663c6427bb55839177f12018874e5298268",
+      "sourceSha256": "3667ff3bfeff2cedd3d0ef40a0a44220a7b505346621e9d971c39999dabbe7ba",
       "triangleBudget": 600,
       "params": [
         {
@@ -306492,7 +306562,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-bag.kcad.ts",
       "preview": "/assets/sports-golf-bag.png",
-      "sourceSha256": "1ca562d501459dd0c6f1976989b74b2d87b32827ea9c508975e7a578b0f6f33d",
+      "sourceSha256": "95316943511daa7d0c3f5cfea60ea43c53e5ebd462a759e4c5c6b77f0ca6dd94",
       "triangleBudget": 600,
       "params": [
         {
@@ -306611,7 +306681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-club.kcad.ts",
       "preview": "/assets/sports-golf-club.png",
-      "sourceSha256": "513e2d86f543c328c07acec5ea367e29a9ace56e0ff8e8eb3e9941a6340fa154",
+      "sourceSha256": "15c3725fd28470698c69fb8a9aa375fa5aca20c72562a253eb00617ee350ee48",
       "triangleBudget": 2000,
       "params": [
         {
@@ -306674,11 +306744,11 @@
         }
       },
       "stats": {
-        "triangles": 1624,
+        "triangles": 776,
         "sizeM": [
-          0.417894,
+          0.417346,
           0.97777,
-          0.622579
+          0.622434
         ],
         "minUpM": 0,
         "materials": 1
@@ -306940,7 +307010,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/hockey-puck.kcad.ts",
       "preview": "/assets/sports-hockey-puck.png",
-      "sourceSha256": "4027039ceb4cd3cb1394bd58eafc9e9ac96d1eadeb3329cbe6a224f65dd60db1",
+      "sourceSha256": "873a9546f984d77c4bd616fc6b5ab7533334ba29a4cfa8d1389367a825a90b9b",
       "triangleBudget": 600,
       "params": [
         {
@@ -307579,7 +307649,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
       "preview": "/assets/sports-lacrosse-stick.png",
-      "sourceSha256": "cd229ab961de7b860bd9efa1fe4c211e7dbeab80772467767f6f1581d70ba73d",
+      "sourceSha256": "4995ab897778567cb67339f11074649310f08ec88c21e600f8ce0dc5f7c71dd2",
       "triangleBudget": 600,
       "params": [
         {
@@ -308055,7 +308125,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/soccer-goal.kcad.ts",
       "preview": "/assets/sports-soccer-goal.png",
-      "sourceSha256": "a0ff2ad15029221e77dc1786baec11d78a9e4ee0b4817702f581215c266fd3bb",
+      "sourceSha256": "1967b94a6cbe07fde312e6bc192bcdc8cc1c34ab2ea1bdd6f81bdd3fce71706c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -308247,7 +308317,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/sports-water-bottle.kcad.ts",
       "preview": "/assets/sports-sports-water-bottle.png",
-      "sourceSha256": "9345c17bc2d765ad485876e2de5f1399aa2a703417a2545cb660888f06d943f6",
+      "sourceSha256": "94b2709b58f151c71bd387cb0b2d87b0c037d9c4402663f687a3347ff0838b7d",
       "triangleBudget": 600,
       "params": [
         {
@@ -308535,7 +308605,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-ball.kcad.ts",
       "preview": "/assets/sports-tennis-ball.png",
-      "sourceSha256": "5500cca0310c7357422b5abc3c84257e6cca4b813e3dffff11777cebed432003",
+      "sourceSha256": "ee93ab5c233a00e1f4ead8320f1a1aa000a90080a809aded21978dae8aef5565",
       "triangleBudget": 800,
       "params": [
         {
@@ -308619,7 +308689,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-net.kcad.ts",
       "preview": "/assets/sports-tennis-net.png",
-      "sourceSha256": "a5b5e52e932e1b976f603226f9b7877d7fa4d5eee27fad27c4c75617ed87f76a",
+      "sourceSha256": "07d96a56c7ae5ea1235d8f679b2325fa68086d5710734727f8de198cecf9f227",
       "triangleBudget": 600,
       "params": [
         {
@@ -309311,7 +309381,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball-net.kcad.ts",
       "preview": "/assets/sports-volleyball-net.png",
-      "sourceSha256": "8ae3e1e74b7a48cc1225a08e66185509931b9601aaff9a516cc286c5d309129a",
+      "sourceSha256": "b52f32314c9fb141c9bb20eff9768ae9bfb5071ef3c356c9dea4b1c98b98c890",
       "triangleBudget": 600,
       "params": [
         {
@@ -309452,7 +309522,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball.kcad.ts",
       "preview": "/assets/sports-volleyball.png",
-      "sourceSha256": "d9cbe83c6f5c1e7fd55f9990b9bf90cd5ee497d2608142934353de98a12f88df",
+      "sourceSha256": "e3bd66066e0c9bb3f7f7c8159742c6a7b1f6caf9df96f4968f295a110b8d19cb",
       "triangleBudget": 800,
       "params": [
         {
@@ -309550,7 +309620,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/weight-plate.kcad.ts",
       "preview": "/assets/sports-weight-plate.png",
-      "sourceSha256": "a05a98956e1de9c456b2d9e860794bda15084366a9edde71f7748d5dc29f5be5",
+      "sourceSha256": "08db86ea6dc34d03d68f66396c10e06d8332d9b9ff5d44a1696daa9e38c06cc2",
       "triangleBudget": 600,
       "params": [
         {
@@ -309648,7 +309718,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-block.kcad.ts",
       "preview": "/assets/sports-yoga-block.png",
-      "sourceSha256": "edd523a9df14f1eeac99647db137acf9a029733c910e61c28665ede2b8d68d5f",
+      "sourceSha256": "288e9fff4852238b9ba74fe7a5a41cd1393d744db9a97c96d01dd901a77d435c",
       "triangleBudget": 600,
       "params": [
         {
@@ -309736,7 +309806,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-mat.kcad.ts",
       "preview": "/assets/sports-yoga-mat.png",
-      "sourceSha256": "ba417ee909a73ac9548a290cf7fdcaa523bbc36bf2de473a130a1e11ebe3733a",
+      "sourceSha256": "9321543a89f3ee8808a0487ea6cfe70acafc9242b91429b2c327b8a428696eda",
       "triangleBudget": 600,
       "params": [
         {
@@ -318793,7 +318863,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/omnidirectional-whip-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-omnidirectional-whip-antenna.png",
-      "sourceSha256": "051a682a183f89748144fcb7462ddeccba903ac8e4616cda3eba2edf82659d68",
+      "sourceSha256": "6285d39bec54f762cf7b3944582c6c72134267e486f1c1217956850a61a0834d",
       "triangleBudget": 2400,
       "params": [
         {
@@ -318851,7 +318921,7 @@
         }
       },
       "stats": {
-        "triangles": 1890,
+        "triangles": 1308,
         "sizeM": [
           0.474,
           2.298,
@@ -338981,7 +339051,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/garment-bag.kcad.ts",
       "preview": "/assets/travel-gear-garment-bag.png",
-      "sourceSha256": "2e220c661921cda2d6efa10a42611437ce1580b64e5f77c9181bce4e26448c99",
+      "sourceSha256": "aebd1a10c54ccf998b639f7a485c33991f5cefb66445e02c5df7a23dca70665c",
       "triangleBudget": 2400,
       "params": [
         {
@@ -353378,7 +353448,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/uv-disinfection-channel.kcad.ts",
       "preview": "/assets/water-treatment-uv-disinfection-channel.png",
-      "sourceSha256": "aa3676d7a0a4a0ba39e689a0bcf63a49bb5ea699effa9e7f99d30cae33c4d056",
+      "sourceSha256": "7b8d4ccbe09b4b9e15e35185c03d5b63dc8ddc9acd2fdef41c5bbd17bfeda04d",
       "triangleBudget": 2800,
       "params": [
         {
@@ -356924,7 +356994,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/rooftop-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-rooftop-wind-turbine.png",
-      "sourceSha256": "d074bc91ac6963b0b67ed4044d3523ca0c52c074cc41f36304aba8778dc0bd95",
+      "sourceSha256": "055880db3ba7c10ca1f81a3675c56a3059da57856b99cb130dc674d8930cdcc1",
       "triangleBudget": 550,
       "params": [
         {
@@ -357360,7 +357430,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/small-farm-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-small-farm-wind-turbine.png",
-      "sourceSha256": "1fb5046efe96808faecbd367641f1d2f34304f3e9ef3caf25f8a82a7995850ab",
+      "sourceSha256": "7f24786f46c90050af72e9514fff0e4446386f2e424773a7e929564222c521f8",
       "triangleBudget": 450,
       "params": [
         {

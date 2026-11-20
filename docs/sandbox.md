@@ -61,14 +61,14 @@ The check runs at three layers that share one decision
   `node:fs/promises` (sync, callback, promise and stream forms) is wrapped
   once, and the ESM named exports are re-synced, so
   `import { writeFileSync } from 'node:fs'` is guarded too. Script asset
-  paths (`lib.fromSTEP`, `fromSTL`, `fromDXF`, `referenceImage`, fonts and
+  paths (`lib.fromSTEP`, `fromSTL`, `from3MF`, `fromDXF`, `referenceImage`, fonts and
   textures) are also refused earlier, at the script path resolver, so the
   author gets a clear diagnostic and not a generic "cannot read file".
 
 Scratch locations move into the workspace. `TMPDIR` (and therefore
 `os.tmpdir()`), `KERNELCAD_CACHE_DIR` and `KERNELCAD_CONFIG_HOME` point under
 `<workspace>/.kernelcad-sandbox/`. Default output directories for
-`render_preview`, `import_step`, `run_fea`, `run_cfd` and `diff_geometry` are created
+`render_preview`, `import_step`, `run_fea`, `run_cfd`, `diff_geometry` and `inspect_step_views` are created
 there. You can delete that directory at any time.
 
 ### Network
@@ -118,6 +118,7 @@ Bundled HDRI presets work. A URL `environment` is refused.
 | `kernelcad mcp --cloud` | Proxies every call to the hosted API. |
 | `kernelcad stats` | Admin telemetry API. |
 | `kernelcad print send`, MCP `send_to_printer` | Uploads to a network printer. |
+| `kernelcad slicer open` | Launches a local GUI binary outside the in-process guard. |
 | `kernelcad install` | Writes MCP client configs in your home directory and runs other agent CLIs. |
 | `kernelcad telemetry enable` / `reset` | Telemetry is forced off. |
 
@@ -173,10 +174,10 @@ replace OS isolation against hostile native code. These are not covered by the
 in-process guard:
 
 - Child processes other than Chromium (`ffmpeg`, CalculiX/gmsh, OpenFOAM (native,
-  or a Docker container that always runs with `--network none`), slicer CLIs,
-  `git` for `collab check`). They inherit the sandbox environment, including
-  the dead proxy, `TMPDIR` and `KERNELCAD_SANDBOX=1`, but not the patched
-  modules.
+  or a Docker container that always runs with `--network none`), slicer CLIs used
+  for G-code slicing, `git` for `collab check`). They inherit the
+  sandbox environment, including the dead proxy, `TMPDIR` and
+  `KERNELCAD_SANDBOX=1`, but not the patched modules.
 - Native addons that do their own I/O.
 - File descriptors opened before the guard was installed. The CLI installs it
   as its first import, so in practice there are none.

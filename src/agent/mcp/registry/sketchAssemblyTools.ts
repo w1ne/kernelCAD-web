@@ -5,6 +5,7 @@ import { addAssemblyPartSourceTool } from '../tools/addAssemblyPartSource';
 import { addPartConnectorSourceTool } from '../tools/addPartConnectorSource';
 import { addWorkspaceTargetSourceTool } from '../tools/addWorkspaceTargetSource';
 import { setSceneReturnSourceTool } from '../tools/setSceneReturnSource';
+import { ADHESIVE_FACES } from '../../../modeling/mates/mate';
 import { addMateAuthoringTool } from '../tools/addMateAuthoring';
 import { solveMatesTool } from '../tools/solveMates';
 import type { ToolRegistryEntry } from './types';
@@ -177,6 +178,15 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
           pose: { type: 'object', description: "relation:'mate' — optional mate pose." },
+          adhesive: {
+            type: 'object',
+            description: "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",
+            properties: {
+              face_a: { type: 'string', enum: [...ADHESIVE_FACES] },
+              face_b: { type: 'string', enum: [...ADHESIVE_FACES] },
+            },
+            required: ['face_a', 'face_b'],
+          },
           limits_deg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
           limits_mm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
           driven: { type: 'string', description: "relation:'coupling' — driven mate name." },
@@ -247,12 +257,12 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'solve_mates',
-      description: 'Use this when you need to solve the mate graph and get part poses. Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
+      description: 'Use this when you need to solve the mate graph and get part poses. Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional `poses` overrides are keyed by mate name and accept only solver-supported pose coordinates. Fastened mates have zero articulation DOFs and planar mates have no supported pose coordinate; overrides for either return `feature.invalid-args`.',
       inputSchema: {
         type: 'object',
         properties: {
           assembly: { type: 'string' },
-          poses: { type: 'object', description: 'Optional numeric pose overrides keyed by mate name.' },
+          poses: { type: 'object', description: 'Optional numeric overrides keyed by mate name. Only mate types with solver-supported pose coordinates accept overrides; fastened mates have zero articulation DOFs and planar mates have no supported pose coordinate, so overrides for either return `feature.invalid-args`.' },
         },
       },
     },

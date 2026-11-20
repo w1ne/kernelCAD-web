@@ -43,3 +43,5 @@ python3 artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-r
 ## Evidence limits
 
 The MP4 and page check show local source, software rendering, and validation only. This branch has not been deployed, so the public page remains unchanged. No motion simulation, engineering performance, manufacturing suitability, or physical equipment acceptance is claimed.
+
+> **Superseded 2026-11-20.** Merging `develop` replaced this source with the connected-frame version from `fix(catalog): orient conveyor rollers and connect their supports` (nine rollers on axles, one `steel` control). `tests/integration/catalog/rollerConveyorGeometry.test.ts` now covers the asset; this demo is historical.

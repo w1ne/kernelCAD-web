@@ -85,15 +85,15 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'spurGearPair', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
-      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
+      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle', 'ellipse', 'ellipseArc',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'bezierTo', 'quadraticTo', 'hermiteG2',
-      'sectionSketch', 'faceSketch', 'silhouette',
+      'sectionSketch', 'faceSketch', 'silhouette', 'offset',
     ],
   },
   {
@@ -165,7 +165,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'meta', 'presets', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
+    names: ['param', 'params', 'meta', 'presets', 'configurations', 'definePart', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

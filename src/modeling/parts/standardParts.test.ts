@@ -85,3 +85,22 @@ describe('SG90 community reference shortcuts', () => {
     }
   }, 120000);
 });
+
+describe('datasheet-modelled hobby servos', () => {
+  it('fetches MG995 (and the MG996R alias) and MG90S with ear-face and output-axis connectors', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const mg995 = await api.lib.standard.mg995();
+    const mg90s = await api.lib.standard.mg90s();
+    const alias = await api.lib.fetchPart('mg996r-servo');
+    expect(session.catalogConnectors.get(mg995.id)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'shaft-output', origin: [0, 0, 42.7], axis: [0, 0, 1] }),
+      expect.objectContaining({ name: 'ear-face-high', normal: [0, 0, -1] }),
+      expect.objectContaining({ name: 'ear-face-low', normal: [0, 0, -1] }),
+    ]));
+    expect(session.catalogConnectors.get(alias.id)).toBeDefined();
+    expect(session.catalogConnectors.get(mg90s.id)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'shaft-output', origin: [0, 0, 32.5], axis: [0, 0, 1] }),
+    ]));
+  }, 120000);
+});

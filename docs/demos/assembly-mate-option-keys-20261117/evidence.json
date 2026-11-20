@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-11-17T10:17:49.752Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, or deployed runtime used.",
+  "invocation": "npx tsx docs/demos/assembly-mate-option-keys-20261117/capture-demo.mts",
+  "source": {
+    "path": "docs/demos/assembly-mate-option-keys-20261117/capture-demo.mts",
+    "sha256": "5d1df3ea41a5b235c1cdec976a45838f98baccccc36e4fbfe730323f555f8c7c"
+  },
+  "baselineReproductionSource": {
+    "path": "docs/demos/assembly-mate-option-keys-20261117/baseline-repro.mts",
+    "sha256": "6f0ada9fdc72a48918065fe691287e172b6530c8287c70121178c584435edc86",
+    "invocation": "npx tsx docs/demos/assembly-mate-option-keys-20261117/baseline-repro.mts on baseline 642f9a398"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "baseline": {
+    "baseRevision": "origin/develop 642f9a398",
+    "requestOption": "limtsDeg: [-45, 45]",
+    "capturedMate": {
+      "name": "hinge",
+      "type": "revolute"
+    },
+    "limitsDeg": "omitted; typo silently dropped",
+    "reproduction": "npx tsx docs/demos/assembly-mate-option-keys-20261117/baseline-repro.mts on baseline 642f9a398"
+  },
+  "fixedReplay": {
+    "errorCode": "feature.invalid-args",
+    "errorPath": "opts.limtsDeg",
+    "errorMessage": "assembly.mate('hinge', aRef, bRef, type, opts): opts.limtsDeg — got an unknown option 'limtsDeg'; requires one of pose, limitsDeg, limitsMm, exposure, capacity, maxLoad, stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg, stiffnessNPerMm, springRefMm, dampingNsPerMm, fastener, fit. Example: arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })",
+    "mateRecordedAfterError": false,
+    "correctedMate": {
+      "name": "hinge",
+      "type": "revolute",
+      "limitsDeg": [
+        -45,
+        45
+      ]
+    }
+  },
+  "video": {
+    "path": "docs/demos/assembly-mate-option-keys-20261117/demo.mp4",
+    "sha256": "6ae2cf7b5133501876f45a69c4ce33560acc6596a37318b7434b11709eef03ef",
+    "bytes": 87295
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

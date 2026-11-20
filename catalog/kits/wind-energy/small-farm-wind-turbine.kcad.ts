@@ -23,7 +23,7 @@ presets({
   highVisibility: {"fiberglassComposite": "#e48d35"},
 });
 
-const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
+const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2);
 
 
 const ngon = (radius: number, sides: number, offset = 0) => {
@@ -39,10 +39,10 @@ const towerShape = (levels: number[][], sides = 10) => {
   return profiles[0].loft(profiles.slice(1), {
     planes: levels.map(([z]) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
     ruled: true,
-  }).scale(scale);
+  });
 };
 const rotorHub = (x: number, y: number, z: number, length: number, radius: number, sides = 12) =>
-  cylinder(length, radius, sides).rotateX(90).translate(x, y + length / 2, z).scale(scale);
+  cylinder(length, radius, sides).rotateX(90).translate(x, y + length / 2, z);
 const rotorBlade = (span: number, rootChord: number, middleChord: number, tipChord: number, thickness: number, sweep = 20) => {
   const profile = path()
     .moveTo(-rootChord / 2, 0)
@@ -53,17 +53,18 @@ const rotorBlade = (span: number, rootChord: number, middleChord: number, tipCho
     .lineTo(sweep - middleChord / 2, span * 0.46)
     .lineTo(-rootChord / 2, 0)
     .close();
-  return profile.extrude(thickness).rotateX(90).translate(0, thickness / 2, 0).scale(scale);
+  return profile.extrude(thickness).rotateX(90).translate(0, thickness / 2, 0);
 };
 
 const p=assembly("small-farm-wind-turbine");
-p.part("tower",towerShape([[0,82],[190,66],[1330,43]],9).color(paintedSteel));
-p.part("nacelle",b(0,0,1320,400,165,145).color(paintedSteel));
-p.part("hub",rotorHub(0,-116,1398,100,80,10).color(paintedSteel));
-p.part("blade-up",rotorBlade(620,150,92,25,40,18).translate(0,-116,1398).color(fiberglassComposite));
-p.part("blade-left",rotorBlade(620,150,92,25,40,18).rotateY(120).translate(0,-116,1398).color(fiberglassComposite));
-p.part("blade-right",rotorBlade(620,150,92,25,40,18).rotateY(240).translate(0,-116,1398).color(fiberglassComposite));
-p.part("tail",b(210,0,1330,240,35,160).color(fiberglassComposite));
-p.part("base",b(0,0,0,260,260,70).color(paintedSteel));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add("tower",towerShape([[0,82],[190,66],[1330,43]],9).color(paintedSteel));
+add("nacelle",b(0,0,1320,400,165,145).color(paintedSteel));
+add("hub",rotorHub(0,-116,1398,100,80,10).color(paintedSteel));
+add("blade-up",rotorBlade(620,150,92,25,40,18).translate(0,-116,1398).color(fiberglassComposite));
+add("blade-left",rotorBlade(620,150,92,25,40,18).rotateY(120).translate(0,-116,1398).color(fiberglassComposite));
+add("blade-right",rotorBlade(620,150,92,25,40,18).rotateY(240).translate(0,-116,1398).color(fiberglassComposite));
+add("tail",b(210,0,1330,240,35,160).color(fiberglassComposite));
+add("base",b(0,0,0,260,260,70).color(paintedSteel));
 
 return p.model();

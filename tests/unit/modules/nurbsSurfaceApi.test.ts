@@ -22,9 +22,32 @@ describe('nurbsSurface API', () => {
     const surf = api.nurbsSurface({
       controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]],
       degree: { u: 1, v: 1 },
+      periodic: { u: false, v: false },
     });
     expect(surf.id).toBe('surface_1');
     expect(session.getSurfaceRecord('surface_1')?.kind).toBe('nurbsSurface');
+  });
+
+  it('rejects unknown options instead of silently dropping a misspelled periodic flag', () => {
+    const api = createModelingApi({ session: new CaptureSession() });
+    let caught: unknown;
+    try {
+      api.nurbsSurface({
+        controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]],
+        degree: { u: 1, v: 1 },
+        periodicU: true,
+      } as unknown as Parameters<typeof api.nurbsSurface>[0]);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(isKernelError(caught)).toBe(true);
+    if (isKernelError(caught)) {
+      expect(caught.code).toBe('feature.invalid-args');
+      expect(caught.featureId).toBe('nurbsSurface');
+      expect(caught.message).toContain('opts.periodicU');
+      expect(caught.message).toContain('unknown option');
+    }
   });
 
   it('feature.nurbs.degenerate-controls when controls is empty', () => {

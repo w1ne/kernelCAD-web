@@ -34,9 +34,9 @@ Load this skill whenever the user asks any of:
 Do NOT load this skill for static CAD authoring (use `kernelcad-authoring`) or
 for visualization (use the renderer). This skill is feasibility-checking only.
 
-## The 6 entry points
+## Entry points
 
-All six live under the `kinematic.*` namespace exposed to every `.kcad.ts`
+These live under the `kinematic.*` namespace exposed to every `.kcad.ts`
 script. The same surface is reachable from host code via `import * as kinematic from
 'src/kinematic'`. Every entry returns a `Promise<…Result>` envelope carrying
 `source: 'local'`.
@@ -45,8 +45,9 @@ script. The same surface is reachable from host code via `import * as kinematic 
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
+| `kinematic.suggestJointRanges(arm, opts)` | Where should this revolute or prismatic stop so non-exempt parts keep the clearance? | no diagnostic code; the reported stop is the clear side of the bracket; `no-stop` means the sampled poses found no crossing, not a continuous proof; an unmeasured side is `unknown`, never `no-stop` |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
-| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded` |
+| `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `assembly.joint.static-hold.no-actuator`, `assembly.joint.static-hold.mass-unavailable`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
@@ -55,8 +56,13 @@ script. The same surface is reachable from host code via `import * as kinematic 
 `mode: 'stub'` compatibility path compares manually supplied per-part loads
 against a mate's deprecated `maxLoad`; for a mated assembly, connector and
 part-frame origins use the solved mate placements. This is a lever-arm sanity
-check, not reaction propagation, FEA, or hardware acceptance. See the
-[Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md).
+check, not reaction propagation, FEA, or hardware acceptance. A warning with
+`assembly.joint.load-unverified` means a connector origin could not be resolved
+by this synchronous path, or a declared load rating is unsupported (the legacy
+checker does not compare torque ratings on ball mates), so that capacity
+comparison did not run. See the [Gate 3 solved-frame replay bundle](../../../../docs/demos/issue-917-gate3-solved-frame/README.md),
+the [topology-origin unverified replay bundle](../../../../docs/demos/joint-load-unverified-topology-1272/README.md),
+and the [ball-joint torque replay bundle](../../../../docs/demos/joint-load-ball-torque-1272/README.md).
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
 
@@ -123,6 +129,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'mounting-holes' })` — wraps the facade; accepts `file` or `code`
 - `verify({ check: 'assembly-path', file|code, assembly?, directions?, disassemblyOrder?, sequence?, threadedFasteners?, stability?, gravity?, fixtures?, contactToleranceMm? })` — continuous mesh straight-removal check along six world axes plus explicit vectors; per-part valid directions/blockers and three-way states (removable / blocked / unknown), optional greedy order/stuck set, and a `sequence: true` build plan with a model stamp. Fastened/fixed clusters become subassemblies planned recursively inside and installed as one unit; deterministic heuristics order valid steps; stuck sets use a budgeted partition and a sampling fallback labelled found-by-search, never proven. Threaded fasteners are `unknown: non-straight-path` until P2. `stability: true` adds the approximate P3 centre-of-mass/support-polygon check (`needsHold`, `Step.heldBy`, `model.stability`) under a declared `gravity`/`fixtures`; it is not a physics simulation. Contact is conservative; no rotation, inferred axes or hardware certification.
 - `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
+- `verify({ check: 'joint-range' })` — wraps `suggestJointRanges`; accepts `file|code`, `assembly`, `joint`, `search`, `clearance_mm` (default 0.3), `step`, `resolution`. Passing `{ sweep_budget }` sets the face-weighted exact BREP distance budget. Each revolute or prismatic joint is walked alone from its authored pose while other mates stay at their authored poses. Exact BREP distance brackets the first non-exempt pair inside the clearance, and the reported stop is the clear side of that bracket so the suggested limit keeps the requested clearance. Returns the stop, the limiting part pair, the resolution, and `stop` | `no-stop` | `unknown`. `no-stop` means no crossing was found at the sampled poses, not continuous proof that the interval is clear. A missing finite bound, the sweep budget, or a failed measurement is `unknown`, never a clear side. The `limitsSnippet` is for the caller to apply; the script is not rewritten. Mate neighbours, declared contact pairs, and `disableCollision` pairs are not stops. A contact thinner than the coarse step can be missed. Demo: `docs/demos/joint-range-suggestion/README.md`.
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
@@ -327,21 +334,28 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 `kinematic.check*` calls, and assert the expected outcome in-script with
 `throw new Error(...)` so a regression fails fast under `kernelcad evaluate`.
 
-1. `01-swept-collision-shoulder.kcad.ts` — 2-DOF arm; K1 fires across the
-   colliding band of the shoulder sweep
-2. `02-reachable-with-seed.kcad.ts` — 6-DOF spherical-wrist arm reaching a
-   nearby target with a seed-pose hint
+1. `01-swept-collision-shoulder.kcad.ts` — 2-DOF arm seated on a pedestal;
+   a sweep past the mate limit finds the colliding band (K1), and a sweep
+   across the limit proves the declared travel clear
+2. `02-reachable-with-seed.kcad.ts` — 6-DOF spherical-wrist arm, seated
+   face to face at each joint, reaching a nearby target with a seed-pose
+   hint (mate-graph numeric solver)
 3. `03-cantilever-beam-stress.kcad.ts` — steel-vs-PLA cantilever beam stress
    (steel passes; PLA fires K6)
 4. `04-scissor-jack-swept.kcad.ts` — closed-loop scissor jack (two loops,
    mobility 1) swept over the lift angle; platform height checked against
    `L·sin(lift)`
-5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge across
-   [0°, 135°]; K1 fires when the lid touches the table
+5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge, lid seated
+   between two hinge ears; a sweep past closed finds the K1 band
+   ([-15°, -1°], lid into base and table), then the [0°, 135°] limits
+   sweep clean
 6. `06-over-center-latch-reachable.kcad.ts` — over-center draw latch as a
-   closed slider-crank: IK drives only the handle; a `loopMode` pin makes
-   the over-center point (4.41°) a `kinematic.loop.branch-flip` finding
-7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint;
+   closed slider-crank, mated parts sharing a face on the pin plane and the
+   mate limits set to the latched-side travel: IK drives only the handle; a
+   `loopMode` pin makes the over-center point (4.41°) a
+   `kinematic.loop.branch-flip` finding in a sweep run past the limits
+7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint, beam
+   lapped on the bracket side face with the joint origin on that face;
    generous actuator passes, undersized actuator fires
    `assembly.joint.static-hold.exceeded`; the same script feeds the worst
    motion pose into `feaStudy({ loadsFrom })` and reports the bracket safety
@@ -349,5 +363,7 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 8. `08-sweep-tolerance-clearance.kcad.ts` — swept clearance-gap param;
    the interference gate flips pass→fail past the closing threshold
 9. `09-four-bar-loop-swept.kcad.ts` — closed-loop four-bar driven by the
-   crank only; the first crank angle where the rocker hits a stop matches
-   the closed form
+   crank only, mated parts sharing a face on the pin plane and the mate
+   limits set to the crank travel short of the stop; a sweep run past the
+   limits gives the first crank angle where the rocker hits the stop, which
+   matches the closed form

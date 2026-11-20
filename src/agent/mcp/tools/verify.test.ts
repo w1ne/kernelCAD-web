@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock all eight verifiers — this is a routing layer, so we test that `check`
+// Mock the verifiers — this is a routing layer, so we test that `check`
 // selects the right handler and forwards the remaining params, not the
 // verifiers' own (unchanged) behavior.
 vi.mock('./checkAssemblyPath', () => ({ checkAssemblyPathTool: vi.fn(async () => 'assembly-path') }));
@@ -10,6 +10,7 @@ vi.mock('./validateAssembly', () => ({ validateAssemblyTool: vi.fn(async () => '
 vi.mock('./validateUrdf', () => ({ validateUrdfTool: vi.fn(async () => 'urdf') }));
 vi.mock('./dfmCheck', () => ({ dfmCheckTool: vi.fn(async () => 'dfm') }));
 vi.mock('./checkSweptCollision', () => ({ checkSweptCollisionTool: vi.fn(async () => 'swept') }));
+vi.mock('./suggestJointRanges', () => ({ suggestJointRangesTool: vi.fn(async () => 'joint-range') }));
 vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reachable') }));
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
@@ -25,6 +26,7 @@ import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
 import { checkSweptCollisionTool } from './checkSweptCollision';
+import { suggestJointRangesTool } from './suggestJointRanges';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
@@ -40,6 +42,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['urdf', validateUrdfTool as never, 'urdf'],
   ['dfm', dfmCheckTool as never, 'dfm'],
   ['swept-collision', checkSweptCollisionTool as never, 'swept'],
+  ['joint-range', suggestJointRangesTool as never, 'joint-range'],
   ['reachable', checkReachableTool as never, 'reachable'],
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
   ['load-capacity', checkLoadCapacityTool as never, 'load'],

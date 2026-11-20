@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { linkInertialBlock } from '../../../../../src/modeling/export/urdf/linkInertial';
 
@@ -33,5 +33,43 @@ describe('linkInertialBlock — Task B3.B', () => {
     const waterMass = parseFloat(water.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
     const steelMass = parseFloat(steel.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
     expect(steelMass / waterMass).toBeCloseTo(7.85, 2);
+  });
+
+  it('scales mass and inertia to a declared massKg', () => {
+    // 10 mm cube in the positive octant. Volume 1e-6 m³.
+    // At 1000 kg/m³ the geometric mass is 0.001 kg. Declared 0.004 kg
+    // scales inertia by 4. About the centre of mass,
+    // Ixx = m (a² + a²) / 12.
+    const cube = OcctBackend.box(10, 10, 10);
+    const declaredKg = 0.004;
+    const side = 0.01;
+    const ixx = declaredKg * (side * side + side * side) / 12;
+    const r = linkInertialBlock(cube, 1000, declaredKg);
+    const mass = parseFloat(r.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
+    const inertia = parseFloat(r.xml.match(/ixx="([\d.e+-]+)"/)![1]);
+    expect(mass).toBeCloseTo(declaredKg, 6);
+    expect(Math.abs(inertia - ixx) / ixx).toBeLessThan(5e-6);
+    expect(r.diagnostics).toEqual([]);
+    const water = linkInertialBlock(cube, undefined, declaredKg);
+    expect(water.diagnostics).toEqual([]);
+    expect(parseFloat(water.xml.match(/<mass value="([\d.e+-]+)"/)![1])).toBeCloseTo(declaredKg, 6);
+  });
+
+  it('substitutes unit inertia when mass properties throw', () => {
+    const cube = OcctBackend.box(10, 10, 10);
+    const spy = vi.spyOn(cube, 'massProperties').mockImplementation(() => {
+      throw new Error('mass properties unavailable');
+    });
+    try {
+      const r = linkInertialBlock(cube, 1000, undefined, 'slug');
+      expect(r.diagnostics.map((d) => d.code)).toEqual(['export.urdf.inertia-fallback']);
+      expect(r.diagnostics[0]?.message).toContain('substituted unit inertia');
+      const mass = parseFloat(r.xml.match(/<mass value="([\d.e+-]+)"/)![1]);
+      const ixx = parseFloat(r.xml.match(/ixx="([\d.e+-]+)"/)![1]);
+      expect(mass).toBeCloseTo(1, 6);
+      expect(ixx).toBeCloseTo(1e-3, 8);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

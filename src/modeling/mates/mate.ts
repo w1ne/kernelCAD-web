@@ -80,7 +80,15 @@ export interface FitMateMetadata {
   readonly axis?: Vec3;
 }
 
+export const ADHESIVE_FACES = ['left', 'right', 'front', 'back', 'top', 'bottom'] as const;
+
+export interface AdhesiveMateMetadata {
+  readonly faceA: typeof ADHESIVE_FACES[number];
+  readonly faceB: typeof ADHESIVE_FACES[number];
+}
+
 export interface MateRecord {
+  readonly adhesive?: AdhesiveMateMetadata;
   readonly name: string;
   /** "<partName>.<connectorName>" */
   readonly a: string;
@@ -123,6 +131,10 @@ export interface MateRecord {
   readonly fastener?: FastenerMateMetadata;
   /** Declared press/snap fit (P2). */
   readonly fit?: FitMateMetadata;
+  /** Configuration of the part that owns connector `a`, when it has one. */
+  readonly aConfiguration?: { readonly source: string; readonly name: string };
+  /** Configuration of the part that owns connector `b`, when it has one. */
+  readonly bConfiguration?: { readonly source: string; readonly name: string };
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

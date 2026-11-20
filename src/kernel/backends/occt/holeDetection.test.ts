@@ -52,6 +52,20 @@ describe('detectCylindricalHoles', () => {
     expect(holes[0].depthMm).toBeCloseTo(10, 2);
   });
 
+  it('reports a bore with a measurable 0.1 mm end cap as blind', () => {
+    // This is the inspection blind/through contract: its 0.1 mm cap is
+    // measurable but sits before the former 0.2 mm near-end probe.
+    const part = plateWithHole(9.9);
+    const holes = detectCylindricalHoles(part);
+    expect(holes).toHaveLength(1);
+    expect(holes[0].kind).toBe('blind');
+    expect(holes[0].depthMm).toBeCloseTo(9.9, 2);
+
+    const report = inspectCylindricalHoles(part);
+    expect(report.holeDetection).toBe('exact');
+    expect(report.holes[0].kind).toBe('blind');
+  });
+
   it('ignores convex cylinders (bosses)', () => {
     const boss = OcctBackend.box(20, 20, 10, true)
       .union(OcctBackend.cylinder(5, 3).translate(0, 0, 5));

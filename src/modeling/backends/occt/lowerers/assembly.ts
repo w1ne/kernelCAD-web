@@ -3,6 +3,7 @@
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/backends/occt/lookupSourceColor';
+import { memberMaterialsByFace } from '../../../../kernel/backends/occt/memberMaterials';
 import type { SceneBackend, SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
 import type { RigConnector, RigMate, SolvedRigAssembly } from '../../../../kernel/export/rigHierarchy';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -22,6 +23,7 @@ import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
 import { propagateConnectedPartMotion, propagateConnectedSolvedPartMotion } from './connectedPartMotion';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { finished, noShape, type LowerContext, type LowerOutcome } from './context';
+import { createPartPrototypeResolver } from './partPrototype';
 
 /** Pose value as captured: a single Param, or three for a ball joint. */
 type EncodedPose =
@@ -299,7 +301,7 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
   if (!worldT) return noShape();
   propagateConnectedPartMotion(worldT, inputs.partIds, inputs.records, inputs.encodedMates);
 
-  const sceneParts = buildAssemblyModelSceneParts(inputs, worldT);
+  const sceneParts = buildAssemblyModelSceneParts(ctx, inputs, worldT);
   const sceneBackend: SceneBackend = {
     target: ctx.target,
     assemblyName: inputs.assemblyName,
@@ -391,16 +393,31 @@ function applyAssemblyModelFk(
 }
 
 /** Engineering-material name recorded on an `assemblyPart` record, if any. */
+/** Per-face finishes of a part whose source shape fused differently finished
+ *  members (`union(case.finish('abs'), horn.finish('aluminium'))`). */
+function partMemberMaterials(
+  partRec: FeatureRecord | undefined,
+  partShape: ShapeBackend,
+  records: readonly FeatureRecord[],
+): SceneBackendPart['materialByFaceIndex'] {
+  const ref = partRec?.inputs.shape;
+  if (ref === undefined || ref.kind !== 'feature') return undefined;
+  const source = records.find((rec) => rec.id === ref.id);
+  return memberMaterialsByFace(partShape, source, records);
+}
+
 function partMaterialName(partRec: FeatureRecord | undefined): string | undefined {
   const name = (partRec?.metadata as { materialName?: unknown } | undefined)?.materialName;
   return typeof name === 'string' ? name : undefined;
 }
 
 function buildAssemblyModelSceneParts(
+  ctx: LowerContext,
   inputs: AssemblyModelInputs,
   worldT: Map<FeatureId, Transform>,
 ): SceneBackendPart[] {
   const { partEntries, partIds, records } = inputs;
+  const partPrototype = createPartPrototypeResolver(ctx, records);
   return partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
     const partRec = records.find((rec) => rec.id === partId);
@@ -409,13 +426,17 @@ function buildAssemblyModelSceneParts(
     const color = partRec ? lookupSourceColor(partRec, records) : undefined;
     const material = partRec ? lookupSourceMaterial(partRec, records) : undefined;
     const materialName = partMaterialName(partRec);
+    const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
+      ...(prototype !== undefined ? { prototype } : {}),
     };
   });
 }
@@ -601,6 +622,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     });
     return noShape();
   }
+  const partPrototype = createPartPrototypeResolver(ctx, records);
   const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
     const T = worldT.get(partId);
@@ -618,13 +640,17 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const color = lookupSourceColor(partRec, records);
     const material = lookupSourceMaterial(partRec, records);
     const materialName = partMaterialName(partRec);
+    const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
+      ...(prototype !== undefined ? { prototype } : {}),
     };
   });
   const assemblyName =

@@ -197,6 +197,10 @@ export interface ParamDeclaration {
   kind: DeclaredParamKind;
   choices?: string[];
   maxLength?: number;
+  /** Inclusive numeric bounds copied from `meta.min` / `meta.max` when those
+   *  fields are number literals. Absent when the declaration does not state them. */
+  min?: number;
+  max?: number;
 }
 
 export type ParseParamDeclarationResult =
@@ -272,6 +276,10 @@ export function parseParamDeclaration(code: string, paramName: string): ParsePar
     if (choices !== undefined) declaration.choices = choices;
     const maxLength = extractMaxLength(metaLiteral);
     if (maxLength !== undefined) declaration.maxLength = maxLength;
+    const min = extractBound(metaLiteral, 'min');
+    if (min !== undefined) declaration.min = min;
+    const max = extractBound(metaLiteral, 'max');
+    if (max !== undefined) declaration.max = max;
   }
 
   // A string default with a declared `choices` array is a 'choice' param,
@@ -311,6 +319,14 @@ function extractChoices(metaLiteral: string): string[] | undefined {
 /** Extract `maxLength: <number>` from a `meta` object's source text. */
 function extractMaxLength(metaLiteral: string): number | undefined {
   const m = /maxLength\s*:\s*(-?\d+(?:\.\d+)?)/.exec(metaLiteral);
+  if (!m) return undefined;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/** Extract `min` or `max` without treating `maxLength` as `max`. */
+function extractBound(metaLiteral: string, key: 'min' | 'max'): number | undefined {
+  const m = new RegExp(`(?<![A-Za-z0-9_])${key}\\s*:\\s*(-?\\d+(?:\\.\\d+)?(?:[eE][-+]?\\d+)?)`).exec(metaLiteral);
   if (!m) return undefined;
   const n = Number(m[1]);
   return Number.isFinite(n) ? n : undefined;

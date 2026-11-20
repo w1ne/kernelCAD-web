@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-11-17",
+  "source": "docs/demos/hole-up-to-face/model.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "baseVolumeMm3": 12000,
+  "volumeMm3": 11874.33629385641,
+  "expectedVolumeMm3": 11874.336293856408,
+  "boreFloorProbe": {
+    "probe": "2 x 2 x 0.02 mm box at x 9..11, y 9..11 inside the bore",
+    "aboveFloorZ": 10.05,
+    "aboveFloorMm3": 0,
+    "belowFloorZ": 9.95,
+    "belowFloorMm3": 0.07999999999999942
+  },
+  "faceCount": 10,
+  "occtBoundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      40,
+      20,
+      20
+    ]
+  },
+  "meshBoundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      40,
+      20,
+      20
+    ]
+  },
+  "meshedFeatureCount": 4,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

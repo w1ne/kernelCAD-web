@@ -218,6 +218,13 @@ export const ASSEMBLY_CODES = {
     description: 'A connector ref tracked by the pose envelope could not be resolved at a sampled pose.',
   },
   // Assembly validator — v0.6.2 limit-missing warning (1)
+  'assembly.mate.adhesive-contact': {
+    hintTemplate: 'Select opposing planar faces that share a positive contact area in the solved assembly.',
+    nextAction: { kind: 'fix-arg', field: 'adhesive' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'The declared adhesive interface could not be verified on the solved geometry.',
+  },
   'assembly.mate.limit-missing': {
     hintTemplate:
       "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",
@@ -368,6 +375,14 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
   },
+  'assembly.joint.load-unverified': {
+    hintTemplate:
+      'This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared legacy joint load rating was not compared because a connector origin or load kind is unsupported.',
+  },
   'assembly.joint.not-visible': {
     hintTemplate:
       "Widen the fork-plate gap (FORK_GAP_Y) versus the tongue thickness (TONGUE_Y), and/or extend the pivot pin (PIN_LEN) so the joint hardware is visible at typical viewing distance.",
@@ -464,7 +479,7 @@ export const ASSEMBLY_CODES = {
     nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A mate connector origin lies outside its part\'s modeled material by more than the support tolerance.',
+    description: 'A mate connector origin lies more than 6 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose; the mate\'s own fastened partner does not count). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.mate-contact-missing': {
     hintTemplate:
@@ -497,7 +512,7 @@ export const ASSEMBLY_CODES = {
     },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A revolute mate connector origin is outside the modeled support material of its part.',
+    description: 'A revolute mate connector origin lies more than 1 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.revolute-contact-missing': {
     hintTemplate:

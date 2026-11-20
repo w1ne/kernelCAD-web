@@ -36,9 +36,15 @@ export function meshToleranceFailure(
 export async function exportStlWithOptions(
   shape: OcctBackend,
   options?: StlMeshToleranceOptions,
+  keepTornBytes = true,
 ): Promise<{ bytes: Uint8Array; report: WatertightReport; mesh_deviation?: MeshDeviationReport }> {
   const controls = meshToleranceControls(options);
   const toleranceRequested = options?.tolerance !== undefined;
+  // A caller that replaces a torn mesh does not need its bytes. With a
+  // requested tolerance the bytes are still needed to measure the deviation.
+  if (!keepTornBytes && !toleranceRequested) {
+    return shape.exportSTLWithReportAsync(exportMeshDeflection(controls), true);
+  }
   const initialDeflection = toleranceRequested
     ? exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg })
     : exportMeshDeflection(controls);

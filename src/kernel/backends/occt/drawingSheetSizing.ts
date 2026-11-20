@@ -3,7 +3,7 @@
 import { SHEETS, SHEET_SERIES } from './drawingLayout';
 import type { DrawingSheetSize, DrawingViewName, ProjectionAngle, SheetLayout, SheetSpec, ViewBox2 } from './drawingLayout';
 import { FULL_TITLE_BLOCK } from './drawingTitleBlock';
-import { isFrontOnlyDrawing, selectedDrawingLayout } from './drawingViewSelection';
+import { singleOrthographicView, selectedDrawingLayout } from './drawingViewSelection';
 import type { SvgDrawingOptions } from './exportSvgDrawing';
 import type { Box } from './drawingObstacles';
 
@@ -46,9 +46,9 @@ export function resolveSheet(
   const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
   for (const size of series) {
     const r = resolve(size);
-    const frontOnly = isFrontOnlyDrawing(options.views);
-    const layout = selectedDrawingLayout(frontOnly, boxes, r.sheet, projection);
-    if (layout.scale >= 1) return r;
+    const singleView = singleOrthographicView(options.views);
+    const layout = selectedDrawingLayout(singleView, boxes, r.sheet, projection);
+    if (layout.scale >= (options.scale ?? 1)) return r;
   }
   return resolve(series[series.length - 1]!);
 }

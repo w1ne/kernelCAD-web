@@ -88,6 +88,14 @@ Read `evidence` before applying. `maxFeasibleValueMm`, when present, is a
 radius the same-edge kernel probe built, so you can tell that limit from a
 geometric ceiling such as half the shortest edge.
 
+A refused constant fillet or chamfer also names the edge that stops a larger
+size. `refuse.location.edge` and `details.failingEdgeRef` hold its
+`@kc[<base>/edge/s…]` selector; `details.failingEdgeLocator` gives curve
+kind, length and midpoint. Each named edge failed alone at
+`details.failingEdgeProbeValue`. `details.failingEdgeStatus: 'interaction'`
+means every edge builds alone and the selected edges limit each other: split
+the selection, do not hunt for one edge.
+
 ## Diagnostic kinds with automatic candidates
 
 | diagnostic | derivation |

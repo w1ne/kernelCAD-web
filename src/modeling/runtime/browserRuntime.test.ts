@@ -166,6 +166,12 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     ).rejects.toThrow(/lib\.fromSTL\(\).*filesystem/s);
   });
 
+  it('lib.from3MF fails the same way', async () => {
+    await expect(
+      runScriptInBrowser({ code: `return await lib.from3MF('mesh.3mf');` }),
+    ).rejects.toThrow(/lib\.from3MF\(\).*filesystem/s);
+  });
+
   it('lib.part builds an envelope without a filesystem', async () => {
     const result = await runScriptInBrowser({
       code: `return await lib.part({ family: 'hex-nut', thread: 'M5' });`,

@@ -8,6 +8,11 @@
 // the coupler and rocker at every sample, continuing from the previous pose
 // so the linkage stays in the open assembly mode it was modeled in.
 //
+// Every joint frame lies on the y=0 pin plane and mated parts share a face
+// there, so `evaluate_script` reports a real mechanism. The mate limits are
+// the crank travel where every loop joint angle is monotonic (40° to 130°);
+// the sweep runs past both ends of them.
+//
 // A stop block stands in the rocker's layer beside the rocker pivot. `checkSweptCollision` walks the
 // crank and reports the FIRST crank angle at which the rocker touches the
 // stop. The script recomputes that angle from the closed-form rocker angle
@@ -40,51 +45,62 @@ function rockerAngle(t2: number): number {
 const deg = (r: number) => (r * 180) / Math.PI;
 const rad = (v: number) => (v * Math.PI) / 180;
 
-// As-built pose at crank = 0: the coupler and rocker mate poses close the
-// loop there, so continuation starts from a closed, non-singular pose.
-const t4At0 = rockerAngle(0);
-const C0 = [d + c * Math.cos(t4At0), c * Math.sin(t4At0)];
-const t3At0 = Math.atan2(C0[1], C0[0] - a);
+// Closed-form coupler angle (rad, from +X) for crank angle t2 (rad).
+function couplerAngle(t2: number): number {
+  const t4 = rockerAngle(t2);
+  return Math.atan2(c * Math.sin(t4) - a * Math.sin(t2), d + c * Math.cos(t4) - a * Math.cos(t2));
+}
+// Mate angles (deg) for a crank angle (deg): each is child minus parent.
+const rockerDeg = (t: number) => deg(rockerAngle(rad(t)));
+const couplerDeg = (t: number) => deg(couplerAngle(rad(t))) - t;
+const pinDeg = (t: number) => deg(rockerAngle(rad(t)) - couplerAngle(rad(t)));
+
+// As-built pose at crank = 60°: the mate poses close the loop there, so
+// continuation starts from a closed, non-singular pose.
+const crank0 = 60;
+// The rocker reverses at crank 24.1° and 231.3° (crank and coupler in line),
+// and the rocker reaches the stop at 164°. The limits stay inside that span.
+const crankRange: [number, number] = [40, 130];
 
 const arm = assembly('four-bar');
-// Links live in separate Y layers so they never touch each other; every
-// connector sits at y = 0. Axis −Y makes a positive angle turn +X toward +Z.
+// Every joint frame lies on the y=0 pin plane. Mated parts occupy opposite
+// half-spaces (ground and coupler at +Y, crank and rocker at −Y), so each
+// pair shares a face at its joint and no volume. Axis −Y makes a positive
+// angle turn +X toward +Z.
 const Y: [number, number, number] = [0, -1, 0];
 const pivot = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: Y });
 
-// A pin along Y at (x, z), spanning y0..y1 (drawn in the gap between two
-// link layers, 0.2 mm short of the next layer so it never touches it).
-const pinY = (x: number, z: number, y0: number, y1: number) =>
-  cylinder(y1 - y0, 3).rotateX(-90).translate(x, y0, z);
-
-// Ground: a base plate under the whole mechanism, a post under each ground
-// pivot (crank post in front, rocker post behind the rocker layer) and the
-// two ground pins the crank and rocker turn on.
+// Ground: a low bar with a post under each ground pivot. The coupler shares
+// the ground's layer; it passes above the bar at crank 0° and above the
+// crank post at crank 200°.
+const BAR_Z: [number, number] = [-24, -8];
+const POST_TOP = 4;
+const post = (x: number) => box(16, 6, POST_TOP - BAR_Z[1], true).translate(x, 3, (POST_TOP + BAR_Z[1]) / 2);
 const ground = arm.part(
   'ground',
-  box(d + 40, 51, 8, true).translate(d / 2, 22.5, -50)
-    .union(box(8, 6, 46, true).translate(0, 0, -23))
-    .union(box(8, 6, 46, true).translate(d, 45, -23))
-    .union(pinY(0, 0, 3, 8.8))
-    .union(pinY(d, 0, 39.2, 42)),
+  box(d + 16, 6, BAR_Z[1] - BAR_Z[0], true).translate(d / 2, 3, (BAR_Z[0] + BAR_Z[1]) / 2)
+    .union(post(0))
+    .union(post(d)),
 );
-const crank = arm.part('crank', box(a, 6, 8, true).translate(a / 2, 12, 0).union(pinY(a, 0, 15, 20.8)));
-const coupler = arm.part('coupler', box(b, 6, 8, true).translate(b / 2, 24, 0).union(pinY(b, 0, 27, 32.8)));
-const rocker = arm.part('rocker', box(c, 6, 8, true).translate(c / 2, 36, 0));
-// Stop block in the rocker's layer, standing on the base plate just left of
-// the rocker pivot: the rocker leans onto it; crank and coupler pass well
-// clear of it (they also live in other layers).
+const crank = arm.part('crank', box(a, 6, 8, true).translate(a / 2, -3, 0));
+const coupler = arm.part('coupler', box(b, 6, 8, true).translate(b / 2, 3, 0));
+const rocker = arm.part('rocker', box(c, 6, 8, true).translate(c / 2, -3, 0));
+// Stop block in the rocker's layer, seated on the ground bar face just left
+// of the rocker pivot: the rocker leans onto it past the mate limits; the
+// crank stays well clear of it.
 const stopX: [number, number] = [72, 88];
-const stopZ: [number, number] = [-45.8, 16];
+const stopZ: [number, number] = [BAR_Z[0], 16];
 const stop = arm.part(
   'stop',
-  box(stopX[1] - stopX[0], 6, stopZ[1] - stopZ[0], true).translate((stopX[0] + stopX[1]) / 2, 36, (stopZ[0] + stopZ[1]) / 2),
+  box(stopX[1] - stopX[0], 6, stopZ[1] - stopZ[0], true).translate((stopX[0] + stopX[1]) / 2, -3, (stopZ[0] + stopZ[1]) / 2),
 );
+// Stop seat: a point on the face the stop shares with the ground bar.
+const stopSeat = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [(stopX[0] + stopX[1]) / 2, 0, (BAR_Z[0] + BAR_Z[1]) / 2] as [number, number, number] } };
 
 ground.connector('o2', pivot(0));
 ground.connector('o4', pivot(d));
-ground.connector('stopMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-stop.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+ground.connector('stopMount', stopSeat);
+stop.connector('mount', stopSeat);
 crank.connector('base', pivot(0));
 crank.connector('tip', pivot(a));
 coupler.connector('base', pivot(0));
@@ -92,13 +108,20 @@ coupler.connector('tip', pivot(b));
 rocker.connector('base', pivot(0));
 rocker.connector('tip', pivot(c));
 
-arm.mate('crank', 'ground.o2', 'crank.base', 'revolute', { limitsDeg: [0, 360] });
-arm.mate('rocker', 'ground.o4', 'rocker.base', 'revolute', { pose: deg(t4At0), limitsDeg: [0, 180] });
-arm.mate('coupler', 'crank.tip', 'coupler.base', 'revolute', { pose: deg(t3At0), limitsDeg: [-180, 180] });
-arm.mate('pin', 'coupler.tip', 'rocker.tip', 'revolute', { limitsDeg: [-180, 180] });
+// Each loop joint is limited to its closed-form values at the two ends of
+// the crank travel, so the loop closes at every mate limit.
+const limits = (f: (t: number) => number): [number, number] => {
+  const [lo, hi] = [f(crankRange[0]), f(crankRange[1])];
+  return [Math.min(lo, hi), Math.max(lo, hi)];
+};
+arm.mate('crank', 'ground.o2', 'crank.base', 'revolute', { pose: crank0, limitsDeg: crankRange });
+arm.mate('rocker', 'ground.o4', 'rocker.base', 'revolute', { pose: rockerDeg(crank0), limitsDeg: limits(rockerDeg) });
+arm.mate('coupler', 'crank.tip', 'coupler.base', 'revolute', { pose: couplerDeg(crank0), limitsDeg: limits(couplerDeg) });
+arm.mate('pin', 'coupler.tip', 'rocker.tip', 'revolute', { pose: pinDeg(crank0), limitsDeg: limits(pinDeg) });
 arm.mate('stopMount', 'ground.stopMount', 'stop.mount', 'fastened');
 
-// Sweep the crank alone; the loop solver poses coupler and rocker.
+// Sweep the crank alone, past both mate limits; the loop solver poses
+// coupler and rocker.
 const sweep = await kinematic.checkSweptCollision(arm, { joint: 'crank', range: [0, 200, STEP] });
 const first = sweep.collidingPoses[0];
 if (first === undefined) throw new Error('expected the rocker to reach the stop');
@@ -135,4 +158,4 @@ const loopDiags = sweep.diagnostics.filter((x) => x.code.startsWith('kinematic.l
 console.log(`[four-bar] sampled ${sweep.posesSampled} poses; loop diagnostics: ${loopDiags.map((x) => x.code).join(', ') || 'none'}`);
 if (sweep.posesSampled !== 200 / STEP + 1) throw new Error('the crank-rocker should sweep its whole range without a loop stop');
 
-return arm.solvedModel({ crank: 60 });
+return arm.solvedModel({ crank: crank0 });

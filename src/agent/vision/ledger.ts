@@ -12,7 +12,6 @@
 // (or the `resolve_assumptions` MCP tool) confirm/override open facts and
 // derive param overrides.
 //
-// Spec: kernelCAD-private/docs/specs/2026-09-14-image-ledger-design.md.
 // The same ledger records the facts `drawing_to_cad` reads off an engineering
 // drawing PDF (stated dimensions, symmetry, linework measured at the sheet
 // scale, defaults) — see src/agent/drawing/ and

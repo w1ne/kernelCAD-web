@@ -15,6 +15,7 @@
 //   5. extrude(-depth) — extrudes inward (since plane normal is outward).
 //      For 'symmetric', translate the plane outward by depth first and
 //      extrude(-2*depth). For 'through', use deriveThroughDepth(target).
+//      For upToFace, cutoutUpToFace trims a long prism at the target plane.
 //   6. cutWithHistory(target, tool) → the post-boolean result.
 //   7. Walk new faces, classify via createdFaceTracker.classifyCutoutFace.
 //
@@ -34,7 +35,9 @@ import { collectParamRefs } from '../../../shared/runtime/resolveParams';
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
+import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { faceFrameOrigin } from './faceFrame';
+import { buildUpToFaceTool } from './cutoutUpToFace';
 import {
   applyCreatedRefs,
   captureAllFaceSnapshots,
@@ -151,6 +154,20 @@ function deriveThroughDepth(
   return maxAlong;
 }
 
+/** Place the profile on `plane`. A `Drawing` has no spline or NURBS segment
+ *  kinds, so a profile with one is built flat on XY by the NURBS lowerer and
+ *  moved onto the plane by the plane's own local-to-world transform. */
+function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replicad.Plane): replicad.Sketch {
+  if (!hasNurbsSegments(commands as SketchCommand[])) {
+    return drawingFromCommands(commands).sketchOnPlane(plane) as replicad.Sketch;
+  }
+  const flat = buildNurbsSketchOnPlane(commands as SketchCommand[], 'XY');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const localToGlobal = (plane as any).localToGlobal as { transform(s: unknown): unknown };
+  const placed = replicad.cast(localToGlobal.transform(flat.wire.wrapped) as never) as replicad.Wire;
+  return new replicad.Sketch(placed, { defaultOrigin: plane.origin, defaultDirection: plane.zDir });
+}
+
 /** Build the prism tool by extruding the profile along the bore axis from
  *  the entry face plane. */
 function buildPrismTool(
@@ -159,7 +176,6 @@ function buildPrismTool(
   effectiveDepth: number,
   symmetric: boolean,
 ): replicad.Shape3D {
-  const drawing = drawingFromCommands(commands);
   const OVERSHOOT = 0.01;
   const totalDepth = symmetric ? effectiveDepth * 2 + OVERSHOOT * 2 : effectiveDepth + OVERSHOOT * 2;
   // For symmetric: start the plane offset by +effectiveDepth in the outward
@@ -174,10 +190,8 @@ function buildPrismTool(
   // Build a Plane with origin at planeOrigin, xDir=uBasis, normal=outward.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const plane = new (replicad as any).Plane(planeOrigin, entry.uBasis, entry.normalOutward) as replicad.Plane;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sketch = drawing.sketchOnPlane(plane) as any;
   // extrude(-totalDepth) extrudes against the plane normal — into the body.
-  return sketch.extrude(-totalDepth) as replicad.Shape3D;
+  return profileSketchOnPlane(commands, plane).extrude(-totalDepth) as replicad.Shape3D;
 }
 
 function attachCreatedRefs(
@@ -339,6 +353,21 @@ function tryBuildPrismTool(
   }
 }
 
+/** Depth-driven tool: blind, symmetric or 'through'. */
+function buildDepthTool(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  commands: readonly SketchCommand[],
+): { tool: replicad.Shape3D; effectiveDepth: number; through: boolean } | { error: CompilerDiagnostic } {
+  const depthRes = resolveCutoutDepth(feature, target, entry);
+  if ('error' in depthRes) return depthRes;
+  const { effectiveDepth, through, symmetric } = depthRes;
+  const tool = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  if ('error' in tool) return tool;
+  return { tool, effectiveDepth, through };
+}
+
 /** Boolean-cut the tool out of the target, converting a throw into a diagnostic. */
 function tryCutWithHistory(
   target: OcctBackend,
@@ -436,19 +465,14 @@ export function lowerCutout(
   // Suppress unused-var warning until slice-2 might consume profileBackend.
   void profileBackend;
 
-  const depthRes = resolveCutoutDepth(feature, target, entry);
-  if ('error' in depthRes) {
-    diagnostics.push(depthRes.error);
-    return { backend: target, diagnostics };
-  }
-  const { effectiveDepth, through, symmetric } = depthRes;
-
-  const toolRes = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  const toolRes = feature.inputs.upToFace
+    ? buildUpToFaceTool(feature, target, records, entry, (depth) => buildPrismTool(entry, commands, depth, false))
+    : buildDepthTool(feature, target, entry, commands);
   if ('error' in toolRes) {
     diagnostics.push(toolRes.error);
     return { backend: target, diagnostics };
   }
-  const toolShape = toolRes;
+  const { tool: toolShape, effectiveDepth, through } = toolRes;
 
   const toolBackend = new OcctBackend(toolShape);
   const cutRes = tryCutWithHistory(target, toolBackend, feature.id);

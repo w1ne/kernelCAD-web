@@ -24,17 +24,27 @@ const OPTION_KEY_ARGS = {
   spline3d: 'points',
   variableSweep: 'spine, sections',
   surfaceFromBoundary: 'curves',
+  sew: 'surfaces',
 } as const;
 
-/** Reject a non-object opts or an unknown key for the curve, sweep and
- *  boundary-surface constructors. `spline3d(pts, 0.2)` and
- *  `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
+function optionSignature(
+  api: 'nurbsSurface' | 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary' | 'sew',
+  unknownKey: boolean,
+): string {
+  if (api === 'nurbsSurface') return 'nurbsSurface(opts)';
+  return `${api}(${OPTION_KEY_ARGS[api]}, opts${unknownKey ? '' : '?'})`;
+}
+
+/** Reject a non-object opts or an unknown key for the surface, curve, sweep,
+ *  boundary-surface and sewing operations. `sew(surfaces, { requireClosd: true })`
+ *  used to silently disable the closed-shell requirement. `spline3d(pts, 0.2)`
+ *  and `spline3d(pts, { tensoin: 0.2 })` used to build with the default 0.5
  *  tension, `nurbsCurve(cp, { periodic: true })` built an open curve,
  *  `variableSweep(spine, sections, { continuty: 'C2' })` swept at C1 and
  *  `surfaceFromBoundary(curves, { samples: 40 })` filled at the default 15
  *  points, all with no diagnostic. */
 function assertOptionKeys(
-  api: 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary',
+  api: 'nurbsSurface' | 'nurbsCurve' | 'spline3d' | 'variableSweep' | 'surfaceFromBoundary' | 'sew',
   keys: readonly string[],
   example: string,
   opts: unknown,
@@ -42,7 +52,7 @@ function assertOptionKeys(
   if (opts === undefined || opts === null) return;
   if (typeof opts !== 'object' || Array.isArray(opts)) {
     invalidArgs({
-      api: `${api}(${OPTION_KEY_ARGS[api]}, opts?)`,
+      api: optionSignature(api, false),
       path: 'opts',
       got: opts,
       showType: true,
@@ -54,7 +64,7 @@ function assertOptionKeys(
   for (const key of Object.keys(opts)) {
     if (!keys.includes(key)) {
       invalidArgs({
-        api: `${api}(${OPTION_KEY_ARGS[api]}, opts)`,
+        api: optionSignature(api, true),
         path: `opts.${key}`,
         gotText: `an unknown option '${key}'`,
         requires: `one of ${keys.join(', ')}`,
@@ -69,26 +79,7 @@ export function makeNurbsSurfaceMethods(
   session: CaptureSession,
 ): Pick<KernelCadApi, 'nurbsSurface' | 'surfaceFromCurves' | 'nurbsCurve' | 'spline3d'> {
   return {
-    nurbsSurface(opts) {
-      validateNurbsControls(opts.controls);
-      validateNurbsDegree(opts.controls, opts.degree);
-      if (opts.weights && !isRectangularGrid(opts.weights as unknown[][])) {
-        throw new KernelError(
-          'feature.nurbs.degenerate-controls',
-          `nurbsSurface: weights grid must be the same rectangular shape as controls; got ${describeGridShape(opts.weights)}.`,
-          undefined,
-          'nurbs.degenerate-controls — weights grid must match controls shape.',
-        );
-      }
-      return session.addNurbsSurface({
-        kind: 'nurbsSurface',
-        controls: opts.controls,
-        weights: opts.weights,
-        degree: opts.degree,
-        knots: opts.knots,
-        periodic: opts.periodic,
-      });
-    },
+    nurbsSurface: opts => captureNurbsSurface(session, opts),
 
     surfaceFromCurves(sections) {
       if (!Array.isArray(sections) || sections.length < 2) {
@@ -191,6 +182,36 @@ export function makeNurbsSurfaceMethods(
       });
     },
   };
+}
+
+function captureNurbsSurface(
+  session: CaptureSession,
+  opts: Parameters<KernelCadApi['nurbsSurface']>[0],
+): ReturnType<KernelCadApi['nurbsSurface']> {
+  assertOptionKeys(
+    'nurbsSurface',
+    ['controls', 'weights', 'degree', 'knots', 'periodic'],
+    'nurbsSurface({ controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]], degree: { u: 1, v: 1 } })',
+    opts,
+  );
+  validateNurbsControls(opts.controls);
+  validateNurbsDegree(opts.controls, opts.degree);
+  if (opts.weights && !isRectangularGrid(opts.weights as unknown[][])) {
+    throw new KernelError(
+      'feature.nurbs.degenerate-controls',
+      `nurbsSurface: weights grid must be the same rectangular shape as controls; got ${describeGridShape(opts.weights)}.`,
+      undefined,
+      'nurbs.degenerate-controls — weights grid must match controls shape.',
+    );
+  }
+  return session.addNurbsSurface({
+    kind: 'nurbsSurface',
+    controls: opts.controls,
+    weights: opts.weights,
+    degree: opts.degree,
+    knots: opts.knots,
+    periodic: opts.periodic,
+  });
 }
 
 export function makeCurveMethods(
@@ -351,6 +372,7 @@ export function makeSweepMethods(
           'invalid-args.sew.surfaces — pass an array of at least 1 Surface returned by nurbsSurface() / surfaceFromCurves() / surfaceFromBoundary().',
         );
       }
+      assertOptionKeys('sew', ['tolerance', 'requireClosed'], 'sew([surfaceA, surfaceB], { requireClosed: true })', opts);
       const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
       for (let i = 0; i < surfaces.length; i++) {
         const surface = surfaces[i];

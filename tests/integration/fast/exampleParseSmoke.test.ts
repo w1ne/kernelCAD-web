@@ -21,6 +21,7 @@ const relativeExample = (file: string) => `examples/${file.slice(EXAMPLES_ROOT.l
 // checks still run for every one so malformed source cannot hide here.
 const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts', 'detailed timing-belt sweeps'],
+  ['examples/cookbook-parity/involute-spur-gear-pair.kcad.ts', 'tooth-interference report samples exact BREP distance across a mesh cycle'],
   ['examples/cookbook-parity/gridfinity-bin.kcad.ts', '0.8 s local evaluate; bin booleans approach the per-test budget'],
   ['examples/cookbook/wayfarer-temple-ray-ban.kcad.ts', '1.0 s local detailed temple model evaluation'],
   ['examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts', 'detailed helical thread geometry'],

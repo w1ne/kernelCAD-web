@@ -28,6 +28,7 @@
 
 import * as replicad from 'replicad';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { smoothSplineConfig } from '../../../shared/capture/smoothSplineTangents';
 import { resolveTangency } from './tangencySolver';
 
 /** Split a command list into `moveTo … close` groups. */
@@ -62,7 +63,7 @@ function applySegment(
   if (c.kind === 'sagittaArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
   if (c.kind === 'bulgeArc') return pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
   if (c.kind === 'radiusArc') return pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], radiusArcSagitta(c, currentX, currentY));
-  if (c.kind === 'smoothSpline') return pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
+  if (c.kind === 'smoothSpline') return pen.smoothSplineTo([c.x.evaluated, c.y.evaluated], smoothSplineConfig(c));
   throw new Error(`drawingFromCommands: unsupported segment kind '${(c as { kind: string }).kind}'`);
 }
 
@@ -138,5 +139,39 @@ export function drawingFromCommands(input: readonly SketchCommand[]): replicad.D
     drawing = drawing.cut(drawingForLoop(groups[i]));
   }
   return drawing;
+}
+
+/**
+ * Build one open planar drawing from a single `moveTo … segment+` command
+ * chain. The open-face projection path uses `Drawing.sketchOnPlane()` to lift
+ * this wire into its explicitly supplied source frame. It deliberately does
+ * not close the path or accept multiple moveTo groups: those would make the
+ * projected fragment count and command grouping ambiguous.
+ */
+export function drawingFromOpenCommands(input: readonly SketchCommand[]): replicad.Drawing {
+  const commands = resolveTangency(input);
+  if (commands.length < 2 || commands[0].kind !== 'moveTo') {
+    throw new Error('drawingFromOpenCommands: expected moveTo followed by at least one segment');
+  }
+  if (commands.some((command) => command.kind === 'close')) {
+    throw new Error('drawingFromOpenCommands: open projection source must not contain close');
+  }
+  if (commands.slice(1).some((command) => command.kind === 'moveTo')) {
+    throw new Error('drawingFromOpenCommands: one continuous path is required; multiple moveTo groups are unsupported');
+  }
+
+  const first = commands[0];
+  let pen: replicad.DrawingPen = replicad.draw([first.x.evaluated, first.y.evaluated]);
+  let currentX = first.x.evaluated;
+  let currentY = first.y.evaluated;
+  for (let i = 1; i < commands.length; i++) {
+    const command = commands[i];
+    pen = applySegment(pen, command, currentX, currentY);
+    if ('x' in command && 'y' in command) {
+      currentX = command.x.evaluated;
+      currentY = command.y.evaluated;
+    }
+  }
+  return pen.done();
 }
 

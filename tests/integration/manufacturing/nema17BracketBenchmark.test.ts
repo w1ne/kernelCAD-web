@@ -9,9 +9,8 @@
 //   3. the named interfaces (pilot bore, M3 square, M5 base pair: diameter,
 //      axis, through-length and position) are measured from the re-imported
 //      STEP, not from the source;
-//   4. a Width edit through set_param's source rewrite recomputes, grows the
-//      solid by exactly the width delta, and keeps the motor and base holes
-//      centred with the same pitch;
+//   4. Width and Thickness edits through set_param's source rewrite recompute
+//      the solid while preserving the motor and base hole interfaces;
 //   5. seeded defects (M3 tap-drill size instead of clearance, a motor
 //      pattern shifted off the bore) fail the gate.
 // Tolerances are this fixture's own: 0.1 % on volume (exact B-rep faces) and
@@ -127,6 +126,61 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     expect(bracketFailures(solid, { ...DEFAULTS, width: 80 })).toEqual([]);
   }, 120_000);
 
+  it('a Thickness edit keeps the motor and mounting holes through the thicker plates', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const solid = await buildAndReimport(edited.new_code);
+    expect(bracketFailures(solid, { ...DEFAULTS, thickness: 8 })).toEqual([]);
+  }, 120_000);
+
+  it('catches upright holes that keep their old cutter length after a Thickness edit', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(edited.new_code, 'cylinder(thickness.add(2), radius)', 'cylinder(7, radius)');
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, thickness: 8 });
+
+    // The old 7 mm cutter stops inside the new 8 mm upright. It preserves
+    // the outside box, but the imported motor holes are blind and too short.
+    expect(failures.filter((failure) => failure.startsWith('bore ') || failure.startsWith('M3 '))).toHaveLength(10);
+    expect(failures.some((failure) => failure.startsWith('bore depth:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('bore kind:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('M3 depth:'))).toBe(true);
+    expect(failures.some((failure) => failure.startsWith('M3 kind:'))).toBe(true);
+  }, 120_000);
+
+  it('catches base holes that keep their old cutter length after a Thickness edit', async () => {
+    const edited = setParamValue(SOURCE, 'Thickness', 8);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(edited.new_code, 'cylinder(thickness.add(2), 2.75)', 'cylinder(7, 2.75)');
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, thickness: 8 });
+
+    // The M5 cutters start 1 mm below the base. A stale 7 mm length stops
+    // 2 mm inside the 8 mm plate while leaving the bracket's outside bounds
+    // unchanged; STEP depth, through-kind, and volume checks must reject it.
+    expect(failures).toHaveLength(5);
+    expect(failures.filter((failure) => failure.startsWith('M5 depth:'))).toHaveLength(2);
+    expect(failures.filter((failure) => failure.startsWith('M5 kind:'))).toHaveLength(2);
+    expect(failures.some((failure) => failure.startsWith('volume rel. error:'))).toBe(true);
+    expect(failures.every((failure) => !failure.startsWith('bbox.'))).toBe(true);
+  }, 120_000);
+
+  it('catches base holes left at the default flange depth after a BaseDepth edit', async () => {
+    const edited = setParamValue(SOURCE, 'BaseDepth', 60);
+    if (!edited.ok) throw new Error(edited.error);
+    const stale = inject(
+      edited.new_code,
+      'const baseHoleY = thickness.add(baseDepth.subtract(thickness).divide(2));',
+      'const baseHoleY = 22.5;',
+    );
+    const failures = bracketFailures(await buildAndReimport(stale), { ...DEFAULTS, baseDepth: 60 });
+
+    // A stale 22.5 mm coordinate still cuts valid through-holes and leaves
+    // volume and bounds unchanged. The STEP interface oracle must catch that
+    // both holes missed the new 32.5 mm flange midpoint.
+    expect(failures).toHaveLength(2);
+    expect(failures).toEqual(['M5 y: 22.5 != 32.5', 'M5 y: 22.5 != 32.5']);
+  }, 120_000);
+
   it('catches M3 tap-drill holes where the motor needs clearance holes', async () => {
     const code = inject(SOURCE, 'throughUpright(1.7)', 'throughUpright(1.25)');
     const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
@@ -138,5 +192,28 @@ describe('manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227)', () => {
     const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
     expect(failures).toHaveLength(1);
     expect(failures[0]).toMatch(/^M3 centre x: 31(\.\d+)? != 30$/);
+  }, 120_000);
+
+  it('catches one M5 base hole shifted off the 40 mm mounting pitch', async () => {
+    const code = inject(SOURCE, 'for (const dx of [-20, 20]) {', 'for (const dx of [-20, 21]) {');
+    const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
+
+    // A hole moving within the base leaves the solid volume and outer box
+    // unchanged, so the interface oracle must catch its 41 mm pitch and
+    // 0.5 mm center shift independently.
+    expect(failures).toHaveLength(2);
+    expect(failures.map((failure) => failure.split(':')[0])).toEqual(['M5 pitch', 'M5 centre x']);
+    expect(failures[0]).toMatch(/^M5 pitch: 41(\.\d+)? != 40$/);
+    expect(failures[1]).toMatch(/^M5 centre x: 30\.5 != 30$/);
+  }, 120_000);
+
+  it('catches the M5 base pair shifted together while preserving its 40 mm pitch', async () => {
+    const code = inject(SOURCE, 'for (const dx of [-20, 20]) {', 'for (const dx of [-19, 21]) {');
+    const failures = bracketFailures(await buildAndReimport(code), DEFAULTS);
+
+    // This defect preserves the pair's pitch, the solid volume and the outer
+    // box, so the independent centerline check must catch the +1 mm shift.
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatch(/^M5 centre x: 31 != 30$/);
   }, 120_000);
 });

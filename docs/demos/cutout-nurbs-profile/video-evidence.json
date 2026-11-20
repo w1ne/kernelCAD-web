@@ -1,0 +1,47 @@
+{
+  "invocation": "node --import tsx docs/demos/cutout-nurbs-profile/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 4,
+    "scenes": 4,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "renderInvocations": [
+    "node dist/cli/index.js render instrument-lid.kcad.ts -o lid.png --pose 30,40 --width 640 --height 480",
+    "node dist/cli/index.js render instrument-lid.kcad.ts -o lid.png --pose 200,35 --width 640 --height 480",
+    "node dist/cli/index.js render instrument-lid.kcad.ts -o lid.png --pose 0,90 --width 640 --height 480"
+  ],
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "16.000000",
+      "size": "103884"
+    }
+  },
+  "inputSha256": {
+    "lid-front.png": "215028abe149040b85c2ee461407562bdb4f141e8d6bb60329c70b6371c7c97c",
+    "lid-back.png": "30a9f9772b11e91a9a1273a88472f0d8786859705d9425a3a7edf8d0f45b114e",
+    "lid-top.png": "d83b13a3f6642b0c3522a333da25040832d00fbb49b79223dd019edab47decff",
+    "evidence.json": "1dc307dd31b56836f0340fb86b8476cc78de6442c5e34fdb2199c8f22437d211"
+  },
+  "outputSha256": {
+    "demo.mp4": "a7f16b5b7bcf7c6d1d61498d1a6f88329f6c73a224cee481226ffe205008f6aa",
+    "poster.png": "32f5f7a5e1701f5f66efd7b90f732781e2233868ceb60d7b99c4a4a08f909ef9"
+  }
+}

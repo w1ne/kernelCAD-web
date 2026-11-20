@@ -1,0 +1,256 @@
+{
+  "scope": "Local kernelCAD Node API: faceSketch of the top face of a rounded cover plate, extrude to a gasket, OCCT volume and validity check, and the flat DXF profile of the gasket.",
+  "invocation": "node --import tsx docs/demos/face-sketch-clockwise-arcs/capture-demo.mts",
+  "source": "docs/demos/face-sketch-clockwise-arcs/cover-gasket.kcad.ts",
+  "sourceSha256": "0ddc58f6eaa7912d2a17a75bcd905828f0f6238b8940ef872fade590bf327227",
+  "implementationSha256": {
+    "src/kernel/backends/occt/sketchFromShape.ts": "fca22de92e4c375e5152655f90c0802ec680bd77c9d018b930996588fb6ba469"
+  },
+  "expected": {
+    "basis": "closed form from the dimensions in the source script",
+    "outlineAreaMm2": 2378.539816,
+    "gasketVolumeMm3": 3472.383848,
+    "cornerBulge": 0.414214
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "loops": 5,
+    "outerLoop": [
+      [
+        "moveTo",
+        -25,
+        -20
+      ],
+      [
+        "bulgeArc",
+        -30,
+        -15,
+        -0.414214
+      ],
+      [
+        "lineTo",
+        -30,
+        15
+      ],
+      [
+        "bulgeArc",
+        -25,
+        20,
+        -0.414214
+      ],
+      [
+        "lineTo",
+        25,
+        20
+      ],
+      [
+        "bulgeArc",
+        30,
+        15,
+        -0.414214
+      ],
+      [
+        "lineTo",
+        30,
+        -15
+      ],
+      [
+        "bulgeArc",
+        25,
+        -20,
+        -0.414214
+      ],
+      [
+        "lineTo",
+        -25,
+        -20
+      ],
+      [
+        "close"
+      ]
+    ],
+    "holeLoops": [
+      [
+        [
+          "moveTo",
+          19.75,
+          -12
+        ],
+        [
+          "bulgeArc",
+          24.25,
+          -12,
+          -1
+        ],
+        [
+          "bulgeArc",
+          19.75,
+          -12,
+          -1
+        ],
+        [
+          "close"
+        ]
+      ],
+      [
+        [
+          "moveTo",
+          -24.25,
+          -12
+        ],
+        [
+          "bulgeArc",
+          -19.75,
+          -12,
+          -1
+        ],
+        [
+          "bulgeArc",
+          -24.25,
+          -12,
+          -1
+        ],
+        [
+          "close"
+        ]
+      ],
+      [
+        [
+          "moveTo",
+          19.75,
+          12
+        ],
+        [
+          "bulgeArc",
+          24.25,
+          12,
+          -1
+        ],
+        [
+          "bulgeArc",
+          19.75,
+          12,
+          -1
+        ],
+        [
+          "close"
+        ]
+      ],
+      [
+        [
+          "moveTo",
+          -24.25,
+          12
+        ],
+        [
+          "bulgeArc",
+          -19.75,
+          12,
+          -1
+        ],
+        [
+          "bulgeArc",
+          -24.25,
+          12,
+          -1
+        ],
+        [
+          "close"
+        ]
+      ]
+    ],
+    "cornerBulges": [
+      -0.414214,
+      -0.414214,
+      -0.414214,
+      -0.414214
+    ],
+    "gasketVolumeMm3": 3472.383848,
+    "gasketSizeMm": [
+      60,
+      40,
+      1.5
+    ],
+    "brepValid": true,
+    "flatLoops": 5,
+    "flatOutlineAreaMm2": 2378.5398,
+    "flatHoleAreasMm2": [
+      15.9043,
+      15.9043,
+      15.9043,
+      15.9043
+    ],
+    "dxf": {
+      "bytes": 1268,
+      "sha256": "7fff09289c7d43948348151101ad16f1e06b86a6aa931235e8ad7dbc451a4803"
+    }
+  },
+  "before": {
+    "commit": "d6737bdc1",
+    "gasketVolumeMm3": 3166.538931,
+    "flatOutlineAreaMm2": 2142.9204,
+    "errorDiagnostics": 0,
+    "outerLoop": [
+      [
+        "moveTo",
+        -25,
+        -20
+      ],
+      [
+        "bulgeArc",
+        -30,
+        -15,
+        2.414214
+      ],
+      [
+        "lineTo",
+        -30,
+        15
+      ],
+      [
+        "bulgeArc",
+        -25,
+        20,
+        -0.414214
+      ],
+      [
+        "lineTo",
+        25,
+        20
+      ],
+      [
+        "bulgeArc",
+        30,
+        15,
+        2.414214
+      ],
+      [
+        "lineTo",
+        30,
+        -15
+      ],
+      [
+        "bulgeArc",
+        25,
+        -20,
+        2.414214
+      ],
+      [
+        "lineTo",
+        -25,
+        -20
+      ],
+      [
+        "close"
+      ]
+    ]
+  },
+  "limits": [
+    "The values under \"before\" are recorded from a run on the named commit; this script does not measure them again.",
+    "No other CAD or CAM system opened the DXF file.",
+    "No gasket was cut."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

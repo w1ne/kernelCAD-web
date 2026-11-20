@@ -1,0 +1,14 @@
+{
+  "workflow": "solve_mates rejects a pose override for a fastened mate",
+  "fixture": "tests/integration/mcp/solveMates.test.ts",
+  "unitRegression": "src/modeling/mates/solver.test.ts",
+  "input": "solve_mates({ poses: { rigid: 90 } }) where rigid is a fastened mate",
+  "expected": "feature.invalid-args naming poses.rigid and zero articulation DOFs",
+  "canvas": "1280x720",
+  "durationSeconds": 9,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/fastened-mate-pose-rejection-1227-20261118/capture_demo.py",
+  "inspection": "python3 docs/demos/fastened-mate-pose-rejection-1227-20261118/inspect_demo.py"
+}

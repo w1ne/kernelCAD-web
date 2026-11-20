@@ -1,0 +1,16 @@
+{
+  "video": "demo.mp4",
+  "sha256": "1a6e158cedfe64b65b9104b3f88d1093d188e8e2b72e37f49ec541d8c0773360",
+  "bytes": 136057,
+  "durationSeconds": 15.0,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "sampleSeconds": [
+    2,
+    7,
+    12
+  ],
+  "contactSheet": "video-contact-sheet.png"
+}

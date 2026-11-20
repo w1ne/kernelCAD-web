@@ -129,7 +129,7 @@ function definedOnly<T extends object>(o: T): Partial<T> {
 }
 
 /** The svg-drawing options that render a pdf-drawing sheet: standard sheet
- *  (default A3), full title block, today's date, autoAnnotate unless the
+ *  (default A3), full title block, today's date, overall dimensions unless the
  *  author dimensions the sheet. */
 function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): SvgDrawingOptions {
   pdf = applyDraftingProfile(pdf);
@@ -143,6 +143,8 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
     ...definedOnly({
       modelName: pdf.modelName,
       views: pdf.views,
+      hiddenLines: pdf.hiddenLines,
+      scale: pdf.scale,
       draftingProfile: pdf.draftingProfile,
       annotationOverrides: pdf.annotationOverrides,
       layoutRepair: pdf.layoutRepair,
@@ -159,7 +161,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       style: pdf.style,
       plan: pdf.plan,
     }),
-    autoAnnotate: pdf.autoAnnotate ?? !authored,
+    autoAnnotate: pdf.autoAnnotate ?? (authored ? false : { include: ['overall'] }),
   };
 }
 

@@ -533,39 +533,75 @@ function frameConnector(origin: [number, number, number]) {
 let fastenSeq = 0;
 type PartRef = ReturnType<typeof grinder.part>;
 type PartShape = Parameters<typeof grinder.part>[1];
-function fixed(parent: PartRef, name: string, shape: PartShape): PartRef {
+type Seat = [number, number, number];
+// Every shape is authored in WORLD coordinates and the part placement is
+// identity, so both connectors of a mate share one world point: the fastened
+// zero pose is the authored pose. That point is the pair's seat, a point on
+// the face the two parts share, so each connector sits on its own part's
+// material. A connector origin is a plain number, so each seat reads the
+// current parameter values with Number(...). A parameter edit then runs the
+// script again and the seats move with the parts. The seats are the contact
+// points of the assembled state (explode = 0).
+function fixed(parent: PartRef, name: string, shape: PartShape, seat: Seat): PartRef {
   const child = grinder.part(name, shape);
   const slot = ++fastenSeq;
-  parent.connector(`fastener-${slot}-parent`, frameConnector([0, 0, 0]));
-  child.connector(`fastener-${slot}-child`, frameConnector([0, 0, 0]));
+  parent.connector(`fastener-${slot}-parent`, frameConnector(seat));
+  child.connector(`fastener-${slot}-child`, frameConnector(seat));
   grinder.mate(`fixed-${slot}`, `${parent.name}.fastener-${slot}-parent`, `${child.name}.fastener-${slot}-child`, 'fastened');
   return child;
 }
 
-const body = grinder.part('body-tube', bodyTube);
-fixed(body, 'catch-cup', cup);
-const carrierPart = fixed(body, 'lower-bearing-carrier', lowerCarrier);
-fixed(carrierPart, 'detent-click-ring', clickRing);
-const bottomBearingPart = fixed(carrierPart, 'bottom-bearing', bottomBearing);
-fixed(body, 'outer-ring-burr', outerBurr);
-const lidPart = fixed(body, 'lid', lid);
-fixed(lidPart, 'top-bearing', topBearing);
+// Current-parameter stations for the seats. Seats on revolved contacts sit on
+// the +y ray, in the half that `cutaway` keeps.
+const dR = Number(R);
+const dRi = Number(Ri);
+const dTop = Number(zTop);
+const dDrop = Number(drop);
+const dArm = Number(zArm);
+const dArmTop = Number(zArmTop);
+const dCrank = Number(crankLength);
+const ySeat = (r: number, z: number): Seat => [0, r, z];
 
-// The shaft turns in the bottom bearing (and the top one).
+const body = grinder.part('body-tube', bodyTube);
+// Cup shoulder on the tube bottom face (the V seam).
+fixed(body, 'catch-cup', cup, ySeat((dRi + dR) / 2, zCupTop));
+// Carrier rim and ring-burr OD in the body bore.
+const carrierPart = fixed(body, 'lower-bearing-carrier', lowerCarrier, ySeat(dRi, (carrierZ0 + carrierZ1) / 2));
+// Click ring top face under the carrier hub.
+fixed(carrierPart, 'detent-click-ring', clickRing, ySeat(rBrgOut - 1.35, carrierZ0));
+// Bearing outer races in their bores.
+const bottomBearingPart = fixed(carrierPart, 'bottom-bearing', bottomBearing, ySeat(rBrgOut, zBrgLo + W / 2));
+fixed(body, 'outer-ring-burr', outerBurr, ySeat(dRi, zBurr + burrH / 2));
+// Lid shoulder on the tube top face.
+const lidPart = fixed(body, 'lid', lid, ySeat((dRi + dR) / 2, dTop));
+fixed(lidPart, 'top-bearing', topBearing, ySeat(rBrgOut, dTop - W / 2));
+
+// The shaft turns in the bottom bearing (and the top one). The axis origin is
+// the centre of the bottom bearing, inside the shaft journal.
 const shaftPart = grinder.part('drive-shaft', shaft);
-bottomBearingPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
-shaftPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+const driveOrigin: Seat = [0, 0, zBrgLo + W / 2];
+bottomBearingPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: driveOrigin }, axis: [0, 0, 1] });
+shaftPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: driveOrigin }, axis: [0, 0, 1] });
 grinder.mate('drive', 'bottom-bearing.drive-axis', 'drive-shaft.drive-axis', 'revolute', { limitsDeg: [-180, 180] });
-const innerBurrPart = fixed(shaftPart, 'inner-conical-burr', innerBurr);
-fixed(shaftPart, 'grind-adjust-nut', nut);
-fixed(innerBurrPart, 'preload-spring', spring); // seats on the burr hub
-fixed(shaftPart, 'spring-washer', springWasher);
-fixed(shaftPart, 'circlip-lower', lowerCirclip);
-fixed(shaftPart, 'circlip-top', topCirclip);
-const armPart = fixed(shaftPart, 'crank-arm', crankArm);
-fixed(armPart, 'crank-screw', screw);
-const pinPart = fixed(armPart, 'knob-pin', pin);
-fixed(pinPart, 'walnut-knob', knob);
+// Burr bore on the shaft journal.
+const innerBurrPart = fixed(shaftPart, 'inner-conical-burr', innerBurr, ySeat(rShaft, zBurr + burrH / 2 + dDrop));
+// Nut thread on the shaft thread, at the pitch radius.
+fixed(shaftPart, 'grind-adjust-nut', nut, ySeat(rShaft - (3 / 8) * H, nutZ0 + nutH / 2 + dDrop));
+// First spring coil on the burr hub top face (the helix starts on +x).
+fixed(innerBurrPart, 'preload-spring', spring, [rShaft + 2.4, 0, zSpringBot + dDrop]);
+// Washer bore around the journal (0.1 mm radial clearance).
+fixed(shaftPart, 'spring-washer', springWasher, ySeat(rShaft + 0.05, zCollar + 0.525 + dDrop));
+// Circlips on their groove floors.
+fixed(shaftPart, 'circlip-lower', lowerCirclip, ySeat(rShaft - 0.45, zCollar + 1.45 + dDrop));
+fixed(shaftPart, 'circlip-top', topCirclip, ySeat(rShaft - 0.45, dTop + 1 + dDrop));
+// Hex drive flat in the crank socket (a flat faces +x).
+const hexFlat = (hexCircR + FIT_HEX_SLIP / 2) * Math.cos(Math.PI / 6);
+const armPart = fixed(shaftPart, 'crank-arm', crankArm, [hexFlat, 0, dArm + (hexLen - 1) / 2 + dDrop]);
+// Screw head underside on the hub top face.
+fixed(armPart, 'crank-screw', screw, ySeat(4.3, dArmTop + dDrop));
+// Pin press fit in the arm end bore; knob bottom face on the pin collar.
+const pinPart = fixed(armPart, 'knob-pin', pin, [dCrank + 2.6, 0, dArmTop - armT / 2 + dDrop]);
+fixed(pinPart, 'walnut-knob', knob, [dCrank + 3, 0, dArmTop + 1 + dDrop]);
 
 setCameraTarget(0, 0, 115);
 

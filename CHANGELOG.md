@@ -1,5 +1,248 @@
 # Unreleased
 
+- `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
+  `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
+  Before, every such cutout failed with `feature.kernel-failed` (`unsupported
+  segment kind 'nurbsSegment'`), so an elliptical or spline-bounded pocket
+  had to be an extruded profile subtracted by hand at the right face
+  position. A 12 × 6 mm elliptical through-hole in a 20 mm block removes
+  π·12·6·20 mm³ (relative error under 1e-6), and a spline or mixed profile
+  gives the same volume, face count and centroid as the explicit
+  `subtract()`. The spline and ellipse side faces now carry the `wall`
+  created ref. Limit: a blind cutout still overshoots its depth by 0.01 mm,
+  as it does for a polyline profile.
+
+- Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  12 `mechanism.orphan-part` errors because only the bolts and the two shaft
+  clusters had mates. The posts are fastened to the base, the rib to the
+  cover, each shaft turns in the base on a revolute mate, and each bolt is
+  fastened to the cover and to the base. Part geometry is unchanged. The
+  assembly sequence planner now reports four fastened clusters and 21 steps
+  for this example (before: two clusters, 19 steps);
+  `docs/demos/assembly-sequence-planner/` is recaptured.
+- `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
+  `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
+  draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
+  a path had no ellipse: the author wrote rational NURBS control points and
+  weights by hand, or used a polyline. Both calls are exact: one rational
+  quadratic segment per 90° of sweep. A 20 × 10 mm ellipse extruded 5 mm
+  measures 3141.592654 mm³ (π·rx·ry·h), and a quarter arc revolved into a
+  2:1 elliptical head measures (2/3)·π·R²·h. The `ellipse` centre and
+  semi-axes accept `param()` values; `ellipseArc` takes plain numbers, and
+  radii too small to join the two points throw `feature.invalid-args` with
+  the smallest pair that fits. Limits: `Sketch.offset` and the sketch
+  booleans do not take a NURBS profile. Demo:
+  `docs/demos/path-ellipse/`.
+- Example `examples/exploded/clamshell-table-first.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  4 errors (orphan `table`, lid through base and table at the -15° hinge
+  limit, `dof-mismatch` at the closed pose). The base is fastened on the
+  table with face contact and the hinge opens from 0° to 135°. The table is
+  still declared first, and mate-axis explode still moves the lid 300 mm
+  along the hinge axis.
+
+- Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  16 errors. Mated parts share a face on the y=0 pin plane, the stop is seated
+  on the ground bar, and the mate limits are the crank travel from 40° to
+  130°. The 0° to 200° sweep still finds the first rocker-to-stop contact at
+  crank 164°, equal to the closed form.
+
+- Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
+  and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
+  returned 2 errors. In each snippet the child part sits on the top face of
+  the parent and both connectors of the fastened mate are on that shared
+  face.
+- A mirrored or turned `smoothSpline` profile keeps its shape. The free end
+  tangent of a `smoothSpline` segment is the sketch +X direction, and the
+  segment stored no tangent, so `Sketch.reflect('y')` built a different
+  curve: a 20 × 14 mm plate with a two-segment bulged edge went from
+  308.000 mm² to 318.733 mm², and a mirrored segment that follows `moveTo`
+  left its 10 mm wide bounding box by 1.709 mm on each side. `reflect`,
+  `translate`, `rotate`, `scale` and loft section rotation (`twistDeg`,
+  `planes[].rotationDeg`) now write the mapped tangent into the segment.
+  `Sketch.rotate` no longer refuses a `smoothSpline` profile.
+  `path().smoothSpline(x, y, { endTangent, startTangent })` states the
+  tangents directly: `[x, y]` directions of travel that accept `param()`
+  values; a zero-length vector, a value that is not an `[x, y]` pair and an
+  unknown option key throw `feature.invalid-args`. `Sketch.reflect` also
+  mirrors the `startTangent` / `endTangent` constraints of `spline([...])`;
+  before, it mirrored the waypoints only (319.176 mm² by hand, 321.666 mm²
+  from `reflect('x')` on the test profile). Demo:
+  `docs/demos/smoothspline-tangents/`.
+
+- Kinematic skill cookbook snippet 9 (`09-four-bar-loop-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 15 errors. Mated four-bar parts share a face on the pin plane, the
+  stop is seated on the ground bar, and the mate limits are the crank travel
+  short of the stop (40° to 130°). The sweep still runs past the limits and
+  finds the first rocker-to-stop contact at crank 164°, equal to the closed
+  form.
+
+- A `union()` member that carries no face lineage, such as a sketch extrude
+  or extruded text, now keeps its finish too. `union(plate, logo)` with a
+  navy plate and orange raised text rendered all navy in `kernelcad render`,
+  `render_preview` and GLB export, because the per-face finishes were read
+  from naming lineage that sketch extrudes do not write. Every boolean now
+  records which operand each result face came from, from the kernel's own
+  boolean history. `examples/gallery/raised-logo-extrusion.kcad.ts` is one
+  body again instead of two parts and a fastened mate (#1639).
+
+- Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 16 errors. Mated latch parts share a face on the pin plane, the
+  keeper rides a housing rail, and the mate limits are the latched-side travel
+  (handle -60° to -10°). The sweep still runs past the limits and reports the
+  over-center point as `kinematic.loop.branch-flip`.
+- `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
+  `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
+  profile and return a new sketch; the source is unchanged, so one profile
+  can be placed several times. They are synchronous. Every loop is
+  transformed, holes included, and arcs stay exact arcs: a 30 × 10 mm slot
+  turned 90° has the same 278.540 mm² area and the same face count, and at
+  `scale(2)` its R5 ends are R10. Before, a profile could only be mirrored;
+  a sketch from `offset`, a sketch boolean, `sectionSketch`, `faceSketch`,
+  `silhouette` or a DXF/SVG import could not be moved at all. `dx`, `dy`,
+  `factor`, `center` and `param()` coordinates stay symbolic and follow
+  `set_param`. Refused with `feature.invalid-args`: a `param()` rotation
+  angle (parameter expressions have no sin/cos), a factor that is not > 0
+  and a `sketch.text` sketch. Demo: `docs/demos/sketch-transform/`.
+- Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors because the beam was inside the wall block and inside the
+  bracket through the ±90° shoulder travel. The beam now laps the bracket
+  side face, with the joint origin on that face, and the returned model no
+  longer needs an `ignore` pair.
+- Kinematic skill cookbook snippet 5 (`05-clamshell-hinge-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 4 errors. The table is fastened under the base, the lid sits
+  between two hinge ears, and the hinge limit is [0°, 135°]. The snippet
+  sweeps -15° to 135° to find the colliding band (-15° to -1°), then sweeps
+  the declared limits and expects no collision.
+- Kinematic skill cookbook snippet 2 (`02-reachable-with-seed.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 27 errors because no link of the 6-DOF arm touched the next one.
+  Each mated pair now shares a face square to the joint axis, with the
+  connector origin on that face. The header no longer claims the closed-form
+  solver: an arm built with `arm.mate(...)` uses the mate-graph numeric
+  solver.
+- Kinematic skill cookbook snippet 1 (`01-swept-collision-shoulder.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 10 errors. The arm sits on a pedestal, the forearm laps the
+  upper arm at the elbow, and the shoulder limit is ±110°. The snippet sweeps
+  0° to 180° to find the colliding band (120° to 180°), then sweeps the
+  declared limits and expects no collision.
+- `Sketch.union(other)`, `Sketch.subtract(other)` and `Sketch.intersect(other)`
+  combine closed 2D profiles into one new sketch; `await` them. `other` is
+  one sketch or an array. Lines stay lines and arcs stay arcs, and a boundary
+  shared by two profiles disappears. A removed profile inside the outline
+  becomes a hole. For a 40 × 20 mm rectangle and a Ø16 disc centred on its
+  right edge: union 900.531 mm², subtract 699.469 mm², intersect
+  100.531 mm². The result is refused, not approximated, when it is not one
+  outline with holes: `feature.sketch-boolean.empty` (no area left),
+  `feature.sketch-boolean.split` (separate regions, or a result that touches
+  itself at a point) and `feature.sketch-boolean.failed`. The boolean is
+  computed when the script runs, so a `param()`-driven coordinate and a
+  spline segment throw `feature.invalid-args`. Demo:
+  `docs/demos/sketch-boolean/`.
+- `union()` keeps each member's own `.finish()`, `.material()` or `.color()`
+  on the faces that came from that member, in Studio, `render_preview`, an
+  assembly part's mesh and GLB export. A servo with a dark ABS case, an
+  aluminium horn and steel screw heads is one body (or one assembly part)
+  instead of one part and one fastened mate per colour. Before, Studio drew
+  the fused body in the default grey and GLB export painted it with the base
+  operand's finish. A finish on the union result still covers every face.
+  A bore wall or fillet blend takes the finish of the faces around it when
+  they agree, else the body's, never the cutter's. Example:
+  `examples/exports/servo-member-finishes.kcad.ts`.
+
+- `Sketch.offset(distance, { corners })` returns the parallel curve of a
+  closed profile as a new sketch; `await` it. A positive distance grows the
+  region (the outline moves outward and holes shrink), a negative distance
+  shrinks it. Lines stay lines and arcs stay arcs. `corners: 'round'`
+  (default) joins an outward-moving corner with an arc; `'sharp'` extends the
+  segments until they meet. A 40 × 20 mm rectangle offset by 2 mm encloses
+  1052.566 mm² (round) or 1056 mm² (sharp); offset by −2 mm it encloses
+  576 mm². The result is refused, not approximated, when it is not one
+  profile: `feature.sketch-offset.collapsed`, `feature.sketch-offset.split`
+  (a neck or gap closes, a hole reaches the boundary, or the profile touches
+  itself at exactly that distance) and `feature.sketch-offset.failed`. The
+  offset is computed when the script runs, so a `param()` distance, a
+  `param()`-driven coordinate and a spline segment throw
+  `feature.invalid-args`. Demo: `docs/demos/sketch-offset/`.
+- `.fillet(r)` and `.chamfer(d)` with no edge selector now round a part
+  built from several joined primitives. The union keeps coplanar seams so
+  face history stays exact. The blend solver could not pass the vertex where
+  a seam split a convex edge, at any radius, so a six-operand bracket refused
+  `.fillet(1)` outright. A failed fillet or chamfer is now retried on the
+  same solid with same-domain faces merged, keeping face and edge lineage.
+  When the default every-edge form still has edges no radius builds on, for
+  example where a boss meets a plate's corner tangentially, the other edges
+  are rounded and `feature.edge-feature.unblendable-edges-skipped` (warn)
+  lists each skipped edge. An explicit selection that cannot be blended
+  still fails with `feature.kernel-failed`. Successful fillets run as before
+  (#1612).
+- The rest-pose joint check no longer reports `mechanism.joint-mesh-gap` for a
+  connector that is inside its part and in the plane of one of its faces, for
+  example a slide connector at the base of a rail that is one solid with its
+  deck. The mesh point-in-solid test counted the faces its ray only touched
+  on an edge, so the connector read as outside the part (45.0 mm for a 90 mm
+  rail). A ray that meets a triangle edge is now repeated along a tilted
+  direction. The DFM wall and moulding checks use the same test. Demo:
+  `docs/demos/point-inside-face-plane-parity-20261119/`.
+- `faceSketch`, `sectionSketch`, the flat and section DXF profiles and the
+  `inspect` section report keep a clockwise arc that sweeps less than 180°.
+  Such an arc was returned as the opposite arc of the same circle, with no error: a
+  90° corner became a 270° arc that cut into the part. `faceSketch('top')` of
+  a 60 × 40 mm cover plate with R5 corners extruded to a gasket 8.8 % low in
+  volume; it now matches the closed form. Lines, full circles,
+  counter-clockwise arcs and arcs of 180° or more are unchanged. A sketch or
+  DXF file made with an earlier version keeps the wrong arcs; run the script
+  or the export again. Demo: `docs/demos/face-sketch-clockwise-arcs/`.
+- The refusal of a param in a `vec3` connector origin names a second way to
+  follow the param: in a script, `Number(p)` gives the current value as a
+  plain number, and an edit to the param runs the script again. The hint
+  named only the `at` path, which does not move a connector along its own
+  part. The `kernelcad-assemblies` skill has the same rule.
+- STEP export writes no colour for an assembly part that has none. Every
+  such part was written as red, and `import-step` then gave it an explicit
+  `.color("#ff0000")`. The part is now written and read back without a
+  colour, as a single-part export already was. A colour that the script sets
+  is unchanged. A project imported from STEP with an earlier version keeps
+  the red `.color(...)` calls in its script; import the file again or delete
+  them. Demo: `docs/demos/step-uncoloured-parts/`.
+- STEP colours use the correct colour space. Export wrote a hex colour to
+  `COLOUR_RGB` with the sRGB curve applied a second time (`#3366cc` became
+  `0.4845, 0.6652, 0.9063`, about `#7caae7`), and `import-step` read a file
+  colour of `0.2, 0.4, 0.8` as `#08229a`. Export now writes `0.2, 0.4, 0.8`
+  and import reads `#3366cc`, for single-part and assembly STEP. A kernelCAD
+  export then import returned the same hex before and still does. A project
+  imported from STEP with an earlier version keeps the darker colour that
+  version read; import the file again to correct it. Demo:
+  `docs/demos/step-colour-space/`.
+- Params work in plain JS math: `param('w', 60) + 4`, `Math.tan(a * Math.PI / 180)`,
+  loops and point lists (numeric coercion used to throw). An edit to such a
+  param rewrites its default in the source and rebuilds with dependency-aware
+  reuse. `updateModelParams` and `diff_geometry` route these edits; other
+  params keep the in-place path. `.add()` / `.multiply()` still work.
+- Incremental rebuild reuses every feature an edit did not touch (same hash
+  and all inputs reused), not only an unchanged prefix. Demo:
+  `docs/demos/params-plain-math/` (a 2-of-52-feature edit in ~0.15–0.2 s vs a
+  2.2 s full rebuild locally).
+- `kinematic.suggestJointRanges` and `verify({ check: 'joint-range' })` suggest
+  revolute and prismatic limits from geometry. Each joint is swept alone from
+  its authored pose, with other mates held at their authored poses, until a
+  non-exempt pair is within the clearance (default 0.3 mm) or the finite
+  search bound is reached. Exact BREP distance brackets the crossing, and the
+  reported stop is the clear side of that bracket so the suggested limit keeps
+  the requested clearance. A gap within 1e-6 mm of the clearance counts as
+  reached. The result is a limits snippet; the model is not rewritten. A
+  missing bound, the sweep budget, or a failed measurement is `unknown`, never
+  a clear range. `no-stop` means the sampled poses found no crossing, not a
+  continuous proof the interval is clear. Mate neighbours and declared contact
+  pairs are not stops.
 - Rocket flight study (#1441). `arm.flightStudy({ motor, aero, launch,
   recovery, minStabilityCal })` (or `shape.flightStudy`) takes mass and CG
   from the parts, replaces `motor.part` with the declared motor (thrust table
@@ -285,6 +528,13 @@
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
+
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
 
 # v0.17.4 — 2026-10-31
 

@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-11-17T10:49:15.820Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, or deployed runtime used.",
+  "invocation": "npx tsx docs/demos/assembly-mate-option-shape-20261117/capture-demo.mts",
+  "baselineReproduction": {
+    "baseRevision": "origin/develop b93aa9011a45a04dac172d48dca9c205e536ae21",
+    "invocation": "npx tsx docs/demos/assembly-mate-option-shape-20261117/baseline-repro.mts",
+    "result": "[] was accepted as omitted options and captured an unbounded revolute mate.",
+    "sourceSha256": "7234e145de564d79e003270c288d2793a302d3da36194431d5c1f4a66e0c1c72"
+  },
+  "fixedReplay": {
+    "invalidInputs": [
+      {
+        "value": null,
+        "code": "feature.invalid-args",
+        "path": "opts",
+        "message": "assembly.mate('hinge', aRef, bRef, type, opts): opts — got null (null); requires an options object with only pose, limitsDeg, limitsMm, exposure, capacity, maxLoad, stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg, stiffnessNPerMm, springRefMm, dampingNsPerMm, fastener, fit. Example: arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })"
+      },
+      {
+        "value": [],
+        "code": "feature.invalid-args",
+        "path": "opts",
+        "message": "assembly.mate('hinge', aRef, bRef, type, opts): opts — got [] (array); requires an options object with only pose, limitsDeg, limitsMm, exposure, capacity, maxLoad, stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg, stiffnessNPerMm, springRefMm, dampingNsPerMm, fastener, fit. Example: arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })"
+      },
+      {
+        "value": 42,
+        "code": "feature.invalid-args",
+        "path": "opts",
+        "message": "assembly.mate('hinge', aRef, bRef, type, opts): opts — got 42 (number); requires an options object with only pose, limitsDeg, limitsMm, exposure, capacity, maxLoad, stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg, stiffnessNPerMm, springRefMm, dampingNsPerMm, fastener, fit. Example: arm.mate('hinge', 'base.pivot', 'lid.pivot', 'revolute', { limitsDeg: [0, 120] })"
+      }
+    ],
+    "malformedInputsRecordedMate": false,
+    "validMate": {
+      "name": "hinge",
+      "type": "revolute",
+      "limitsDeg": [
+        -45,
+        45
+      ]
+    }
+  },
+  "verification": {
+    "focusedTests": {
+      "command": "npx vitest run src/modeling/capture/assemblyMateOptionKeys.test.ts",
+      "result": "1 test file passed; 6 tests passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/assemblyMateOptionKeys.ts src/modeling/capture/assemblyMateOptionKeys.test.ts",
+      "result": "passed"
+    }
+  },
+  "source": {
+    "path": "docs/demos/assembly-mate-option-shape-20261117/capture-demo.mts",
+    "sha256": "51d409a0e51141cd5c7b3589841f28725a0a835e1ef50b8c394cd3743053207e"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/assembly-mate-option-shape-20261117/demo.mp4",
+    "sha256": "1bdfc3f9d74a45db758edabf4026e16687894552b647c3d43d47017699fdc0e0",
+    "bytes": 91089
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

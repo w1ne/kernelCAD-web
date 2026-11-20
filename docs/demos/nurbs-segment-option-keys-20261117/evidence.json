@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-11-17T20:06:09.369Z",
+  "replay": "Local CaptureSession + createModelingApi. This exercises PathBuilder capture only.",
+  "baseline": {
+    "baseRevision": "origin/develop d7bf35f0e97b2bcdc950435f5fa60b5a707eda07",
+    "command": "npx vitest run src/modeling/capture/sketchNurbsSegment.test.ts",
+    "result": "Failed before the fix: expected KernelError but caught undefined; opts.degre was ignored."
+  },
+  "fixedReplay": {
+    "invalidOptions": {
+      "code": "feature.invalid-args",
+      "path": "opts.degre",
+      "message": "path().nurbsSegment(controlPoints, opts): opts.degre — got an unknown option 'degre'; requires one of degree, weights, knots. Example: path().moveTo(0, 0).nurbsSegment([[0, 0], [5, 10], [10, 0]], { degree: 2 })",
+      "recordedSegment": false
+    },
+    "correctedOptions": {
+      "degree": 2,
+      "weights": [
+        1,
+        2,
+        1,
+        1
+      ],
+      "knots": [
+        0,
+        0,
+        0,
+        0.3,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "source": {
+    "path": "docs/demos/nurbs-segment-option-keys-20261117/capture-demo.mts",
+    "sha256": "1fde6aa245ad07511218ac1b96d7a9b4e28d4344a9b25a1567c98d7d06f1bda5"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 2,
+    "encoder": "libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/nurbs-segment-option-keys-20261117/demo.mp4",
+    "sha256": "977bb0efbb61f78f79505ed40c72b434fa9397a5097ccf561ed5e3943e380496",
+    "bytes": 57899
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/sketchNurbsSegment.test.ts src/kernel/backends/occt/pathNurbsLowerer.test.ts",
+      "result": "2 files passed; 10 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/nurbsSegmentPhases.ts src/modeling/capture/sketch.ts src/modeling/capture/sketchNurbsSegment.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    "docs": {
+      "command": "npm run skill:references -- --check",
+      "result": "passed"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

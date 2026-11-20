@@ -1,0 +1,13 @@
+{
+  "scope": "Local inspect render. Deployed behavior and hardware acceptance are separate checks.",
+  "command": "node docs/demos/step-inspect-views/make-video.mjs",
+  "ffmpeg": "/opt/homebrew/bin/ffmpeg",
+  "frames": [
+    "title",
+    "front.png",
+    "right.png",
+    "top.png",
+    "iso.png"
+  ],
+  "secondsEach": 2
+}

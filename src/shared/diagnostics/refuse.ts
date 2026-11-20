@@ -9,6 +9,9 @@ import { HINT_TEMPLATES, type DiagnosticCode } from './registry';
 export interface EvaluateRefuseLocation {
   featureId?: string;
   param?: string;
+  /** Failing edge of a refused fillet/chamfer: its `@kc[...]` selector, or
+   *  the bare stable edge ID when no unique selector exists. */
+  edge?: string;
   scriptLocation?: {
     line?: number;
     column?: number;
@@ -66,11 +69,13 @@ function hintTemplateFor(code: string): string | undefined {
 function refuseLocation(diagnostic: CompilerDiagnostic): EvaluateRefuseLocation | undefined {
   const featureId = nonEmptyString(diagnostic.featureId);
   const param = nonEmptyString(diagnostic.details?.param);
+  const edge = nonEmptyString(diagnostic.details?.failingEdgeRef) ?? nonEmptyString(diagnostic.details?.failingEdgeId);
   const scriptLocation = scriptLocationOf(diagnostic.scriptLocation);
-  if (featureId === undefined && param === undefined && scriptLocation === undefined) return undefined;
+  if (featureId === undefined && param === undefined && edge === undefined && scriptLocation === undefined) return undefined;
   return {
     ...(featureId !== undefined ? { featureId } : {}),
     ...(param !== undefined ? { param } : {}),
+    ...(edge !== undefined ? { edge } : {}),
     ...(scriptLocation !== undefined ? { scriptLocation } : {}),
   };
 }

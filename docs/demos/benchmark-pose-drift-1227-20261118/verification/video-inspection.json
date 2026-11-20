@@ -1,0 +1,23 @@
+{
+  "video": "demo.mp4",
+  "video_sha256": "57a3053b4055758783a700afc78300c39d6593d8bc29654dec22a5324ac70252",
+  "fixture_sha256": "2a5385d0c82eb73cbba29436cb9ae78aac64a54fadaef729b860f2cc49b66e30",
+  "test_sha256": "0d32dd2b183d9165fd53625347dae44a12f9656d00acfd87f1ceba38fa3b91cc",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "12.000000",
+      "size": "118207"
+    }
+  },
+  "inspection": "Representative frames at 1 s, 5 s and 9 s saved to video-contact-sheet.png; reviewed for legible labels, unclipped geometry, and correct expected/mutant distinction."
+}

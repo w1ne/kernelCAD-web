@@ -83,6 +83,9 @@ const contour = path()
 
 Each `smoothSpline(x, y)` inherits its start tangent from the previous segment,
 so chained calls interpolate smoothly through many points without C0 kinks.
+Each segment arrives travelling along the sketch +X direction unless you state
+the direction: `smoothSpline(x, y, { endTangent: [dx, dy] })`. State it where
+the outline turns back (a right-to-left run needs `endTangent: [-1, 0]`).
 
 **Why this matters:** chained `sagittaArc` segments hit the fillet solver
 cliffs at sub-arc joins — the tangent discontinuity at each join becomes a
@@ -131,8 +134,9 @@ reference has specular highlights. The role-token shortcuts (`.color('servo')`,
 `.color('frame')`, etc.) are for schematic coloring in mechanisms — not for
 photorealistic product surfaces.
 
-Material must be applied BEFORE the shape enters a boolean. Coloring the
-post-union root is a no-op; see `kernelcad-authoring` Conventions.
+Finish each differently coloured member before `union()`; each keeps its
+finish on its own faces. A finish on the union result recolours the whole
+body. See `kernelcad-authoring` materials reference.
 
 ## Rule 7 — Reference photo → referenceImage overlay
 

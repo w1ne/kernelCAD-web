@@ -47,6 +47,7 @@ import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { rotateSketchCommands } from '../../../shared/capture/rotateSketchCommands';
+import { smoothSplineConfig } from '../../../shared/capture/smoothSplineTangents';
 import { solveHermiteG2 } from '../../geometry/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsKnots';
@@ -381,7 +382,7 @@ function applySimplePenCommand(state: PenRunState, c: SimplePenCommand): void {
   } else if (c.kind === 'bulgeArc') {
     state.pen = p.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as replicad.DrawingPen;
   } else {
-    state.pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
+    state.pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated], smoothSplineConfig(c)) as replicad.DrawingPen;
   }
   state.currentX = c.x.evaluated;
   state.currentY = c.y.evaluated;

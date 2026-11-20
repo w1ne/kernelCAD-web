@@ -156,6 +156,23 @@ describe('bundled SG90 discovery', () => {
   });
 });
 
+describe('bundled hobby servo discovery', () => {
+  it('finds MG995, MG996R (alias) and MG90S, labelled as datasheet-modelled, without disturbing SG90', () => {
+    const cat = loadCatalog();
+    expect(queryCatalog(cat, 'MG995').map(r => r.id)).toContain('mg995-servo');
+    expect(queryCatalog(cat, 'MG996R').map(r => r.id)).toContain('mg995-servo');
+    expect(queryCatalog(cat, 'MG90S').map(r => r.id)).toContain('mg90s-servo');
+    expect(resolveById(cat, 'mg996r-servo')!.record.id).toBe('mg995-servo');
+    for (const id of ['mg995-servo', 'mg90s-servo']) {
+      const found = resolveById(cat, id)!;
+      expect(found.record.attributes.provenance).toBe('modelled from datasheet drawing, not a manufacturer model');
+      expect(found.record.licenseClass).toBe('permissive');
+      expect(existsSync(found.stepPath)).toBe(true);
+    }
+    expect(queryCatalog(cat, 'SG90', { limit: 50 }).map(r => r.id).sort()).toEqual(['sg90-horn-single-arm', 'sg90-servo']);
+  });
+});
+
 describe('user catalog overlay', () => {
   let prev: string | undefined;
   let dir: string;

@@ -456,4 +456,34 @@ describe('solveMates — pose-driven articulation', () => {
       /opts\.pose — got .* fixes every articulation DOF/,
     );
   });
+
+  it('rejects caller pose overrides on fastened mates', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(1, 1, 1))
+      .connector('joint', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('link', kcad.box(1, 1, 1))
+      .connector('joint', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('rigid', 'base.joint', 'link.joint', 'fastened');
+
+    await expect(solveMates(arm, { rigid: 90 })).rejects.toThrow(
+      /solve_mates\(\{ poses \}\): poses\.rigid.*fastened.*zero articulation DOFs/i,
+    );
+  });
+
+  it('rejects caller pose overrides on planar mates with no solver pose coordinate', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(1, 1, 1))
+      .connector('joint', { type: 'planar', origin: { kind: 'vec3', value: [0, 0, 0] }, normal: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(1, 1, 1))
+      .connector('joint', { type: 'planar', origin: { kind: 'vec3', value: [0, 0, 0] }, normal: [0, 0, 1] });
+    arm.mate('slide', 'base.joint', 'link.joint', 'planar');
+
+    await expect(solveMates(arm, { slide: 90 })).rejects.toThrow(
+      /poses\.slide.*planar mates do not accept pose overrides/i,
+    );
+  });
 });

@@ -19,11 +19,12 @@ const rimSteel = param('rimSteel', '#d34a3b', { label: 'Rim steel' });
 const netNylon = param('netNylon', '#eee8d8', { label: 'Net nylon' });
 presets({ clubColors: { powderCoat: '#496b52', backboardPolycarbonate: '#d8e3df' } });
 const p = assembly('basketball-hoop');
-p.part('base', box(120, 92, 18, true).translate(0, 0, 9).scale(scale).color(powderCoat));
-p.part('upright', cylinder(330, 13, 10).scale(scale).color(powderCoat));
-p.part('support-arm', box(100, 16, 16, true).translate(0, 0, 265).scale(scale).color(powderCoat));
-p.part('backboard', box(220, 14, 150, true).translate(0, 0, 340).scale(scale).color(backboardPolycarbonate));
-p.part('rim', cylinder(8, 56, 16).subtract(cylinder(10, 43, 16).translate(0, 0, -1)).translate(0, 0, 236).scale(scale).color(rimSteel));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('base', box(120, 92, 18, true).translate(0, 0, 9).color(powderCoat));
+add('upright', cylinder(330, 13, 10).color(powderCoat));
+add('support-arm', box(100, 16, 16, true).translate(0, 0, 265).color(powderCoat));
+add('backboard', box(220, 14, 150, true).translate(0, 0, 340).color(backboardPolycarbonate));
+add('rim', cylinder(8, 56, 16).subtract(cylinder(10, 43, 16).translate(0, 0, -1)).translate(0, 0, 236).color(rimSteel));
 
 
 const seamStroke = (name: string, a: [number, number, number], b: [number, number, number], radius: number, finish: string) => {
@@ -32,7 +33,7 @@ const seamStroke = (name: string, a: [number, number, number], b: [number, numbe
   const axis: [number, number, number] = [-dy, dx, 0];
   const angle = Math.acos(Math.max(-1, Math.min(1, dz / length))) * 180 / Math.PI;
   const shape = cylinder(length + 0.7, radius, 6).rotate(axis, angle).translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
-  p.part(name, shape.color(finish));
+  add(name, shape.color(finish));
 };
 
 // Tapered hanging nylon cords make the rim assembly read as a playable hoop.
