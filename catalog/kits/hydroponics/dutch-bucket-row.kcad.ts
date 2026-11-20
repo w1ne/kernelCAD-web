@@ -71,14 +71,15 @@ const DRAIN_R = 25; // the described 50 mm return pipe
 const ZB = ZP + DRAIN_R - 2; // 2 mm seating overlap with the pipe crown
 const BH = 300; // bucket height
 const ZW = 2050; // trellis wire
+const OUTLET_X = L / 2 + 200; // clear the right trellis foot
 const fruit = crop.value === 'pepper' ? '#d8402b' : crop.value === 'cucumber' ? '#2d6a2a' : '#c9302c';
 const fruitShape = crop.value === 'cucumber' ? [0.35, 0.35, 1.6] : crop.value === 'pepper' ? [0.9, 0.9, 1.2] : [1, 1, 0.9];
 
 // Shared drain pipe on saddle blocks, with an outlet on the +X end.
-add("drain-pipe", cylX(-L / 2 - 250, 0, ZP, L + 600, DRAIN_R).color(plumbing));
-for (let i = 0; i <= N; i++) add(`pipe-saddle-${i}`, blk(-L / 2 - 210 + i * PITCH, 0, 0, 60, 120, ZP - 20).color('#5d6366'));
+add("drain-pipe", cylX(-L / 2 - 250, 0, ZP, OUTLET_X + L / 2 + 250, DRAIN_R).color(plumbing));
+for (let i = 0; i <= N; i++) add(`pipe-saddle-${i}`, blk(i === N ? OUTLET_X - 80 : -L / 2 - 210 + i * PITCH, 0, 0, 60, 120, ZP - 20).color('#5d6366'));
 add("drain-cap", cylX(-L / 2 - 270, 0, ZP, 20, DRAIN_R + 6).color(plumbing));
-add("drain-elbow", cylZ(L / 2 + 350, 0, 0, ZP + DRAIN_R, DRAIN_R).color(plumbing));
+add("drain-elbow", cylZ(OUTLET_X, 0, 0, ZP + DRAIN_R, DRAIN_R).color(plumbing));
 
 // Drip line along the front with a stake into every bucket.
 const DY = -230, DZ = ZB + BH + 60;
@@ -103,8 +104,8 @@ for (let i = 0; i < N; i++) {
   add(`bucket-rim-${i}`, blk(x, 0, ZB + BH - 20, 334, 300, 20).subtract(blk(x, 0, ZB + BH - 30, 300, 270, 40)).color(bucket));
   add(`perlite-${i}`, blk(x, 0, ZB + 130, 270, 242, BH - 170).color('#e3e1d8'));
   add(`siphon-${i}`, cylZ(x + 90, 0, ZP, ZB - ZP + 30, 14).color(plumbing));
-  // Dripper stake.
-  add(`dripper-${i}`, rod([x - 40, DY, DZ], [x - 40, -80, ZB + BH - 40], 4).color('#1d2023'));
+  // Enter through the open mouth without crossing the bucket wall or rim.
+  add(`dripper-${i}`, rod([x - 40, DY, DZ], [x - 40, -20, ZB + BH - 40], 4).color('#1d2023'));
   add(`dripper-head-${i}`, blk(x - 40, DY, DZ - 20, 30, 30, 40).color('#c0392b'));
   // Vine: main stem leaning to the support string, leaf clusters and fruit.
   const top: [number, number, number] = [x + 30, 0, ZW - 40];

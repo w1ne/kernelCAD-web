@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Measures actual scene meshes. These checks do not certify hydraulic function.
 import { containsPoint, readConnectionParts, type MeshPart, type PartMap } from './fiveConnectionsGeometry';
+import { inspectDutchLayout } from './dutchBucketLayoutGeometry';
 
 export type DutchCrop = 'tomato' | 'pepper' | 'cucumber';
 type Vec = [number, number, number];
@@ -58,7 +59,7 @@ export function inspectDutchBucketParts(parts: PartMap, crop: DutchCrop, scale =
     if (!insideA || !insideB) failures.push(label);
   };
   const drain = parts.get('drain-pipe');
-  if (!drain || size(drain).some((value, axis) => !near(value, [2700, 50, 50][axis]! * scale, scale)))
+  if (!drain || size(drain).some((value, axis) => !near(value, [2550, 50, 50][axis]! * scale, scale)))
     failures.push('drain does not have the authored 50 mm diameter');
   let openBuckets = 0, materialWalls = 0, matchedFruits = 0;
   for (let i = 0; i < 6; i++) {
@@ -82,8 +83,10 @@ export function inspectDutchBucketParts(parts: PartMap, crop: DutchCrop, scale =
   }
   if (openBuckets !== 6 || materialWalls !== 6) failures.push('bucket cavities or material walls are missing');
   if (matchedFruits !== 36) failures.push('fruit geometry does not match the selected crop');
+  const layout = inspectDutchLayout(parts, scale);
+  failures.push(...layout.failures);
   return { failures, crop, scale, partCount: parts.size, namesMatch, triangleCount, zeroAreaTriangles,
-    openBuckets, materialWalls, matchedFruits, boundsMm: bounds, witnesses };
+    openBuckets, materialWalls, matchedFruits, boundsMm: bounds, witnesses, layout };
 }
 
 export async function inspectDutchBucketGlb(bytes: Uint8Array, crop: DutchCrop, scale = 1) {

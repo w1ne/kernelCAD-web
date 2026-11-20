@@ -32,7 +32,7 @@ export const RATIONAL_WEIGHT_SPREAD = 1.25;
 export function integrateVolumeProperties(shape: unknown, props: unknown): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  if (hasStronglyRationalFace(oc, shape)) {
+  if (hasStronglyRationalFace(shape)) {
     try {
       oc.BRepGProp.VolumeProperties_2(shape, props, VOLUME_RELATIVE_EPS, false, false);
       return;
@@ -56,8 +56,11 @@ export function integrateVolume(shape: unknown): number {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function hasStronglyRationalFace(oc: any, shape: unknown): boolean {
+/** True when a B-spline face of the raw `TopoDS_Shape` `shape` has pole
+ *  weights that spread by more than `RATIONAL_WEIGHT_SPREAD`. */
+export function hasStronglyRationalFace(shape: unknown): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
   const spline = oc.GeomAbs_SurfaceType.GeomAbs_BSplineSurface;
   const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
