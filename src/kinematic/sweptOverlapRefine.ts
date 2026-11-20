@@ -37,6 +37,9 @@ export interface PairState {
   readonly hits: ReadonlyMap<string, PairHit>;
   readonly unknownPairs: ReadonlyMap<string, { readonly a: string; readonly b: string }>;
   readonly unknownReason?: string;
+  /** Relative pose key per BRep pair (the overlap memo's key). A pair whose
+   *  key is the same at every measured sample keeps its place on the walk. */
+  readonly poseKeys?: ReadonlyMap<string, string>;
 }
 
 export interface WalkSample<S> extends PairState {
@@ -78,11 +81,14 @@ export async function refineWalk<S>(
   measure: MeasureAt<S>,
   rounds: number = DEFAULT_REFINE_ROUNDS,
 ): Promise<SweptWalkReport> {
+  const fixed = fixedPairs(samples);
+  if (fixed.keys.size > 0) samples = samples.map((s) => withoutPairs(s, fixed.keys));
   const worst = new Map<string, Worst>();
   const names = new Map<string, { a: string; b: string }>();
   const unknown: SweptUnknownPose[] = [];
   const noteHits = (state: PairState, value: number): void => {
     for (const [key, hit] of state.hits) {
+      if (fixed.keys.has(key)) continue;
       names.set(key, { a: hit.a, b: hit.b });
       const prev = worst.get(key);
       if (prev === undefined || hit.volumeMm3 > prev.hit.volumeMm3) worst.set(key, { hit, value });
@@ -104,7 +110,43 @@ export async function refineWalk<S>(
     noteUnknown(s, s.value);
   }
 
-  // boundaries.get(key).get(i) is the refined bracket between samples i, i+1.
+  const { boundaries, refinementSamples } = await refineBrackets(samples, measure, rounds, noteHits, noteUnknown);
+
+  const overlaps = [...worst].map(([key, w]) =>
+    overlapPair(joint, names.get(key)!, w, stretchesFor(key, samples, boundaries.get(key), step)));
+  overlaps.sort((x, y) => y.worstVolumeMm3 - x.worstVolumeMm3);
+
+  const values = samples.map((s) => s.value);
+  return {
+    joint,
+    from: values[0] ?? Number.NaN,
+    to: values[values.length - 1] ?? Number.NaN,
+    step,
+    samples: samples.length,
+    refineRounds: rounds,
+    refinementSamples,
+    ...(fixed.total === undefined ? {} : { movingPairs: fixed.total - fixed.keys.size, fixedPairs: fixed.keys.size }),
+    overlaps,
+    unknown,
+    clearNote:
+      `Pairs not listed in overlaps were clear at every position checked (step ${step}). ` +
+      'An overlap shorter than one step with no state change at a sample can be missed; ' +
+      'positions in unknown were not measured.' +
+      (fixed.keys.size > 0
+        ? ` ${fixed.keys.size} pair(s) keep their relative pose along the walk and are left to the static interference check.`
+        : ''),
+  };
+}
+
+/** Bisect every step where a pair changes state. `boundaries.get(key).get(i)`
+ *  is the refined bracket between samples i and i+1. */
+async function refineBrackets<S>(
+  samples: ReadonlyArray<WalkSample<S>>,
+  measure: MeasureAt<S>,
+  rounds: number,
+  noteHits: (state: PairState, value: number) => void,
+  noteUnknown: (state: PairState, value: number) => void,
+): Promise<{ boundaries: Map<string, Map<number, Boundary>>; refinementSamples: number }> {
   const boundaries = new Map<string, Map<number, Boundary>>();
   let refinementSamples = 0;
   for (let i = 0; i + 1 < samples.length; i++) {
@@ -122,27 +164,30 @@ export async function refineWalk<S>(
       boundaries.set(key, byIndex);
     }
   }
+  return { boundaries, refinementSamples };
+}
 
-  const overlaps = [...worst].map(([key, w]) =>
-    overlapPair(joint, names.get(key)!, w, stretchesFor(key, samples, boundaries.get(key), step)));
-  overlaps.sort((x, y) => y.worstVolumeMm3 - x.worstVolumeMm3);
+/** Pairs whose relative pose key is the same at every measured sample.
+ *  `total` is the number of pairs keyed, or undefined when the samples
+ *  carry no keys. Fewer than two measured samples prove nothing fixed. */
+function fixedPairs(samples: ReadonlyArray<PairState>): { keys: Set<string>; total?: number } {
+  const keyed = samples.filter((s) => s.unknownReason === undefined && s.poseKeys !== undefined);
+  if (keyed.length === 0) return { keys: new Set() };
+  const maps = keyed.map((s) => s.poseKeys!);
+  const [first, ...rest] = maps;
+  const total = new Set(maps.flatMap((k) => [...k.keys()])).size;
+  if (rest.length === 0) return { keys: new Set(), total };
+  const keys = new Set<string>();
+  for (const [pair, pose] of first) {
+    if (rest.every((k) => k.get(pair) === pose)) keys.add(pair);
+  }
+  return { keys, total };
+}
 
-  const values = samples.map((s) => s.value);
-  return {
-    joint,
-    from: values[0] ?? Number.NaN,
-    to: values[values.length - 1] ?? Number.NaN,
-    step,
-    samples: samples.length,
-    refineRounds: rounds,
-    refinementSamples,
-    overlaps,
-    unknown,
-    clearNote:
-      `Pairs not listed in overlaps were clear at every position checked (step ${step}). ` +
-      'An overlap shorter than one step with no state change at a sample can be missed; ' +
-      'positions in unknown were not measured.',
-  };
+/** A fixed pair's overlap is the static check's finding. A failed exact
+ *  check stays in `unknown`: it is not a clear result for any check. */
+function withoutPairs<T extends PairState>(state: T, drop: ReadonlySet<string>): T {
+  return { ...state, hits: new Map([...state.hits].filter(([key]) => !drop.has(key))) };
 }
 
 /** Bisect one bracket where `key` changes state. The lower end (walk

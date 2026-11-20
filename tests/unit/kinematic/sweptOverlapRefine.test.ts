@@ -145,4 +145,34 @@ describe('refineWalk (#1680)', () => {
     expect(report.overlaps).toEqual([]);
     expect(report.clearNote).toContain('clear at every position checked (step 2.5)');
   });
+
+  it('counts pairs with a constant relative pose and leaves their overlap out', async () => {
+    const FIXED = pairKey('frame', 'block');
+    const state = (v: number): PairState => {
+      const base = stateAt(v, 23.3, 41.7);
+      const hits = new Map(base.hits);
+      hits.set(FIXED, { a: 'frame', b: 'block', volumeMm3: 50 });
+      return {
+        ...base,
+        hits,
+        poseKeys: new Map([[KEY, `pin@${v}`], [FIXED, 'frame@0']]),
+      };
+    };
+    const { measure } = measureFor(state);
+    const report = await refineWalk('slide', 10, walk([0, 10, 20, 30, 40, 50], state), measure, 6);
+
+    expect(report.movingPairs).toBe(1);
+    expect(report.fixedPairs).toBe(1);
+    expect(report.overlaps.map((p) => p.partA)).toEqual(['pin']);
+    expect(report.overlaps[0].worstVolumeMm3).toBeLessThan(50);
+  });
+
+  it('does not call a pair fixed from one measured sample', async () => {
+    const state = (v: number): PairState => ({ ...stateAt(v, 0, 5), poseKeys: new Map([[KEY, 'same']]) });
+    const { measure } = measureFor(state);
+    const report = await refineWalk('slide', 10, walk([0], state), measure, 6);
+    expect(report.fixedPairs).toBe(0);
+    expect(report.movingPairs).toBe(1);
+    expect(report.overlaps).toHaveLength(1);
+  });
 });

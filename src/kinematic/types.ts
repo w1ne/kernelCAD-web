@@ -171,6 +171,12 @@ export interface SweptWalkReport {
   readonly samples: number;
   readonly refineRounds: number;
   readonly refinementSamples: number;
+  /** BRep pairs whose relative pose changes along the walk; these are the
+   *  pairs the report covers. Absent when the walk carried no pose keys. */
+  readonly movingPairs?: number;
+  /** BRep pairs that keep their relative pose at every measured sample.
+   *  They are left to the static interference check. */
+  readonly fixedPairs?: number;
   readonly overlaps: ReadonlyArray<SweptOverlapPair>;
   readonly unknown: ReadonlyArray<SweptUnknownPose>;
   readonly clearNote: string;

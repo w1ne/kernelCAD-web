@@ -14,6 +14,11 @@
   stretch at -4.031 deg; the closed-form contact angles are -0.573 deg and
   -4.016 deg, inside the 0.0156 deg bracket. Explicit pose lists are not
   refined.
+  Each walk also counts `movingPairs` and `fixedPairs`: a BRep pair whose
+  relative pose (the overlap memo's key) is the same at every measured
+  sample is left out of `overlaps` and left to the static interference
+  check. `collidingPoses` is unchanged. On the clamshell hinge, base/table
+  is the one fixed pair; lid/base and lid/table are the two moving pairs.
 
 - Filters written inside `q.edge(...)` now select edges. A bare
   `withLabel`, `withFeatureName` or `createdBy` filter defaulted to faces,

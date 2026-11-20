@@ -23,7 +23,7 @@ vi.mock('../../../src/modeling/runtime/detectInterferences', async (importOrigin
 const START_DEG = 29.251;
 const END_DEG = 60.749;
 
-function swingingBar() {
+function swingingBar(opts: { fixedClamp?: boolean } = {}) {
   const session = new CaptureSession();
   const kcad = createModelingApi({ session });
   const arm = kcad.assembly('swept-refine-hinge');
@@ -40,6 +40,9 @@ function swingingBar() {
       axis: [0, 0, 1],
     });
   arm.mate('swing', 'base.hinge', 'bar.hinge', 'revolute', { pose: 0, limitsDeg: [0, 90] });
+  // An unmated clamp sunk 1 mm into the base: it never moves relative to
+  // the base, and the bar never reaches it.
+  if (opts.fixedClamp) arm.part('clamp', kcad.box(6, 6, 6).translate(2, 2, 3));
   return arm;
 }
 
@@ -110,6 +113,22 @@ describe('checkSweptCollision overlap refinement (#1680)', () => {
     } finally {
       mocked.mockImplementation(actual);
     }
+  }, 60_000);
+
+  it('leaves pairs that keep their relative pose to the static check', async () => {
+    const swept = await checkSweptCollision(swingingBar({ fixedClamp: true }), { joint: 'swing', range: [0, 90, 15] });
+    const walk = swept.walks![0];
+    // base/bar and bar/clamp move; base/clamp keeps its place.
+    expect(walk.movingPairs).toBe(2);
+    expect(walk.fixedPairs).toBe(1);
+    expect(walk.overlaps.map((p) => [p.partA, p.partB].sort().join('/'))).toEqual(['bar/base']);
+    expect(walk.clearNote).toContain('1 pair(s) keep their relative pose');
+    // Same refinement as without the clamp: the fixed overlap adds no bisection.
+    const plain = await checkSweptCollision(swingingBar(), { joint: 'swing', range: [0, 90, 15] });
+    expect(walk.refinementSamples).toBe(plain.walks![0].refinementSamples);
+    expect(walk.overlaps[0].stretches).toEqual(plain.walks![0].overlaps[0].stretches);
+    // The per-pose list is unchanged: the clamp overlap is still at every sample.
+    expect(swept.collidingPoses).toHaveLength(7);
   }, 60_000);
 
   it('does not refine an explicit pose list', async () => {

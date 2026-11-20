@@ -40,9 +40,9 @@ import { reposedLoweredAssemblyScene } from '../modeling/mates/loweredAssemblySc
 import { solveMates } from '../modeling/mates/solver';
 import type { Transform } from '../shared/runtime/se3';
 import { detectInterferences } from '../modeling/runtime/detectInterferences';
-import { buildSweepProxies } from '../modeling/runtime/sweepCollisionProxy';
+import { buildSweepProxies, relativePoseKey } from '../modeling/runtime/sweepCollisionProxy';
 import { proxyPairsNeedingExactConfirm } from '../modeling/runtime/convexHullBroadphase';
-import { initOcct } from '../kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import {
   DIAGNOSTIC_REGISTRY,
@@ -330,7 +330,19 @@ async function sampleSweepPose(
   for (const p of result.unconfirmedPairs ?? []) {
     unknownPairs.set(pairKey(p.a, p.b), { a: p.a, b: p.b });
   }
-  return { state: { hits, unknownPairs } };
+  return { state: { hits, unknownPairs, poseKeys: pairPoseKeys(scene) } };
+}
+
+/** Relative pose key of every BRep part pair in one posed scene. */
+function pairPoseKeys(scene: SceneBackend): Map<string, string> {
+  const parts = scene.parts.filter((p) => p.shape instanceof OcctBackend);
+  const keys = new Map<string, string>();
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      keys.set(pairKey(parts[i].name, parts[j].name), relativePoseKey(parts[i].worldTransform, parts[j].worldTransform));
+    }
+  }
+  return keys;
 }
 
 /** Re-pose the cached lowered scene, or lower the feature tree once. */
