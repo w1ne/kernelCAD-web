@@ -111,6 +111,7 @@ import {
   assertWrapTextureArgs,
   existingMaterialBaseColor,
   attachTextureProjection,
+  unresolvedColorWarning,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf, projectOpenCurveOf } from './proxyDerivedSketch';
 import type { ThreadedHoleOpts } from './threadedHole';
@@ -468,9 +469,11 @@ export class Shape {
         'invalid-args.color.unknown-record — call .color() on a Shape produced by the current session.',
       );
     }
-    return this.session.applyVersionedOp(this.recordId, this.version, {
-      kind: 'color', value: isTypedParamRef(name) ? name.value : name,
-    });
+    const value = isTypedParamRef(name) ? name.value : name;
+    const colored = this.session.applyVersionedOp(this.recordId, this.version, { kind: 'color', value });
+    const warning = unresolvedColorWarning(value, colored.id);
+    if (warning !== undefined) this.session.warnings.push(warning);
+    return colored;
   }
 
   /**

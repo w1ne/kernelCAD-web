@@ -1,5 +1,20 @@
 # Unreleased
 
+- `Shape.color()` with a string that is not a role token or a `#rrggbb` hex
+  (for example `'orange'` or `'steel'`) now raises a `feature.color.unresolved`
+  warning. Before, the value was stored with no diagnostic; 3MF, PLY, USD and
+  the demo player used the default grey, STEP wrote no colour, and GLB passed
+  the raw string through. The warning gives
+  the hex for a CSS colour name (`'orange'` -> `'#ffa500'`) or points to
+  `.finish('steel')` for a material name. `evaluate_script` and the CLI
+  evaluate now return the soft warnings a script raises while it runs as
+  `warn` diagnostics; before, they were dropped, so the existing
+  `feature.material.value-clamped` warning was not visible either.
+  `examples/fastener-installation/l-bracket-mount.kcad.ts` now uses
+  `.finish('steel')` and `'#ffa500'`, and the `.color()` hint example uses
+  `'#ff0000'` instead of `'red'`. Three cookbook snippets, the mechanism
+  smoke script and the robot-arm eval solution used `.color('actuator')`,
+  which is not a role token and rendered grey; they now use `'servo'`.
 - `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
   now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
   runtime already selected every edge of the matched face, but the public

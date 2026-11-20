@@ -364,6 +364,7 @@ async function evaluateAndBuildScriptFresh(
   // Keep the original validator diagnostic on the shared evaluation surface
   // as well; other strict validation errors still fail during capture.
   appendDeferredOverlapDiagnostics(model);
+  model.diagnostics.push(...softWarningDiagnostics(model));
   if (input.baseline !== undefined) model.diagnostics.push(...selectionDriftDiagnostics(input.baseline, model.selections));
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
@@ -423,6 +424,30 @@ async function evaluateAndBuildScriptFresh(
     ...gates,
     ...(portReport !== undefined ? { portReport } : {}),
   };
+}
+
+/** Soft warnings the script raised while it ran (e.g. `.color('orange')`,
+ *  clamped `.material()` fields). They live on the capture session, which
+ *  no evaluation surface read, so an agent never saw them. Surfaced as
+ *  `warn` diagnostics; one already present with the same code and message
+ *  is not repeated. */
+function softWarningDiagnostics(model: BuiltModel): CompilerDiagnostic[] {
+  const seen = new Set(model.diagnostics.map(d => `${d.code}\u0000${d.message}`));
+  const out: CompilerDiagnostic[] = [];
+  for (const w of model.session.warnings) {
+    const key = `${w.code}\u0000${w.message}`;
+    if (w.phase !== 'build' || seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      target: 'export-occt',
+      code: w.code,
+      severity: 'warn',
+      message: w.message,
+      hint: w.hint,
+      ...(w.recordId !== undefined ? { featureId: w.recordId } : {}),
+    });
+  }
+  return out;
 }
 
 export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
