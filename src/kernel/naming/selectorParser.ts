@@ -62,6 +62,29 @@ export function parseFaceSelector(s: string): ParsedSelector {
   return { kind: 'collective', refName: s };
 }
 
+/** The lineage slots a `<name>.<ref>` or `<kind><N>.<ref>` selector reads;
+ *  face and edge lineage both carry them. */
+export interface RefLineage {
+  labelName?: string;
+  featureName?: string;
+  featureKind?: FaceLineage['featureKind'];
+  featureOrdinal?: number;
+}
+
+/** Hashes whose lineage carries the selector's feature and ref, edges or faces. */
+export function findRefMatches(map: ReadonlyMap<string, RefLineage>, parsed: ParsedSelector): string[] {
+  if (parsed.kind === 'collective') return [];
+  const out: string[] = [];
+  for (const [hash, lineage] of map) {
+    if (lineage.labelName !== parsed.refName) continue;
+    const sameFeature = parsed.kind === 'named'
+      ? lineage.featureName === parsed.featureName
+      : lineage.featureKind === parsed.featureKind && lineage.featureOrdinal === parsed.n;
+    if (sameFeature) out.push(hash);
+  }
+  return out;
+}
+
 /** Walk the lineage map for entries matching a parsed selector. Returns face
  *  hashes; the caller turns those into Face objects. The result excludes
  *  any snapshot fallback — that's a separate path on `resolveBySnapshot`. */
@@ -178,7 +201,10 @@ export function findFallbackSnapshot(
  *  parsed selector names, sorted and de-duplicated. Feeds the
  *  not-resolvable hint so a mistyped or never-created role lists the real
  *  ones. */
-export function availableRefNames(historyMap: HistoryMap, parsed: ParsedSelector): string[] {
+export function availableRefNames(
+  historyMap: ReadonlyMap<string, RefLineage>,
+  parsed: ParsedSelector,
+): string[] {
   if (parsed.kind === 'collective') return [];
   const names = new Set<string>();
   for (const lineage of historyMap.values()) {

@@ -82,10 +82,11 @@ describe('edge lineage through hole, holes and cutout', () => {
     for (const h of solid!.edgeHashes()) expect(descendsFromFeature(map.get(h)!, holeId)).toBe(true);
     // The twelve box edges keep their corner / perimeter birth labels.
     const fromBox = solid!.edgeHashes().filter((h) => map.get(h)!.rootFeatureId === boxId);
-    expect(labelsOf(solid!).filter((l) => l !== '-')).toEqual(labelsOf(plain.solid!));
+    const rim = (l: string) => l.endsWith('-rim');
+    expect(labelsOf(solid!).filter((l) => l !== '-' && !rim(l))).toEqual(labelsOf(plain.solid!));
     expect(fromBox.length).toBe(plain.solid!.edgeHashes().length);
     // Entry rim, exit rim and the bore seam are born on the hole.
     const born = solid!.edgeHashes().filter((h) => map.get(h)!.rootFeatureId === holeId);
-    expect(born.length).toBeGreaterThan(0);
+    expect([...new Set(born.map((h) => map.get(h)!.labelName ?? '-'))].sort()).toEqual(['-', 'entry-rim', 'exit-rim']);
   });
 });
