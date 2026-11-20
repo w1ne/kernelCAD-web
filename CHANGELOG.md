@@ -1,11 +1,19 @@
 # Unreleased
 
-- Eight catalog scene assets now have connected supports, correct part axes or
-  counts, and open passage or port geometry. The heat exchanger exposes plate
-  count and plate height; the cylinder bank exposes bottle count; the cage
-  ladder exposes section height. Five additional catalog sources avoid
-  reserved host identifiers and unsupported collection construction without
-  changing their exported geometry or public parameter keys.
+- `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
+  `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
+  draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
+  a path had no ellipse: the author wrote rational NURBS control points and
+  weights by hand, or used a polyline. Both calls are exact: one rational
+  quadratic segment per 90° of sweep. A 20 × 10 mm ellipse extruded 5 mm
+  measures 3141.592654 mm³ (π·rx·ry·h), and a quarter arc revolved into a
+  2:1 elliptical head measures (2/3)·π·R²·h. The `ellipse` centre and
+  semi-axes accept `param()` values; `ellipseArc` takes plain numbers, and
+  radii too small to join the two points throw `feature.invalid-args` with
+  the smallest pair that fits. Limits: `Sketch.offset`, the sketch booleans
+  and `cutout()` do not take a NURBS profile, so an elliptical hole is an
+  extruded ellipse subtracted from the solid. Demo:
+  `docs/demos/path-ellipse/`.
 
 - Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
@@ -493,6 +501,13 @@
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
+
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
 
 # v0.17.4 — 2026-10-31
 

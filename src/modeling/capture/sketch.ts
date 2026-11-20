@@ -21,6 +21,7 @@ import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
 import { rotateSketchOf, scaleSketchOf, translateSketchOf } from './sketchTransform';
 import { circleCommands } from './pathCircle';
+import { ellipseCommands, ellipseArcCommands, type EllipseOptions, type EllipseArcOptions } from './pathEllipse';
 import { checkSweepSection } from './sweepSection';
 import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
@@ -1366,6 +1367,60 @@ export class PathBuilder {
       params: {},
       metadata: { commands: this.commands },
     });
+  }
+
+  /**
+   * Author a closed ellipse centred on `(cx, cy)` with semi-axes `rx` (along
+   * sketch +X) and `ry`. `opts.rotationDeg` turns the `rx` axis
+   * counterclockwise. Returns the `Sketch` directly, like `circle`.
+   *
+   * The ellipse is EXACT: four rational quadratic `nurbsSegment` quarter
+   * arcs, not a polyline or a fitted spline, so the area is `π·rx·ry` to
+   * kernel precision. `cx`, `cy`, `rx` and `ry` accept `Editable<number>` and
+   * stay symbolic; `rotationDeg` is a plain number.
+   */
+  ellipse(
+    cx: Editable<number>,
+    cy: Editable<number>,
+    rx: Editable<number>,
+    ry: Editable<number>,
+    opts?: EllipseOptions,
+  ): Sketch {
+    const loop = ellipseCommands(cx, cy, rx, ry, opts, this.session.paramTable);
+    if (this.commands.length > 0) {
+      invalidArgs({
+        api: 'path().ellipse(cx, cy, rx, ry, opts?)',
+        path: 'path',
+        gotText: 'a path that already has other commands',
+        requires: 'a fresh path; use ellipseArc(x, y, rx, ry) for an elliptical segment inside a path',
+        example: 'path().ellipse(0, 0, 20, 10)',
+      });
+    }
+    this.commands.push(...loop, { kind: 'close' });
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: {},
+      params: {},
+      metadata: { commands: this.commands },
+    });
+  }
+
+  /**
+   * Exact elliptical arc from the current pen to `(x, y)` on an ellipse with
+   * semi-axes `rx` and `ry` (SVG `A`, with the Y axis pointing up).
+   * `opts.rotationDeg` turns the `rx` axis counterclockwise; `opts.largeArc`
+   * takes the arc longer than 180°; `opts.clockwise` reverses the travel
+   * direction (default counterclockwise). Lowered as one rational quadratic
+   * `nurbsSegment` per 90° of sweep.
+   *
+   * All arguments are plain numbers: the centre is solved at capture time,
+   * so a `param()` value is refused. Radii too small to join the two points
+   * are refused with the smallest pair that fits (SVG would scale them).
+   */
+  ellipseArc(x: number, y: number, rx: number, ry: number, opts?: EllipseArcOptions): PathBuilder {
+    const now = (p: Param): number => this.#now(p);
+    this.commands.push(...ellipseArcCommands(this.#currentPen(), { x, y, rx, ry }, opts, now));
+    return this;
   }
 
   /**
