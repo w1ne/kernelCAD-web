@@ -126624,7 +126624,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
       "preview": "/assets/hydroponics-blackout-curtain-drive.png",
-      "sourceSha256": "21c4aced71da19c67732e64f1b3e9f09686e36a32ec8bae92f761bd6a76b8a23",
+      "sourceSha256": "a2f5d5f8fed8d0ab63acd919527f33aa965605d3b5175b7df50e721d7b89d288",
       "triangleBudget": 5000,
       "params": [
         {
@@ -126699,11 +126699,11 @@
         }
       },
       "stats": {
-        "triangles": 1788,
+        "triangles": 1944,
         "sizeM": [
           2.04,
           2.27,
-          2.1
+          2.48
         ],
         "minUpM": 0,
         "materials": 1
@@ -126729,7 +126729,10 @@
             "truss-web-5",
             "drive-shaft",
             "bearing-arm--830",
+            "bearing-hanger--830",
             "bearing-arm-830",
+            "bearing-hanger-830",
+            "gearbox-mount",
             "rack--500",
             "tooth--500-0",
             "tooth--500-1",
@@ -126749,6 +126752,11 @@
             "tooth--500-15",
             "tooth--500-16",
             "tooth--500-17",
+            "tooth--500-18",
+            "tooth--500-19",
+            "tooth--500-20",
+            "tooth--500-21",
+            "tooth--500-22",
             "rack-clamp--500",
             "push-rod--500",
             "rack-500",
@@ -126770,6 +126778,11 @@
             "tooth-500-15",
             "tooth-500-16",
             "tooth-500-17",
+            "tooth-500-18",
+            "tooth-500-19",
+            "tooth-500-20",
+            "tooth-500-21",
+            "tooth-500-22",
             "rack-clamp-500",
             "push-rod-500",
             "wire--700",
@@ -177156,7 +177169,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/belt-magnet-separator.kcad.ts",
       "preview": "/assets/mining-belt-magnet-separator.png",
-      "sourceSha256": "e1b69ea3a7294ebbf0f96dace961612b1f0f5bb5ab4dfc3a79c7af07f3e3d8c4",
+      "sourceSha256": "035795270e88de69d8c18a374c92c01b6edad03fc8db6c9f77708fb1a2d8dc33",
       "triangleBudget": 2600,
       "params": [
         {
@@ -177224,7 +177237,7 @@
         }
       },
       "stats": {
-        "triangles": 2060,
+        "triangles": 2180,
         "sizeM": [
           8.14,
           3.86,
@@ -177356,7 +177369,9 @@
             "idler-wing-5-1",
             "return-idler-0",
             "return-idler-1",
-            "return-idler-2"
+            "return-idler-2",
+            "magnet-pulley-axle-0",
+            "magnet-pulley-axle-1"
           ]
         },
         {
@@ -177367,7 +177382,11 @@
             "head-motor",
             "magnet-block",
             "side-frame-0",
+            "magnet-support-0-0",
+            "magnet-support-0-1",
             "side-frame-1",
+            "magnet-support-1-0",
+            "magnet-support-1-1",
             "terminal-box",
             "drive-motor",
             "lifting-lug-0",
@@ -281669,7 +281688,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
       "preview": "/assets/retail-store-roll-cage-trolley.png",
-      "sourceSha256": "d48c6d14a8919b1d769d2f18827e5b1bc01066188dfb7fe619b0f98c02ae43c3",
+      "sourceSha256": "89b5c278d4eb2e68c3cfbdf0f1a412145ad2d21b6ff9b513743791b874adfb28",
       "triangleBudget": 2500,
       "params": [
         {
@@ -281737,7 +281756,7 @@
         }
       },
       "stats": {
-        "triangles": 1696,
+        "triangles": 1872,
         "sizeM": [
           0.808,
           1.7,
@@ -281755,18 +281774,22 @@
             "castor-swivel-lf",
             "castor-fork-l-lf",
             "castor-fork-r-lf",
+            "castor-axle-lf",
             "castor-plate-rf",
             "castor-swivel-rf",
             "castor-fork-l-rf",
             "castor-fork-r-rf",
+            "castor-axle-rf",
             "castor-plate-lb",
             "castor-swivel-lb",
             "castor-fork-l-lb",
             "castor-fork-r-lb",
+            "castor-axle-lb",
             "castor-plate-rb",
             "castor-swivel-rb",
             "castor-fork-l-rb",
             "castor-fork-r-rb",
+            "castor-axle-rb",
             "deck-frame",
             "side-l-0",
             "side-r-0",
@@ -307125,7 +307148,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/inline-skate.kcad.ts",
       "preview": "/assets/sports-inline-skate.png",
-      "sourceSha256": "d86d7131feab76efd74676fefd78edcc2e9f238ef673ae27a71b84b15612a50d",
+      "sourceSha256": "c71ad16d4366159fc1afeccb856f9db9654ded6e9f3bed2ed206b903ab1cb2b5",
       "triangleBudget": 2400,
       "params": [
         {
@@ -307189,9 +307212,9 @@
         }
       },
       "stats": {
-        "triangles": 1892,
+        "triangles": 1912,
         "sizeM": [
-          0.354,
+          0.377,
           0.359095,
           0.126
         ],
@@ -307249,7 +307272,8 @@
           "name": "moldedCuff",
           "color": "#24292e",
           "parts": [
-            "brake-arm",
+            "brake-arm-left",
+            "brake-arm-right",
             "sole",
             "toe-cap",
             "heel-counter",
@@ -336231,7 +336255,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
       "preview": "/assets/theatre-production-strip-light-battens.png",
-      "sourceSha256": "636d6b5a2b957c21d0526e1aace8aa637658e2ecb0926c5ff165fd969292568b",
+      "sourceSha256": "2c060ae969cd9c39c9c4ec0f852a5985e99aee539ea03b3997b909e5bb416f22",
       "triangleBudget": 3000,
       "params": [
         {
@@ -336289,7 +336313,7 @@
         }
       },
       "stats": {
-        "triangles": 1804,
+        "triangles": 2068,
         "sizeM": [
           3.424,
           0.353699,
@@ -336343,20 +336367,26 @@
             "runner-left-back",
             "stand-foot-left-l",
             "stand-upright-left-l",
+            "pivot-axle-left-l",
             "stand-foot-left-r",
             "stand-upright-left-r",
+            "pivot-axle-left-r",
             "runner-centre-front",
             "runner-centre-back",
             "stand-foot-centre-l",
             "stand-upright-centre-l",
+            "pivot-axle-centre-l",
             "stand-foot-centre-r",
             "stand-upright-centre-r",
+            "pivot-axle-centre-r",
             "runner-right-front",
             "runner-right-back",
             "stand-foot-right-l",
             "stand-upright-right-l",
+            "pivot-axle-right-l",
             "stand-foot-right-r",
-            "stand-upright-right-r"
+            "stand-upright-right-r",
+            "pivot-axle-right-r"
           ],
           "param": "hardware"
         },

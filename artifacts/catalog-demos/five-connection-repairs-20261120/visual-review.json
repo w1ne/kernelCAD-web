@@ -1,0 +1,224 @@
+{
+  "status": "SAVED_NATIVE_GLB_VISUAL_REVIEW",
+  "reviewedAt": "2026-11-20T13:37:20.032693+00:00",
+  "scope": "Saved native catalog GLB views and sampled decoded MP4 frames. No canonical render inspect model-run, Studio or physical-load acceptance.",
+  "reviewMethod": "Reviewed before/after comparisons and front/right/top/iso PNG sheets as proportional JPEG display copies; inspected decoded encoded-video frames at each static card and final held frame.",
+  "findings": [
+    {
+      "model": "belt-magnet-separator",
+      "finding": "Self-cleaning magnet has visible body-to-frame arms and pulley axle extensions. Lugs and chains sit outboard of the upper belt; plate-magnet branch remains a separate finned suspended block. Precise contact and clearance come from native triangle assertions."
+    },
+    {
+      "model": "blackout-curtain-drive",
+      "finding": "Both bearing hangers and the gearbox bridge visibly connect the drive to the truss. Open/half/closed scenes remain coherent; the rack reaches the fixed drive in each native branch."
+    },
+    {
+      "model": "inline-skate",
+      "finding": "Corrected final iso shows distinct wheel gaps and a clean rear arm/rail face step; the previously observed stippled coplanar patch is absent. The original deficient visual version is archived separately."
+    },
+    {
+      "model": "strip-light-battens",
+      "finding": "Independent reviewer inspected the three-assembly set and pivot close-up; exact six axle contacts are native geometry assertions because full-set views are too small to prove them."
+    },
+    {
+      "model": "roll-cage-trolley",
+      "finding": "Independent reviewer inspected caster close-up and all four shelf-off views; visible axle caps and coherent shelf-off assembly."
+    }
+  ],
+  "reviewedPngFiles": [
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/comparison.png",
+      "sha256": "42c4f342b3a419d88b70b8589b655c2d437899913dcb7d981f201d3c7476e086"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-front.png",
+      "sha256": "0722b746f2218236736eeb6282ea290b077ad8b4d785d288799ed2d1686e28fb"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-right.png",
+      "sha256": "fceb1459964fb35e5f33972ff67c18f87ceda1ea3d713b36a2e7adc0fc021582"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-top.png",
+      "sha256": "17ef068f7192f02ac8b7b7178387a5a7439b5427cd5341b9d23d1cec5c356117"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-iso.png",
+      "sha256": "e5b71ffa73a88feadf4fe824aa51cc128d485b3d0062ed4bc597a2ffc3b89cf1"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/comparison.png",
+      "sha256": "ead20d8afb281707889eb383a88e16f0b67abe7592be8e21f2576b524dbb16ec"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-front.png",
+      "sha256": "cd0726e670c7af7b4d65d4a730dd1c049e6724cbcb426c4d186339565553f954"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-right.png",
+      "sha256": "14c07025ec068bf4a8460720fd6bcf749198786c47188797f69de949cb1af036"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-top.png",
+      "sha256": "1a24f79d464b7eb43c829d0796e7a64529b3d81d4fbeb8e74ebc88cf4534321b"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-iso.png",
+      "sha256": "dce85d7e5861c269b703fd0197f9bac8cb850199e8c8b8dda3bc0b06beb9c89b"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-front.png",
+      "sha256": "50019955b7bb84f471f50f8d0af01b286c7f9b9cc6a851fec1132600c26de1fa"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-right.png",
+      "sha256": "3cc45a7d83fe44234d4e9ef937dc3c98f8d08699bce0b960637447c1bd2f42bd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-top.png",
+      "sha256": "7f40048a8da9b14ce950fae80c6fcf5c50c23a59f31faa1c9811a0945d7ebdbc"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-iso.png",
+      "sha256": "7b89ba856d3f4a560274f04cce241f00af3b25291208d0f89728fede724c3236"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-front.png",
+      "sha256": "2742e176338c3401be2d37bd677cf1b2f33414feab96807ae95a8a9ab62b40d0"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-right.png",
+      "sha256": "4d0dd838bcc704d3c4b9cc94aef7803983155a9b2215466644d80dc2361947bd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-top.png",
+      "sha256": "d006825951f76a7a67756855922d830d1dec500c7c2b9053b68a96b4bcce42e5"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-iso.png",
+      "sha256": "51f3158170b596e904c39ba4f6844381da0edc8585c9bd417ba265a68e832f5c"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-front.png",
+      "sha256": "8e1828f189f7f83727bba7f925eff94755cc1707b9159e90f92a68f536f1b2a5"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-right.png",
+      "sha256": "9ed3a0e72624baebd3bf9313a6784153ebe522deab5c495881b37158237f9c5e"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-top.png",
+      "sha256": "5857526847354c5a47ce2129e980d78d39250bcbe4ba7b53beb6de5532d19cf9"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-iso.png",
+      "sha256": "2856219004a294e1bd02d34940fb895eb936fb7eec63e46ea6fece71fcb93e20"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/after-iso.png",
+      "sha256": "0fbe8670a92efc3d2a686a7496b979f41c273f9f280d82e05816f43cdfabafbb"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/comparison.png",
+      "sha256": "3b36dd03658618e861ee3c5e536ac6dff3afef235cfdfcc1bb471c74abd4f456"
+    }
+  ],
+  "independentInitialReview": {
+    "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-c/independent-five-connection-review/review.json",
+    "sha256": "058c8a9fb4ff20f4018d8d527ebcc1f35fecd970b9d4b66a63064bc737b8992e",
+    "scope": "Five original P1 source claims and20 initial saved PNGs; initial skate artifact subsequently corrected"
+  },
+  "video": {
+    "path": "artifacts/catalog-demos/five-connection-repairs-20261120/before-after.mp4",
+    "sha256": "f83a4d0fa47ec09e63a89e20a6ba2a0595792c9646b445887f6881a22290bb70",
+    "actualDurationSeconds": 17.958333,
+    "width": 1920,
+    "height": 1080,
+    "framesPerSecond": 24,
+    "sampledFrames": [
+      {
+        "second": 1,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/1s.png",
+        "sha256": "2ff009227f559156cb539086d3243faef5b3349a7f44314b508759fef9fa6bfe"
+      },
+      {
+        "second": 4,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/4s.png",
+        "sha256": "3e4e18247a7b763d2abf15f39a95c8cc751e1b9c0b4c6b56e5e344f63e81dc04"
+      },
+      {
+        "second": 7,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/7s.png",
+        "sha256": "b23dc316f0763451e92ab8dfc6a7ca3b8535f240f8239132d93a51dc98d81a3a"
+      },
+      {
+        "second": 10,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/10s.png",
+        "sha256": "346f97f6fd8ccc12f5a140b6aa61220b3a6fc0119f5e4d1f992417acd4d988c3"
+      },
+      {
+        "second": 13,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/13s.png",
+        "sha256": "35e9a8fda43577bf3293442f674086f9e1fcc62eecf29cf0f60be8e2a7f90904"
+      },
+      {
+        "second": 16,
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/video-review-v2/16s.png",
+        "sha256": "35e9a8fda43577bf3293442f674086f9e1fcc62eecf29cf0f60be8e2a7f90904"
+      }
+    ]
+  },
+  "canonicalRenderer": {
+    "status": "BOOTSTRAP_BLOCKED_AT_CDP_INITIALIZATION",
+    "modelRunCompleted": false,
+    "newBrowserStarted": false,
+    "retryAttempts": 0,
+    "receipt": "canonical-renderer-bootstrap.json",
+    "sha256": "cfb45b495d5ed13d3c00b896a3e2848029e061e916c27312c6141bcd15f7a451"
+  },
+  "nativeAcceptance": {
+    "file": "native-acceptance.json",
+    "sha256": "ca38f030b9f7062bbaa90adc3836a8ca666c29b51e7ead7515faf14bedfb9cbd",
+    "status": "COMPOSITE_NATIVE_ACCEPTANCE",
+    "selectedRows": 33,
+    "lineage": "29 unchanged accepted rows plus4 corrected skate rows",
+    "normalWorkerLimits": {
+      "rssMiB": 896,
+      "heapMiB": 768,
+      "wasmMiB": 864,
+      "nativeTimeMs": 270000,
+      "outerTimeMs": 300000,
+      "graceMs": 2000
+    },
+    "oldRun": {
+      "executedCases": 33,
+      "selectedCases": 29,
+      "maxSampledRssMiB": 429,
+      "hardKills": 0,
+      "budgetStops": 0,
+      "retries": 0,
+      "policyFreshStarts": 10,
+      "policyRespawns": 10
+    },
+    "skateCorrectionRun": {
+      "executedCases": 4,
+      "selectedCases": 4,
+      "maxSampledRssMiB": 389,
+      "hardKills": 0,
+      "budgetStops": 0,
+      "retries": 0,
+      "policyFreshStarts": 0,
+      "policyRespawns": 0
+    }
+  },
+  "scopeLimits": [
+    "Literal branch/scale variants rebuild independently; incremental Studio edits were not exercised.",
+    "The native export adapter binds actual installed private dependency bytes, not public package-lock byte parity.",
+    "Static scene-prop contact and clearance checks do not establish load, motion, magnetic, electrical or manufacturing performance."
+  ],
+  "independentSkateFollowup": {
+    "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-c/independent-five-connection-review/skate-visual-followup.json",
+    "sha256": "92fe657731b6fe034224ce1c3157253e673d93be3d90d460fed0bcc6b8b5f4c2",
+    "finding": "Prior rear arm/frame stipple absent; visible wheel gaps and brake support retained. Two corrected saved PNGs inspected; no hidden-contact inference."
+  }
+}

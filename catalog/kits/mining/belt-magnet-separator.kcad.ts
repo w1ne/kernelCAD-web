@@ -120,7 +120,10 @@ for (const [k, x] of [-GX, GX].entries()) {
 const ZB = 1750; // underside of the magnet, about 390 mm above the ore crest
 if (selfCleaning) {
   const ZP = ZB + 220; // pulley centre
-  for (const [k, y] of [-1050, 1050].entries()) add(`magnet-pulley-${k}`, cylX(220, -620, 620, y, ZP, 14).color(structureSteel));
+  for (const [k, y] of [-1050, 1050].entries()) {
+    add(`magnet-pulley-${k}`, cylX(220, -620, 620, y, ZP, 14).color(structureSteel));
+    add(`magnet-pulley-axle-${k}`, cylX(38, -700, 700, y, ZP, 10).color(roll));
+  }
   add('cleaning-belt-lower', blk(-640, -1050, ZB - 20, 640, 1050, ZB).color(beltRubber));
   add('cleaning-belt-upper', blk(-640, -1050, ZP + 220, 640, 1050, ZP + 240).color(beltRubber));
   for (let i = 0; i < 7; i++) {
@@ -131,6 +134,9 @@ if (selfCleaning) {
   add('magnet-block', blk(-560, -820, ZB + 30, 560, 820, ZP + 190).color(magnetPaint));
   for (const [k, s] of [-1, 1].entries()) {
     add(`side-frame-${k}`, blk(s * 690 - 30, -1150, ZB + 60, s * 690 + 30, 1150, ZP + 160).color(magnetPaint));
+    // Static arms bridge the 100 mm body-to-frame gap between the belt runs.
+    for (const [j, y] of [-600, 600].entries())
+      add(`magnet-support-${k}-${j}`, blk(Math.min(s * 540, s * 680), y - 40, ZP - 40, Math.max(s * 540, s * 680), y + 40, ZP + 40).color(magnetPaint));
   }
   add('terminal-box', blk(-860, -300, ZB + 120, -720, 300, ZP + 100).color(magnetPaint));
   add('drive-gearbox', blk(720, 900, ZP - 200, 980, 1200, ZP + 200).color(structureSteel));
@@ -156,10 +162,13 @@ if (selfCleaning) {
   add('caught-bolt', tube([-300, -300, ZB - 60], [200, -150, ZB - 50], 22, 6).color(rust));
 }
 
-// Four lifting lugs, chains up to the gantry runners.
+// Four lifting lugs, chains up to the gantry runners. The cleaning-belt
+// lugs attach to the side frames, outside the moving belt and its cleats.
 const lugZ = selfCleaning ? ZB + 560 : ZB + 600;
-for (const [k, [x, y]] of [[-560, -760], [560, -760], [-560, 760], [560, 760]].entries()) {
-  add(`lifting-lug-${k}`, blk(x - 40, y - 40, lugZ - 140, x + 40, y + 40, lugZ).color(magnetPaint));
+const lugX = selfCleaning ? 690 : 560;
+const lugBaseZ = selfCleaning ? ZB + 300 : lugZ - 140;
+for (const [k, [x, y]] of [[-lugX, -760], [lugX, -760], [-lugX, 760], [lugX, 760]].entries()) {
+  add(`lifting-lug-${k}`, blk(x - 40, y - 40, lugBaseZ, x + 40, y + 40, lugZ).color(magnetPaint));
   add(`chain-${k}`, tube([x, y, lugZ], [Math.sign(x) * (GX - 200), Math.sign(y) * GY, GZ + 260], 22, 6).color('#5d6266'));
 }
 
