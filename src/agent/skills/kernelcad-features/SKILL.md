@@ -51,8 +51,9 @@ plate.hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thru' })
 
 `kc.q.edge(kc.q.derivedFrom(part.id)).and(kc.q.withLabel('entry-rim'))`
 selects every entry rim on `part`, from all its holes. A later `fillet` or
-`chamfer` does not keep the rim labels of the edges it leaves alone, so
-break all the rims you need in one edge feature. `cutout`
+`chamfer` keeps the labels of the edges it leaves alone, so
+`.chamfer(0.5, { face: 'thru.entry-rim' }).chamfer(0.3, { face: 'thru.exit-rim' })`
+breaks the two rims by different amounts. `cutout`
 has no rim refs yet; select its edges by query, for example
 `{ atZ: 20 }` on a 20 mm plate. A slot the feature never
 wrote (`pilotHole.rim`, a typo) fails with

@@ -9,6 +9,7 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { verifyTool } from '../../../src/agent/mcp/tools/verify';
 import type { CheckClearanceRangeOutput } from '../../../src/agent/mcp/tools/checkClearanceRange';
 import type { ClearanceRangeReport, ClearanceRangeRow } from '../../../src/modeling/mates/clearanceRange';
+import type { RequirementLedgerEntry, RequirementsLedger } from '../../../src/shared/intent/requirementRecord';
 
 interface FixtureOpts {
   limits?: string;
@@ -31,7 +32,7 @@ return cell.solvedModel({}, { clearances: ${clearances} });
 `;
 }
 
-type Report = ClearanceRangeReport & { source: 'local'; assembly: string };
+type Report = ClearanceRangeReport & { source: 'local'; assembly: string; requirements: RequirementsLedger };
 
 async function run(code: string, extra: Record<string, unknown> = {}): Promise<CheckClearanceRangeOutput> {
   return (await verifyTool({ check: 'clearance-range', code, ...extra })) as CheckClearanceRangeOutput;
@@ -45,6 +46,12 @@ function report(out: CheckClearanceRangeOutput): Report {
 function row(r: Report, a: string, b: string, at: 'rest' | 'range'): ClearanceRangeRow {
   const found = r.rows.find((x) => x.at === at && [x.a, x.b].sort().join() === [a, b].sort().join());
   if (found === undefined) throw new Error(`no ${at} row for ${a}/${b}: ${JSON.stringify(r.rows)}`);
+  return found;
+}
+
+function ledgerEntry(r: Report, name: string): RequirementLedgerEntry {
+  const found = r.requirements.entries.find((e) => e.name === name);
+  if (found === undefined) throw new Error(`no ledger entry ${name}: ${JSON.stringify(r.requirements.entries.map((e) => e.name))}`);
   return found;
 }
 
@@ -72,6 +79,14 @@ describe("verify({ check: 'clearance-range' })", () => {
     expect(range.actual).toBeCloseTo(1, 6);
     expect(range.reason).toMatch(/below the planned 5 mm/);
     expect(r.ok).toBe(false);
+    // The same rows enter the requirements ledger.
+    expect(ledgerEntry(r, 'assembly.clearance.rest.carriage~stop')).toMatchObject({ source: 'assembly', status: 'pass', limit: 5 });
+    const failed = ledgerEntry(r, 'assembly.clearance.range.carriage~stop');
+    expect(failed).toMatchObject({ status: 'fail', limit: 5 });
+    expect(failed.measured).toBeCloseTo(1, 6);
+    expect(failed.margin).toBeCloseTo(-4, 6);
+    expect(failed.message).toMatch(/1\.000 mm apart at slide:max, need 5 mm/);
+    expect(r.requirements).toMatchObject({ ok: false, summary: { pass: 1, fail: 1, notEvaluated: 0 } });
   }, 180_000);
 
   it('reports the range as unknown, not pass, when a movable mate has no limits', async () => {
@@ -82,6 +97,10 @@ describe("verify({ check: 'clearance-range' })", () => {
     expect(range.reason).toMatch(/'slide' have no declared limits/);
     expect(r.unboundedMates).toEqual(['slide']);
     expect(r.ok).toBe(false);
+    const ledger = ledgerEntry(r, 'assembly.clearance.range.carriage~stop');
+    expect(ledger).toMatchObject({ status: 'not-evaluated', margin: null });
+    expect(ledger.message).toMatch(/'slide' have no declared limits/);
+    expect(r.requirements.ok).toBe(false);
   }, 180_000);
 
   it('applies min_clearance_mm to movable mate pairs and keeps fastened pairs exempt', async () => {
