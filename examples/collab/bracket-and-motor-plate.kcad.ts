@@ -3,9 +3,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Two-part model used by the collaboration gate example and the `collab check`
-// CLI test. Both parts are authored independently and placed in one assembly;
-// the shared `hole-pattern` requirement is the interface contract. Moving one
-// bracket hole breaks it, while a cosmetic bracket fillet change does not.
+// CLI test. Both parts are authored independently and placed in one assembly:
+// the motor plate is fastened on the bracket top face, so the two plates touch
+// and do not overlap. The shared `hole-pattern` requirement is the interface
+// contract. Moving one bracket hole breaks it, while a cosmetic bracket fillet
+// change does not.
 //
 //   npx tsx src/agent/cli/index.ts evaluate examples/collab/bracket-and-motor-plate.kcad.ts
 
@@ -33,8 +35,14 @@ const motorHole = box(40, 30, plateT).hole('top', {
 const motorPlate = motorHole.chamfer(motorChamfer, 'top');
 
 const asm = assembly('bracket and motor plate');
-asm.part('bracket', bracket, { at: [0, 0, 0] });
-asm.part('motor_plate', motorPlate, { at: [0, 0, 0] });
+const bracketPart = asm.part('bracket', bracket, { at: [0, 0, 0] });
+const motorPart = asm.part('motor_plate', motorPlate, { at: [0, 0, 0] });
+
+// Seat: the motor plate bottom face (z = 0) on the bracket top face
+// (z = plateT), at the plate centre. Number(plateT) follows the parameter.
+bracketPart.connector('top', { type: 'frame', origin: { kind: 'vec3', value: [20, 15, Number(plateT)] } });
+motorPart.connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [20, 15, 0] } });
+asm.mate('motorOnBracket', 'bracket.top', 'motor_plate.bottom', 'fastened');
 
 require('hole-pattern', concentric(
   faces(bracketHole, { ofSurfaceType: 'CYLINDER' }),

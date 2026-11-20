@@ -9,6 +9,35 @@
   `hole()` does; `through` and `upToFace` cuts are unchanged, and a blind
   depth equal to the wall thickness still cuts clean through.
 
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  one `mechanism.interpenetration` error (6914.65 mm3) because both plates
+  were placed at the origin with no mate. The motor plate is fastened on the
+  bracket top face, and the seat follows `plateT`. The parameters and the
+  `hole-pattern` requirement are unchanged, so `kernelcad collab check`
+  results are unchanged.
+- `examples/kinematic/joint-range-suggestion.kcad.ts` and
+  `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, each returned
+  `mechanism.orphan-part` because the wall that stops the carriage had no
+  mate. The rail has a bed, the wall stands on the bed and is fastened to it
+  at the shared face, and the carriage slides on the bed. The suggested stop
+  is unchanged: the clear side of 9.7 mm, pair `carriage` / `wall`.
+
+- A script that calls `kinematic.suggestJointRanges`, `checkSweptCollision`,
+  `checkStaticHold` or `motionLoad` no longer gets a second copy of every
+  assembly part in its model. Each query lowered a probe scene and left that
+  scene in the feature list, fixed at the probe pose, so `kernelcad animate`
+  and the viewer drew the moving part twice: at the probe pose and at the
+  current pose. The probe scene is now removed after the query has read it.
+  The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
+  one showed the carriage stretched from its start to the wall.
+- `kernelcad render`, `kernelcad render inspect` and the `render_preview`
+  explode path now accept a script that calls `kinematic.*`; before, they
+  failed with `ReferenceError: kinematic is not defined` on a script that
+  `evaluate_script` accepted (for example kinematic cookbook snippets 1 and
+  4). The render loader used the modeling-only script API; it now uses the
+  same composed API as `buildModel` and `evaluate_script`.
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported

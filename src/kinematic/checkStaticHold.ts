@@ -251,6 +251,7 @@ async function lowerPartMasses(
     gatedFeatureNames: arm.__session().gatedFeatureNames,
   });
   const sourceId = scene.__sourceFeatureId();
+  arm.__session().discardProbeRecord(sourceId);
   const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
   if (!lowered || !isSceneBackend(lowered)) {
     return undefined;
