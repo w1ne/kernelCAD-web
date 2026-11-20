@@ -1,5 +1,14 @@
 # Unreleased
 
+- `Shape.boundingBox()` now contains thickened curved surfaces. On a
+  curved surface, `thicken()` makes an offset-surface face. OCCT's default
+  box bounds that face by its basis surface and stores the offset distance
+  as the box gap, and the box then removed the gap as tolerance. The box
+  fell inside the solid: the pocket-watch crystal (`thicken(0.4)`) read
+  z max 3.2 mm instead of 3.6 mm, and the imported pocket-watch STEP read
+  y min -8.5 mm instead of -8.899 mm. Shapes with an offset face now take
+  the exact box of each offset face and the gap-free default box of the
+  other faces (64 to 97 ms on the 768-face pocket-watch STEP).
 - `Shape.surfaceArea()` (and the area in `getShapeInfo`, part stats and the
   BOM) is now close to the true area of non-uniformly scaled curved solids.
   The fixed-order OCCT area integration read their rational B-spline faces
