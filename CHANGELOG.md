@@ -1,5 +1,14 @@
 # Unreleased
 
+- A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
+  Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
+  `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
+  instead of 480 mm³, and the pocket floor never got the documented `floor`
+  created ref: `fillet(r, { face: 'pocket.floor' })` silently rounded a
+  different face. The tool now overshoots only outside the entry face, as
+  `hole()` does; `through` and `upToFace` cuts are unchanged, and a blind
+  depth equal to the wall thickness still cuts clean through.
+
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported
@@ -9,8 +18,7 @@
   π·12·6·20 mm³ (relative error under 1e-6), and a spline or mixed profile
   gives the same volume, face count and centroid as the explicit
   `subtract()`. The spline and ellipse side faces now carry the `wall`
-  created ref. Limit: a blind cutout still overshoots its depth by 0.01 mm,
-  as it does for a polyline profile.
+  created ref.
 
 - Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
