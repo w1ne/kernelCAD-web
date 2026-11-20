@@ -657,8 +657,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing stacks sections on XY planes at z = 0, spacing, 2*spacing, ...;
 // of the rotation controls only twistDeg/twistCenter apply there (per-plane
 // rotationDeg requires opts.planes). opts.planes overrides with explicit
-// per-section placement and each entry may add rotationDeg. Unknown option
-// keys (top-level or per-plane) throw feature.invalid-args.
+// per-section placement and each entry may add rotationDeg. Every entry
+// needs plane ('XY' | 'YZ' | 'XZ', upper case unlike mirror's 'xy') and an
+// [x, y, z] origin. Unknown option keys (top-level or per-plane), a missing or
+// lower-case plane, and a missing origin throw feature.invalid-args.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: Editable<number>;
   planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>]; rotationDeg?: Editable<number> }[];

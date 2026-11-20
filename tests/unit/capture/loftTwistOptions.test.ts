@@ -136,4 +136,66 @@ describe('loft twist capture contract', () => {
     expect(badRotation.code).toBe('feature.invalid-args');
     expect(badRotation.message).toMatch(/planes\[0\]\.rotationDeg/);
   });
+  it('rejects a planes[] entry without a valid plane name', () => {
+    const { kcad } = session();
+    const a = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    const b = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+
+    // Before the check, a missing plane passed capture and the loft failed
+    // later as feature.empty-result, which named no cause.
+    const missing = captureError(() =>
+      a.loft(b, { planes: [{ origin: [0, 0, 0] }, { origin: [0, 0, 10] }] } as never),
+    );
+    expect(missing.code).toBe('feature.invalid-args');
+    expect(missing.message).toMatch(/planes\[0\]\.plane/);
+    expect(missing.message).toMatch(/'XY' \| 'YZ' \| 'XZ'/);
+
+    const lowercase = captureError(() =>
+      a.loft(b, {
+        planes: [
+          { plane: 'XY', origin: [0, 0, 0] },
+          { plane: 'xy', origin: [0, 0, 10] },
+        ],
+      } as never),
+    );
+    expect(lowercase.code).toBe('feature.invalid-args');
+    expect(lowercase.message).toMatch(/planes\[1\]\.plane/);
+  });
+
+  it('rejects a planes[] entry without a 3D origin', () => {
+    const { kcad } = session();
+    const a = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    const b = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+
+    for (const origin of [undefined, [0, 10], [0, 0, 'ten'], [0, 0, Number.NaN]]) {
+      const err = captureError(() =>
+        a.loft(b, {
+          planes: [
+            { plane: 'XY', origin: [0, 0, 0] },
+            { plane: 'XY', origin },
+          ],
+        } as never),
+      );
+      expect(err.code).toBe('feature.invalid-args');
+      expect(err.message).toMatch(/planes\[1\]\.origin/);
+    }
+  });
+
+  it('captures ParamRef origin coordinates in a valid planes[] entry', () => {
+    const { s, kcad } = session();
+    const height = kcad.param('height', 40);
+    const a = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+    const b = kcad.path().moveTo(0, -1).lineTo(2, 0).lineTo(0, 1).close();
+
+    a.loft(b, {
+      planes: [
+        { plane: 'XY', origin: [0, 0, 0] },
+        { plane: 'XY', origin: [0, 0, height] },
+      ],
+    });
+
+    const rec = s.getRecords().at(-1)!;
+    const planes = (rec.metadata as { planes: Array<{ origin: Array<number | CapturedParam> }> }).planes;
+    expect((planes[1].origin[2] as CapturedParam).paramRef).toBe('height');
+  });
 });

@@ -43,8 +43,8 @@ import {
 import { smoothSplineTangentOptions, type SmoothSplineOptions } from './smoothSplinePhases';
 
 import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
-import { ALLOWED_LOFT_KEYS, ALLOWED_LOFT_PLANE_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
-import { assertKnownKeys, assertEditableNumber, assertEditablePair } from './sketchOptionGuards';
+import { ALLOWED_LOFT_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
+import { assertKnownKeys, assertEditableNumber, assertEditablePair, assertLoftPlaneEntry } from './sketchOptionGuards';
 export type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 
 // Re-export so existing modeling/agent/authoring importers keep working.
@@ -469,19 +469,7 @@ export class Sketch {
             `Pass opts.planes[${i}] as { plane, origin, rotationDeg? }.`,
           );
         }
-        assertKnownKeys(
-          p,
-          ALLOWED_LOFT_PLANE_KEYS,
-          this.id,
-          (key) => `Sketch.loft: unknown planes[${i}] option '${key}'.`,
-          'planes entries',
-        );
-        assertEditableNumber(
-          p.rotationDeg,
-          `Sketch.loft: opts.planes[${i}].rotationDeg`,
-          this.id,
-          `Pass planes[${i}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
-        );
+        assertLoftPlaneEntry(p, i, this.id);
       }
     }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
