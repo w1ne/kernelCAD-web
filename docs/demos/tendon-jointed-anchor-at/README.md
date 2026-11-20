@@ -15,7 +15,7 @@ node docs/demos/tendon-jointed-anchor-at/generate-video.mjs
 ```
 
 The verification script runs the source through kernelCAD and meshes its
-tendon, then checks the endpoint rings against `[110, 0, 0]` and `[-10, 0, 0]`
+tendon, then checks the endpoint rings against `[90, 0, 0]` and `[10, 0, 0]`
 in millimetres. The integration test independently asserts those coordinates.
 The checked result and capture settings are in `verification.json` and
 `generate-video.mjs`.
