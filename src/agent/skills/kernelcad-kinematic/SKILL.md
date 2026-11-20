@@ -44,7 +44,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | Call | Question answered | Key diagnostics |
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
-| `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
+| `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? Where does each overlap start and end? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2), `kinematic.collision.swept.unmeasured`; `result.walks[]` gives per-pair overlap stretches bisected between samples (`opts.refineRounds`, default 6 = step/64), the worst overlap volume, pose and witness point, and `unknown` positions (never read as clear) |
 | `kinematic.suggestJointRanges(arm, opts)` | Where should this revolute or prismatic stop so non-exempt parts keep the clearance? | no diagnostic code; the reported stop is the clear side of the bracket; `no-stop` means the sampled poses found no crossing, not a continuous proof; an unmeasured side is `unknown`, never `no-stop` |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
@@ -149,6 +149,7 @@ call to confirm.
 |------|------|----|
 | K1 `kinematic.collision.swept` | `rewrite-feature` | Inspect `result.collidingPoses[]`; narrow joint limits OR reshape the colliding part OR insert clearance |
 | K2 `kinematic.collision.swept.sample-density-warning` | `fix-arg` (`opts.range`) | Halve the step size OR widen the range |
+| `kinematic.collision.swept.unmeasured` | `rewrite-feature` | A sampled pose was not lowered or its exact boolean failed; see `result.walks[].unknown`, simplify the named parts or change the step, and re-run |
 | K3 `kinematic.unreachable` | conditional by `axis` | `axis: 'position' \| 'both'` → restructure (lengthen link, add DOF, move target). `axis: 'orientation'` → relax orientation tolerance or drop the orientation constraint |
 | K4 `kinematic.reachability.iteration-cap-hit` | `fix-arg` (`opts.maxIterations`) | Bump iterations OR relax tolerances; inspect `closestApproach` to choose |
 | K5 `kinematic.solver.unsupported-config` | `rewrite-feature` | Switch `preferSolver: 'numeric'`: the closed-form solver takes serial spherical-wrist chains only (closed loops go through the numeric path) |

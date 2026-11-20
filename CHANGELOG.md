@@ -1,5 +1,20 @@
 # Unreleased
 
+- `kinematic.checkSweptCollision` and `verify({ check: 'swept-collision' })`
+  (#1680) now return `walks[]`: for each swept joint, every overlapping
+  pair with its overlap stretches, the largest measured overlap volume,
+  the pose where it occurs and a witness point. Where a pair changes
+  between overlap and clear from one sample to the next, the step is
+  bisected (`refineRounds`, default 6, i.e. step / 64) and each stretch
+  end carries the bracket width left. A sample that could not be lowered,
+  or whose exact boolean failed, was read as clear; it is now listed in
+  `walks[].unknown` and fails the check with
+  `kinematic.collision.swept.unmeasured`. On the clamshell-hinge cookbook
+  (1 deg step) the lid/base stretch ends at -0.578 deg and the lid/table
+  stretch at -4.031 deg; the closed-form contact angles are -0.573 deg and
+  -4.016 deg, inside the 0.0156 deg bracket. Explicit pose lists are not
+  refined.
+
 - Filters written inside `q.edge(...)` now select edges. A bare
   `withLabel`, `withFeatureName` or `createdBy` filter defaulted to faces,
   and the edge narrowing then dropped every face, so

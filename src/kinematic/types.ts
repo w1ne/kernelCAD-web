@@ -110,6 +110,9 @@ export interface SweptCollisionOpts {
   readonly collisionToleranceMm3?: number;
   /** Pairs to skip during interference detection. */
   readonly ignored?: ReadonlySet<string>;
+  /** Bisection rounds where a pair changes state between two samples
+   *  (default 6, i.e. step / 64). 0 reports unrefined stretches. */
+  readonly refineRounds?: number;
 }
 
 export interface SweptCollisionContact {
@@ -123,9 +126,61 @@ export interface SweptCollidingPose {
   readonly contacts: ReadonlyArray<SweptCollisionContact>;
 }
 
+/** One overlap stretch of a pair along a swept joint, in the joint's unit
+ *  (deg or mm). Ends between two samples are bisected; the resolution is
+ *  the bracket width left after refinement (0 at the first or last sampled
+ *  position, one step where a neighbour could not be measured). */
+export interface SweptOverlapStretch {
+  readonly start: number;
+  readonly end: number;
+  readonly startResolution: number;
+  readonly endResolution: number;
+  /** The overlap already holds at the first position the walk sampled. */
+  readonly startsAtFirstSample: boolean;
+  /** The overlap still holds at the last position the walk sampled. */
+  readonly endsAtLastSample: boolean;
+}
+
+/** Every overlap of one part pair along one swept joint. */
+export interface SweptOverlapPair {
+  readonly partA: string;
+  readonly partB: string;
+  readonly stretches: ReadonlyArray<SweptOverlapStretch>;
+  /** Largest overlap volume measured (samples and refinement steps). */
+  readonly worstVolumeMm3: number;
+  readonly worstPose: NumericPoses;
+  /** Centre of the shared region at the worst pose, world frame (mm). */
+  readonly witness?: readonly [number, number, number];
+  readonly overlapBounds?: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+}
+
+/** A position whose overlap could not be measured. Never read as clear. */
+export interface SweptUnknownPose {
+  readonly pose: NumericPoses;
+  readonly reason: string;
+  /** Pairs whose exact check failed; absent when nothing was measured. */
+  readonly pairs?: ReadonlyArray<{ readonly partA: string; readonly partB: string }>;
+}
+
+/** Overlap report for one swept joint walk. */
+export interface SweptWalkReport {
+  readonly joint: string;
+  readonly from: number;
+  readonly to: number;
+  readonly step: number;
+  readonly samples: number;
+  readonly refineRounds: number;
+  readonly refinementSamples: number;
+  readonly overlaps: ReadonlyArray<SweptOverlapPair>;
+  readonly unknown: ReadonlyArray<SweptUnknownPose>;
+  readonly clearNote: string;
+}
+
 export interface SweptCollisionResult extends KinematicResultBase {
   readonly collidingPoses: ReadonlyArray<SweptCollidingPose>;
   readonly posesSampled: number;
+  /** One overlap report per single-joint walk (absent for explicit samples). */
+  readonly walks?: ReadonlyArray<SweptWalkReport>;
 }
 
 // ===== checkReachable =====
