@@ -7,6 +7,12 @@
   shared face, and the mate limits (-10° to 20°) keep the link tip above the
   plate. In MuJoCo the single base hull still contacts the link between the
   rods, and the four declared pieces give no contact.
+- `kernelcad render`, `kernelcad render inspect` and the `render_preview`
+  explode path now accept a script that calls `kinematic.*`; before, they
+  failed with `ReferenceError: kinematic is not defined` on a script that
+  `evaluate_script` accepted (for example kinematic cookbook snippets 1 and
+  4). The render loader used the modeling-only script API; it now uses the
+  same composed API as `buildModel` and `evaluate_script`.
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported
