@@ -85396,7 +85396,7 @@
       "id": "site-energy-management-controller",
       "kit": "ev-charging-infrastructure",
       "title": "Site energy management controller",
-      "description": "Wall enclosure with a control screen, antenna pair, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
+      "description": "Wall enclosure on a rear mounting plate, with a control screen, a pair of polymer-sheathed antennas on steel connectors, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer, stainless steel and antenna radome polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -85417,7 +85417,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/site-energy-management-controller.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
-      "sourceSha256": "2861706f6da1a1ccd2acb06c5366a0bf9943d34ea50ac0569442622ebd64dfb6",
+      "sourceSha256": "5d106e1902589ade776cfe428791710c061e9e00a21f55094fa18f5024b27d93",
       "triangleBudget": 2400,
       "params": [
         {
@@ -85452,6 +85452,12 @@
           "type": "color",
           "default": "#b5c0c2",
           "label": "Stainless steel"
+        },
+        {
+          "name": "antennaPolymer",
+          "type": "color",
+          "default": "#2b3236",
+          "label": "Antenna radome polymer"
         }
       ],
       "presets": {
@@ -85459,21 +85465,23 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "safetyPolymer": "#f3bd2f",
-          "stainlessSteel": "#c2c9c8"
+          "stainlessSteel": "#c2c9c8",
+          "antennaPolymer": "#1f2a27"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "safetyPolymer": "#ffbf24",
-          "stainlessSteel": "#c8cecd"
+          "stainlessSteel": "#c8cecd",
+          "antennaPolymer": "#e6e9e6"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 328,
         "sizeM": [
           0.56,
-          1.1,
-          0.352
+          1.082,
+          0.3585
         ],
         "minUpM": 0,
         "materials": 1
@@ -85485,7 +85493,9 @@
           "parts": [
             "mounting-plate",
             "vent-slot-1",
-            "vent-slot-2"
+            "vent-slot-2",
+            "antenna-mount-left",
+            "antenna-mount-right"
           ],
           "param": "stainlessSteel"
         },
@@ -85496,8 +85506,6 @@
             "main-enclosure",
             "top-cap",
             "front-door",
-            "antenna-left",
-            "antenna-right",
             "cable-gland-strip"
           ],
           "param": "powderCoat"
@@ -85518,6 +85526,15 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "antennaPolymer",
+          "color": "#2b3236",
+          "parts": [
+            "antenna-left",
+            "antenna-right"
+          ],
+          "param": "antennaPolymer"
         }
       ]
     },
