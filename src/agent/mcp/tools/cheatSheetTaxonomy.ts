@@ -89,7 +89,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
-      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
+      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle', 'ellipse', 'ellipseArc',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'bezierTo', 'quadraticTo', 'hermiteG2',

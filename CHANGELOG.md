@@ -1,5 +1,19 @@
 # Unreleased
 
+- `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
+  `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
+  draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
+  a path had no ellipse: the author wrote rational NURBS control points and
+  weights by hand, or used a polyline. Both calls are exact: one rational
+  quadratic segment per 90° of sweep. A 20 × 10 mm ellipse extruded 5 mm
+  measures 3141.592654 mm³ (π·rx·ry·h), and a quarter arc revolved into a
+  2:1 elliptical head measures (2/3)·π·R²·h. The `ellipse` centre and
+  semi-axes accept `param()` values; `ellipseArc` takes plain numbers, and
+  radii too small to join the two points throw `feature.invalid-args` with
+  the smallest pair that fits. Limits: `Sketch.offset`, the sketch booleans
+  and `cutout()` do not take a NURBS profile, so an elliptical hole is an
+  extruded ellipse subtracted from the solid.
+
 - A mirrored or turned `smoothSpline` profile keeps its shape. The free end
   tangent of a `smoothSpline` segment is the sketch +X direction, and the
   segment stored no tangent, so `Sketch.reflect('y')` built a different
