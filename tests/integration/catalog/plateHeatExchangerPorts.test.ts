@@ -54,19 +54,23 @@ function xRayHits(triangles: Triangle[], y: number, z: number): boolean {
   });
 }
 
-function accept(meshes: Map<string, Triangle[]>): void {
+function accept(meshes: Map<string, Triangle[]>, endX = 184.8, height = 620, count = 9): void {
   const ports = [...meshes.keys()].filter(name => /^port-\d+$/.test(name));
   expect(ports).toHaveLength(4);
+  expect([...meshes.keys()].filter(name => name.startsWith('heat-plate-'))).toHaveLength(count);
   const plate = meshes.get('fixed-end-plate')!;
+  expect(Math.min(...plate.flat().map(v => v[2]))).toBeCloseTo(0, 2);
+  expect(Math.max(...plate.flat().map(v => v[2]))).toBeCloseTo(height, 2);
   const plateXs = plate.flat().map(v => v[0]);
-  expect(Math.min(...plateXs)).toBeCloseTo(-200.8, 2);
-  expect(Math.max(...plateXs)).toBeCloseTo(-168.8, 2);
-  for (const [i, [y, z]] of centers.entries()) {
+  expect(Math.min(...plateXs)).toBeCloseTo(-endX - 16, 2);
+  expect(Math.max(...plateXs)).toBeCloseTo(-endX + 16, 2);
+  for (const [i, [y, nominalZ]] of centers.entries()) {
+    const z = nominalZ * height / 620;
     const port = meshes.get(`port-${i}`)!;
     expect(port, `connection ${i} exists`).toBeDefined();
     const points = port.flat();
-    expect(Math.min(...points.map(v => v[0])), '62 mm outward projection').toBeCloseTo(-262.8, 2);
-    expect(Math.max(...points.map(v => v[0])), 'fitting seats on fixed plate').toBeCloseTo(-200.8, 2);
+    expect(Math.min(...points.map(v => v[0])), '62 mm outward projection').toBeCloseTo(-endX - 78, 2);
+    expect(Math.max(...points.map(v => v[0])), 'fitting seats on fixed plate').toBeCloseTo(-endX - 16, 2);
     expect((Math.min(...points.map(v => v[1])) + Math.max(...points.map(v => v[1]))) / 2).toBeCloseTo(y, 2);
     expect((Math.min(...points.map(v => v[2])) + Math.max(...points.map(v => v[2]))) / 2).toBeCloseTo(z, 2);
     expect(xRayHits(port, y, z), 'fitting bore is open').toBe(false);
@@ -84,6 +88,14 @@ describe('plate heat exchanger connection geometry', () => {
       accept(await parts(code, scale));
     }, 60_000);
   }
+  it('rebuilds useful plate count and height controls while preserving the four connections', async () => {
+    for (const [count, height, endX] of [[5, 480, 118.3], [13, 800, 251.3]]) {
+      const code = source.replace("param('plateCount', '9',", `param('plateCount', '${count}',`)
+        .replace("param('plateHeight', 620,", `param('plateHeight', ${height},`);
+      expect(code).not.toBe(source);
+      accept(await parts(code), endX, height, count);
+    }
+  }, 60_000);
   it('rejects a two-port regression even when the geometry exports', async () => {
     const code = source.replace('portCenters.entries()', 'portCenters.slice(0, 2).entries()');
     expect(code).not.toBe(source);
