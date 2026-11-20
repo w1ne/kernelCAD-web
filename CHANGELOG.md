@@ -8,6 +8,14 @@
   and `examples/fea/stress-graded-infill-bracket.kcad.ts` failed
   `npm run typecheck:examples:all` with TS2322. A non-number, non-param
   value (`{ atX: '0' }`) is still a type error.
+- `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
+  now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
+  runtime already selected every edge of the matched face, but the public
+  type accepted only `{ face: 'top' | <label> }`, so scripts such as
+  `examples/selector-binding-drift.kcad.ts` and
+  `examples/cookbook-parity/gridfinity-bin.kcad.ts` failed `TS2345` in the
+  editor. Full-tree `typecheck:examples:all`: 367 errors in 41 files before,
+  363 in 40 after (4 `TS2345` removed, no new errors).
 
 - `hole`, `holes` and `cutout` now keep the edge lineage of the body they
   cut, as `subtract` already did. Before, their result had no edge history,
