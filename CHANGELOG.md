@@ -1,5 +1,14 @@
 # Unreleased
 
+- The GLB rig example (`examples/assemblies/glb-rig-hinge.kcad.ts`) now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it had 4
+  errors (`mechanism: broken`): the hinge axis was 9.0 mm away from the lid,
+  the lid was 6.24 mm away from the base at the 35° rest pose, and it cut
+  1.4 mm into the base at 0°. The base has a hinge ear, the end face of the
+  lid bears on the ear, and the closed lid is 2 mm above the base. The rig
+  export is unchanged (`rotate`, range [-35, 75]). The demo in
+  `docs/demos/glb-rig/` is recaptured from the new geometry.
+
 - A mirrored or turned `smoothSpline` profile keeps its shape. The free end
   tangent of a `smoothSpline` segment is the sketch +X direction, and the
   segment stored no tangent, so `Sketch.reflect('y')` built a different
