@@ -3,7 +3,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { openFileInSlicer } from '../../../../../src/kernel/export/gcode/slicerCli';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, writeFileSync, chmodSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, chmodSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
@@ -28,6 +28,7 @@ function fakeChildProcess(opts: { error?: Error } = {}) {
 function fakeStalledChildProcess() {
   const child = new EventEmitter() as ReturnType<typeof spawn> & EventEmitter;
   child.unref = vi.fn();
+  child.kill = vi.fn(() => true);
   // Never emits spawn or error so the launch timeout is exercised.
   return child as unknown as ReturnType<typeof spawn>;
 }

@@ -175,7 +175,7 @@ in-process guard:
 
 - Child processes other than Chromium (`ffmpeg`, CalculiX/gmsh, OpenFOAM (native,
   or a Docker container that always runs with `--network none`), slicer CLIs used
-  for G-code slicing / 3MF layout, `git` for `collab check`). They inherit the
+  for G-code slicing, `git` for `collab check`). They inherit the
   sandbox environment, including the dead proxy, `TMPDIR` and
   `KERNELCAD_SANDBOX=1`, but not the patched modules.
 - Native addons that do their own I/O.
