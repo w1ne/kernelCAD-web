@@ -43,11 +43,12 @@ const touches = (a: Bounds, b: Bounds) => [0, 1, 2].every((axis) =>
   a.max[axis]! + tolerance >= b.min[axis]! && b.max[axis]! + tolerance >= a.min[axis]!);
 const center = (bounds: Bounds, axis: number) => (bounds.min[axis]! + bounds.max[axis]!) / 2;
 
-function bankFailures(parts: Map<string, Bounds>): string[] {
+function bankFailures(parts: Map<string, Bounds>, count = 5): string[] {
   const failures: string[] = [];
+  if ([...parts.keys()].filter((name) => /^cylinder-\d$/.test(name)).length !== count) failures.push('wrong cylinder count');
   const rack = parts.get('rack-base')!;
   const header = parts.get('manifold-header')!;
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= count; i++) {
     const bottle = parts.get(`cylinder-${i}`);
     const valve = parts.get(`valve-${i}`);
     const branch = parts.get(`manifold-branch-${i}`);
@@ -121,6 +122,7 @@ describe('catalog support continuity', () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(root, bankFile);
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     expect(asset.stats.minUpM).toBeCloseTo(0, 5);
+    expect(asset.params.find((p) => p.name === 'cylinderCount')).toMatchObject({ type: 'choice', default: '5', choices: ['3', '5'] });
     expect(bankFailures(await namedBounds(glb))).toEqual([]);
   }, 60_000);
 
@@ -146,6 +148,19 @@ describe('catalog support continuity', () => {
     const code = read(liftFile).replace(/^ {2}add\(`caster-bridge-.*$/m, '');
     expect(code).not.toBe(read(liftFile));
     expect(liftFailures(await variant(liftFile, code))).toEqual(expect.arrayContaining(['caster-0: bridge-to-leg gap']));
+  }, 60_000);
+
+  it('changes to three connected bottles at both scale limits without changing the rack', async () => {
+    const code = read(bankFile).replace("param('cylinderCount', '5'", "param('cylinderCount', '3'");
+    expect(code).not.toBe(read(bankFile));
+    for (const scale of [0.65, 1.35]) {
+      const parts = await variant(bankFile, withScale(code, scale));
+      expect(bankFailures(parts, 3)).toEqual([]);
+      expect(parts.has('cylinder-4')).toBe(false);
+      const rack = parts.get('rack-base')!;
+      expect(rack.max[0]! - rack.min[0]!).toBeCloseTo(2200 * scale, 1);
+      expect(center(parts.get('cylinder-2')!, 0)).toBeCloseTo(0, 2);
+    }
   }, 60_000);
 
   it('preserves support contacts at both declared scale limits', async () => {

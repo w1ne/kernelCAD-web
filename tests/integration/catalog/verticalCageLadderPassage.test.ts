@@ -51,17 +51,19 @@ function hit(tris: Triangle[], origin: Vec, direction: Vec, length: number): boo
   });
 }
 
-function assertOpenCorridor(parts: Map<string, Triangle[]>, scale: number): void {
+function assertOpenCorridor(parts: Map<string, Triangle[]>, scale: number, sectionHeight = 1035): void {
+  const railHeight = sectionHeight - 105;
   const all = [...parts.values()].flat();
   expect([...parts.keys()].filter((name) => /^rung-\d$/.test(name))).toHaveLength(8);
   expect([...parts.keys()].filter((name) => /^safety-hoop-\d$/.test(name))).toHaveLength(4);
   expect([...parts.keys()].filter((name) => /^cage-upright-\d$/.test(name))).toHaveLength(3);
   for (const x of [-40, 0, 40]) for (const y of [35, 65])
-    expect(hit(all, [x * scale, y * scale, 300 * scale], [0, 0, 1], 500 * scale)).toBe(false);
+    expect(hit(all, [x * scale, y * scale, railHeight * 0.3 * scale], [0, 0, 1], railHeight * 0.55 * scale)).toBe(false);
   // Positive controls prevent an empty or deleted cage from passing the void probes.
-  expect(hit(all, [0, 288 * scale, 300 * scale], [0, 0, 1], 500 * scale)).toBe(true);
-  expect(hit(all, [-88.2 * scale, 0, -10 * scale], [0, 0, 1], 1050 * scale)).toBe(true);
-  for (const z of [325.5, 465, 604.5, 744]) {
+  expect(hit(all, [0, 288 * scale, railHeight * 0.3 * scale], [0, 0, 1], railHeight * 0.55 * scale)).toBe(true);
+  expect(hit(all, [-88.2 * scale, 0, -10 * scale], [0, 0, 1], (sectionHeight + 15) * scale)).toBe(true);
+  for (const fraction of [0.35, 0.5, 0.65, 0.8]) {
+    const z = railHeight * fraction;
     expect(hit(all, [0, 20 * scale, z * scale], [0, 1, 0], 240 * scale)).toBe(false);
     expect(hit(all, [0, 20 * scale, z * scale], [0, 1, 0], 290 * scale)).toBe(true);
   }
@@ -83,6 +85,7 @@ describe('vertical cage ladder open passage', () => {
     expect(asset.stats.sizeM[1]).toBeCloseTo(1.035, 5);
     expect(asset.stats.minUpM).toBeCloseTo(0, 5);
     expect(asset.description).toContain('1035 mm');
+    expect(asset.params.find((p) => p.name === 'sectionHeight')).toMatchObject({ type: 'number', default: 1035, min: 900, max: 1800, unit: 'mm' });
     assertOpenCorridor(await triangles(glb), 1);
   }, 60_000);
 
@@ -91,6 +94,19 @@ describe('vertical cage ladder open passage', () => {
     const all = [...(await exportSource(old)).values()].flat();
     for (const x of [-40, 0, 40]) for (const y of [35, 65])
       expect(hit(all, [x, y, 300], [0, 0, 1], 500)).toBe(true);
+  }, 60_000);
+
+  it('moves rungs and all cage straps when section height changes to either limit', async () => {
+    for (const height of [900, 1800]) {
+      const code = source.replace("param('sectionHeight', 1035,", `param('sectionHeight', ${height},`);
+      expect(code).not.toBe(source);
+      const parts = await exportSource(code);
+      assertOpenCorridor(parts, 1, height);
+      const points = [...parts.values()].flat(2);
+      expect(Math.max(...points.map((p) => p[2]))).toBeCloseTo(height, 1);
+      const rung = parts.get('rung-7')!.flat();
+      expect(Math.min(...rung.map((p) => p[2]))).toBeCloseTo(height - 149, 1);
+    }
   }, 60_000);
 
   it('keeps the opening and surrounding guard geometry at both scale limits', async () => {
