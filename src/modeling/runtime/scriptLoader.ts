@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
-import { runScript } from './runScript';
+import { runScript, type RunScriptFacadeOptions } from './runScript';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureKind } from '../../shared/intent/types';
@@ -20,7 +20,15 @@ export interface LoadedScript {
   returnValue?: unknown;
 }
 
-export async function loadScriptFeatures(scriptPath: string): Promise<LoadedScript> {
+/**
+ * Low-level primitive: with no `opts.apiFactory` the script sees modeling's API
+ * only (no `kinematic` namespace). In-repo callers should import
+ * `loadScriptFeatures` from `src/composition/scriptLoader`.
+ */
+export async function loadScriptFeatures(
+  scriptPath: string,
+  opts?: RunScriptFacadeOptions,
+): Promise<LoadedScript> {
   // W2.3: capture-time scripts may call sdf.materialize / OcctBackend
   // factories which require initOcct(). runMcpScript already inits OCCT; the
   // direct loadScriptFeatures path (captureDemo, eval runner) must mirror that
@@ -29,7 +37,7 @@ export async function loadScriptFeatures(scriptPath: string): Promise<LoadedScri
   const source = readFileSync(scriptPath, 'utf8');
   const fileName = basename(scriptPath);
   const scriptDir = dirname(resolve(scriptPath));
-  const { records, paramTable, session, returnValue } = await runScript({ code: source, fileName, scriptDir });
+  const { records, paramTable, session, returnValue } = await runScript({ code: source, fileName, scriptDir }, opts);
   return {
     source,
     paramTable,

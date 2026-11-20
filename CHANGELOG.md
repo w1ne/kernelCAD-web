@@ -1,5 +1,11 @@
 # Unreleased
 
+- `kernelcad render`, `kernelcad render inspect` and the `render_preview`
+  explode path now accept a script that calls `kinematic.*`; before, they
+  failed with `ReferenceError: kinematic is not defined` on a script that
+  `evaluate_script` accepted (for example kinematic cookbook snippets 1 and
+  4). The render loader used the modeling-only script API; it now uses the
+  same composed API as `buildModel` and `evaluate_script`.
 - `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
   `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
   profile and return a new sketch; the source is unchanged, so one profile
