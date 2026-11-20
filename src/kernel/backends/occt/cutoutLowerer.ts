@@ -35,6 +35,7 @@ import { collectParamRefs } from '../../../shared/runtime/resolveParams';
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
+import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { faceFrameOrigin } from './faceFrame';
 import { buildUpToFaceTool } from './cutoutUpToFace';
 import {
@@ -153,6 +154,20 @@ function deriveThroughDepth(
   return maxAlong;
 }
 
+/** Place the profile on `plane`. A `Drawing` has no spline or NURBS segment
+ *  kinds, so a profile with one is built flat on XY by the NURBS lowerer and
+ *  moved onto the plane by the plane's own local-to-world transform. */
+function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replicad.Plane): replicad.Sketch {
+  if (!hasNurbsSegments(commands as SketchCommand[])) {
+    return drawingFromCommands(commands).sketchOnPlane(plane) as replicad.Sketch;
+  }
+  const flat = buildNurbsSketchOnPlane(commands as SketchCommand[], 'XY');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const localToGlobal = (plane as any).localToGlobal as { transform(s: unknown): unknown };
+  const placed = replicad.cast(localToGlobal.transform(flat.wire.wrapped) as never) as replicad.Wire;
+  return new replicad.Sketch(placed, { defaultOrigin: plane.origin, defaultDirection: plane.zDir });
+}
+
 /** Build the prism tool by extruding the profile along the bore axis from
  *  the entry face plane. */
 function buildPrismTool(
@@ -161,7 +176,6 @@ function buildPrismTool(
   effectiveDepth: number,
   symmetric: boolean,
 ): replicad.Shape3D {
-  const drawing = drawingFromCommands(commands);
   const OVERSHOOT = 0.01;
   const totalDepth = symmetric ? effectiveDepth * 2 + OVERSHOOT * 2 : effectiveDepth + OVERSHOOT * 2;
   // For symmetric: start the plane offset by +effectiveDepth in the outward
@@ -176,10 +190,8 @@ function buildPrismTool(
   // Build a Plane with origin at planeOrigin, xDir=uBasis, normal=outward.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const plane = new (replicad as any).Plane(planeOrigin, entry.uBasis, entry.normalOutward) as replicad.Plane;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sketch = drawing.sketchOnPlane(plane) as any;
   // extrude(-totalDepth) extrudes against the plane normal — into the body.
-  return sketch.extrude(-totalDepth) as replicad.Shape3D;
+  return profileSketchOnPlane(commands, plane).extrude(-totalDepth) as replicad.Shape3D;
 }
 
 function attachCreatedRefs(

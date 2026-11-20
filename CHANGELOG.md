@@ -8,6 +8,54 @@
   current pose. The probe scene is now removed after the query has read it.
   The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
   one showed the carriage stretched from its start to the wall.
+- `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
+  `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
+  Before, every such cutout failed with `feature.kernel-failed` (`unsupported
+  segment kind 'nurbsSegment'`), so an elliptical or spline-bounded pocket
+  had to be an extruded profile subtracted by hand at the right face
+  position. A 12 × 6 mm elliptical through-hole in a 20 mm block removes
+  π·12·6·20 mm³ (relative error under 1e-6), and a spline or mixed profile
+  gives the same volume, face count and centroid as the explicit
+  `subtract()`. The spline and ellipse side faces now carry the `wall`
+  created ref. Limit: a blind cutout still overshoots its depth by 0.01 mm,
+  as it does for a polyline profile.
+
+- Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  12 `mechanism.orphan-part` errors because only the bolts and the two shaft
+  clusters had mates. The posts are fastened to the base, the rib to the
+  cover, each shaft turns in the base on a revolute mate, and each bolt is
+  fastened to the cover and to the base. Part geometry is unchanged. The
+  assembly sequence planner now reports four fastened clusters and 21 steps
+  for this example (before: two clusters, 19 steps);
+  `docs/demos/assembly-sequence-planner/` is recaptured.
+- `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
+  `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
+  draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
+  a path had no ellipse: the author wrote rational NURBS control points and
+  weights by hand, or used a polyline. Both calls are exact: one rational
+  quadratic segment per 90° of sweep. A 20 × 10 mm ellipse extruded 5 mm
+  measures 3141.592654 mm³ (π·rx·ry·h), and a quarter arc revolved into a
+  2:1 elliptical head measures (2/3)·π·R²·h. The `ellipse` centre and
+  semi-axes accept `param()` values; `ellipseArc` takes plain numbers, and
+  radii too small to join the two points throw `feature.invalid-args` with
+  the smallest pair that fits. Limits: `Sketch.offset` and the sketch
+  booleans do not take a NURBS profile. Demo:
+  `docs/demos/path-ellipse/`.
+- Example `examples/exploded/clamshell-table-first.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  4 errors (orphan `table`, lid through base and table at the -15° hinge
+  limit, `dof-mismatch` at the closed pose). The base is fastened on the
+  table with face contact and the hinge opens from 0° to 135°. The table is
+  still declared first, and mate-axis explode still moves the lid 300 mm
+  along the hinge axis.
+
+- Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  16 errors. Mated parts share a face on the y=0 pin plane, the stop is seated
+  on the ground bar, and the mate limits are the crank travel from 40° to
+  130°. The 0° to 200° sweep still finds the first rocker-to-stop contact at
+  crank 164°, equal to the closed form.
 
 - Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
   and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
@@ -488,6 +536,13 @@
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
+
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
 
 # v0.17.4 — 2026-10-31
 

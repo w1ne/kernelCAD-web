@@ -78,6 +78,8 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.close() => Sketch` | Close the path; returns a Sketch that can be extruded/revolved/swept. |
 | `PathBuilder.label(name: string) => PathBuilder` | Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`. |
 | `PathBuilder.circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
+| `PathBuilder.ellipse(cx: Editable<number>, cy: Editable<number>, rx: Editable<number>, ry: Editable<number>, opts?: { rotationDeg?: number }) => Sketch` | Closed ellipse profile centered at (cx, cy) with semi-axes rx (along sketch +X) and ry; opts.rotationDeg turns the rx axis counterclockwise. |
+| `PathBuilder.ellipseArc(x: number, y: number, rx: number, ry: number, opts?: { rotationDeg?: number; largeArc?: boolean; clockwise?: boolean }) => PathBuilder` | Exact elliptical arc from the current pen to (x, y) on an ellipse with semi-axes rx, ry (SVG `A`, Y axis up). |
 | `PathBuilder.tangentArc(x: Editable<number>, y: Editable<number>) => PathBuilder` | Arc continuing tangent from the previous segment to (x, y). |
 | `PathBuilder.threePointsArc(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>) => PathBuilder` | Arc through start, midpoint, and end. |
 | `PathBuilder.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder` | Arc by chord + perpendicular bulge height. |

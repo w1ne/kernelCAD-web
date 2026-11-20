@@ -1,0 +1,108 @@
+{
+  "id": "rebar-cage",
+  "kit": "construction-equipment",
+  "title": "Reinforcing bar cage",
+  "description": "Short reinforcing cage with twelve distinct longitudinal bars in two layers and eight closed rectangular ties seated on support saddles. Generic visualization prop, not structural design or manufacturing CAD. Material controls: equipment enamel paint and structural steel; weathered and highVisibility presets.",
+  "category": "structure",
+  "origin": "base",
+  "tags": [
+    "construction equipment",
+    "roadworks",
+    "jobsite",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "construction",
+    "roadworks",
+    "jobsite",
+    "site-plan"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/construction-equipment/rebar-cage.kcad.ts",
+  "preview": "/assets/construction-equipment-rebar-cage.png",
+  "sourceSha256": "3af39024a7c4bbbf8e6dec37cc89b69ea2520cc5c79766e9e4d79b03500604bb",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "equipmentPaintColor",
+      "type": "color",
+      "default": "#e1a31b",
+      "label": "Equipment enamel paint"
+    },
+    {
+      "name": "structuralSteelColor",
+      "type": "color",
+      "default": "#89969a",
+      "label": "Exposed structural steel"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "equipmentPaintColor": "#a87b36",
+      "structuralSteelColor": "#716b61"
+    },
+    "highVisibility": {
+      "equipmentPaintColor": "#f06b26",
+      "structuralSteelColor": "#c1c7c2"
+    }
+  },
+  "stats": {
+    "triangles": 820,
+    "sizeM": [
+      1.26,
+      0.406,
+      0.558
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "equipmentPaintColor",
+      "color": "#e1a31b",
+      "parts": [
+        "assembly-skid"
+      ],
+      "param": "equipmentPaintColor"
+    },
+    {
+      "name": "structuralSteelColor",
+      "color": "#89969a",
+      "parts": [
+        "support-saddle--1",
+        "support-saddle-1",
+        "longitudinal-bar-lower-0",
+        "longitudinal-bar-lower-1",
+        "longitudinal-bar-lower-2",
+        "longitudinal-bar-lower-3",
+        "longitudinal-bar-lower-4",
+        "longitudinal-bar-lower-5",
+        "longitudinal-bar-upper-0",
+        "longitudinal-bar-upper-1",
+        "longitudinal-bar-upper-2",
+        "longitudinal-bar-upper-3",
+        "longitudinal-bar-upper-4",
+        "longitudinal-bar-upper-5",
+        "tie-ring-0",
+        "tie-ring-1",
+        "tie-ring-2",
+        "tie-ring-3",
+        "tie-ring-4",
+        "tie-ring-5",
+        "tie-ring-6",
+        "tie-ring-7"
+      ],
+      "param": "structuralSteelColor"
+    }
+  ]
+}

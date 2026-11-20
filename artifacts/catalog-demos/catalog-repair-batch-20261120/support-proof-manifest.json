@@ -1,0 +1,266 @@
+{
+  "generatedAt": "2026-11-20T01:51:08.248Z",
+  "renderer": "native OCCT GLB + repository software renderer; canonical browser inspect timed out",
+  "claims": "static source geometry only; no manufacturer/load/pressure acceptance",
+  "models": [
+    {
+      "name": "drywall",
+      "slug": "construction-equipment/drywall-panel-lift",
+      "asset": {
+        "id": "drywall-panel-lift",
+        "kit": "construction-equipment",
+        "title": "Drywall panel lift",
+        "description": "Static drywall panel lift with a nested mast, connected support cradle and three radial caster legs. CC0 visualization geometry, not manufacturer CAD or a load-rated or kinematically verified lift. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+        "category": "prop",
+        "origin": "base",
+        "tags": [
+          "construction equipment",
+          "roadworks",
+          "jobsite",
+          "low poly",
+          "CC0"
+        ],
+        "compat": [
+          "construction",
+          "roadworks",
+          "jobsite",
+          "site-plan"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/construction-equipment/drywall-panel-lift.kcad.ts",
+        "preview": "/assets/construction-equipment-drywall-panel-lift.png",
+        "sourceSha256": "c7a6ea5d43c548dc53ba850a2ef2c68a6575f095dff2ab838aec44242ffe5ce4",
+        "triangleBudget": 2200,
+        "params": [
+          {
+            "name": "scale",
+            "type": "number",
+            "default": 1,
+            "label": "Overall scale",
+            "min": 0.7,
+            "max": 1.3,
+            "step": 0.05
+          },
+          {
+            "name": "equipmentPaintColor",
+            "type": "color",
+            "default": "#e1a31b",
+            "label": "Equipment enamel paint"
+          },
+          {
+            "name": "tireRubberColor",
+            "type": "color",
+            "default": "#252a2d",
+            "label": "Tire and grip rubber"
+          },
+          {
+            "name": "structuralSteelColor",
+            "type": "color",
+            "default": "#89969a",
+            "label": "Exposed structural steel"
+          }
+        ],
+        "presets": {
+          "weathered": {
+            "equipmentPaintColor": "#a87b36",
+            "tireRubberColor": "#3a3a37",
+            "structuralSteelColor": "#716b61"
+          },
+          "highVisibility": {
+            "equipmentPaintColor": "#f06b26",
+            "tireRubberColor": "#292e31",
+            "structuralSteelColor": "#c1c7c2"
+          }
+        },
+        "stats": {
+          "triangles": 620,
+          "sizeM": [
+            0.863,
+            1.38,
+            0.904743
+          ],
+          "minUpM": 0,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "structuralSteelColor",
+            "color": "#89969a",
+            "parts": [
+              "base-hub",
+              "caster-bridge-0",
+              "caster-axle-0",
+              "caster-fork-0--1",
+              "caster-fork-0-1",
+              "caster-bridge-1",
+              "caster-axle-1",
+              "caster-fork-1--1",
+              "caster-fork-1-1",
+              "caster-bridge-2",
+              "caster-axle-2",
+              "caster-fork-2--1",
+              "caster-fork-2-1",
+              "mast",
+              "mast-extension",
+              "mast-collar",
+              "cradle-crossbar"
+            ],
+            "param": "structuralSteelColor"
+          },
+          {
+            "name": "equipmentPaintColor",
+            "color": "#e1a31b",
+            "parts": [
+              "base-leg-0",
+              "base-leg-1",
+              "base-leg-2",
+              "tilt-cradle",
+              "cradle-arm--1",
+              "cradle-arm-1"
+            ],
+            "param": "equipmentPaintColor"
+          },
+          {
+            "name": "tireRubberColor",
+            "color": "#252a2d",
+            "parts": [
+              "caster-0",
+              "caster-1",
+              "caster-2"
+            ],
+            "param": "tireRubberColor"
+          }
+        ]
+      },
+      "evidence": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/drywall-proof"
+    },
+    {
+      "name": "cylinder-bank",
+      "slug": "grid-substation/substation-fire-suppression-cylinder-bank",
+      "asset": {
+        "id": "substation-fire-suppression-cylinder-bank",
+        "kit": "grid-substation",
+        "title": "Fire suppression cylinder bank",
+        "description": "Five suppression cylinders seated within one rack, connected to a shared manifold header. Static CC0 visualization, not pressure-rated manufacturer CAD. Material controls: galvanized steel, safety red, brass; finish presets: weathered and maintenance.",
+        "category": "prop",
+        "origin": "base",
+        "tags": [
+          "grid substation",
+          "electrical infrastructure",
+          "utility yard",
+          "low poly",
+          "CC0",
+          "maintenance and safety"
+        ],
+        "compat": [
+          "grid-substation",
+          "utility-substation",
+          "electrical-infrastructure"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts",
+        "preview": "/assets/grid-substation-substation-fire-suppression-cylinder-bank.png",
+        "sourceSha256": "3f4ccc99d2c1741175bb3e5a12c3012189d292720bca7418a4b8ab266c4ad7b6",
+        "triangleBudget": 1800,
+        "params": [
+          {
+            "name": "scale",
+            "type": "number",
+            "default": 1,
+            "label": "Overall scale",
+            "min": 0.65,
+            "max": 1.35,
+            "step": 0.05
+          },
+          {
+            "name": "galvanizedSteel",
+            "type": "color",
+            "default": "#7f8c92",
+            "label": "Galvanized steel"
+          },
+          {
+            "name": "safetyRed",
+            "type": "color",
+            "default": "#c7493c",
+            "label": "Safety red"
+          },
+          {
+            "name": "brass",
+            "type": "color",
+            "default": "#bf9143",
+            "label": "Brass"
+          }
+        ],
+        "presets": {
+          "weathered": {
+            "galvanizedSteel": "#778080",
+            "safetyRed": "#aa5144",
+            "brass": "#a48349"
+          },
+          "maintenance": {
+            "safetyRed": "#e45b4d"
+          }
+        },
+        "stats": {
+          "triangles": 636,
+          "sizeM": [
+            2.2,
+            1.792,
+            0.9
+          ],
+          "minUpM": 0,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "galvanizedSteel",
+            "color": "#7f8c92",
+            "parts": [
+              "rack-base",
+              "manifold-branch-1",
+              "manifold-branch-2",
+              "manifold-branch-3",
+              "manifold-branch-4",
+              "manifold-branch-5",
+              "manifold-header",
+              "rack-post--1--1",
+              "rack-post--1-1",
+              "retainer--1-650",
+              "retainer--1-1280",
+              "rack-post-1--1",
+              "rack-post-1-1",
+              "retainer-1-650",
+              "retainer-1-1280"
+            ],
+            "param": "galvanizedSteel"
+          },
+          {
+            "name": "safetyRed",
+            "color": "#c7493c",
+            "parts": [
+              "cylinder-1",
+              "cylinder-2",
+              "cylinder-3",
+              "cylinder-4",
+              "cylinder-5"
+            ],
+            "param": "safetyRed"
+          },
+          {
+            "name": "brass",
+            "color": "#bf9143",
+            "parts": [
+              "valve-1",
+              "valve-2",
+              "valve-3",
+              "valve-4",
+              "valve-5"
+            ],
+            "param": "brass"
+          }
+        ]
+      },
+      "evidence": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/cylinder-bank-proof"
+    }
+  ]
+}

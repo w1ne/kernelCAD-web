@@ -1,0 +1,50 @@
+{
+  "invocation": "node --import tsx docs/demos/path-ellipse/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 5,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "10.000000",
+      "size": "118441"
+    }
+  },
+  "renders": {
+    "head-outside.png": "80ff728e85de0b6f7aaf173e929fe4a8068529f058e5611625df8e329316687b",
+    "head-section.png": "0a080d25b007e109d6b57d4cc81fd28565cd12c0612a6fe4bcfe0ce0d1bf37b4",
+    "gasket.png": "a77c81790dfbe1753c0e94db661e99c599e24f0827be1eca2b44fbe78ea6ab14"
+  },
+  "renderInvocations": [
+    "kernelcad render docs/demos/path-ellipse/elliptical-head.kcad.ts -o head.png --pose 25,20 --width 640 --height 480",
+    "kernelcad render docs/demos/path-ellipse/elliptical-head.kcad.ts -o head.png --section y=0 --section-flip --pose 0,-18 --width 640 --height 480",
+    "kernelcad render docs/demos/path-ellipse/handhole-gasket.kcad.ts -o gasket.png --pose 20,55 --width 640 --height 480"
+  ],
+  "poster": "poster.png",
+  "posterSha256": "c6fe9b00faf392d02239e73f72ce74e37e58fb2955715cc5bba757e494532492",
+  "videoSha256": "637586b72f71a2c51cfcd7bee04b3d06fecffc3d712c61736131ef6f2b712688",
+  "inspection": "Both scenes extracted from the final MP4 and visually reviewed after generation.",
+  "scope": "Local kernelCAD Node API: a 2:1 semi-elliptical vessel head revolved from two ellipseArc segments, and a turned elliptical gasket from two closed ellipses. OCCT volume, bounding box and validity checks against closed-form values.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
