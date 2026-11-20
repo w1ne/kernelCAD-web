@@ -7,8 +7,10 @@
 //
 // Rotation is CCW by `angleDeg` about `center` (default `[0, 0]`, the
 // sketch-local origin). Points are rotated affinely; direction vectors
-// (hermite tangents / curvatures, spline tangent constraints) are rotated
-// without the center term. Scalars that encode a magnitude or sign rather
+// (hermite tangents / curvatures, spline and smoothSpline tangents) are
+// rotated without the center term. A `smoothSpline` free tangent defaults to
+// the sketch +X direction, so the rotated direction is written into the
+// command. Scalars that encode a magnitude or sign rather
 // than a position (`sagitta`, `bulge`, `radius`, `tension`, NURBS `degree` /
 // `weights` / `knots`) are left numerically unchanged. Rotated coordinates
 // are rebuilt as concrete numeric records (`{ expression, unit, evaluated }`)
@@ -26,6 +28,7 @@
 import type { Param } from '../intent/types';
 import type { SketchCommand } from './sketchCommand';
 import type { TangentEntitySpec, TangentNearSpec } from './tangency';
+import { mapSmoothSplineTangents } from './smoothSplineTangents';
 import { toParam } from '../runtime/editableHelpers';
 
 /** The two coordinate transforms shared by every handler. */
@@ -117,8 +120,13 @@ function rotateNear(n: TangentNearSpec | undefined, r: Rotators): TangentNearSpe
   return { ...n, x, y };
 }
 
-function rotatePointOnlyCommand(cmd: PointOnlyCommand, r: Rotators): SketchCommand {
+function rotatePointOnlyCommand(
+  cmd: PointOnlyCommand,
+  r: Rotators,
+  prev: SketchCommand | undefined,
+): SketchCommand {
   const [x, y] = r.pointParam(cmd.x, cmd.y);
+  if (cmd.kind === 'smoothSpline') return { ...cmd, x, y, ...mapSmoothSplineTangents(cmd, prev, r.vecParam) };
   return { ...cmd, x, y };
 }
 
@@ -221,8 +229,8 @@ function rotateTangencyCommand(cmd: TangencyCommand, r: Rotators): SketchCommand
 }
 
 /** Rotate one command by kind group. */
-function rotateCommand(cmd: SketchCommand, r: Rotators): SketchCommand {
-  if (isPointOnlyCommand(cmd)) return rotatePointOnlyCommand(cmd, r);
+function rotateCommand(cmd: SketchCommand, r: Rotators, prev: SketchCommand | undefined): SketchCommand {
+  if (isPointOnlyCommand(cmd)) return rotatePointOnlyCommand(cmd, r, prev);
   if (isArcCommand(cmd)) return rotateArcCommand(cmd, r);
   if (isNurbsCommand(cmd)) return rotateNurbsCommand(cmd, r);
   return rotateTangencyCommand(cmd, r);
@@ -242,5 +250,5 @@ export function rotateSketchCommands(
     );
   }
   const rotators = createRotators(angleDeg, center);
-  return commands.map((cmd) => rotateCommand(cmd, rotators));
+  return commands.map((cmd, i) => rotateCommand(cmd, rotators, commands[i - 1]));
 }

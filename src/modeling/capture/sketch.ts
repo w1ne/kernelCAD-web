@@ -39,6 +39,7 @@ import {
   toSplineTangent,
   toSplineWaypoints,
 } from './splinePhases';
+import { smoothSplineTangentOptions, type SmoothSplineOptions } from './smoothSplinePhases';
 
 import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 import { ALLOWED_LOFT_KEYS, ALLOWED_LOFT_PLANE_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
@@ -814,7 +815,8 @@ export class PathBuilder {
   /**
    * C1-smooth spline segment from current pen position to (x, y). Replicad's
    * `smoothSplineTo` underneath. The start tangent is inherited from the
-   * prior segment (smooth join); the end tangent is auto-chosen.
+   * prior segment (smooth join). The segment arrives along `opts.endTangent`;
+   * without it, along the sketch +X direction.
    *
    * Pick this for organic outlines (eyewear brow, ergonomic grips, sneaker
    * silhouettes) where chained sagittaArcs hit OCCT BlendChain solver
@@ -822,14 +824,19 @@ export class PathBuilder {
    * interpolate through many points; each segment joins the previous one
    * smoothly.
    *
-   * Throws at lowering time if called as the first command — no prior
-   * tangent to inherit.
+   * Directly after `moveTo` there is no prior segment: the segment then
+   * leaves along `opts.startTangent`, or along the sketch +X direction.
    *
    * @param x endpoint X
    * @param y endpoint Y
+   * @param opts.endTangent 2D direction of travel at (x, y); only the
+   *   direction matters
+   * @param opts.startTangent 2D direction of travel at the start; replaces
+   *   the inherited tangent
    */
-  smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder {
-    this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
+  smoothSpline(x: Editable<number>, y: Editable<number>, opts?: SmoothSplineOptions): PathBuilder {
+    const tangents = smoothSplineTangentOptions(opts, (p) => this.#now(p));
+    this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm'), ...tangents });
     return this;
   }
 

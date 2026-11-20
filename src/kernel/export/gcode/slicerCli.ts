@@ -240,6 +240,17 @@ export async function openFileInSlicer(
         }
       };
 
+      /** Best-effort termination guarded against an already-exited child. */
+      const safeTerminate = () => {
+        if (child.exitCode != null || child.signalCode != null) return;
+        try {
+          child.kill();
+        } catch {
+          // Ignore delivery failures — the child is already gone or the OS
+          // refused the signal; the timeout result is reported regardless.
+        }
+      };
+
       const done = (value: OpenSlicerResult) => {
         if (settled) return;
         settled = true;
@@ -271,8 +282,10 @@ export async function openFileInSlicer(
       // Defensive bounded wait: in the pathological case where neither
       // `spawn` nor `error` fires, fail closed rather than hanging or
       // pretending success. The timer is always cleared once an outcome is
-      // known so it cannot unref a child or resolve twice later.
+      // known so it cannot unref a child or resolve twice later. If the
+      // timeout wins, terminate the child so a stalled spawn cannot leak.
       timer = setTimeout(() => {
+        safeTerminate();
         done({
           ok: false,
           file: filePath,
