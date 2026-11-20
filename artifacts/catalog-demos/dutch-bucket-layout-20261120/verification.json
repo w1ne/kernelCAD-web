@@ -362,10 +362,18 @@
     "sourceOfViews": "Fresh accepted actual GLB triangles from this exact source. Camera-only named-part isolation in the close views; all overall and state views retain every part.",
     "preview": {
       "path": "catalog/kits/hydroponics/previews/dutch-bucket-row.png",
-      "sha256": "88585bdd88b78b7ae364da9832a0d36eba613f19d575b11f6680d681990b4dfc",
-      "pixelSha256": "eb969afa1cb819e59ecc0e331bdab4ed6ce85603be3c6ecbc71d574c8d655c93",
+      "sha256": "955aba4078438021723a6ebb971c3120d0035010435b8f8262e5607598944b14",
+      "pixelSha256": "7e40ba263b958a638ef8c9efe2c77773534b6ab304db72aedf281df47342bdc9",
       "width": 512,
-      "height": 512
+      "height": 512,
+      "pixelHashEncoding": "SHA-256 of decoded RGBA bytes, without dimensions prefix.",
+      "catalogGatePixelSha256": "a1a3876c2fd7d51099e0c406e4c13e684ab89d9777ebcf84db05b69bd318da69",
+      "catalogGatePixelHashEncoding": "SHA-256 of 512x512: UTF-8 prefix followed by decoded RGBA bytes.",
+      "renderOptions": {
+        "label": "Dutch bucket row \u00b7 3304 tris"
+      },
+      "renderedFromGlbSha256": "a06ddd367df9b158f0e02643a9aaf48a6d1e7d98dd138b360561252d6ac4b719",
+      "correction": "Use the ordinary labelled catalog preview contract. The former unlabelled PNG changed framing and failed the unchanged pixel gate; source, GLB and geometry remain identical."
     },
     "video": {
       "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/default-orbit.mp4",
@@ -404,7 +412,9 @@
     "source-v1/sandbox-variants-02/independent-postflight.json": "94b292886208056ab0a726260d3fd417a6413705b9cfb905de8fbeed4a7413a8",
     "source-v1/visuals-01/visual-inspection.json": "51efc1d90fc8a9a10802721d3a15a760c4ef2393b5dc1d7578643a5956a21da2",
     "source-v1/visuals-01/root-visual-inspection.json": "01d014d88cb2f41c04314609007cfcdc962280c98fe24ae5d8d3bd4e81d33f64",
-    "root/hosted-preview-dutch-layout-v1/root-inspection.json": "2138ee62f000b1a136fecf09ab55fe91dc137cb807e2bb2596756608f14a309d"
+    "root/hosted-preview-dutch-layout-v1/root-inspection.json": "2138ee62f000b1a136fecf09ab55fe91dc137cb807e2bb2596756608f14a309d",
+    "source-v1/publication/preview-correction-01/correction.json": "01c8b583f875340a772a083370d5d82ce3039997d5efcde1438667e250fe8c63",
+    "source-v1/publication/preview-correction-01/visual-inspection.json": "e8bf4594a45aee418dba8fda9802b811c671b0c913c16c3fe950dc35f809ad9b"
   },
   "limitations": [
     "This is a simplified scene prop, not a hydraulically functioning or manufacturing-certified assembly.",
