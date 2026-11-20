@@ -60,7 +60,7 @@ async function exportVariant(values: Record<string, string | number>) {
 }
 
 beforeAll(async () => { await initOcct(); }, 60_000);
-describe('Dutch bucket scene facets and drain contacts', () => {
+describe('Dutch bucket scene facets, contacts and layout clearances', () => {
   it('preserves metadata and all six control declarations', () => {
     expect(declarations(source)).toHaveLength(7);
     expect(declarations(source)).toEqual(declarations(original));
@@ -70,7 +70,12 @@ describe('Dutch bucket scene facets and drain contacts', () => {
     expect(asset.triangleBudget).toBe(5600);
     expect(asset.stats.triangles).toBeLessThanOrEqual(5600);
     const parts = await readConnectionParts(glb);
-    expect(inspectDutchBucketParts(parts, 'tomato').failures).toEqual([]);
+    const report = inspectDutchBucketParts(parts, 'tomato');
+    expect(report.failures).toEqual([]);
+    expect(report.layout.clearances.filter(pair => pair.scope === 'residual')).toHaveLength(15);
+    expect(report.layout.clearances).toHaveLength(17);
+    expect(report.layout.contacts).toHaveLength(8);
+    expect(report.layout.contacts.every(contact => contact.insideA && contact.insideB)).toBe(true);
     // Restore the two measured gap sizes in copied exported triangles only.
     // No original-source native run is needed for these negative controls.
     const raised = moveDutchPart(parts, 'bucket-0', [0, 0, 17]);
@@ -78,6 +83,15 @@ describe('Dutch bucket scene facets and drain contacts', () => {
     const lateralOffset = parts.get('drain-pipe')!.max[1] - parts.get('siphon-0')!.min[1] + 16;
     const disconnected = moveDutchPart(parts, 'siphon-0', [0, lateralOffset, 0]);
     expect(inspectDutchBucketParts(disconnected, 'tomato').failures).toContain('siphon-0 does not enter drain');
+    // Move only copied mesh triangles back into the known obstructions.
+    const blockedOutlet = moveDutchPart(parts, 'drain-elbow', [150, 0, 0]);
+    const outletFailures = inspectDutchBucketParts(blockedOutlet, 'tomato').failures;
+    expect(outletFailures).toContain('clearance: drain-elbow / post-r');
+    expect(outletFailures).toContain('clearance: drain-elbow / post-foot-r');
+    const crossedStake = moveDutchPart(parts, 'dripper-0', [0, -60, 0]);
+    const stakeFailures = inspectDutchBucketParts(crossedStake, 'tomato').failures;
+    expect(stakeFailures).toContain('clearance: dripper-0 / bucket-0');
+    expect(stakeFailures).toContain('clearance: dripper-0 / bucket-rim-0');
   }, 60_000);
   for (const test of dutchCases.slice(1)) {
     it(`keeps the named parts and crop geometry for ${test.id}`, async () => {

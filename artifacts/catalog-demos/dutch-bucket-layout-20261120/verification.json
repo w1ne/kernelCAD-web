@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-20T17:51:20.005Z",
+  "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
+  "sourceSha256": "eb959691466df5523a8edc1a1c3ddf1d767c1a5538734fdb16a0065038f3bbbf",
+  "purpose": "Separate the Dutch-row drain outlet from the right trellis post/foot, and route all six drip stakes through the open bucket mouths.",
+  "sourceDelta": {
+    "outletXmm": {
+      "before": 1400,
+      "after": 1250
+    },
+    "lastSaddleXmm": {
+      "before": 1260,
+      "after": 1170
+    },
+    "stakeTipYmm": {
+      "before": -80,
+      "after": -20
+    },
+    "changedNamedPartMeshes": 9,
+    "unchangedNamedPartMeshes": 137,
+    "scope": "The prior low-poly geometry, bucket seating, fresh-handle portability and crop presets remain unchanged."
+  },
+  "controls": {
+    "declared": 6,
+    "allSchemasUnchanged": true,
+    "presets": [
+      "tomato",
+      "sweetPepper",
+      "cucumber",
+      "weathered"
+    ],
+    "allPresetValuesUnchanged": true,
+    "weathered": "Unchanged style-only preset; no separate native weathered request in this packet."
+  },
+  "geometry": {
+    "namedParts": 146,
+    "triangles": 3304,
+    "authoredTriangleBudget": 5600,
+    "defaultSizeM": [
+      3,
+      2.15,
+      0.412336
+    ],
+    "clearancePairsChecked": 17,
+    "contactWitnessesChecked": 26,
+    "cavitiesChecked": 6,
+    "wallsChecked": 6,
+    "fruitBoundsChecked": 36,
+    "degenerateTriangles": 0,
+    "defaultResetGlbExact": true
+  },
+  "publicExports": [
+    {
+      "case": "dutch-layout.default",
+      "values": {
+        "scale": 1,
+        "crop": "tomato"
+      },
+      "status": "clean_pass",
+      "sourceSha256": "eb959691466df5523a8edc1a1c3ddf1d767c1a5538734fdb16a0065038f3bbbf",
+      "glbSha256": "a06ddd367df9b158f0e02643a9aaf48a6d1e7d98dd138b360561252d6ac4b719",
+      "glbBytes": 488516,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 8.983983843730329,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 430,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 0,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 0
+      }
+    },
+    {
+      "case": "dutch-layout.pepper",
+      "values": {
+        "crop": "pepper",
+        "bucket": "#d9cfb4",
+        "plumbing": "#e6e7e1",
+        "trellis": "#8f989c",
+        "foliage": "#2f7a30",
+        "scale": 1
+      },
+      "status": "clean_pass",
+      "sourceSha256": "5d0173d9c2adbfe057563de08dbd20ad7fe6ad6e9be2db4c6adb3249e21e7eaf",
+      "glbSha256": "359054a68bf5ab76c6a889783255c7c0647e7265c1bbb0ada596bb6d98a6a254",
+      "glbBytes": 490600,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 8.983983843730329,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 429,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 1,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 1
+      }
+    },
+    {
+      "case": "dutch-layout.cucumber",
+      "values": {
+        "crop": "cucumber",
+        "bucket": "#2a2c2e",
+        "plumbing": "#4a5a66",
+        "trellis": "#c9a640",
+        "foliage": "#56993d",
+        "scale": 1
+      },
+      "status": "clean_pass",
+      "sourceSha256": "0fd61976bece247911aad5c9f4f2da904035ddbadac15ee95d4d716f08e0c44d",
+      "glbSha256": "2695eda573caeb3302212a18156e27f953f1c8f8f8e4baebf9295c9738e9c76a",
+      "glbBytes": 491012,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 8.983983843730329,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 412,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 1,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 1
+      }
+    },
+    {
+      "case": "dutch-layout.scale-min",
+      "values": {
+        "scale": 0.7,
+        "crop": "tomato"
+      },
+      "status": "clean_pass",
+      "sourceSha256": "a62d60589de4aa7ad1e1c629f4c5fc82583e79b8f7bd53dd5ba3e81e9dc6c4bd",
+      "glbSha256": "bd1bcaaed0eba7540ddffe2592113ff63d6a11012b6aea9378b6ca0696b7621c",
+      "glbBytes": 493420,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 6.288792434443306,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 354,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 0,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 0
+      }
+    },
+    {
+      "case": "dutch-layout.scale-max",
+      "values": {
+        "crop": "cucumber",
+        "bucket": "#2a2c2e",
+        "plumbing": "#4a5a66",
+        "trellis": "#c9a640",
+        "foliage": "#56993d",
+        "scale": 1.3
+      },
+      "status": "clean_pass",
+      "sourceSha256": "9d514f7430b5471291e83714ab080f6c5762a80d5f6a6afa21c736ac4871cc39",
+      "glbSha256": "a1ddb413c646686494f8aeaccad941cba06107583137d3ba3798911d3b23e9bd",
+      "glbBytes": 493972,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 11.67921275954833,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 359,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 0,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 0
+      }
+    },
+    {
+      "case": "dutch-layout.default-recovery",
+      "values": {
+        "crop": "tomato",
+        "bucket": "#2a2c2e",
+        "plumbing": "#e6e7e1",
+        "trellis": "#8f989c",
+        "foliage": "#3f8436",
+        "scale": 1
+      },
+      "status": "clean_pass",
+      "sourceSha256": "eb959691466df5523a8edc1a1c3ddf1d767c1a5538734fdb16a0065038f3bbbf",
+      "glbSha256": "a06ddd367df9b158f0e02643a9aaf48a6d1e7d98dd138b360561252d6ac4b719",
+      "glbBytes": 488516,
+      "triangles": 3304,
+      "minimumMeasuredClearanceMm": 8.983983843730329,
+      "contacts": 26,
+      "clearances": 17,
+      "peakCachedPoolRssMiB": 364,
+      "guardDelta": {
+        "kills.memory": 0,
+        "kills.time": 0,
+        "kills.crash": 0,
+        "kills.oom": 0,
+        "kills.cancelled": 0,
+        "budgetStops.memory": 0,
+        "budgetStops.time": 0,
+        "budgetStops.timeKilled": 0,
+        "budgetStops.retried": 0,
+        "respawns": 0,
+        "recycles": 0,
+        "idleRecycles": 0,
+        "freshStarts": 0
+      }
+    }
+  ],
+  "publicExportScope": "Six public low-poly GLB exports with normal896RSS/768heap/864native limits and two ordinary pre-request fresh worker starts. No hard guard event, retry or resubmission. These exports are not Studio incremental edits.",
+  "normalRemoteLoadEvidence": {
+    "acceptedDefaultCases": 1,
+    "remainingPresetScaleCases": 5,
+    "eachNamedParts": 146,
+    "eachTriangles": 3304,
+    "eachPartBoundsChecked": 99,
+    "hardGuardRetryFallbackRecycleEvents": 0,
+    "defaultPeakCachedSupervisorRssMiB": 758,
+    "variantPeaksCachedSupervisorRssMiB": [
+      780,
+      780,
+      725,
+      740,
+      756
+    ],
+    "resetNumericMeshSha256": "c3a741554a82aacb1efc4f94f7fc47186f055e46d1fb94081423d7e042d14f1b",
+    "all146PerPartResetHashesEqual": true,
+    "scope": "Separate one-default and five-state runs on the immutable normal b269 sandbox at3GiB and896RSS/768heap/864native. Matching RemoteChild dispatch and terminal identity were required. Direct per-child full-source attestation is unavailable; this is not a live Studio sequence or a newer16GiB profile claim."
+  },
+  "liveHostedPreview": {
+    "serverBuild": "0.1.0+3675b44bce9d@2026-11-20T17:34:34.271Z",
+    "sceneValid": true,
+    "faceCount": 2434,
+    "volumeMm3": 263590572.25821868,
+    "mechanism": "broken",
+    "previousDiagnostics": 231,
+    "remainingDiagnostics": 216,
+    "removedPairs": [
+      [
+        "bucket-0",
+        "dripper-0"
+      ],
+      [
+        "bucket-1",
+        "dripper-1"
+      ],
+      [
+        "bucket-2",
+        "dripper-2"
+      ],
+      [
+        "bucket-3",
+        "dripper-3"
+      ],
+      [
+        "bucket-4",
+        "dripper-4"
+      ],
+      [
+        "bucket-5",
+        "dripper-5"
+      ],
+      [
+        "bucket-rim-0",
+        "dripper-0"
+      ],
+      [
+        "bucket-rim-1",
+        "dripper-1"
+      ],
+      [
+        "bucket-rim-2",
+        "dripper-2"
+      ],
+      [
+        "bucket-rim-3",
+        "dripper-3"
+      ],
+      [
+        "bucket-rim-4",
+        "dripper-4"
+      ],
+      [
+        "bucket-rim-5",
+        "dripper-5"
+      ],
+      [
+        "drain-elbow",
+        "post-foot-r"
+      ],
+      [
+        "drain-elbow",
+        "post-r"
+      ],
+      [
+        "drain-pipe",
+        "post-r"
+      ]
+    ],
+    "addedPairs": [],
+    "retainedCategories": {
+      "support_and_static_body_joins": 21,
+      "plumbing_connector_and_body_joins": 21,
+      "explicit_drain_seating": 18,
+      "plant_and_support_embedding": 114,
+      "decorative_crop_cluster_overlap": 42
+    },
+    "rootReviewSha256": "2138ee62f000b1a136fecf09ab55fe91dc137cb807e2bb2596756608f14a309d",
+    "rawResultSha256": "e86b42a6b66ef3c6ee51b47874435af56e5bdb8f24509299f23252727a5b4127",
+    "imageSha256": "83ecb2615ecf65bc7b0bc2900bd59c6589b9eb3c8bf5cc9ad34de2278eaddf31",
+    "scope": "One separately observed hosted default render. The15 targeted pairs disappear; all216 remaining pair identities are preserved and classified, not automatically confirmed physical defects or mechanically accepted joins. Mechanism remains broken and no diagnostics were suppressed."
+  },
+  "savedGlbVisuals": {
+    "nativeRequestsForRendering": 0,
+    "sourceOfViews": "Fresh accepted actual GLB triangles from this exact source. Camera-only named-part isolation in the close views; all overall and state views retain every part.",
+    "preview": {
+      "path": "catalog/kits/hydroponics/previews/dutch-bucket-row.png",
+      "sha256": "88585bdd88b78b7ae364da9832a0d36eba613f19d575b11f6680d681990b4dfc",
+      "pixelSha256": "eb969afa1cb819e59ecc0e331bdab4ed6ce85603be3c6ecbc71d574c8d655c93",
+      "width": 512,
+      "height": 512
+    },
+    "video": {
+      "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/default-orbit.mp4",
+      "durationSeconds": 6,
+      "frames": 48,
+      "codec": "h264",
+      "width": 640,
+      "height": 640,
+      "fps": 8,
+      "inspection": "Four quarter-turn frames inspected; video duration/frame count checked with ffprobe."
+    },
+    "views": [
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/default-orbit.mp4",
+        "sha256": "2c0750a31c68e2d72e554656e59adff582ed82f8e9fc3367b644dbc769303a59"
+      },
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/default-views.webp",
+        "sha256": "c700c4692086f1741915d99a25e4b076fbca5d9a0d3fc559547daf12d9f3c194"
+      },
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/layout-details.webp",
+        "sha256": "8a6ca6deaf5649219c13cbe0bc9122f52016c5f708f7713e6775b5dd8d7eab72"
+      },
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-layout-20261120/parameter-states.webp",
+        "sha256": "a664a369c4d29eeac9dfe94866c3b7d1e89b0cd5b1f157a4b12dafccbc8aecad"
+      }
+    ]
+  },
+  "evidenceHashes": {
+    "source-v1/native-v5/independent-postflight.json": "57fc7fadd5124bf2a3391ea0fcc9fb8a31a3d74b149fbdaa2f8d9b5152a5bf75",
+    "source-v1/native-v5/root-postflight-review.json": "3e056c2f85be9107bf72c4e43d60c9be02abb219dc1e54efd8b7eb5635bb4bbd",
+    "source-v1/sandbox-default-01/independent-postflight.json": "f0c900a8085d9bfb144dd6f6c17f8cd9ab29942973c8214449f7d8755da4d4a4",
+    "source-v1/sandbox-default-01/root-postflight-review.json": "9637bc13d30d910485e6c8846d4e48b8bb4892f1ad41be33da54fcfbf3b7cc2f",
+    "source-v1/sandbox-variants-02/independent-postflight.json": "94b292886208056ab0a726260d3fd417a6413705b9cfb905de8fbeed4a7413a8",
+    "source-v1/visuals-01/visual-inspection.json": "51efc1d90fc8a9a10802721d3a15a760c4ef2393b5dc1d7578643a5956a21da2",
+    "source-v1/visuals-01/root-visual-inspection.json": "01d014d88cb2f41c04314609007cfcdc962280c98fe24ae5d8d3bd4e81d33f64",
+    "root/hosted-preview-dutch-layout-v1/root-inspection.json": "2138ee62f000b1a136fecf09ab55fe91dc137cb807e2bb2596756608f14a309d"
+  },
+  "limitations": [
+    "This is a simplified scene prop, not a hydraulically functioning or manufacturing-certified assembly.",
+    "Mechanism remains broken with216 retained overlap diagnostics; the change does not blanket-mate or ignore contacts.",
+    "Clearance checks operate on actual triangulated exports and include bidirectional containment checks; they do not establish stress, load capacity or plumbing continuity.",
+    "The inherited faceted organic shapes preserve authored axis extents but are not exact spheres.",
+    "Local export, normal remote-sandbox loading and one live hosted preview are separate evidence. No full-catalog, current production capacity or live Studio acceptance is claimed."
+  ]
+}
