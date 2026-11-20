@@ -1,5 +1,14 @@
 # Unreleased
 
+- Spatial and geometry filters inside `q.face(...)` now select faces on
+  plain primitives. Face lineage on `box(...)` and `cylinder(...)` (and most
+  faces derived from them) has no geometry snapshot and no surface type, so
+  `q.face(q.closestTo(p))` returned the first face by name (`back`) for any
+  `p`, and `q.face(q.geometryType('PLANE'))` selected nothing. When lineage
+  has no value, the filters now read the face area centroid and surface type
+  from the body. `box(40, 30, 10).shell(2, { face: q.face(q.closestTo([20,
+  15, -5])) })` now opens the bottom face and builds to 4 512 mm³, equal to
+  the closed form. Faces that carry a lineage snapshot are unchanged.
 - Spatial and geometry filters inside `q.edge(...)` now select edges.
   `closestTo` and `containsPoint` read the edge midpoint (the centroid that
   edge fingerprints report) and `geometryType` reads the edge curve type

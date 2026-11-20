@@ -55,7 +55,9 @@ selects every entry rim on `part`, from all its holes;
 Filters inside `q.edge(...)` select edges, so
 `q.edge(q.withFeatureName(id), q.withLabel('corner'))` works too, and so do
 `q.edge(q.closestTo([x, y, z]))` (nearest edge midpoint) and
-`q.edge(q.geometryType('CIRCLE'), q.closestTo(p))` (nearest circular edge). A later `fillet` or
+`q.edge(q.geometryType('CIRCLE'), q.closestTo(p))` (nearest circular edge).
+`q.face(q.closestTo(p))` and `q.face(q.geometryType('PLANE'))` select faces on
+any body, including plain `box(...)` and `cylinder(...)`. A later `fillet` or
 `chamfer` keeps the labels of the edges it leaves alone, so
 `.chamfer(0.5, { face: 'thru.entry-rim' }).chamfer(0.3, { face: 'thru.exit-rim' })`
 breaks the two rims by different amounts. `cutout`

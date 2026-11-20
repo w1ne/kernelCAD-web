@@ -38,6 +38,7 @@ import type { EdgeLineage, FaceLineage, FaceHash } from './evolutionRecord';
 import { descendsFromFeature } from './operationLineage';
 import { scopeFiltersToKind } from './queryKindScope';
 import { edgeGeometryOf } from '../backends/occt/edgeGeometry';
+import { faceGeometryOf } from '../backends/occt/faceGeometry';
 import {
   throwQueryEmpty,
   throwQueryOverDetermined,
@@ -454,11 +455,14 @@ function entityHasFeatureName(e: ResolvedEntity, name: string, scene: QueryScene
 // Spatial / geometric filters.
 // ---------------------------------------------------------------------------
 
-/** Face centroid from the lineage snapshot; edge centroid (curve midpoint)
- *  read from the body, since edge lineage carries no snapshot. */
+/** Face centroid from the lineage snapshot, else read from the body (plain
+ *  primitives carry no snapshot); edge centroid (curve midpoint) read from
+ *  the body, since edge lineage carries no snapshot. */
 function centroidOf(e: ResolvedEntity, scene: QueryScene): [number, number, number] | undefined {
   if (e.kind === 'edge') return edgeGeometryOf(scene.backend.getReplicadShape(), e.handle)?.centroid;
-  return e.snapshot?.centroid;
+  if (e.snapshot) return e.snapshot.centroid;
+  if (e.kind === 'face') return faceGeometryOf(scene.backend.getReplicadShape(), e.handle)?.centroid;
+  return undefined;
 }
 
 function filterContainsPoint(
@@ -506,19 +510,12 @@ function filterGeometryType(
     const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
     // FaceLineage.surfaceType uses OCCT names ('PLANE' / 'CYLINDRE' / ...).
     // GeometryType uses the public-API names ('PLANE' / 'CYLINDER' / ...).
-    // Map between them so the filter passes through cleanly.
-    return matchesGeometryType(lineage?.surfaceType, geomType);
+    // Map between them so the filter passes through cleanly. Lineage without
+    // a surface type (plain primitives) reads it from the body.
+    const surfaceType = lineage?.surfaceType ??
+      faceGeometryOf(scene.backend.getReplicadShape(), e.handle)?.surfaceType;
+    return sameGeometryType(surfaceType, geomType);
   });
-}
-
-function matchesGeometryType(
-  surfaceType: FaceLineage['surfaceType'] | undefined,
-  requested: GeometryType,
-): boolean {
-  if (!surfaceType) return false;
-  // Alias-aware: OCCT 'CYLINDRE' ≡ public 'CYLINDER', 'BSPLINE' ≡
-  // 'BSPLINE_SURFACE', and so on (see shared/intent/queryNormalize.ts).
-  return sameGeometryType(surfaceType, requested);
 }
 
 function filterNth(input: ResolvedEntity[], index: number): ResolvedEntity[] {
