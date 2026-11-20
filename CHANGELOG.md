@@ -14,6 +14,15 @@
   `.finish('steel')` and `'#ffa500'`, and the `.color()` hint example uses
   `'#ff0000'` instead of `'red'`.
 
+- `hole`, `holes` and `cutout` now keep the edge lineage of the body they
+  cut, as `subtract` already did. Before, their result had no edge history,
+  so a lineage edge query after them failed: on a 60 × 40 × 5 mm plate with
+  one Ø4 through-hole, `fillet(3, q.edge(q.createdBy(plate.id))
+  .and(q.withLabel('corner')))` raised `query.unsupported-entity-type`
+  instead of rounding the four corners. Kept and split edges keep their
+  birth labels (`corner`, `top-perimeter`, `bottom-perimeter`); the new rim
+  and seam edges are born on the hole or cutout.
+
 - `scripts/typecheckExamples.ts` (`npm run typecheck:examples`) now declares
   `kinematic` and types `kc` as the composed `ScriptApi`; before, every
   script that called `kinematic.*` failed with `TS2304 Cannot find name
