@@ -7,6 +7,18 @@
   bracket top face, and the seat follows `plateT`. The parameters and the
   `hole-pattern` requirement are unchanged, so `kernelcad collab check`
   results are unchanged.
+- `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
+  `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
+  Before, every such cutout failed with `feature.kernel-failed` (`unsupported
+  segment kind 'nurbsSegment'`), so an elliptical or spline-bounded pocket
+  had to be an extruded profile subtracted by hand at the right face
+  position. A 12 × 6 mm elliptical through-hole in a 20 mm block removes
+  π·12·6·20 mm³ (relative error under 1e-6), and a spline or mixed profile
+  gives the same volume, face count and centroid as the explicit
+  `subtract()`. The spline and ellipse side faces now carry the `wall`
+  created ref. Limit: a blind cutout still overshoots its depth by 0.01 mm,
+  as it does for a polyline profile.
+
 - Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
   12 `mechanism.orphan-part` errors because only the bolts and the two shaft
@@ -26,10 +38,16 @@
   2:1 elliptical head measures (2/3)·π·R²·h. The `ellipse` centre and
   semi-axes accept `param()` values; `ellipseArc` takes plain numbers, and
   radii too small to join the two points throw `feature.invalid-args` with
-  the smallest pair that fits. Limits: `Sketch.offset`, the sketch booleans
-  and `cutout()` do not take a NURBS profile, so an elliptical hole is an
-  extruded ellipse subtracted from the solid. Demo:
+  the smallest pair that fits. Limits: `Sketch.offset` and the sketch
+  booleans do not take a NURBS profile. Demo:
   `docs/demos/path-ellipse/`.
+- Example `examples/exploded/clamshell-table-first.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  4 errors (orphan `table`, lid through base and table at the -15° hinge
+  limit, `dof-mismatch` at the closed pose). The base is fastened on the
+  table with face contact and the hinge opens from 0° to 135°. The table is
+  still declared first, and mate-axis explode still moves the lid 300 mm
+  along the hinge axis.
 
 - Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
