@@ -9,6 +9,22 @@
   `mechanism.tendon-body-intersect` error); its hook and eye are on the
   facing ends of the two parts (tendon from x=90 to x=10 mm), and
   `docs/demos/tendon-jointed-anchor-at/` is recaptured.
+- A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
+  Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
+  `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
+  instead of 480 mm³, and the pocket floor never got the documented `floor`
+  created ref: `fillet(r, { face: 'pocket.floor' })` silently rounded a
+  different face. The tool now overshoots only outside the entry face, as
+  `hole()` does; `through` and `upToFace` cuts are unchanged, and a blind
+  depth equal to the wall thickness still cuts clean through.
+
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  one `mechanism.interpenetration` error (6914.65 mm3) because both plates
+  were placed at the origin with no mate. The motor plate is fastened on the
+  bracket top face, and the seat follows `plateT`. The parameters and the
+  `hole-pattern` requirement are unchanged, so `kernelcad collab check`
+  results are unchanged.
 - `examples/kinematic/joint-range-suggestion.kcad.ts` and
   `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, each returned
@@ -40,8 +56,7 @@
   π·12·6·20 mm³ (relative error under 1e-6), and a spline or mixed profile
   gives the same volume, face count and centroid as the explicit
   `subtract()`. The spline and ellipse side faces now carry the `wall`
-  created ref. Limit: a blind cutout still overshoots its depth by 0.01 mm,
-  as it does for a polyline profile.
+  created ref.
 
 - Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
