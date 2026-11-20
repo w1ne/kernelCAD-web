@@ -1,5 +1,16 @@
 # Unreleased
 
+- `verify({ check: 'clearance-range' })` (#1590) reports, for each mating
+  pair, the actual vs the planned minimum clearance at rest and across the
+  declared joint range, with `pass | fail | unknown` per row. Planned values
+  come from `solvedModel({}, { clearances })` and, for movable mate pairs,
+  from `min_clearance_mm` or `dfmSpec({ minClearance })`. It reuses the
+  pose-envelope samples and the exact BREP distance of the rest-pose
+  `clearances` gate. On a carriage that slides toward a stop (20 mm gap at
+  rest, 5 mm planned): limits `[0, 10]` pass at 10.000 mm; limits
+  `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
+  give `unknown` for the range, not pass.
+
 - `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
   now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
   runtime already selected every edge of the matched face, but the public
