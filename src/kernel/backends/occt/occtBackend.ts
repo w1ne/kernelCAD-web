@@ -71,6 +71,12 @@ export class OcctBackend implements ShapeBackend {
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
   /** Edge ancestry. Populated for primitives and for operations that record it. */
   edgeHistoryMap?: import('../../naming/evolutionRecord').EdgeHistoryMap;
+  /** Face hash -> the records the face came from through booleans, oldest
+   *  first (`[operand, ..., boolean]`). Written by every boolean from the OCCT
+   *  boolean history whether or not the operands carry face lineage, so a
+   *  sketch extrude or extruded text member is traceable too. Appearance only:
+   *  `memberMaterialsByFace` reads it to keep each union member's finish. */
+  memberOrigin?: ReadonlyMap<string, readonly string[]>;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
   // When `_commands` contains at least one Slice D NURBS segment (`spline`,
@@ -124,6 +130,7 @@ export class OcctBackend implements ShapeBackend {
   clone(): OcctBackend {
     const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
     if (this.edgeHistoryMap) out.edgeHistoryMap = this.edgeHistoryMap;
+    if (this.memberOrigin) out.memberOrigin = remapMemberOriginByIndex(this.memberOrigin, this.faceHashes(), out.faceHashes());
     if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
     return out;
   }
@@ -1463,4 +1470,22 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
  *  nominal analysis stand-in when it carries one, else the shape itself. */
 export function analysisBodyOf<T>(shape: T): T | OcctBackend {
   return shape instanceof OcctBackend && shape.analysisBody !== undefined ? shape.analysisBody : shape;
+}
+
+/** Carry a `memberOrigin` map across a topology-preserving copy or rigid
+ *  transform: OCCT keeps face explorer order, so face i maps to face i (the
+ *  invariant `propagateTransformHistory` relies on). A face-count mismatch
+ *  drops the map. */
+export function remapMemberOriginByIndex(
+  origin: ReadonlyMap<string, readonly string[]>,
+  inputHashes: readonly string[],
+  outputHashes: readonly string[],
+): ReadonlyMap<string, readonly string[]> | undefined {
+  if (inputHashes.length !== outputHashes.length) return undefined;
+  const out = new Map<string, readonly string[]>();
+  inputHashes.forEach((h, i) => {
+    const chain = origin.get(h);
+    if (chain !== undefined) out.set(outputHashes[i]!, chain);
+  });
+  return out.size > 0 ? out : undefined;
 }
