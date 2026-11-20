@@ -8,6 +8,22 @@
   `contact-unreachable`. In the regression rig the held contact moved from
   [-2, 0, 0] to [10, 0, 0] mm and the 10.2 mm false miss is now 0 mm.
 
+- `examples/kinematic/joint-range-suggestion.kcad.ts` and
+  `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, each returned
+  `mechanism.orphan-part` because the wall that stops the carriage had no
+  mate. The rail has a bed, the wall stands on the bed and is fastened to it
+  at the shared face, and the carriage slides on the bed. The suggested stop
+  is unchanged: the clear side of 9.7 mm, pair `carriage` / `wall`.
+
+- A script that calls `kinematic.suggestJointRanges`, `checkSweptCollision`,
+  `checkStaticHold` or `motionLoad` no longer gets a second copy of every
+  assembly part in its model. Each query lowered a probe scene and left that
+  scene in the feature list, fixed at the probe pose, so `kernelcad animate`
+  and the viewer drew the moving part twice: at the probe pose and at the
+  current pose. The probe scene is now removed after the query has read it.
+  The `docs/demos/joint-range-suggestion` capture is replaced; the earlier
+  one showed the carriage stretched from its start to the wall.
 - `kernelcad render`, `kernelcad render inspect` and the `render_preview`
   explode path now accept a script that calls `kinematic.*`; before, they
   failed with `ReferenceError: kinematic is not defined` on a script that
