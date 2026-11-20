@@ -1,0 +1,90 @@
+{
+  "reviewedAt": "2026-11-20",
+  "scope": "HV divider and pipe roller stand illustrative CC0 assets; exact live drafted housing recheck",
+  "observations": {
+    "HV divider": "Three clearly separated splayed feet support the hub. The ceramic column seats on the hub and carries six sheds. The copper top terminal is on the ceramic top.",
+    "pipe roller stand": "Three splayed legs join the hub and central post. The head carries two parallel rollers, each between visible end brackets. Shafts pass through the rollers and bored brackets.",
+    "drafted housing": "Four cored posts are visibly inside the open teal shell. No ribs are present."
+  },
+  "nativeTests": {
+    "HV divider": {
+      "passed": 4,
+      "scales": [
+        0.65,
+        1,
+        1.35
+      ],
+      "negativeControl": "missing third leg"
+    },
+    "pipe roller stand": {
+      "passed": 4,
+      "scales": [
+        0.7,
+        1,
+        1.3
+      ],
+      "negativeControl": "detached post"
+    }
+  },
+  "externalReferenceCheck": {
+    "source": "https://ohm-labs.com/high-voltage-dividers/",
+    "date": "2026-11-20",
+    "conclusion": "Real supplier models have calibrated electrical specifications. No such electrical or structural claims are assigned to this scene prop."
+  },
+  "limitations": [
+    "Scene geometry and visible support only",
+    "No calibrated voltage divider or certified structural load",
+    "Pipe height adjustment remains a labelled envelope, without a screw mechanism",
+    "Local verification is distinct from deployed runtime verification"
+  ],
+  "canonicalInspect": {
+    "status": "BLOCKED_CDP_ATTACHMENT",
+    "reason": "Existing Chrome9222 WebSocket connected but Playwright CDP initialization timed out after 30 seconds for each model. No replacement browser launched.",
+    "attemptedCommand": "PW_CDP_URL=http://127.0.0.1:9222 kernelcad render inspect <source> <out> --views top,front,iso --width 512 --height 512 --environment none",
+    "logs": [
+      "render-inspect.log",
+      "roller-inspect.log"
+    ]
+  },
+  "visualEvidence": {
+    "method": "Existing generic glbSoftwareRender.ts, native OCCT export, 32 camera views per model",
+    "mp4s": [
+      {
+        "label": "tripod",
+        "file": "/data/qa/kernelcad-targeted-repairs-20261120/tripod-demo.mp4",
+        "sha256": "f561798d09e99d01e94c1e5688699ae7d47e9018569abd9dc2e52758e6515a35",
+        "durationSeconds": 4,
+        "frames": 32,
+        "width": 512,
+        "height": 512,
+        "inspectedDecodedSeconds": [
+          1,
+          3
+        ],
+        "sourceSha256": "41b37400c9e882b0e22f5be065bb8b6163b4d7b8523770ada4c8eaadb56ca5b5",
+        "triangles": 1784,
+        "triangleBudget": 1800
+      },
+      {
+        "label": "roller",
+        "file": "/data/qa/kernelcad-targeted-repairs-20261120/roller-demo.mp4",
+        "sha256": "3139360aadbd64744ebbd2880756202e2809f3c008a0132c6382879b0ab99f59",
+        "durationSeconds": 4,
+        "frames": 32,
+        "width": 512,
+        "height": 512,
+        "inspectedDecodedSeconds": [
+          1,
+          3
+        ],
+        "sourceSha256": "9c0940a5fd3613386f50735f9a3a1b1ebd9a63e64ee1c9a3a3fc79a99c38a7d3",
+        "triangles": 672,
+        "triangleBudget": 2200
+      }
+    ]
+  },
+  "commits": {
+    "HVdivider": "48242edb18020433167400a9087e64b45c277213",
+    "pipeRollerStand": "ab438f833d7e6ba9a4e68eee09da00b80230ca58"
+  }
+}
