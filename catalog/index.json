@@ -359758,7 +359758,7 @@
       "id": "wind-site-bollard",
       "kit": "wind-energy",
       "title": "Wind site bollard",
-      "description": "Low site bollard with a rounded cap, square foot and two raised reflector bands. Controls: scale and safety paint, stainless steel, concrete; weathered and high-visibility presets.",
+      "description": "Low painted site bollard with a round cap, square concrete foot and two reflective sheeting bands. Controls: scale and safety paint, reflective sheeting, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -359777,7 +359777,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-site-bollard.kcad.ts",
       "preview": "/assets/wind-energy-wind-site-bollard.png",
-      "sourceSha256": "d35b5df53b9f2ab07a5d321a9efd8c8c2735bc88ca7f299dc124457c1a401984",
+      "sourceSha256": "c1b9dec8cd154b928ac63b2e24e4bb7baa8c9d8e57f3143389a58d607907f34b",
       "triangleBudget": 400,
       "params": [
         {
@@ -359796,10 +359796,10 @@
           "label": "Safety paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "reflectiveBand",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#d5322c",
+          "label": "Reflective sheeting"
         },
         {
           "name": "concrete",
@@ -359811,7 +359811,7 @@
       "presets": {
         "weathered": {
           "safetyPaint": "#ba8d27",
-          "stainlessSteel": "#c7d2d5"
+          "reflectiveBand": "#b04a41"
         },
         "highVisibility": {
           "safetyPaint": "#d29f2c"
@@ -359846,13 +359846,13 @@
           "param": "safetyPaint"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "reflectiveBand",
+          "color": "#d5322c",
           "parts": [
             "band-low",
             "band-high"
           ],
-          "param": "stainlessSteel"
+          "param": "reflectiveBand"
         }
       ]
     },
