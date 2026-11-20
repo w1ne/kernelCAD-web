@@ -1,5 +1,11 @@
 # Unreleased
 
+- Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
+  and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
+  returned 2 errors. In each snippet the child part sits on the top face of
+  the parent and both connectors of the fastened mate are on that shared
+  face.
 - `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
   `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
   profile and return a new sketch; the source is unchanged, so one profile
