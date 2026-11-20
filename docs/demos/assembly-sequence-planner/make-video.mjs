@@ -114,14 +114,14 @@ slides.push([5.0, await slide('04-steps-a', {
   footer: 'sequence-evidence.json · verify assembly-path sequence:true',
 })]);
 slides.push([5.0, await slide('05-steps-b', {
-  title: 'Build sequence · steps 11–19',
+  title: 'Build sequence · steps 11–21',
   lines: [
-    ...listLines(evidence.result.steps, 10, 19),
+    ...listLines(evidence.result.steps, 10, 21),
     '',
     `unknown: ${evidence.result.unknown.length === 0 ? '[]' : evidence.result.unknown.join(', ')}`,
     `ok: ${evidence.result.ok} · toolBlocked: ${(evidence.result.toolBlocked ?? []).length} · requiresForce: ${(evidence.result.requiresForce ?? []).length}`,
   ],
-  footer: 'Nineteen steps: seventeen part additions plus two subassembly installs.',
+  footer: 'Twenty-one steps: seventeen part additions plus four subassembly installs.',
 })]);
 slides.push([5.0, await slide('05a-fasteners', {
   title: 'P2 · helical motion, tool reach and declared force',
@@ -149,11 +149,8 @@ slides.push([5.0, await slide('05b-subassemblies', {
       .map(step => step.adds[0] === step.subassembly
         ? `${String(step.index).padStart(2, ' ')}  install ${step.subassembly} as one unit`
         : `${String(step.index).padStart(2, ' ')}  add ${step.adds.join(' + ').padEnd(20)} inside ${step.subassembly}`),
-    '',
-    'Internal steps are tagged; the unit install step adds the subassembly name.',
-    'Deterministic heuristics: subassemblies first, outside-in, fewest reorientations, fewest tool changes.',
   ],
-  footer: 'Fastened mates define the clusters; no mate solve is claimed.',
+  footer: 'Fastened mates define the clusters; internal steps are tagged; the unit step adds the subassembly name.',
 })]);
 slides.push([5.0, await slide('06-states', {
   title: 'States and fallback labels are never collapsed',

@@ -79,8 +79,8 @@ if (style.value === 'round-hat') {
     [646, 16, 16, 10],
   ]).color(fabric));
   // The window sits proud of the hood front so the mesh reads from the side too.
-  const window = stack([[0, 112, 104], [24, 108, 100], [34, 96, 90]]).rotateX(90).translate(0, -128, 470);
-  add('face-window-mesh', window.color(mesh));
+  const faceWindow = stack([[0, 112, 104], [24, 108, 100], [34, 96, 90]]).rotateX(90).translate(0, -128, 470);
+  add('face-window-mesh', faceWindow.color(mesh));
   add('face-window-hoop', torus(110, 5, 24).rotateX(90).translate(0, -140, 470).color(trim));
   add('crown-seam', box(8, 210, 8, true).translate(0, 18, 640).color(trim));
 }
