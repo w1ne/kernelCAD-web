@@ -11,10 +11,10 @@
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
-import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
+import type { FeatureId, Param } from '../../shared/intent/types';
 import type { FaceSelector } from '../capture/proxy';
 import type { SketchCommand } from '../capture/sketch';
-import { validateFeatureName } from './holeValidation';
+import { validateFeatureName, type UpToFaceSelector } from './holeValidation';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool, toParam, toBoolParam } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';
@@ -24,7 +24,7 @@ export type CutoutDepthMode = 'blind' | 'symmetric';
 export interface EditableCutoutOpts {
   face: FaceSelector;
   depth?: Editable<number> | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   depthMode?: CutoutDepthMode;
   /** Optional agent-chosen feature name. */
   name?: string;
@@ -35,7 +35,7 @@ export interface EditableCutoutOpts {
 export interface CutoutOpts {
   face: FaceSelector;
   depth?: number | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   depthMode?: CutoutDepthMode;
   name?: string;
   enabled?: boolean;

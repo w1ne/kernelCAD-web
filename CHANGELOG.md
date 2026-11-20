@@ -8,6 +8,12 @@
   `examples/cookbook-parity/gridfinity-bin.kcad.ts` failed `TS2345` in the
   editor. Full-tree `typecheck:examples:all`: 367 errors in 41 files before,
   363 in 40 after (4 `TS2345` removed, no new errors).
+- The `upToFace` option of `hole`, `holes` and `cutout` now has the type of
+  every form the runtime accepts: a FaceRef, a face name, a label, a
+  `{ face }` selector, a FaceQuery such as `{ containsPoint: [x, y, z] }` or
+  a Query DSL value. Before, the type allowed only a FaceRef, so
+  `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
+  check with TS2353 although it runs. Runtime behaviour is unchanged.
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
