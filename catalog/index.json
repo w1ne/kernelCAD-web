@@ -76545,7 +76545,7 @@
       "id": "rack-kvm-console",
       "kit": "data-center-infrastructure",
       "title": "Rack KVM console",
-      "description": "Pull-out console tray with display housing, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
+      "description": "Pull-out console tray with a painted-steel display housing and glass screen, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76565,7 +76565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/rack-kvm-console.kcad.ts",
       "preview": "/assets/data-center-infrastructure-rack-kvm-console.png",
-      "sourceSha256": "9d83918ebfb14b86f7c4bdadf558c52b0d9b819287e1e1e5d42f793cd4ec88ef",
+      "sourceSha256": "2e8cd61498f47f48aafd22f69f089a777b5138a80fb02d4ce68442ba1c352f4f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76601,7 +76601,7 @@
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 260,
         "sizeM": [
           0.56,
           0.395,
@@ -76621,6 +76621,7 @@
             "right-mounting-ear",
             "slide-rail-left",
             "slide-rail-right",
+            "display-housing",
             "keyboard-tray",
             "hinge-left",
             "hinge-right"
@@ -76631,7 +76632,7 @@
           "name": "glass",
           "color": "#42bac9",
           "parts": [
-            "display-housing"
+            "display-screen"
           ],
           "param": "glass"
         }
