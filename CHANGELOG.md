@@ -12,7 +12,8 @@
   radii too small to join the two points throw `feature.invalid-args` with
   the smallest pair that fits. Limits: `Sketch.offset`, the sketch booleans
   and `cutout()` do not take a NURBS profile, so an elliptical hole is an
-  extruded ellipse subtracted from the solid.
+  extruded ellipse subtracted from the solid. Demo:
+  `docs/demos/path-ellipse/`.
 
 - A mirrored or turned `smoothSpline` profile keeps its shape. The free end
   tangent of a `smoothSpline` segment is the sketch +X direction, and the
