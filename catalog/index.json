@@ -81722,7 +81722,7 @@
       "id": "compact-dc-fast-charger",
       "kit": "ev-charging-infrastructure",
       "title": "Compact DC fast charger",
-      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and plug handle polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -81743,7 +81743,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/compact-dc-fast-charger.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
-      "sourceSha256": "8a7cf0bca7503dd7e9b9daa6cfefedf5d0a08bf90d956749171078bc0a6cc997",
+      "sourceSha256": "8758927f921e04fb9f578366aae2d6847c4201d627429406f893c92cf122105b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -81778,6 +81778,12 @@
           "type": "color",
           "default": "#f0b13c",
           "label": "Safety-colored polymer"
+        },
+        {
+          "name": "connectorPolymer",
+          "type": "color",
+          "default": "#2a3033",
+          "label": "Plug handle and contact collar (moulded polymer)"
         }
       ],
       "presets": {
@@ -81785,13 +81791,15 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "cableElastomer": "#1a2522",
-          "safetyPolymer": "#f3bd2f"
+          "safetyPolymer": "#f3bd2f",
+          "connectorPolymer": "#262c2b"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "cableElastomer": "#111719",
-          "safetyPolymer": "#ffbf24"
+          "safetyPolymer": "#ffbf24",
+          "connectorPolymer": "#1c2124"
         }
       },
       "stats": {
@@ -81820,11 +81828,7 @@
             "vent-slot-5",
             "roof-visor",
             "left-connector-cradle",
-            "right-connector-cradle",
-            "left-connector-handle",
-            "right-connector-handle",
-            "left-contact-collar",
-            "right-contact-collar"
+            "right-connector-cradle"
           ],
           "param": "powderCoat"
         },
@@ -81853,6 +81857,17 @@
             "right-charging-cable"
           ],
           "param": "cableElastomer"
+        },
+        {
+          "name": "connectorPolymer",
+          "color": "#2a3033",
+          "parts": [
+            "left-connector-handle",
+            "right-connector-handle",
+            "left-contact-collar",
+            "right-contact-collar"
+          ],
+          "param": "connectorPolymer"
         }
       ]
     },
