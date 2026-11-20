@@ -26,12 +26,13 @@
     10
   ],
   "cameraDistance": 48,
-  "animateWallSeconds": 344.69,
+  "animateWallSeconds": 204.3,
   "verify": {
     "ok": true,
     "verified": true,
     "collisions": []
   },
   "kind": "local kinematic replay of one animationView timeline",
-  "recapture": "Replaces the 2026-11-17 capture, which drew the suggestJointRanges probe scene as a second carriage fixed at slide 0.1."
+  "recapture": "Replaces the 2026-11-17 capture, which drew the suggestJointRanges probe scene as a second carriage fixed at slide 0.1.",
+  "geometry": "rail = end block + bed; wall fastened to the bed at z = 0; carriage slides on the bed"
 }

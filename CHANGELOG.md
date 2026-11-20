@@ -1,5 +1,13 @@
 # Unreleased
 
+- `examples/kinematic/joint-range-suggestion.kcad.ts` and
+  `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
+  `ok: true` and `mechanism: real`; before, each returned
+  `mechanism.orphan-part` because the wall that stops the carriage had no
+  mate. The rail has a bed, the wall stands on the bed and is fastened to it
+  at the shared face, and the carriage slides on the bed. The suggested stop
+  is unchanged: the clear side of 9.7 mm, pair `carriage` / `wall`.
+
 - A script that calls `kinematic.suggestJointRanges`, `checkSweptCollision`,
   `checkStaticHold` or `motionLoad` no longer gets a second copy of every
   assembly part in its model. Each query lowered a probe scene and left that
