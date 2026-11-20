@@ -1,5 +1,12 @@
 # Unreleased
 
+- The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
+  `evaluate_script` with `ok: true`; before, it had one
+  `mechanism.interpenetration` error (`mechanism: broken`): the corners of
+  the 30 mm square avionics bay (21.2 mm half-diagonal) cut 192 mm³ out of
+  the wall of the body tube (20.3 mm bore radius). The bay is 28 mm square.
+  The mass and the flight results are unchanged.
+
 - Assemblies skill Query snippets `Q-S4-ownership-and-part-queries.kcad.ts`
   and `Q-S5-connector-queries.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, Q-S4 returned 1 error and Q-S5
