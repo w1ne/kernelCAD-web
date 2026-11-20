@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { LowerResult, ShapeBackend } from '../../../../kernel/backends/backend';
-import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
+import { OcctBackend, remapMemberOriginByIndex } from '../../../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../../../kernel/backends/meshBackend';
 import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { FaceHash, EdgeHash } from '../../../../kernel/naming/evolutionRecord';
@@ -138,6 +138,7 @@ export function applyTransforms(
     if (inputMap !== undefined) {
       shape = carryTransformHistory(shape, inputHashes, inputMap, inputEdgeHashes, inputEdgeMap);
     }
+    carryMemberOrigin(inputBackend, inputHashes, shape);
   }
   return shape;
 }
@@ -156,7 +157,9 @@ export function translatePreservingLineage(
   tz: number,
 ): ShapeBackend {
   if (!(shape instanceof OcctBackend) || shape.historyMap === undefined) {
-    return shape.translate(tx, ty, tz);
+    const moved = shape.translate(tx, ty, tz);
+    if (shape instanceof OcctBackend) carryMemberOrigin(shape, shape.memberOrigin ? shape.faceHashes() : [], moved);
+    return moved;
   }
   const inputHashes = shape.faceHashes();
   const moved = shape.translate(tx, ty, tz);
@@ -165,7 +168,15 @@ export function translatePreservingLineage(
   const lineage = propagateTransformHistory(shape.historyMap, inputHashes, outputHashes);
   const carried = new OcctBackend(moved.getReplicadShape(), undefined, lineage);
   if (moved.analysisBody !== undefined) carried.analysisBody = moved.analysisBody;
+  carryMemberOrigin(shape, inputHashes, carried);
   return carried;
+}
+
+/** Rigid transforms keep face order: carry the union member origins by index
+ *  (see `remapMemberOriginByIndex`). */
+function carryMemberOrigin(input: OcctBackend, inputHashes: readonly FaceHash[], output: ShapeBackend): void {
+  if (input.memberOrigin === undefined || !(output instanceof OcctBackend)) return;
+  output.memberOrigin = remapMemberOriginByIndex(input.memberOrigin, inputHashes, output.faceHashes());
 }
 
 /**
