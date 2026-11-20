@@ -8,6 +8,18 @@
   21 570.166667 mm³, equal to the closed form. `withFeatureName` also reads
   the owners of edges. Spatial and geometry filters inside `q.edge(...)`
   still read faces.
+- `solvedModel({}, { posesGate: 'envelope', clearances })` (#1590) now
+  checks each declared per-pair minimum clearance at every envelope sample,
+  not only at rest. A pair that goes under its `minMm` inside the joint
+  range is `assembly.pose-envelope.clearance-violated` (error, so the build
+  fails under `validate: 'error'`); an unmeasured pair is
+  `assembly.pose-envelope.clearance-unresolved` (warning). The default gate
+  stays rest-only. On a carriage that slides toward a stop (20 mm gap at
+  rest, limits `[0, 15]`), `minMm: 10` now fails at `slide:max` with 5 mm
+  and `minMm: 4` passes. On `examples/robot-arm/compact-supported-arm` with
+  `yaw-turret`/`upper-link` declared at 3 mm, the gate reports 0.186 mm at
+  `shoulder-pitch:max`, the same value as `verify({ check:
+  'clearance-range' })`.
 - `fillet` and `chamfer` now keep the birth labels of the edges they leave
   alone. OCCT's `BRepFilletAPI_MakeChamfer`/`MakeFillet` report the untouched
   edges of a rebuilt face as deleted although the result keeps them, so
