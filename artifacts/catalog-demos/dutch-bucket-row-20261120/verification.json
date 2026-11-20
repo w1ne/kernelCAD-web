@@ -179,5 +179,16 @@
     "A separate hosted preview rendered this source but reported mechanism=broken with 231 interpenetration diagnostics. These remain unresolved and are not suppressed.",
     "Contact, loading and preset checks do not establish hydraulic operation, manufacturing fits, load capacity or mechanical acceptance.",
     "Video and views are deterministic renders of actual saved GLB output, not a recording of a live Studio interaction."
-  ]
+  ],
+  "mechanicsFindingSummary": {
+    "classificationSha256": "5b17d3179da902e0acbd5fe4c395900e242b4a23c12ddec92848fa2b4db179e4",
+    "basis": "Read-only classification of231 saved default/rest pair diagnostics and exact source geometry; no new collision execution.",
+    "mechanismStatus": "broken",
+    "totalPairDiagnostics": 231,
+    "independentlyConfirmedDefectCountIsNot231": true,
+    "outletRightPostOrFootCollisions": 3,
+    "unrelievedStakeWallOrRimCrossings": 12,
+    "allDiagnosticsRetained": true,
+    "sourceUnchanged": true
+  }
 }
