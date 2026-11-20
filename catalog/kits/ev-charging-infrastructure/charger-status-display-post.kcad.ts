@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: CC0-1.0
 // quality-promotion: ev-charging-infrastructure 2026-11-05
 // Charger status display post: wayfinding-height display post with a framed status screen and a slim base.
+// What makes it a status post: the screen sits in a housing on the column head, where a driver reads it
+// across the bay, framed by a black polymer bezel; the lower cabinet carries the service door and button.
 // Source convention: millimetres, Z up, base at z = 0.
 
 meta({
   name: "charger-status-display-post",
   license: 'CC0-1.0',
   title: "Charger status display post",
-  description: "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
+  description: "Wayfinding-height display post with a status screen in a black polymer screen bezel on the column head, a lower service cabinet and a slim base. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, safety-colored polymer and engineering polymer color controls.",
   tags: ['EV charging', 'electric vehicle', 'charging station', 'low poly', 'scene prop', 'CC0'],
   kit: "ev-charging-infrastructure",
   category: 'prop',
@@ -19,12 +21,13 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const powderCoat = param('powderCoat', '#397f90', { label: 'Powder-coated metal' });
 const displayGlass = param('displayGlass', '#79cfda', { label: 'Display glass' });
+const bezelPolymer = param('bezelPolymer', '#1f2427', { label: 'Screen bezel (black polymer)' });
 const safetyPolymer = param('safetyPolymer', '#f0b13c', { label: 'Safety-colored polymer' });
 const engineeringPolymer = param('engineeringPolymer', '#657f84', { label: 'Engineering polymer' });
 
 presets({
-  fleetReady: { powderCoat: '#28765f', displayGlass: '#46b8c4', safetyPolymer: '#f3bd2f', engineeringPolymer: '#263a36' },
-  nightService: { powderCoat: '#3f5059', displayGlass: '#11bfd0', safetyPolymer: '#ffbf24', engineeringPolymer: '#222d32' },
+  fleetReady: { powderCoat: '#28765f', displayGlass: '#46b8c4', bezelPolymer: '#18201e', safetyPolymer: '#f3bd2f', engineeringPolymer: '#263a36' },
+  nightService: { powderCoat: '#3f5059', displayGlass: '#11bfd0', bezelPolymer: '#111618', safetyPolymer: '#ffbf24', engineeringPolymer: '#222d32' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z).scale(scale);
@@ -36,12 +39,14 @@ p.part("pedestal-column", b(0, 0, 40, 181.50000000000003, 240, 1700).color(powde
 p.part("main-enclosure", b(0, 0, 0, 330, 240, 520).color(powderCoat));
 p.part("top-cap", b(0, 0, 520, 354, 264, 22).color(powderCoat));
 p.part("front-door", b(0, -123.0, 65, 304, 8, 400).color(powderCoat));
-p.part("display-bezel", b(0, -132.0, 353.6, 151.8, 22, 88.4).color(displayGlass));
-p.part("display-window", b(0, -145.0, 358.79999999999995, 128.70000000000002, 7, 65.0).color(displayGlass));
 p.part("status-button", c(112.2, -148.0, 249.6, 18, 12, 8).color(safetyPolymer));
 p.part("vent-slot-1", b(0, -128.0, 104.0, 191.39999999999998, 12, 12).color(powderCoat));
 p.part("vent-slot-2", b(0, -128.0, 143.0, 191.39999999999998, 12, 12).color(powderCoat));
 p.part("head-cap", b(0, 0, 1740, 370, 300, 45).color(powderCoat));
+// Display head: housing on the column front under the cap, bezel on its face, glass 3 mm proud of the bezel.
+p.part("display-housing", b(0, -135, 1380, 330, 30, 360).color(powderCoat));
+p.part("display-bezel", b(0, -154, 1430, 290, 8, 260).color(bezelPolymer));
+p.part("display-window", b(0, -158, 1450, 250, 6, 220).color(displayGlass));
 p.part("left-connector-cradle", hy(-221.10000000000002, -30, 300, 105, 30, 8).color(engineeringPolymer));
 p.part("right-connector-cradle", hy(221.10000000000002, -30, 300, 105, 30, 8).color(engineeringPolymer));
 

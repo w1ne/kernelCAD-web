@@ -81117,7 +81117,7 @@
       "id": "charger-status-display-post",
       "kit": "ev-charging-infrastructure",
       "title": "Charger status display post",
-      "description": "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
+      "description": "Wayfinding-height display post with a status screen in a black polymer screen bezel on the column head, a lower service cabinet and a slim base. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -81138,7 +81138,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-status-display-post.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
-      "sourceSha256": "20daadc1ccc16469e8dda6d16ce1b18afbd2c7458156d009b39abaff56e0e206",
+      "sourceSha256": "f8d76ff966d7bb4e51dd710b932ef90ccfee05129406aee0090f2740dccf5fa2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -81163,6 +81163,12 @@
           "label": "Display glass"
         },
         {
+          "name": "bezelPolymer",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Screen bezel (black polymer)"
+        },
+        {
           "name": "safetyPolymer",
           "type": "color",
           "default": "#f0b13c",
@@ -81179,22 +81185,24 @@
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
+          "bezelPolymer": "#18201e",
           "safetyPolymer": "#f3bd2f",
           "engineeringPolymer": "#263a36"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
+          "bezelPolymer": "#111618",
           "safetyPolymer": "#ffbf24",
           "engineeringPolymer": "#222d32"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 264,
         "sizeM": [
           0.5022,
           1.785,
-          0.32
+          0.321
         ],
         "minUpM": 0,
         "materials": 1
@@ -81211,18 +81219,10 @@
             "front-door",
             "vent-slot-1",
             "vent-slot-2",
-            "head-cap"
+            "head-cap",
+            "display-housing"
           ],
           "param": "powderCoat"
-        },
-        {
-          "name": "displayGlass",
-          "color": "#79cfda",
-          "parts": [
-            "display-bezel",
-            "display-window"
-          ],
-          "param": "displayGlass"
         },
         {
           "name": "safetyPolymer",
@@ -81231,6 +81231,22 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "bezelPolymer",
+          "color": "#1f2427",
+          "parts": [
+            "display-bezel"
+          ],
+          "param": "bezelPolymer"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-window"
+          ],
+          "param": "displayGlass"
         },
         {
           "name": "engineeringPolymer",
