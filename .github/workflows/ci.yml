@@ -364,6 +364,42 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
 
+      - name: Prefer the existing HTTPS Ubuntu archive for external tools
+        run: |
+          # The Azure HTTP mirror took 19 minutes for 109 MB in CI.
+          # Retain the runner's signed sources and its existing HTTPS fallback.
+          sudo python3 - <<'PY_MIRROR'
+          from pathlib import Path
+
+          def prefer_https_archive(mirror_path):
+              if not mirror_path.is_file():
+                  print("APT mirror list absent; no source configuration changed.")
+                  return 0
+              original = mirror_path.read_bytes()
+              lines = original.decode("utf-8").splitlines(keepends=True)
+              def uri(line):
+                  fields = line.split()
+                  return fields[0] if fields and not fields[0].startswith("#") else None
+              azure = {"http://azure.archive.ubuntu.com/ubuntu",
+                       "http://azure.archive.ubuntu.com/ubuntu/"}
+              official = {"https://archive.ubuntu.com/ubuntu",
+                          "https://archive.ubuntu.com/ubuntu/"}
+              targets = [i for i, line in enumerate(lines) if uri(line) in azure]
+              if not targets:
+                  print("No Azure HTTP mirror entry; source configuration unchanged.")
+                  return 0
+              if not any(uri(line) in official for line in lines):
+                  raise RuntimeError("Azure mirror found without the official HTTPS fallback; source configuration unchanged.")
+              for i in targets:
+                  lines[i] = "# " + lines[i]
+              mirror_path.write_bytes("".join(lines).encode("utf-8"))
+              print(f"Commented {len(targets)} Azure HTTP mirror entry/entries; retained the official HTTPS archive and all other lines.")
+              return len(targets)
+
+          if __name__ == "__main__":
+              prefer_https_archive(Path("/etc/apt/apt-mirrors.txt"))
+          PY_MIRROR
+
       - name: Install CalculiX (ccx), gmsh runtime libs and ffmpeg
         run: |
           sudo apt-get update
