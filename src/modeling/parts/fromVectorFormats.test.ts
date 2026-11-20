@@ -64,6 +64,23 @@ const BULGED_DXF = [
   0, 'ENDSEC', 0, 'EOF',
 ].join('\n') + '\n';
 
+/**
+ * A 30 x 20 plate at x in [-30, 0] (world coordinates, extrusion +Z) with a
+ * r=3 mm hole written as a CIRCLE with extrusion (0, 0, -1). Its stored
+ * centre (10, 10) is in the mirrored OCS, so the world centre is (-10, 10)
+ * and the hole lies inside the plate. Read without the OCS, it lies outside.
+ */
+const MIRRORED_HOLE_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, -30, 20, 0,
+  10, 0, 20, 0,
+  10, 0, 20, 20,
+  10, -30, 20, 20,
+  0, 'CIRCLE', 10, 10, 20, 10, 40, 3, 210, 0, 220, 0, 230, -1,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
 /** The asymmetric L from the parser tests, at true millimetre scale. */
 const L_SVG = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="40mm" viewBox="0 0 100 40">
@@ -84,6 +101,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'plate.dxf'), PLATE_DXF);
   writeFileSync(join(tmpDir, 'plate-hole.dxf'), PLATE_WITH_HOLE_DXF);
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
+  writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -237,6 +255,21 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const plate = outline.extrude(3).subtract(holes[0].extrude(3));
     const backend = await lower(session, plate.id);
     expect(backend.volume()).toBeCloseTo((10 * 5 - Math.PI) * 3, 4);
+  });
+
+  it('places a CIRCLE with extrusion (0, 0, -1) at its mirrored world centre', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, ...holes] = await api.lib.fromDXF('mirrored-hole.dxf');
+    expect(holes).toHaveLength(1);
+
+    const plate = outline.extrude(2).subtract(holes[0].extrude(2));
+    const backend = await lower(session, plate.id);
+    // The hole cuts the plate only at the mirrored centre (-10, 10).
+    expect(backend.volume()).toBeCloseTo((30 * 20 - 9 * Math.PI) * 2, 4);
+    const box = backend.boundingBox();
+    expect(box.min[0]).toBeCloseTo(-30, 6);
+    expect(box.max[0]).toBeCloseTo(0, 6);
   });
 
   it('records the unit decision on the sketch so it can be inspected later', async () => {
