@@ -65,6 +65,7 @@ export const CLI_SANDBOX_REFUSED: Readonly<Record<string, string>> = {
   install: 'it writes MCP client configs in your home directory and runs other agent CLIs',
   stats: 'it fetches the admin telemetry API over the network',
   'print send': 'it uploads G-code to a network printer',
+  'slicer open': 'it launches a local GUI binary outside the in-process sandbox guard',
   'telemetry enable': 'telemetry is forced off in sandbox mode',
   'telemetry reset': 'telemetry is forced off in sandbox mode',
 };

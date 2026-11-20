@@ -149,6 +149,26 @@ writes the per-object filament slot (slot N = Nth distinct colour); pick
 the filament colours in the slicer. See the `slicer-ready-3mf` cookbook
 snippet.
 
+## Opening a STEP/3MF directly in a local slicer: `kernelcad slicer open`
+
+For human review or manual print setup, the CLI can ask the detected local
+slicer to open an already-exported STEP or 3MF file:
+
+```bash
+kernelcad slicer open model.step
+kernelcad slicer open model.3mf
+```
+
+Detection order: `KERNELCAD_SLICER` env var, then `orca-slicer`,
+`prusa-slicer`, `PrusaSlicer`, `bambu-studio`, `BambuStudio`, `cura` on PATH.
+The command returns exit code `1` with a typed `no-slicer` or `spawn-failed`
+result when no slicer is available or it cannot be started; the exported file
+is left untouched.
+
+In sandbox mode (`--sandbox` / `KERNELCAD_SANDBOX=1`), `kernelcad slicer open`
+is refused outright with `cli.sandbox-command-refused` because it launches a
+local GUI binary outside the in-process guard.
+
 The layout is checked against the `printer` bed (default `generic-fdm`,
 220×220×250 mm). Naming a `printer` also sets the `slicer` default to its
 family (`printer: 'bambu-a1'` writes the bambu sidecar). Parts that do not

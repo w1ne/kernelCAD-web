@@ -62,9 +62,9 @@ from the hole wall.
 - The rotation angle must be a plain number. A `param()` angle is refused
   with `feature.invalid-args`, because parameter expressions have no sin/cos.
   Extrude the sketch and use `Shape.rotate` for a parameter-driven angle.
-- `rotate` refuses a profile with a `smoothSpline` segment. The free end
-  tangent of `smoothSpline` is fixed to the sketch +X direction, so the turned
-  curve would have a different shape. `translate` and `scale` accept it.
+- At the time of this demo `rotate` refused a profile with a `smoothSpline`
+  segment. That limit is removed: the transform now writes the turned tangent
+  into the segment (`docs/demos/smoothspline-tangents/`).
 - `scale` is uniform. A factor that is not > 0 is refused; use `reflect` to
   mirror.
 - A `sketch.text` sketch has no path commands and is refused. Use the

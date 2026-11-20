@@ -3,6 +3,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { runOpenSlicerCli, slicerCommand } from '../../../src/agent/cli/commands/slicer';
 import { openFileInSlicer } from '../../../src/kernel/export/gcode/slicerCli';
+import { guardCliCommand } from '../../../src/agent/cli/lib/sandboxCli';
+import { buildProgram } from '../../../src/agent/cli/program';
+import { enableSandbox, disableSandboxForTest } from '../../../src/shared/sandbox/enable';
+import { isSandboxError } from '../../../src/shared/sandbox/errors';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -92,5 +96,37 @@ describe('slicer open command', () => {
     await slicerCommand().parseAsync(['open', file], { from: 'user' });
     expect(process.exitCode).toBe(1);
     expect(errSpy.mock.calls.flat().join('\n')).toContain('Slicer failed to start');
+  });
+});
+
+describe('slicer open sandbox guard', () => {
+  let ws: string;
+
+  beforeEach(() => {
+    ws = mkdtempSync(join(tmpdir(), 'kc-slicer-sbx-'));
+    enableSandbox({ workspace: ws, env: { ...process.env }, installGuards: false });
+  });
+
+  afterEach(() => {
+    disableSandboxForTest();
+    rmSync(ws, { recursive: true, force: true });
+  });
+
+  it('is refused outright in sandbox mode', () => {
+    const program = buildProgram();
+    const slicer = program.commands.find(c => c.name() === 'slicer')!;
+    const open = slicer.commands.find(c => c.name() === 'open')!;
+    (open as unknown as { processedArgs: unknown[] }).processedArgs = [join(ws, 'part.step')];
+
+    let err: unknown;
+    try {
+      guardCliCommand(open);
+    } catch (e) {
+      err = e;
+    }
+
+    expect(isSandboxError(err)).toBe(true);
+    expect((err as { code: string }).code).toBe('cli.sandbox-command-refused');
+    expect((err as { message: string }).message).toContain('slicer open');
   });
 });

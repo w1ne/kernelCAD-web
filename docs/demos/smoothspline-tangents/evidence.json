@@ -1,0 +1,359 @@
+{
+  "scope": "Local kernelCAD Node API: a drawer-pull backplate built from one smoothSpline quarter profile and its three mirror images, and one quarter with a stated end tangent. OCCT volume, bounding box and validity checks against closed-form values.",
+  "invocation": "node --import tsx docs/demos/smoothspline-tangents/capture-demo.mts",
+  "source": "docs/demos/smoothspline-tangents/pull-backplate.kcad.ts",
+  "sourceSha256": "fa530cb8c3ad4ccf2193e05e3632dcb9ed0be10c73b044fb8444c462419ea7a4",
+  "roundSource": "docs/demos/smoothspline-tangents/round-end.kcad.ts",
+  "roundSourceSha256": "fbc08fb3e52e85060533385ee2a08b04c2b23cbdaa5c6ef8eb3d0000e20ec713",
+  "implementationSha256": {
+    "src/shared/capture/smoothSplineTangents.ts": "0e47480386732a9ebc5f9d2e28fe16bbdaf8b842cc2d2d4735ceea7371747c8e",
+    "src/modeling/capture/smoothSplinePhases.ts": "b1186bc96d026c59e4f4ba1f7a6d34540f7e55e794c8381a7d61512235f755ba",
+    "src/modeling/capture/sketchReflect.ts": "ff8ab77b61dba95f2c293294c3d808c22a8cd0e14afe70f0d2da830b23fcf91b",
+    "src/modeling/capture/sketchTransform.ts": "96c4796463914f4457d7b99258c4c6b9708bf62b46ebc0260fd14ad150c45f5d",
+    "src/shared/capture/rotateSketchCommands.ts": "ba25765f2629e33092b80c5d65bb59e52c21c080fc5547969abb5fdce18feb64",
+    "src/kernel/backends/occt/sketchToDrawing.ts": "bdaca623b0d282681ea604ba9b5dd63194b163399c3544d9d82a402f72e14b11",
+    "src/kernel/backends/occt/pathNurbsLowerer.ts": "64448678ca328b4085aff6011809e0b5f5d439e897223d97191e03e2e0773210"
+  },
+  "expected": {
+    "basis": "closed form: the x·dy integral over the cubic Bézier poles of each smoothSpline (quarter-chord rule) plus the straight edges, from the dimensions in the source scripts",
+    "quarterAreaMm2": 454,
+    "quarterVolumeMm3": 1362,
+    "plateVolumeMm3": 5364.873458,
+    "plateSizeMm": [
+      92,
+      28,
+      3
+    ],
+    "roundQuarterVolumeMm3": 1328.88526
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "quarterNames": [
+      "source",
+      "reflect('x')",
+      "reflect('y')",
+      "reflect('x').reflect('y')"
+    ],
+    "quarterVolumesMm3": [
+      1362,
+      1362,
+      1362,
+      1362
+    ],
+    "quarterBoxesMm": [
+      [
+        [
+          0,
+          -14
+        ],
+        [
+          46,
+          0
+        ]
+      ],
+      [
+        [
+          0,
+          0
+        ],
+        [
+          46,
+          14
+        ]
+      ],
+      [
+        [
+          -46,
+          -14
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      [
+        [
+          -46,
+          0
+        ],
+        [
+          0,
+          14
+        ]
+      ]
+    ],
+    "quarterCommands": [
+      [
+        {
+          "kind": "moveTo",
+          "x": 0,
+          "y": -7
+        },
+        {
+          "kind": "lineTo",
+          "x": 4,
+          "y": -7
+        },
+        {
+          "kind": "smoothSpline",
+          "x": 22,
+          "y": -8.5,
+          "startTangent": null,
+          "endTangent": null
+        },
+        {
+          "kind": "smoothSpline",
+          "x": 40,
+          "y": -14,
+          "startTangent": null,
+          "endTangent": null
+        },
+        {
+          "kind": "lineTo",
+          "x": 46,
+          "y": -14
+        },
+        {
+          "kind": "lineTo",
+          "x": 46,
+          "y": 0
+        },
+        {
+          "kind": "lineTo",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      [
+        {
+          "kind": "moveTo",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "kind": "lineTo",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "kind": "smoothSpline",
+          "x": 22,
+          "y": 8.5,
+          "startTangent": null,
+          "endTangent": [
+            1,
+            0
+          ]
+        },
+        {
+          "kind": "smoothSpline",
+          "x": 40,
+          "y": 14,
+          "startTangent": null,
+          "endTangent": [
+            1,
+            0
+          ]
+        },
+        {
+          "kind": "lineTo",
+          "x": 46,
+          "y": 14
+        },
+        {
+          "kind": "lineTo",
+          "x": 46,
+          "y": 0
+        },
+        {
+          "kind": "lineTo",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      [
+        {
+          "kind": "moveTo",
+          "x": 0,
+          "y": -7
+        },
+        {
+          "kind": "lineTo",
+          "x": -4,
+          "y": -7
+        },
+        {
+          "kind": "smoothSpline",
+          "x": -22,
+          "y": -8.5,
+          "startTangent": null,
+          "endTangent": [
+            -1,
+            0
+          ]
+        },
+        {
+          "kind": "smoothSpline",
+          "x": -40,
+          "y": -14,
+          "startTangent": null,
+          "endTangent": [
+            -1,
+            0
+          ]
+        },
+        {
+          "kind": "lineTo",
+          "x": -46,
+          "y": -14
+        },
+        {
+          "kind": "lineTo",
+          "x": -46,
+          "y": 0
+        },
+        {
+          "kind": "lineTo",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      [
+        {
+          "kind": "moveTo",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "kind": "lineTo",
+          "x": -4,
+          "y": 7
+        },
+        {
+          "kind": "smoothSpline",
+          "x": -22,
+          "y": 8.5,
+          "startTangent": null,
+          "endTangent": [
+            -1,
+            0
+          ]
+        },
+        {
+          "kind": "smoothSpline",
+          "x": -40,
+          "y": 14,
+          "startTangent": null,
+          "endTangent": [
+            -1,
+            0
+          ]
+        },
+        {
+          "kind": "lineTo",
+          "x": -46,
+          "y": 14
+        },
+        {
+          "kind": "lineTo",
+          "x": -46,
+          "y": 0
+        },
+        {
+          "kind": "lineTo",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "kind": "close"
+        }
+      ]
+    ],
+    "plateVolumeMm3": 5364.873458,
+    "plateSizeMm": [
+      92,
+      28,
+      3
+    ],
+    "plateBrepValid": true,
+    "roundQuarterVolumeMm3": 1328.88526,
+    "roundQuarterBrepValid": true,
+    "roundCommands": [
+      {
+        "kind": "moveTo",
+        "x": 0,
+        "y": -7
+      },
+      {
+        "kind": "lineTo",
+        "x": 4,
+        "y": -7
+      },
+      {
+        "kind": "smoothSpline",
+        "x": 22,
+        "y": -8.5,
+        "startTangent": null,
+        "endTangent": null
+      },
+      {
+        "kind": "smoothSpline",
+        "x": 40,
+        "y": -14,
+        "startTangent": null,
+        "endTangent": null
+      },
+      {
+        "kind": "smoothSpline",
+        "x": 46,
+        "y": -8,
+        "startTangent": null,
+        "endTangent": [
+          0,
+          1
+        ]
+      },
+      {
+        "kind": "lineTo",
+        "x": 46,
+        "y": 0
+      },
+      {
+        "kind": "lineTo",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "kind": "close"
+      }
+    ]
+  },
+  "before": {
+    "commit": "1cea61618",
+    "plateVolumeMm3": 5340.489229,
+    "quarterVolumesMm3": [
+      1362,
+      1362,
+      1349.807885,
+      1349.807885
+    ],
+    "errorDiagnostics": 0
+  },
+  "limits": [
+    "The values under \"before\" are recorded from a run on the named commit; this script does not measure them again.",
+    "No other CAD system opened the model.",
+    "No backplate was made."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
