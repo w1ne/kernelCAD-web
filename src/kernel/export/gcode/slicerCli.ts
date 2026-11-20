@@ -245,7 +245,6 @@ export async function openFileInSlicer(
         settled = true;
         cleanup();
         child.off('spawn', onSpawn);
-        child.off('error', onError);
         resolve(value);
       };
 
@@ -255,6 +254,7 @@ export async function openFileInSlicer(
       };
 
       const onError = (e: Error) => {
+        if (settled) return;
         // Do not unref a child that never started; report the async spawn failure.
         done({
           ok: false,
@@ -266,7 +266,7 @@ export async function openFileInSlicer(
       };
 
       child.once('spawn', onSpawn);
-      child.once('error', onError);
+      child.on('error', onError);
 
       // Defensive bounded wait: in the pathological case where neither
       // `spawn` nor `error` fires, fail closed rather than hanging or
