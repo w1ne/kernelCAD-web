@@ -1134,6 +1134,15 @@ export class CaptureSession {
     return this.records;
   }
 
+  /** Remove the probe scene record `id` that an in-script query
+   *  (`kinematic.checkSweptCollision`, `suggestJointRanges`, ...) appended
+   *  with `solvedModel(poses, { validate: 'off' })` and has already lowered.
+   *  Left in the record list, the probe scene is meshed and exported as a
+   *  second copy of every part, fixed at the probe pose. Only a trailing
+   *  record is removed, so no later record can reference it; the id is not
+   *  reused. */
+  discardProbeRecord(id: FeatureId | undefined): void { if (id !== undefined && this.records.at(-1)?.id === id) this.records.pop(); }
+
   exportSession(): SerializedSession & { schemaVersion: 3; params: SerializedParamTable } {
     return {
       schemaVersion: 3,
