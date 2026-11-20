@@ -14,6 +14,7 @@
   and `cutout()` do not take a NURBS profile, so an elliptical hole is an
   extruded ellipse subtracted from the solid. Demo:
   `docs/demos/path-ellipse/`.
+
 - Example `examples/kinematic/four-bar-swept.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
   16 errors. Mated parts share a face on the y=0 pin plane, the stop is seated
@@ -500,6 +501,13 @@
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
+
+- Eight catalog scene assets now have connected supports, correct part axes or
+  counts, and open passage or port geometry. The heat exchanger exposes plate
+  count and plate height; the cylinder bank exposes bottle count; the cage
+  ladder exposes section height. Five additional catalog sources avoid
+  reserved host identifiers and unsupported collection construction without
+  changing their exported geometry or public parameter keys.
 
 # v0.17.4 — 2026-10-31
 
