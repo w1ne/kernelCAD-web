@@ -1,5 +1,13 @@
 # Unreleased
 
+- `Shape.surfaceArea()` (and the area in `getShapeInfo`, part stats and the
+  BOM) is now close to the true area of non-uniformly scaled curved solids.
+  The fixed-order OCCT area integration read their rational B-spline faces
+  0.05 to 0.39 % high: `sphere(1).scale([1, 1, 2])` measured 21.5618 mm²
+  instead of 21.4784 mm². Shapes with a face whose B-spline weights spread
+  by more than 1.25 now take OCCT's adaptive integration (1 to 11 ms). The
+  residual depends on the shape: 1e-9 on that spheroid, about 4e-6 on an
+  elliptic cylinder. Other shapes keep the fixed-order result.
 - `Shape.boundingBox()` and the MCP `sceneSummary.size` now report the true
   size of non-uniformly scaled curved solids. A non-uniform scale turns
   circles into rational B-spline faces, and the default OCCT box followed
