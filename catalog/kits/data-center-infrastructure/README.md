@@ -24,6 +24,10 @@ The [overhead-power-busway joint-cover review](../../../artifacts/catalog-demos/
 
 The [leak-detection floor puck review](../../../artifacts/catalog-demos/data-center-leak-detection-puck-material-review-20261120/README.md) moves the moulded floor sensor puck from the painted-steel control to the existing `polymer` control. Geometry, dimensions, and triangle count are unchanged.
 
+## Semantic material review — 20 November 2026 (distribution panelboard)
+
+The [panelboard breaker review](../../../artifacts/catalog-demos/data-center-panelboard-breaker-material-review-20261120/README.md) moves the four moulded-case breaker rows from the painted-steel control to the existing `polymer` control. Geometry, dimensions, and triangle count are unchanged.
+
 | id | asset | description | knobs | triangles |
 | --- | --- | --- | --- | ---: |
 | `air-cooled-chiller` | Air-cooled chiller | V-coil air-cooled chiller with six axial fans, copper headers, compressor and control enclosure, and flanged chilled-water nozzles. | Overall scale · Casing paint · Condenser coil fins · Fan guards and blades · Base frame · Chilled-water piping | 5,236 |
@@ -40,7 +44,7 @@ The [leak-detection floor puck review](../../../artifacts/catalog-demos/data-cen
 | `data-center-plate-heat-exchanger` | Data-center plate heat exchanger | Compact exchanger stack with tie bars, frame plates, and pipe flanges. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer | 304 |
 | `data-center-security-camera` | Data-center security camera | Compact fixed camera on a service mast with sunshield and mounting base. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Glass and display lenses | 168 |
 | `day-fuel-tank` | Generator day tank | Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, skid base steel. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Skid base steel | 200 |
-| `distribution-panelboard` | Distribution panelboard | Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer · Rubber and elastomer | 172 |
+| `distribution-panelboard` | Distribution panelboard | Painted steel panelboard enclosure with hinged door, four rows of moulded polymer breakers, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer · Rubber and elastomer | 172 |
 | `dry-type-transformer` | Dry-type transformer | Three cast-resin coils on a laminated core with copper links and busbars, HV post insulators, clamping channels, lifting lugs, and wheeled channel base. | Overall scale · Cast-resin coils · Laminated core steel · Clamp frame and base paint · Copper links and busbars · Insulators and spacers | 5,160 |
 | `emergency-power-off-station` | Emergency power-off station | Wall-mounted protected control station with a red mushroom actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer, actuator polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Engineering polymer · Actuator polymer | 136 |
 | `enclosed-it-rack` | Enclosed IT rack | Full-height rack cabinet with front door frame, side panels, rails, and leveling feet. Knobs: overall scale; painted steel, rubber and elastomer, engineering polymer. Presets: facilityStandard and highVisibility. | Overall scale · Painted steel · Rubber and elastomer · Engineering polymer | 400 |

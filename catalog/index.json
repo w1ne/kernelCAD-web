@@ -73838,7 +73838,7 @@
       "id": "distribution-panelboard",
       "kit": "data-center-infrastructure",
       "title": "Distribution panelboard",
-      "description": "Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+      "description": "Painted steel panelboard enclosure with hinged door, four rows of moulded polymer breakers, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -73858,7 +73858,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/distribution-panelboard.kcad.ts",
       "preview": "/assets/data-center-infrastructure-distribution-panelboard.png",
-      "sourceSha256": "9782409b729136b70401d515f9fda326ecfe45e0c610df06e44e9996af2c5c5b",
+      "sourceSha256": "7af2bb2401bf0a7e878c00b50114f37978ea8e13994d97d682959bde85c9ed56",
       "triangleBudget": 2200,
       "params": [
         {
@@ -73918,13 +73918,21 @@
           "parts": [
             "wall-enclosure",
             "door",
-            "interior-deadfront",
+            "interior-deadfront"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
             "breaker-row-0",
             "breaker-row-1",
             "breaker-row-2",
-            "breaker-row-3"
+            "breaker-row-3",
+            "door-latch"
           ],
-          "param": "steel"
+          "param": "polymer"
         },
         {
           "name": "rubber",
@@ -73933,14 +73941,6 @@
             "cable-entry"
           ],
           "param": "rubber"
-        },
-        {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "door-latch"
-          ],
-          "param": "polymer"
         }
       ]
     },
