@@ -128421,7 +128421,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
       "preview": "/assets/hydroponics-dutch-bucket-row.png",
-      "sourceSha256": "e9aeb5bebeaa297e765fb47e2c431036635062cb45fc15af3187552380d86871",
+      "sourceSha256": "b28d73667cd7359f704db79a9a93739c29bb13344231ec90d001fa83d33234e6",
       "triangleBudget": 5600,
       "params": [
         {
@@ -128471,18 +128471,21 @@
       ],
       "presets": {
         "tomato": {
+          "crop": "tomato",
           "bucket": "#2a2c2e",
           "plumbing": "#e6e7e1",
           "trellis": "#8f989c",
           "foliage": "#3f8436"
         },
         "sweetPepper": {
+          "crop": "pepper",
           "bucket": "#d9cfb4",
           "plumbing": "#e6e7e1",
           "trellis": "#8f989c",
           "foliage": "#2f7a30"
         },
         "cucumber": {
+          "crop": "cucumber",
           "bucket": "#2a2c2e",
           "plumbing": "#4a5a66",
           "trellis": "#c9a640",
@@ -128496,11 +128499,11 @@
         }
       },
       "stats": {
-        "triangles": 4712,
+        "triangles": 3304,
         "sizeM": [
           3,
           2.15,
-          0.414
+          0.412336
         ],
         "minUpM": 0,
         "materials": 1
