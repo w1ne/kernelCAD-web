@@ -1,5 +1,14 @@
 # Unreleased
 
+- `feaStudy` types now accept `param()` refs inside `fixed`, `loads[].faces`
+  and `loadsFrom.faces` face queries (`{ atZ: wall }`, `boundingBoxIn:
+  { xMax: wall.add(1) }`). The runtime already kept these refs symbolic and
+  resolved them before binding faces (`resolveStudyParams`), but the
+  `FaceQuery` type rejected them, so `examples/fea/shelf-bracket-fea.kcad.ts`
+  and `examples/fea/stress-graded-infill-bracket.kcad.ts` failed
+  `npm run typecheck:examples:all` with TS2322. A non-number, non-param
+  value (`{ atX: '0' }`) is still a type error.
+
 - `hole`, `holes` and `cutout` now keep the edge lineage of the body they
   cut, as `subtract` already did. Before, their result had no edge history,
   so a lineage edge query after them failed: on a 60 × 40 × 5 mm plate with
