@@ -11,6 +11,13 @@
   never wrote `entry-rim`, `floor-rim` or `wall-back-rim`; the skill docs no
   longer list them and show an edge query for a rim-only fillet instead.
 
+- The `upToFace` option of `hole`, `holes` and `cutout` now has the type of
+  every form the runtime accepts: a FaceRef, a face name, a label, a
+  `{ face }` selector, a FaceQuery such as `{ containsPoint: [x, y, z] }` or
+  a Query DSL value. Before, the type allowed only a FaceRef, so
+  `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
+  check with TS2353 although it runs. Runtime behaviour is unchanged.
+
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
