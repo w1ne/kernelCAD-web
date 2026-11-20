@@ -7,6 +7,15 @@
   short of the stop (40° to 130°). The sweep still runs past the limits and
   finds the first rocker-to-stop contact at crank 164°, equal to the closed
   form.
+- A `union()` member that carries no face lineage, such as a sketch extrude
+  or extruded text, now keeps its finish too. `union(plate, logo)` with a
+  navy plate and orange raised text rendered all navy in `kernelcad render`,
+  `render_preview` and GLB export, because the per-face finishes were read
+  from naming lineage that sketch extrudes do not write. Every boolean now
+  records which operand each result face came from, from the kernel's own
+  boolean history. `examples/gallery/raised-logo-extrusion.kcad.ts` is one
+  body again instead of two parts and a fastened mate (#1639).
+
 - Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
   now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
   it returned 16 errors. Mated latch parts share a face on the pin plane, the

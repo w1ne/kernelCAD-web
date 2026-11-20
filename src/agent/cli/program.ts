@@ -17,6 +17,7 @@ import { mcpCommand } from './commands/mcp';
 import { partsCommand } from './commands/parts';
 import { renderCommand } from './commands/render';
 import { skillCommand } from './commands/skill';
+import { slicerCommand } from './commands/slicer';
 import { statsCommand } from './commands/stats';
 import { telemetryCommand } from './commands/telemetry';
 import { validateCommand } from './commands/validate';
@@ -67,6 +68,7 @@ export function buildProgram(): Command {
   program.addCommand(reconstructCommand());
   program.addCommand(renderCommand());
   program.addCommand(skillCommand());
+  program.addCommand(slicerCommand());
   program.addCommand(statsCommand());
   program.addCommand(telemetryCommand());
   program.addCommand(validateCommand());
