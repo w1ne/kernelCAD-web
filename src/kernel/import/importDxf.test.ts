@@ -195,6 +195,95 @@ describe('importDxfText — entities', () => {
   });
 });
 
+describe('importDxfText — extrusion direction (OCS)', () => {
+  // ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the entity's
+  // Object Coordinate System. With extrusion direction (0, 0, -1) the
+  // arbitrary-axis algorithm gives OCS X = -WCS X, so the drawing is the
+  // mirror image of the raw numbers. CAD tools write such entities for
+  // mirrored and flipped-view geometry.
+  const NEG_Z: Array<[number, string | number]> = [[210, 0], [220, 0], [230, -1]];
+
+  it('mirrors an ARC with extrusion (0, 0, -1) into world X', () => {
+    // OCS centre (10, 0), radius 10, 0..90 deg -> WCS centre (-10, 0) from
+    // (-20, 0) to (-10, 10). The LINEs are WCS, so they close only on the
+    // mirrored arc.
+    const r = importDxfText(entities(
+      [0, 'ARC'], [10, 10], [20, 0], [40, 10], ...NEG_Z, [50, 0], [51, 90],
+      [0, 'LINE'], [10, -10], [20, 10], [11, -10], [21, 0],
+      [0, 'LINE'], [10, -10], [20, 0], [11, -20], [21, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-20, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-10, 9);
+  });
+
+  it('mirrors a CIRCLE centre with extrusion (0, 0, -1)', () => {
+    const r = importDxfText(entities([0, 'CIRCLE'], [10, 10], [20, 5], [40, 2], ...NEG_Z));
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    const ys = points(r.regions[0].commands).map(([, y]) => y);
+    expect(Math.min(...xs)).toBeCloseTo(-12, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-8, 9);
+    expect(Math.min(...ys)).toBeCloseTo(5, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(Math.PI * 4, 9);
+  });
+
+  it('mirrors LWPOLYLINE vertices and bulges with extrusion (0, 0, -1)', () => {
+    // The bulged edge bows outward in OCS. The mirror keeps it outward:
+    // a mirrored x without a negated bulge would cut the segment area out.
+    const r = importDxfText(entities(
+      [0, 'LWPOLYLINE'], [90, 4], [70, 1], ...NEG_Z,
+      [10, 0], [20, 0], [42, 0.5],
+      [10, 10], [20, 0],
+      [10, 10], [20, 10],
+      [10, 0], [20, 10],
+    ));
+    const theta = 4 * Math.atan(0.5);
+    const radius = 5 / Math.sin(theta / 2);
+    const segmentArea = (radius * radius / 2) * (theta - Math.sin(theta));
+    expect(r.regions[0].areaMm2).toBeCloseTo(100 + segmentArea, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-10, 9);
+    expect(Math.max(...xs)).toBeCloseTo(0, 9);
+    const arc = r.regions[0].commands.find(c => c.kind === 'bulgeArc');
+    expect(arc).toBeDefined();
+  });
+
+  it('mirrors pre-R13 POLYLINE vertices with the header extrusion (0, 0, -1)', () => {
+    const r = importDxfText(entities(
+      [0, 'POLYLINE'], [70, 1], ...NEG_Z,
+      [0, 'VERTEX'], [10, 1], [20, 0],
+      [0, 'VERTEX'], [10, 5], [20, 0],
+      [0, 'VERTEX'], [10, 5], [20, 3],
+      [0, 'VERTEX'], [10, 1], [20, 3],
+      [0, 'SEQEND'],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(12, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-5, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-1, 9);
+  });
+
+  it('keeps an explicit (0, 0, 1) extrusion unchanged', () => {
+    const r = importDxfText(entities([0, 'CIRCLE'], [10, 10], [20, 5], [40, 2], [210, 0], [220, 0], [230, 1]));
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(8, 9);
+  });
+
+  it('refuses an entity whose extrusion direction leaves the Z axis', () => {
+    let error: unknown;
+    try {
+      importDxfText(entities([0, 'CIRCLE'], [10, 0], [20, 0], [40, 2], [210, 1], [220, 0], [230, 0]));
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(DxfParseError);
+    expect((error as DxfParseError).reason).toBe('unsupported-entity');
+    expect((error as DxfParseError).message).toMatch(/^CIRCLE at line \d+: extrusion direction/);
+  });
+});
+
 describe('importDxfText — messy real-world input', () => {
   it('chains loose LINE entities in arbitrary order and direction', () => {
     // Deliberately shuffled, and two of the four are written backwards.

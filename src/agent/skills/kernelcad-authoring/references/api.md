@@ -209,6 +209,8 @@ lib.from3MF(path: string, opts?: {
 // Clamped, continuous, planar XY SPLINE entities retain their control points,
 // knots and rational weights. Nonplanar ellipses, periodic, fit-point-only,
 // discontinuous and nonplanar SPLINE, plus INSERT entities, fail with a named diagnostic.
+// ARC, CIRCLE, LWPOLYLINE and POLYLINE with extrusion direction (0, 0, -1) are
+// mirrored from their object coordinates into world X; other directions fail.
 const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
 const [outline, ...holes] = profiles;
 let plate = outline.extrude(3);
