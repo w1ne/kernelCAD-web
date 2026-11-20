@@ -56,6 +56,7 @@ export const CLI_SANDBOX_ARGS: Readonly<Record<string, CliSandboxSpec>> = {
   'render inspect': { args: { file: 'read', outDir: 'write' }, options: { baseUrl: 'url', environment: 'environment' } },
   'skill install': { args: { dir: 'write' } },
   'skill onefile': { args: { path: 'write' } },
+  'slicer open': { args: { file: 'read' } },
   validate: { args: { file: 'read' } },
 };
 
