@@ -46,6 +46,7 @@ import {
   surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
+import { edgeLineageAfterCut } from './edgeLineage';
 import type { FeatureKind } from '../../../shared/intent/types';
 
 export interface CutoutLowerResult {
@@ -508,8 +509,7 @@ export function lowerCutout(
     feature.id, feature.kind, featMeta?.name, featMeta?.ordinal,
   );
 
-  return {
-    backend: new OcctBackend(wrapped, undefined, newHistoryMap),
-    diagnostics,
-  };
+  const backend = new OcctBackend(wrapped, undefined, newHistoryMap);
+  backend.edgeHistoryMap = edgeLineageAfterCut(target, cutResult, backend, feature.id);
+  return { backend, diagnostics };
 }

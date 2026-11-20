@@ -1,5 +1,14 @@
 # Unreleased
 
+- `hole`, `holes` and `cutout` now keep the edge lineage of the body they
+  cut, as `subtract` already did. Before, their result had no edge history,
+  so a lineage edge query after them failed: on a 60 × 40 × 5 mm plate with
+  one Ø4 through-hole, `fillet(3, q.edge(q.createdBy(plate.id))
+  .and(q.withLabel('corner')))` raised `query.unsupported-entity-type`
+  instead of rounding the four corners. Kept and split edges keep their
+  birth labels (`corner`, `top-perimeter`, `bottom-perimeter`); the new rim
+  and seam edges are born on the hole or cutout.
+
 - A created face ref that names a slot its feature never wrote, such as
   `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
   with `feature.face-ref.not-resolvable`, and the hint lists the slots the
