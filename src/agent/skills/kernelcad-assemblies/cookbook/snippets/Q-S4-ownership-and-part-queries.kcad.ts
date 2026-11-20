@@ -14,8 +14,13 @@
 const arm = assembly('bracket-mount');
 arm.part('bracket', box(20, 20, 10, false, {
   faceLabels: { mount: 'top', sole: 'bottom' },
-}));
-arm.part('servo', cylinder(15, 8));
+}))
+   .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 10] }, normal: [0, 0, 1] });
+// The servo stands on the bracket's mount face (z = 10): the two parts
+// share that face and no volume, and the fastened mate holds the seat.
+arm.part('servo', cylinder(15, 8))
+   .connector('foot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] }, normal: [0, 0, 1] });
+arm.mate('servo-on-bracket', 'bracket.seat', 'servo.foot', 'fastened');
 
 // Build a Part query for "the bracket": narrows from "all parts" to one
 // by feature name. Part queries are themselves Queries — composable with
