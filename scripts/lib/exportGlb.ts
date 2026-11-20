@@ -13,7 +13,7 @@ import {
 import { GLTFExporter, mergeVertices } from 'three-stdlib';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { pbrFromMetadata, type OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
-import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
+import { loadScriptFeatures } from '../../src/composition/scriptLoader';
 import { meshFeaturesPerFeature, type FeatureMesh } from '../../src/modeling/capture/featureMeshing';
 import type { PBRMaterial } from '../../src/shared/intent/material';
 import type { MeshOptions } from '../../src/kernel/backends/occt/meshing';
