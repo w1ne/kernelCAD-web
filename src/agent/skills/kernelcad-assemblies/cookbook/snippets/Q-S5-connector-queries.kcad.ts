@@ -15,10 +15,14 @@
 // the `query({ mode: 'evaluate' })` MCP tool.
 
 const arm = assembly('attach');
+// `box(w, d, h)` has its corner at the origin, so the base's top face is
+// z = 10 and the bracket's bottom face is z = 0. Each connector is at the
+// centre of the face that seats: the fastened mate puts the bracket on top
+// of the base with a shared face and no shared volume.
 arm.part('base', box(20, 20, 10))
-   .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 5] }, normal: [0, 0, 1] });
+   .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 10] }, normal: [0, 0, 1] });
 arm.part('bracket', box(10, 10, 5))
-   .connector('flange', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -2.5] }, normal: [0, 0, 1] });
+   .connector('flange', { type: 'frame', origin: { kind: 'vec3', value: [5, 5, 0] }, normal: [0, 0, 1] });
 
 // The base side: "the connector on the 'base' part labelled 'mount'".
 const baseSide = q.connector()
