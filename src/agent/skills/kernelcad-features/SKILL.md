@@ -53,7 +53,9 @@ plate.hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thru' })
 selects every entry rim on `part`, from all its holes;
 `kc.q.edge(kc.q.withLabel('entry-rim'))` selects them on the whole body.
 Filters inside `q.edge(...)` select edges, so
-`q.edge(q.withFeatureName(id), q.withLabel('corner'))` works too. A later `fillet` or
+`q.edge(q.withFeatureName(id), q.withLabel('corner'))` works too, and so do
+`q.edge(q.closestTo([x, y, z]))` (nearest edge midpoint) and
+`q.edge(q.geometryType('CIRCLE'), q.closestTo(p))` (nearest circular edge). A later `fillet` or
 `chamfer` keeps the labels of the edges it leaves alone, so
 `.chamfer(0.5, { face: 'thru.entry-rim' }).chamfer(0.3, { face: 'thru.exit-rim' })`
 breaks the two rims by different amounts. `cutout`
