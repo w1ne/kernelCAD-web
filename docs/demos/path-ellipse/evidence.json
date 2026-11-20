@@ -1,0 +1,341 @@
+{
+  "scope": "Local kernelCAD Node API: a 2:1 semi-elliptical vessel head revolved from two ellipseArc segments, and a turned elliptical gasket from two closed ellipses. OCCT volume, bounding box and validity checks against closed-form values.",
+  "invocation": "node --import tsx docs/demos/path-ellipse/capture-demo.mts",
+  "headSource": "docs/demos/path-ellipse/elliptical-head.kcad.ts",
+  "headSourceSha256": "72377f1b0f15d64d0515270e4c1ffbdf9dff3c25bbb5bd98ad77f2962f2ff7fb",
+  "gasketSource": "docs/demos/path-ellipse/handhole-gasket.kcad.ts",
+  "gasketSourceSha256": "998c8e6cdcf11ef2a0707b81d0e20ac852c6e5bf3255c51d6ddfd1882b4cc73c",
+  "implementationSha256": {
+    "src/modeling/capture/pathEllipse.ts": "2c9a43e432e8b0ce89d737d82d11441f48021ea7f0758217494acc60b519013e",
+    "src/modeling/capture/sketch.ts": "bbe30295d41e228208cf04a3e43f6b43ff56fb4e3bd320beed901b60a1d6f055"
+  },
+  "dimensionsMm": {
+    "head": {
+      "outerRadius": 100,
+      "dishDepth": 50,
+      "wall": 4,
+      "flange": 20
+    },
+    "gasket": {
+      "outerRx": 95,
+      "outerRy": 70,
+      "land": 15,
+      "thickness": 3,
+      "turnDeg": 30
+    }
+  },
+  "expected": {
+    "basis": "closed form: half a spheroid is (2/3)·π·R²·h, a ring is π·(R² − r²)·s, an ellipse is π·rx·ry; the box of a turned ellipse has half extents sqrt(rx²cos²φ + ry²sin²φ) and sqrt(rx²sin²φ + ry²cos²φ)",
+    "headVolumeMm3": 208568.241877,
+    "headSizeMm": [
+      200,
+      200,
+      70
+    ],
+    "gasketVolumeMm3": 21205.750412,
+    "gasketSizeMm": [
+      178.815547,
+      154.029218,
+      3
+    ]
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "headVolumeMm3": 208568.241877,
+    "headSizeSortedMm": [
+      70,
+      199.975,
+      199.988
+    ],
+    "headBrepValid": true,
+    "headFaces": 5,
+    "headCommands": [
+      {
+        "kind": "moveTo",
+        "x": 96,
+        "y": 0
+      },
+      {
+        "kind": "lineTo",
+        "x": 100,
+        "y": 0
+      },
+      {
+        "kind": "lineTo",
+        "x": 100,
+        "y": 20
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            100,
+            20
+          ],
+          [
+            100,
+            70
+          ],
+          [
+            0,
+            70
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "lineTo",
+        "x": 0,
+        "y": 66
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            0,
+            66
+          ],
+          [
+            96,
+            66
+          ],
+          [
+            96,
+            20
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "close"
+      }
+    ],
+    "gasketVolumeMm3": 21205.744631,
+    "gasketSizeMm": [
+      178.814,
+      154.027,
+      3
+    ],
+    "gasketBrepValid": true,
+    "gasketFaces": 10,
+    "gasketOuterCommands": [
+      {
+        "kind": "moveTo",
+        "x": 82.272413,
+        "y": 47.5
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            82.272413,
+            47.5
+          ],
+          [
+            47.272413,
+            108.121778
+          ],
+          [
+            -35,
+            60.621778
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            -35,
+            60.621778
+          ],
+          [
+            -117.272413,
+            13.121778
+          ],
+          [
+            -82.272413,
+            -47.5
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            -82.272413,
+            -47.5
+          ],
+          [
+            -47.272413,
+            -108.121778
+          ],
+          [
+            35,
+            -60.621778
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            35,
+            -60.621778
+          ],
+          [
+            117.272413,
+            -13.121778
+          ],
+          [
+            82.272413,
+            47.5
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "close"
+      }
+    ],
+    "gasketInnerCommands": [
+      {
+        "kind": "moveTo",
+        "x": 69.282032,
+        "y": 40
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            69.282032,
+            40
+          ],
+          [
+            41.782032,
+            87.631397
+          ],
+          [
+            -27.5,
+            47.631397
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            -27.5,
+            47.631397
+          ],
+          [
+            -96.782032,
+            7.631397
+          ],
+          [
+            -69.282032,
+            -40
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            -69.282032,
+            -40
+          ],
+          [
+            -41.782032,
+            -87.631397
+          ],
+          [
+            27.5,
+            -47.631397
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "nurbsSegment",
+        "controlPoints": [
+          [
+            27.5,
+            -47.631397
+          ],
+          [
+            96.782032,
+            -7.631397
+          ],
+          [
+            69.282032,
+            40
+          ]
+        ],
+        "weights": [
+          1,
+          0.707106781187,
+          1
+        ]
+      },
+      {
+        "kind": "close"
+      }
+    ]
+  },
+  "before": {
+    "commit": "9149fe5df",
+    "result": "TypeError: path(...).ellipse is not a function; PathBuilder had no ellipse or elliptical-arc call"
+  },
+  "limits": [
+    "The value under \"before\" is recorded from a run on the named commit; this script does not measure it again.",
+    "Volumes are checked to 1 part in 1 000 000 of the closed form.",
+    "Bounding boxes come from the display mesh; their tolerance is the mesh chord error (0.05 mm allowed).",
+    "An ellipse is stored as rational quadratic B-spline segments, which are geometrically exact. It is not a STEP ELLIPSE entity.",
+    "No other CAD system opened the models.",
+    "No head or gasket was made."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

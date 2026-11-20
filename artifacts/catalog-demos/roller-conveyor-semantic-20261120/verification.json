@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-20",
+  "asset": "industrial-plant/roller-conveyor-line",
+  "scope": "CC0 scene geometry only; not a load-rated production conveyor",
+  "before": {
+    "roller_axis": "X, parallel to travel",
+    "roller_cross_conveyor_span_mm": 44,
+    "roller_length_along_travel_mm": 324,
+    "adjacent_roller_pitch_mm": 96.6,
+    "all_roller_center_y_mm": 0,
+    "native_triangles": 576,
+    "public_source_sha256": "df91b1dc1be2b892c78187077ba2d0d1afe2697baf24bc8089b1563d296f8275",
+    "negative_control": "Original public source fails new native test: cross-conveyor span 44 mm, expected 300 mm."
+  },
+  "after": {
+    "roller_axis": "Y, across travel",
+    "roller_count": 9,
+    "roller_cross_conveyor_span_mm": 300,
+    "roller_diameter_mm": 44,
+    "roller_pitch_mm": 96.6,
+    "open_gap_between_rollers_mm": 52.6,
+    "axle_count": 9,
+    "support_legs": 6,
+    "cross_ties": 3,
+    "end_stops": 2,
+    "support_bottom_mm": 18,
+    "foot_top_mm": 18,
+    "support_top_mm": 274,
+    "rail_bottom_mm": 274,
+    "native_triangles": 1020,
+    "bounds_m_glb_xyz": [
+      0.92,
+      0.356,
+      0.4012
+    ],
+    "parameter_scales_verified": [
+      0.65,
+      1,
+      1.35
+    ],
+    "tests_passed": 2
+  },
+  "commands": [
+    "NODE_OPTIONS=--max-old-space-size=2048 node_modules/.bin/vitest run tests/integration/catalog/rollerConveyorGeometry.test.ts --maxWorkers=1",
+    "node_modules/.bin/eslint tests/integration/catalog/rollerConveyorGeometry.test.ts"
+  ],
+  "preview": "Production GLB software renderer; exact committed PNG byte parity asserted by the regression test.",
+  "video": "6 seconds, static native-render comparison; no physics or hardware claim.",
+  "visual_review": "Before: one overlapping longitudinal top tube and floating deck/rails. After: nine separate transverse rollers with open gaps on a connected six-leg frame."
+}
