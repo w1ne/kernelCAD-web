@@ -1,5 +1,16 @@
 # Unreleased
 
+- `fillet` and `chamfer` now keep the birth labels of the edges they leave
+  alone. OCCT's `BRepFilletAPI_MakeChamfer`/`MakeFillet` report the untouched
+  edges of a rebuilt face as deleted although the result keeps them, so
+  after `box(60, 60, 6).chamfer(0.5, { face: 'bottom' })` the four
+  `top-perimeter` labels were gone and a later
+  `q.edge(q.createdBy(stock.id)).and(q.withLabel('top-perimeter'))` failed
+  with `query.empty`. The same drop hit hole rim labels: on a NEMA 17 plate,
+  `chamfer(0.5, entry rims).chamfer(0.3, exit rims)` failed; it now builds
+  to 18 847.615286 mm³, equal to the closed form. An input sub-shape that
+  the result still contains is now kept, whatever `IsDeleted()` reports.
+  Demo: `docs/demos/edge-labels-through-chamfer/`.
 - `verify({ check: 'clearance-range' })` (#1590) reports, for each mating
   pair, the actual vs the planned minimum clearance at rest and across the
   declared joint range, with `pass | fail | unknown` per row. Planned values
@@ -67,9 +78,7 @@
   chamfer ring; the chamfer cone spans z 19.5 to 20). Before, every rim selector failed
   with `feature.face-ref.not-resolvable`, so the v0.6.3 created-refs demo
   (`thruHole.entry-rim`) errored. `holes1.entry-rim` selects every entry rim
-  of a `holes()` call. Limits: `cutout` has no rim refs yet, and a later
-  `fillet` or `chamfer` drops the labels of edges it leaves alone (as it
-  already did for box edge labels), so break all rims in one edge feature.
+  of a `holes()` call. Limit: `cutout` has no rim refs yet.
   Demo: `docs/demos/hole-rim-refs/`.
 
 - A created face ref that names a slot its feature never wrote, such as
