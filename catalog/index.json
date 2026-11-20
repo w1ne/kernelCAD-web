@@ -76164,7 +76164,7 @@
       "id": "perforated-floor-tile",
       "kit": "data-center-infrastructure",
       "title": "Perforated floor tile",
-      "description": "Airflow floor panel with a dense low-relief grille and four support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Perforated raised-floor tile: a painted-steel airflow panel with low-relief grille bars and polymer edge trim, carried 150 mm above the slab on four steel pedestals. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76184,7 +76184,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/perforated-floor-tile.kcad.ts",
       "preview": "/assets/data-center-infrastructure-perforated-floor-tile.png",
-      "sourceSha256": "576d768991933adcffd5286eb93bbfb0ab50a50e8ff86b3bdf30cdfeca045fb4",
+      "sourceSha256": "364db77d8995303c2a06092ed162674bdb2ce482f52b0bff54d55b27acd7c09b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76205,14 +76205,14 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#c99b35",
+          "default": "#2f3438",
           "label": "Engineering polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "polymer": "#2f3438"
         },
         "highVisibility": {
           "steel": "#d99b22",
@@ -76220,10 +76220,10 @@
         }
       },
       "stats": {
-        "triangles": 340,
+        "triangles": 376,
         "sizeM": [
           0.6,
-          0.15,
+          0.193,
           0.6
         ],
         "minUpM": 0,
@@ -76231,22 +76231,14 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "tile-panel"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
-            "edge-frame",
             "pedestal-0",
             "pedestal-1",
             "pedestal-2",
             "pedestal-3",
+            "tile-panel",
             "air-slot-bar-0",
             "air-slot-bar-1",
             "air-slot-bar-2",
@@ -76258,6 +76250,17 @@
             "lift-ring"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#2f3438",
+          "parts": [
+            "edge-trim-front",
+            "edge-trim-rear",
+            "edge-trim-left",
+            "edge-trim-right"
+          ],
+          "param": "polymer"
         }
       ]
     },
