@@ -363,5 +363,7 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 8. `08-sweep-tolerance-clearance.kcad.ts` — swept clearance-gap param;
    the interference gate flips pass→fail past the closing threshold
 9. `09-four-bar-loop-swept.kcad.ts` — closed-loop four-bar driven by the
-   crank only; the first crank angle where the rocker hits a stop matches
-   the closed form
+   crank only, mated parts sharing a face on the pin plane and the mate
+   limits set to the crank travel short of the stop; a sweep run past the
+   limits gives the first crank angle where the rocker hits the stop, which
+   matches the closed form
