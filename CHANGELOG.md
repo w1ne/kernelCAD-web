@@ -1,5 +1,15 @@
 # Unreleased
 
+- `examples/assets/pine-tree.kcad.ts` now passes `evaluate_script` with
+  `ok: true`. The trunk was extruded to 30 % of the tree height, so it ran
+  450 mm (default 4.5 m tree) into the lowest foliage tier and gave one
+  `mechanism.interpenetration` error (39.9e6 mm³). The trunk now stops on
+  the base of the lowest tier; the visible tree is unchanged. Regression:
+  `tests/integration/examples/pineTreeExampleReal.test.ts` (defaults and
+  2, 4, 5 tiers). Not changed: the catalog copy
+  `catalog/kits/nature/pine-tree.kcad.ts` has the same overlap; fixing it
+  needs a catalog index, preview and asset-module demo refresh.
+
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported
