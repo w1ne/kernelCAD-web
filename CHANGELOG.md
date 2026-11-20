@@ -1,5 +1,14 @@
 # Unreleased
 
+- Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  12 `mechanism.orphan-part` errors because only the bolts and the two shaft
+  clusters had mates. The posts are fastened to the base, the rib to the
+  cover, each shaft turns in the base on a revolute mate, and each bolt is
+  fastened to the cover and to the base. Part geometry is unchanged. The
+  assembly sequence planner now reports four fastened clusters and 21 steps
+  for this example (before: two clusters, 19 steps);
+  `docs/demos/assembly-sequence-planner/` is recaptured.
 - `path().ellipse(cx, cy, rx, ry, { rotationDeg })` draws a closed ellipse and
   `path().ellipseArc(x, y, rx, ry, { rotationDeg, largeArc, clockwise })`
   draws an elliptical arc from the pen (SVG `A`, with the Y axis up). Before,
