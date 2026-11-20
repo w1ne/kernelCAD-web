@@ -6,6 +6,12 @@
   `evaluate_script` accepted (for example kinematic cookbook snippets 1 and
   4). The render loader used the modeling-only script API; it now uses the
   same composed API as `buildModel` and `evaluate_script`.
+- Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
+  now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
+  it returned 16 errors. Mated latch parts share a face on the pin plane, the
+  keeper rides a housing rail, and the mate limits are the latched-side travel
+  (handle -60° to -10°). The sweep still runs past the limits and reports the
+  over-center point as `kinematic.loop.branch-flip`.
 - `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
   `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
   profile and return a new sketch; the source is unchanged, so one profile

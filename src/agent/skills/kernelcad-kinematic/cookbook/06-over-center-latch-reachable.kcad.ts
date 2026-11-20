@@ -28,37 +28,44 @@ const keeperX = (t: number) => r * Math.cos(rad(t)) + Math.sqrt(l * l - (r * Mat
 const arm = assembly('cookbook-over-center-latch');
 const Y: [number, number, number] = [0, -1, 0]; // +angle turns +X toward +Z
 const pin = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: Y });
+const track = (z: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [0, 0, z] as [number, number, number] }, axis: [1, 0, 0] as [number, number, number] });
 
-// A pin along Y at (x, z), spanning y0..y1 in the gap between two layers.
-const pinY = (x: number, z: number, y0: number, y1: number) =>
-  cylinder(y1 - y0, 3).rotateX(-90).translate(x, y0, z);
-
+// Every joint frame lies on the y=0 pin plane. Mated parts occupy opposite
+// half-spaces (housing and link at +Y, handle and keeper at −Y), so each
+// pair shares a face at its joint and no volume.
+const RAIL = 10; // keeper track height above the keeper pin line
+// Housing: a post that carries the handle pivot, and a rail above the link
+// sweep that gives the keeper a bearing face over its travel.
 const housing = arm.part(
   'housing',
-  box(160, 20, 6, true).translate(70, 0, -30)
-    .union(box(8, 6, 27, true).translate(0, 0, -13.5))
-    .union(pinY(0, 0, 3, 6.8)),
+  box(16, 6, 27, true).translate(0, 3, 9.5)
+    .union(box(158, 6, 6, true).translate(71, 3, e + RAIL)),
 );
-const handleBar = arm.part('handle', box(r, 6, 6, true).translate(r / 2, 10, 0).union(pinY(r, 0, 13, 16.8)));
-const link = arm.part('link', box(l, 6, 6, true).translate(l / 2, 20, 0).union(pinY(l, 0, 23, 26.8)));
-const keeper = arm.part('keeper', box(20, 6, 12, true).translate(0, 30, 0));
+const handleBar = arm.part('handle', box(r, 6, 6, true).translate(r / 2, -3, 0));
+const link = arm.part('link', box(l, 6, 6, true).translate(l / 2, 3, 0));
+// The keeper bridges its pin on the link and the housing rail.
+const keeper = arm.part('keeper', box(16, 6, 17, true).translate(0, -3, 4.5));
 
 housing.connector('pivot', pin(0));
-housing.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, e] }, axis: [1, 0, 0] });
+housing.connector('track', track(e + RAIL));
 handleBar.connector('pivot', pin(0));
 handleBar.connector('tip', pin(r));
 link.connector('base', pin(0));
 link.connector('tip', pin(l));
-keeper.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+keeper.connector('track', track(RAIL));
 keeper.connector('pin', pin(0));
 
-// As-built (latched) pose: handle at −20°, link aimed at the keeper.
-const B0 = [r * Math.cos(rad(handle0)), r * Math.sin(rad(handle0))];
-const linkAbs0 = deg(Math.atan2(e - B0[1], keeperX(handle0) - B0[0]));
-arm.mate('handle', 'housing.pivot', 'handle.pivot', 'revolute', { pose: handle0, limitsDeg: [-60, 130] });
-arm.mate('slide', 'housing.track', 'keeper.track', 'prismatic', { pose: keeperX(handle0), limitsMm: [60, 140] });
-arm.mate('link', 'handle.tip', 'link.base', 'revolute', { pose: linkAbs0 - handle0, limitsDeg: [-180, 180] });
-arm.mate('latch', 'link.tip', 'keeper.pin', 'revolute', { limitsDeg: [-180, 180] });
+// As-built (latched) pose: handle at −20°, link aimed at the keeper. The
+// mate limits are the latched-side travel: every loop joint closes at both
+// ends of it. Sweeps may run past the limits (step 2 does).
+const handleRange: [number, number] = [-60, -10];
+const linkAbs = (t: number) => deg(Math.asin((e - r * Math.sin(rad(t))) / l)); // link angle from +X
+const linkAbs0 = linkAbs(handle0);
+const B0 = [r * Math.cos(rad(handle0)), r * Math.sin(rad(handle0))]; // handle tip, latched
+arm.mate('handle', 'housing.pivot', 'handle.pivot', 'revolute', { pose: handle0, limitsDeg: handleRange });
+arm.mate('slide', 'housing.track', 'keeper.track', 'prismatic', { pose: keeperX(handle0), limitsMm: [keeperX(handleRange[0]), keeperX(handleRange[1])] });
+arm.mate('link', 'handle.tip', 'link.base', 'revolute', { pose: linkAbs0 - handle0, limitsDeg: [linkAbs(handleRange[1]) - handleRange[1], linkAbs(handleRange[0]) - handleRange[0]] });
+arm.mate('latch', 'link.tip', 'keeper.pin', 'revolute', { pose: -linkAbs0, limitsDeg: [-linkAbs(handleRange[0]), -linkAbs(handleRange[1])] });
 
 // 1. Reach: draw the keeper in to where handle = −45° puts it (on the
 //    latched side, so the IK does not have to cross over center).
