@@ -8,6 +8,12 @@
   `contact-unreachable`. In the regression rig the held contact moved from
   [-2, 0, 0] to [10, 0, 0] mm and the 10.2 mm false miss is now 0 mm.
 
+- `kernelcad render`, `kernelcad render inspect` and the `render_preview`
+  explode path now accept a script that calls `kinematic.*`; before, they
+  failed with `ReferenceError: kinematic is not defined` on a script that
+  `evaluate_script` accepted (for example kinematic cookbook snippets 1 and
+  4). The render loader used the modeling-only script API; it now uses the
+  same composed API as `buildModel` and `evaluate_script`.
 - `Shape.cutout(profile, opts)` now takes a profile with a `spline`,
   `ellipse`, `ellipseArc`, `hermiteG2` or `nurbsSegment` segment.
   Before, every such cutout failed with `feature.kernel-failed` (`unsupported

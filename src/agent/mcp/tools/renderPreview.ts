@@ -50,7 +50,7 @@ import {
 import { mechanismErrors } from '../../cli/lib/mechanismBanner';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
-import { loadScriptFeatures } from '../../../modeling/runtime/scriptLoader';
+import { loadScriptFeatures } from '../../../composition/scriptLoader';
 import {
   PUBLISH_BACKGROUND_HINT,
   PUBLISH_PRESET,
