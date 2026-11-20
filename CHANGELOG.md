@@ -11,6 +11,21 @@
   `[0, 19]` pass at rest but fail at `slide:max` with 1.000 mm; no limits
   give `unknown` for the range, not pass.
 
+- `Shape.color()` with a string that is not a role token or a `#rrggbb` hex
+  (for example `'orange'` or `'steel'`) now raises a `feature.color.unresolved`
+  warning. Before, the value was stored with no diagnostic; 3MF, PLY, USD and
+  the demo player used the default grey, STEP wrote no colour, and GLB passed
+  the raw string through. The warning gives
+  the hex for a CSS colour name (`'orange'` -> `'#ffa500'`) or points to
+  `.finish('steel')` for a material name. `evaluate_script` and the CLI
+  evaluate now return the soft warnings a script raises while it runs as
+  `warn` diagnostics; before, they were dropped, so the existing
+  `feature.material.value-clamped` warning was not visible either.
+  `examples/fastener-installation/l-bracket-mount.kcad.ts` now uses
+  `.finish('steel')` and `'#ffa500'`, and the `.color()` hint example uses
+  `'#ff0000'` instead of `'red'`. Three cookbook snippets, the mechanism
+  smoke script and the robot-arm eval solution used `.color('actuator')`,
+  which is not a role token and rendered grey; they now use `'servo'`.
 - `Shape.fillet` / `Shape.chamfer` (and every other `EdgeSelector` slot)
   now type `{ face: <FaceQuery> }` and `{ face: kc.q.face(...) }`; the
   runtime already selected every edge of the matched face, but the public
@@ -35,6 +50,18 @@
   'kinematic'`, although the runtime injects it. Full-tree run
   (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
   (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
+- `hole` and `holes` now name the rim edges they create: `entry-rim`,
+  `exit-rim` (through) and `floor-rim` (blind). `chamfer(0.5, { face:
+  'thru.entry-rim' })` on a Ø6 through hole in a 100 × 60 × 20 block breaks
+  only the top edge (the 119 434.5 mm³ drilled block loses the 2.487 mm³
+  chamfer ring; the chamfer cone spans z 19.5 to 20). Before, every rim selector failed
+  with `feature.face-ref.not-resolvable`, so the v0.6.3 created-refs demo
+  (`thruHole.entry-rim`) errored. `holes1.entry-rim` selects every entry rim
+  of a `holes()` call. Limits: `cutout` has no rim refs yet, and a later
+  `fillet` or `chamfer` drops the labels of edges it leaves alone (as it
+  already did for box edge labels), so break all rims in one edge feature.
+  Demo: `docs/demos/hole-rim-refs/`.
+
 - A created face ref that names a slot its feature never wrote, such as
   `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
   with `feature.face-ref.not-resolvable`, and the hint lists the slots the

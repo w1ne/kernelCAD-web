@@ -1,0 +1,50 @@
+{
+  "scope": "Local kernelCAD Node API: a NEMA 17 motor mount plate with a pilot bore and four clearance holes, the entry rims chamfered through the rim edge refs that hole() and holes() now write. OCCT volume and validity against a closed form; chamfer cone positions.",
+  "invocation": "node --import tsx docs/demos/hole-rim-refs/capture-demo.mts",
+  "source": "docs/demos/hole-rim-refs/mount-plate.kcad.ts",
+  "sourceSha256": "b3b565f7da5dfb53567f069ffb3e559d19c414a0ec7e78d5a4905f14fbd86189",
+  "implementationSha256": {
+    "src/kernel/backends/occt/holeRims.ts": "ccd11a1b4edc2ef4ebaf123ec3a4521b09f278a90df33223863886fe3b08acd7",
+    "src/kernel/backends/occt/holeLowerer.ts": "28e9234d59a592dd39f06bac9e541d06b6397c5fac91bfda4c165749159916f8",
+    "src/kernel/backends/occt/edgeSelection.ts": "249f91c48218c2f49ab93526eca8ca2b6910cb8ba4f4332956ffa5f5baad197c"
+  },
+  "dimensionsMm": {
+    "side": 60,
+    "thickness": 6,
+    "pilotDiameter": 22.5,
+    "screwDiameter": 3.4,
+    "boltSquare": 31,
+    "chamfer": 0.5
+  },
+  "expected": {
+    "basis": "plate − bores − one 45° chamfer ring per entry rim, ring volume 2π(r + c/3)·c²/2",
+    "volumeMm3": 18981.621277,
+    "chamferCones": 5
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "brepValid": true,
+    "volumeMm3": 18981.621277,
+    "chamferConeCentreZ": [
+      5.7518,
+      5.7607,
+      5.7607,
+      5.7607,
+      5.7607
+    ],
+    "rimLabelsAfterChamfer": {}
+  },
+  "before": {
+    "commit": "eb2c992f2",
+    "result": "query.empty: Query DSL edge ref resolved to zero edges on the input shape. (`chamfer(0.5, { face: 'pilot.entry-rim' })` failed with feature.face-ref.not-resolvable)"
+  },
+  "limits": [
+    "The value under \"before\" is recorded from a run on the named commit; this script does not measure it again.",
+    "A later fillet or chamfer does not keep the labels of edges it leaves alone (also true of box edge labels), so all entry rims are chamfered in one feature.",
+    "cutout() writes no rim refs.",
+    "No other CAD system opened the model, and no plate was made."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
