@@ -1,5 +1,13 @@
 # Unreleased
 
+- Filters written inside `q.edge(...)` now select edges. A bare
+  `withLabel`, `withFeatureName` or `createdBy` filter defaulted to faces,
+  and the edge narrowing then dropped every face, so
+  `box(60, 60, 6).chamfer(0.5, q.edge(q.withLabel('top-perimeter')))` failed
+  with no edge to chamfer. It now chamfers the four top edges and builds to
+  21 570.166667 mm³, equal to the closed form. `withFeatureName` also reads
+  the owners of edges. Spatial and geometry filters inside `q.edge(...)`
+  still read faces.
 - `solvedModel({}, { posesGate: 'envelope', clearances })` (#1590) now
   checks each declared per-pair minimum clearance at every envelope sample,
   not only at rest. A pair that goes under its `minMm` inside the joint
