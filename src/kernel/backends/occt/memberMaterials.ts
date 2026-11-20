@@ -10,11 +10,14 @@
 // exporters walked the primary lineage (the base operand's finish painted the
 // whole body). A dark servo case unioned with a metal horn lost the horn.
 //
-// The faces already know where they came from: every boolean writes face
-// lineage (`FaceLineage.descendsFrom`, earliest record first) into the
-// result's `historyMap`. This module reads it. For each face of a lowered
-// shape it walks that chain from the newest record back to the oldest and
-// takes the first record that
+// Where each face came from: every boolean records, from the OCCT boolean
+// history, which operand each result face came from (`memberOrigin`, oldest
+// record first). That works for any operand, including a sketch extrude or
+// extruded text that carries no naming lineage. Faces without an origin
+// (after a later fillet, say) fall back to the naming lineage
+// (`FaceLineage.descendsFrom`) in `historyMap`. For each face this module
+// walks that chain from the newest record back to the oldest and takes the
+// first record that
 //   1. carries its own appearance (`metadata.material`, else `metadata.color`),
 //   2. is MATERIAL-SIDE of the source record: reachable through union
 //      operands and primary inputs, never through the cutter of a subtract /
@@ -40,6 +43,7 @@ import { pbrFromColor } from '../../../shared/render/materialRoles';
 import { resolveColor } from '../../../shared/render/palette';
 import { OcctBackend } from './occtBackend';
 import { faceHashOf } from './createdRefs';
+import type { FaceLineage } from '../../naming/evolutionRecord';
 
 /** Face index (replicad `shape.faces` order, the order `meshShape` assigns
  *  `faceId` in) -> the appearance of the member that face came from. */
@@ -132,8 +136,9 @@ export function memberMaterialsByFace(
   recordByIdIn?: ReadonlyMap<FeatureId, FeatureRecord>,
 ): MaterialByFaceIndex | undefined {
   if (source === undefined || !(shape instanceof OcctBackend)) return undefined;
-  const history = shape.historyMap;
-  if (history === undefined || history.size === 0) return undefined;
+  const history = shape.historyMap ?? new Map();
+  const origin = shape.memberOrigin;
+  if (history.size === 0 && origin === undefined) return undefined;
   const recordById = recordByIdIn ?? new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
   const side = materialSideRecords(source, recordById);
   const defaultId = primaryAppearanceSource(source, recordById);
@@ -157,10 +162,9 @@ export function memberMaterialsByFace(
   // material-side record with an appearance is in the face's lineage (a
   // blend face born in a fillet, the wall a cutter left behind).
   const resolved: Array<PBRMaterial | typeof DEFAULT | undefined> = faces.map((face) => {
-    const lineage = history.get(hashOf(face));
-    if (lineage === undefined) return undefined;
-    const chain = lineage.descendsFrom
-      ?? [lineage.rootFeatureId, ...(lineage.featureId !== undefined ? [lineage.featureId] : [])];
+    const hash = hashOf(face);
+    const chain = origin?.get(hash) ?? lineageChain(history.get(hash));
+    if (chain === undefined) return undefined;
     for (let i = chain.length - 1; i >= 0; i--) {
       const id = chain[i]!;
       if (!side.has(id)) continue;
@@ -183,6 +187,13 @@ export function memberMaterialsByFace(
 }
 
 const DEFAULT = Symbol('body-default');
+
+/** Records a face descends from, oldest first, from its naming lineage. */
+function lineageChain(lineage: FaceLineage | undefined): readonly string[] | undefined {
+  if (lineage === undefined) return undefined;
+  return lineage.descendsFrom
+    ?? [lineage.rootFeatureId, ...(lineage.featureId !== undefined ? [lineage.featureId] : [])];
+}
 
 function hashOf(shape: unknown): string {
   try {
