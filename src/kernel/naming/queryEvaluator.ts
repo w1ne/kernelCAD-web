@@ -36,6 +36,7 @@ import {
 } from './topoRef';
 import type { EdgeLineage, FaceLineage, FaceHash } from './evolutionRecord';
 import { descendsFromFeature } from './operationLineage';
+import { scopeFiltersToKind } from './queryKindScope';
 import {
   throwQueryEmpty,
   throwQueryOverDetermined,
@@ -308,6 +309,7 @@ function filterEntityKind(
   if (kind !== 'face' && kind !== 'edge') {
     throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
   }
+  if (kind === 'edge') subAst = scopeFiltersToKind(subAst, kind);
   if (subAst.op === 'createdBy' || subAst.op === 'newSince' || subAst.op === 'derivedFrom') {
     return collectHistory(subAst.op, subAst.id, kind, scene, originatingQuery);
   }
@@ -387,7 +389,7 @@ function labelFilterCandidates(
 /** The owner names a face answers to: its agent-chosen feature name, the id
  *  of the feature that created/labelled it, and the owner its printed
  *  `@kc[<owner>/face/<label>]` ref carries. */
-function ownersOf(lineage: FaceLineage): string[] {
+function ownersOf(lineage: FaceLineage | EdgeLineage): string[] {
   const out = [lineage.featureName ?? lineage.rootFeatureId];
   if (lineage.featureName !== undefined) out.push(lineage.featureName);
   if (lineage.featureId !== undefined) out.push(lineage.featureId);
@@ -397,6 +399,9 @@ function ownersOf(lineage: FaceLineage): string[] {
 function collectKnownOwners(scene: QueryScene): Set<string> {
   const out = new Set<string>();
   for (const [, lineage] of scene.backend.historyMap ?? []) {
+    for (const o of ownersOf(lineage)) out.add(o);
+  }
+  for (const [, lineage] of scene.backend.edgeHistoryMap ?? []) {
     for (const o of ownersOf(lineage)) out.add(o);
   }
   return out;
@@ -430,6 +435,10 @@ function entityHasLabel(e: ResolvedEntity, label: string, scene: QueryScene): bo
 }
 
 function entityHasFeatureName(e: ResolvedEntity, name: string, scene: QueryScene): boolean {
+  if (e.kind === 'edge') {
+    const edge = scene.backend.edgeHistoryMap?.get(e.handle);
+    return edge !== undefined && ownersOf(edge).includes(name);
+  }
   if (e.kind !== 'face') return false;
   const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
   return lineage !== undefined && ownersOf(lineage).includes(name);
