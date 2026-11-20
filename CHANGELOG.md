@@ -7,6 +7,13 @@
   (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
   (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
 
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts` now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
+  one `mechanism.interpenetration` error (6914.65 mm3) because both plates
+  were placed at the origin with no mate. The motor plate is fastened on the
+  bracket top face, and the seat follows `plateT`. The parameters and the
+  `hole-pattern` requirement are unchanged, so `kernelcad collab check`
+  results are unchanged.
 - `examples/kinematic/joint-range-suggestion.kcad.ts` and
   `joint-range-suggestion-motion.kcad.ts` now pass `evaluate_script` with
   `ok: true` and `mechanism: real`; before, each returned
