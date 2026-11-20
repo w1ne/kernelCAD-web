@@ -1,5 +1,15 @@
 # Unreleased
 
+- `Shape.boundingBox()` and the MCP `sceneSummary.size` now report the true
+  size of non-uniformly scaled curved solids. A non-uniform scale turns
+  circles into rational B-spline faces, and the default OCCT box followed
+  their control hull: `cylinder(1, 1).scale([2, 1, 1])` read 6 x 3.46 x 1 mm
+  instead of 4 x 2 x 1 mm, and `torus(10, 2).scale([1, 1, 2])` read
+  36 x 41.6 x 8 mm instead of 24 x 24 x 8 mm. When a face's B-spline
+  weights spread by more than 1.25, the box now comes from OCCT's exact,
+  tolerance-inclusive bounds (1 to 35 ms on these shapes). Threaded rods
+  keep the hull box (10 to 22 % large); the exact box costs 0.45 to 1.1 s
+  there.
 - Spatial and geometry filters inside `q.face(...)` now select faces on
   plain primitives. Face lineage on `box(...)` and `cylinder(...)` (and most
   faces derived from them) has no geometry snapshot and no surface type, so
