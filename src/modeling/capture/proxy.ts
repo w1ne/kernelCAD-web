@@ -20,7 +20,7 @@ import { captureBooleanSplit } from './booleanSplitCapture';
 import type { Scene } from '../validation/scene';
 import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
-import type { Query, EdgeMarker } from '../../kernel/naming/query';
+import type { Query, EdgeMarker, FaceMarker } from '../../kernel/naming/query';
 import {
   assertCutoutOptionKeys, validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
@@ -54,7 +54,9 @@ export type EdgeSelector =
   | EdgeQuery
   | EdgeSegment
   | EdgeSegment[]
-  | { face: CanonicalFace | string }
+  // Every edge of one face: a canonical name / label, a FaceQuery
+  // ({ face: { atZ: 0 } }) or a Query DSL face (kc.q.face(...)).
+  | { face: FaceQuery | CanonicalFace | string | Query<FaceMarker> | Query<unknown> }
   // A canonical face name / face label (all edges of that face), an
   // `@kc[<feature>/edge/e<N>]` / `@kc[<feature>/face/<name>]` ref string as
   // printed by inspect, or an `@kcq[...]` Query DSL string.
