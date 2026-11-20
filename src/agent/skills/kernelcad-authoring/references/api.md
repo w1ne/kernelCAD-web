@@ -598,7 +598,7 @@ return arm.model();
 
 ### Sketch methods
 
-A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
+A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`, `translate`, `rotate`, `scale`, `offset` and the 2D booleans).
 
 ```typescript
 // Extrude closed sketch normal to its plane by `depth` (mm; number or ParamRef).
@@ -677,6 +677,20 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // symbolic: ParamRef coords (and a ParamRef offset) reflect to ParamRef
 // expressions, so the reflected sketch tracks param edits.
 .reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: Editable<number> }): Sketch
+
+// Move, turn or uniformly resize this sketch in its own plane, returning a new
+// Sketch. Synchronous (no await). The source is unchanged, so one profile can
+// be placed several times. Every loop is transformed, holes included, and arcs
+// stay exact arcs. Calls chain in order: .rotate(90).translate(20, 0) turns
+// about the origin, then moves. rotate is counter-clockwise; center defaults
+// to the sketch origin [0, 0]. dx, dy, factor, center and ParamRef coordinates
+// stay symbolic. angleDeg must be a plain number (parameter expressions have
+// no sin/cos). factor must be > 0. rotate refuses a profile with a smoothSpline
+// segment (its free end tangent is fixed to +X). A sketch.text sketch is
+// refused: use its position / rotation / size options.
+.translate(dx: Editable<number>, dy: Editable<number>): Sketch
+.rotate(angleDeg: number, center?: [Editable<number>, Editable<number>]): Sketch
+.scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>]): Sketch
 
 // Parallel curve of this closed profile, `distance` mm away. ASYNC: await it.
 // The profile is the region inside the first loop and outside the hole loops.
