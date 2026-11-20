@@ -112,7 +112,9 @@ async function hueCounts(png: string): Promise<{ orange: number; navy: number }>
 }
 
 describe.runIf(canRender)('live render: one body, two finishes', () => {
-  it('default and publish looks both show orange letters on a navy plate', { timeout: 600_000 }, async () => {
+  // One retry: under heavy machine load the headless player has returned an
+  // empty first frame (seen for the publish look on develop too).
+  it('default and publish looks both show orange letters on a navy plate', { timeout: 600_000, retry: 1 }, async () => {
     const file = await scriptFile('live', SINGLE);
     for (const preset of ['default', 'publish']) {
       const out = join(dir, `live-${preset}.png`);
