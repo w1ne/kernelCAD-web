@@ -1,5 +1,12 @@
 # Unreleased
 
+- The `upToFace` option of `hole`, `holes` and `cutout` now has the type of
+  every form the runtime accepts: a FaceRef, a face name, a label, a
+  `{ face }` selector, a FaceQuery such as `{ containsPoint: [x, y, z] }` or
+  a Query DSL value. Before, the type allowed only a FaceRef, so
+  `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
+  check with TS2353 although it runs. Runtime behaviour is unchanged.
+
 - Example `examples/collab/bracket-and-motor-plate.kcad.ts` now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it returned
   one `mechanism.interpenetration` error (6914.65 mm3) because both plates
