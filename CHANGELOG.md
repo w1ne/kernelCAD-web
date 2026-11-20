@@ -9,6 +9,12 @@
   birth labels (`corner`, `top-perimeter`, `bottom-perimeter`); the new rim
   and seam edges are born on the hole or cutout.
 
+- `scripts/typecheckExamples.ts` (`npm run typecheck:examples`) now declares
+  `kinematic` and types `kc` as the composed `ScriptApi`; before, every
+  script that called `kinematic.*` failed with `TS2304 Cannot find name
+  'kinematic'`, although the runtime injects it. Full-tree run
+  (`typecheck:examples:all`): 369 errors in 42 files before, 334 in 32 after
+  (21 `TS2304` and 14 dependent `TS7006` removed, no new errors).
 - A created face ref that names a slot its feature never wrote, such as
   `fillet(r, { face: 'pocket.nosuch' })` or `'pilot.entry-rim'`, now fails
   with `feature.face-ref.not-resolvable`, and the hint lists the slots the
