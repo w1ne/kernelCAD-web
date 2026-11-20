@@ -1,5 +1,12 @@
 # Unreleased
 
+- Kinematic skill cookbook snippet 9 (`09-four-bar-loop-swept.kcad.ts`) now
+  passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
+  returned 15 errors. Mated four-bar parts share a face on the pin plane, the
+  stop is seated on the ground bar, and the mate limits are the crank travel
+  short of the stop (40° to 130°). The sweep still runs past the limits and
+  finds the first rocker-to-stop contact at crank 164°, equal to the closed
+  form.
 - Kinematic skill cookbook snippet 6 (`06-over-center-latch-reachable.kcad.ts`)
   now passes `evaluate_script` with `ok: true` and `mechanism: real`; before,
   it returned 16 errors. Mated latch parts share a face on the pin plane, the
