@@ -61,3 +61,11 @@ export function entityVector(body: readonly Pair[], entity: string, codes: reado
     return pair ? num(pair, entity, code) : defaults[index];
   });
 }
+
+/** One `0/<TYPE>` entity and the pairs that follow it. */
+export interface EntityBlock {
+  type: string;
+  /** Pairs AFTER the `0/<TYPE>` pair, up to the next `0`. */
+  body: Pair[];
+  line: number;
+}

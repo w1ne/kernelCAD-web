@@ -136,8 +136,11 @@ export interface PartsLib {
    * islands are not flattened.
    * Full and partial planar ellipses and supported splines are exact rational
    * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous
-   * and nonplanar splines, plus INSERT, are refused with an entity and line
-   * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
+   * and nonplanar splines are refused with an entity and line diagnostic.
+   * INSERT block references (nested, and MINSERT grids) are expanded with
+   * their base point, insertion point, rotation and scale; external-reference
+   * blocks and arcs under a non-uniform block scale are refused.
+   * `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**

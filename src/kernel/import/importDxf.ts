@@ -23,6 +23,8 @@
 //   SPLINE      planar, clamped, continuous, non-periodic control-point B-splines, kept
 //               as exact rational/non-rational NURBS sketch commands
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
+//   INSERT      block references, including nested blocks and MINSERT grids,
+//               placed by an exact affine map (dxfInsert.ts)
 //
 // ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the Object
 // Coordinate System of their extrusion direction: -Z is mirrored into world
@@ -35,8 +37,9 @@
 //
 // WHAT WE REFUSE, AND WHY IT IS A REFUSAL
 // ---------------------------------------
-// Non-XY ELLIPSE, INSERT (block reference), 3DFACE, SOLID and anything
-// unrecognised are refused: each carries profile geometry, so skipping it
+// Non-XY ELLIPSE, external-reference blocks, arcs under a non-uniform block
+// scale, 3DFACE, SOLID and anything unrecognised are refused: each carries
+// profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. HATCH is
 // accepted only with one planar closed polyline path; multi-path hatches are
 // refused because this importer does not preserve hole/island relationships.
@@ -55,7 +58,8 @@ import {
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
 import { mirrorSegments, ocsSign } from './dxfOcs';
-import { DxfParseError, entityVector, get, num, require, type Pair } from './dxfPairs';
+import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
+import { DxfParseError, entityVector, get, num, require, type EntityBlock, type Pair } from './dxfPairs';
 
 export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
@@ -175,29 +179,17 @@ function resolveScale(
   return { scale: 1, source: 'assumed mm ($INSUNITS absent or 0/Unitless)' };
 }
 
-interface EntityBlock {
-  type: string;
-  /** Pairs AFTER the `0/<TYPE>` pair, up to the next `0`. */
-  body: Pair[];
-  line: number;
-}
-
-/** Slice the ENTITIES section into `0`-delimited entity blocks. */
-function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
+/** Slice a named section into `0`-delimited entity blocks; null when absent. */
+function sectionBlocks(pairs: readonly Pair[], section: string): EntityBlock[] | null {
   let start = -1;
   for (let i = 0; i + 1 < pairs.length; i++) {
     if (pairs[i].code === 0 && pairs[i].value.trim() === 'SECTION' &&
-        pairs[i + 1].code === 2 && pairs[i + 1].value.trim() === 'ENTITIES') {
+        pairs[i + 1].code === 2 && pairs[i + 1].value.trim() === section) {
       start = i + 2;
       break;
     }
   }
-  if (start === -1) {
-    throw new DxfParseError(
-      'no-entities',
-      'no ENTITIES section: the file has no `0/SECTION` + `2/ENTITIES` pair, so it carries no drawable geometry.',
-    );
-  }
+  if (start === -1) return null;
 
   const blocks: EntityBlock[] = [];
   let current: EntityBlock | null = null;
@@ -211,6 +203,18 @@ function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
     } else if (current) {
       current.body.push(p);
     }
+  }
+  return blocks;
+}
+
+/** Slice the ENTITIES section into `0`-delimited entity blocks. */
+function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
+  const blocks = sectionBlocks(pairs, 'ENTITIES');
+  if (!blocks) {
+    throw new DxfParseError(
+      'no-entities',
+      'no ENTITIES section: the file has no `0/SECTION` + `2/ENTITIES` pair, so it carries no drawable geometry.',
+    );
   }
   return blocks;
 }
@@ -829,21 +833,75 @@ function throwUnsupportedEntity(b: EntityBlock): never {
       `SPLINE at line ${b.line}: its representation is outside the supported clamped, continuous, planar control-point subset. ` +
           'Re-export a continuous clamped XY spline with control points and knots.',
       );
-    case 'INSERT':
-      throw new DxfParseError(
-        'unsupported-entity',
-        `INSERT (block reference) at line ${b.line}: block definitions are not expanded, and the ` +
-          'geometry it references would be missing from the imported profile without warning. ' +
-          'Explode blocks in the source tool before exporting.',
-      );
     default:
       throw new DxfParseError(
         'unsupported-entity',
     `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, planar ELLIPSE, ` +
-          'LWPOLYLINE, POLYLINE, one closed polyline HATCH boundary, and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
+          'LWPOLYLINE, POLYLINE, INSERT, one closed polyline HATCH boundary, and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
           'because a dropped entity leaves a hole in the profile with no indication.',
       );
   }
+}
+
+interface ReadContext {
+  scale: number;
+  tolerance: number;
+  definitions: ReadonlyMap<string, BlockDefinition>;
+  /** Names of the blocks being expanded, outermost first, for cycle detection. */
+  stack: readonly string[];
+}
+
+interface Collected {
+  closed: ImportSegment[][];
+  open: ImportSegment[];
+  ignoredEntities: string[];
+}
+
+/** Read a list of entities into segments. `note` labels skipped annotation inside a block. */
+function collectEntities(blocks: readonly EntityBlock[], ctx: ReadContext, note: string): Collected {
+  const out: Collected = { closed: [], open: [], ignoredEntities: [] };
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const simple = segmentsForSimpleEntity(b, ctx.scale, ctx.tolerance);
+    if (simple) {
+      out.closed.push(...simple.closed);
+      out.open.push(...simple.open);
+      continue;
+    }
+    if (b.type === 'POLYLINE') {
+      const consumed = consumePolyline(blocks, i, ctx.scale);
+      out.closed.push(...consumed.closed);
+      out.open.push(...consumed.open);
+      i = consumed.nextIndex;
+      continue;
+    }
+    if (b.type === 'INSERT') {
+      i = consumeInsert(blocks, i, ctx, out, note);
+      continue;
+    }
+    if (b.type === 'VERTEX' || b.type === 'SEQEND') {
+      // Only reachable if a VERTEX appears without its POLYLINE header.
+      throw new DxfParseError(
+        'malformed-entity',
+        `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
+      );
+    }
+    if (!ANNOTATION_ENTITIES.has(b.type)) throwUnsupportedEntity(b);
+    out.ignoredEntities.push(`${b.type} (line ${b.line})${note}`);
+  }
+  return out;
+}
+
+/** Expand one INSERT: read its block, place every copy, skip trailing attributes. */
+function consumeInsert(blocks: readonly EntityBlock[], i: number, ctx: ReadContext, out: Collected, note: string): number {
+  const b = blocks[i];
+  const def = resolveInsertBlock(b, ctx.definitions, ctx.stack);
+  const inner = collectEntities(def.entities, { ...ctx, stack: [...ctx.stack, def.name] }, ` in block "${def.name}"`);
+  const placed = placeInsert(b, def, inner, ctx.scale);
+  out.closed.push(...placed.closed);
+  out.open.push(...placed.open);
+  out.ignoredEntities.push(...inner.ignoredEntities);
+  return skipAttributes(blocks, i, out.ignoredEntities, note);
 }
 
 export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImportResult {
@@ -857,40 +915,13 @@ export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImp
   }
 
   const { scale, source: unitSource } = resolveScale(pairs, opts);
-  const blocks = entityBlocks(pairs);
-
-  const closed: ImportSegment[][] = [];
-  const open: ImportSegment[] = [];
-  const ignoredEntities: string[] = [];
-
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    const simple = segmentsForSimpleEntity(b, scale, opts.tolerance ?? DEFAULT_DXF_TOLERANCE);
-    if (simple) {
-      closed.push(...simple.closed);
-      open.push(...simple.open);
-      continue;
-    }
-    if (b.type === 'POLYLINE') {
-      const consumed = consumePolyline(blocks, i, scale);
-      closed.push(...consumed.closed);
-      open.push(...consumed.open);
-      i = consumed.nextIndex;
-      continue;
-    }
-    if (b.type === 'VERTEX' || b.type === 'SEQEND') {
-      // Only reachable if a VERTEX appears without its POLYLINE header.
-      throw new DxfParseError(
-        'malformed-entity',
-        `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
-      );
-    }
-    if (ANNOTATION_ENTITIES.has(b.type)) {
-      ignoredEntities.push(`${b.type} (line ${b.line})`);
-      continue;
-    }
-    throwUnsupportedEntity(b);
-  }
+  const ctx: ReadContext = {
+    scale,
+    tolerance: opts.tolerance ?? DEFAULT_DXF_TOLERANCE,
+    definitions: blockDefinitions(sectionBlocks(pairs, 'BLOCKS')),
+    stack: [],
+  };
+  const { closed, open, ignoredEntities } = collectEntities(entityBlocks(pairs), ctx, '');
 
   let assembled;
   try {
