@@ -26,6 +26,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isParamRef, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { currentValue, paramExpr, paramFromExpr, toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
+import { mapSmoothSplineTangents } from '../../shared/capture/smoothSplineTangents';
 import type { TangentEntitySpec, TangentNearSpec } from '../../shared/capture/tangency';
 import type { CaptureSession } from './captureSession';
 import type { Sketch } from './sketch';
@@ -151,13 +152,21 @@ function mapSpline(cmd: CommandOf<'spline'>, m: SimilarityMap): SketchCommand {
 
 /** One handler per command kind. The record is exhaustive over
  *  `SketchCommand['kind']`, so a new kind cannot silently skip the transform. */
-const MAPPERS: { [K in SketchCommand['kind']]: (cmd: CommandOf<K>, m: SimilarityMap) => SketchCommand } = {
+type Mapper<K extends SketchCommand['kind']> = (
+  cmd: CommandOf<K>,
+  m: SimilarityMap,
+  prev: SketchCommand | undefined,
+) => SketchCommand;
+
+const MAPPERS: { [K in SketchCommand['kind']]: Mapper<K> } = {
   moveTo: (cmd, m) => mapXY(cmd, m, 'point'),
   lineTo: (cmd, m) => mapXY(cmd, m, 'point'),
-  // tangentArc and smoothSpline inherit their start tangent from the previous
-  // segment, which is transformed too.
+  // tangentArc inherits its start tangent from the previous segment, which is
+  // transformed too.
   tangentArc: (cmd, m) => mapXY(cmd, m, 'point'),
-  smoothSpline: (cmd, m) => mapXY(cmd, m, 'point'),
+  // The free tangents of a smoothSpline default to the sketch +X direction,
+  // so the mapped direction is written into the command.
+  smoothSpline: (cmd, m, prev) => ({ ...mapXY(cmd, m, 'point'), ...mapSmoothSplineTangents(cmd, prev, m.vec) }),
   threePointsArc: (cmd, m) => {
     const [midX, midY] = m.point(cmd.midX, cmd.midY);
     return { ...mapXY(cmd, m, 'point'), midX, midY };
@@ -180,8 +189,8 @@ const MAPPERS: { [K in SketchCommand['kind']]: (cmd: CommandOf<K>, m: Similarity
   close: (cmd) => cmd,
 };
 
-function mapCommand(cmd: SketchCommand, m: SimilarityMap): SketchCommand {
-  return (MAPPERS[cmd.kind] as (c: SketchCommand, map: SimilarityMap) => SketchCommand)(cmd, m);
+function mapCommand(cmd: SketchCommand, m: SimilarityMap, prev: SketchCommand | undefined): SketchCommand {
+  return (MAPPERS[cmd.kind] as Mapper<SketchCommand['kind']>)(cmd as never, m, prev);
 }
 
 const editableExpr = (v: Editable<number>): ParamRefExpr => paramExpr(toParam(v, 'mm'));
@@ -260,7 +269,7 @@ function emit(
   spec: SimilaritySpec,
 ): Sketch {
   const map = similarityMap(spec);
-  const commands = pathCommands(name, id, session).map((cmd) => mapCommand(cmd, map));
+  const commands = pathCommands(name, id, session).map((cmd, i, all) => mapCommand(cmd, map, all[i - 1]));
   return session.createSketch({
     kind: 'sketch',
     inputs: { source: { kind: 'feature', id } },
@@ -292,17 +301,6 @@ export function rotateSketchOf(id: FeatureId, session: CaptureSession, angleDeg:
     });
   }
   const [cos, sin] = cosSin(angleDeg);
-  // A smoothSpline command stores no tangent: its free end leaves along the
-  // sketch +X direction, which a turn would have to turn with it.
-  if (cos !== 1 && pathCommands('rotate', id, session).some((c) => c.kind === 'smoothSpline')) {
-    invalidArgs({
-      api: SIGNATURE.rotate, path: 'sketch', gotText: "a profile with a 'smoothSpline' segment",
-      requires:
-        'a profile whose curves state their own tangents: the free end tangent of smoothSpline is fixed to the sketch +X direction, '
-        + 'so the turned curve would have a different shape. Draw the curve with spline([...]) or hermiteG2, or extrude and use Shape.rotate',
-      example: EXAMPLE.rotate, featureId: id,
-    });
-  }
   return emit('rotate', id, session, {
     a: lit(cos), b: lit(sin), k: lit(1), center: centerExprs('rotate', center, id), delta: ORIGIN,
   });

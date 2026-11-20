@@ -1,5 +1,22 @@
 # Unreleased
 
+- A mirrored or turned `smoothSpline` profile keeps its shape. The free end
+  tangent of a `smoothSpline` segment is the sketch +X direction, and the
+  segment stored no tangent, so `Sketch.reflect('y')` built a different
+  curve: a 20 × 14 mm plate with a two-segment bulged edge went from
+  308.000 mm² to 318.733 mm², and a mirrored segment that follows `moveTo`
+  left its 10 mm wide bounding box by 1.709 mm on each side. `reflect`,
+  `translate`, `rotate`, `scale` and loft section rotation (`twistDeg`,
+  `planes[].rotationDeg`) now write the mapped tangent into the segment.
+  `Sketch.rotate` no longer refuses a `smoothSpline` profile.
+  `path().smoothSpline(x, y, { endTangent, startTangent })` states the
+  tangents directly: `[x, y]` directions of travel that accept `param()`
+  values; a zero-length vector, a value that is not an `[x, y]` pair and an
+  unknown option key throw `feature.invalid-args`. `Sketch.reflect` also
+  mirrors the `startTangent` / `endTangent` constraints of `spline([...])`;
+  before, it mirrored the waypoints only (319.176 mm² by hand, 321.666 mm²
+  from `reflect('x')` on the test profile). Demo:
+  `docs/demos/smoothspline-tangents/`.
 - `Sketch.translate(dx, dy)`, `Sketch.rotate(angleDeg, center?)` and
   `Sketch.scale(factor, center?)` move, turn and uniformly resize a 2D
   profile and return a new sketch; the source is unchanged, so one profile
@@ -11,10 +28,8 @@
   `silhouette` or a DXF/SVG import could not be moved at all. `dx`, `dy`,
   `factor`, `center` and `param()` coordinates stay symbolic and follow
   `set_param`. Refused with `feature.invalid-args`: a `param()` rotation
-  angle (parameter expressions have no sin/cos), a factor that is not > 0,
-  `rotate` on a profile with a `smoothSpline` segment (its free end tangent
-  is fixed to +X) and a `sketch.text` sketch. Demo:
-  `docs/demos/sketch-transform/`.
+  angle (parameter expressions have no sin/cos), a factor that is not > 0
+  and a `sketch.text` sketch. Demo: `docs/demos/sketch-transform/`.
 - Kinematic skill cookbook snippet 7 (`07-static-hold-servo-arm.kcad.ts`) now
   passes `evaluate_script` with `ok: true` and `mechanism: real`; before, it
   returned 4 errors because the beam was inside the wall block and inside the
