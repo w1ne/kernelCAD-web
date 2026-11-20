@@ -4,18 +4,19 @@
 // solution runs down every gutter from a feed riser to a return collector.
 // What makes it a vertical-farm grow rack: slotted steel uprights with cross
 // beams and diagonal end bracing, four white lidded gutters per tier with a
-// row of planting holes and a crop growing out of them, a feed riser with a
+// continuous planting slot and nine crop stations, a feed riser with a
 // drip tube into the head of each gutter, a return collector across the
 // gutter tails dropping to a floor return pipe, and LED light bars hung over
 // every tier.
 // Generic visualization geometry at about real size (2.5 m long, 0.8 m deep,
-// 2.1 m tall), millimetres, Z up, gutter rows seen from -Y.
+// 2.1 m tall), millimetres, Z up, gutter rows seen from -Y. Roots, net-cup
+// interiors and connected fluid passages are not modeled.
 
 meta({
   name: "hydroponic-grow-rack",
   license: 'CC0-1.0',
   title: "Hydroponic grow rack",
-  description: "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four lidded gutters per tier with planting holes and a growing crop, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets.",
+  description: "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four open channels per tier with continuously slotted lids and nine crop stations per channel, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets. Scene prop: roots, net-cup interiors and connected fluid passages are omitted.",
   tags: ['vertical farm', 'grow rack', 'nft', 'nutrient film technique', 'gutter', 'multi-tier', 'indoor farm', 'led grow light', 'lettuce', 'hydroponics', 'controlled environment agriculture', 'low poly', 'scene prop'],
   kit: 'hydroponics',
   category: 'prop',
@@ -70,23 +71,39 @@ const lettuceHead = (r: number) => polygon(r, 12).loft(polygon(r, 12), {
 const L = 2400, W = 760, H = 2100;
 const tierZ = [280, 950, 1620]; // gutter underside per tier
 const gutterY = [-270, -90, 90, 270];
-const holes = 9, pitch = 240;
+const stations = 9, pitch = 240;
+
+// An eight-vertex U section gives 5 mm walls/floor and open gutter ends.
+// The XY profile maps to world YZ after rotateY; every call owns a new solid.
+const gutterChannel = (y: number, z: number) => path()
+  .moveTo(0, -55).lineTo(0, 55).lineTo(-60, 55).lineTo(-60, 50)
+  .lineTo(-5, 50).lineTo(-5, -50).lineTo(-60, -50).lineTo(-60, -55)
+  .close().extrude(L + 100).rotateY(90).translate(-(L + 100) / 2, y, z);
+// A second moveTo starts the inner contour; the profile lowerer closes both
+// loops. One fresh planar face with a hole extrudes to the same slotted lid.
+const slottedLid = (y: number, z: number) => path()
+  .moveTo(-(L + 100) / 2, -62).lineTo((L + 100) / 2, -62)
+  .lineTo((L + 100) / 2, 62).lineTo(-(L + 100) / 2, 62)
+  .moveTo(-1000, -28).lineTo(-1000, 28).lineTo(1000, 28).lineTo(1000, -28)
+  .close().extrude(10).translate(0, y, z + 60);
 
 // Uprights on foot plates, with a slot pattern on the front faces.
 for (const x of [-L / 2, 0, L / 2]) {
   for (const y of [-W / 2, W / 2]) {
-    add(`upright-${x}-${y}`, blk(x, y, 10, 60, 60, H - 10).color(frame));
+    const postY = y + (x === 0 ? Math.sign(y) * 20 : 0);
+    add(`upright-${x}-${y}`, blk(x, postY, 10, 60, 60, H - 10).color(frame));
     add(`foot-${x}-${y}`, blk(x, y, 0, 120, 120, 10).color('#5a5f63'));
   }
-  for (let k = 0; k < 14; k++) add(`slots-${x}-${k}`, blk(x, -W / 2 - 31, 120 + k * 140, 22, 2, 50).color('#1f2326'));
+  for (let k = 0; k < 14; k++) add(`slots-${x}-${k}`, blk(x, -W / 2 - 31 - (x === 0 ? 20 : 0), 120 + k * 140, 22, 2, 50).color('#1f2326'));
 }
-// End bracing on both ends: horizontals and a diagonal per bay.
+// Short end knee braces connect each front post to its tie below the gutters.
 for (const x of [-L / 2, L / 2]) {
   for (const z of [120, 760, 1430, H - 60]) add(`end-tie-${x}-${z}`, blk(x, 0, z, 40, W - 60, 40).color(frame));
-  for (const [z0, z1] of [[120, 760], [760, 1430], [1430, H - 60]]) {
-    const ang = Math.atan2(z1 - z0, W - 60) * 180 / Math.PI;
-    const len = Math.hypot(z1 - z0, W - 60);
-    add(`end-brace-${x}-${z0}`, box(26, len, 26, true).rotateX(ang).translate(x, 0, (z0 + z1) / 2 + 20).color(frame));
+  for (const z0 of [120, 760, 1430]) {
+    const run = 180, rise = 100;
+    const ang = -Math.atan2(rise, run) * 180 / Math.PI;
+    const len = Math.hypot(run, rise);
+    add(`end-brace-${x}-${z0}`, box(26, len, 26, true).rotateX(ang).translate(x, -260, z0 + 70).color(frame));
   }
 }
 
@@ -96,18 +113,19 @@ tierZ.forEach((z, t) => {
   for (const x of [-L / 2 + 300, 0, L / 2 - 300]) add(`gutter-bearer-${t}-${x}`, blk(x, 0, z - 30, 40, W - 40, 30).color(frame));
 
   gutterY.forEach((y, g) => {
-    // Lidded NFT gutter; net cups sit in a row of holes along the lid.
-    add(`gutter-${t}-${g}`, blk(0, y, z, L + 100, 110, 60).color(gutters));
-    add(`gutter-lid-${t}-${g}`, blk(0, y, z + 60, L + 100, 124, 10).color(gutters));
+    // Open NFT channel with one continuous planting slot and nine crop stations.
+    add(`gutter-${t}-${g}`, gutterChannel(y, z).color(gutters));
+    add(`gutter-lid-${t}-${g}`, slottedLid(y, z).color(gutters));
     add(`gutter-head-cap-${t}-${g}`, blk(-L / 2 - 55, y, z, 12, 116, 72).color('#c9cbc4'));
 
-    for (let h = 0; h < holes; h++) {
-      const x = (h - (holes - 1) / 2) * pitch;
+    for (let h = 0; h < stations; h++) {
+      const x = (h - (stations - 1) / 2) * pitch;
       const k = t * 100 + g * 10 + h;
       if (crop.value === 'lettuce') {
         const variant = (h * 5 + g * 3 + t) % 3;
         const r = 78 + variant * 8;
-        add(`head-${k}`, lettuceHead(r).translate(x, y, z + 70 + r * 0.38).color(foliage));
+        // The head section at the lid top has radius 26, leaving 2 mm slot clearance.
+        add(`head-${k}`, lettuceHead(r).translate(x, y, z + 70 + r * 0.6 - 7.8).color(foliage));
       } else if (crop.value === 'empty') {
         add(`cup-${k}`, cylZ(x, y, z + 70, 8, 32, 8).color('#25282a'));
       }

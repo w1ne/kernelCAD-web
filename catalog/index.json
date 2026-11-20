@@ -132448,7 +132448,7 @@
       "id": "hydroponic-grow-rack",
       "kit": "hydroponics",
       "title": "Hydroponic grow rack",
-      "description": "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four lidded gutters per tier with planting holes and a growing crop, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets.",
+      "description": "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four open channels per tier with continuously slotted lids and nine crop stations per channel, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets. Scene prop: roots, net-cup interiors and connected fluid passages are omitted.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -132475,7 +132475,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
-      "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+      "sourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
       "triangleBudget": 8000,
       "params": [
         {
@@ -132551,7 +132551,7 @@
         }
       },
       "stats": {
-        "triangles": 7400,
+        "triangles": 7832,
         "sizeM": [
           2.98,
           2.1,
