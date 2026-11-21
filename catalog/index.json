@@ -316909,7 +316909,7 @@
       "id": "fiber-drop-terminal",
       "kit": "telecom-infrastructure",
       "title": "Fiber drop terminal",
-      "description": "Small multiport drop terminal with six connector caps and a shallow rain hood. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Pole-mounted fiber drop terminal (multiport service terminal): a moulded polymer housing with a lid seam and stainless lid screws, six hardened drop ports with black dust caps on the front, a black tether stub cable from a gland under the housing, and a stainless mounting bracket with two band straps round a wood pole section. Knobs: overall scale; polymer housing, black polymer caps and cable, stainless steel, pole wood.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316928,8 +316928,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-drop-terminal.png",
-      "sourceSha256": "4f70afacf9d09cccb489113e5bba6a7150ef3c0ea98a5ab6c405f9b3aac368be",
-      "triangleBudget": 900,
+      "sourceSha256": "40a8848a3a4ce8753d9ce7aecd4f93c6203952255d29c5375a37359ccb0d889c",
+      "triangleBudget": 1100,
       "params": [
         {
           "name": "scale",
@@ -316941,59 +316941,104 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "housing",
           "type": "color",
-          "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
+          "default": "#3d4347",
+          "label": "Housing and port bosses (moulded polymer)"
         },
         {
-          "name": "powderCoat",
+          "name": "polymer",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#15191c",
+          "label": "Dust caps, lid seam, gland and tether cable (black polymer)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Bracket, band straps and lid screws (stainless steel)"
+        },
+        {
+          "name": "poleWood",
+          "type": "color",
+          "default": "#7a5b3e",
+          "label": "Pole section (treated wood)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "housing": "#5d6660",
+          "polymer": "#1f2421",
+          "stainlessSteel": "#c8d0cf",
+          "poleWood": "#5f4a36"
         },
         "highVisibility": {
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "housing": "#e0aa18",
+          "polymer": "#1b1f22",
+          "stainlessSteel": "#e4e9e6",
+          "poleWood": "#8a6a4a"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 976,
         "sizeM": [
-          0.47,
-          0.265,
-          0.251
+          0.402,
+          1.1,
+          0.418
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "poleWood",
+          "color": "#7a5b3e",
           "parts": [
-            "case",
-            "hood",
-            "face"
+            "pole"
           ],
-          "param": "powderCoat"
+          "param": "poleWood"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "band-strap-0",
+            "band-strap-1",
+            "bracket",
+            "lid-screw-0",
+            "lid-screw-1",
+            "lid-screw-2",
+            "lid-screw-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "housing",
+          "color": "#3d4347",
+          "parts": [
+            "housing",
+            "port-boss-0",
+            "port-boss-1",
+            "port-boss-2",
+            "port-boss-3",
+            "port-boss-4",
+            "port-boss-5"
+          ],
+          "param": "housing"
         },
         {
           "name": "polymer",
-          "color": "#315267",
+          "color": "#15191c",
           "parts": [
-            "port-0",
-            "port-1",
-            "port-2",
-            "port-3",
-            "port-4",
-            "port-5"
+            "lid-seam",
+            "port-cap-0",
+            "port-cap-1",
+            "port-cap-2",
+            "port-cap-3",
+            "port-cap-4",
+            "port-cap-5",
+            "tether-gland",
+            "tether-cable"
           ],
           "param": "polymer"
         }

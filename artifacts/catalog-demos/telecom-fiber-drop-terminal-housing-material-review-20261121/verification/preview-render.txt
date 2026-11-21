@@ -1,0 +1,1 @@
+telecom-infrastructure/fiber-drop-terminal: 976 tris
