@@ -10,6 +10,7 @@ import { initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../src/agent/catalog/buildCatalog';
 import { CatalogIndexSchema } from '../src/shared/assets/catalogSchema';
 import { glbTriangles, renderTrianglesPng } from './lib/glbSoftwareRender';
+import { renderManufacturingCatalogPreview } from './lib/manufacturingCatalogPreview';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')));
@@ -18,10 +19,15 @@ const only = new Set(process.argv.slice(2));
 await initOcct();
 for (const row of index.assets) {
   if (only.size > 0 && !only.has(row.id)) continue;
-  const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, row.source);
-  const dir = join(repoRoot, 'catalog', 'kits', asset.kit, 'previews');
+  const isManufacturingCard = row.kit === 'standard-components';
+  const built = isManufacturingCard ? undefined : await buildCatalogAssetWithGlb(repoRoot, row.source);
+  const dir = join(repoRoot, 'catalog', 'kits', row.kit, 'previews');
   mkdirSync(dir, { recursive: true });
-  const png = await renderTrianglesPng(await glbTriangles(glb), { label: `${asset.title} · ${asset.stats.triangles} tris` });
-  writeFileSync(join(dir, `${asset.id}.png`), png);
-  console.log(`${asset.kit}/${asset.id}: ${asset.stats.triangles} tris`);
+  const png = isManufacturingCard
+    ? await renderManufacturingCatalogPreview(join(repoRoot, row.source))
+    : await renderTrianglesPng(await glbTriangles(built!.glb), {
+      label: `${built!.asset.title} · ${built!.asset.stats.triangles} tris`,
+    });
+  writeFileSync(join(dir, `${row.id}.png`), png);
+  console.log(`${row.kit}/${row.id}: ${row.stats.triangles} tris`);
 }

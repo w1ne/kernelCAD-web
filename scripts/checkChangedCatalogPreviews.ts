@@ -16,6 +16,7 @@ import { initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../src/agent/catalog/buildCatalog';
 import { CatalogIndexSchema } from '../src/shared/assets/catalogSchema';
 import { glbTriangles, renderTrianglesPng } from './lib/glbSoftwareRender';
+import { renderManufacturingCatalogPreview } from './lib/manufacturingCatalogPreview';
 import {
   exceptionApplies, pixelDiff, pixelSha256, previewMatches, previewPathFor, sha256, touchedAssets,
   type PreviewExceptions, type RgbaImage,
@@ -76,8 +77,14 @@ for (const { row, sourceChanged } of touched) {
   }
   let fresh: RgbaImage;
   try {
-    const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, row.source);
-    fresh = await decode(await renderTrianglesPng(await glbTriangles(glb), { label: `${asset.title} · ${asset.stats.triangles} tris` }));
+    const isManufacturingCard = row.kit === 'standard-components';
+    const built = isManufacturingCard ? undefined : await buildCatalogAssetWithGlb(repoRoot, row.source);
+    const png = isManufacturingCard
+      ? await renderManufacturingCatalogPreview(join(repoRoot, row.source))
+      : await renderTrianglesPng(await glbTriangles(built!.glb), {
+        label: `${built!.asset.title} · ${built!.asset.stats.triangles} tris`,
+      });
+    fresh = await decode(png);
   } catch (err) {
     failures.push(`${row.id}: build failed: ${err instanceof Error ? err.message : String(err)}`);
     continue;
