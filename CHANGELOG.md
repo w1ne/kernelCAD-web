@@ -1,5 +1,17 @@
 # Unreleased
 
+- `Shape.boundingBox()` no longer shrinks to the mesh once a shape is
+  meshed. The OCCT wrapper builds the default box from the triangulation when one
+  exists, and mesh vertices lie inside curved faces. In a script,
+  `await c.boundingBox({ exact: true })` followed by `await c.boundingBox()`
+  on `cylinder(5, 10)` read x from -9.9756 and y to 9.9939 instead of
+  +-10 mm, so a part placed from that box sat 0.024 mm inside the cylinder.
+  The default box now reads the geometry in every call order. Analytic
+  faces trimmed off their iso-lines now take their exact face box, as
+  B-spline faces already did, so the geometry box does not overshoot:
+  `examples/manufacturing-showcase/moulded-housing.kcad.ts` reads 25 mm high,
+  not 25.0152 mm. The exact box is unchanged.
+
 - The partial-success `feature.edge-feature.short-edges-skipped` warning now
   has a true hint. Before, it said the short edges "got skipped so the rest
   could chamfer", also on a fillet, and that the blend solver rejects every

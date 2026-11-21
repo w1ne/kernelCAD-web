@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildModel } from '../../../../src/modeling/buildModel';
 
 describe('boundingBox({ exact: true })', () => {
-  it('tessellation box is tight where Bnd_Box pads (filleted cylinder)', async () => {
+  it('default box stays outside and close to the tessellation box (filleted cylinder)', async () => {
     const model = await buildModel({
       code: 'return cylinder(30, 10).fillet(3);',
       fileName: 'bbox-exact.kcad.ts',
@@ -13,8 +13,10 @@ describe('boundingBox({ exact: true })', () => {
     const padded = shape.boundingBox();
     const exact = shape.boundingBox({ exact: true });
 
-    // Default Bnd_Box pads the post-fillet B-spline face (~10.82 for r=10).
-    expect(padded.max[0]).toBeGreaterThan(10.5);
+    // OCCT's default Bnd_Box pads the trimmed fillet torus (~10.82 for
+    // r=10); its exact face box keeps the default box at the true radius.
+    expect(padded.max[0]).toBeGreaterThanOrEqual(10);
+    expect(padded.max[0]).toBeLessThan(10 + 1e-5);
     // Exact box is tight to the true radius within mesh deflection.
     expect(exact.max[0]).toBeLessThanOrEqual(10 + 1e-6);
     expect(exact.max[0]).toBeGreaterThan(9.9);
@@ -36,5 +38,25 @@ describe('boundingBox({ exact: true })', () => {
       expect(exact.min[a]).toBeCloseTo(padded.min[a], 4);
       expect(exact.max[a]).toBeCloseTo(padded.max[a], 4);
     }
+  });
+
+  it('default box does not shrink to the mesh after the shape is meshed', async () => {
+    // replicad's box reads the triangulation once one exists: after the
+    // exact (meshed) box, the default box of a radius-10 cylinder read
+    // x from -9.9756 and y to 9.9939 instead of +-10.
+    const code = 'return cylinder(5, 10);';
+    const fresh = (await buildModel({ code, fileName: 'bbox-fresh.kcad.ts' })).rootShape!;
+    const meshed = (await buildModel({ code, fileName: 'bbox-meshed.kcad.ts' })).rootShape!;
+    meshed.boundingBox({ exact: true });
+    const before = fresh.boundingBox();
+    const after = meshed.boundingBox();
+    for (let a = 0; a < 2; a++) {
+      expect(before.min[a]).toBeCloseTo(-10, 6);
+      expect(before.max[a]).toBeCloseTo(10, 6);
+      expect(after.min[a]).toBeCloseTo(-10, 6);
+      expect(after.max[a]).toBeCloseTo(10, 6);
+    }
+    expect(after.min[2]).toBeCloseTo(0, 6);
+    expect(after.max[2]).toBeCloseTo(5, 6);
   });
 });

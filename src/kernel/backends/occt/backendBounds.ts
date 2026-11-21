@@ -227,3 +227,36 @@ function finiteBox(min: Vec3, max: Vec3): boolean {
   }
   return true;
 }
+
+/**
+ * Default OCCT box of the raw TopoDS `shape` from its geometry, never its triangulation.
+ * replicad's `Shape.boundingBox` reads the triangulation once the shape is
+ * meshed, and mesh vertices lie inside curved faces: after `getMesh()`,
+ * `cylinder(5, 10)` read x from -9.9756 instead of -10. OCCT's Bnd_Box
+ * inflates bounds by a tolerance gap; remove it so that exact
+ * axis-aligned primitives report integral coordinates.
+ */
+export function geometryBox(shape: unknown): { min: Vec3; max: Vec3 } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const bb = new oc.Bnd_Box_1();
+  try {
+    oc.BRepBndLib.Add(shape, bb, false);
+    // An empty shape throws, as replicad's box does.
+    if (bb.IsVoid()) throw new Error('Bnd_Box is void');
+    const lo = bb.CornerMin();
+    const hi = bb.CornerMax();
+    const gap = bb.GetGap();
+    try {
+      return {
+        min: [lo.X() + gap, lo.Y() + gap, lo.Z() + gap],
+        max: [hi.X() - gap, hi.Y() - gap, hi.Z() - gap],
+      };
+    } finally {
+      lo.delete();
+      hi.delete();
+    }
+  } finally {
+    bb.delete();
+  }
+}
