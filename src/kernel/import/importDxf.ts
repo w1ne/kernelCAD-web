@@ -22,7 +22,9 @@
 //   HATCH       one closed, planar polyline boundary path; pattern styling is ignored
 //   SPLINE      planar, continuous control-point B-splines, kept as exact
 //               rational/non-rational NURBS sketch commands; unclamped and
-//               periodic knot vectors are clamped exactly (dxfSplineClamp.ts)
+//               periodic knot vectors are clamped exactly (dxfSplineClamp.ts);
+//               open fit-point-only cubics are interpolated through their fit
+//               points and end tangents (dxfSplineFit.ts)
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
 //   INSERT      block references, including nested blocks and MINSERT grids,
 //               placed by an exact affine map (dxfInsert.ts)
@@ -45,9 +47,10 @@
 // accepted only with one planar closed polyline path; multi-path hatches are
 // refused because this importer does not preserve hole/island relationships.
 // SPLINE is accepted only when its planar control points and knots define a
-// continuous curve. Fit-point-only, nonplanar and discontinuous SPLINE
-// entities, and closed SPLINEs whose control net does not wrap, still fail
-// closed rather than being approximated.
+// continuous curve, or when it is an open cubic with fit points only.
+// Closed fit-point-only, nonplanar and discontinuous SPLINE entities, and
+// closed SPLINEs whose control net does not wrap, still fail closed rather
+// than being approximated.
 //
 // Only entities that are provably annotation — TEXT, DIMENSION, POINT and
 // friends — are skipped, with the count returned to the caller.
@@ -59,10 +62,11 @@ import {
   type ImportedRegion,
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
-import { clampSpline } from './dxfSplineClamp';
+import { clampSpline, type PlanarSpline } from './dxfSplineClamp';
+import { fitPointSpline, validateSplinePlanarity } from './dxfSplineFit';
 import { mirrorSegments, ocsSign } from './dxfOcs';
 import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
-import { DxfParseError, entityVector, get, num, require, type EntityBlock, type Pair } from './dxfPairs';
+import { DxfParseError, entityVector, get, num, require, values, type EntityBlock, type Pair } from './dxfPairs';
 
 export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
@@ -222,10 +226,6 @@ function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
   return blocks;
 }
 
-function values(body: readonly Pair[], code: number, entity: string): number[] {
-  return body.filter(p => p.code === code).map(p => num(p, entity, code));
-}
-
 interface SplineDefinition {
   flags: number;
   degree: number;
@@ -252,28 +252,6 @@ function splineDefinition(b: EntityBlock): SplineDefinition {
   return { flags, degree, declaredKnotCount, declaredControlCount };
 }
 
-function validateSplinePlanarity(b: EntityBlock, zs: number[]): void {
-  const zScale = Math.max(1, ...zs.map(Math.abs));
-  if (zs.some(z => Math.abs(z) > 1e-9 * zScale)) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: non-zero Z control points are outside this 2D profile importer; flatten the spline to the XY plane.`,
-    );
-  }
-  const nx = get(b.body, 210);
-  const ny = get(b.body, 220);
-  const nz = get(b.body, 230);
-  const normalIsXY = Math.abs(nx ? num(nx, 'SPLINE', 210) : 0) <= 1e-9 &&
-    Math.abs(ny ? num(ny, 'SPLINE', 220) : 0) <= 1e-9 &&
-    Math.abs(Math.abs(nz ? num(nz, 'SPLINE', 230) : 0) - 1) <= 1e-9;
-  if ((nx !== undefined || ny !== undefined || nz !== undefined) && !normalIsXY) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: its normal is not aligned with the XY plane; only planar XY profiles can be imported.`,
-    );
-  }
-}
-
 function splineControlPoints(
   b: EntityBlock,
   scale: number,
@@ -289,12 +267,6 @@ function splineControlPoints(
       'malformed-entity',
       `SPLINE at line ${b.line}: declared ${declaredControlCount} control points but found ` +
         `${xs.length} X, ${ys.length} Y and ${zs.length} Z coordinates.`,
-    );
-  }
-  if (xs.length === 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: fit-point-only splines are not supported; export control points and knots from the source tool.`,
     );
   }
   if (degree + 1 > xs.length) {
@@ -382,20 +354,29 @@ function validateSplineClosure(
   return isClosed;
 }
 
-/** Parse the exact 2D control-net subset of a DXF SPLINE. */
-function splineSegments(b: EntityBlock, scale: number, tolerance: number): {
-  closed: ImportSegment[][];
-  open: ImportSegment[];
-} {
-  const definition = splineDefinition(b);
+/** Clamped control net, knots and weights of a DXF SPLINE that stores its control points. */
+function controlNetSpline(b: EntityBlock, scale: number, definition: SplineDefinition): PlanarSpline {
   const net = splineControlPoints(b, scale, definition.degree, definition.declaredControlCount);
-  const { controlPoints, knots, weights } = clampSpline({
+  const spline = clampSpline({
     degree: definition.degree,
     controlPoints: net,
     knots: splineKnots(b, definition.degree, net.length, definition.declaredKnotCount),
     weights: splineWeights(b, net.length),
   });
-  validateSplineContinuity(knots, definition.degree, controlPoints.length, b.line);
+  validateSplineContinuity(spline.knots, definition.degree, spline.controlPoints.length, b.line);
+  return spline;
+}
+
+/** Parse the 2D subset of a DXF SPLINE: an exact control net, or a cubic through fit points. */
+function splineSegments(b: EntityBlock, scale: number, tolerance: number): {
+  closed: ImportSegment[][];
+  open: ImportSegment[];
+} {
+  const definition = splineDefinition(b);
+  const fitOnly = definition.declaredControlCount === 0 && values(b.body, 10, 'SPLINE').length === 0;
+  const { controlPoints, knots, weights } = fitOnly
+    ? fitPointSpline(b, scale, definition)
+    : controlNetSpline(b, scale, definition);
   const isClosed = validateSplineClosure(definition.flags, controlPoints, tolerance, b.line);
   const first = controlPoints[0];
   const last = controlPoints[controlPoints.length - 1];

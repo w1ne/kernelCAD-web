@@ -91,6 +91,21 @@ function deBoor(
   return [d[degree][0] / d[degree][2], d[degree][1] / d[degree][2]];
 }
 
+/**
+ * Knots and control points of a non-rational NURBS command in the direction
+ * that starts at `start`; region assembly may reverse a segment for winding.
+ */
+function orientedNet(
+  nurbs: Extract<SketchCommand, { kind: 'nurbsSegment' }>,
+  start: readonly [number, number],
+): { knots: number[]; controls: Array<readonly [number, number]> } {
+  const knots = nurbs.knots!.map(k => k.evaluated);
+  const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+  if (Math.hypot(controls[0][0] - start[0], controls[0][1] - start[1]) < 1e-9) return { knots, controls };
+  const [lo, hi] = [knots[0], knots[knots.length - 1]];
+  return { knots: knots.map(k => lo + hi - k).reverse(), controls: [...controls].reverse() };
+}
+
 function nurbsCommands(commands: readonly SketchCommand[]): Array<Extract<SketchCommand, { kind: 'nurbsSegment' }>> {
   return commands.filter(
     (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
@@ -190,6 +205,59 @@ describe('importDxfText — entities', () => {
     expect(r.regions).toHaveLength(1);
     const [nurbs] = nurbsCommands(r.regions[0].commands);
     expect(nurbs.knots!.map(k => k.evaluated)).toEqual([3, 3, 3, 3, 4, 4, 4, 4]);
+  });
+
+  it('interpolates a fit-point-only SPLINE as a cubic that passes through every fit point', () => {
+    // ezdxf `add_spline(fit_points)` writes this form: fit points (11/21/31), no control net.
+    const fit: Array<readonly [number, number]> = [[0, 0], [10, 8], [20, 10], [30, 8], [40, 0]];
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, fit.length],
+      ...fit.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y], [31, 0]]),
+      [0, 'LINE'], [10, 40], [20, 0], [11, 0], [21, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs.degree.evaluated).toBe(3);
+    expect(nurbs.weights).toBeUndefined();
+    const { knots, controls } = orientedNet(nurbs, fit[0]);
+    // Chord-length parameters; the interior knots are the interior parameters.
+    const chords = fit.slice(1).map(([x, y], i) => Math.hypot(x - fit[i][0], y - fit[i][1]));
+    const total = chords.reduce((a, b) => a + b, 0);
+    const params = [0];
+    for (const c of chords) params.push(params[params.length - 1] + c / total);
+    params[params.length - 1] = 1;
+    expect(knots).toHaveLength(controls.length + 4);
+    expect(knots.slice(0, 4)).toEqual([0, 0, 0, 0]);
+    expect(knots.slice(-4)).toEqual([1, 1, 1, 1]);
+    knots.slice(4, -4).forEach((k, i) => expect(k).toBeCloseTo(params[i + 1], 12));
+    expect(controls).toHaveLength(fit.length + 2);
+    fit.forEach(([fx, fy], i) => {
+      const [x, y] = deBoor(3, knots, controls, undefined, params[i]);
+      expect(x).toBeCloseTo(fx, 9);
+      expect(y).toBeCloseTo(fy, 9);
+    });
+    // The smooth arch bulges outside the fit-point polygon (area 260 mm²) but stays near it.
+    expect(r.regions[0].areaMm2).toBeGreaterThan(260);
+    expect(r.regions[0].areaMm2).toBeLessThan(290);
+  });
+
+  it('honours the start and end tangents of a fit-point SPLINE', () => {
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, 3],
+      [12, 0], [22, 1], [32, 0], [13, 0], [23, -1], [33, 0],
+      [11, 0], [21, 0], [11, 10], [21, 10], [11, 20], [21, 0],
+      [0, 'LINE'], [10, 20], [20, 0], [11, 0], [21, 0],
+    ));
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const { knots, controls } = orientedNet(nurbs, [0, 0]);
+    // C'(0) is parallel to P1 - P0 and C'(1) to Pn - Pn-1 on a clamped cubic.
+    expect(controls[1][0]).toBeCloseTo(0, 12);
+    expect(controls[1][1]).toBeGreaterThan(0);
+    expect(controls[controls.length - 2][0]).toBeCloseTo(20, 12);
+    expect(controls[controls.length - 2][1]).toBeGreaterThan(0);
+    const [mx, my] = deBoor(3, knots, controls, undefined, 0.5);
+    expect(mx).toBeCloseTo(10, 9);
+    expect(my).toBeCloseTo(10, 9);
   });
 
   it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
@@ -705,6 +773,24 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.reason).toBe('unsupported-entity');
     expect(e.message).toMatch(/^SPLINE at line \d+:/);
     expect(e.message).toMatch(/closed flag is set but the curve endpoints do not meet/);
+  });
+
+  it('refuses a closed fit-point-only SPLINE instead of guessing its periodic interpolation', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 4],
+      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y]]),
+    )));
+    expect(e.reason).toBe('unsupported-entity');
+    expect(e.message).toMatch(/^SPLINE at line \d+: closed fit-point-only splines are not supported/);
+  });
+
+  it('refuses a fit-point SPLINE with repeated consecutive fit points as malformed', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, 3],
+      [11, 0], [21, 0], [11, 0], [21, 0], [11, 10], [21, 0],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/consecutive fit points coincide/);
   });
 
   it('an INSERT of an undefined block is refused rather than dropped', () => {
