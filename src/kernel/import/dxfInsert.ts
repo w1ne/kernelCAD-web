@@ -16,7 +16,7 @@
 // as exact rational quadratic pieces, whose control points the affine map
 // then moves without changing the weights, so the ellipse is exact too.
 
-import type { ImportSegment } from './contourAssembly';
+import type { ImportFace, ImportSegment } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
 import { ocsSign } from './dxfOcs';
 import { DxfParseError, get, num, require, type EntityBlock } from './dxfPairs';
@@ -32,6 +32,7 @@ export interface BlockDefinition {
 export interface PlacedSegments {
   closed: ImportSegment[][];
   open: ImportSegment[];
+  faces: ImportFace[];
 }
 
 /** Nesting deeper than this is treated as a broken file, not a design. */
@@ -101,15 +102,20 @@ export function resolveInsertBlock(
 export function placeInsert(b: EntityBlock, def: BlockDefinition, inner: PlacedSegments, scale: number): PlacedSegments {
   const p = insertParameters(b);
   const uniform = Math.abs(Math.abs(p.sx) - Math.abs(p.sy)) <= 1e-12 * Math.max(Math.abs(p.sx), Math.abs(p.sy));
-  if (!uniform) inner = { closed: inner.closed.map(loop => loop.flatMap(arcAsNurbs)), open: inner.open.flatMap(arcAsNurbs) };
+  const reshape = (loop: ImportSegment[]) => (uniform ? loop : loop.flatMap(arcAsNurbs));
+  const closed = inner.closed.map(reshape);
+  const open = reshape(inner.open);
+  const faces = inner.faces.map(face => ({ outer: reshape(face.outer), holes: face.holes.map(reshape) }));
   const sign = ocsSign(b.body, 'INSERT', b.line);
   const label = `INSERT "${def.name}" (line ${b.line})`;
-  const out: PlacedSegments = { closed: [], open: [] };
+  const out: PlacedSegments = { closed: [], open: [], faces: [] };
   for (let row = 0; row < p.rows; row++) {
     for (let col = 0; col < p.cols; col++) {
       const m = insertMatrix(p, def, scale, col, row, sign);
-      out.closed.push(...inner.closed.map(loop => loop.map(seg => transformSegment(seg, m, label))));
-      out.open.push(...inner.open.map(seg => transformSegment(seg, m, label)));
+      const place = (loop: ImportSegment[]) => loop.map(seg => transformSegment(seg, m, label));
+      out.closed.push(...closed.map(place));
+      out.open.push(...place(open));
+      out.faces.push(...faces.map(face => ({ outer: place(face.outer), holes: face.holes.map(place) })));
     }
   }
   return out;

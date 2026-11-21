@@ -108,12 +108,14 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
- * planar polyline HATCH boundary, and clamped continuous planar SPLINE
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, closed
+ * planar polyline HATCH boundaries, and clamped continuous planar SPLINE
  * entities. Polyline and HATCH bulges keep their exact DXF arc geometry;
  * full and partial planar ellipses and supported splines retain exact rational
- * NURBS geometry. Multi-path HATCH is refused to preserve hole/island intent;
- * edge-based and out-of-plane HATCH boundaries are also refused. Periodic
+ * NURBS geometry. A multi-path HATCH keeps its declared holes: each filled
+ * area is ONE sketch whose inner paths are holes, and an island inside a hole
+ * is its own sketch. Edge-based, crossing and out-of-plane HATCH boundaries
+ * are refused. Periodic
  * and unclamped SPLINE knots are clamped exactly; a cubic SPLINE with fit
  * points only is interpolated through its fit points, as a C2 periodic cubic
  * when it is closed. Nonplanar ellipses, non-cubic fit-point-only,

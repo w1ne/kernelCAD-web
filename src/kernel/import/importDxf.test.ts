@@ -27,6 +27,28 @@ function hatch(...pairs: Array<[number, string | number]>): string {
   );
 }
 
+/** One closed polyline boundary path: `[x, y]` or `[x, y, bulge]` vertices. */
+function polylinePath(vertices: Array<[number, number] | [number, number, number]>): Array<[number, string | number]> {
+  const hasBulges = vertices.some(v => v.length === 3);
+  return [
+    [92, 2], [72, hasBulges ? 1 : 0], [73, 1], [93, vertices.length],
+    ...vertices.flatMap(([x, y, bulge]): Array<[number, number]> =>
+      hasBulges ? [[10, x], [20, y], [42, bulge ?? 0]] : [[10, x], [20, y]]),
+    [97, 1], [330, '2A'],
+  ];
+}
+
+/** 40 x 40 outer square, 30 x 30 hole, 10 x 10 island inside the hole. */
+function nestedHatch(style: number): string {
+  return hatch(
+    [91, 3],
+    ...polylinePath([[0, 0], [40, 0], [40, 40], [0, 40]]),
+    ...polylinePath([[5, 5], [35, 5], [35, 35], [5, 35]]),
+    ...polylinePath([[15, 15], [25, 15], [25, 25], [15, 25]]),
+    [75, style], [76, 1], [98, 1], [10, 2], [20, 2],
+  );
+}
+
 function header(...pairs: Array<[number, string | number]>): Array<[number, string | number]> {
   return [[0, 'SECTION'], [2, 'HEADER'], ...pairs, [0, 'ENDSEC']];
 }
@@ -353,8 +375,67 @@ describe('importDxfText — entities', () => {
     );
   });
 
-  it('refuses HATCH entities with multiple paths instead of flattening holes into separate profiles', () => {
-    expect(() => importDxfText(hatch([91, 2]))).toThrow(/2 boundary paths are not supported/);
+  it('reads a multi-path HATCH as one profile whose inner paths are holes', () => {
+    const r = importDxfText(hatch(
+      [91, 3],
+      ...polylinePath([[0, 0], [40, 0], [40, 20], [0, 20]]),
+      // Clockwise inner square: winding must not decide which loop is a hole.
+      ...polylinePath([[5, 5], [5, 15], [15, 15], [15, 5]]),
+      // r = 3 mm circle as two bulge-1 vertices.
+      ...polylinePath([[27, 10, 1], [33, 10, 1]]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(800 - 100 - 9 * Math.PI, 9);
+    expect(r.regions[0].segmentCount).toBe(10);
+    expect(r.regions[0].commands.filter(c => c.kind === 'moveTo')).toHaveLength(3);
+    // The outer boundary comes first: the sketch lowering cuts every later loop from it.
+    expect(points(r.regions[0].commands)[0]).toEqual([0, 0]);
+    expect(r.regions[0].source).toBe('HATCH with 2 holes');
+  });
+
+  it('returns an island inside a HATCH hole as its own profile under the normal style', () => {
+    const r = importDxfText(nestedHatch(0));
+    expect(r.regions.map(region => region.areaMm2)).toEqual([
+      expect.closeTo(1600 - 900, 9),
+      expect.closeTo(100, 9),
+    ]);
+    expect(r.regions.map(region => region.commands.filter(c => c.kind === 'moveTo').length)).toEqual([2, 1]);
+  });
+
+  it('honours the outer and ignore HATCH styles for nested paths', () => {
+    expect(importDxfText(nestedHatch(1)).regions.map(region => region.areaMm2)).toEqual([expect.closeTo(700, 9)]);
+    expect(importDxfText(nestedHatch(2)).regions.map(region => region.areaMm2)).toEqual([expect.closeTo(1600, 9)]);
+  });
+
+  it('decides HATCH nesting exactly when a path vertex sits inside a bulge arc', () => {
+    // The hole's corner (1, 10) is outside the outer chord polygon (x >= 2)
+    // but inside the outer boundary's left semicircle bulge.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[2, 0], [22, 0], [22, 20], [2, 20, 1]]),
+      ...polylinePath([[1, 10], [6, 8], [6, 12]]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 + 50 * Math.PI - 10, 9);
+  });
+
+  it('refuses HATCH paths that cross instead of guessing which side is filled', () => {
+    expect(() => importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[0, 0], [10, 0], [10, 10], [0, 10]]),
+      ...polylinePath([[5, 5], [15, 5], [15, 15], [5, 15]]),
+      [75, 0],
+    ))).toThrow(/boundary paths 1 and 2 cross/);
+  });
+
+  it('refuses a HATCH path count that does not match the paths present', () => {
+    expect(() => importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[0, 0], [10, 0], [10, 10], [0, 10]]),
+      [75, 0],
+    ))).toThrow(/boundary path data must start with group code 92/);
   });
 
   it('refuses edge-based HATCH paths until their exact curve geometry is supported', () => {
@@ -484,6 +565,24 @@ describe('importDxfText — INSERT block references', () => {
     expect(b.xs[1]).toBeCloseTo(100, 9);
     expect(b.ys[0]).toBeCloseTo(50, 9);
     expect(b.ys[1]).toBeCloseTo(70, 9);
+  });
+
+  it('keeps a HATCH hole inside its profile when the block is inserted with a non-uniform scale', () => {
+    const r = importDxfText(drawing(
+      block('GASKET', [0, 0],
+        [0, 'HATCH'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbHatch'],
+        [10, 0], [20, 0], [30, 0], [210, 0], [220, 0], [230, 1], [2, 'SOLID'], [70, 1], [71, 0],
+        [91, 2],
+        ...polylinePath([[0, 0], [20, 0], [20, 10], [0, 10]]),
+        ...polylinePath([[8, 5, 1], [12, 5, 1]]),
+        [75, 0]),
+      [[0, 'INSERT'], [2, 'GASKET'], [10, 0], [20, 0], [41, 2], [42, 1]],
+    ));
+    // 40 x 10 plate minus the r = 2 hole stretched to a 4 x 2 mm semi-axis ellipse.
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 - 8 * Math.PI, 2);
+    expect(r.regions[0].commands.filter(c => c.kind === 'moveTo')).toHaveLength(2);
+    expect(r.regions[0].commands.some(c => c.kind === 'nurbsSegment')).toBe(true);
   });
 
   it('measures block geometry from the block base point', () => {
