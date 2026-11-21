@@ -301,6 +301,26 @@ describe('lib.fromDXF — round trip to a solid', () => {
     });
   });
 
+  it('imports a multi-path HATCH as one profile whose window and bolt holes cut the solid', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-gasket.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(2).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // 60 x 40 plate minus a 30 x 16 window and four r = 3 bolt holes, 2 mm thick.
+    expect(backend.volume()).toBeCloseTo((2400 - 480 - 36 * Math.PI) * 2, 4);
+    // Outer sides, top, bottom, four window walls and four cylindrical bores.
+    expect(shape.faces.length).toBe(4 + 2 + 4 + 4 * 2);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(40, 6), expect.closeTo(2, 6)],
+    });
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
