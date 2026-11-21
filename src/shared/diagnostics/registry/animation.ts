@@ -4,7 +4,7 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const ANIMATION_CODES = {
-  // Animation views (7) — multi-track keyframe animationView() validation.
+  // Animation views (8) — multi-track keyframe animationView() validation.
   // The first five fire at capture time from CaptureSession.addAnimationView
   // (errors THROW KernelError — the addDfmSpec precedent, since stashed
   // virtual-record diagnostics never reach evaluate; warns stash on
@@ -65,5 +65,13 @@ export const ANIMATION_CODES = {
     defaultSeverity: 'error',
     group: 'animation',
     description: 'An animationView track param re-lowers part-local geometry (not just a solvedAssembly mate pose), so Studio baked playback — which only re-applies rigid per-part transforms — cannot represent it; offline MP4 capture is required.',
+  },
+  'animation.target.unknown': {
+    hintTemplate:
+      'An animationView appearance track names a target that matches no rendered object. Use a feature id, assembly part name or display name listed in the message (case-insensitive; * and ? wildcards work), or name the part with assembly.part(name, shape).',
+    nextAction: { kind: 'fix-arg', field: 'tracks[].target' },
+    defaultSeverity: 'error',
+    group: 'animation',
+    description: 'An animationView appearance track (colour / emissive keyframes) targets an object name that matches no rendered feature or assembly part.',
   },
 } as const satisfies Record<`animation.${string}`, DiagnosticCodeSpec>;

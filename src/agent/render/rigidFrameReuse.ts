@@ -16,6 +16,11 @@ export interface ReusableFeature {
   faces: readonly unknown[];
   transform?: readonly number[];
   mesh?: { positions: ArrayLike<number>; normals: ArrayLike<number>; indices: ArrayLike<number> };
+  /** Appearance: a transform-only update would keep the loaded materials, so
+   *  any change here forces a full load. */
+  color?: string;
+  material?: unknown;
+  materialByFaceId?: unknown;
 }
 
 /** True when every feature is a display mesh with an assembly transform, and
@@ -39,7 +44,14 @@ function sameFeature(a: ReusableFeature, b: ReusableFeature): boolean {
   if (aEmpty || bEmpty) return aEmpty === bEmpty;
   if (!isMeshOnly(a) || !isMeshOnly(b)) return false;
   if (b.transform === undefined || b.transform.length !== 16) return false;
+  if (!sameAppearance(a, b)) return false;
   return sameMesh(a.mesh, b.mesh);
+}
+
+function sameAppearance(a: ReusableFeature, b: ReusableFeature): boolean {
+  return a.color === b.color
+    && JSON.stringify(a.material) === JSON.stringify(b.material)
+    && JSON.stringify(a.materialByFaceId) === JSON.stringify(b.materialByFaceId);
 }
 
 function isEmpty(f: ReusableFeature): boolean {

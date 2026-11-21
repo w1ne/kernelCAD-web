@@ -34,6 +34,7 @@ import {
   type HeadlessObjectFilter,
 } from './headlessRender';
 import { canReuseLoadedMeshes } from './rigidFrameReuse';
+import { appearanceEntriesForFrame, resolveAppearanceTargets } from '../../modeling/animation/appearanceTargets';
 import type {
   CaptureAnimationOpts,
   CaptureAnimationResult,
@@ -57,6 +58,7 @@ declare const window: {
     setRenderView: (view: string) => void;
     setRenderPose: (azDeg: number, elDeg: number) => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
+    setFeatureAppearance: (overrides: Array<{ featureId: string; color?: string; emissive?: string }>) => unknown;
     setPublishStage: (spec: { background: string; shadow: boolean } | null) => void;
   };
 };
@@ -317,6 +319,35 @@ export async function coldMeshPhase(
   return { initial };
 }
 
+/** Resolve appearance-track targets against the cold mesh. A target that
+ *  names no rendered object is a model fault, refused before any browser or
+ *  encoder starts. */
+export function resolveAppearanceTargetsPhase(
+  metadata: AnimationViewMetadata,
+  initial: MeshResult,
+  durationMs: number,
+  fps: number,
+  stashedWarns: CompilerDiagnostic[],
+  verifyFields: VerifyFieldsFn,
+): { targets: ReadonlyMap<string, readonly string[]> | undefined } | { failure: CaptureAnimationResult } {
+  const tracks = metadata.appearanceTracks ?? [];
+  if (tracks.length === 0) return { targets: undefined };
+  const resolved = resolveAppearanceTargets(tracks, initial.features);
+  if (resolved.unknown.length > 0) {
+    return {
+      failure: {
+        ok: false, frameCount: 0, durationMs, fps, failureKind: 'model', ...verifyFields(),
+        diagnostics: [...stashedWarns, diag(
+          'animation.target.unknown',
+          `captureAnimation: appearance track target(s) ${resolved.unknown.map((t) => `'${t}'`).join(', ')} match no rendered object. Available names: ${resolved.available.join(', ')}.`,
+          'Use a feature id, assembly part name or display name from the list (wildcards * and ? work), or name the part with assembly.part(name, shape).',
+        )],
+      },
+    };
+  }
+  return { targets: resolved.featureIdsByTarget };
+}
+
 /** ffmpeg arguments for a PNG stdin stream → `outPath`. `.gif` gets a
  *  two-pass palette (palettegen + paletteuse) and loops forever; anything
  *  else is H.264 MP4. */
@@ -438,13 +469,17 @@ async function updateFrameModelPhase(params: {
   verifyFields: VerifyFieldsFn;
   partialNote: string;
   abortFfmpeg: () => Promise<void>;
+  /** Cold-mesh result reused for frames with no param values (an
+   *  appearance-only timeline never re-solves the model). */
+  staticMeshing?: MeshResult;
 }): Promise<{ meshing: MeshResult } | { failure: CaptureAnimationResult }> {
   const { frame, i, model, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
+  const updates: ParamUpdateEdit[] = Object.entries(frame.values)
+    .map(([name, value]) => ({ name, value }));
+  if (updates.length === 0 && params.staticMeshing !== undefined) return { meshing: params.staticMeshing };
   // (a) param-update / solve / mesh — MODEL fault.
   let meshing;
   try {
-    const updates: ParamUpdateEdit[] = Object.entries(frame.values)
-      .map(([name, value]) => ({ name, value }));
     await updateModelParams(model, updates);
     meshing = await meshFeaturesPerFeature(
       model.records, model.session.paramTable, model.session,
@@ -481,12 +516,16 @@ async function renderFramePhase(params: {
   partialNote: string;
   abortFfmpeg: () => Promise<void>;
   loadedFeatures: MeshResult['features'] | undefined;
+  appearanceTargets?: ReadonlyMap<string, readonly string[]>;
 }): Promise<{ png: Buffer; loadedFeatures: MeshResult['features'] } | { failure: CaptureAnimationResult }> {
   const { frame, i, page, meshing, opts, bounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg, loadedFeatures } = params;
   // (b) browser render ops — ENVIRONMENT fault.
   let png: Buffer;
   try {
-    if (canReuseLoadedMeshes(loadedFeatures, meshing.features)) {
+    if (loadedFeatures !== undefined && loadedFeatures === meshing.features) {
+      // Same meshing object as the loaded frame (no param tracks): the page
+      // already holds this scene, nothing to send.
+    } else if (canReuseLoadedMeshes(loadedFeatures, meshing.features)) {
       // Geometry is already in the page: send only the 16-value transforms.
       await updateFeatureTransformsOnPage(page, meshing.features, bounds ?? meshing.bounds);
     } else {
@@ -509,6 +548,12 @@ async function renderFramePhase(params: {
         (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
         opts.objectFilter,
       );
+    }
+    // Appearance tracks: material overrides on top of the loaded meshes,
+    // re-applied every frame because a mesh reload rebuilds the materials.
+    if (frame.appearance !== undefined && params.appearanceTargets !== undefined) {
+      const entries = appearanceEntriesForFrame(frame.appearance, params.appearanceTargets);
+      await page.evaluate((overrides) => window.__demoPlayer!.setFeatureAppearance(overrides), entries);
     }
     // Mesh reloads fit the camera again; restore the requested pose on every frame.
     if (opts.cameraPose !== undefined) {
@@ -591,6 +636,7 @@ async function lockedFramingBounds(params: {
   opts: CaptureAnimationOpts;
   t0: number;
   abortFfmpeg: () => Promise<void>;
+  staticMeshing?: MeshResult;
 }): Promise<Bounds | undefined | { failure: CaptureAnimationResult }> {
   if (params.opts.lockFrame !== true) return undefined;
   const boxes: Bounds[] = [];
@@ -606,6 +652,7 @@ async function lockedFramingBounds(params: {
       verifyFields: params.verifyFields,
       partialNote: 'The camera-lock measure stopped before any frame was written.',
       abortFfmpeg: params.abortFfmpeg,
+      staticMeshing: params.staticMeshing,
     });
     if ('failure' in meshResult) return meshResult;
     boxes.push(meshResult.meshing.bounds);
@@ -617,6 +664,13 @@ async function lockedFramingBounds(params: {
   if (union === undefined) return undefined;
   params.onProgress('camera locked to the full reach');
   return padBounds(union, FRAME_LOCK_PAD);
+}
+
+/** Features the page bootstrap already holds that frame 0 may reuse: the
+ *  cold mesh, but only for a timeline with no param values. */
+function preloadedFeatures(frames: FrameList, staticMeshing: MeshResult | undefined): MeshResult['features'] | undefined {
+  if (staticMeshing === undefined || frames.length === 0) return undefined;
+  return Object.keys(frames[0].values).length === 0 ? staticMeshing.features : undefined;
 }
 
 export async function runFrameLoopPhase(params: {
@@ -633,11 +687,15 @@ export async function runFrameLoopPhase(params: {
   opts: CaptureAnimationOpts;
   t0: number;
   abortFfmpeg: () => Promise<void>;
+  /** Cold-mesh result; frames with no param values reuse it unchanged. */
+  staticMeshing?: MeshResult;
+  /** Appearance-track target → feature ids (see appearanceTargets.ts). */
+  appearanceTargets?: ReadonlyMap<string, readonly string[]>;
 }): Promise<{ written: number } | { failure: CaptureAnimationResult }> {
-  const { frames, model, page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg } = params;
+  const { frames, model, page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg, staticMeshing, appearanceTargets } = params;
   let written = 0;
   const framing = await lockedFramingBounds({
-    frames, model, written, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,
+    frames, model, written, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg, staticMeshing,
   });
   if (framing !== undefined && 'failure' in framing) return framing;
   const lockedBounds = framing !== undefined && !('failure' in framing) ? framing : undefined;
@@ -656,16 +714,18 @@ export async function runFrameLoopPhase(params: {
     : 'The partial MP4 was deleted.';
   // Features last loaded into the page. A frame whose mesh buffers match these
   // only needs a transform update (see rigidFrameReuse.ts).
-  let loadedFeatures: MeshResult['features'] | undefined;
+  // The page bootstrap already loaded the cold mesh. A timeline with no param
+  // tracks reuses that mesh on every frame, so nothing is ever re-sent.
+  let loadedFeatures = preloadedFeatures(frames, staticMeshing);
   for (let i = 0; i < frames.length; i += 1) {
     const frame = frames[i];
     const meshResult = await updateFrameModelPhase({
-      frame, i, model, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
+      frame, i, model, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg, staticMeshing,
     });
     if ('failure' in meshResult) return meshResult;
     const renderResult = await renderFramePhase({
       frame, i, page, meshing: meshResult.meshing, opts, bounds: lockedBounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
-      loadedFeatures,
+      loadedFeatures, appearanceTargets,
     });
     if ('failure' in renderResult) return renderResult;
     loadedFeatures = renderResult.loadedFeatures;
