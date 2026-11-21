@@ -6,6 +6,14 @@
   the finger centre line, and the two strap anchors are 2 mm off the palm
   faces instead of inside the palm. The finger also stays collision-free with
   all three joints at their flexed limits together.
+
+- Canonical face names (`top`, `bottom`, `left` and the others) on a solid
+  without a primitive kind no longer stop resolving once the solid is
+  meshed. The box rule compared each planar face with a box read from the
+  triangulation. After a mesh, the curved corners of a 40 x 30 x 10 mm
+  rounded-rectangle prism moved that box above the 10 mm cap by more than
+  the 0.01 mm tolerance, so `top` returned no canonical face. The rule now
+  reads the geometry box in every call order.
 - The STL fuse-cost gate for a multi-part Scene no longer changes its price
   once the parts are meshed, for example by a render before the export. It
   read each free-form face box from the triangulation when one existed: two
