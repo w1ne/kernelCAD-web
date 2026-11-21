@@ -2,10 +2,27 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { strFromU8, unzipSync } from 'fflate';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
+import type { Mesh } from 'three';
+import { USDLoader } from 'three/examples/jsm/loaders/USDLoader.js';
 
 function objBundle(bytes: Uint8Array): { obj: string; mtl: string } {
   const files = unzipSync(bytes);
   return { obj: strFromU8(files['model.obj']!), mtl: strFromU8(files['model.mtl']!) };
+}
+
+/** Load a USDA stage the way three.js viewers do and return its meshes. */
+async function loadUsdMeshes(code: string): Promise<Mesh[]> {
+  const result = await runAndExport({ code, fileName: 'usd.kcad.ts', format: 'usd' });
+  const meshes: Mesh[] = [];
+  new USDLoader().parse(new TextDecoder().decode(result.bytes)).traverse(o => {
+    if ((o as Mesh).isMesh) meshes.push(o as Mesh);
+  });
+  return meshes;
+}
+
+function cornerNormals(mesh: Mesh): Array<[number, number, number]> {
+  const n = mesh.geometry.getAttribute('normal');
+  return Array.from({ length: n.count }, (_, i) => [n.getX(i), n.getY(i), n.getZ(i)]);
 }
 
 describe('standalone OBJ and USD mesh exports', () => {
@@ -59,5 +76,33 @@ describe('standalone OBJ and USD mesh exports', () => {
     expect(usd).toContain('def Mesh "left"');
     expect(usd).toContain('def Mesh "right"');
     expect(usd).toContain('(8, 0, 0)');
+  });
+
+  it('loads in the three.js USD reader with flat box faces', async () => {
+    const meshes = await loadUsdMeshes('return box(10, 20, 30);');
+    expect(meshes.map(m => m.name)).toEqual(['part']);
+    const normals = cornerNormals(meshes[0]!);
+    expect(normals).toHaveLength(36);
+    // Each corner normal is a face axis, not the (±0.58, ±0.58, ±0.58)
+    // average across the shared box corner.
+    for (const n of normals) expect(Math.max(...n.map(Math.abs))).toBeCloseTo(1, 5);
+  });
+
+  it('keeps a cylinder side smooth and its caps flat in USD normals', async () => {
+    const meshes = await loadUsdMeshes('return cylinder(10, 20);');
+    const normals = cornerNormals(meshes[0]!);
+    const side = normals.filter(n => Math.abs(n[2]) < 1e-6);
+    const caps = normals.filter(n => Math.abs(Math.abs(n[2]) - 1) < 1e-6);
+    expect(side.length + caps.length).toBe(normals.length);
+    expect(side.every(n => Math.abs(Math.hypot(n[0], n[1]) - 1) < 1e-5)).toBe(true);
+    expect(new Set(side.map(n => n.map(v => v.toFixed(4)).join())).size).toBeGreaterThan(32);
+  });
+
+  it('authors one face-varying USD normal index per face vertex', async () => {
+    const result = await runAndExport({ code: 'return box(10, 20, 30);', fileName: 'box.kcad.ts', format: 'usd' });
+    const text = new TextDecoder().decode(result.bytes);
+    const list = (name: string): string[] => text.match(new RegExp(`${name} = \\[([^\\]]*)\\]`))![1]!.split(', ');
+    expect(text).toContain('interpolation = "faceVarying"');
+    expect(list('int\\[\\] primvars:normals:indices')).toHaveLength(list('int\\[\\] faceVertexIndices').length);
   });
 });
