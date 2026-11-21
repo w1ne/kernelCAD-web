@@ -22,11 +22,11 @@ export function drainResolvedWarnings(
   }
 }
 
-/** Pre-filter edges below `minLength` (2 × radius for fillet, 2 × distance for
- *  chamfer). OCCT's BlendChain solver rejects radii larger than half the target
- *  edge length, so historically a single sub-2×r edge would fail the whole
- *  operation. Filtering pre-call lets long edges proceed and surfaces a clean
- *  info diagnostic naming the skipped count. Used by both fillet and chamfer. */
+/** Screen out edges below `minLength` (2 × radius for fillet, 2 × distance for
+ *  chamfer) after the kernel rejected the full selection. The long edges get a
+ *  retry, and the diagnostic names the skipped count. Edge length alone does
+ *  not set the limit: a 12 mm corner edge takes a 34.8 mm fillet. Used by both
+ *  fillet and chamfer. */
 export function filterEdgesByMinLength(
   edges: readonly Edge[],
   minLength: number,
