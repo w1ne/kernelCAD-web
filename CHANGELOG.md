@@ -1,5 +1,13 @@
 # Unreleased
 
+- The STL fuse-cost gate for a multi-part Scene no longer changes its price
+  once the parts are meshed, for example by a render before the export. It
+  read each free-form face box from the triangulation when one existed: two
+  interpenetrating twisted sweeps counted 283 overlapping face pairs before
+  meshing and 291 after, so a Scene near the 64-pair budget could fuse or
+  ship as separate shells depending on call order. The gate now reads the
+  face geometry in every call order.
+
 - The `boundingBoxIn` face query no longer changes its result once the
   shape is meshed. It read each face box from the triangulation when one
   existed: after a mesh, the side face of a 10 mm high, 5 mm radius
