@@ -80,6 +80,22 @@ describe('resolveCanonicalByGeometry (unit)', () => {
     const res = resolveCanonicalByGeometry(sphere.getReplicadShape(), 'top');
     expect(res.kind).toBe('no-canonical-faces');
   });
+
+  it('box rule: meshing the solid does not change which face is top', () => {
+    // A rounded-rectangle prism has six planar faces, so 'top' resolves by
+    // the box rule. replicad's box reads the triangulation once the shape is
+    // meshed, and the curved corner faces moved its z max above the cap.
+    for (const meshFirst of [false, true]) {
+      const prism = OcctBackend.extrudeRoundedRect(40, 30, 6, 10);
+      if (meshFirst) prism.getMesh();
+      const shape = prism.getReplicadShape();
+      for (const [name, z] of [['top', 10], ['bottom', 0]] as const) {
+        const res = resolveCanonicalByGeometry(shape, name);
+        expect(res.kind, `${name}, meshFirst=${meshFirst}`).toBe('resolved');
+        if (res.kind === 'resolved') expect(res.face.center.z).toBeCloseTo(z, 6);
+      }
+    }
+  });
 });
 
 describe('pickFace / pickEdges on a swept solid (canonical refs)', () => {
