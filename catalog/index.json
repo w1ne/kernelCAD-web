@@ -229175,7 +229175,7 @@
       "id": "hopper-wagon",
       "kit": "railway",
       "title": "Hopper wagon",
-      "description": "Open-top hopper wagon with sloped discharge bays, top rails and four paired wheels. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
+      "description": "Open-top two-bay hopper wagon: painted side sheets with posts and top chords, end slope sheets that feed two V-shaped discharge pockets with galvanized bottom gates, two freight bogies with wheels on both rails, stub sills, couplers, end ladders and a hand brake wheel. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -229196,8 +229196,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/hopper-wagon.kcad.ts",
       "preview": "/assets/railway-hopper-wagon.png",
-      "sourceSha256": "581cf3e4655e162f5ad25372d910f41d6239935a22145d5133c7f6d7c49d8e08",
-      "triangleBudget": 1800,
+      "sourceSha256": "0be5383600066259721651f09355288c2b62177e374874c7168404c8eb1718bd",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -229211,19 +229211,19 @@
         {
           "name": "railSteel",
           "type": "color",
-          "default": "#626b70",
+          "default": "#3c4245",
           "label": "Rail and running gear steel"
         },
         {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#4a5358",
+          "default": "#7a3a2c",
           "label": "Painted steel"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#929da0",
+          "default": "#a3acae",
           "label": "Galvanized steel"
         }
       ],
@@ -229240,48 +229240,126 @@
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 1976,
         "sizeM": [
-          1.38,
-          0.584,
-          0.367
+          1.6,
+          0.596,
+          0.358
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "railSteel",
-          "color": "#626b70",
-          "parts": [
-            "underframe",
-            "wheel-left-a",
-            "wheel-left-b",
-            "wheel-right-a",
-            "wheel-right-b"
-          ],
-          "param": "railSteel"
-        },
-        {
           "name": "paintedSteel",
-          "color": "#4a5358",
+          "color": "#7a3a2c",
           "parts": [
-            "hopper-body",
-            "left-slope",
-            "right-slope"
+            "side-sheet-front",
+            "top-chord-front",
+            "side-post-front--620",
+            "side-post-front--420",
+            "side-post-front--200",
+            "side-post-front-200",
+            "side-post-front-420",
+            "side-post-front-620",
+            "side-sheet-back",
+            "top-chord-back",
+            "side-post-back--620",
+            "side-post-back--420",
+            "side-post-back--200",
+            "side-post-back-200",
+            "side-post-back-420",
+            "side-post-back-620",
+            "hopper-floor",
+            "end-sheet-a",
+            "top-chord-end-a",
+            "end-sheet-b",
+            "top-chord-end-b",
+            "body-bolster-a",
+            "stub-sill-a",
+            "end-sill-a",
+            "body-bolster-b",
+            "stub-sill-b",
+            "end-sill-b"
           ],
           "param": "paintedSteel"
         },
         {
           "name": "galvanizedSteel",
-          "color": "#929da0",
+          "color": "#a3acae",
           "parts": [
-            "top-rail-front",
-            "top-rail-back",
-            "outlet-left",
-            "outlet-right"
+            "gate-frame-a",
+            "gate-door-a",
+            "gate-shaft-a",
+            "gate-drive-a-front",
+            "gate-drive-a-back",
+            "gate-frame-b",
+            "gate-door-b",
+            "gate-shaft-b",
+            "gate-drive-b-front",
+            "gate-drive-b-back",
+            "ladder-rail-a-80",
+            "ladder-rail-a-130",
+            "ladder-rung-a-280",
+            "ladder-rung-a-350",
+            "ladder-rung-a-420",
+            "ladder-rung-a-490",
+            "ladder-rail-b-80",
+            "ladder-rail-b-130",
+            "ladder-rung-b-280",
+            "ladder-rung-b-350",
+            "ladder-rung-b-420",
+            "ladder-rung-b-490"
           ],
           "param": "galvanizedSteel"
+        },
+        {
+          "name": "railSteel",
+          "color": "#3c4245",
+          "parts": [
+            "coupler-shank-a",
+            "coupler-knuckle-a",
+            "coupler-shank-b",
+            "coupler-knuckle-b",
+            "axle-a--85",
+            "wheel-a--85-front",
+            "flange-a--85-front",
+            "journal-box-a--85-front",
+            "wheel-a--85-back",
+            "flange-a--85-back",
+            "journal-box-a--85-back",
+            "axle-a-85",
+            "wheel-a-85-front",
+            "flange-a-85-front",
+            "journal-box-a-85-front",
+            "wheel-a-85-back",
+            "flange-a-85-back",
+            "journal-box-a-85-back",
+            "side-frame-a-front",
+            "side-frame-a-back",
+            "bogie-bolster-a",
+            "axle-b--85",
+            "wheel-b--85-front",
+            "flange-b--85-front",
+            "journal-box-b--85-front",
+            "wheel-b--85-back",
+            "flange-b--85-back",
+            "journal-box-b--85-back",
+            "axle-b-85",
+            "wheel-b-85-front",
+            "flange-b-85-front",
+            "journal-box-b-85-front",
+            "wheel-b-85-back",
+            "flange-b-85-back",
+            "journal-box-b-85-back",
+            "side-frame-b-front",
+            "side-frame-b-back",
+            "bogie-bolster-b",
+            "brake-staff",
+            "brake-wheel",
+            "brake-wheel-hub"
+          ],
+          "param": "railSteel"
         }
       ]
     },
