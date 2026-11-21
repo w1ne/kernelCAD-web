@@ -15,8 +15,16 @@
 //   2 ignore  only the outermost loops are filled; inner loops are not holes
 //
 // Nesting depth is decided geometrically with an exact point-in-loop test
-// for line and bulge-arc boundaries. Only planar polyline paths are read;
-// edge-based paths and out-of-plane hatches are refused.
+// for line and bulge-arc boundaries.
+//
+// A boundary path is a polyline (path flag bit 2) or a chain of edges. Line
+// and circular-arc edges are read exactly: an arc edge becomes a bulge
+// segment. A clockwise arc edge (group code 73 = 0) stores its angles as
+// complementary angles (360 - angle), so it runs clockwise from -50 to -51.
+// Writers do not all emit each edge in the direction of travel, so an edge
+// whose end, not its start, meets the previous edge is reversed. Edges that
+// do not join, elliptic-arc and spline edges, and out-of-plane hatches are
+// refused.
 
 import type { ImportFace, ImportSegment } from './contourAssembly';
 import { DxfParseError, entityVector, get, num, polylineSegments, type EntityBlock, type Pair, type PolyVertex } from './dxfPairs';
@@ -57,7 +65,8 @@ function validateHatchPlane(b: EntityBlock, pathCountIndex: number): void {
 
 type HatchPolylinePath = { pairs: Pair[]; vertexCount: number; hasBulges: number; nextIndex: number };
 
-function hatchPathFlags(b: EntityBlock, start: number): void {
+/** Whether the path that starts at `start` is a polyline (true) or an edge chain (false). */
+function isPolylinePath(b: EntityBlock, start: number): boolean {
   const pathFlagPair = b.body[start];
   if (!pathFlagPair || pathFlagPair.code !== 92) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: boundary path data must start with group code 92.`);
@@ -66,17 +75,11 @@ function hatchPathFlags(b: EntityBlock, start: number): void {
   if (!Number.isInteger(pathFlags) || pathFlags < 0) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: boundary path flags must be a non-negative integer.`);
   }
-  if ((pathFlags & 2) === 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `HATCH at line ${b.line}: edge-based boundary paths are not supported; re-export the boundary as a closed polyline.`,
-    );
-  }
+  return (pathFlags & 2) !== 0;
 }
 
 /** Read the polyline path that starts with group code 92 at `start`. */
 function hatchPolylinePath(b: EntityBlock, start: number): HatchPolylinePath {
-  hatchPathFlags(b, start);
   const pathEndIndex = b.body.findIndex((pair, index) => index > start && pair.code === 97);
   if (pathEndIndex < 0) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: required group code 97 is missing after the boundary path.`);
@@ -103,10 +106,137 @@ function hatchPolylinePath(b: EntityBlock, start: number): HatchPolylinePath {
   if (!Number.isInteger(vertexCount) || vertexCount < 2) {
     throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 93 must declare at least 2 vertices.`);
   }
-  // The 97 count is followed by that many source-object handles (330).
-  let nextIndex = pathEndIndex + 1;
+  return { pairs: path, vertexCount, hasBulges, nextIndex: skipSourceHandles(b, pathEndIndex) };
+}
+
+/** Skip the 97 source-object count at `index` and the handles (330) after it. */
+function skipSourceHandles(b: EntityBlock, index: number): number {
+  let nextIndex = index + 1;
   while (b.body[nextIndex]?.code === 330) nextIndex++;
-  return { pairs: path, vertexCount, hasBulges, nextIndex };
+  return nextIndex;
+}
+
+// ---------------------------------------------------------------------------
+// Edge-based paths
+// ---------------------------------------------------------------------------
+
+/** Endpoint mismatch allowed between consecutive edges, in millimetres. */
+const EDGE_JOIN_TOLERANCE = 1e-6;
+
+const UNSUPPORTED_EDGE: Record<number, string> = { 3: 'elliptic-arc', 4: 'spline' };
+
+/** Read edges in their fixed DXF group-code order; every code is required. */
+function edgeReader(b: EntityBlock, start: number) {
+  let index = start;
+  return {
+    take(code: number): number {
+      const pair = b.body[index];
+      if (!pair || pair.code !== code) {
+        throw new DxfParseError(
+          'malformed-entity',
+          `HATCH at line ${b.line}: expected group code ${code} in a boundary edge` +
+            (pair ? `, found ${pair.code} at line ${pair.line}.` : ', found the end of the entity.'),
+        );
+      }
+      index++;
+      return num(pair, 'HATCH', code);
+    },
+    get index() { return index; },
+  };
+}
+
+/** One line or circular-arc edge as a segment in millimetres. */
+function hatchEdge(b: EntityBlock, read: ReturnType<typeof edgeReader>, scale: number): ImportSegment[] {
+  const type = read.take(72);
+  const source = `HATCH (line ${b.line})`;
+  if (type === 1) {
+    const [x0, y0, x1, y1] = [read.take(10), read.take(20), read.take(11), read.take(21)].map(v => v * scale);
+    return [{ x0, y0, x1, y1, source }];
+  }
+  if (type !== 2) {
+    const name = UNSUPPORTED_EDGE[type];
+    throw new DxfParseError(
+      name ? 'unsupported-entity' : 'malformed-entity',
+      name
+        ? `HATCH at line ${b.line}: ${name} boundary edges are not supported; re-export the boundary as a closed polyline.`
+        : `HATCH at line ${b.line}: boundary edge type (group code 72) must be 1, 2, 3 or 4, found ${type}.`,
+    );
+  }
+  const cx = read.take(10) * scale, cy = read.take(20) * scale, radius = read.take(40) * scale;
+  const startAngle = read.take(50), endAngle = read.take(51), ccw = read.take(73);
+  if (!(radius > 0) || (ccw !== 0 && ccw !== 1)) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `HATCH at line ${b.line}: an arc edge needs a positive radius (40) and a direction flag (73) of 0 or 1.`,
+    );
+  }
+  const raw = endAngle - startAngle;
+  const span = Math.abs(Math.abs(raw) - 360) <= 1e-9 ? 360 : ((raw % 360) + 360) % 360;
+  if (span <= 1e-9) {
+    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: an arc edge has zero angular span.`);
+  }
+  // A clockwise edge stores 360 - angle: it runs clockwise from -start to -end.
+  const sign = ccw === 1 ? 1 : -1;
+  const at = (deg: number): [number, number] => {
+    const rad = (sign * deg * Math.PI) / 180;
+    return [cx + radius * Math.cos(rad), cy + radius * Math.sin(rad)];
+  };
+  // A full circle is two half arcs: one bulge segment cannot close on itself.
+  const pieces = span === 360 ? [[startAngle, startAngle + 180], [startAngle + 180, startAngle + 360]] : [[startAngle, startAngle + span]];
+  return pieces.map(([from, to]) => {
+    const [x0, y0] = at(from), [x1, y1] = at(to);
+    return { x0, y0, x1, y1, bulge: sign * Math.tan(((to - from) * Math.PI) / 720), source };
+  });
+}
+
+/** Read the edge path that starts with group code 92 at `start` as one closed loop. */
+function hatchEdgePath(b: EntityBlock, start: number, scale: number): { loop: ImportSegment[]; nextIndex: number } {
+  const read = edgeReader(b, start + 1);
+  const edgeCount = read.take(93);
+  if (!Number.isInteger(edgeCount) || edgeCount < 1) {
+    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 93 must declare at least 1 boundary edge.`);
+  }
+  const edges: ImportSegment[][] = [];
+  for (let e = 0; e < edgeCount; e++) edges.push(hatchEdge(b, read, scale));
+  for (let e = 1; e < edges.length; e++) {
+    const end = edges[e - 1][edges[e - 1].length - 1];
+    if (!meets(end, edges[e][0]) && meets(end, reversed(edges[e])[0])) edges[e] = reversed(edges[e]);
+    // The first edge has no predecessor to fix its direction; the second edge decides it.
+    if (e === 1 && !meets(end, edges[1][0])) {
+      const flipped = reversed(edges[0]);
+      const flippedEnd = flipped[flipped.length - 1];
+      if (meets(flippedEnd, edges[1][0])) edges[0] = flipped;
+      else if (meets(flippedEnd, reversed(edges[1])[0])) [edges[0], edges[1]] = [flipped, reversed(edges[1])];
+    }
+    joinEdges(b, edges[e - 1][edges[e - 1].length - 1], edges[e][0], e + 1, e);
+  }
+  const loop = edges.flat();
+  joinEdges(b, loop[loop.length - 1], loop[0], 1, edgeCount);
+  read.take(97);
+  return { loop, nextIndex: skipSourceHandles(b, read.index - 1) };
+}
+
+function meets(previous: ImportSegment, next: ImportSegment): boolean {
+  return Math.hypot(next.x0 - previous.x1, next.y0 - previous.y1) <= EDGE_JOIN_TOLERANCE;
+}
+
+/** The same edge traversed the other way: a bulge arc keeps its points with the sign flipped. */
+function reversed(edge: readonly ImportSegment[]): ImportSegment[] {
+  return edge.map(seg => ({ ...seg, x0: seg.x1, y0: seg.y1, x1: seg.x0, y1: seg.y0, bulge: seg.bulge ? -seg.bulge : seg.bulge })).reverse();
+}
+
+/** Require `next` to start where `previous` ends, then make the join exact. */
+function joinEdges(b: EntityBlock, previous: ImportSegment, next: ImportSegment, edge: number, previousEdge: number): void {
+  if (!meets(previous, next)) {
+    const fmt = (x: number, y: number) => `(${+x.toFixed(6)}, ${+y.toFixed(6)})`;
+    throw new DxfParseError(
+      'malformed-entity',
+      `HATCH at line ${b.line}: boundary edge ${edge} does not join edge ${previousEdge}: edge ${previousEdge} ends at ` +
+        `${fmt(previous.x1, previous.y1)}, and neither end of edge ${edge} is there. The edges of a boundary path must form one closed chain.`,
+    );
+  }
+  next.x0 = previous.x1;
+  next.y0 = previous.y1;
 }
 
 function hatchPolylineVertices(b: EntityBlock, path: readonly Pair[], scale: number): { vertices: PolyVertex[]; hasBulgeValue: boolean } {
@@ -255,13 +385,19 @@ function hatchFaces(b: EntityBlock, loops: readonly ImportSegment[][], style: 0 
   });
 }
 
-/** Import a HATCH whose boundary paths are closed planar polylines. */
+/** Import a HATCH whose boundary paths are closed planar polylines or line and arc edges. */
 export function hatchSegments(b: EntityBlock, scale: number): HatchSegments {
   const { pathCountIndex, pathCount } = hatchPathCount(b);
   validateHatchPlane(b, pathCountIndex);
   const loops: ImportSegment[][] = [];
   let index = pathCountIndex + 1;
   for (let k = 0; k < pathCount; k++) {
+    if (!isPolylinePath(b, index)) {
+      const { loop, nextIndex } = hatchEdgePath(b, index, scale);
+      loops.push(loop);
+      index = nextIndex;
+      continue;
+    }
     const { pairs, vertexCount, hasBulges, nextIndex } = hatchPolylinePath(b, index);
     const { vertices, hasBulgeValue } = hatchPolylineVertices(b, pairs, scale);
     validateHatchVertices(b, vertices, vertexCount, hasBulges, hasBulgeValue);

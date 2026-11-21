@@ -38,6 +38,30 @@ function polylinePath(vertices: Array<[number, number] | [number, number, number
   ];
 }
 
+type HatchEdge =
+  | { line: [number, number, number, number] }
+  | { arc: [cx: number, cy: number, r: number, start: number, end: number, ccw: 0 | 1] }
+  | { type: number };
+
+/** One edge-based boundary path (group code 92 without the polyline bit). */
+function edgePath(edges: HatchEdge[]): Array<[number, string | number]> {
+  return [
+    [92, 1], [93, edges.length],
+    ...edges.flatMap((edge): Array<[number, string | number]> => {
+      if ('line' in edge) {
+        const [x0, y0, x1, y1] = edge.line;
+        return [[72, 1], [10, x0], [20, y0], [11, x1], [21, y1]];
+      }
+      if ('arc' in edge) {
+        const [cx, cy, r, start, end, ccw] = edge.arc;
+        return [[72, 2], [10, cx], [20, cy], [40, r], [50, start], [51, end], [73, ccw]];
+      }
+      return [[72, edge.type]];
+    }),
+    [97, 0],
+  ];
+}
+
 /** 40 x 40 outer square, 30 x 30 hole, 10 x 10 island inside the hole. */
 function nestedHatch(style: number): string {
   return hatch(
@@ -438,8 +462,75 @@ describe('importDxfText — entities', () => {
     ))).toThrow(/boundary path data must start with group code 92/);
   });
 
-  it('refuses edge-based HATCH paths until their exact curve geometry is supported', () => {
-    expect(() => importDxfText(hatch([91, 1], [92, 1]))).toThrow(/edge-based boundary paths are not supported/);
+  it('reads an edge-based HATCH path of lines and counter-clockwise arc edges as exact arcs', () => {
+    // 20 mm straight sides joined by two r = 10 mm semicircle arc edges.
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        { arc: [20, 10, 10, 270, 90, 1] },
+        { line: [20, 20, 0, 20] },
+        { arc: [0, 10, 10, 90, 270, 1] },
+      ]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 + 100 * Math.PI, 9);
+    expect(r.regions[0].segmentCount).toBe(4);
+    expect(r.regions[0].commands.filter(c => c.kind === 'bulgeArc')).toHaveLength(2);
+  });
+
+  it('reads clockwise HATCH arc edges with the DXF complementary-angle convention', () => {
+    // Pairs written by ezdxf 1.4.5 for a 30 x 16 rectangle with an upper
+    // half-disc hole whose arc edge runs clockwise: 50 = 180, 51 = 360,
+    // 73 = 0. Reading the raw angles counter-clockwise would put the
+    // half-disc below the X axis, across the rectangle's lower edge. The
+    // closing line is written against the arc's direction of travel.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([
+        { line: [-15, -1, 15, -1] },
+        { line: [15, -1, 15, 15] },
+        { line: [15, 15, -15, 15] },
+        { line: [-15, 15, -15, -1] },
+      ]),
+      ...edgePath([
+        { arc: [0, 0, 10, 180, 360, 0] },
+        { line: [-10, 0, 10, 0] },
+      ]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(480 - 50 * Math.PI, 9);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+  });
+
+  it('reads a full-circle HATCH arc edge as a hole', () => {
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([
+        { line: [0, 0, 40, 0] }, { line: [40, 0, 40, 20] }, { line: [40, 20, 0, 20] }, { line: [0, 20, 0, 0] },
+      ]),
+      ...edgePath([{ arc: [20, 10, 4, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(800 - 16 * Math.PI, 9);
+  });
+
+  it('refuses HATCH edges that do not connect end to start', () => {
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([{ line: [0, 0, 10, 0] }, { line: [10, 1, 10, 10] }, { line: [10, 10, 0, 0] }]),
+      [75, 0],
+    ))).toThrow(/edge 2 does not join edge 1: edge 1 ends at \(10, 0\)/);
+  });
+
+  it('refuses elliptic-arc and spline HATCH edges until their exact geometry is supported', () => {
+    expect(() => importDxfText(hatch([91, 1], ...edgePath([{ type: 3 }]), [75, 0])))
+      .toThrow(/elliptic-arc boundary edges are not supported/);
+    expect(() => importDxfText(hatch([91, 1], ...edgePath([{ type: 4 }]), [75, 0])))
+      .toThrow(/spline boundary edges are not supported/);
   });
 
   it('refuses HATCH paths outside the XY plane', () => {
