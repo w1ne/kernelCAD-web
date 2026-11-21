@@ -105,10 +105,30 @@ function listToHashStrings(oc: any, list: any): string[] {
   return result;
 }
 
+/** Hashes of every sub-shape of `typeEnum` in `shape`. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function subShapeHashes(oc: any, shape: unknown, typeEnum: unknown): Set<string> {
+  const hashes = new Set<string>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const explorer = new oc.TopExp_Explorer_2(shape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    for (; explorer.More(); explorer.Next()) hashes.add(explorer.Current().HashCode(HASH_UPPER).toString(16));
+  } finally {
+    explorer.delete();
+  }
+  return hashes;
+}
+
 /**
  * Enumerate all faces (or edges) of `bodyShape`, query the builder for
  * Modified/IsDeleted, and populate the history/deleted maps.
  * Wraps the TopExp_Explorer_2 in try/finally to guarantee cleanup.
+ *
+ * `IsDeleted` is not trusted for a sub-shape the result still contains:
+ * BRepFilletAPI_MakeChamfer/MakeFillet report the untouched edges of a
+ * rebuilt face as deleted (`box.chamfer(0.5, { face: 'bottom' })` "deletes"
+ * the four top edges although the result keeps them), which dropped their
+ * `top-perimeter` labels.
  */
 function enumerateAndRecord(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,6 +140,7 @@ function enumerateAndRecord(
   history: Map<string, string[]>,
   deleted: Set<string>,
 ): void {
+  const kept = subShapeHashes(oc, builder.Shape(), typeEnum);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const explorer = new oc.TopExp_Explorer_2(bodyShape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
@@ -127,7 +148,9 @@ function enumerateAndRecord(
       const sub = explorer.Current();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const inputHash = (sub as any).HashCode(HASH_UPPER).toString(16);
-      if (builder.IsDeleted(sub)) {
+      if (kept.has(inputHash)) {
+        // Unchanged: no history entry, the hash carries over.
+      } else if (builder.IsDeleted(sub)) {
         deleted.add(inputHash);
       } else {
         const modified = builder.Modified(sub);

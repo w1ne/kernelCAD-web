@@ -20,7 +20,7 @@
 // Circular arcs travel as a DXF bulge factor (`tan(includedAngle / 4)`,
 // positive counter-clockwise) because that is exactly what
 // `SketchCommand.bulgeArc` already carries — DXF's native encoding maps to it
-// with no conversion and no loss. Clamped DXF SPLINE data maps to
+// with no conversion and no loss. DXF SPLINE data, clamped on import, maps to
 // `nurbsSegment` with its knots and weights intact; full planar DXF ELLIPSE
 // entities use four exact rational NURBS segments. Geometry with no exact
 // command form (such as SVG Béziers and SVG ellipses) is flattened in the
@@ -56,8 +56,8 @@ export interface ImportSegment {
   y1: number;
   bulge?: number;
   source: string;
-  /** Exact planar B-spline geometry. DXF splines are restricted to clamped,
-   * non-periodic forms so the first and last poles are curve endpoints. */
+  /** Exact planar B-spline geometry. DXF splines are clamped on import
+   * (dxfSplineClamp.ts) so the first and last poles are curve endpoints. */
   nurbs?: ImportNurbsSegment;
 }
 
@@ -75,7 +75,7 @@ export interface ImportedRegion {
   /** Enclosed area in mm², positive after winding normalization. NURBS area is
    * sampled only for region ranking; emitted geometry remains exact. */
   areaMm2: number;
-  /** Number of segments in the loop. */
+  /** Number of segments in the loop, including the segments of its holes. */
   segmentCount: number;
   /** Where the loop's segments came from, for diagnostics and metadata. */
   source: string;
@@ -113,11 +113,19 @@ export interface AssembleOptions {
   tolerance: number;
 }
 
+/** A closed outer loop with the closed loops the source file declares as its holes. */
+export interface ImportFace {
+  outer: ImportSegment[];
+  holes: ImportSegment[][];
+}
+
 /** Segments already known to form a closed loop (a CIRCLE, a `<rect>`, a `Z`-closed subpath). */
 export interface AssembleInput {
   closed: ImportSegment[][];
   /** Segments whose loop membership is unknown; chained by endpoint matching. */
   open: ImportSegment[];
+  /** Profiles whose holes the file states explicitly (a multi-path DXF HATCH). */
+  faces?: ImportFace[];
 }
 
 /** Summary of what assembly had to do, surfaced as import metadata. */
@@ -508,6 +516,40 @@ function describeLoop(loop: readonly ImportSegment[]): string {
   return [...kinds].sort().join(' + ');
 }
 
+/** The loop wound counter-clockwise, with its enclosed area in mm². */
+function orientLoop(loop: ImportSegment[], tol: number): { oriented: ImportSegment[]; area: number } {
+  const area = signedArea(loop);
+  if (Math.abs(area) < tol * tol) {
+    throw new ContourError(
+      'degenerate-region',
+      `region from ${describeLoop(loop)} encloses no area (${area.toExponential(2)} mm²) — ` +
+        'its segments are collinear or double back on themselves.',
+    );
+  }
+  // Normalise to CCW so extrude/revolve see a consistent winding regardless
+  // of how the authoring tool happened to order its points.
+  return { oriented: area < 0 ? loop.map(reverseSegment).reverse() : loop, area: Math.abs(area) };
+}
+
+/** One region from an outer loop and its declared holes, outer loop first. */
+function faceRegion(face: ImportFace, tol: number): ImportedRegion {
+  const outer = orientLoop(face.outer, tol);
+  const holes = face.holes.map(hole => orientLoop(hole, tol));
+  const area = outer.area - holes.reduce((sum, hole) => sum + hole.area, 0);
+  if (area < tol * tol) {
+    throw new ContourError(
+      'degenerate-region',
+      `region from ${describeLoop(outer.oriented)} encloses no area once its holes are removed (${area.toExponential(2)} mm²).`,
+    );
+  }
+  return {
+    commands: [outer, ...holes].flatMap(loop => loopToCommands(loop.oriented)),
+    areaMm2: area,
+    segmentCount: [outer, ...holes].reduce((sum, loop) => sum + loop.oriented.length, 0),
+    source: `${describeLoop(outer.oriented)} with ${holes.length} hole${holes.length === 1 ? '' : 's'}`,
+  };
+}
+
 /**
  * Chain, orient and emit closed regions.
  *
@@ -518,7 +560,9 @@ function describeLoop(loop: readonly ImportSegment[]): string {
  * NESTING IS NOT INTERPRETED. A shape with a hole yields two regions, not one
  * region with an inner boundary. Deciding which loop is a hole requires intent
  * this stage does not have (a "hole" and a separate part look identical), so
- * the caller unions or cuts them explicitly.
+ * the caller unions or cuts them explicitly. The exception is `input.faces`:
+ * there the file itself declared the holes, and each face becomes one region
+ * whose commands list the outer loop first and then each hole.
  *
  * @throws {ContourError} on empty input, an unclosed chain, an ambiguous
  *   junction, or a loop that encloses no area.
@@ -529,19 +573,23 @@ export function assembleRegions(input: AssembleInput, opts: AssembleOptions): As
   let duplicatesDropped = 0;
   let degeneratesDropped = 0;
 
-  const cleanedClosed: ImportSegment[][] = [];
-  for (const loop of input.closed) {
+  const clean = (loop: readonly ImportSegment[]): ImportSegment[] => {
     const { kept, duplicates, degenerates } = dedupe(loop, tol);
     duplicatesDropped += duplicates;
     degeneratesDropped += degenerates;
-    if (kept.length > 0) cleanedClosed.push(kept);
-  }
+    return kept;
+  };
+  const cleanedClosed = input.closed.map(clean).filter(loop => loop.length > 0);
+  const cleanedFaces = (input.faces ?? []).map(face => ({
+    outer: clean(face.outer),
+    holes: face.holes.map(clean).filter(loop => loop.length > 0),
+  })).filter(face => face.outer.length > 0);
 
   const openClean = dedupe(input.open, tol);
   duplicatesDropped += openClean.duplicates;
   degeneratesDropped += openClean.degenerates;
 
-  if (cleanedClosed.length === 0 && openClean.kept.length === 0) {
+  if (cleanedClosed.length === 0 && cleanedFaces.length === 0 && openClean.kept.length === 0) {
     throw new ContourError(
       'no-geometry',
       'no usable 2D geometry: the file parsed cleanly but produced zero non-degenerate segments.',
@@ -551,26 +599,16 @@ export function assembleRegions(input: AssembleInput, opts: AssembleOptions): As
   const chained = chainLoops(openClean.kept, tol);
   const allLoops = [...cleanedClosed, ...chained.loops];
 
-  const regions: ImportedRegion[] = [];
-  for (const loop of allLoops) {
-    const area = signedArea(loop);
-    if (Math.abs(area) < tol * tol) {
-      throw new ContourError(
-        'degenerate-region',
-        `region from ${describeLoop(loop)} encloses no area (${area.toExponential(2)} mm²) — ` +
-          'its segments are collinear or double back on themselves.',
-      );
-    }
-    // Normalise to CCW so extrude/revolve see a consistent winding regardless
-    // of how the authoring tool happened to order its points.
-    const oriented = area < 0 ? loop.map(reverseSegment).reverse() : loop;
-    regions.push({
+  const regions: ImportedRegion[] = allLoops.map(loop => {
+    const { oriented, area } = orientLoop(loop, tol);
+    return {
       commands: loopToCommands(oriented),
-      areaMm2: Math.abs(area),
+      areaMm2: area,
       segmentCount: oriented.length,
       source: describeLoop(oriented),
-    });
-  }
+    };
+  });
+  regions.push(...cleanedFaces.map(face => faceRegion(face, tol)));
 
   regions.sort((a, b) => b.areaMm2 - a.areaMm2);
   return {

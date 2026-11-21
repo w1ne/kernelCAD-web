@@ -1,0 +1,129 @@
+{
+  "createdAt": "2026-11-20T13:38:26.325836+00:00",
+  "baseCommit": "414fb42ea12d3c984da0cdcaee27a9d9a730d2a9",
+  "sources": [
+    {
+      "file": "catalog/kits/mining/belt-magnet-separator.kcad.ts",
+      "originalSha256": "e1b69ea3a7294ebbf0f96dace961612b1f0f5bb5ab4dfc3a79c7af07f3e3d8c4",
+      "currentSha256": "035795270e88de69d8c18a374c92c01b6edad03fc8db6c9f77708fb1a2d8dc33",
+      "preservedMetaParamPresetCalls": 8,
+      "syntaxErrors": 0
+    },
+    {
+      "file": "catalog/kits/sports/inline-skate.kcad.ts",
+      "originalSha256": "d86d7131feab76efd74676fefd78edcc2e9f238ef673ae27a71b84b15612a50d",
+      "currentSha256": "c71ad16d4366159fc1afeccb856f9db9654ded6e9f3bed2ed206b903ab1cb2b5",
+      "preservedMetaParamPresetCalls": 8,
+      "syntaxErrors": 0
+    },
+    {
+      "file": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
+      "originalSha256": "636d6b5a2b957c21d0526e1aace8aa637658e2ecb0926c5ff165fd969292568b",
+      "currentSha256": "2c060ae969cd9c39c9c4ec0f852a5985e99aee539ea03b3997b909e5bb416f22",
+      "preservedMetaParamPresetCalls": 7,
+      "syntaxErrors": 0
+    },
+    {
+      "file": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
+      "originalSha256": "21c4aced71da19c67732e64f1b3e9f09686e36a32ec8bae92f761bd6a76b8a23",
+      "currentSha256": "a2f5d5f8fed8d0ab63acd919527f33aa965605d3b5175b7df50e721d7b89d288",
+      "preservedMetaParamPresetCalls": 8,
+      "syntaxErrors": 0
+    },
+    {
+      "file": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
+      "originalSha256": "d48c6d14a8919b1d769d2f18827e5b1bc01066188dfb7fe619b0f98c02ae43c3",
+      "currentSha256": "89b5c278d4eb2e68c3cfbdf0f1a412145ad2d21b6ff9b513743791b874adfb28",
+      "preservedMetaParamPresetCalls": 8,
+      "syntaxErrors": 0
+    }
+  ],
+  "preservedControlMetadataCalls": 39,
+  "staticChecks": [
+    {
+      "name": "lint",
+      "command": [
+        "/home/andrii/.nvm/versions/node/v22.23.4/bin/node",
+        "/data/worktrees/kernelcad-catalog-five-connections-20261120/node_modules/eslint/bin/eslint.js",
+        "tests/integration/catalog/fiveConnectionsGeometry.ts",
+        "tests/integration/catalog/fiveConnectionsCases.ts",
+        "tests/integration/catalog/fiveConnectionsGeometry.test.ts"
+      ],
+      "exit": 0,
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/skate-visual-correction/lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "geometry-types",
+      "command": [
+        "/home/andrii/.nvm/versions/node/v22.23.4/bin/node",
+        "/data/worktrees/kernelcad-catalog-five-connections-20261120/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--target",
+        "ES2022",
+        "--module",
+        "ESNext",
+        "--moduleResolution",
+        "Bundler",
+        "--strict",
+        "--skipLibCheck",
+        "--types",
+        "node",
+        "tests/integration/catalog/fiveConnectionsGeometry.ts",
+        "tests/integration/catalog/fiveConnectionsCases.ts"
+      ],
+      "exit": 0,
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/skate-visual-correction/geometry-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/skate-visual-correction/diff-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "nativeCases": "tests/integration/catalog/fiveConnectionsCases.ts",
+  "nativeGeometryAssertions": "tests/integration/catalog/fiveConnectionsGeometry.ts",
+  "repositoryTestCommand": "npx vitest run tests/integration/catalog/fiveConnectionsGeometry.test.ts",
+  "executedValidation": "The same case definitions and assertion helper were executed through a separately frozen one-worker guarded public-catalog adapter. The repository Vitest command is a reproducibility command, not a claimed additional execution.",
+  "executedRuns": [
+    {
+      "bindingPath": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/binding.json",
+      "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+      "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+      "executedCases": 33,
+      "selectedCases": 29,
+      "launcherExit": 0
+    },
+    {
+      "bindingPath": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/binding.json",
+      "bindingSha256": "9c7c4cbe95137cd22188f14546d3d77c1886a533afd3bab7344182ad5138310e",
+      "resultsSha256": "2ac204bdf6671775a0078f26643fa4eea14d49293115a199cbbf9c470f5a39b5",
+      "executedCases": 4,
+      "selectedCases": 4,
+      "launcherExit": 0
+    }
+  ],
+  "namedArtifacts": {
+    "previewGenerator": "scripts/lib/glbSoftwareRender.ts::renderTrianglesPng",
+    "sourceOfGeometry": "Accepted native GLB bytes, SHA-bound per case",
+    "previewYawPitchDegrees": [
+      35,
+      22
+    ],
+    "comparisonSettings": "verification.json models[*].pose, focusNames, framing",
+    "renderDriver": {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/render-artifacts-v2.mts",
+      "sha256": "e74186dc3c0e99d89d866608bcb2751a552f9c5c2dc0966236e691e2a3783c51",
+      "newCadEvaluations": 0
+    },
+    "videoInvocation": "ffmpeg -f concat -safe 0 -i video-input.txt -r 24 -c:v libx264 -preset fast -crf 22 -pix_fmt yuv420p -movflags +faststart before-after.mp4"
+  },
+  "canonicalRenderer": "Shared browser bootstrap blocked before any model run; canonical-renderer-bootstrap.json records the30-second CDP initialization failure. No fresh browser or repeated attempt."
+}

@@ -139,6 +139,26 @@ describe('physical use case reachability', () => {
     expect(issue.contactDistances[1].distanceMm).toBeCloseTo(Math.sqrt(200));
   });
 
+  it('reads a contact on an unmated part where its `at` puts it', async () => {
+    const arm = makeRotatingFingerRig([10, 0, 0]);
+    const { kcad } = makeArm();
+    // The held part is in no mate; only its `at` puts its contact point at
+    // the finger tip (world [10, 0, 0]).
+    arm
+      .part('held', kcad.box(4, 4, 4), { at: [12, 0, 0], role: 'contact-target' })
+      .connector('contact', { type: 'frame', origin: { kind: 'vec3', value: [-2, 0, 0] } });
+    const useCase = makePhysicalUseCaseRecord('held-at', {
+      contacts: [{ a: 'finger.a', b: 'held.contact', normal: [1, 0, 0], friction: 0.5 }],
+      actuatorLimits: [{ mate: 'yaw', maxTorqueNmm: 10 }],
+      criteria: { maxSlipMm: 0.1 },
+    });
+
+    const assessment = await assessPhysicalUseCaseReachability(arm, useCase, { samplesPerMate: 2 });
+
+    expect(assessment.findings).toEqual([]);
+    expect(assessment.commonPoseSamples[0].contacts[0].pointB).toEqual([10, 0, 0]);
+  });
+
   it('accepts multiple contacts satisfied by one actuator pose', async () => {
     const arm = makeRotatingFingerRig([10, 0, 0]);
     const useCase = makePhysicalUseCaseRecord('common-pose-grasp', {

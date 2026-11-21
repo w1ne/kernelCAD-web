@@ -101,11 +101,18 @@ describe('findLineageMatches', () => {
 });
 
 describe('findFallbackSnapshot', () => {
-  it('returns the named feature snapshot when present', () => {
+  it('returns the named feature snapshot of the requested ref', () => {
     const map: HistoryMap = new Map();
-    map.set('h1', { rootHash: 'h1', rootFeatureId: 'f', featureName: 'a', snapshot: sampleSnap });
+    map.set('h1', { rootHash: 'h1', rootFeatureId: 'f', featureName: 'a', labelName: 'wall', snapshot: sampleSnap });
     const result = findFallbackSnapshot(map, { kind: 'named', featureName: 'a', refName: 'wall' });
     expect(result).toEqual(sampleSnap);
+  });
+
+  it('returns null when the feature never carried the requested ref', () => {
+    const map: HistoryMap = new Map();
+    map.set('h1', { rootHash: 'h1', rootFeatureId: 'f', featureName: 'a', labelName: 'wall', snapshot: sampleSnap });
+    map.set('h2', { rootHash: 'h2', rootFeatureId: 'f', featureName: 'a', snapshot: sampleSnap });
+    expect(findFallbackSnapshot(map, { kind: 'named', featureName: 'a', refName: 'entry-rim' })).toBeNull();
   });
 
   it('returns null when no lineage entry matches the name', () => {

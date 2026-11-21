@@ -13,13 +13,13 @@ meta({
   name: "uv-disinfection-channel",
   license: 'CC0-1.0',
   title: "UV disinfection channel",
-  description: "Open-channel UV disinfection system at about real size: a 1.2 m concrete channel with flowing effluent, two banks of eight vertical lamp modules with ballast heads above the water on a bank rail, cable trays to two power distribution cabinets on the deck, a downstream motorised flap gate for level control, a level sensor, handrail and a service rack holding two lifted modules with glowing quartz-sleeved lamps and wiper rings. Material controls: concrete, stainless modules and frame, cabinet coating, effluent; weathered, highVisibility and greyCabinet presets.",
+  description: "Open-channel UV disinfection system at about real size: a 1.2 m concrete channel with flowing effluent, two banks of eight vertical lamp modules, each holding six submerged lamps, with ballast heads above the water on a bank rail, cable trays to two power distribution cabinets on the deck, a downstream motorised flap gate for level control, a level sensor, handrail and a service rack holding two lifted modules with glowing quartz-sleeved lamps and wiper rings. Material controls: concrete, stainless modules and frame, cabinet coating, effluent; weathered, highVisibility and greyCabinet presets.",
   tags: ['water treatment', 'wastewater', 'disinfection', 'UV', 'ultraviolet', 'lamp module', 'effluent channel'],
   kit: 'water-treatment',
   category: 'prop',
   origin: 'base',
   compat: ['water-treatment', 'utility', 'industrial', 'scene'],
-  triangleBudget: 2800,
+  triangleBudget: 3600,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
@@ -76,17 +76,22 @@ add('water-upstream', blk(-4200, -HW, 0, 3150, HW, WL).color(water));
 add('water-downstream', blk(3350, -HW, 0, 4200, HW, 700).color(water));
 
 // ---- Lamp banks: eight vertical modules across the flow ----
-const lampModule = (tag, x0, x1, y, zBase, lamps) => {
+const lampModule = (tag, x0, x1, y, zBase, lifted) => {
   for (const x of [x0, x1]) add(`${tag}-leg-${x}`, blk(x - 25, y - 25, zBase, x + 25, y + 25, zBase + 1550).color(stainlessSteel));
   add(`${tag}-head`, blk(x0 - 60, y - 55, zBase + 1450, x1 + 60, y + 55, zBase + 1650).color(stainlessSteel));
   add(`${tag}-ballast-cap`, blk(x0 + 80, y - 45, zBase + 1650, x0 + 380, y + 45, zBase + 1720).color(dark));
-  if (!lamps) return;
   for (let k = 0; k < 6; k++) {
     const z = zBase + 180 + k * 200;
+    // Submerged lamps are square-section sleeves to stay inside the budget;
+    // the lifted modules show the faceted sleeves and wiper rings.
+    if (!lifted) {
+      add(`${tag}-lamp-${k}`, blk(x0 + 30, y - 36, z - 36, x1 - 30, y + 36, z + 36).color(glow));
+      continue;
+    }
     add(`${tag}-lamp-${k}`, latheX([[42, x0 + 30], [42, x1 - 30]], y, z, 8).color(glow));
     add(`${tag}-wiper-${k}`, latheX([[58, x0 + 300 + k * 90], [58, x0 + 360 + k * 90]], y, z, 8).color(dark));
   }
-  add(`${tag}-wiper-rod`, latheX([[18, x0 + 30], [18, x1 - 30]], y, zBase + 1300, 6).color(stainlessSteel));
+  if (lifted) add(`${tag}-wiper-rod`, latheX([[18, x0 + 30], [18, x1 - 30]], y, zBase + 1300, 6).color(stainlessSteel));
 };
 const banks = [[-2600, -1000], [-200, 1400]];
 banks.forEach(([x0, x1], b) => {

@@ -38,7 +38,14 @@ describe('ci.yml develop push gate', () => {
     // It rebuilds and exports every asset (2,100 today). As a dedicated job it
     // never unbalances a shard, so it is required on the PR path too.
     // Draft PRs (light=true) run it once they are marked ready.
-    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true'");
+    // Only a PR whose files are all on the allow-list (tests/unit, eval, docs ...)
+    // turns `catalog` off; it defaults to true, so a push never skips it.
+    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true' && needs.changes.outputs.catalog == 'true'");
+    const detect = (jobs.changes.steps ?? []).map(s => s.run ?? '').join('\n');
+    expect(detect).toMatch(/\ncatalog=true\n/);
+    // The full catalog is rebuilt as 4 kit shards that must cover every kit.
+    expect(jobs['catalog-index'].strategy?.matrix?.shard).toEqual([1, 2, 3, 4]);
+    expect(JSON.stringify(jobs['catalog-index'])).toContain('KCAD_CATALOG_SHARD');
     // And therefore excluded from the sharded run, so no shard pays its cost.
     const shardRuns = (jobs['test-shard'].steps ?? []).map(s => s.run ?? '').join('\n');
     expect(shardRuns).toContain("--exclude 'tests/integration/catalog/catalogIndex.test.ts'");

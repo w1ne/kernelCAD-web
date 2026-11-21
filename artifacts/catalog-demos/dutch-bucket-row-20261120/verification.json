@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-20T16:20:23.813Z",
+  "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
+  "sourceSha256": "b28d73667cd7359f704db79a9a93739c29bb13344231ec90d001fa83d33234e6",
+  "purpose": "Reduce display geometry, seat the six buckets and siphons on the drain, and make the named crop presets select their matching crop.",
+  "controls": {
+    "declared": 6,
+    "preservedSchemas": true,
+    "presets": [
+      "tomato",
+      "sweetPepper",
+      "cucumber",
+      "weathered"
+    ],
+    "changedPresetValues": {
+      "tomato": {
+        "crop": "tomato"
+      },
+      "sweetPepper": {
+        "crop": "pepper"
+      },
+      "cucumber": {
+        "crop": "cucumber"
+      }
+    },
+    "weathered": "Unchanged style-only preset; no new native application in this packet."
+  },
+  "geometry": {
+    "namedParts": 146,
+    "triangles": 3304,
+    "authoredTriangleBudget": 5600,
+    "defaultSizeM": [
+      3,
+      2.15,
+      0.412336
+    ],
+    "contactsChecked": 18,
+    "cavitiesChecked": 6,
+    "wallsChecked": 6,
+    "fruitBoundsChecked": 36,
+    "degenerateTriangles": 0,
+    "placementChange": "Bucket floor 115 to 93 mm; dependent crop geometry follows the authored formulas. Drain radius 30 to 25 mm; siphon lateral centre 60 to 0 mm."
+  },
+  "publicExports": [
+    {
+      "case": "dutch-bucket-row.default",
+      "values": {
+        "scale": 1,
+        "crop": "tomato"
+      },
+      "sourceSha256": "b28d73667cd7359f704db79a9a93739c29bb13344231ec90d001fa83d33234e6",
+      "glbSha256": "8a7c4ba856a9f3cd258841757de333a6114e1e46c9b70c06563b2a27902ea4cb",
+      "glbBytes": 488524,
+      "status": "clean_pass",
+      "triangles": 3304
+    },
+    {
+      "case": "dutch-bucket-row.pepper",
+      "values": {
+        "crop": "pepper",
+        "bucket": "#d9cfb4",
+        "plumbing": "#e6e7e1",
+        "trellis": "#8f989c",
+        "foliage": "#2f7a30",
+        "scale": 1
+      },
+      "sourceSha256": "2fc4c25a4c02670a1929408ac0e6d539429fb7e2d4719eec7ebc17f7a1eed1e7",
+      "glbSha256": "4b4f5289905cc0c1160a4231060a30a43c0a3d6065dc350fbb503ab300404bf8",
+      "glbBytes": 490604,
+      "status": "clean_pass",
+      "triangles": 3304
+    },
+    {
+      "case": "dutch-bucket-row.cucumber",
+      "values": {
+        "crop": "cucumber",
+        "bucket": "#2a2c2e",
+        "plumbing": "#4a5a66",
+        "trellis": "#c9a640",
+        "foliage": "#56993d",
+        "scale": 1
+      },
+      "sourceSha256": "3e6fdddc13ec4f9309c6d4806a466c8a70d4e7514b6109d88f26ae5e746eee22",
+      "glbSha256": "8aa118e8c3101591a811502a249c4de990dd7ca3669c9af4145084469cbb5173",
+      "glbBytes": 491016,
+      "status": "clean_pass",
+      "triangles": 3304
+    },
+    {
+      "case": "dutch-bucket-row.scale-min",
+      "values": {
+        "scale": 0.7,
+        "crop": "tomato"
+      },
+      "sourceSha256": "1381f11e36de59d6c97b517b5ad03d4acc97a42bc6f7a9d29b5efce9ad3ce430",
+      "glbSha256": "471651a36f836425c4c711b7634854f5522dd2d7088bab7966becbf57a818f6a",
+      "glbBytes": 493416,
+      "status": "clean_pass",
+      "triangles": 3304
+    },
+    {
+      "case": "dutch-bucket-row.scale-max",
+      "values": {
+        "crop": "cucumber",
+        "bucket": "#2a2c2e",
+        "plumbing": "#4a5a66",
+        "trellis": "#c9a640",
+        "foliage": "#56993d",
+        "scale": 1.3
+      },
+      "sourceSha256": "023d8bdecc3b457efd3374f6ee9efda90499d911b47fe18136161c665bda3e74",
+      "glbSha256": "0962e9c3bcb6b82ae2ce1252af8b6963282f6e9004aafd7e18e4b41c45e9dc82",
+      "glbBytes": 493960,
+      "status": "clean_pass",
+      "triangles": 3304
+    },
+    {
+      "case": "dutch-bucket-row.default-recovery",
+      "values": {
+        "crop": "tomato",
+        "bucket": "#2a2c2e",
+        "plumbing": "#e6e7e1",
+        "trellis": "#8f989c",
+        "foliage": "#3f8436",
+        "scale": 1
+      },
+      "sourceSha256": "b28d73667cd7359f704db79a9a93739c29bb13344231ec90d001fa83d33234e6",
+      "glbSha256": "8a7c4ba856a9f3cd258841757de333a6114e1e46c9b70c06563b2a27902ea4cb",
+      "glbBytes": 488524,
+      "status": "clean_pass",
+      "triangles": 3304
+    }
+  ],
+  "savedGlbVisuals": {
+    "renderer": "scripts/lib/glbSoftwareRender.ts",
+    "sourceOfViews": "Previously inspected saved GLBs, with exact whole-file parity against all six fresh portable-source exports.",
+    "nativeReplayForRendering": 0,
+    "preview": {
+      "path": "catalog/kits/hydroponics/previews/dutch-bucket-row.png",
+      "sha256": "8f37172690c0408435880f7ee7a93f8b738134a03960a9ea61cc98bff0750c80",
+      "pixelSha256": "4e667855a16e59a2be1189b3db056ad7687e4e661e81e23a7eb94bb4db2a38ae",
+      "width": 512,
+      "height": 512
+    },
+    "video": {
+      "path": "artifacts/catalog-demos/dutch-bucket-row-20261120/default-orbit.mp4",
+      "durationSeconds": 6.958333,
+      "codec": "h264",
+      "width": 768,
+      "height": 768,
+      "fps": 24
+    },
+    "views": [
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-row-20261120/default-orbit.mp4",
+        "sha256": "c3e59654cffaaec32e1d298a416489a69704806b5d2372da14cfeb3dc3d82d3c"
+      },
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-row-20261120/default-views.webp",
+        "sha256": "33d3a2d1eae617c16b2b8251d082a9c378d6fd64719841ee5385910cdd51c360"
+      },
+      {
+        "path": "artifacts/catalog-demos/dutch-bucket-row-20261120/crop-variants.webp",
+        "sha256": "27028fe7a78abf0066e22385a5d11c93b4bb777e393d889396c37afa5d979681"
+      }
+    ]
+  },
+  "independentRemoteLoadEvidence": {
+    "cases": 6,
+    "namedPartsEach": 146,
+    "trianglesEach": 3304,
+    "guardOrRecoveryEvents": 0,
+    "defaultResetNumericMeshSha256": "71bd913b0e7dab95798f86ef1eb6e8015205b7d2764bcb2f82e4f275aafe2d3f",
+    "scope": "Six direct remote-sandbox source/parameter loads; separate from the public GLB export cases and from a live Studio interaction."
+  },
+  "limitations": [
+    "This is a low-poly scene prop. The faceted organic approximation preserves axis extents but is not an exact sphere; its corners can extend beyond the sphere surface.",
+    "A separate hosted preview rendered this source but reported mechanism=broken with 231 interpenetration diagnostics. These remain unresolved and are not suppressed.",
+    "Contact, loading and preset checks do not establish hydraulic operation, manufacturing fits, load capacity or mechanical acceptance.",
+    "Video and views are deterministic renders of actual saved GLB output, not a recording of a live Studio interaction."
+  ],
+  "mechanicsFindingSummary": {
+    "classificationSha256": "5b17d3179da902e0acbd5fe4c395900e242b4a23c12ddec92848fa2b4db179e4",
+    "basis": "Read-only classification of231 saved default/rest pair diagnostics and exact source geometry; no new collision execution.",
+    "mechanismStatus": "broken",
+    "totalPairDiagnostics": 231,
+    "independentlyConfirmedDefectCountIsNot231": true,
+    "outletRightPostOrFootCollisions": 3,
+    "unrelievedStakeWallOrRimCrossings": 12,
+    "allDiagnosticsRetained": true,
+    "sourceUnchanged": true
+  }
+}

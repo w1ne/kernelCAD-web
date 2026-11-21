@@ -16,7 +16,7 @@ import type {
   FeaStudyMetadata,
   FeaStudySpec,
 } from '../../shared/intent/feaStudyRecord';
-import { resolveFeaLoadsFromMotion, validFeaSelector, validateFeaStudyLoads } from './feaStudyLoads';
+import { recordedFeaSelector, resolveFeaLoadsFromMotion, validFeaSelector, validateFeaStudyLoads } from './feaStudyLoads';
 import { resolveFeaMaterial } from '../../kernel/fea/feaMaterials';
 import {
   DATUM_LABEL_RE,
@@ -612,7 +612,7 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
     virtual: true,
     name: args.name ?? 'study',
     material: args.material,
-    fixed: args.fixed,
+    fixed: recordedFeaSelector(args.fixed),
     loads,
     ...(args.meshSize !== undefined ? { meshSize: args.meshSize } : {}),
     ...(args.minSafetyFactor !== undefined ? { minSafetyFactor: args.minSafetyFactor } : {}),

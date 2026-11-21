@@ -3,7 +3,9 @@
 //
 // Argument guards shared by the `Sketch` option bags (extrude, sweep, loft).
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isValidEditableNumber, type FeatureId } from '../../shared/intent/types';
+import { ALLOWED_LOFT_PLANE_KEYS } from './sketchOptions';
 
 /**
  * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
@@ -69,4 +71,56 @@ export function assertEditablePair(
       hint,
     );
   }
+}
+
+const LOFT_PLANE_NAMES: ReadonlySet<unknown> = new Set(['XY', 'YZ', 'XZ']);
+const LOFT_PLANE_EXAMPLE = "a.loft(b, { planes: [{ plane: 'XY', origin: [0, 0, 0] }, { plane: 'XY', origin: [0, 0, 40] }] })";
+
+/**
+ * Check one `loft.planes[i]` entry: known keys, a plane name, a 3D origin and
+ * an optional numeric `rotationDeg`. Before the plane and origin checks, a
+ * missing plane reached the lowerer and the loft failed as
+ * `feature.empty-result`, and a missing origin threw a raw TypeError.
+ */
+export function assertLoftPlaneEntry(
+  entry: { plane?: unknown; origin?: unknown; rotationDeg?: unknown },
+  index: number,
+  featureId: FeatureId,
+): void {
+  assertKnownKeys(
+    entry,
+    ALLOWED_LOFT_PLANE_KEYS,
+    featureId,
+    (key) => `Sketch.loft: unknown planes[${index}] option '${key}'.`,
+    'planes entries',
+  );
+  const api = 'Sketch.loft(other, { planes })';
+  if (!LOFT_PLANE_NAMES.has(entry.plane)) {
+    invalidArgs({
+      api,
+      path: `opts.planes[${index}].plane`,
+      got: entry.plane,
+      requires: "'XY' | 'YZ' | 'XZ' (upper case; mirror() takes lower case)",
+      example: LOFT_PLANE_EXAMPLE,
+      featureId,
+    });
+  }
+  const origin = entry.origin;
+  if (!Array.isArray(origin) || origin.length !== 3 || !origin.every(isValidEditableNumber)) {
+    invalidArgs({
+      api,
+      path: `opts.planes[${index}].origin`,
+      got: origin,
+      requires: 'an [x, y, z] of finite numbers or ParamRefs',
+      unit: 'mm',
+      example: LOFT_PLANE_EXAMPLE,
+      featureId,
+    });
+  }
+  assertEditableNumber(
+    entry.rotationDeg,
+    `Sketch.loft: opts.planes[${index}].rotationDeg`,
+    featureId,
+    `Pass planes[${index}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
+  );
 }

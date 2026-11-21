@@ -16,11 +16,11 @@
 // diagnostic-code id from `shared/diagnostics/registry`.
 
 import type { OcctBackend } from '../backends/occt/occtBackend';
-import type { FaceHash, FaceLineage, HistoryMap } from './evolutionRecord';
+import type { FaceHash, HistoryMap } from './evolutionRecord';
 import type { TopoRef } from './topoRef';
 import {
   findLineageMatches,
-  findFallbackSnapshot,
+  findFallbackLineage,
   FEATURE_KINDS,
   type ParsedSelector,
 } from './selectorParser';
@@ -188,35 +188,6 @@ function lineageMatches(
   });
 }
 
-/** Locate the surfaceType for the lineage that produced the fallback snapshot.
- *  `findFallbackSnapshot` returns only the FaceSnapshot; we need the surfaceType
- *  as a 4th discriminator for `findByGeometrySnapshot`. Scans the map for the
- *  lineage entry that owns this snapshot reference. */
-function findSurfaceTypeForFallback(
-  map: HistoryMap,
-  parsed: ParsedSelector,
-): FaceLineage['surfaceType'] | undefined {
-  if (parsed.kind === 'named') {
-    for (const lineage of map.values()) {
-      if (lineage.featureName === parsed.featureName && lineage.snapshot) {
-        return lineage.surfaceType;
-      }
-    }
-  }
-  if (parsed.kind === 'ordinal') {
-    for (const lineage of map.values()) {
-      if (
-        lineage.featureKind === parsed.featureKind &&
-        lineage.featureOrdinal === parsed.n &&
-        lineage.snapshot
-      ) {
-        return lineage.surfaceType;
-      }
-    }
-  }
-  return undefined;
-}
-
 /** Screen a ref for the two shape-level not-resolvable cases the face/edge
  *  resolver owns: bare-owner refs and kinds that a sibling slice dispatches. */
 function screenResolvableKind(ref: TopoRef): TopoResolveResult | undefined {
@@ -254,7 +225,8 @@ function resolveSnapshotFallback(
   // guaranteed to be the original (non-collective) form — collective only
   // takes effect via an early return above.
   const fallbackSelector = parsed;
-  const fingerprint = findFallbackSnapshot(map, fallbackSelector);
+  const fallbackLineage = findFallbackLineage(map, fallbackSelector);
+  const fingerprint = fallbackLineage?.snapshot ?? null;
   if (fingerprint === null) {
     return {
       kind: 'not-resolvable',
@@ -262,7 +234,7 @@ function resolveSnapshotFallback(
       message: `topology ref '${ref.raw}' produced no lineage hits and no fallback snapshot is available.`,
     };
   }
-  const surfaceType = findSurfaceTypeForFallback(map, fallbackSelector);
+  const surfaceType = fallbackLineage?.surfaceType;
   if (surfaceType === undefined) {
     return {
       kind: 'not-resolvable',

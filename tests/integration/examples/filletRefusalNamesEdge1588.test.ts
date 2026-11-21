@@ -82,5 +82,12 @@ describe('fillet and chamfer refusals on the drafting-review mounting plate', ()
     expect(refusal?.details?.failingEdgeCount).toBe(0);
     expect(refusal?.details).not.toHaveProperty('failingEdgeRef');
     expect(refusal?.hint).toContain('No single edge is the limit');
+    // The 12 mm corner edges take a 34.8 mm fillet, so the refusal must not
+    // blame edge length or claim the rest were chamfered.
+    expect(refusal?.message).toMatch(/^fillet refused: the kernel rejected the radius/);
+    expect(refusal?.hint).toMatch(/^No edge was filleted\./);
+    expect(refusal?.hint).not.toContain('chamfer');
+    expect(refusal?.hint).not.toContain('half the target edge length');
+    expect(Number(refusal?.details?.maxFeasibleValue)).toBeGreaterThan(24);
   }, 60_000);
 });

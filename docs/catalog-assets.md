@@ -4,6 +4,19 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
+## Semantic correction (2026-11-20)
+
+`water-treatment/uv-disinfection-channel` described two banks of eight lamp
+modules in the flow, but its source gave lamps only to the two modules lifted
+onto the service rack (#1676). Each of the 16 installed modules now holds six
+square-section lamp sleeves between its legs, inside the effluent body. A GLB
+regression checks 96 named installed lamp bodies, their containment in the
+water and between the module legs, the lifted lamps and wipers, and a 1.25
+scale variant; the original source fails it with zero lamps in
+`bank-0-module-0`. The triangle budget rises from 2,800 to 3,600 (3,480 at
+default). The ID, kit, controls and presets are unchanged. This is a scene
+prop, not disinfection-performance or manufacturer geometry.
+
 ## Semantic correction (2026-11-10)
 
 The existing `water-treatment/pressure-sand-filter-vessel` now has lower and

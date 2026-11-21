@@ -72,11 +72,13 @@ for (const [u, xc] of [["left", -PITCH], ["centre", 0], ["right", PITCH]] as [st
   // Connector box on the back of the trough.
   add(`connector-${u}`, aim(box(130, 60, 70, true).translate(L / 2 - 120, 0, -100)).color(BLACK));
 
-  // Floor trunnion stand at each end: foot, upright, pivot knob.
+  // Floor trunnion stand at each end: foot, upright, axle and pivot knob.
   for (const [e, s] of [["l", -1], ["r", 1]] as [string, number][]) {
     const x = xc + s * (L / 2 + 38);
     add(`stand-foot-${u}-${e}`, box(60, 320, 14, true).translate(x, 0, 7).color(hardware));
     add(`stand-upright-${u}-${e}`, box(16, 50, PZ + 20, true).translate(x, 0, (PZ + 20) / 2 + 14).color(hardware));
+    // The axle overlaps the end cap, spans the stand gap and enters the knob.
+    add(`pivot-axle-${u}-${e}`, alongX(44, 10).translate(xc + s * (L / 2 + 30) - 22, 0, PZ).color(hardware));
     add(`pivot-knob-${u}-${e}`, alongX(36, 26, 14).translate(s > 0 ? x + 8 : x - 44, 0, PZ).color(BLACK));
   }
 }
