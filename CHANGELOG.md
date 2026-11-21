@@ -1,5 +1,25 @@
 # Unreleased
 
+- `lib.fromDXF` now imports elliptic-arc (type 3) and spline (type 4) edges in
+  edge-based HATCH boundary paths. Before, the importer refused the file:
+  `elliptic-arc boundary edges are not supported`. Elliptic-arc edges become
+  exact rational NURBS arcs, as for ELLIPSE; spline edges keep their control
+  points, knots and weights, and are clamped as for SPLINE. R2010 fit data
+  and end tangents on a spline edge are skipped. ezdxf and netDxf read
+  elliptic-arc angles as angles from the major axis, but libdxfrw reads them as
+  ellipse parameters; an elliptic-arc edge is therefore accepted only where
+  both readings agree (a circle, or ends on the ellipse axes) and refused
+  otherwise. Fit-point-only spline edges are refused. A 60 x 20 mm plate with
+  a cubic spline edge, a 20 x 8 mm elliptic hole and a half-ellipse D-hole,
+  written by ezdxf 1.4.5 as R2010, extrudes 3 mm to one valid solid of
+  (1650 - 44π) x 3 = 4,535.3 mm³ (relative error below 1e-4) with 13 faces.
+- Extruding or revolving a sketch that contains a NURBS segment now cuts all
+  of its holes. Before, only the first `moveTo … close` loop was built and the
+  holes were dropped without an error: a 20 x 20 mm profile with a parabolic
+  edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
+  Loft, sweep and surface operations, which take one wire, now refuse such a
+  holed profile instead of dropping the holes.
+
 - `lib.fromDXF` now imports edge-based HATCH boundary paths made of line and
   circular-arc edges. AutoCAD writes this form for a hatch picked from LINE,
   ARC and CIRCLE geometry. Before, the importer refused the file:
@@ -1212,6 +1232,26 @@ npm run dev
 
 
 # Unreleased
+
+- `lib.fromDXF` now imports elliptic-arc (type 3) and spline (type 4) edges in
+  edge-based HATCH boundary paths. Before, the importer refused the file:
+  `elliptic-arc boundary edges are not supported`. Elliptic-arc edges become
+  exact rational NURBS arcs, as for ELLIPSE; spline edges keep their control
+  points, knots and weights, and are clamped as for SPLINE. R2010 fit data
+  and end tangents on a spline edge are skipped. ezdxf and netDxf read
+  elliptic-arc angles as angles from the major axis, but libdxfrw reads them as
+  ellipse parameters; an elliptic-arc edge is therefore accepted only where
+  both readings agree (a circle, or ends on the ellipse axes) and refused
+  otherwise. Fit-point-only spline edges are refused. A 60 x 20 mm plate with
+  a cubic spline edge, a 20 x 8 mm elliptic hole and a half-ellipse D-hole,
+  written by ezdxf 1.4.5 as R2010, extrudes 3 mm to one valid solid of
+  (1650 - 44π) x 3 = 4,535.3 mm³ (relative error below 1e-4) with 13 faces.
+- Extruding or revolving a sketch that contains a NURBS segment now cuts all
+  of its holes. Before, only the first `moveTo … close` loop was built and the
+  holes were dropped without an error: a 20 x 20 mm profile with a parabolic
+  edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
+  Loft, sweep and surface operations, which take one wire, now refuse such a
+  holed profile instead of dropping the holes.
 
 ## Added
 
