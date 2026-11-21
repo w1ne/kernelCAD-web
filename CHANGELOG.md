@@ -9,6 +9,13 @@
   4 mm to 200π mm³ and has a 10 x 20 mm bounding box. Uniform-scale and
   mirrored inserts still keep circular bulge arcs.
 
+- The `boundingBoxIn` face query no longer changes its result once the
+  shape is meshed. It read each face box from the triangulation when one
+  existed: after a mesh, the side face of a 10 mm high, 5 mm radius
+  cylinder read z from -0.01398 to 10.01398 mm, so a region with a
+  0.005 mm margin matched 2 faces instead of 3. The query now reads the
+  face geometry in every call order.
+
 - `Shape.boundingBox()` no longer shrinks to the mesh once a shape is
   meshed. The OCCT wrapper builds the default box from the triangulation when one
   exists, and mesh vertices lie inside curved faces. In a script,
