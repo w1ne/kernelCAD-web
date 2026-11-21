@@ -1,7 +1,7 @@
 # Unreleased
 
 - `Shape.boundingBox()` no longer shrinks to the mesh once a shape is
-  meshed. replicad builds the default box from the triangulation when one
+  meshed. The OCCT wrapper builds the default box from the triangulation when one
   exists, and mesh vertices lie inside curved faces. In a script,
   `await c.boundingBox({ exact: true })` followed by `await c.boundingBox()`
   on `cylinder(5, 10)` read x from -9.9756 and y to 9.9939 instead of
