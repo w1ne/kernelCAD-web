@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-11-21T15:20:00Z",
+  "source": "docs/demos/glb-creased-normals/bracket.kcad.ts",
+  "exporter": "runAndExport(format=\"glb\"), default style pbr, units m, axis y-up",
+  "before": {
+    "revision": "origin/develop 91075619e",
+    "vertices": 18184,
+    "indices": 109104,
+    "indexComponentType": 5123,
+    "glbBytes": 656084,
+    "glbSha256": "212f8d2c83e9df196357af2fc3c5343aea068dcf1f007168f9469ae6dd64d985"
+  },
+  "after": {
+    "revision": "fix/glb-creased-normals-20261121",
+    "vertices": 19192,
+    "indices": 109104,
+    "indexComponentType": 5123,
+    "glbBytes": 680276,
+    "glbSha256": "ea37efb2268ca34b8605e564bf148ad93cc9a89324cc63af3b0762f1b6654eea"
+  },
+  "regressionTests": [
+    "tests/unit/kernel/backends/occt/exportGlb.test.ts: keeps sharp B-rep edges sharp and curved faces smooth in default pbr normals (fails on develop: cube normal max component 0.667)",
+    "src/kernel/export/creasedNormals.test.ts"
+  ],
+  "render": "headless Chromium (SwiftShader) + three.js GLTFLoader, docs/demos/glb-creased-normals/render-video.mjs"
+}
