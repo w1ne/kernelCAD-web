@@ -231,7 +231,10 @@ jobs:
         if: matrix.shard == 1
         run: |
           npm run build:player
-          npx playwright install chromium --only-shell
+          # Playwright does not yet identify the GitHub Ubuntu 26.04 runner;
+          # the official Ubuntu 24.04 headless-shell binary is compatible.
+          echo 'PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64' >> "$GITHUB_ENV"
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium --only-shell
       # #1416: re-render only the assets whose source or preview changed and
       # fail on a stale preview, unless catalog/preview-exceptions.json holds a
       # reviewed exception for that exact source and preview. Runs on shard 1
@@ -294,7 +297,8 @@ jobs:
               --exclude 'tests/integration/catalog/catalogIndex.test.ts' \
               | grep -Eq '(hoseBarbFidelity|dinRailEndStopFidelity)\.test\.ts'; then
             npm run build:player
-            npx playwright install chromium --only-shell
+            echo 'PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64' >> "$GITHUB_ENV"
+            PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium --only-shell
           fi
       - name: QC — vitest (shard ${{ matrix.shard }}/8)
         # `catalogIndex.test.ts` rebuilds + exports the whole catalog and runs in
