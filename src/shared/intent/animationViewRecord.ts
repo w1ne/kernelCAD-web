@@ -18,7 +18,7 @@
 //        ] })
 //      A track may instead animate appearance: `{ target, channel, keys }`
 //      with `channel` 'color' | 'emissive' and `#rrggbb` key values, e.g.
-//        { target: 'led-03', channel: 'emissive', keys: [{ atMs: 0, value: '#000000' }, { atMs: 150, value: '#2bff88' }] }
+//        { target: 'part-a', channel: 'emissive', keys: [{ atMs: 0, value: '#000000' }, { atMs: 150, value: '#2bff88' }] }
 //
 // Whatever the author surface, the metadata stored on the FeatureRecord is
 // ALWAYS normalized to the track shape (see AnimationViewMetadata) — the
