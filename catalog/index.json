@@ -319832,7 +319832,7 @@
       "id": "remote-power-shelf",
       "kit": "telecom-infrastructure",
       "title": "Remote power shelf",
-      "description": "Rack power shelf with two module faces, handles and a raised top lip. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "19-inch 3U rack DC power shelf: one powder-coated steel chassis with L-shaped rack ears and stainless rack screws, a controller with display and ports, four hot-swap rectifier modules with aluminium faces, vent slots and polymer pull handles, and a rear terminal cover. Knobs: overall scale; powder-coated steel, aluminium, stainless steel, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319851,8 +319851,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/remote-power-shelf.kcad.ts",
       "preview": "/assets/telecom-infrastructure-remote-power-shelf.png",
-      "sourceSha256": "fb678df1beeae081e2a33e079b29a28b473ee28bc96592a7ce6c933dc98599e0",
-      "triangleBudget": 900,
+      "sourceSha256": "1ba31e195ad1226c47e4d0ea52c1308df50c320200b3c7ce8dbaf7388fdd27fc",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -319864,58 +319864,122 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#353c41",
+          "label": "Chassis and rack ears (powder-coated steel)"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b4bcbf",
+          "label": "Module faces (aluminium)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Rack screws (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#1c2124",
+          "label": "Handles, vents, display and terminal cover (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "powderCoat": "#52756b",
+          "aluminium": "#a9b1ad",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "powderCoat": "#e6e8e4",
+          "aluminium": "#c3c9cb",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 688,
         "sizeM": [
-          0.7,
-          0.34,
-          0.425
+          0.483,
+          0.133,
+          0.382
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
-          "parts": [
-            "shelf"
-          ],
-          "param": "galvanizedSteel"
-        },
-        {
           "name": "powderCoat",
-          "color": "#318b96",
+          "color": "#353c41",
           "parts": [
-            "top",
-            "module-left",
-            "module-right",
-            "handle-left",
-            "handle-right"
+            "chassis",
+            "ear-left",
+            "ear-right"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "rack-screw-left-0",
+            "rack-screw-left-1",
+            "rack-screw-right-0",
+            "rack-screw-right-1"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b4bcbf",
+          "parts": [
+            "controller",
+            "rectifier-0",
+            "rectifier-1",
+            "rectifier-2",
+            "rectifier-3"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "polymer",
+          "color": "#1c2124",
+          "parts": [
+            "display",
+            "port-0",
+            "port-1",
+            "handle-0",
+            "vent-0-0",
+            "vent-0-1",
+            "vent-0-2",
+            "vent-0-3",
+            "vent-0-4",
+            "handle-1",
+            "vent-1-0",
+            "vent-1-1",
+            "vent-1-2",
+            "vent-1-3",
+            "vent-1-4",
+            "handle-2",
+            "vent-2-0",
+            "vent-2-1",
+            "vent-2-2",
+            "vent-2-3",
+            "vent-2-4",
+            "handle-3",
+            "vent-3-0",
+            "vent-3-1",
+            "vent-3-2",
+            "vent-3-3",
+            "vent-3-4",
+            "terminal-cover"
+          ],
+          "param": "polymer"
         }
       ]
     },
