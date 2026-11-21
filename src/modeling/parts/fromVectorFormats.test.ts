@@ -125,6 +125,25 @@ const PERIODIC_SPLINE_CUTOUT_DXF = [
 ].join('\n') + '\n';
 
 /**
+ * A 60 x 40 plate with a closed fit-point-only SPLINE cut-out: eight fit
+ * points on an 8 mm circle centred on (30, 20), flag 11 (closed | periodic |
+ * planar), no control net and no end tangents, as ezdxf
+ * `add_spline(fit_points)` writes a closed spline before it is edited.
+ */
+const CLOSED_FIT_SPLINE_CUTOUT_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 11, 71, 3, 72, 0, 73, 0, 74, 8,
+  ...Array.from({ length: 8 }, (_, k) => [30 + 8 * Math.cos((k * Math.PI) / 4), 20 + 8 * Math.sin((k * Math.PI) / 4)])
+    .flatMap(([x, y]) => [11, x, 21, y, 31, 0]),
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
  * A 40 mm arch written the way ezdxf `add_spline(fit_points)` writes it: a
  * cubic SPLINE with five fit points (group codes 11/21/31) and no control
  * net, closed by a LINE along the X axis. The polygon through the fit points
@@ -162,6 +181,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
   writeFileSync(join(tmpDir, 'periodic-spline-cutout.dxf'), PERIODIC_SPLINE_CUTOUT_DXF);
   writeFileSync(join(tmpDir, 'fit-point-arch.dxf'), FIT_POINT_ARCH_DXF);
+  writeFileSync(join(tmpDir, 'closed-fit-spline-cutout.dxf'), CLOSED_FIT_SPLINE_CUTOUT_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -372,6 +392,29 @@ describe('lib.fromDXF — round trip to a solid', () => {
     expect(box.max[0]).toBeCloseTo(40, 6);
     expect(box.min[1]).toBeCloseTo(0, 6);
     expect(box.max[1]).toBeCloseTo(10, 5);
+  });
+
+  it('cuts a closed fit-point-only DXF SPLINE out of a plate as a smooth near-circular hole', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, cutout] = await api.lib.fromDXF('closed-fit-spline-cutout.dxf');
+    expect(cutout).toBeDefined();
+    const prism = await lower(session, cutout.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    // The periodic cubic through eight points of the 8 mm circle encloses within 0.2 % of 64 pi mm².
+    const area = prism.volume() / 4;
+    expect(Math.abs(area / (64 * Math.PI) - 1)).toBeLessThan(2e-3);
+    // One smooth closed curve: a single lateral face, not a faceted polygon.
+    expect(prism.getReplicadShape().faces.length).toBe(3);
+    const box = prism.boundingBox();
+    expect((box.min[0] + box.max[0]) / 2).toBeCloseTo(30, 6);
+    expect((box.min[1] + box.max[1]) / 2).toBeCloseTo(20, 6);
+    expect(box.max[0] - box.min[0]).toBeGreaterThan(15.9);
+    expect(box.max[0] - box.min[0]).toBeLessThan(16.1);
+
+    const plate = await lower(session, outline.extrude(4).subtract(cutout.extrude(4)).id);
+    expect(isValidShape(getOC(), plate.getReplicadShape().wrapped)).toBe(true);
+    expect(Math.abs(plate.volume() / ((60 * 40 - area) * 4) - 1)).toBeLessThan(1e-4);
   });
 
   it('expands an MINSERT block of holes into four cuts at the grid points', async () => {

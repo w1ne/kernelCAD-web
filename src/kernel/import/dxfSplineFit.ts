@@ -17,14 +17,21 @@
 //   - a missing tangent is the Bessel estimate, the end derivative of the
 //     parabola through the first (or last) three fit points.
 //
+// A closed fit-point spline (flag 1) without end tangents is interpolated as a
+// periodic cubic instead (Piegl & Tiller section 9.2.4 with chord-length
+// parameters around the closed polygon, the knots at the parameters), so the
+// seam is C2 like every other fit point. With an end tangent it is the clamped
+// cubic above through the fit points and back to the first, with that tangent
+// at both ends. The periodic result is clamped exactly (dxfSplineClamp.ts).
+//
 // The curve passes through the fit points exactly (to solver round-off).
 // Between fit points the shape depends on these choices, so it can differ
 // slightly from the curve the source tool drew from the same fit data.
 //
 // `fitPointSpline` reads and validates the fit data of one SPLINE entity;
-// closed, non-cubic, nonplanar and duplicate-point fit splines are refused.
+// non-cubic, nonplanar and duplicate-point fit splines are refused.
 
-import type { PlanarSpline } from './dxfSplineClamp';
+import { clampSpline, type PlanarSpline } from './dxfSplineClamp';
 import { DxfParseError, get, num, values, type EntityBlock } from './dxfPairs';
 
 type Point = readonly [number, number];
@@ -158,6 +165,34 @@ export function interpolateFitPoints(
   return { degree: 3, controlPoints: controls, knots, weights: [] };
 }
 
+/**
+ * Clamped form of the C2 periodic cubic through the closed polygon `fit`
+ * (three or more distinct points, the first not repeated at the end).
+ */
+export function interpolateClosedFitPoints(fit: readonly Point[]): PlanarSpline {
+  const count = fit.length;
+  const { params } = chordParameters([...fit, fit[0]]);
+  // Periodic knots u_i = params[i mod count] + floor(i / count), for i = -3..count+3.
+  const knots = Array.from({ length: count + 7 }, (_, j) => {
+    const i = j - 3;
+    return params[((i % count) + count) % count] + Math.floor(i / count);
+  });
+  // Control i of the wrapped net is P[i mod count]; one equation C(u_k) = Q_k per fit point.
+  const a = Array.from({ length: count }, () => new Array<number>(count).fill(0));
+  const b = fit.map(([x, y]) => [x, y]);
+  for (let k = 0; k < count; k++) {
+    const basis = cubicBasis(knots, k + 3, params[k]);
+    for (let j = 0; j <= 3; j++) a[k][(k + j) % count] += basis[j];
+  }
+  const periodic = solve(a, b).map(([x, y]) => [x, y] as const);
+  return clampSpline({
+    degree: 3,
+    controlPoints: [...periodic, ...periodic.slice(0, 3)],
+    knots,
+    weights: [],
+  });
+}
+
 /** Refuse SPLINE data off the XY plane: non-zero Z values or a tilted normal. */
 export function validateSplinePlanarity(b: EntityBlock, zs: number[]): void {
   const zScale = Math.max(1, ...zs.map(Math.abs));
@@ -198,9 +233,34 @@ function optionalTangent(b: EntityBlock, codes: readonly [number, number, number
 }
 
 /**
+ * Cubic through the fit points of a closed SPLINE and back to the first: C2
+ * periodic without end tangents, otherwise clamped with the given tangent at
+ * the seam.
+ */
+function closedFitPointSpline(
+  fit: readonly Point[],
+  size: number,
+  line: number,
+  startTangent?: Point,
+  endTangent?: Point,
+): PlanarSpline {
+  // A closed spline may repeat its first fit point at the end; the closure adds it back.
+  const [lx, ly] = fit[fit.length - 1];
+  const ring = Math.hypot(lx - fit[0][0], ly - fit[0][1]) <= 1e-12 * size ? fit.slice(0, -1) : fit;
+  if (ring.length < 3) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${line}: a closed fit-point spline needs at least 3 distinct fit points, found ${ring.length}.`,
+    );
+  }
+  if (!startTangent && !endTangent) return interpolateClosedFitPoints(ring);
+  return interpolateFitPoints([...ring, ring[0]], startTangent ?? endTangent, endTangent ?? startTangent);
+}
+
+/**
  * A SPLINE with fit points and no control net: build the clamped cubic
- * through the fit points (dxfSplineFit.ts). Closed fit-point splines need a
- * periodic interpolation that this importer does not attempt.
+ * through the fit points, or for a closed spline the cubic that also returns
+ * to the first fit point (dxfSplineFit.ts).
  */
 export function fitPointSpline(
   b: EntityBlock,
@@ -220,12 +280,6 @@ export function fitPointSpline(
       'malformed-entity',
       `SPLINE at line ${b.line}: fit point counts disagree (${xs.length} X, ${ys.length} Y, ${zs.length} Z` +
         `${declaredFitCount === undefined ? '' : `, ${num(declaredFitCount, 'SPLINE', 74)} declared`}).`,
-    );
-  }
-  if ((definition.flags & 1) !== 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: closed fit-point-only splines are not supported; export control points and knots from the source tool.`,
     );
   }
   if (definition.degree !== 3) {
@@ -249,5 +303,8 @@ export function fitPointSpline(
       );
     }
   });
-  return interpolateFitPoints(fit, optionalTangent(b, [12, 22, 32]), optionalTangent(b, [13, 23, 33]));
+  const startTangent = optionalTangent(b, [12, 22, 32]);
+  const endTangent = optionalTangent(b, [13, 23, 33]);
+  if ((definition.flags & 1) === 0) return interpolateFitPoints(fit, startTangent, endTangent);
+  return closedFitPointSpline(fit, size, b.line, startTangent, endTangent);
 }

@@ -23,8 +23,8 @@
 //   SPLINE      planar, continuous control-point B-splines, kept as exact
 //               rational/non-rational NURBS sketch commands; unclamped and
 //               periodic knot vectors are clamped exactly (dxfSplineClamp.ts);
-//               open fit-point-only cubics are interpolated through their fit
-//               points and end tangents (dxfSplineFit.ts)
+//               fit-point-only cubics, open or closed, are interpolated through
+//               their fit points and end tangents (dxfSplineFit.ts)
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
 //   INSERT      block references, including nested blocks and MINSERT grids,
 //               placed by an exact affine map (dxfInsert.ts)
@@ -47,8 +47,8 @@
 // accepted only with one planar closed polyline path; multi-path hatches are
 // refused because this importer does not preserve hole/island relationships.
 // SPLINE is accepted only when its planar control points and knots define a
-// continuous curve, or when it is an open cubic with fit points only.
-// Closed fit-point-only, nonplanar and discontinuous SPLINE entities, and
+// continuous curve, or when it is a cubic with fit points only.
+// Non-cubic fit-point-only, nonplanar and discontinuous SPLINE entities, and
 // closed SPLINEs whose control net does not wrap, still fail closed rather
 // than being approximated.
 //

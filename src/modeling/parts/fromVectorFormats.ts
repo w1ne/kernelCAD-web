@@ -114,9 +114,9 @@ function registerRegions(
  * full and partial planar ellipses and supported splines retain exact rational
  * NURBS geometry. Multi-path HATCH is refused to preserve hole/island intent;
  * edge-based and out-of-plane HATCH boundaries are also refused. Periodic
- * and unclamped SPLINE knots are clamped exactly; an open cubic SPLINE with
- * fit points only is interpolated through its fit points. Nonplanar
- * ellipses, closed fit-point-only,
+ * and unclamped SPLINE knots are clamped exactly; a cubic SPLINE with fit
+ * points only is interpolated through its fit points, as a C2 periodic cubic
+ * when it is closed. Nonplanar ellipses, non-cubic fit-point-only,
  * discontinuous and nonplanar SPLINE entities are REFUSED
  * with an entity and line diagnostic rather than dropped. INSERT block
  * references are expanded exactly, including nested blocks and MINSERT grids;

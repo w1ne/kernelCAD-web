@@ -208,9 +208,10 @@ lib.from3MF(path: string, opts?: {
 // retain exact rational NURBS geometry and can join other profile edges.
 // Continuous, planar XY SPLINE entities retain their control points, knots and
 // rational weights; periodic and unclamped knot vectors are clamped by exact
-// knot insertion. An open cubic SPLINE with fit points only is interpolated
-// through its fit points and end tangents (chord-length parameters). Nonplanar
-// ellipses, closed fit-point-only, discontinuous and nonplanar SPLINE, and
+// knot insertion. A cubic SPLINE with fit points only is interpolated through
+// its fit points and end tangents (chord-length parameters); a closed one
+// without end tangents becomes a smooth (C2) periodic cubic. Nonplanar
+// ellipses, non-cubic fit-point-only, discontinuous and nonplanar SPLINE, and
 // closed SPLINE whose control net does not wrap, fail with a named diagnostic.
 // INSERT block references (nested, MINSERT grids) are placed with their base
 // point, insertion point, rotation and scale; external-reference blocks and
