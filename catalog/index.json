@@ -190256,7 +190256,7 @@
       "id": "trommel-screen",
       "kit": "mining",
       "title": "Rotary trommel screen",
-      "description": "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, spray-water bar with drop nozzles, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
+      "description": "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, galvanized spray-water bar with drop nozzles fed by a valved riser, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -190278,7 +190278,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/trommel-screen.kcad.ts",
       "preview": "/assets/mining-trommel-screen.png",
-      "sourceSha256": "acec3569dc0ef8ffa8532cd4a9ba577ebda92920ab836006ee6ddfcaa7123c5f",
+      "sourceSha256": "87c85535cf6da22fe7e8cfd27e812390a39be5212e3784ea4d86becda94aa7cd",
       "triangleBudget": 3200,
       "params": [
         {
@@ -190346,7 +190346,7 @@
         }
       },
       "stats": {
-        "triangles": 2160,
+        "triangles": 2352,
         "sizeM": [
           14.5,
           5.608729,
@@ -190387,14 +190387,7 @@
           "name": "stainlessSteel",
           "color": "#7c8589",
           "parts": [
-            "screen-panels",
-            "spray-bar",
-            "spray-nozzle--2200",
-            "spray-nozzle--1200",
-            "spray-nozzle--200",
-            "spray-nozzle-800",
-            "spray-nozzle-1800",
-            "spray-nozzle-2800"
+            "screen-panels"
           ],
           "param": "stainlessSteel"
         },
@@ -190444,10 +190437,35 @@
           ]
         },
         {
-          "name": "spray-supply",
-          "color": "#9fc6d8",
+          "name": "spray-bar",
+          "color": "#a7afb1",
           "parts": [
-            "spray-supply"
+            "spray-bar",
+            "spray-nozzle--2200",
+            "spray-nozzle--1200",
+            "spray-nozzle--200",
+            "spray-nozzle-800",
+            "spray-nozzle-1800",
+            "spray-nozzle-2800",
+            "spray-supply",
+            "spray-elbow",
+            "spray-riser",
+            "spray-riser-flange"
+          ]
+        },
+        {
+          "name": "spray-valve",
+          "color": "#3c4144",
+          "parts": [
+            "spray-valve",
+            "spray-valve-stem"
+          ]
+        },
+        {
+          "name": "spray-valve-handwheel",
+          "color": "#c8322b",
+          "parts": [
+            "spray-valve-handwheel"
           ]
         },
         {
