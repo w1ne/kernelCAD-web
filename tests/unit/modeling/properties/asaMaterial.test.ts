@@ -4,9 +4,9 @@
 // ASA (acrylonitrile styrene acrylate) is a first-class engineering grade:
 // it resolves for mass (`arm.part({ material })`), FEA and the default finish.
 import { describe, it, expect } from 'vitest';
-import { resolveMaterial } from '../../modeling/properties/materialLibrary';
-import { resolveFeaMaterial, feaMaterialTable } from '../../kernel/fea/feaMaterials';
-import { ACCEPTED_MATERIAL_NAMES, defaultFinish } from './engineeringMaterials';
+import { resolveMaterial } from '../../../../src/modeling/properties/materialLibrary';
+import { resolveFeaMaterial, feaMaterialTable } from '../../../../src/kernel/fea/feaMaterials';
+import { ACCEPTED_MATERIAL_NAMES, defaultFinish } from '../../../../src/shared/materials/engineeringMaterials';
 
 describe('asa material grade', () => {
   it('resolves for mass with the Bambu ASA TDS density and the abs finish', () => {
