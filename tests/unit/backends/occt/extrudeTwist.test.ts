@@ -61,7 +61,10 @@ describe('extrude twistAngle', () => {
     const straight = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(splineProfile), 60);
     const twisted = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(splineProfile), 60, { twistAngle: 45 });
     expect(straight.volume()).toBeGreaterThan(0);
-    expect(twisted.boundingBox().max[1]).toBeGreaterThan(straight.boundingBox().max[1] + 1);
+    // Compare mesh-exact boxes: the default box of the straight spline prism
+    // can be the loose control-point hull (y max 26.1 vs a true 14.8).
+    expect(twisted.boundingBox({ exact: true }).max[1])
+      .toBeGreaterThan(straight.boundingBox({ exact: true }).max[1] + 1);
     expect(Math.abs(twisted.volume() - straight.volume()) / straight.volume()).toBeLessThan(1e-3);
   });
 
@@ -126,6 +129,20 @@ const TWIST_BUILDERS: Record<string, (angle: number) => OcctBackend> = {
   'rounded-rect': (angle) => OcctBackend.extrudeRoundedRect(20, 10, 2, 5, { twistAngle: angle }),
 };
 
+// A circle centred on the twist axis is rotationally symmetric: its true box
+// does not change under twist, so it has its own case below.
+const ASYMMETRIC_KINDS = Object.keys(LEGACY_BUILDERS).filter((k) => k !== 'circle');
+
+/** Largest absolute difference between two boxes, across all six faces. */
+function bboxDelta(
+  a: { min: readonly number[]; max: readonly number[] },
+  b: { min: readonly number[]; max: readonly number[] },
+): number {
+  let d = 0;
+  for (let i = 0; i < 3; i++) d = Math.max(d, Math.abs(b.max[i] - a.max[i]), Math.abs(b.min[i] - a.min[i]));
+  return d;
+}
+
 describe('primitive extrudes with twistAngle (backend)', () => {
   beforeAll(async () => { await initOcct(); });
 
@@ -136,12 +153,19 @@ describe('primitive extrudes with twistAngle (backend)', () => {
     expect(zero.boundingBox()).toEqual(straight.boundingBox());
   });
 
-  it.each(Object.keys(LEGACY_BUILDERS))('%s: twistAngle 60 changes the bbox and preserves volume', (kind) => {
+  it.each(ASYMMETRIC_KINDS)('%s: twistAngle 60 changes the bbox and preserves volume', (kind) => {
     const straight = LEGACY_BUILDERS[kind]();
     const twisted = TWIST_BUILDERS[kind](60);
     expect(twisted.volume()).toBeGreaterThan(0);
     expect(Math.abs(twisted.volume() - straight.volume()) / straight.volume()).toBeLessThan(1e-3);
     expect(bboxGrowth(straight.boundingBox(), twisted.boundingBox())).toBeGreaterThan(1);
+  });
+
+  it('circle: twistAngle 60 keeps the true box and volume', () => {
+    const straight = LEGACY_BUILDERS.circle();
+    const twisted = TWIST_BUILDERS.circle(60);
+    expect(Math.abs(twisted.volume() - straight.volume()) / straight.volume()).toBeLessThan(1e-3);
+    expect(bboxDelta(straight.boundingBox(), twisted.boundingBox())).toBeLessThan(0.01);
   });
 
   it.each(Object.keys(LEGACY_BUILDERS))('%s: non-finite twistAngle throws typed feature.invalid-args', (kind) => {
@@ -207,7 +231,7 @@ const LOWERER_RECORDS: Record<string, (twist: number) => FeatureRecord> = {
 describe('primitive extrude twistAngle (lowerer)', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it.each(Object.keys(LOWERER_RECORDS))('%s: lowerer applies twist (bbox grows vs 0)', async (kind) => {
+  it.each(ASYMMETRIC_KINDS)('%s: lowerer applies twist (bbox grows vs 0)', async (kind) => {
     const lowerer = new OcctLowerer();
     const straight = await lowerer.lower(LOWERER_RECORDS[kind](0), { byKey: {} });
     const twisted = await lowerer.lower(LOWERER_RECORDS[kind](60), { byKey: {} });

@@ -64,6 +64,120 @@ const BULGED_DXF = [
   0, 'ENDSEC', 0, 'EOF',
 ].join('\n') + '\n';
 
+/**
+ * A 30 x 20 plate at x in [-30, 0] (world coordinates, extrusion +Z) with a
+ * r=3 mm hole written as a CIRCLE with extrusion (0, 0, -1). Its stored
+ * centre (10, 10) is in the mirrored OCS, so the world centre is (-10, 10)
+ * and the hole lies inside the plate. Read without the OCS, it lies outside.
+ */
+const MIRRORED_HOLE_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, -30, 20, 0,
+  10, 0, 20, 0,
+  10, 0, 20, 20,
+  10, -30, 20, 20,
+  0, 'CIRCLE', 10, 10, 20, 10, 40, 3, 210, 0, 220, 0, 230, -1,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
+ * A 60 x 40 plate whose four r=2.5 mm holes are one block, "HOLE", placed as
+ * a 2 x 2 MINSERT grid at (10, 10) with 40 mm column and 20 mm row spacing.
+ * The block base point (1, 0) is subtracted, so the circle drawn at (1, 0)
+ * lands exactly on each grid point. Exporters write repeated holes this way.
+ */
+const BLOCK_HOLES_DXF = [
+  0, 'SECTION', 2, 'BLOCKS',
+  0, 'BLOCK', 8, '0', 2, 'HOLE', 70, 0, 10, 1, 20, 0, 30, 0, 3, 'HOLE',
+  0, 'CIRCLE', 8, '0', 10, 1, 20, 0, 30, 0, 40, 2.5,
+  0, 'ENDBLK', 8, '0',
+  0, 'ENDSEC',
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'INSERT', 8, '0', 2, 'HOLE', 10, 10, 20, 10, 30, 0, 70, 2, 71, 2, 44, 40, 45, 20,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
+ * A 60 x 40 plate with one r = 5 hole block inserted at (30, 20) with scale
+ * (2, 1) and rotation 90°: an elliptical hole, semi-axes 10 along Y and 5
+ * along X, so the plate encloses exactly 2400 - 50π mm².
+ */
+const STRETCHED_HOLE_DXF = [
+  0, 'SECTION', 2, 'BLOCKS',
+  0, 'BLOCK', 8, '0', 2, 'HOLE', 70, 0, 10, 0, 20, 0, 30, 0, 3, 'HOLE',
+  0, 'CIRCLE', 8, '0', 10, 0, 20, 0, 30, 0, 40, 5,
+  0, 'ENDBLK', 8, '0',
+  0, 'ENDSEC',
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'INSERT', 8, '0', 2, 'HOLE', 10, 30, 20, 20, 30, 0, 41, 2, 42, 1, 43, 1, 50, 90,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
+ * A 60 x 40 plate with a closed spline cut-out, written the way AutoCAD and
+ * ezdxf write a closed spline: a periodic (flag 2) uniform cubic whose first
+ * three control points repeat at the end and whose knots 0..10 are unclamped.
+ * The control net is the 20 mm square centred on (30, 20). By Green's theorem
+ * this closed uniform cubic B-spline encloses exactly 2440/9 mm².
+ */
+const PERIODIC_SPLINE_CUTOUT_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 11, 71, 3, 72, 11, 73, 7, 74, 0,
+  ...Array.from({ length: 11 }, (_, i) => [40, i]).flat(),
+  ...[[20, 10], [40, 10], [40, 30], [20, 30], [20, 10], [40, 10], [40, 30]]
+    .flatMap(([x, y]) => [10, x, 20, y, 30, 0]),
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
+ * A 60 x 40 plate with a closed fit-point-only SPLINE cut-out: eight fit
+ * points on an 8 mm circle centred on (30, 20), flag 11 (closed | periodic |
+ * planar), no control net and no end tangents, as ezdxf
+ * `add_spline(fit_points)` writes a closed spline before it is edited.
+ */
+const CLOSED_FIT_SPLINE_CUTOUT_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 11, 71, 3, 72, 0, 73, 0, 74, 8,
+  ...Array.from({ length: 8 }, (_, k) => [30 + 8 * Math.cos((k * Math.PI) / 4), 20 + 8 * Math.sin((k * Math.PI) / 4)])
+    .flatMap(([x, y]) => [11, x, 21, y, 31, 0]),
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
+ * A 40 mm arch written the way ezdxf `add_spline(fit_points)` writes it: a
+ * cubic SPLINE with five fit points (group codes 11/21/31) and no control
+ * net, closed by a LINE along the X axis. The polygon through the fit points
+ * encloses 260 mm²; the smooth arch through them encloses slightly more.
+ */
+const FIT_POINT_ARCH_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 8, 71, 3, 72, 0, 73, 0, 74, 5,
+  ...[[0, 0], [10, 8], [20, 10], [30, 8], [40, 0]].flatMap(([x, y]) => [11, x, 21, y, 31, 0]),
+  0, 'LINE', 8, '0', 10, 40, 20, 0, 11, 0, 21, 0,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
 /** The asymmetric L from the parser tests, at true millimetre scale. */
 const L_SVG = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="40mm" viewBox="0 0 100 40">
@@ -84,6 +198,12 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'plate.dxf'), PLATE_DXF);
   writeFileSync(join(tmpDir, 'plate-hole.dxf'), PLATE_WITH_HOLE_DXF);
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
+  writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
+  writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
+  writeFileSync(join(tmpDir, 'stretched-hole.dxf'), STRETCHED_HOLE_DXF);
+  writeFileSync(join(tmpDir, 'periodic-spline-cutout.dxf'), PERIODIC_SPLINE_CUTOUT_DXF);
+  writeFileSync(join(tmpDir, 'fit-point-arch.dxf'), FIT_POINT_ARCH_DXF);
+  writeFileSync(join(tmpDir, 'closed-fit-spline-cutout.dxf'), CLOSED_FIT_SPLINE_CUTOUT_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -181,6 +301,47 @@ describe('lib.fromDXF — round trip to a solid', () => {
     });
   });
 
+  it('imports a multi-path HATCH as one profile whose window and bolt holes cut the solid', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-gasket.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(2).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // 60 x 40 plate minus a 30 x 16 window and four r = 3 bolt holes, 2 mm thick.
+    expect(backend.volume()).toBeCloseTo((2400 - 480 - 36 * Math.PI) * 2, 4);
+    // Outer sides, top, bottom, four window walls and four cylindrical bores.
+    expect(shape.faces.length).toBe(4 + 2 + 4 + 4 * 2);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(40, 6), expect.closeTo(2, 6)],
+    });
+  });
+
+  it('imports an edge-based HATCH of lines and arcs as one plate with a slot and round holes', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-edge-bracket.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(3).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // 60 x 30 plate with r5 corners, minus a 20 x 6 slot with r3 ends and two r4 holes, 3 mm thick.
+    expect(backend.volume()).toBeCloseTo((1700 + 25 * Math.PI - (120 + 9 * Math.PI) - 32 * Math.PI) * 3, 4);
+    // Outer: 4 flats and 4 corner cylinders; slot: 2 flats and 2 half cylinders;
+    // two bores of two half cylinders each; top and bottom.
+    expect(shape.faces.length).toBe(8 + 4 + 4 + 2);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(30, 6), expect.closeTo(3, 6)],
+    });
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
@@ -237,6 +398,123 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const plate = outline.extrude(3).subtract(holes[0].extrude(3));
     const backend = await lower(session, plate.id);
     expect(backend.volume()).toBeCloseTo((10 * 5 - Math.PI) * 3, 4);
+  });
+
+  it('places a CIRCLE with extrusion (0, 0, -1) at its mirrored world centre', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, ...holes] = await api.lib.fromDXF('mirrored-hole.dxf');
+    expect(holes).toHaveLength(1);
+
+    const plate = outline.extrude(2).subtract(holes[0].extrude(2));
+    const backend = await lower(session, plate.id);
+    // The hole cuts the plate only at the mirrored centre (-10, 10).
+    expect(backend.volume()).toBeCloseTo((30 * 20 - 9 * Math.PI) * 2, 4);
+    const box = backend.boundingBox();
+    expect(box.min[0]).toBeCloseTo(-30, 6);
+    expect(box.max[0]).toBeCloseTo(0, 6);
+  });
+
+  it('cuts a periodic closed DXF SPLINE out of a plate at its exact enclosed area', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, cutout] = await api.lib.fromDXF('periodic-spline-cutout.dxf');
+    expect(cutout).toBeDefined();
+
+    const plate = outline.extrude(4).subtract(cutout.extrude(4));
+    const backend = await lower(session, plate.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // The spline prism alone integrates to the exact area within 1e-6.
+    const prism = await lower(session, cutout.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    expect(prism.volume()).toBeCloseTo((2440 / 9) * 4, 2);
+    // After the cut, OCCT's fixed-order integration over the trimmed planar
+    // faces measured 1.6e-5 relative error, so the plate check is relative.
+    expect(Math.abs(backend.volume() / ((60 * 40 - 2440 / 9) * 4) - 1)).toBeLessThan(1e-4);
+
+    // The clamped curve starts at the uniform-cubic knot point (P0 + 4 P1 + P2) / 6
+    // and is symmetric about the square centre, so its box is centred on (30, 20).
+    const box = (await lower(session, cutout.extrude(1).id)).boundingBox();
+    expect((box.min[0] + box.max[0]) / 2).toBeCloseTo(30, 6);
+    expect((box.min[1] + box.max[1]) / 2).toBeCloseTo(20, 6);
+  });
+
+  it('extrudes a fit-point-only DXF SPLINE arch into a valid solid through its fit points', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [arch] = await api.lib.fromDXF('fit-point-arch.dxf');
+    const backend = await lower(session, arch.extrude(3).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // The arch bulges just outside the 260 mm² fit-point polygon.
+    expect(backend.volume() / 3).toBeGreaterThan(260);
+    expect(backend.volume() / 3).toBeLessThan(290);
+    // The curve is symmetric about x = 20 and passes through (20, 10), so its
+    // apex is that fit point: the box tops out at y = 10 and spans x 0..40.
+    const box = backend.boundingBox();
+    expect(box.min[0]).toBeCloseTo(0, 6);
+    expect(box.max[0]).toBeCloseTo(40, 6);
+    expect(box.min[1]).toBeCloseTo(0, 6);
+    expect(box.max[1]).toBeCloseTo(10, 5);
+  });
+
+  it('cuts a closed fit-point-only DXF SPLINE out of a plate as a smooth near-circular hole', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, cutout] = await api.lib.fromDXF('closed-fit-spline-cutout.dxf');
+    expect(cutout).toBeDefined();
+    const prism = await lower(session, cutout.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    // The periodic cubic through eight points of the 8 mm circle encloses within 0.2 % of 64 pi mm².
+    const area = prism.volume() / 4;
+    expect(Math.abs(area / (64 * Math.PI) - 1)).toBeLessThan(2e-3);
+    // One smooth closed curve: a single lateral face, not a faceted polygon.
+    expect(prism.getReplicadShape().faces.length).toBe(3);
+    const box = prism.boundingBox();
+    expect((box.min[0] + box.max[0]) / 2).toBeCloseTo(30, 6);
+    expect((box.min[1] + box.max[1]) / 2).toBeCloseTo(20, 6);
+    expect(box.max[0] - box.min[0]).toBeGreaterThan(15.9);
+    expect(box.max[0] - box.min[0]).toBeLessThan(16.1);
+
+    const plate = await lower(session, outline.extrude(4).subtract(cutout.extrude(4)).id);
+    expect(isValidShape(getOC(), plate.getReplicadShape().wrapped)).toBe(true);
+    expect(Math.abs(plate.volume() / ((60 * 40 - area) * 4) - 1)).toBeLessThan(1e-4);
+  });
+
+  it('expands an MINSERT block of holes into four cuts at the grid points', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, ...holes] = await api.lib.fromDXF('block-holes.dxf');
+    expect(holes).toHaveLength(4);
+
+    let plate = outline.extrude(4);
+    for (const hole of holes) plate = plate.subtract(hole.extrude(4));
+    const backend = await lower(session, plate.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo((60 * 40 - 4 * Math.PI * 2.5 * 2.5) * 4, 4);
+
+    const centres = await Promise.all(holes.map(async hole => {
+      const box = (await lower(session, hole.extrude(1).id)).boundingBox();
+      return [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2].map(v => Math.round(v * 1e6) / 1e6);
+    }));
+    expect(centres.sort((a, b) => a[0] - b[0] || a[1] - b[1])).toEqual([[10, 10], [10, 30], [50, 10], [50, 30]]);
+  });
+
+  it('cuts a non-uniformly scaled block circle as an exact elliptical hole', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, hole, ...rest] = await api.lib.fromDXF('stretched-hole.dxf');
+    expect(rest).toHaveLength(0);
+
+    const prism = await lower(session, hole.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    expect(prism.volume()).toBeCloseTo(50 * Math.PI * 4, 5);
+    const box = prism.boundingBox();
+    expect([box.min[0], box.max[0], box.min[1], box.max[1]].map(v => Math.round(v * 1e3) / 1e3))
+      .toEqual([25, 35, 10, 30]);
+
+    const plate = await lower(session, outline.extrude(4).subtract(hole.extrude(4)).id);
+    expect(isValidShape(getOC(), plate.getReplicadShape().wrapped)).toBe(true);
+    expect(Math.abs(plate.volume() / ((2400 - 50 * Math.PI) * 4) - 1)).toBeLessThan(1e-4);
   });
 
   it('records the unit decision on the sketch so it can be inspected later', async () => {

@@ -16,7 +16,7 @@
 // The parser is purely syntactic — it does not validate that any feature
 // exists. The resolver below handles non-existence with the spec §D.2 hints.
 
-import type { HistoryMap, FaceHash } from './evolutionRecord';
+import type { HistoryMap, FaceHash, FaceLineage } from './evolutionRecord';
 import type { FaceSnapshot } from '../backends/occt/createdRefs';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
 
@@ -60,6 +60,29 @@ export function parseFaceSelector(s: string): ParsedSelector {
   }
   // Bare label (slice-1 collective).
   return { kind: 'collective', refName: s };
+}
+
+/** The lineage slots a `<name>.<ref>` or `<kind><N>.<ref>` selector reads;
+ *  face and edge lineage both carry them. */
+export interface RefLineage {
+  labelName?: string;
+  featureName?: string;
+  featureKind?: FaceLineage['featureKind'];
+  featureOrdinal?: number;
+}
+
+/** Hashes whose lineage carries the selector's feature and ref, edges or faces. */
+export function findRefMatches(map: ReadonlyMap<string, RefLineage>, parsed: ParsedSelector): string[] {
+  if (parsed.kind === 'collective') return [];
+  const out: string[] = [];
+  for (const [hash, lineage] of map) {
+    if (lineage.labelName !== parsed.refName) continue;
+    const sameFeature = parsed.kind === 'named'
+      ? lineage.featureName === parsed.featureName
+      : lineage.featureKind === parsed.featureKind && lineage.featureOrdinal === parsed.n;
+    if (sameFeature) out.push(hash);
+  }
+  return out;
 }
 
 /** Walk the lineage map for entries matching a parsed selector. Returns face
@@ -144,34 +167,62 @@ export function resolveBySnapshot(
   return out;
 }
 
-/** Find any lineage entry that *would* match the parsed selector if topology
- *  hadn't lost the labelName, and return the snapshot to use as a fallback
- *  query. Returns null when no such reference exists.
- *
- *  Used by the Phase-4 resolver: when topology returns zero hits, look for
- *  a lineage entry with the right featureName / featureKind+ordinal but
- *  without (or with) the labelName, and pull its snapshot as the query. */
+/** Find the lineage entry whose snapshot backs the fallback for a parsed
+ *  selector: same feature (name, or kind + ordinal) AND same `refName`. The
+ *  snapshot must describe the face that was asked for — taking any face of
+ *  the feature would silently bind `pocket.typo` (or a role the feature never
+ *  created) to an unrelated face of `pocket`. Returns null when no such
+ *  entry exists. */
+export function findFallbackLineage(
+  historyMap: HistoryMap,
+  parsed: ParsedSelector,
+): FaceLineage | null {
+  if (parsed.kind === 'collective') return null;
+  for (const lineage of historyMap.values()) {
+    if (!lineage.snapshot || lineage.labelName !== parsed.refName) continue;
+    const sameFeature = parsed.kind === 'named'
+      ? lineage.featureName === parsed.featureName
+      : lineage.featureKind === parsed.featureKind && lineage.featureOrdinal === parsed.n;
+    if (sameFeature) return lineage;
+  }
+  return null;
+}
+
+/** Snapshot of `findFallbackLineage`, used as the geometry-fallback query by
+ *  the Phase-4 resolver when topology returns zero live hits. */
 export function findFallbackSnapshot(
   historyMap: HistoryMap,
   parsed: ParsedSelector,
 ): FaceSnapshot | null {
-  if (parsed.kind === 'named') {
-    for (const lineage of historyMap.values()) {
-      if (lineage.featureName === parsed.featureName && lineage.snapshot) {
-        return lineage.snapshot;
-      }
-    }
+  return findFallbackLineage(historyMap, parsed)?.snapshot ?? null;
+}
+
+/** Ref names (`floor`, `wall`, …) the lineage map carries for the feature a
+ *  parsed selector names, sorted and de-duplicated. Feeds the
+ *  not-resolvable hint so a mistyped or never-created role lists the real
+ *  ones. */
+export function availableRefNames(
+  historyMap: ReadonlyMap<string, RefLineage>,
+  parsed: ParsedSelector,
+): string[] {
+  if (parsed.kind === 'collective') return [];
+  const names = new Set<string>();
+  for (const lineage of historyMap.values()) {
+    if (!lineage.labelName) continue;
+    const sameFeature = parsed.kind === 'named'
+      ? lineage.featureName === parsed.featureName
+      : lineage.featureKind === parsed.featureKind && lineage.featureOrdinal === parsed.n;
+    if (sameFeature) names.add(lineage.labelName);
   }
-  if (parsed.kind === 'ordinal') {
-    for (const lineage of historyMap.values()) {
-      if (
-        lineage.featureKind === parsed.featureKind &&
-        lineage.featureOrdinal === parsed.n &&
-        lineage.snapshot
-      ) {
-        return lineage.snapshot;
-      }
-    }
+  return [...names].sort();
+}
+
+/** Hint for a named/ordinal selector that resolved to no face. Lists the ref
+ *  names the feature does carry, so a role it never created reads as such
+ *  rather than as lost topology. */
+export function notResolvableHint(labelName: string, refNames: readonly string[]): string {
+  if (refNames.length > 0) {
+    return `'${labelName}' did not resolve. That feature carries the refs: ${refNames.join(', ')}.`;
   }
-  return null;
+  return `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`;
 }

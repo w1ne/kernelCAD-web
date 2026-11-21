@@ -23,7 +23,7 @@ describe('get_face_lineage', () => {
   it('returns usedFallback boolean field after downstream fillet', async () => {
     const code = `
       const plate = box(40,40,10).hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thru' });
-      return plate.fillet(0.2, { face: 'thru.entry-rim' });
+      return plate.fillet(0.2, { face: 'thru.wall' });
     `;
     const result = await getFaceLineageTool({ code, feature_id: 'auto', ref: 'thru.wall' });
     expect(result.ok).toBe(true);
@@ -58,7 +58,7 @@ describe('get_face_lineage', () => {
     // re-lowerings that might emit multi-feature chains.
     const code = `
       const plate = box(40, 40, 10).hole('top', { u: 0, v: 0, diameter: 6, depth: 3, name: 'blind' });
-      const filleted = plate.fillet(0.2, { face: 'blind.entry-rim' });
+      const filleted = plate.fillet(0.2, { face: 'blind.wall' });
       return filleted.chamfer(0.3, { face: 'bottom' });
     `;
     // Resolve the script independently to capture canonical creation order.

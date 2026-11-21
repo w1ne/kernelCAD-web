@@ -14,14 +14,14 @@ for (const x of stations) {
   base = base.subtract(drill);
   bracket = bracket.subtract(drill);
 }
-mount.part('base', base.color('steel'));
-mount.part('l-bracket', bracket.color('orange'));
+mount.part('base', base.finish('steel'));
+mount.part('l-bracket', bracket.color('#ffa500'));
 for (let index = 0; index < stations.length; index++) {
   const x = stations[index];
   const name = index === 0 ? 'left' : 'right';
-  mount.part(`${name}-washer`, (await lib.fetchPart('iso-7089-m3')).translate(x, 0, 6).color('steel'));
-  mount.part(`${name}-nut`, (await lib.fetchPart('iso-4032-m3')).translate(x, 0, -2.4).color('steel'));
+  mount.part(`${name}-washer`, (await lib.fetchPart('iso-7089-m3')).translate(x, 0, 6).finish('steel'));
+  mount.part(`${name}-nut`, (await lib.fetchPart('iso-4032-m3')).translate(x, 0, -2.4).finish('steel'));
   const bearingZ = index === 0 ? 6.5 : liftedHeadMm.add(6.5);
-  mount.part(`${name}-screw`, (await lib.fetchPart('iso-4762-m3x10')).color('steel'), { at: [x, 0, bearingZ] });
+  mount.part(`${name}-screw`, (await lib.fetchPart('iso-4762-m3x10')).finish('steel'), { at: [x, 0, bearingZ] });
 }
 return mount.model();

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   API_SOURCE_PATH,
+  SCRIPT_API_SOURCE_PATH,
   SHIM_ONLY_GLOBALS,
   USER_GLOBALS_SOURCE_PATH,
   WORKER_SOURCE_PATH,
@@ -9,6 +10,7 @@ import {
   buildWrapperPreamble,
   missingWorkerGlobals,
   parseKernelCadApiGlobals,
+  parseScriptApiGlobals,
   parseWorkerShimGlobals,
 } from '../../../scripts/typecheckExamples';
 
@@ -83,6 +85,23 @@ describe('typecheckExamples globals drift sentinel', () => {
       '}',
     ].join('\n');
     expect(parseKernelCadApiGlobals(source)).toEqual(['box', 'param']);
+  });
+
+  // `src/composition/scriptApi.ts` attaches `kinematic` on top of
+  // KernelCadApi and the runtime spreads it as a bare global; the wrapper
+  // used to declare only KernelCadApi members, so every `kinematic.*` call
+  // failed with TS2304 "Cannot find name 'kinematic'".
+  it('declares the composed ScriptApi members (kinematic) as globals', () => {
+    const composed = parseScriptApiGlobals(readFileSync(SCRIPT_API_SOURCE_PATH, 'utf8'));
+    expect(composed).toEqual(['kinematic']);
+    const full = buildWrapperPreamble([...apiNames, ...composed], '/tmp/kcad-typecheck-examples-test');
+    expect(full).toContain("declare const kinematic: ScriptApi['kinematic'];");
+    expect(full).toContain('declare const kc: ScriptApi;');
+  });
+
+  it('parses intersection type-literal members of a synthetic ScriptApi alias', () => {
+    const source = 'export type ScriptApi = KernelCadApi & { kinematic: K; extra(): void };';
+    expect(parseScriptApiGlobals(source)).toEqual(['kinematic', 'extra']);
   });
 
   it('maps wrapper coordinates back to the embedded source lines', () => {
