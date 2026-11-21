@@ -129,15 +129,25 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
-   * planar polyline HATCH boundary, and clamped continuous planar SPLINE
-   * entities with control points and knots. HATCH bulges map to exact arcs;
-   * multi-path, edge-based, and out-of-plane hatches are refused so holes and
-   * islands are not flattened.
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, closed
+   * planar HATCH boundaries (polyline paths, or edge paths of lines and
+   * circular arcs), and clamped continuous planar SPLINE entities with
+   * control points and knots. HATCH bulges and arc edges map to exact arcs;
+   * a multi-path HATCH keeps its declared holes, so each filled area is ONE
+   * sketch with its inner paths as holes. Elliptic-arc and spline HATCH
+   * edges, crossing and out-of-plane hatches are refused.
    * Full and partial planar ellipses and supported splines are exact rational
-   * NURBS geometry; nonplanar ellipses, periodic, fit-point-only, discontinuous
-   * and nonplanar splines, plus INSERT, are refused with an entity and line
-   * diagnostic. `$INSUNITS` sets scale; absent or Unitless means mm.
+   * NURBS geometry; periodic and unclamped knot vectors are clamped exactly.
+   * A cubic SPLINE with fit points only is interpolated through its fit
+   * points and end tangents; a closed one without end tangents becomes a C2
+   * periodic cubic. Nonplanar ellipses, non-cubic fit-point-only,
+   * discontinuous and nonplanar splines are refused with an entity and line
+   * diagnostic.
+   * INSERT block references (nested, and MINSERT grids) are expanded with
+   * their base point, insertion point, rotation and scale; an arc under a
+   * non-uniform block scale becomes an exact rational elliptical arc.
+   * External-reference blocks are refused.
+   * `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
   /**

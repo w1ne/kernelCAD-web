@@ -1,0 +1,61 @@
+{
+  "scope": "Local kernelCAD Node API: a NEMA 17 motor mount plate. A first chamfer breaks the entry rims; a second, later chamfer picks the exit rims by created edge label, which the first chamfer now keeps. OCCT volume and validity against a closed form; chamfer cone positions; labels after the first chamfer.",
+  "invocation": "node --import tsx docs/demos/edge-labels-through-chamfer/capture-demo.mts",
+  "source": "docs/demos/edge-labels-through-chamfer/mount-plate.kcad.ts",
+  "sourceSha256": "6cf09db3d61d1e85dedcdab97ad3f3e428347fda597130f21b01f1d6f7e4a055",
+  "implementationSha256": {
+    "src/kernel/backends/occt/historyAwareEdgeFeatures.ts": "e1a7ada72bf24cd417471a338b288d4dccfe54158db6b6eefe19d762fd7de65b"
+  },
+  "dimensionsMm": {
+    "side": 60,
+    "thickness": 6,
+    "cornerRadius": 5,
+    "pilotDiameter": 22.5,
+    "screwDiameter": 3.4,
+    "boltSquare": 31,
+    "entryChamfer": 0.5,
+    "exitChamfer": 0.3
+  },
+  "expected": {
+    "basis": "blank with R5 corners − bores − one 45° chamfer ring per rim, ring volume 2π(r + c/3)·c²/2",
+    "volumeMm3": 18847.615286,
+    "chamferCones": 10
+  },
+  "now": {
+    "errorDiagnostics": 0,
+    "brepValid": true,
+    "volumeMm3": 18847.615286,
+    "entryConeCentreZ": [
+      5.7518,
+      5.7607,
+      5.7607,
+      5.7607,
+      5.7607
+    ],
+    "exitConeCentreZ": [
+      0.1459,
+      0.1459,
+      0.1459,
+      0.1459,
+      0.1493
+    ],
+    "edgeLabelsAfterEntryChamfer": {
+      "bottom-perimeter": 4,
+      "top-perimeter": 4,
+      "pilot.exit-rim": 1,
+      "screws.exit-rim": 4
+    }
+  },
+  "before": {
+    "commit": "8d535d15a",
+    "result": "query.empty: Query DSL edge ref resolved to zero edges on the input shape. (the entry chamfer dropped every exit-rim label)"
+  },
+  "limits": [
+    "The value under \"before\" is recorded from a run on the named commit; this script does not measure it again.",
+    "The fix trusts a sub-shape hash that the result still contains. An edge that the kernel rebuilds as a new edge with the same geometry and no Modified() entry still loses its label.",
+    "No other CAD system opened the model, and no plate was made."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

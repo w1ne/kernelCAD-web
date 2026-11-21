@@ -60,6 +60,15 @@ export class LoopContinuation {
     return [...this.notes.values()];
   }
 
+  /** A continuation that resumes from the current solved pose without
+   *  advancing this one (bisection between two sweep samples). */
+  fork(): LoopContinuation {
+    const copy = new LoopContinuation(this.arm);
+    copy.seed = this.seed;
+    copy.previous = this.previous;
+    return copy;
+  }
+
   /** Start a new sweep from the as-built pose (e.g. the next swept joint). */
   reset(): void {
     this.seed = undefined;

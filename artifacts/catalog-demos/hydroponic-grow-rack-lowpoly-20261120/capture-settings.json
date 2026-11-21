@@ -1,0 +1,50 @@
+{
+  "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
+  "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+  "input": "default.glb",
+  "inputSha256": "7ece2fd071bc5cb473aed0199fe894177204a6031981425a60bff9a3f95d0c52",
+  "renderer": "scripts/lib/glbSoftwareRender.ts",
+  "rendererSha256": "21be8dcfe98c02559df0a8875a0e6a05b3fc9d3b6bd7866a77c7df8c120a13c0",
+  "invocation": "glbTriangles(savedGLB); renderTrianglesPng(triangles, {size:768, yawDeg:35 + 7.5*frameIndex, pitchDeg:22, label}) for frameIndex 0..47; encode the resulting PNG sequence with ffmpeg at 12 fps.",
+  "label": "Hydroponic grow rack / native GLB / 7,400 triangles",
+  "video": {
+    "file": "grow-rack-orbit.mp4",
+    "codec": "h264",
+    "width": 768,
+    "height": 768,
+    "fps": 12,
+    "frames": 48,
+    "durationSeconds": 4,
+    "sha256": "974f53779c13c4a7e235b3ca099a2bf64add506fb37ce790c4ec13d0e0f16cf9"
+  },
+  "canonicalPreview": {
+    "options": {
+      "size": 512,
+      "yawDeg": 35,
+      "pitchDeg": 22,
+      "label": "Hydroponic grow rack \u00b7 7400 tris"
+    },
+    "sha256": "aefa60441ae851e08e10e2d3f2466130ddf1418e05ce6304bbc03373b1665fe3"
+  },
+  "scope": "Saved native geometry only. No simulated UI, no live Studio recording, no mechanism acceptance.",
+  "encodingInvocation": [
+    "ffmpeg",
+    "-y",
+    "-framerate",
+    "12",
+    "-i",
+    "orbit-frames/frame-%03d.png",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "fast",
+    "-crf",
+    "21",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "grow-rack-orbit.mp4"
+  ],
+  "renderScriptSha256": "066f1e1ede5910687ab6a7eb1b518a5c1c3ae2fd3c02e097bd0f89a2e7571a73"
+}

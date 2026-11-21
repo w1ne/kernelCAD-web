@@ -639,6 +639,13 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A texture image was loaded with a dimension greater than 8192 px; the kernel rejects it as oversized.',
   },
+  'feature.color.unresolved': {
+    hintTemplate: 'Shape.color() takes a role token (servo, gear, beam, shaft, plate, pin, frame, tool) or a #rrggbb hex. Use the hex for a CSS colour name, or .finish(name) for a material look.',
+    nextAction: { kind: 'fix-arg', field: 'name' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'Shape.color() received a string that is neither a role token nor a #hex colour; renders and exports fall back to the default colour.',
+  },
   // Finish (1) — named-finish front door over raw .material()
   'feature.finish.unknown-token': {
     hintTemplate:

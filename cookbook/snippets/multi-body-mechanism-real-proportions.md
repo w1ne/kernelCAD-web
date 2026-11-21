@@ -62,7 +62,7 @@ base.connector('servo-mount', {
 // Park the servo on the rear of the desk plate — clear of the hinge pin/cheeks.
 const servo = arm.part(
   'shoulder-servo',
-  box(34, 28, 22, true).translate(-40, 0, 19).color('actuator'),
+  box(34, 28, 22, true).translate(-40, 0, 19).color('servo'),
 );
 servo.connector('mount', {
   type: 'frame',

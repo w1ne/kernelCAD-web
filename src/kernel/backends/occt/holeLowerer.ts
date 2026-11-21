@@ -37,6 +37,8 @@ import {
   surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
+import { edgeLineageAfterCut } from './edgeLineage';
+import { labelHoleRims } from './holeRims';
 import type { FeatureKind } from '../../../shared/intent/types';
 import { HelicalSweepArgsError, polygonWireXY, sweepProfileAlongHelix } from './helicalSweep';
 import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './isoThread';
@@ -1002,10 +1004,12 @@ function runCutAndClassify(
     featureId, featureKind, featureName, featureOrdinal,
   );
 
-  return {
-    backend: new OcctBackend(wrapped, undefined, newHistoryMap),
-    diagnostics,
-  };
+  const backend = new OcctBackend(wrapped, undefined, newHistoryMap);
+  backend.edgeHistoryMap = edgeLineageAfterCut(target, cutResult, backend, featureId);
+  labelHoleRims(backend.getReplicadShape().faces, newHistoryMap, backend.edgeHistoryMap, bores, {
+    id: featureId, kind: featureKind, name: featureName, ordinal: featureOrdinal,
+  });
+  return { backend, diagnostics };
 }
 
 // fuseWithHistory imported but only used in slice-2 (when we want richer
