@@ -46,8 +46,10 @@
 // Non-XY ELLIPSE, external-reference blocks, 3DFACE, SOLID and anything
 // unrecognised are refused: each carries profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. HATCH is
-// accepted with planar closed polyline paths and edge paths of lines and
-// circular arcs; elliptic-arc and spline edges and crossing paths are refused.
+// accepted with planar closed polyline paths and edge paths of line,
+// circular-arc, elliptic-arc and spline edges (dxfHatch.ts); elliptic-arc
+// edges that end off the ellipse axes, fit-point-only spline edges and
+// crossing paths are refused.
 // SPLINE is accepted only when its planar control points and knots define a
 // continuous curve, or when it is a cubic with fit points only.
 // Non-cubic fit-point-only, nonplanar and discontinuous SPLINE entities, and
@@ -65,7 +67,7 @@ import {
   type ImportedRegion,
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
-import { clampSpline, type PlanarSpline } from './dxfSplineClamp';
+import { clampSpline, validateKnotDomain, validateKnotOrder, validateSplineContinuity, type PlanarSpline } from './dxfSplineClamp';
 import { fitPointSpline, validateSplinePlanarity } from './dxfSplineFit';
 import { mirrorSegments, ocsSign } from './dxfOcs';
 import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
@@ -283,34 +285,6 @@ function splineControlPoints(
   return xs.map((x, i) => [x * scale, ys[i] * scale] as const);
 }
 
-function validateKnotOrder(knots: number[], line: number): void {
-  for (let i = 1; i < knots.length; i++) {
-    if (knots[i] < knots[i - 1]) {
-      throw new DxfParseError('malformed-entity', `SPLINE at line ${line}: knot values must be non-decreasing.`);
-    }
-  }
-}
-
-function validateKnotDomain(knots: number[], degree: number, controlCount: number, line: number): void {
-  if (knots[degree] >= knots[controlCount]) {
-    throw new DxfParseError('malformed-entity', `SPLINE at line ${line}: knot vector has an empty parameter domain.`);
-  }
-}
-
-function validateSplineContinuity(knots: number[], degree: number, controlCount: number, line: number): void {
-  for (let i = degree + 1; i < controlCount; i++) {
-    let multiplicity = 1;
-    while (i + multiplicity < controlCount && knots[i + multiplicity] === knots[i]) multiplicity++;
-    if (multiplicity > degree) {
-      throw new DxfParseError(
-        'unsupported-entity',
-        `SPLINE at line ${line}: knot multiplicity ${multiplicity} makes the curve discontinuous; use a continuous clamped spline.`,
-      );
-    }
-    i += multiplicity - 1;
-  }
-}
-
 function splineKnots(b: EntityBlock, degree: number, controlCount: number, declaredKnotCount: number): number[] {
   const knots = values(b.body, 40, 'SPLINE');
   if (knots.length !== declaredKnotCount || knots.length !== controlCount + degree + 1) {
@@ -320,8 +294,8 @@ function splineKnots(b: EntityBlock, degree: number, controlCount: number, decla
         `${controlCount + degree + 1} for ${controlCount} control points of degree ${degree}, found ${knots.length}.`,
     );
   }
-  validateKnotOrder(knots, b.line);
-  validateKnotDomain(knots, degree, controlCount, b.line);
+  validateKnotOrder(knots, `SPLINE at line ${b.line}`);
+  validateKnotDomain(knots, degree, controlCount, `SPLINE at line ${b.line}`);
   return knots;
 }
 
@@ -367,7 +341,7 @@ function controlNetSpline(b: EntityBlock, scale: number, definition: SplineDefin
     knots: splineKnots(b, definition.degree, net.length, definition.declaredKnotCount),
     weights: splineWeights(b, net.length),
   });
-  validateSplineContinuity(spline.knots, definition.degree, spline.controlPoints.length, b.line);
+  validateSplineContinuity(spline.knots, definition.degree, spline.controlPoints.length, `SPLINE at line ${b.line}`);
   return spline;
 }
 

@@ -9,7 +9,7 @@ import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/type
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
-import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
+import { buildNurbsProfileOnPlane, buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { drawingFromCommands } from './sketchToDrawing';
@@ -380,7 +380,8 @@ export class OcctBackend implements ShapeBackend {
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
-      const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
+      // Later `moveTo … close` loops are holes.
+      const built = buildNurbsProfileOnPlane(sketch._commands, 'XY');
       return new OcctBackend(extrudeLiftedShape(built, depth, angle));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');
@@ -413,7 +414,7 @@ export class OcctBackend implements ShapeBackend {
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build the wire on XZ (so path-y becomes world-z) and
       // revolve around world Z, matching the Drawing-side behaviour.
-      const built = buildNurbsSketchOnPlane(sketch._commands, 'XZ');
+      const built = buildNurbsProfileOnPlane(sketch._commands, 'XZ');
       const revolvable = built as unknown as {
         revolve: (
           axis?: [number, number, number],
@@ -461,9 +462,9 @@ export class OcctBackend implements ShapeBackend {
     }
     if (sketch._hasNurbs && sketch._commands) {
       const built = buildNurbsSketchOnPlane(sketch._commands, plane);
-      // The NURBS path always produces a single closed `replicad.Sketch`
-      // (assembleWire either returns one wire or throws); the multi-face
-      // guard below is therefore a no-op here, but we keep the same shape
+      // The NURBS path produces a single closed `replicad.Sketch` (a holed
+      // profile throws); the multi-face guard below is therefore a no-op
+      // here, but we keep the same shape
       // of the returned object so callers (`sweepFromSketch`,
       // `variableSweepLowerer`) don't branch.
       const liftedSketch = built as unknown as { face: () => { outerWire: () => replicad.Wire } };

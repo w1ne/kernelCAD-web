@@ -201,10 +201,12 @@ lib.from3MF(path: string, opts?: {
 // ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
 // area so the caller can choose which regions are outlines, holes or parts.
 // LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and closed,
-// planar DXF HATCH boundaries (polyline paths, or edge paths of lines and
-// circular arcs) are supported. A multi-path HATCH returns each filled area as
-// one sketch with its inner paths as holes. Pattern styling is ignored;
-// elliptic-arc and spline edges, crossing and out-of-plane hatches are refused.
+// planar DXF HATCH boundaries (polyline paths, or edge paths of line,
+// circular-arc, elliptic-arc and spline edges) are supported. A multi-path
+// HATCH returns each filled area as one sketch with its inner paths as holes.
+// Pattern styling is ignored; elliptic-arc edges that end off the ellipse
+// axes, fit-point-only spline edges, crossing and out-of-plane hatches are
+// refused.
 // Full ellipses use four exact rational NURBS segments; partial elliptical arcs
 // retain exact rational NURBS geometry and can join other profile edges.
 // Continuous, planar XY SPLINE entities retain their control points, knots and

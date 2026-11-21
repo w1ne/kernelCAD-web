@@ -209,9 +209,9 @@ function evaluateNurbs(curve: ImportNurbsSegment, u: number): [number, number] {
   return [xw / weight, yw / weight];
 }
 
-/** Sample only for contour area ranking. The emitted sketch keeps the exact
- * NURBS control net and lowers it to a B-spline edge. */
-function sampleNurbs(curve: ImportNurbsSegment): [number, number][] {
+/** Sample only for contour area ranking and HATCH nesting tests. The emitted
+ * sketch keeps the exact NURBS control net and lowers it to a B-spline edge. */
+export function sampleNurbs(curve: ImportNurbsSegment): [number, number][] {
   const { degree, controlPoints, knots } = curve;
   const start = knots[degree];
   const end = knots[controlPoints.length];
@@ -230,7 +230,7 @@ function sampleNurbs(curve: ImportNurbsSegment): [number, number][] {
   return points;
 }
 
-function reverseSegment(seg: ImportSegment): ImportSegment {
+export function reverseSegment(seg: ImportSegment): ImportSegment {
   const nurbs = seg.nurbs;
   const reversedNurbs = nurbs === undefined ? undefined : {
     ...nurbs,

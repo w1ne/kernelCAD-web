@@ -342,6 +342,31 @@ describe('lib.fromDXF — round trip to a solid', () => {
     });
   });
 
+  it('imports HATCH spline and elliptic-arc edges as exact curved faces', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-curved-edge-plate.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(3).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // 60 x 20 plate plus the cubic bump 45 t (1 - t) over 60 mm (450), minus
+    // a 10 x 4 elliptic hole (40 pi) and a 4 x 2 half-ellipse D-hole (4 pi).
+    const exact = (1650 - 44 * Math.PI) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-4);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(31.25, 3), expect.closeTo(3, 6)],
+    });
+    // Swept curved walls: the spline edge, four elliptic quarters and the two
+    // quarters of the half ellipse; the other six faces are planar.
+    const types = shape.faces.map(face => face.geomType);
+    expect(types.filter(type => type === 'EXTRUSION_SURFACE')).toHaveLength(1 + 4 + 2);
+    expect(types.filter(type => type === 'PLANE')).toHaveLength(3 + 1 + 2);
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
