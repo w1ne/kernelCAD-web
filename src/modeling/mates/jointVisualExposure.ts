@@ -75,6 +75,7 @@ import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { geometryBox } from '../../kernel/backends/occt/backendBounds';
 import { connectorDirection, resolveConnectorFrame } from './connector';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { ValidatorDiagnostic } from './validator';
@@ -92,6 +93,13 @@ const MIN_GAP_RATIO = 0.15;
  * than reporting a formatted "15.0%" failure caused by representation noise.
  */
 const GAP_RATIO_NUMERIC_EPSILON = 1e-7;
+
+/**
+ * Same inclusive-boundary rule for the pin stickout: a stickout equal to
+ * `MIN_PIN_STICKOUT_FACTOR * pinR` passes. Relative to the threshold, so
+ * a 3.5 mm pin that sticks out 3.5 mm no longer reads "3.50 (need >= 3.50)".
+ */
+const PIN_STICKOUT_RELATIVE_EPSILON = 1e-7;
 
 /**
  * Minimum pivot-pin stickout, expressed as a multiplier on the pin
@@ -191,7 +199,7 @@ export async function validateJointVisualExposure(
     const minPinStickout = MIN_PIN_STICKOUT_FACTOR * inferredPinR;
 
     const gapFails = measurements.gapRatio < MIN_GAP_RATIO - GAP_RATIO_NUMERIC_EPSILON;
-    const pinFails = measurements.pinStickout < minPinStickout;
+    const pinFails = measurements.pinStickout < minPinStickout * (1 - PIN_STICKOUT_RELATIVE_EPSILON);
     if (!gapFails && !pinFails) continue;
 
     const failureCause = jointFailureCause(gapFails, pinFails);
@@ -298,6 +306,17 @@ interface JointVisuals {
   readonly pinStickout: number;
 }
 
+/**
+ * Face box from the B-rep geometry, never the triangulation: replicad's
+ * `face.boundingBox` switches to the mesh once the part is meshed, which
+ * moved a 3.5 mm pin face out to 3.5098 mm, so the gate read different
+ * numbers depending on whether a viewer or export had meshed the part.
+ */
+function faceBounds(face: { wrapped: unknown }): [Vec3, Vec3] {
+  const { min, max } = geometryBox(face.wrapped);
+  return [min, max];
+}
+
 interface ParentFace {
   readonly axisMin: number;
   readonly axisMax: number;
@@ -320,7 +339,7 @@ function collectParentFaces(
   const parentFaces: ParentFace[] = [];
   const replicadShape = parent.getReplicadShape();
   for (const face of replicadShape.faces) {
-    const bb = face.boundingBox.bounds;
+    const bb = faceBounds(face);
     const aabbMin = bb[0] as Vec3;
     const aabbMax = bb[1] as Vec3;
     const range = projectAabbToAxis(aabbMin, aabbMax, axisOrigin, axisDir);
@@ -602,7 +621,7 @@ function localAxisIntervalNearOrigin(
   const originV = origin[0] * v[0] + origin[1] * v[1] + origin[2] * v[2];
   const replicadShape = shape.getReplicadShape();
   for (const face of replicadShape.faces) {
-    const bb = face.boundingBox.bounds;
+    const bb = faceBounds(face);
     const aabbMin = bb[0] as Vec3;
     const aabbMax = bb[1] as Vec3;
     const perp = perpendicularProjection(aabbMin, aabbMax, u, v);
@@ -724,7 +743,7 @@ function inferPinRadius(
   for (const shape of [parent, child]) {
     const replicadShape = shape.getReplicadShape();
     for (const face of replicadShape.faces) {
-      const bb = face.boundingBox.bounds;
+      const bb = faceBounds(face);
       const aabbMin = bb[0] as Vec3;
       const aabbMax = bb[1] as Vec3;
       const halfMax = candidatePinHalfExtent(aabbMin, aabbMax, originU, originV, u, v);
