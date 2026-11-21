@@ -15,6 +15,7 @@
 import type { Edge, Face } from 'replicad';
 import { getOC, makeVertex, measureArea, measureDistanceBetween } from 'replicad';
 import type { OcctBackend } from './occtBackend';
+import { geometryBox } from './backendBounds';
 import { KernelError } from '../../../shared/intent/kernelError';
 import type { Vec3 } from '../../../shared/intent/types';
 export type { Vec3 };
@@ -516,8 +517,10 @@ export function resolveFaceQuery(base: OcctBackend, rawQuery: FaceQuery): Face[]
   }
   if (query.boundingBoxIn !== undefined) {
     const r = query.boundingBoxIn;
+    // Geometry box, not replicad's: that one reads the triangulation once
+    // the shape is meshed, so a render could change which faces match.
     faces = faces.filter(f => {
-      const [minP, maxP] = f.boundingBox.bounds;
+      const { min: minP, max: maxP } = geometryBox(f.wrapped);
       if (r.xMin !== undefined && minP[0] < r.xMin) return false;
       if (r.xMax !== undefined && maxP[0] > r.xMax) return false;
       if (r.yMin !== undefined && minP[1] < r.yMin) return false;
