@@ -227,6 +227,11 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
           KCAD_CATALOG_SHARD: ${{ matrix.shard }}/4
         run: npx vitest run tests/integration/catalog/catalogIndex.test.ts
+      - name: Prepare native manufacturing preview renderer
+        if: matrix.shard == 1
+        run: |
+          npm run build:player
+          npx playwright install chromium --only-shell
       # #1416: re-render only the assets whose source or preview changed and
       # fail on a stale preview, unless catalog/preview-exceptions.json holds a
       # reviewed exception for that exact source and preview. Runs on shard 1
@@ -280,6 +285,17 @@ jobs:
       # keeps this fast (~10-15s on hit).
       - name: Build CLI bundle (required by integration tests)
         run: npm run build:cli
+      # The two standard-component fidelity tests render the real authored CAD
+      # with the same publish preset as the committed 4:3 thumbnail. Only the
+      # shard containing those tests needs a browser; avoid 8 redundant downloads.
+      - name: Prepare renderer for manufacturing fidelity tests
+        run: |
+          if npx vitest list --filesOnly --shard=${{ matrix.shard }}/8 \
+              --exclude 'tests/integration/catalog/catalogIndex.test.ts' \
+              | grep -Eq '(hoseBarbFidelity|dinRailEndStopFidelity)\.test\.ts'; then
+            npm run build:player
+            npx playwright install chromium --only-shell
+          fi
       - name: QC — vitest (shard ${{ matrix.shard }}/8)
         # `catalogIndex.test.ts` rebuilds + exports the whole catalog and runs in
         # its own `catalog-index` job (above) so no shard inherits its ~7 min.
