@@ -10,6 +10,7 @@ import {
   splineSurfaceBounds,
   type HPoint,
   type SplineSurface,
+  unwrapPeriodic,
 } from '../../../../src/kernel/geometry/rationalPatchBounds';
 
 const R = 3;
@@ -78,6 +79,51 @@ describe('splineSurfaceBounds', () => {
     expect(box[1]).toBeLessThanOrEqual(yMin + 1e-12);
     expect(box[1]).toBeGreaterThan(yMin - 1e-5);
     expect(box[4]).toBeLessThan(2); // tighter than the pole box
+  });
+});
+
+/** Uniform periodic cubic ring with 12 poles at radius R in u, height H in
+ *  v, as OCCT stores it: u knots 0..12, flat sequence -3..15. */
+const RING_POLES = 12;
+const RING_SEQUENCE = Array.from({ length: RING_POLES + 7 }, (_, i) => i - 3);
+
+function ringSurface(u1: number, u2: number): SplineSurface | undefined {
+  const u = unwrapPeriodic(RING_SEQUENCE, RING_POLES, 3, u1, u2);
+  if (!u) return undefined;
+  const ring = Array.from({ length: RING_POLES }, (_, i) => (i * 2 * Math.PI) / RING_POLES);
+  const poles = u.poleIndex.map((i) => [0, H].map((z): HPoint => [R * Math.cos(ring[i]), R * Math.sin(ring[i]), z, 1]));
+  return { uDegree: 3, vDegree: 1, uKnots: u.knots, vKnots: [0, 0, 1, 1], poles };
+}
+
+describe('unwrapPeriodic', () => {
+  // At the knot of pole 0 the ring point is (P[-1] + 4 P[0] + P[1]) / 6: the
+  // largest x. The pole box reaches R.
+  const xMax = (R * (4 + 2 * Math.cos(Math.PI / 6))) / 6;
+
+  it('bounds a periodic ring to tol, not to its pole box', () => {
+    const surface = ringSurface(0, 12)!;
+    expect(surface.poles).toHaveLength(surface.uKnots.length - 4);
+    const box = splineSurfaceBounds(surface, { u1: 0, u2: 12, v1: 0, v2: 1 }, emptyBox(), 1e-6, { splits: 10_000 })!;
+    expect(box[3]).toBeGreaterThanOrEqual(xMax - 1e-12);
+    expect(box[3]).toBeLessThan(xMax + 1e-5);
+    expect(box[0]).toBeLessThanOrEqual(-xMax + 1e-12);
+    expect(box[0]).toBeGreaterThan(-xMax - 1e-5);
+  });
+
+  it('covers a parameter range that crosses the period seam', () => {
+    const surface = ringSurface(8, 14)!;
+    const box = splineSurfaceBounds(surface, { u1: 8, u2: 14, v1: 0, v2: 1 }, emptyBox(), 1e-6, { splits: 10_000 })!;
+    // Pole 0 peaks at u 11 (the knot of P[11], P[0], P[1]); u 8..14 is the
+    // half ring x >= 0, from -90 to +90 deg.
+    expect(box[3]).toBeGreaterThanOrEqual(xMax - 1e-12);
+    expect(box[3]).toBeLessThan(xMax + 1e-5);
+    expect(box[0]).toBeGreaterThan(-1e-5);
+    expect(box[4]).toBeCloseTo(xMax, 4);
+    expect(box[1]).toBeCloseTo(-xMax, 4);
+  });
+
+  it('refuses a sequence that is not periodic', () => {
+    expect(unwrapPeriodic([0, 1, 2, 3, 4, 5, 7, 8], 4, 3, 3, 4)).toBeUndefined();
   });
 });
 

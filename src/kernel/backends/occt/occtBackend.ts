@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
-import { optimalBoundsOf, rationalFaceBounds } from './backendBounds';
-import { withSplineFaceBounds } from './splineFaceBounds';
+import { optimalBoundsOf } from './backendBounds';
+import { curvedFaceBounds, withSplineFaceBounds } from './splineFaceBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
@@ -1121,8 +1121,8 @@ export class OcctBackend implements ShapeBackend {
       if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
-    const rational = rationalFaceBounds(this.shape.wrapped);
-    if (rational) return rational;
+    const curved = curvedFaceBounds(this.shape.wrapped);
+    if (curved) return curved;
     const bb = this.shape.boundingBox;
     const [minP, maxP] = bb.bounds;
     // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
