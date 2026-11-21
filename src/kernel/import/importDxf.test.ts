@@ -65,6 +65,58 @@ const RATIONAL_QUARTER_CIRCLE: Array<[number, string | number]> = [
   [10, 10], [20, 0], [30, 0], [41, 1],
 ];
 
+/** Rational de Boor evaluation of a B-spline at `u`, independent of the importer. */
+function deBoor(
+  degree: number,
+  knots: readonly number[],
+  controls: ReadonlyArray<readonly [number, number]>,
+  weights: readonly number[] | undefined,
+  u: number,
+): [number, number] {
+  const n = controls.length;
+  let k = degree;
+  while (k < n - 1 && u >= knots[k + 1]) k++;
+  const d = Array.from({ length: degree + 1 }, (_, j) => {
+    const w = weights?.[k - degree + j] ?? 1;
+    const [x, y] = controls[k - degree + j];
+    return [x * w, y * w, w];
+  });
+  for (let r = 1; r <= degree; r++) {
+    for (let j = degree; j >= r; j--) {
+      const i = k - degree + j;
+      const alpha = (u - knots[i]) / (knots[i + degree + 1 - r] - knots[i]);
+      d[j] = d[j].map((v, c) => (1 - alpha) * d[j - 1][c] + alpha * v);
+    }
+  }
+  return [d[degree][0] / d[degree][2], d[degree][1] / d[degree][2]];
+}
+
+function nurbsCommands(commands: readonly SketchCommand[]): Array<Extract<SketchCommand, { kind: 'nurbsSegment' }>> {
+  return commands.filter(
+    (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+  );
+}
+
+const SQUARE_NET: Array<readonly [number, number]> = [[-10, -10], [10, -10], [10, 10], [-10, 10]];
+
+/**
+ * A closed periodic uniform cubic SPLINE as AutoCAD and ezdxf write it: flags
+ * 11 (closed | periodic | planar), the first `degree` control points repeated
+ * at the end, and an unclamped uniform knot vector 0..10. Weights are optional.
+ */
+function periodicSquareSpline(weights?: readonly number[]): Array<[number, string | number]> {
+  const net = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+  const w = weights ? [...weights, ...weights.slice(0, 3)] : undefined;
+  return [
+    [0, 'SPLINE'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbSpline'],
+    [210, 0], [220, 0], [230, 1], [70, 11], [71, 3], [72, 11], [73, 7], [74, 0],
+    ...Array.from({ length: 11 }, (_, i): [number, number] => [40, i]),
+    ...net.flatMap(([x, y], i): Array<[number, number]> => [
+      [10, x], [20, y], [30, 0], ...(w ? [[41, w[i]] as [number, number]] : []),
+    ]),
+  ];
+}
+
 describe('importDxfText — entities', () => {
   it('keeps rational clamped DXF SPLINE geometry in the exact NURBS sketch command', () => {
     const r = importDxfText(entities(
@@ -84,6 +136,60 @@ describe('importDxfText — entities', () => {
     expect(nurbs?.knots?.map(knot => knot.evaluated)).toEqual([0, 0, 0, 1, 1, 1]);
     // NURBS area is sampled for region ordering; the sketch retains the exact curve.
     expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
+  it('clamps a periodic closed DXF SPLINE by exact knot insertion into one closed NURBS profile', () => {
+    const r = importDxfText(entities(...periodicSquareSpline()));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toBeDefined();
+    const knots = nurbs.knots!.map(k => k.evaluated);
+    const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+    // The DXF domain [u3, u7] = [3, 7] becomes a clamped vector over the same parameters.
+    expect(knots).toEqual([3, 3, 3, 3, 4, 5, 6, 7, 7, 7, 7]);
+    expect(controls).toHaveLength(7);
+    // A uniform cubic passes through (P0 + 4 P1 + P2) / 6 at a knot.
+    expect(controls[0][0]).toBeCloseTo(20 / 3, 12);
+    expect(controls[0][1]).toBeCloseTo(-20 / 3, 12);
+    expect(controls[6][0]).toBeCloseTo(controls[0][0], 12);
+    expect(controls[6][1]).toBeCloseTo(controls[0][1], 12);
+    const original = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+    for (let u = 3; u <= 7; u += 0.125) {
+      const [ex, ey] = deBoor(3, Array.from({ length: 11 }, (_, i) => i), original, undefined, u);
+      const [ax, ay] = deBoor(3, knots, controls, undefined, u);
+      expect(ax).toBeCloseTo(ex, 10);
+      expect(ay).toBeCloseTo(ey, 10);
+    }
+  });
+
+  it('keeps a rational periodic SPLINE on the same curve after clamping', () => {
+    const weights = [1, 2, 0.5, 1.5];
+    const r = importDxfText(entities(...periodicSquareSpline(weights)));
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const knots = nurbs.knots!.map(k => k.evaluated);
+    const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+    const clampedWeights = nurbs.weights!.map(w => w.evaluated);
+    const original = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+    const originalWeights = [...weights, ...weights.slice(0, 3)];
+    for (let u = 3; u <= 7; u += 0.125) {
+      const [ex, ey] = deBoor(3, Array.from({ length: 11 }, (_, i) => i), original, originalWeights, u);
+      const [ax, ay] = deBoor(3, knots, controls, clampedWeights, u);
+      expect(ax).toBeCloseTo(ex, 10);
+      expect(ay).toBeCloseTo(ey, 10);
+    }
+  });
+
+  it('clamps an open unclamped uniform SPLINE so its true endpoints join the next segment', () => {
+    // Domain [3, 4]: start (P0 + 4 P1 + P2) / 6 = (20/3, -20/3), end (P1 + 4 P2 + P3) / 6 = (20/3, 20/3).
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 8], [73, 4],
+      ...Array.from({ length: 8 }, (_, i): [number, number] => [40, i]),
+      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[10, x], [20, y]]),
+      [0, 'LINE'], [10, 20 / 3], [20, 20 / 3], [11, 20 / 3], [21, -20 / 3],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs.knots!.map(k => k.evaluated)).toEqual([3, 3, 3, 3, 4, 4, 4, 4]);
   });
 
   it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
@@ -590,13 +696,15 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/no ENTITIES section/);
   });
 
-  it('rejects periodic SPLINE because its curve form is not represented by the path command', () => {
+  it('refuses a periodic SPLINE whose control net does not wrap instead of guessing the closure', () => {
     const e = failure(() => importDxfText(entities(
-      [0, 'SPLINE'], [70, 10], [71, 2], [72, 0], [73, 0],
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 8], [73, 4],
+      ...Array.from({ length: 8 }, (_, i): [number, number] => [40, i]),
+      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[10, x], [20, y]]),
     )));
     expect(e.reason).toBe('unsupported-entity');
     expect(e.message).toMatch(/^SPLINE at line \d+:/);
-    expect(e.message).toMatch(/periodic splines are not supported/);
+    expect(e.message).toMatch(/closed flag is set but the curve endpoints do not meet/);
   });
 
   it('an INSERT of an undefined block is refused rather than dropped', () => {
