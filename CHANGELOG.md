@@ -1,5 +1,14 @@
 # Unreleased
 
+- `catalog/kits/nature/pine-tree.kcad.ts` now passes `evaluate_script`
+  with `ok: true` for every tier choice. The trunk was extruded to 30 % of
+  the tree height, so it ran 450 mm (default 4.5 m tree) into the lowest
+  foliage tier and gave one `mechanism.interpenetration` error
+  (39.9e6 mm³). The trunk now stops on the base of the lowest tier. Only the
+  index `sourceSha256` changed: triangles, size, palette and the committed
+  preview are the same (preview gate: 0.00 % pixels changed). Regression:
+  `tests/integration/catalog/pineTreeCatalogReal.test.ts` (2, 3, 4, 5 tiers).
+
 - Canonical face names (`top`, `bottom`, `left` and the others) on a solid
   without a primitive kind no longer stop resolving once the solid is
   meshed. The box rule compared each planar face with a box read from the
