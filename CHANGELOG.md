@@ -8,6 +8,16 @@
   lid bears on the ear, and the closed lid is 2 mm above the base. The rig
   export is unchanged (`rotate`, range [-35, 75]). The demo in
   `docs/demos/glb-rig/` is recaptured from the new geometry.
+- The default GLB export (`style: 'pbr'`) now keeps sharp CAD edges sharp.
+  The export mesher shares vertices across B-rep face boundaries, and the
+  writer averaged the normals at each shared vertex, so every 90° edge shaded
+  as a soft bulge: a cube's corner normals came out as (0.58, 0.58, 0.58), a
+  through bore rendered as a dome and a boss showed streaks. The writer now
+  splits a vertex where the triangles around it meet at more than 30° and
+  averages only across smoother joins, so flat faces stay flat and cylinders,
+  fillets and bores stay smooth. A 10 mm cube now writes 24 vertices with
+  axis-aligned normals; the demo bracket gains 5.5% vertices (18,184 to
+  19,192) and 3.7% file size. Low-poly GLB, STL, OBJ and 3MF are unchanged.
 
 - `lib.fromDXF` now imports edge-based HATCH boundary paths made of line and
   circular-arc edges. AutoCAD writes this form for a hatch picked from LINE,
