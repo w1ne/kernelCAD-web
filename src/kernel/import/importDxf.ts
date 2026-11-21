@@ -20,8 +20,9 @@
 //   LWPOLYLINE  vertices with optional per-vertex BULGE (group code 42)
 //   POLYLINE    the pre-R13 form: a header entity plus VERTEX children
 //   HATCH       one closed, planar polyline boundary path; pattern styling is ignored
-//   SPLINE      planar, clamped, continuous, non-periodic control-point B-splines, kept
-//               as exact rational/non-rational NURBS sketch commands
+//   SPLINE      planar, continuous control-point B-splines, kept as exact
+//               rational/non-rational NURBS sketch commands; unclamped and
+//               periodic knot vectors are clamped exactly (dxfSplineClamp.ts)
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
 //   INSERT      block references, including nested blocks and MINSERT grids,
 //               placed by an exact affine map (dxfInsert.ts)
@@ -43,9 +44,10 @@
 // would hand back a profile missing a piece with no indication. HATCH is
 // accepted only with one planar closed polyline path; multi-path hatches are
 // refused because this importer does not preserve hole/island relationships.
-// SPLINE is accepted only when its planar control points and knots define a clamped,
-// continuous, non-periodic curve. Fit-point-only, nonplanar, discontinuous
-// and periodic SPLINE entities still fail closed rather than being approximated.
+// SPLINE is accepted only when its planar control points and knots define a
+// continuous curve. Fit-point-only, nonplanar and discontinuous SPLINE
+// entities, and closed SPLINEs whose control net does not wrap, still fail
+// closed rather than being approximated.
 //
 // Only entities that are provably annotation — TEXT, DIMENSION, POINT and
 // friends — are skipped, with the count returned to the caller.
@@ -57,6 +59,7 @@ import {
   type ImportedRegion,
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
+import { clampSpline } from './dxfSplineClamp';
 import { mirrorSegments, ocsSign } from './dxfOcs';
 import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
 import { DxfParseError, entityVector, get, num, require, type EntityBlock, type Pair } from './dxfPairs';
@@ -235,13 +238,6 @@ function splineDefinition(b: EntityBlock): SplineDefinition {
   if (!Number.isInteger(flags)) {
     throw new DxfParseError('malformed-entity', `SPLINE at line ${b.line}: group code 70 must be an integer flag value.`);
   }
-  if ((flags & 2) !== 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: periodic splines are not supported by the 2D path representation; ` +
-        'convert it to a clamped spline in the source tool and re-export.',
-    );
-  }
   const degree = num(require(b.body, 71, 'SPLINE', b.line), 'SPLINE', 71);
   const declaredKnotCount = num(require(b.body, 72, 'SPLINE', b.line), 'SPLINE', 72);
   const declaredControlCount = num(require(b.body, 73, 'SPLINE', b.line), 'SPLINE', 73);
@@ -323,12 +319,6 @@ function validateKnotDomain(knots: number[], degree: number, controlCount: numbe
   if (knots[degree] >= knots[controlCount]) {
     throw new DxfParseError('malformed-entity', `SPLINE at line ${line}: knot vector has an empty parameter domain.`);
   }
-  if (knots[degree] !== knots[0] || knots[controlCount] !== knots[knots.length - 1]) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${line}: only clamped knot vectors are supported so the exact curve endpoints can join neighboring profile segments.`,
-    );
-  }
 }
 
 function validateSplineContinuity(knots: number[], degree: number, controlCount: number, line: number): void {
@@ -356,7 +346,6 @@ function splineKnots(b: EntityBlock, degree: number, controlCount: number, decla
   }
   validateKnotOrder(knots, b.line);
   validateKnotDomain(knots, degree, controlCount, b.line);
-  validateSplineContinuity(knots, degree, controlCount, b.line);
   return knots;
 }
 
@@ -386,7 +375,8 @@ function validateSplineClosure(
   if ((flags & 1) !== 0 && !isClosed) {
     throw new DxfParseError(
       'unsupported-entity',
-      `SPLINE at line ${line}: the closed flag is set but the clamped curve endpoints do not meet; periodic/closed control nets are not supported.`,
+      `SPLINE at line ${line}: the closed flag is set but the curve endpoints do not meet; ` +
+        'a periodic spline must repeat its first degree control points at the end of the control net.',
     );
   }
   return isClosed;
@@ -398,9 +388,14 @@ function splineSegments(b: EntityBlock, scale: number, tolerance: number): {
   open: ImportSegment[];
 } {
   const definition = splineDefinition(b);
-  const controlPoints = splineControlPoints(b, scale, definition.degree, definition.declaredControlCount);
-  const knots = splineKnots(b, definition.degree, controlPoints.length, definition.declaredKnotCount);
-  const weights = splineWeights(b, controlPoints.length);
+  const net = splineControlPoints(b, scale, definition.degree, definition.declaredControlCount);
+  const { controlPoints, knots, weights } = clampSpline({
+    degree: definition.degree,
+    controlPoints: net,
+    knots: splineKnots(b, definition.degree, net.length, definition.declaredKnotCount),
+    weights: splineWeights(b, net.length),
+  });
+  validateSplineContinuity(knots, definition.degree, controlPoints.length, b.line);
   const isClosed = validateSplineClosure(definition.flags, controlPoints, tolerance, b.line);
   const first = controlPoints[0];
   const last = controlPoints[controlPoints.length - 1];

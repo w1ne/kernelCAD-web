@@ -20,7 +20,7 @@
 // Circular arcs travel as a DXF bulge factor (`tan(includedAngle / 4)`,
 // positive counter-clockwise) because that is exactly what
 // `SketchCommand.bulgeArc` already carries — DXF's native encoding maps to it
-// with no conversion and no loss. Clamped DXF SPLINE data maps to
+// with no conversion and no loss. DXF SPLINE data, clamped on import, maps to
 // `nurbsSegment` with its knots and weights intact; full planar DXF ELLIPSE
 // entities use four exact rational NURBS segments. Geometry with no exact
 // command form (such as SVG Béziers and SVG ellipses) is flattened in the
@@ -56,8 +56,8 @@ export interface ImportSegment {
   y1: number;
   bulge?: number;
   source: string;
-  /** Exact planar B-spline geometry. DXF splines are restricted to clamped,
-   * non-periodic forms so the first and last poles are curve endpoints. */
+  /** Exact planar B-spline geometry. DXF splines are clamped on import
+   * (dxfSplineClamp.ts) so the first and last poles are curve endpoints. */
   nurbs?: ImportNurbsSegment;
 }
 

@@ -103,6 +103,27 @@ const BLOCK_HOLES_DXF = [
   0, 'ENDSEC', 0, 'EOF',
 ].join('\n') + '\n';
 
+/**
+ * A 60 x 40 plate with a closed spline cut-out, written the way AutoCAD and
+ * ezdxf write a closed spline: a periodic (flag 2) uniform cubic whose first
+ * three control points repeat at the end and whose knots 0..10 are unclamped.
+ * The control net is the 20 mm square centred on (30, 20). By Green's theorem
+ * this closed uniform cubic B-spline encloses exactly 2440/9 mm².
+ */
+const PERIODIC_SPLINE_CUTOUT_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 11, 71, 3, 72, 11, 73, 7, 74, 0,
+  ...Array.from({ length: 11 }, (_, i) => [40, i]).flat(),
+  ...[[20, 10], [40, 10], [40, 30], [20, 30], [20, 10], [40, 10], [40, 30]]
+    .flatMap(([x, y]) => [10, x, 20, y, 30, 0]),
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
 /** The asymmetric L from the parser tests, at true millimetre scale. */
 const L_SVG = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="40mm" viewBox="0 0 100 40">
@@ -125,6 +146,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
   writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
   writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
+  writeFileSync(join(tmpDir, 'periodic-spline-cutout.dxf'), PERIODIC_SPLINE_CUTOUT_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -293,6 +315,30 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const box = backend.boundingBox();
     expect(box.min[0]).toBeCloseTo(-30, 6);
     expect(box.max[0]).toBeCloseTo(0, 6);
+  });
+
+  it('cuts a periodic closed DXF SPLINE out of a plate at its exact enclosed area', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, cutout] = await api.lib.fromDXF('periodic-spline-cutout.dxf');
+    expect(cutout).toBeDefined();
+
+    const plate = outline.extrude(4).subtract(cutout.extrude(4));
+    const backend = await lower(session, plate.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // The spline prism alone integrates to the exact area within 1e-6.
+    const prism = await lower(session, cutout.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    expect(prism.volume()).toBeCloseTo((2440 / 9) * 4, 2);
+    // After the cut, OCCT's fixed-order integration over the trimmed planar
+    // faces measured 1.6e-5 relative error, so the plate check is relative.
+    expect(Math.abs(backend.volume() / ((60 * 40 - 2440 / 9) * 4) - 1)).toBeLessThan(1e-4);
+
+    // The clamped curve starts at the uniform-cubic knot point (P0 + 4 P1 + P2) / 6
+    // and is symmetric about the square centre, so its box is centred on (30, 20).
+    const box = (await lower(session, cutout.extrude(1).id)).boundingBox();
+    expect((box.min[0] + box.max[0]) / 2).toBeCloseTo(30, 6);
+    expect((box.min[1] + box.max[1]) / 2).toBeCloseTo(20, 6);
   });
 
   it('expands an MINSERT block of holes into four cuts at the grid points', async () => {

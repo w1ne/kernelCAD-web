@@ -206,9 +206,11 @@ lib.from3MF(path: string, opts?: {
 // hole/island intent remains explicit.
 // Full ellipses use four exact rational NURBS segments; partial elliptical arcs
 // retain exact rational NURBS geometry and can join other profile edges.
-// Clamped, continuous, planar XY SPLINE entities retain their control points,
-// knots and rational weights. Nonplanar ellipses, periodic, fit-point-only,
-// discontinuous and nonplanar SPLINE fail with a named diagnostic.
+// Continuous, planar XY SPLINE entities retain their control points, knots and
+// rational weights; periodic and unclamped knot vectors are clamped by exact
+// knot insertion. Nonplanar ellipses, fit-point-only, discontinuous and
+// nonplanar SPLINE, and closed SPLINE whose control net does not wrap, fail
+// with a named diagnostic.
 // INSERT block references (nested, MINSERT grids) are placed with their base
 // point, insertion point, rotation and scale; external-reference blocks and
 // arcs under a non-uniform block scale fail with a named diagnostic.
