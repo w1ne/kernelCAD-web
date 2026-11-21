@@ -1,5 +1,13 @@
 # Unreleased
 
+- `examples/kinematic/collision-shapes.kcad.ts` and cookbook snippet
+  `part-collision-convex-pieces` now pass `evaluate_script` with `ok: true`
+  and `mechanism: real`; before, they returned 6 errors. The base has a hinge
+  ear, the ear, post and link lap in adjacent slabs with each pivot on the
+  shared face, and the mate limits (-10° to 20°) keep the link tip above the
+  plate. In MuJoCo the single base hull still contacts the link between the
+  rods, and the four declared pieces give no contact.
+
 - Canonical face names (`top`, `bottom`, `left` and the others) on a solid
   without a primitive kind no longer stop resolving once the solid is
   meshed. The box rule compared each planar face with a box read from the
@@ -339,7 +347,6 @@
   a Query DSL value. Before, the type allowed only a FaceRef, so
   `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
   check with TS2353 although it runs. Runtime behaviour is unchanged.
-
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
