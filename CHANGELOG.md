@@ -19,6 +19,12 @@
   edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
   Loft, sweep and surface operations, which take one wire, now refuse such a
   holed profile instead of dropping the holes.
+- The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
+  `evaluate_script` with `ok: true`; before, it had one
+  `mechanism.interpenetration` error (`mechanism: broken`): the corners of
+  the 30 mm square avionics bay (21.2 mm half-diagonal) cut 192 mm³ out of
+  the wall of the body tube (20.3 mm bore radius). The bay is 28 mm square.
+  The mass and the flight results are unchanged.
 - `catalog/kits/nature/pine-tree.kcad.ts` now passes `evaluate_script`
   with `ok: true` for every tier choice. The trunk was extruded to 30 % of
   the tree height, so it ran 450 mm (default 4.5 m tree) into the lowest
@@ -367,7 +373,6 @@
   a Query DSL value. Before, the type allowed only a FaceRef, so
   `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
   check with TS2353 although it runs. Runtime behaviour is unchanged.
-
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
