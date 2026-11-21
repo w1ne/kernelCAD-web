@@ -10,7 +10,7 @@ keywords:
   - named engineering material presets
 when_to_use: >-
   You want engineering material presets by grade name (mild-steel,
-  aluminum-6061, pla, petg, abs, nylon) to drive the mass, default finish and
+  aluminum-6061, pla, petg, abs, asa, nylon) to drive the mass, default finish and
   recorded material of identical geometry. One registry serves arm.part({
   material }), inspect({ of: 'mass', material }), feaStudy({ material }) and
   .finish(), so the grade name works everywhere; steel / aluminum / pet are

@@ -185,7 +185,7 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     expect(k8?.severity).toBe('error');
     expect(k8?.element).toBe(partName);
     expect(k8?.message).toContain('aluminum-7075');
-    expect(k8?.message).toContain('mild-steel|aluminum-6061|pla|petg|abs|nylon|steel|aluminum|aluminium|pet');
+    expect(k8?.message).toContain('mild-steel|aluminum-6061|pla|petg|abs|asa|nylon|steel|aluminum|aluminium|pet');
   });
 
   it('part anchored by a single revolute joint (no mate) → computed SF (issue #540 part B)', async () => {
