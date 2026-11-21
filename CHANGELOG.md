@@ -1,5 +1,13 @@
 # Unreleased
 
+- Canonical face names (`top`, `bottom`, `left` and the others) on a solid
+  without a primitive kind no longer stop resolving once the solid is
+  meshed. The box rule compared each planar face with a box read from the
+  triangulation. After a mesh, the curved corners of a 40 x 30 x 10 mm
+  rounded-rectangle prism moved that box above the 10 mm cap by more than
+  the 0.01 mm tolerance, so `top` returned no canonical face. The rule now
+  reads the geometry box in every call order.
+
 - The `boundingBoxIn` face query no longer changes its result once the
   shape is meshed. It read each face box from the triangulation when one
   existed: after a mesh, the side face of a 10 mm high, 5 mm radius
