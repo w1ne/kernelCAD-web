@@ -8,6 +8,23 @@
   lid bears on the ear, and the closed lid is 2 mm above the base. The rig
   export is unchanged (`rotate`, range [-35, 75]). The demo in
   `docs/demos/glb-rig/` is recaptured from the new geometry.
+- The STL fuse-cost gate for a multi-part Scene no longer changes its price
+  once the parts are meshed, for example by a render before the export. It
+  read each free-form face box from the triangulation when one existed: two
+  interpenetrating twisted sweeps counted 283 overlapping face pairs before
+  meshing and 291 after, so a Scene near the 64-pair budget could fuse or
+  ship as separate shells depending on call order. The gate now reads the
+  face geometry in every call order.
+
+- USD export (`format: 'usd'`) now loads in the three.js `USDLoader` and keeps
+  sharp CAD edges sharp. Before, the loader found 0 meshes because the stage
+  opened `def Xform "Model" {` on one line; the writer now puts each brace on
+  its own line, as `usdcat` does. The stage also had no normals, so readers
+  averaged them across the shared vertices at every B-rep edge: a box corner
+  shaded as (±0.58, ±0.58, ±0.58) and a bore as a dome. Each mesh now authors
+  face-varying `primvars:normals` with indices, split at edges sharper than
+  30° (the PLY writer's crease split). Points and faces are unchanged; the
+  ASCII file grows 71% on the demo bracket.
 - The default GLB export (`style: 'pbr'`) now keeps sharp CAD edges sharp.
   The export mesher shares vertices across B-rep face boundaries, and the
   writer averaged the normals at each shared vertex, so every 90° edge shaded
