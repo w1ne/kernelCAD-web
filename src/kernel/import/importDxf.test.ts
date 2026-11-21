@@ -38,6 +38,16 @@ function points(commands: readonly SketchCommand[]): Array<[number, number]> {
     .map(c => [c.x.evaluated, c.y.evaluated]);
 }
 
+function failure(fn: () => unknown): DxfParseError {
+  try {
+    fn();
+  } catch (e) {
+    expect(e).toBeInstanceOf(DxfParseError);
+    return e as DxfParseError;
+  }
+  throw new Error('expected importDxfText to throw');
+}
+
 const SQUARE_10x5: Array<[number, string | number]> = [
   [0, 'LWPOLYLINE'], [90, 4], [70, 1],
   [10, 0], [20, 0],
@@ -192,6 +202,183 @@ describe('importDxfText — entities', () => {
     ));
     expect(r.regions).toHaveLength(1);
     expect(r.regions[0].areaMm2).toBeCloseTo(12, 9);
+  });
+});
+
+describe('importDxfText — INSERT block references', () => {
+  type P = Array<[number, string | number]>;
+  function drawing(blocks: P, ents: P): string {
+    return dxf(
+      [0, 'SECTION'], [2, 'BLOCKS'], ...blocks, [0, 'ENDSEC'],
+      [0, 'SECTION'], [2, 'ENTITIES'], ...ents, [0, 'ENDSEC'], [0, 'EOF'],
+    );
+  }
+  function block(name: string, base: [number, number], ...body: P): P {
+    return [
+      [0, 'BLOCK'], [8, '0'], [2, name], [70, 0], [10, base[0]], [20, base[1]], [30, 0], [3, name],
+      ...body, [0, 'ENDBLK'], [8, '0'],
+    ];
+  }
+  function bounds(r: ReturnType<typeof importDxfText>): { xs: number[]; ys: number[] } {
+    const all = r.regions.flatMap(region => points(region.commands));
+    const xs = all.map(([x]) => x);
+    const ys = all.map(([, y]) => y);
+    return { xs: [Math.min(...xs), Math.max(...xs)], ys: [Math.min(...ys), Math.max(...ys)] };
+  }
+  const BULGED_SQUARE: P = [
+    [0, 'LWPOLYLINE'], [90, 4], [70, 1],
+    [10, 0], [20, 0], [42, 0.5],
+    [10, 10], [20, 0],
+    [10, 10], [20, 10],
+    [10, 0], [20, 10],
+  ];
+  const theta = 4 * Math.atan(0.5);
+  const radius = 5 / Math.sin(theta / 2);
+  const BULGE_SEGMENT_AREA = (radius * radius / 2) * (theta - Math.sin(theta));
+
+  it('places block geometry at the insertion point with rotation and uniform scale', () => {
+    // (x, y) -> 2 * rot90(x, y) + (100, 50): the 10 x 5 square becomes 10 x 20.
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 100], [20, 50], [30, 0], [41, 2], [42, 2], [43, 2], [50, 90]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(200, 9);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(90, 9);
+    expect(b.xs[1]).toBeCloseTo(100, 9);
+    expect(b.ys[0]).toBeCloseTo(50, 9);
+    expect(b.ys[1]).toBeCloseTo(70, 9);
+  });
+
+  it('measures block geometry from the block base point', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [5, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-5, 9);
+    expect(b.xs[1]).toBeCloseTo(5, 9);
+  });
+
+  it('flips the bulge direction when a negative X scale mirrors the block', () => {
+    // Without the flip the mirrored arc bows inward and the area becomes
+    // 100 - segment instead of 100 + segment.
+    const r = importDxfText(drawing(
+      block('B', [0, 0], ...BULGED_SQUARE),
+      [[0, 'INSERT'], [2, 'B'], [10, 0], [20, 0], [41, -1]],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(100 + BULGE_SEGMENT_AREA, 9);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-10, 9);
+    expect(b.xs[1]).toBeCloseTo(0, 9);
+  });
+
+  it('stretches straight edges under a non-uniform scale', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0], [41, 3], [42, 1]],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(150, 9);
+  });
+
+  it('refuses a non-uniform scale on a block arc instead of keeping a circular arc', () => {
+    const e = failure(() => importDxfText(drawing(
+      block('C', [0, 0], [0, 'CIRCLE'], [10, 0], [20, 0], [40, 2]),
+      [[0, 'INSERT'], [2, 'C'], [10, 0], [20, 0], [41, 2], [42, 1]],
+    )));
+    expect(e.reason).toBe('unsupported-entity');
+    expect(e.message).toMatch(/^INSERT at line \d+: non-uniform scale \(2, 1\) turns the arcs of block "C" into ellipses/);
+  });
+
+  it('keeps exact NURBS geometry when a block is rotated', () => {
+    const r = importDxfText(drawing(
+      block('Q', [0, 0],
+        ...RATIONAL_QUARTER_CIRCLE,
+        [0, 'LINE'], [10, 10], [20, 0], [11, 0], [21, 0],
+        [0, 'LINE'], [10, 0], [20, 0], [11, 0], [21, 10],
+      ),
+      [[0, 'INSERT'], [2, 'Q'], [10, 0], [20, 0], [50, 90]],
+    ));
+    const nurbs = r.regions[0].commands.find(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    const poles = nurbs?.controlPoints.map(point => [point.x.evaluated, point.y.evaluated]) ?? [];
+    for (const [x, y] of poles) {
+      expect(x).toBeLessThanOrEqual(1e-9);
+      expect(y).toBeGreaterThanOrEqual(-1e-9);
+    }
+    expect(nurbs?.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
+  it('composes nested block references', () => {
+    // INNER at (10, 0) inside OUTER; OUTER at (0, 100) rotated 180 degrees.
+    const r = importDxfText(drawing(
+      [
+        ...block('INNER', [0, 0], ...SQUARE_10x5),
+        ...block('OUTER', [0, 0], [0, 'INSERT'], [2, 'INNER'], [10, 10], [20, 0]),
+      ],
+      [[0, 'INSERT'], [2, 'OUTER'], [10, 0], [20, 100], [50, 180]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(-10, 9);
+    expect(b.ys[0]).toBeCloseTo(95, 9);
+    expect(b.ys[1]).toBeCloseTo(100, 9);
+  });
+
+  it('refuses a block that references itself', () => {
+    const e = failure(() => importDxfText(drawing(
+      block('LOOP', [0, 0], [0, 'INSERT'], [2, 'LOOP'], [10, 1], [20, 0]),
+      [[0, 'INSERT'], [2, 'LOOP'], [10, 0], [20, 0]],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/block "LOOP" references itself \(LOOP -> LOOP\)/);
+  });
+
+  it('expands an MINSERT column and row grid', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0], [70, 3], [71, 2], [44, 20], [45, 10]],
+    ));
+    expect(r.regions).toHaveLength(6);
+    for (const region of r.regions) expect(region.areaMm2).toBeCloseTo(50, 9);
+    const b = bounds(r);
+    expect(b.xs[1]).toBeCloseTo(50, 9);
+    expect(b.ys[1]).toBeCloseTo(15, 9);
+  });
+
+  it('mirrors an INSERT with extrusion (0, 0, -1) into world X', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 10], [20, 0], [210, 0], [220, 0], [230, -1]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(-10, 9);
+  });
+
+  it('skips attribute values that follow an INSERT and reports block annotation', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5, [0, 'TEXT'], [10, 0], [20, 0], [1, 'label']),
+      [
+        [0, 'INSERT'], [66, 1], [2, 'SQ'], [10, 0], [20, 0],
+        [0, 'ATTRIB'], [10, 0], [20, 0], [1, 'A1'], [2, 'TAG'],
+        [0, 'SEQEND'],
+      ],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.ignoredEntities).toHaveLength(2);
+    expect(r.ignoredEntities[0]).toMatch(/^TEXT \(line \d+\) in block "SQ"$/);
+    expect(r.ignoredEntities[1]).toMatch(/^ATTRIB \(line \d+\)$/);
+  });
+
+  it('refuses an external-reference block because its geometry is in another file', () => {
+    const xref: P = [[0, 'BLOCK'], [2, 'X'], [70, 4], [10, 0], [20, 0], [1, 'other.dxf'], [0, 'ENDBLK']];
+    const e = failure(() => importDxfText(drawing(xref, [[0, 'INSERT'], [2, 'X'], [10, 0], [20, 0]])));
+    expect(e.reason).toBe('unsupported-entity');
+    expect(e.message).toMatch(/^INSERT at line \d+: block "X" is an external reference/);
   });
 });
 
@@ -384,15 +571,6 @@ describe('importDxfText — units', () => {
 });
 
 describe('importDxfText — failure paths name what went wrong', () => {
-  function failure(fn: () => unknown): DxfParseError {
-    try {
-      fn();
-    } catch (e) {
-      expect(e).toBeInstanceOf(DxfParseError);
-      return e as DxfParseError;
-    }
-    throw new Error('expected importDxfText to throw');
-  }
 
   it('empty file', () => {
     const e = failure(() => importDxfText('   \n  '));
@@ -421,9 +599,10 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/periodic splines are not supported/);
   });
 
-  it('an INSERT is refused rather than dropped', () => {
-    expect(failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK']))).message)
-      .toMatch(/INSERT \(block reference\) at line \d+:.*Explode blocks/s);
+  it('an INSERT of an undefined block is refused rather than dropped', () => {
+    const e = failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK'])));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/^INSERT at line \d+: block "BLK" is not defined in the BLOCKS section/);
   });
 
   it('rejects a zero-span ELLIPSE as malformed instead of making a degenerate profile', () => {

@@ -115,8 +115,10 @@ function registerRegions(
  * NURBS geometry. Multi-path HATCH is refused to preserve hole/island intent;
  * edge-based and out-of-plane HATCH boundaries are also refused. Nonplanar
  * ellipses, periodic,
- * fit-point-only, discontinuous and nonplanar SPLINE entities, plus INSERT,
- * are REFUSED with an entity and line diagnostic rather than dropped.
+ * fit-point-only, discontinuous and nonplanar SPLINE entities are REFUSED
+ * with an entity and line diagnostic rather than dropped. INSERT block
+ * references are expanded exactly, including nested blocks and MINSERT grids;
+ * external-reference blocks and arcs under a non-uniform scale are refused.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as

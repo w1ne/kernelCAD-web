@@ -81,6 +81,28 @@ const MIRRORED_HOLE_DXF = [
   0, 'ENDSEC', 0, 'EOF',
 ].join('\n') + '\n';
 
+/**
+ * A 60 x 40 plate whose four r=2.5 mm holes are one block, "HOLE", placed as
+ * a 2 x 2 MINSERT grid at (10, 10) with 40 mm column and 20 mm row spacing.
+ * The block base point (1, 0) is subtracted, so the circle drawn at (1, 0)
+ * lands exactly on each grid point. Exporters write repeated holes this way.
+ */
+const BLOCK_HOLES_DXF = [
+  0, 'SECTION', 2, 'BLOCKS',
+  0, 'BLOCK', 8, '0', 2, 'HOLE', 70, 0, 10, 1, 20, 0, 30, 0, 3, 'HOLE',
+  0, 'CIRCLE', 8, '0', 10, 1, 20, 0, 30, 0, 40, 2.5,
+  0, 'ENDBLK', 8, '0',
+  0, 'ENDSEC',
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'INSERT', 8, '0', 2, 'HOLE', 10, 10, 20, 10, 30, 0, 70, 2, 71, 2, 44, 40, 45, 20,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
 /** The asymmetric L from the parser tests, at true millimetre scale. */
 const L_SVG = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="40mm" viewBox="0 0 100 40">
@@ -102,6 +124,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'plate-hole.dxf'), PLATE_WITH_HOLE_DXF);
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
   writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
+  writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -270,6 +293,25 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const box = backend.boundingBox();
     expect(box.min[0]).toBeCloseTo(-30, 6);
     expect(box.max[0]).toBeCloseTo(0, 6);
+  });
+
+  it('expands an MINSERT block of holes into four cuts at the grid points', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, ...holes] = await api.lib.fromDXF('block-holes.dxf');
+    expect(holes).toHaveLength(4);
+
+    let plate = outline.extrude(4);
+    for (const hole of holes) plate = plate.subtract(hole.extrude(4));
+    const backend = await lower(session, plate.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    expect(backend.volume()).toBeCloseTo((60 * 40 - 4 * Math.PI * 2.5 * 2.5) * 4, 4);
+
+    const centres = await Promise.all(holes.map(async hole => {
+      const box = (await lower(session, hole.extrude(1).id)).boundingBox();
+      return [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2].map(v => Math.round(v * 1e6) / 1e6);
+    }));
+    expect(centres.sort((a, b) => a[0] - b[0] || a[1] - b[1])).toEqual([[10, 10], [10, 30], [50, 10], [50, 30]]);
   });
 
   it('records the unit decision on the sketch so it can be inspected later', async () => {
