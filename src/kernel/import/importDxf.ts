@@ -46,8 +46,8 @@
 // Non-XY ELLIPSE, external-reference blocks, 3DFACE, SOLID and anything
 // unrecognised are refused: each carries profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. HATCH is
-// accepted only with planar closed polyline paths; edge-based paths and
-// crossing paths are refused.
+// accepted with planar closed polyline paths and edge paths of lines and
+// circular arcs; elliptic-arc and spline edges and crossing paths are refused.
 // SPLINE is accepted only when its planar control points and knots define a
 // continuous curve, or when it is a cubic with fit points only.
 // Non-cubic fit-point-only, nonplanar and discontinuous SPLINE entities, and
