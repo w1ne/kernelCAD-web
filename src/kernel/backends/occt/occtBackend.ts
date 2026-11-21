@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
-import { optimalBoundsOf } from './backendBounds';
+import { geometryBox, optimalBoundsOf } from './backendBounds';
+import { curvedFaceBounds, withSplineFaceBounds } from './splineFaceBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
@@ -24,6 +25,7 @@ import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { reproducibleOcctStep } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
+import { integrateArea, integrateVolume } from './volumeIntegration';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
@@ -1119,19 +1121,13 @@ export class OcctBackend implements ShapeBackend {
       if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
-    const bb = this.shape.boundingBox;
-    const [minP, maxP] = bb.bounds;
-    // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
-    // exact-axis-aligned primitives report integral coordinates. NOTE: even
-    // gap-corrected, Bnd_Box stays padded on curved B-spline faces (control-
-    // point hull); pass { exact: true } for a tessellation-tight box.
-    const wrapped = (bb as unknown as { wrapped?: { GetGap?: () => number } }).wrapped;
-    const gap =
-      wrapped && typeof wrapped.GetGap === 'function' ? wrapped.GetGap() : 0;
-    return {
-      min: [minP[0] + gap, minP[1] + gap, minP[2] + gap] as Vec3,
-      max: [maxP[0] - gap, maxP[1] - gap, maxP[2] - gap] as Vec3,
-    };
+    const curved = curvedFaceBounds(this.shape.wrapped);
+    if (curved) return curved;
+    // NOTE: even gap-corrected, Bnd_Box follows the control-point hull of
+    // B-spline faces; strongly rational faces are measured exactly above,
+    // and other B-spline faces are refined to 1e-3 mm below. Pass
+    // { exact: true } for a tessellation-tight box.
+    return withSplineFaceBounds(this.shape.wrapped, geometryBox(this.shape.wrapped));
   }
 
   /** Fold the standard-mesher vertex AABB. Returns undefined when the
@@ -1176,11 +1172,13 @@ export class OcctBackend implements ShapeBackend {
   }
 
   volume(): number {
-    return memoVolume(this, () => Math.abs(replicad.measureVolume(this.shape)));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return memoVolume(this, () => Math.abs(integrateVolume((this.shape as any).wrapped)));
   }
 
   surfaceArea(): number {
-    return replicad.measureArea(this.shape);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return integrateArea((this.shape as any).wrapped);
   }
 
   isEmpty(): boolean {

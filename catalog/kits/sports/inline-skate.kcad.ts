@@ -4,7 +4,7 @@
 // trailing behind — with a hinged moulded cuff around the ankle, a power strap
 // with buckle over the instep, laces up the toe box and a padded tongue.
 // Generic visualization geometry at about real size (EU 42 boot, 80 mm
-// wheels, 243 mm frame), millimetres, Z up, toe toward -X, wheels on z = 0.
+// wheels, 243 mm axle wheelbase), millimetres, Z up, toe toward -X, wheels on z = 0.
 meta({
   name: 'inline-skate',
   license: 'CC0-1.0',
@@ -59,28 +59,35 @@ const footPlan = (grow = 0) => {
 };
 
 const WHEEL_R = 40;
+const WHEEL_PITCH = 2 * WHEEL_R + 1; // 1 mm tyre clearance; 243 mm axle wheelbase
+const FRAME_SIDE_Y = 16.5; // 2 mm clear of the widest 24 mm tyre section
 const SOLE_Z = 118;      // underside of the boot sole
 
 // Frame: two side rails with lightening windows joined by a top plate.
-const framePts = [[-130, SOLE_Z], [118, SOLE_Z], [114, 72], [100, 46], [-118, 46], [-132, 72]];
+const framePts = [[-138, SOLE_Z], [138, SOLE_Z], [138, 60], [132, 34], [-132, 34], [-138, 60]];
 for (const sy of [-1, 1]) {
-  let rail = side(framePts, 5, sy * 14 - 2.5);
-  for (const wx of [-72, 0, 72]) rail = rail.subtract(side([[wx - 26, 106], [wx + 26, 106], [wx + 14, 60], [wx - 14, 60]], 20, sy * 14 - 10));
+  let rail = side(framePts, 5, sy * FRAME_SIDE_Y);
+  for (const wx of [-72, 0, 72]) rail = rail.subtract(side([[wx - 26, 106], [wx + 26, 106], [wx + 14, 60], [wx - 14, 60]], 20, sy * FRAME_SIDE_Y));
   add(`frame-rail-${sy < 0 ? 'left' : 'right'}`, rail.color(aluminiumFrame));
 }
-add('frame-top-plate', plan(filletPolygon([[-132, -19], [118, -19], [118, 19], [-132, 19]], 12), SOLE_Z - 8, 8).color(aluminiumFrame));
+add('frame-top-plate', plan(filletPolygon([[-138, -19], [138, -19], [138, 19], [-138, 19]], 12), SOLE_Z - 8, 8).color(aluminiumFrame));
 
-// Four 80 mm wheels on the 243 mm frame, with hubs and axle bolt heads.
-const wheelX = [-121, -40, 40, 121].map((x) => x * 0.88);
+// Four 80 mm wheels with positive running clearance, hubs and axle bolts.
+const wheelX = [-1.5, -0.5, 0.5, 1.5].map((i) => i * WHEEL_PITCH);
 for (const [i, wx] of wheelX.entries()) {
   add(`wheel-${i + 1}`, turned([[18, -11], [WHEEL_R - 6, -12], [WHEEL_R, -5], [WHEEL_R, 5], [WHEEL_R - 6, 12], [18, 11]]).rotateX(90).translate(wx, 0, WHEEL_R).color(urethaneWheel));
   add(`hub-${i + 1}`, cylinder(22, 18, 6).translate(0, 0, -11).rotateX(90).translate(wx, 0, WHEEL_R).color(strapAccent));
   add(`axle-bolt-${i + 1}`, cylinder(36, 6, 6).translate(0, 0, -18).rotateX(90).translate(wx, 0, WHEEL_R).color(aluminiumFrame));
 }
 
-// Heel brake: an arm off the rear axle carrying an angled rubber pad.
-add('brake-arm', side([[100, 62], [140, 78], [190, 64], [192, 44], [150, 46], [104, 40]], 34).color(moldedCuff));
-add('brake-pad', side([[150, 46], [192, 44], [200, 10], [160, 8]], 30).color(urethaneWheel));
+// Heel brake: two side arms clear the rear tyre; the pad starts behind it.
+// Half-millimetre outboard steps avoid coincident rail faces while retaining
+// 4.5 mm rail overlap, 0.5 mm pad overlap and 2.5 mm tyre clearance.
+const BRAKE_SIDE_Y = FRAME_SIDE_Y + 0.5;
+const rearAxle = wheelX[3];
+for (const sy of [-1, 1])
+  add(`brake-arm-${sy < 0 ? 'left' : 'right'}`, side([[-6, 62], [34, 78], [84, 64], [86, 44], [44, 46], [-2, 40]], 5, sy * BRAKE_SIDE_Y).translate(rearAxle, 0, 0).color(moldedCuff));
+add('brake-pad', side([[44, 48], [86, 46], [94, 10], [54, 8]], 30).translate(rearAxle, 0, 0).color(urethaneWheel));
 
 // Boot: a toe box and heel built from a side profile cut to the foot plan.
 const bootSide = [[-152, SOLE_Z], [125, SOLE_Z], [132, 190], [118, 260], [60, 268], [30, 250], [-30, 205], [-90, 185], [-140, 168], [-160, 140]];

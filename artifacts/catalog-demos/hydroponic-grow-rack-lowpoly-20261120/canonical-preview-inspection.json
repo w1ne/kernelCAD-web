@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-20T16:27:40.764185+00:00",
+  "file": "catalog/kits/hydroponics/previews/hydroponic-grow-rack.png",
+  "sha256": "aefa60441ae851e08e10e2d3f2466130ddf1418e05ce6304bbc03373b1665fe3",
+  "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+  "observed": "Canonical 512 px preview inspected: complete three-tier rack, aligned faceted crop heads, frame/plumbing retained and readable correct 7400-triangle caption. No high-Z cluster or clipping.",
+  "scope": "Generated from the accepted saved default GLB with the repository standard preview renderer/options; no new native evaluation or mechanism acceptance."
+}

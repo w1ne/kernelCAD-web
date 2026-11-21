@@ -23,6 +23,7 @@ import { OcctBackend } from './occtBackend';
 import { detectCylindricalHoles, type CylindricalHole } from './holeDetection';
 import { isSameEdge } from './edgeQueries';
 import { MESH_FACET_MIN } from './drawingMeshProjection';
+import { geometryBox } from './backendBounds';
 
 export type V3 = [number, number, number];
 
@@ -785,7 +786,9 @@ export interface RecogniseOptions {
  */
 function lazyPlanarFace(face: Face, index: number): PlanarFaceInfo {
   const normal = unit(vec(face.normalAt()));
-  const [mn, mx] = face.boundingBox.bounds;
+  // Not face.boundingBox: replicad reads the triangulation once the shape is
+  // meshed, which pulls a disc cap's box inside its circle.
+  const { min: mn, max: mx } = geometryBox(face.wrapped);
   let centre: V3 | undefined;
   let area: number | undefined;
   const info = { index, normal } as PlanarFaceInfo;
