@@ -63,10 +63,10 @@ import {
 } from './contourAssembly';
 import { ellipseArcSegments } from './dxfEllipse';
 import { clampSpline, type PlanarSpline } from './dxfSplineClamp';
-import { interpolateFitPoints } from './dxfSplineFit';
+import { fitPointSpline, validateSplinePlanarity } from './dxfSplineFit';
 import { mirrorSegments, ocsSign } from './dxfOcs';
 import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
-import { DxfParseError, entityVector, get, num, require, type EntityBlock, type Pair } from './dxfPairs';
+import { DxfParseError, entityVector, get, num, require, values, type EntityBlock, type Pair } from './dxfPairs';
 
 export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
@@ -226,10 +226,6 @@ function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
   return blocks;
 }
 
-function values(body: readonly Pair[], code: number, entity: string): number[] {
-  return body.filter(p => p.code === code).map(p => num(p, entity, code));
-}
-
 interface SplineDefinition {
   flags: number;
   degree: number;
@@ -254,28 +250,6 @@ function splineDefinition(b: EntityBlock): SplineDefinition {
     );
   }
   return { flags, degree, declaredKnotCount, declaredControlCount };
-}
-
-function validateSplinePlanarity(b: EntityBlock, zs: number[]): void {
-  const zScale = Math.max(1, ...zs.map(Math.abs));
-  if (zs.some(z => Math.abs(z) > 1e-9 * zScale)) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: non-zero Z control points are outside this 2D profile importer; flatten the spline to the XY plane.`,
-    );
-  }
-  const nx = get(b.body, 210);
-  const ny = get(b.body, 220);
-  const nz = get(b.body, 230);
-  const normalIsXY = Math.abs(nx ? num(nx, 'SPLINE', 210) : 0) <= 1e-9 &&
-    Math.abs(ny ? num(ny, 'SPLINE', 220) : 0) <= 1e-9 &&
-    Math.abs(Math.abs(nz ? num(nz, 'SPLINE', 230) : 0) - 1) <= 1e-9;
-  if ((nx !== undefined || ny !== undefined || nz !== undefined) && !normalIsXY) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: its normal is not aligned with the XY plane; only planar XY profiles can be imported.`,
-    );
-  }
 }
 
 function splineControlPoints(
@@ -378,73 +352,6 @@ function validateSplineClosure(
     );
   }
   return isClosed;
-}
-
-function optionalTangent(b: EntityBlock, codes: readonly [number, number, number]): readonly [number, number] | undefined {
-  const [x, y, z] = codes.map(code => get(b.body, code));
-  if (x === undefined && y === undefined) return undefined;
-  const t = [x, y, z].map((p, i) => (p ? num(p, 'SPLINE', codes[i]) : 0));
-  const norm = Math.hypot(t[0], t[1], t[2]);
-  // A zero tangent carries no direction; treat it as absent and estimate one.
-  if (norm === 0) return undefined;
-  if (Math.abs(t[2]) > 1e-9 * norm) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: an end tangent leaves the XY plane; only planar XY profiles can be imported.`,
-    );
-  }
-  return [t[0], t[1]];
-}
-
-/**
- * A SPLINE with fit points and no control net: build the clamped cubic
- * through the fit points (dxfSplineFit.ts). Closed fit-point splines need a
- * periodic interpolation that this importer does not attempt.
- */
-function fitPointSpline(b: EntityBlock, scale: number, definition: SplineDefinition): PlanarSpline {
-  const xs = values(b.body, 11, 'SPLINE');
-  const ys = values(b.body, 21, 'SPLINE');
-  const zs = values(b.body, 31, 'SPLINE');
-  const declaredFitCount = get(b.body, 74);
-  if (xs.length === 0) {
-    throw new DxfParseError('malformed-entity', `SPLINE at line ${b.line}: it has neither control points nor fit points.`);
-  }
-  if (ys.length !== xs.length || (zs.length !== 0 && zs.length !== xs.length) ||
-      (declaredFitCount !== undefined && num(declaredFitCount, 'SPLINE', 74) !== xs.length)) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `SPLINE at line ${b.line}: fit point counts disagree (${xs.length} X, ${ys.length} Y, ${zs.length} Z` +
-        `${declaredFitCount === undefined ? '' : `, ${num(declaredFitCount, 'SPLINE', 74)} declared`}).`,
-    );
-  }
-  if ((definition.flags & 1) !== 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: closed fit-point-only splines are not supported; export control points and knots from the source tool.`,
-    );
-  }
-  if (definition.degree !== 3) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `SPLINE at line ${b.line}: fit-point-only splines are interpolated as cubics, but this one declares degree ${definition.degree}; ` +
-        'export control points and knots from the source tool.',
-    );
-  }
-  if (xs.length < 2) {
-    throw new DxfParseError('malformed-entity', `SPLINE at line ${b.line}: a fit-point spline needs at least 2 fit points, found ${xs.length}.`);
-  }
-  validateSplinePlanarity(b, zs);
-  const fit = xs.map((x, i) => [x * scale, ys[i] * scale] as const);
-  const size = Math.max(1, ...fit.map(([x, y]) => Math.max(Math.abs(x), Math.abs(y))));
-  fit.slice(1).forEach(([x, y], i) => {
-    if (Math.hypot(x - fit[i][0], y - fit[i][1]) <= 1e-12 * size) {
-      throw new DxfParseError(
-        'malformed-entity',
-        `SPLINE at line ${b.line}: consecutive fit points coincide at (${x}, ${y}); remove the duplicate fit point.`,
-      );
-    }
-  });
-  return interpolateFitPoints(fit, optionalTangent(b, [12, 22, 32]), optionalTangent(b, [13, 23, 33]));
 }
 
 /** Clamped control net, knots and weights of a DXF SPLINE that stores its control points. */
