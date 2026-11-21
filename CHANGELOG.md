@@ -12,6 +12,15 @@
   `examples/manufacturing-showcase/moulded-housing.kcad.ts` reads 25 mm high,
   not 25.0152 mm. The exact box is unchanged.
 
+- The partial-success `feature.edge-feature.short-edges-skipped` warning now
+  has a true hint. Before, it said the short edges "got skipped so the rest
+  could chamfer", also on a fillet, and that the blend solver rejects every
+  size above half the edge length. On a 40 mm box beside a separate 2 mm box,
+  `fillet(3)` skips the 12 short edges and fillets the 12 long ones. The hint
+  now says the kernel rejected the full selection, the short edges were
+  skipped and the longer ones rounded, and that edge length alone does not
+  set the limit. Code, severity, message and `nextAction` are unchanged.
+
 - A fillet or chamfer that the kernel refuses on every selected edge, where
   every edge is also shorter than 2 × the size, no longer reads as a partial
   success. Before, the error said `fillet skipped` and its hint said the

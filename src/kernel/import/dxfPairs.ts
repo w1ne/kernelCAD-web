@@ -55,6 +55,10 @@ export function require(body: readonly Pair[], code: number, entity: string, lin
   return p;
 }
 
+export function values(body: readonly Pair[], code: number, entity: string): number[] {
+  return body.filter(p => p.code === code).map(p => num(p, entity, code));
+}
+
 export function entityVector(body: readonly Pair[], entity: string, codes: readonly number[], defaults: readonly number[]): number[] {
   return codes.map((code, index) => {
     const pair = get(body, code);
