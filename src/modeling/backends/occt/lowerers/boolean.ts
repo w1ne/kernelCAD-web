@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
+import { getOC } from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import {
   cutManyWithHistory,
   fuseManyWithHistory,
+  fuseLostMaterial,
   intersectWithHistory,
   mergeBooleanHistory,
   mergeBooleanHistoryMany,
@@ -137,7 +139,20 @@ function runManyToolBoolean(
   r: FeatureRecord,
   ctx: LowerContext,
 ): OcctBackend {
-  const result = reusableBoolean(ctx, r, opKind, acc, cutters);
+  const { result, base } = chainedBoolean(ctx, r, opKind, op, acc, cutters);
+  return wrapManyToolResult(result, base, cutters, opKind, op, r, ctx);
+}
+
+/** Diagnostics, merged lineage and member origins of a many-tool result. */
+function wrapManyToolResult(
+  result: BooleanHistoryResult,
+  acc: OcctBackend,
+  cutters: readonly OcctBackend[],
+  opKind: 'cut' | 'fuse',
+  op: string,
+  r: FeatureRecord,
+  ctx: LowerContext,
+): OcctBackend {
   const recovered = booleanRecoveryDiagnostic(r.id, `boolean ${op}`, result);
   if (recovered) ctx.diagnostics.push(recovered);
   const newMap = mergeBooleanHistoryMany(
@@ -155,6 +170,103 @@ function runManyToolBoolean(
   return out;
 }
 
+/** A run of single-consumer booleans of one op growing one body, as far as
+ *  it has been lowered this pass: the first body and each link's lowering. */
+interface BooleanChain {
+  readonly opKind: 'cut' | 'fuse';
+  readonly body: OcctBackend;
+  readonly links: readonly { r: FeatureRecord; ctx: LowerContext; cutters: readonly OcctBackend[] }[];
+}
+
+/** Every reference to each record id, from any record of the run. */
+function referencesById(records: readonly FeatureRecord[]): Map<string, { record: FeatureRecord; key: string }[]> {
+  const out = new Map<string, { record: FeatureRecord; key: string }[]>();
+  for (const record of records) {
+    for (const [key, ref] of Object.entries(record.inputs)) {
+      const id = ref.kind === 'feature' ? ref.id : ref.kind === 'surface' ? ref.surfaceId : ref.featureId;
+      const list = out.get(id) ?? [];
+      list.push({ record, key });
+      out.set(id, list);
+    }
+  }
+  return out;
+}
+
+/** True when `r`'s result is read by nothing but the next boolean of the
+ *  same op, as that boolean's base: the next lowering re-checks the body. */
+function feedsSameOpBoolean(ctx: LowerContext, r: FeatureRecord): boolean {
+  const { pass, records } = ctx.inputs;
+  if (!pass || !records) return false;
+  const refs = pass.memo('booleanReferences', () => referencesById(records)).get(r.id) ?? [];
+  if (refs.length !== 1) return false;
+  const [{ record, key }] = refs;
+  return key === 'base' && record.kind === 'boolean' && record.params.op?.expression === r.params.op?.expression;
+}
+
+/**
+ * The boolean of one chain link. A link whose only reader is the next link
+ * skips the whole-result checks (`deferResultChecks`); the chain's last link
+ * runs them, and also checks that the end body kept the material of every
+ * operand of the chain. If that fails, the chain is built again link by link
+ * with every check, which is what each link did before. The deferred links
+ * keep their exact results, so the per-feature bodies stay inspectable.
+ */
+function chainedBoolean(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  opKind: 'cut' | 'fuse',
+  op: string,
+  acc: OcctBackend,
+  cutters: readonly OcctBackend[],
+): { result: BooleanHistoryResult; base: OcctBackend } {
+  const pass = ctx.inputs.pass;
+  if (!pass) return { result: reusableBoolean(ctx, r, opKind, acc, cutters, false), base: acc };
+  const chains = pass.memo('booleanChains', () => new Map<string, BooleanChain>());
+  const baseId = refIdOf(r, 'base');
+  const prior = baseId === undefined ? undefined : chains.get(baseId);
+  const chain: BooleanChain = prior !== undefined && prior.opKind === opKind
+    ? { opKind, body: prior.body, links: [...prior.links, { r, ctx, cutters }] }
+    : { opKind, body: acc, links: [{ r, ctx, cutters }] };
+  if (feedsSameOpBoolean(ctx, r)) {
+    chains.set(r.id, chain);
+    return { result: reusableBoolean(ctx, r, opKind, acc, cutters, true), base: acc };
+  }
+  const result = reusableBoolean(ctx, r, opKind, acc, cutters, false);
+  if (chain.links.length === 1 || chainKeptMaterial(opKind, chain, result)) return { result, base: acc };
+  // Rebuild link by link with every check; the earlier links' lineage is
+  // merged exactly as their own lowerings did.
+  freeResult(result);
+  let body = chain.body;
+  const last = chain.links.length - 1;
+  for (let i = 0; i < last; i++) {
+    const link = chain.links[i];
+    const linkCtx: LowerContext = { ...link.ctx, diagnostics: ctx.diagnostics };
+    const built = opKind === 'cut' ? cutManyWithHistory(body, link.cutters) : fuseManyWithHistory(body, link.cutters);
+    body = wrapManyToolResult(built, body, link.cutters, opKind, op, link.r, linkCtx);
+  }
+  const final = opKind === 'cut' ? cutManyWithHistory(body, cutters) : fuseManyWithHistory(body, cutters);
+  return { result: final, base: body };
+}
+
+/** A fuse must not end smaller than any operand of its chain. A cut chain's
+ *  end body was already checked (topology) by its own last build. */
+function chainKeptMaterial(opKind: 'cut' | 'fuse', chain: BooleanChain, result: BooleanHistoryResult): boolean {
+  if (opKind === 'cut') return true;
+  const operands = [chain.body, ...chain.links.flatMap((l) => l.cutters)].map(wrappedOf);
+  return fuseLostMaterial(getOC(), operands, result.shape) === undefined;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const wrappedOf = (b: OcctBackend): unknown => (b.getReplicadShape() as any).wrapped;
+
+function freeResult(result: BooleanHistoryResult): void {
+  try {
+    (result.shape as { delete?: () => void }).delete?.();
+  } catch {
+    // already released
+  }
+}
+
 /**
  * Run the boolean, or replay the same boolean already built this pass from
  * operands with the same content (a helper called twice captures two
@@ -168,9 +280,11 @@ function reusableBoolean(
   opKind: 'cut' | 'fuse',
   acc: OcctBackend,
   cutters: readonly OcctBackend[],
+  deferResultChecks: boolean,
 ): BooleanHistoryResult {
+  const options = { deferResultChecks };
   const build = (): BooleanHistoryResult =>
-    opKind === 'cut' ? cutManyWithHistory(acc, cutters) : fuseManyWithHistory(acc, cutters);
+    opKind === 'cut' ? cutManyWithHistory(acc, cutters, options) : fuseManyWithHistory(acc, cutters, options);
   const { pass, records, resolveRecord } = ctx.inputs;
   if (!pass || !records) return build();
   const keys = pass.memo('contentKeys', () => createContentKeyResolver(
@@ -180,7 +294,9 @@ function reusableBoolean(
   ));
   const operandIds = [refIdOf(r, 'base'), ...cutterKeys(ctx).map((k) => refIdOf(r, k))];
   if (operandIds.some((id) => id === undefined)) return build();
-  const key = `${opKind}|${operandIds.map((id) => keys.keyOf(id!)).join('|')}`;
+  // A result built without the whole-result checks is only replayed where
+  // they are deferred again.
+  const key = `${opKind}|${deferResultChecks ? 'deferred' : 'checked'}|${operandIds.map((id) => keys.keyOf(id!)).join('|')}`;
   const replays = pass.memo('booleanReplays', () => new Map<string, BooleanReplay>(), (m) => {
     for (const replay of m.values()) releaseBooleanReplay(replay);
   });
