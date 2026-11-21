@@ -314,6 +314,22 @@ animationView(spec: {
   }>;
   fps?: number;          // default 30
 }): AnimationViewHandle;
+//   3. Appearance tracks — a track may name a rendered object instead of a
+//      param and key its colour. Same atMs / ease / hold rules; each 8-bit
+//      sRGB component interpolates through the ease and rounds. Mix freely
+//      with param tracks, or use appearance tracks alone on a static model
+//      (capture then never re-solves the model and loads meshes once).
+//        { target: 'led-03', channel: 'emissive', keys: [
+//            { atMs: 0, value: '#000000' }, { atMs: 150, value: '#2bff88', ease: 'easeOut' } ] }
+//      `target` uses the render --focus/--hide name rules (feature id,
+//      assembly part name, display name; case-insensitive; * ? wildcards).
+//      `channel` is 'color' (base colour) or 'emissive' (self-lit; '#000000'
+//      = off). Values are '#rgb' / '#rrggbb'. A bad channel / colour / empty
+//      target throws `animation.keys.invalid`; two tracks on one target and
+//      channel throw `animation.track.duplicate-param`; a target that matches
+//      no rendered object refuses capture with `animation.target.unknown`.
+//      Light moving along a path = one part per segment, phase-offset tracks
+//      (examples/animation/led-strip-chase.kcad.ts).
 // Virtual record — display only. Every animated param MUST be declared
 // NUMERIC by a prior param() call; undeclared/non-numeric params, two tracks
 // on the same param, and malformed keys (empty tracks/keys, non-finite or

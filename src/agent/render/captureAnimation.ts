@@ -68,6 +68,7 @@ import {
   errMsg,
   finalizeCapturePhase,
   resolveAnimRecord,
+  resolveAppearanceTargetsPhase,
   resolveCapturePaths,
   resolveFps,
   runFrameLoopPhase,
@@ -277,7 +278,9 @@ export async function captureAnimation(
   // before verification report verified:false with no collisions).
   let verified = false;
   let collisions: AnimationCollision[] = [];
-  const verifySkipped = opts.skipVerify === true;
+  // Set once the record is read: a timeline with no param tracks never moves
+  // a part, so there is no pose to verify (appearance-only timelines).
+  let verifySkipped = opts.skipVerify === true;
   const verifyFields = () => ({
     verified,
     collisions,
@@ -311,12 +314,17 @@ export async function captureAnimation(
   // them.
   const stashedWarns = animResult.stashedWarns;
 
+  if (metadata.tracks.length === 0 && !verifySkipped) {
+    verifySkipped = true;
+    onProgress('verify: skipped (no param tracks, nothing moves)');
+  }
+
   const fpsResult = resolveFps(opts, metadata, stashedWarns, verifyFields);
   if ('failure' in fpsResult) return fpsResult.failure;
   const fps = fpsResult.fps;
 
   // 4. Frame schedule from the shared sampler.
-  const { frames, durationMs } = sampleTracks(metadata.tracks, fps);
+  const { frames, durationMs } = sampleTracks(metadata.tracks, fps, metadata.appearanceTracks ?? []);
   onProgress(`${frames.length} frames scheduled @ ${fps} fps (durationMs=${durationMs})`);
 
   // 4b. Animation-pose interference verification — BEFORE the browser/ffmpeg
@@ -337,6 +345,10 @@ export async function captureAnimation(
   const meshResult = await coldMeshPhase(model, durationMs, fps, stashedWarns, verifyFields);
   if ('failure' in meshResult) return meshResult.failure;
   const initial = meshResult.initial;
+
+  // 5b. Appearance-track targets resolve against the meshed scene.
+  const targetResult = resolveAppearanceTargetsPhase(metadata, initial, durationMs, fps, stashedWarns, verifyFields);
+  if ('failure' in targetResult) return targetResult.failure;
 
   let pageHandle: DemoPlayerPageHandle | undefined;
   /** Provisioned render surface (bundled static player unless opts.baseUrl
@@ -383,6 +395,7 @@ export async function captureAnimation(
 
     const loopResult = await runFrameLoopPhase({
       frames, model, page: pageHandle.page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,
+      staticMeshing: initial, appearanceTargets: targetResult.targets,
     });
     if ('failure' in loopResult) return loopResult.failure;
     written = loopResult.written;

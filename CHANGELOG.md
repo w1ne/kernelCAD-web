@@ -1,5 +1,17 @@
 # Unreleased
 
+- `animationView` tracks can now key a part's colour. A track names a
+  `target` (part, feature or display name, with `*` / `?` wildcards) and a
+  `channel` (`color` or `emissive`) in place of a `param`, with `#rrggbb`
+  keys that use the same ease and hold rules. `capture_animation` /
+  `kernelcad animate` apply them as material overrides on every frame. A
+  timeline with no param tracks never re-solves the model and loads its
+  meshes once. An unknown target refuses the capture with
+  `animation.target.unknown`. Example:
+  `examples/animation/led-strip-chase.kcad.ts` (a light pulse running along
+  16 LED segments). Rigid frame reuse now also compares colour and material,
+  so a frame whose colour changed reloads its meshes.
+
 - `catalog/kits/nature/pine-tree.kcad.ts` now passes `evaluate_script`
   with `ok: true` for every tier choice. The trunk was extruded to 30 % of
   the tree height, so it ran 450 mm (default 4.5 m tree) into the lowest
