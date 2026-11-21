@@ -1,0 +1,1 @@
+telecom-infrastructure/guy-wire-mast-anchor: 752 tris

@@ -317932,7 +317932,7 @@
       "id": "guy-wire-mast-anchor",
       "kit": "telecom-infrastructure",
       "title": "Guyed mast anchor set",
-      "description": "Three-point guy-wire anchor layout with a central mast stub and ground cleat blocks. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Three-point guyed mast set: a galvanized mast stub on a concrete pier, with three galvanized guy wires that run from the mast-head band through turnbuckles to anchor rods set in concrete deadman blocks, and yellow guy guards. Knobs: overall scale; galvanized steel, concrete, guy guard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -317951,7 +317951,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/guy-wire-mast-anchor.kcad.ts",
       "preview": "/assets/telecom-infrastructure-guy-wire-mast-anchor.png",
-      "sourceSha256": "aa0dcff01769ede78ad3cdb54ee2d09bf52f6c992f343789dbcb46a72ca9f5c1",
+      "sourceSha256": "25ae3150f9055800b9ca8d96cb8bc09f2275733dd183d47fc53055d7c452bd5b",
       "triangleBudget": 900,
       "params": [
         {
@@ -317967,57 +317967,84 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
+          "label": "Mast, guys, turnbuckles and anchor rods (galvanized steel)"
         },
         {
-          "name": "powderCoat",
+          "name": "concrete",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#a5a29a",
+          "label": "Pier and deadman blocks (cast concrete)"
+        },
+        {
+          "name": "guyGuard",
+          "type": "color",
+          "default": "#e3b21b",
+          "label": "Guy guard sleeves (yellow polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "concrete": "#8c887e",
+          "guyGuard": "#d9a21a"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "concrete": "#c4c0b5",
+          "guyGuard": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 752,
         "sizeM": [
-          1.5,
-          0.824342,
-          1.32
+          1.56,
+          0.912,
+          1.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "concrete",
+          "color": "#a5a29a",
+          "parts": [
+            "pier",
+            "deadman-a",
+            "deadman-b",
+            "deadman-c"
+          ],
+          "param": "concrete"
+        },
+        {
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
+            "base-plate",
             "mast",
-            "anchor-a",
-            "anchor-b",
-            "anchor-c",
+            "mast-cap",
+            "guy-band",
+            "anchor-rod-a",
+            "turnbuckle-a",
             "guy-a",
+            "anchor-rod-b",
+            "turnbuckle-b",
             "guy-b",
+            "anchor-rod-c",
+            "turnbuckle-c",
             "guy-c"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "guyGuard",
+          "color": "#e3b21b",
           "parts": [
-            "base"
+            "guy-guard-a",
+            "guy-guard-b",
+            "guy-guard-c"
           ],
-          "param": "powderCoat"
+          "param": "guyGuard"
         }
       ]
     },
