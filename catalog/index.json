@@ -321539,7 +321539,7 @@
       "id": "wall-mast-bracket",
       "kit": "telecom-infrastructure",
       "title": "Wall mast stand-off bracket",
-      "description": "Wall stand-off bracket with backplate, two arms, mast clamps and bolt heads. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Galvanized wall stand-off bracket: a wall plate on four anchor bolts, two gusseted arms and end saddles that clamp a mast pipe with stainless U-bolts and nuts, and polymer pipe end caps. Knobs: overall scale; galvanized steel, stainless steel, polymer caps.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -321558,8 +321558,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/wall-mast-bracket.kcad.ts",
       "preview": "/assets/telecom-infrastructure-wall-mast-bracket.png",
-      "sourceSha256": "b94226b51fe0d545139e502bb60cf209fc08c290e5927fed72a4443478b01257",
-      "triangleBudget": 900,
+      "sourceSha256": "f13ccc3b4dfe55771e93ded56578924167decadea20255fee406a06f6d7aafc3",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -321574,60 +321574,56 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Bracket and mast (galvanized steel)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "U-bolts, nuts and anchors (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Pipe end caps (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#2f3a33"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e8c21a"
         }
       },
       "stats": {
-        "triangles": 148,
+        "triangles": 1072,
         "sizeM": [
           0.3,
-          1,
-          0.51
+          1.064,
+          0.478
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
-          "parts": [
-            "backplate"
-          ],
-          "param": "powderCoat"
-        },
-        {
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
-            "arm-upper",
+            "backplate",
             "arm-lower",
-            "gusset-a",
-            "gusset-b"
+            "gusset-lower",
+            "saddle-lower",
+            "arm-upper",
+            "gusset-upper",
+            "saddle-upper",
+            "mast"
           ],
           "param": "galvanizedSteel"
         },
@@ -321635,10 +321631,33 @@
           "name": "stainlessSteel",
           "color": "#d2dbdc",
           "parts": [
-            "clamp-upper",
-            "clamp-lower"
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3",
+            "u-bolt-lower-0",
+            "nut-lower-0-0",
+            "nut-lower-0-1",
+            "u-bolt-lower-1",
+            "nut-lower-1-0",
+            "nut-lower-1-1",
+            "u-bolt-upper-0",
+            "nut-upper-0-0",
+            "nut-upper-0-1",
+            "u-bolt-upper-1",
+            "nut-upper-1-0",
+            "nut-upper-1-1"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "mast-cap-top",
+            "mast-cap-bottom"
+          ],
+          "param": "polymer"
         }
       ]
     },
