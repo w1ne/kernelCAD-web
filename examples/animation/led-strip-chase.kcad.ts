@@ -8,8 +8,9 @@
 //   npx tsx src/agent/cli/index.ts evaluate examples/animation/led-strip-chase.kcad.ts
 //     → OK, no error diagnostics
 //   npx tsx src/agent/cli/index.ts animate examples/animation/led-strip-chase.kcad.ts led-strip-chase.mp4 --pose 35,40 --backdrop white
-//     → 16 appearance tracks, no param tracks (0 poses verified, one mesh
-//       load), a green pulse travelling from the source block to the load block
+//     → "56 frames, 2310 ms @ 24 fps; verify skipped" (no param tracks, so
+//       nothing moves: no re-solve, one mesh load), a green pulse travelling
+//       from the source block to the load block
 
 const segments = 16;
 const pitch = 12; // mm between segment centres
