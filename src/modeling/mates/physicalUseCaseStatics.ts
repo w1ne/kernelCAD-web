@@ -5,7 +5,7 @@ import type { NumericPoses } from '../capture/forwardKinematics';
 import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
 import { expandCoupledPoses } from './coupledPoses';
-import { solveMates } from './solver';
+import { solveMates, withUnmatedPartPlacements } from './solver';
 import type {
   PhysicalUseCaseContact,
   PhysicalUseCaseRecord,
@@ -502,7 +502,7 @@ async function solveRelativeContactPoints(
   if (solved.status !== 'solved' && solved.status !== 'redundant-ok') {
     return `Actuator mate '${mateName}' perturbation returned solver status '${solved.status}'.`;
   }
-  const points = relativeContactPoints(arm, solved.poses, contacts);
+  const points = relativeContactPoints(arm, withUnmatedPartPlacements(arm, solved.poses), contacts);
   return points ?? `Actuator mate '${mateName}' perturbation has unresolved contact endpoints.`;
 }
 

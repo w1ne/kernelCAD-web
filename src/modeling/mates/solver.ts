@@ -41,7 +41,7 @@ import {
   type ConnectorOrigin,
 } from './connector';
 import { expandCoupledPoses } from './coupledPoses';
-import { atPlacement, matedPartNames, resolvedPartAt, sceneMotion } from './partFrame';
+import { atPlacement, matedPartNames, partAtFor, resolvedPartAt, sceneMotion } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
@@ -285,6 +285,25 @@ function inheritConnectedPartPlacements(arm: Assembly, result: SolveResult): Sol
     moved.add(part.name);
   }
   return result;
+}
+
+/** `solveMates` placements with every part it leaves at identity (in no mate
+ *  and not connect-placed under a mated part) moved to where its `at` puts
+ *  it. Use it where a check reads such a part's connector origins, which are
+ *  declared in the part's own frame. */
+export function withUnmatedPartPlacements(
+  arm: Assembly,
+  poses: ReadonlyMap<string, Transform>,
+): Map<string, Transform> {
+  const parts = arm.__parts();
+  const table = arm.__session().paramTable;
+  const atFor = partAtFor(arm.__mates(), parts, table);
+  const out = new Map(poses);
+  for (const part of parts) {
+    if (atFor(part.name) !== undefined) continue;
+    out.set(part.name, atPlacement(resolvedPartAt(part.at, table)));
+  }
+  return out;
 }
 
 /** Resolve explicit pose overrides before the pure loop solver sees them.

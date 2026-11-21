@@ -22,6 +22,7 @@ import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from '../mates/mate';
+import { placementFromSceneMotion, resolvedPartAt } from '../mates/partFrame';
 import { wrapArcPoints, type WrapCylinderWorld } from '../capture/tendonSweepMesh';
 import { measureGapToBody } from './jointMeshContinuity';
 import { anyTriangleWithin, buildMeshPointIndex, pointInsideMesh, type MeshPointIndex } from './meshPointQuery';
@@ -282,16 +283,39 @@ function piercesForTendon(
 }
 
 /**
+ * Anchor, via and wrap points must sit on the bodies the scan probes. A scene
+ * part's shape already carries its `at`, so its placement is
+ * `worldTransform · T(at)` for every part. `solveMates` returns that
+ * placement only for mated parts; a part in no mate (a legacy-joint
+ * participant, for example) keeps its scene motion, which drops `at`.
+ */
+function withScenePlacements(
+  arm: Assembly,
+  partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
+  sample: TendonBodyIntersectSample,
+): TendonBodyIntersectSample {
+  const table = arm.__session().paramTable;
+  const transforms = new Map(sample.transforms);
+  for (const sp of sample.scene.parts) {
+    const part = partByName.get(sp.name);
+    if (part === undefined) continue;
+    transforms.set(sp.name, placementFromSceneMotion(sp.worldTransform, resolvedPartAt(part.at, table)));
+  }
+  return { ...sample, transforms };
+}
+
+/**
  * Evaluate criterion 8 at a single solved pose. Returns one result per
  * (tendon, pierced-part) pair — the first offending sample for that pair.
  * The caller maps each into a `mechanism.tendon-body-intersect` diagnostic.
  */
 export function checkTendonBodyIntersectAtPose(
   arm: Assembly,
-  sample: TendonBodyIntersectSample,
+  posed: TendonBodyIntersectSample,
 ): TendonBodyIntersectResult[] {
   const out: TendonBodyIntersectResult[] = [];
   const partByName = indexPartsByName(arm);
+  const sample = withScenePlacements(arm, partByName, posed);
   const boundsByPart = new Map<string, Aabb | undefined>();
   const inverseByPart = new Map<string, Transform | undefined>();
   for (const part of sample.scene.parts) {

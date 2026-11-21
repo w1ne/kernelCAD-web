@@ -51,12 +51,15 @@ const rod = (a: [number, number, number], b: [number, number, number], r: number
   const l = Math.hypot(d[0], d[1], d[2]);
   const tilt = (Math.acos(d[2] / l) * 180) / Math.PI;
   const yaw = (Math.atan2(d[1], d[0]) * 180) / Math.PI;
-  return cylinder(l, r, seg).rotateY(tilt).rotateZ(yaw).translate(a[0], a[1], a[2]);
+  // cylinder() keeps an analytic surface and ignores its legacy segment slot.
+  // An explicit polygon profile keeps each cable section within the mesh budget.
+  return path().circle(0, 0, r, seg).extrude(l).rotateY(tilt).rotateZ(yaw).translate(a[0], a[1], a[2]);
 };
 
 // Meter, leaning back 15 degrees on its kickstand. Built upright (front on -Y,
 // base at z=0) then tilted, so it all shares one transform.
-const lean = (s: Shape) => s.rotateX(-15).translate(-60, 0, 10);
+const leanAngle = -15;
+const lean = (s: Shape) => s.rotateX(leanAngle).translate(-60, 0, 10);
 const W = 80, H = 170, T = 32;
 add("bumper", lean(extrudeRoundedRect(W + 8, H + 8, 16, T, { axis: 'y' }).translate(0, -T / 2, H / 2)).color(bumper));
 add("housing-face", lean(extrudeRoundedRect(W - 6, H - 10, 10, 4, { axis: 'y' }).translate(0, -T / 2 - 3, H / 2)).color(housing));
@@ -64,13 +67,30 @@ add("display-bezel", lean(blk(0, -T / 2 - 5, H - 78, 62, 3, 58)).color('#2a2d30'
 add("display", lean(blk(0, -T / 2 - 6, H - 73, 54, 2, 48)).color(display));
 // LCD digits for the chosen reading, as segment bars.
 const digits = reading.value === 'acidic' ? [5, 8] : reading.value === 'alkaline' ? [8, 4] : [6, 9];
+// Independent upper/lower vertical strokes are needed to distinguish 4, 5, 6 and 9.
+const glyphs: Record<number, string[]> = {
+  4: ['upper-right', 'lower-right', 'upper-left', 'mid'],
+  5: ['top', 'lower-right', 'bot', 'upper-left', 'mid'],
+  6: ['top', 'lower-right', 'bot', 'lower-left', 'upper-left', 'mid'],
+  8: ['top', 'upper-right', 'lower-right', 'bot', 'lower-left', 'upper-left', 'mid'],
+  9: ['top', 'upper-right', 'lower-right', 'bot', 'upper-left', 'mid'],
+};
+const strokes: [string, number, number, number, number][] = [
+  ['top', 0, H - 36, 12, 3],
+  ['upper-right', 6, H - 48, 2, 12],
+  ['lower-right', 6, H - 63, 2, 12],
+  ['bot', 0, H - 66, 12, 3],
+  ['lower-left', -6, H - 63, 2, 12],
+  ['upper-left', -6, H - 48, 2, 12],
+  ['mid', 0, H - 51, 12, 3],
+];
 digits.forEach((d, i) => {
   const x = -14 + i * 24;
-  add(`digit-${i}-top`, lean(blk(x, -T / 2 - 7.2, H - 36, 12, 1, 3)).color('#1f2a1c'));
-  add(`digit-${i}-mid`, lean(blk(x, -T / 2 - 7.2, H - 51, 12, 1, 3)).color('#1f2a1c'));
-  add(`digit-${i}-bot`, lean(blk(x, -T / 2 - 7.2, H - 66, 12, 1, 3)).color('#1f2a1c'));
-  if (d !== 4) add(`digit-${i}-left`, lean(blk(x - 6, -T / 2 - 7.2, H - 65, 2, 1, 30)).color('#1f2a1c'));
-  add(`digit-${i}-right`, lean(blk(x + 6, -T / 2 - 7.2, H - 65, 2, 1, 30)).color('#1f2a1c'));
+  for (const [name, dx, z, width, height] of strokes) {
+    if (glyphs[d].includes(name)) {
+      add(`digit-${i}-${name}`, lean(blk(x + dx, -T / 2 - 7.2, z, width, 1, height)).color('#1f2a1c'));
+    }
+  }
 });
 add("decimal-point", lean(blk(-2, -T / 2 - 7.2, H - 66, 3, 1, 3)).color('#1f2a1c'));
 add("ph-legend", lean(blk(20, -T / 2 - 7.2, H - 34, 8, 1, 5)).color('#1f2a1c'));
@@ -82,19 +102,25 @@ add("cable-gland", lean(cylZ(22, 0, H + 2, 14, 6, 10)).color('#2a2d30'));
 add("kickstand", blk(0, 0, 0, 60, 8, 60).rotateX(-25).translate(-60, 34, 6).color('#2a2d30'));
 add("bench-pad", blk(-60, 5, 0, 110, 70, 6).color('#2a2d30'));
 
-// Coiled cable from the top of the meter over to the probe.
-const start: [number, number, number] = [-38, 48, 190];
+// Low-poly coiled cable from the meter gland to the probe cap. Eight samples
+// per turn retain the winding; one sample per turn collapses it to its centreline.
+const glandExitZ = H + 15;
+const leanRadians = leanAngle * Math.PI / 180;
+const start: [number, number, number] = [-38, -Math.sin(leanRadians) * glandExitZ, 10 + Math.cos(leanRadians) * glandExitZ];
 const end: [number, number, number] = [80, -10, 212];
 const coils = 9;
-for (let k = 0; k < coils; k++) {
-  const t = k / coils, t2 = (k + 1) / coils;
-  const pt = (u: number): [number, number, number] => [
-    start[0] + (end[0] - start[0]) * u,
-    start[1] + (end[1] - start[1]) * u + Math.sin(u * coils * 2 * Math.PI) * 6,
-    start[2] + (end[2] - start[2]) * u + Math.sin(Math.PI * u) * 60 + Math.cos(u * coils * 2 * Math.PI) * 6,
-  ];
-  add(`cable-${k}`, rod(pt(t), pt(t2), 2.6, 5).color('#1e2124'));
+const samplesPerCoil = 8;
+const cableSegments = coils * samplesPerCoil;
+const cablePoint = (u: number): [number, number, number] => [
+  start[0] + (end[0] - start[0]) * u,
+  start[1] + (end[1] - start[1]) * u + Math.sin(u * coils * 2 * Math.PI) * 6,
+  start[2] + (end[2] - start[2]) * u + Math.sin(Math.PI * u) * 60 + Math.cos(u * coils * 2 * Math.PI) * 6,
+];
+add('cable-inlet', rod(start, cablePoint(0), 2.6, 5).color('#1e2124'));
+for (let k = 0; k < cableSegments; k++) {
+  add(`cable-${k}`, rod(cablePoint(k / cableSegments), cablePoint((k + 1) / cableSegments), 2.6, 5).color('#1e2124'));
 }
+add('cable-outlet', rod(cablePoint(1), end, 2.6, 5).color('#1e2124'));
 
 // Sample beaker with the probe standing in it.
 const BX = 80, BY = -10;
