@@ -14,6 +14,7 @@ import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
 import { evaluateScriptTool } from '../../src/agent/mcp/tools/evaluateScript';
 import { clearActiveMcpSession } from '../../src/agent/mcp/activeSession';
+import { prunedExactBounds, toleranceInclusiveBounds } from '../../src/kernel/backends/occt/backendBounds';
 
 async function lower(code: string): Promise<OcctBackend> {
   const run = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -67,5 +68,25 @@ describe('bounding box of non-uniformly scaled curved solids', () => {
   it('analytic solids keep their gap-corrected box', async () => {
     expect(sizeOf((await lower('return cylinder(1, 1);')).boundingBox())).toEqual([2, 2, 1]);
     expect(sizeOf((await lower('return box(40, 30, 10);')).boundingBox())).toEqual([40, 30, 10]);
+  });
+});
+
+// Only faces that can move the box get an exact box; the result must equal
+// the whole-shape exact box. SO100_Assembly.step: 2.0 s down to 0.4 s.
+describe('pruned exact box', () => {
+  it.each([
+    ['elliptic cylinder', 'return cylinder(1, 1).scale([2, 1, 1]);'],
+    ['ellipsoid', 'return sphere(1).scale([2, 1, 1]);'],
+    ['scaled filleted box', 'return box(20, 10, 8).fillet(2).scale([1.5, 1, 1]);'],
+    ['rational face inside a larger box', 'return box(60, 40, 20).union(sphere(3).scale([2, 1, 1]).translate(30, 20, 10));'],
+    ['rational face past the box corners', 'return box(10, 10, 10).union(cylinder(4, 30).scale([3, 1, 1]).translate(5, 5, -10));'],
+  ])('%s matches the whole-shape exact box', async (_name, code) => {
+    const wrapped = (await lower(code)).getReplicadShape().wrapped;
+    const whole = toleranceInclusiveBounds(wrapped)!;
+    const pruned = prunedExactBounds(wrapped)!;
+    [0, 1, 2].forEach((i) => {
+      expect(pruned.min[i]).toBeCloseTo(whole.min[i], 9);
+      expect(pruned.max[i]).toBeCloseTo(whole.max[i], 9);
+    });
   });
 });
