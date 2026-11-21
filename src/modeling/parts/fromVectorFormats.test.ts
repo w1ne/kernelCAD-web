@@ -104,6 +104,27 @@ const BLOCK_HOLES_DXF = [
 ].join('\n') + '\n';
 
 /**
+ * A 60 x 40 plate with one r = 5 hole block inserted at (30, 20) with scale
+ * (2, 1) and rotation 90°: an elliptical hole, semi-axes 10 along Y and 5
+ * along X, so the plate encloses exactly 2400 - 50π mm².
+ */
+const STRETCHED_HOLE_DXF = [
+  0, 'SECTION', 2, 'BLOCKS',
+  0, 'BLOCK', 8, '0', 2, 'HOLE', 70, 0, 10, 0, 20, 0, 30, 0, 3, 'HOLE',
+  0, 'CIRCLE', 8, '0', 10, 0, 20, 0, 30, 0, 40, 5,
+  0, 'ENDBLK', 8, '0',
+  0, 'ENDSEC',
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'LWPOLYLINE', 90, 4, 70, 1,
+  10, 0, 20, 0,
+  10, 60, 20, 0,
+  10, 60, 20, 40,
+  10, 0, 20, 40,
+  0, 'INSERT', 8, '0', 2, 'HOLE', 10, 30, 20, 20, 30, 0, 41, 2, 42, 1, 43, 1, 50, 90,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
+/**
  * A 60 x 40 plate with a closed spline cut-out, written the way AutoCAD and
  * ezdxf write a closed spline: a periodic (flag 2) uniform cubic whose first
  * three control points repeat at the end and whose knots 0..10 are unclamped.
@@ -179,6 +200,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'bulged.dxf'), BULGED_DXF);
   writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
   writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
+  writeFileSync(join(tmpDir, 'stretched-hole.dxf'), STRETCHED_HOLE_DXF);
   writeFileSync(join(tmpDir, 'periodic-spline-cutout.dxf'), PERIODIC_SPLINE_CUTOUT_DXF);
   writeFileSync(join(tmpDir, 'fit-point-arch.dxf'), FIT_POINT_ARCH_DXF);
   writeFileSync(join(tmpDir, 'closed-fit-spline-cutout.dxf'), CLOSED_FIT_SPLINE_CUTOUT_DXF);
@@ -434,6 +456,24 @@ describe('lib.fromDXF — round trip to a solid', () => {
       return [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2].map(v => Math.round(v * 1e6) / 1e6);
     }));
     expect(centres.sort((a, b) => a[0] - b[0] || a[1] - b[1])).toEqual([[10, 10], [10, 30], [50, 10], [50, 30]]);
+  });
+
+  it('cuts a non-uniformly scaled block circle as an exact elliptical hole', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [outline, hole, ...rest] = await api.lib.fromDXF('stretched-hole.dxf');
+    expect(rest).toHaveLength(0);
+
+    const prism = await lower(session, hole.extrude(4).id);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    expect(prism.volume()).toBeCloseTo(50 * Math.PI * 4, 5);
+    const box = prism.boundingBox();
+    expect([box.min[0], box.max[0], box.min[1], box.max[1]].map(v => Math.round(v * 1e3) / 1e3))
+      .toEqual([25, 35, 10, 30]);
+
+    const plate = await lower(session, outline.extrude(4).subtract(hole.extrude(4)).id);
+    expect(isValidShape(getOC(), plate.getReplicadShape().wrapped)).toBe(true);
+    expect(Math.abs(plate.volume() / ((2400 - 50 * Math.PI) * 4) - 1)).toBeLessThan(1e-4);
   });
 
   it('records the unit decision on the sketch so it can be inspected later', async () => {

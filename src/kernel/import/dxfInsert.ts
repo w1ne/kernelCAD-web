@@ -11,10 +11,13 @@
 // spacing) in the rotated frame, and OCS mirrors X for extrusion -Z. The
 // map is affine, so lines, polyline vertices and NURBS control points stay
 // exact. A bulge arc stays a circular arc only under a uniform scale; a
-// mirror (negative determinant) reverses its turning direction. A
-// non-uniform scale on an arc would need an ellipse, so it is refused.
+// mirror (negative determinant) reverses its turning direction. Under a
+// non-uniform scale an arc becomes an elliptical arc: it is first rewritten
+// as exact rational quadratic pieces, whose control points the affine map
+// then moves without changing the weights, so the ellipse is exact too.
 
 import type { ImportSegment } from './contourAssembly';
+import { ellipseArcSegments } from './dxfEllipse';
 import { ocsSign } from './dxfOcs';
 import { DxfParseError, get, num, require, type EntityBlock } from './dxfPairs';
 
@@ -98,13 +101,7 @@ export function resolveInsertBlock(
 export function placeInsert(b: EntityBlock, def: BlockDefinition, inner: PlacedSegments, scale: number): PlacedSegments {
   const p = insertParameters(b);
   const uniform = Math.abs(Math.abs(p.sx) - Math.abs(p.sy)) <= 1e-12 * Math.max(Math.abs(p.sx), Math.abs(p.sy));
-  if (!uniform && hasArc(inner)) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `INSERT at line ${b.line}: non-uniform scale (${p.sx}, ${p.sy}) turns the arcs of block "${def.name}" into ellipses, ` +
-        'which a bulge arc cannot represent. Use a uniform scale or explode the block in the source tool.',
-    );
-  }
+  if (!uniform) inner = { closed: inner.closed.map(loop => loop.flatMap(arcAsNurbs)), open: inner.open.flatMap(arcAsNurbs) };
   const sign = ocsSign(b.body, 'INSERT', b.line);
   const label = `INSERT "${def.name}" (line ${b.line})`;
   const out: PlacedSegments = { closed: [], open: [] };
@@ -213,7 +210,32 @@ function transformSegment(seg: ImportSegment, m: Affine, label: string): ImportS
   return out;
 }
 
-function hasArc(s: PlacedSegments): boolean {
-  const arc = (seg: ImportSegment): boolean => seg.bulge !== undefined && seg.bulge !== 0;
-  return s.open.some(arc) || s.closed.some(loop => loop.some(arc));
+/**
+ * A bulge arc as exact rational quadratic pieces of at most 90°, so a
+ * non-uniform affine map can carry it. The chord endpoints are kept bit for
+ * bit; straight and NURBS segments pass through unchanged.
+ */
+function arcAsNurbs(seg: ImportSegment): ImportSegment[] {
+  if (seg.bulge === undefined || seg.bulge === 0) return [seg];
+  const sweep = 4 * Math.atan(seg.bulge);
+  const half = Math.hypot(seg.x1 - seg.x0, seg.y1 - seg.y0) / 2;
+  const ux = (seg.x1 - seg.x0) / (2 * half), uy = (seg.y1 - seg.y0) / (2 * half);
+  // The centre sits on the chord's left normal for a counter-clockwise arc
+  // under 180°; tan(sweep / 2) changes sign to put it on the right otherwise.
+  const offset = half / Math.tan(sweep / 2);
+  const cx = (seg.x0 + seg.x1) / 2 - uy * offset;
+  const cy = (seg.y0 + seg.y1) / 2 + ux * offset;
+  const radius = half / Math.abs(Math.sin(sweep / 2));
+  const start = Math.atan2(seg.y0 - cy, seg.x0 - cx);
+  const pieces = ellipseArcSegments({
+    center: [cx, cy], majorAxis: [radius, 0], axisRatio: 1,
+    startParameter: start, endParameter: start + sweep,
+    normalZ: 1, scale: 1, source: seg.source,
+  });
+  const first = pieces[0], last = pieces[pieces.length - 1];
+  first.x0 = seg.x0; first.y0 = seg.y0;
+  last.x1 = seg.x1; last.y1 = seg.y1;
+  first.nurbs = { ...first.nurbs!, controlPoints: [[seg.x0, seg.y0], ...first.nurbs!.controlPoints.slice(1)] };
+  last.nurbs = { ...last.nurbs!, controlPoints: [...last.nurbs!.controlPoints.slice(0, 2), [seg.x1, seg.y1]] };
+  return pieces;
 }

@@ -214,8 +214,9 @@ lib.from3MF(path: string, opts?: {
 // ellipses, non-cubic fit-point-only, discontinuous and nonplanar SPLINE, and
 // closed SPLINE whose control net does not wrap, fail with a named diagnostic.
 // INSERT block references (nested, MINSERT grids) are placed with their base
-// point, insertion point, rotation and scale; external-reference blocks and
-// arcs under a non-uniform block scale fail with a named diagnostic.
+// point, insertion point, rotation and scale; an arc under a non-uniform
+// block scale becomes an exact rational elliptical arc. External-reference
+// blocks fail with a named diagnostic.
 // ARC, CIRCLE, LWPOLYLINE and POLYLINE with extrusion direction (0, 0, -1) are
 // mirrored from their object coordinates into world X; other directions fail.
 const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });

@@ -142,8 +142,9 @@ export interface PartsLib {
    * discontinuous and nonplanar splines are refused with an entity and line
    * diagnostic.
    * INSERT block references (nested, and MINSERT grids) are expanded with
-   * their base point, insertion point, rotation and scale; external-reference
-   * blocks and arcs under a non-uniform block scale are refused.
+   * their base point, insertion point, rotation and scale; an arc under a
+   * non-uniform block scale becomes an exact rational elliptical arc.
+   * External-reference blocks are refused.
    * `$INSUNITS` sets scale; absent or Unitless means mm.
    */
   fromDXF(path: string, opts?: FromDXFOptions): Promise<Sketch[]>;
