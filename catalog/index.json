@@ -319507,7 +319507,7 @@
       "id": "pedestal-fiber-terminal",
       "kit": "telecom-infrastructure",
       "title": "Pedestal fiber terminal",
-      "description": "Slim ground pedestal with removable cap, service door and two conduit entries. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Slim fiber access pedestal on a concrete pad: one powder-coated steel body on a bolted base flange with stainless anchor bolts, a removable powder-coated gable cover that slides over the body top, a front service door in a polymer gasket seam with stainless hinges and a penta-head lock, polymer louvre vents and two HDPE ducts that rise through the pad. Knobs: overall scale; powder-coated steel, concrete, stainless steel, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319526,7 +319526,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/pedestal-fiber-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-pedestal-fiber-terminal.png",
-      "sourceSha256": "0454381ae0f879b8ed9e020b3c832060d51ddefb8490fc11e0b27bbe4d325ccf",
+      "sourceSha256": "0af22686914f56386bb2b500f821a5570e4b63cd824823b65ee0382c1bdea946",
       "triangleBudget": 900,
       "params": [
         {
@@ -319539,58 +319539,106 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#4f6e57",
+          "label": "Body, cover, door and base flange (powder-coated steel)"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a9a69d",
+          "label": "Mounting pad (concrete)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Hinges, lock and anchor bolts (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#1d2326",
+          "label": "Door seal, vents and ducts (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "powderCoat": "#8a8f7a",
+          "concrete": "#9b968a",
+          "stainlessSteel": "#c8d0cf",
+          "polymer": "#2b2f2c"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "powderCoat": "#e0aa18",
+          "concrete": "#b8b5ad",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#1b1f22"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 580,
         "sizeM": [
-          0.43,
-          0.83,
-          0.36
+          0.52,
+          0.85,
+          0.44
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "concrete",
+          "color": "#a9a69d",
           "parts": [
-            "base",
-            "cap",
+            "pad"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "polymer",
+          "color": "#1d2326",
+          "parts": [
+            "duct-0",
+            "duct-1",
+            "door-seal",
+            "vent-left-0",
+            "vent-left-1",
+            "vent-left-2",
+            "vent-left-3",
+            "vent-right-0",
+            "vent-right-1",
+            "vent-right-2",
+            "vent-right-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#4f6e57",
+          "parts": [
+            "base-flange",
+            "body",
+            "cover-skirt",
+            "cover-roof",
             "door"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "pedestal",
-            "conduit-a",
-            "conduit-b"
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3",
+            "hinge-0",
+            "hinge-1",
+            "lock"
           ],
-          "param": "galvanizedSteel"
+          "param": "stainlessSteel"
         }
       ]
     },
