@@ -4,6 +4,8 @@
 // DXF group-code pairs and the readers every entity parser shares. Each
 // failure names the entity and the physical line of the offending pair.
 
+import type { ImportSegment } from './contourAssembly';
+
 export type DxfParseFailure =
   | 'empty'
   | 'not-dxf'
@@ -72,4 +74,31 @@ export interface EntityBlock {
   /** Pairs AFTER the `0/<TYPE>` pair, up to the next `0`. */
   body: Pair[];
   line: number;
+}
+
+export interface PolyVertex { x: number; y: number; bulge: number }
+
+/** Polyline vertices as line and bulge-arc segments; the bulge lives on the starting vertex. */
+export function polylineSegments(
+  vertices: readonly PolyVertex[],
+  closed: boolean,
+  src: string,
+  line: number,
+): ImportSegment[] {
+  if (vertices.length < 2) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `${src}: needs at least 2 vertices, found ${vertices.length}.`,
+    );
+  }
+  const out: ImportSegment[] = [];
+  const n = vertices.length;
+  const last = closed ? n : n - 1;
+  for (let i = 0; i < last; i++) {
+    const a = vertices[i];
+    const b = vertices[(i + 1) % n];
+    // The bulge lives on the vertex that STARTS the segment.
+    out.push({ x0: a.x, y0: a.y, x1: b.x, y1: b.y, bulge: a.bulge, source: `${src} (line ${line})` });
+  }
+  return out;
 }

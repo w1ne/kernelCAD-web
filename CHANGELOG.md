@@ -8,6 +8,17 @@
   after it. The recogniser now reads the unpadded face geometry in every call
   order: `⏥ 0.1` (ISO 2768-2 K, up to 30 mm) in the front view.
 
+- `lib.fromDXF` now imports a HATCH with more than one boundary path. Before,
+  it refused the file: `HATCH at line 19: 6 boundary paths are not supported`.
+  The HATCH states which loops are holes, so each filled area now comes back
+  as one sketch with its inner paths as holes, and an island inside a hole as
+  a separate sketch. Nesting is decided by an exact inside test for line and
+  bulge-arc boundaries, and the hatch style (group code 75: normal, outer,
+  ignore) decides the fill. A 60 x 40 mm gasket HATCH with a 30 x 16 mm window
+  and four r = 3 mm bolt holes extrudes 2 mm to one valid solid of
+  (1920 - 36π) x 2 = 3,613.81 mm³. Crossing or touching paths and edge-based
+  paths are still refused.
+
 - The hinge-visibility check (`exposure: 'exposed'` revolute mates) now
   gives the same result before and after the parts are meshed, and accepts a
   pin stickout equal to the pin radius. It read face boxes from the mesh once
@@ -15,6 +26,7 @@
   out exactly 20 mm failed with "pin stickout is 20.00 mm (need >= 20.00 mm)"
   before meshing and passed after it. The check now reads the face geometry,
   and the stickout floor is inclusive, as the gap floor already was.
+
 - `lib.fromDXF` now imports a block whose INSERT has a non-uniform scale and
   contains arcs. Before, it refused the file: `non-uniform scale (2, 1) turns
   the arcs of block "HOLE" into ellipses`. Each arc, circle and polyline bulge
