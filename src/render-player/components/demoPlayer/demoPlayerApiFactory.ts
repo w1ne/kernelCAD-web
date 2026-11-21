@@ -21,6 +21,7 @@ import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
 import { buildIndexedDisplayMesh, disposeMeshResources } from './demoPlayerGeometry';
 import { updateFeatureTransforms } from './demoPlayerPose';
+import { applyFeatureAppearance } from './demoPlayerAppearance';
 import { dumpScene } from './demoPlayerDiagnostics';
 import { applyPublishStage, capturePublishFrame, isStageHelper } from './publishStage';
 import {
@@ -929,6 +930,7 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     captureInspectionChannels: (input) => captureInspectionChannels(deps, input),
     loadFeatureMeshes: (perFeature, bounds) => loadFeatureMeshes(deps, perFeature, bounds),
     updateFeatureTransforms: (transforms, bounds) => updateFeatureTransforms(requireScene(deps), deps.centroidOffsetRef, transforms, bounds),
+    setFeatureAppearance: (overrides) => applyFeatureAppearance(requireScene(deps).scene, overrides),
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),
     setRenderEnvironment: (spec) => setRenderEnvironment(deps, spec),
     setPublishStage: (spec) => applyPublishStage(requireScene(deps), spec),

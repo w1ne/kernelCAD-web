@@ -19,6 +19,27 @@
   edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
   Loft, sweep and surface operations, which take one wire, now refuse such a
   holed profile instead of dropping the holes.
+- `animationView` tracks can now key a part's colour. A track names a
+  `target` (part, feature or display name, with `*` / `?` wildcards) and a
+  `channel` (`color` or `emissive`) in place of a `param`, with `#rrggbb`
+  keys that use the same ease and hold rules. `capture_animation` /
+  `kernelcad animate` apply them as material overrides on every frame. A
+  timeline with no param tracks never re-solves the model and loads its
+  meshes once. An unknown target refuses the capture with
+  `animation.target.unknown`. Example:
+  `examples/animation/led-strip-chase.kcad.ts` (a light pulse running along
+  16 LED segments). Rigid frame reuse now also compares colour and material,
+  so a frame whose colour changed reloads its meshes.
+
+- `examples/assets/pine-tree.kcad.ts` now passes `evaluate_script` with
+  `ok: true`. The trunk was extruded to 30 % of the tree height, so it ran
+  450 mm (default 4.5 m tree) into the lowest foliage tier and gave one
+  `mechanism.interpenetration` error (39.9e6 mm³). The trunk now stops on
+  the base of the lowest tier; the visible tree is unchanged. Regression:
+  `tests/integration/examples/pineTreeExampleReal.test.ts` (defaults and
+  2, 4, 5 tiers). Not changed: the catalog copy
+  `catalog/kits/nature/pine-tree.kcad.ts` has the same overlap; fixing it
+  needs a catalog index, preview and asset-module demo refresh.
 - The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
   `evaluate_script` with `ok: true`; before, it had one
   `mechanism.interpenetration` error (`mechanism: broken`): the corners of
