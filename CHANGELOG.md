@@ -11,6 +11,18 @@
   axis-aligned normals; the demo bracket gains 5.5% vertices (18,184 to
   19,192) and 3.7% file size. Low-poly GLB, STL, OBJ and 3MF are unchanged.
 
+- `lib.fromDXF` now imports edge-based HATCH boundary paths made of line and
+  circular-arc edges. AutoCAD writes this form for a hatch picked from LINE,
+  ARC and CIRCLE geometry. Before, the importer refused the file:
+  `edge-based boundary paths are not supported`. Arc edges become exact bulge
+  arcs; a clockwise arc edge (group code 73 = 0) uses the DXF
+  complementary-angle convention (360 - angle), and a full-circle edge becomes
+  two half arcs. An edge written against the direction of travel is reversed;
+  edges that do not join end to start are refused. A 60 x 30 mm plate with r5
+  corners, a 20 x 6 mm slot and two 8 mm holes, written by ezdxf 1.4.5,
+  extrudes 3 mm to one valid solid of (1580 - 16π) x 3 = 4,589.2 mm³ with 18
+  faces. Elliptic-arc and spline edges are still refused.
+
 - Automatic drawing annotations no longer change once a part is meshed.
   The recogniser read each planar face box from the triangulation when one
   existed, which pulled a circular cap's box inside its circle; without a

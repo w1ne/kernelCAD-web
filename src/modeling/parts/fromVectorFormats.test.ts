@@ -321,6 +321,27 @@ describe('lib.fromDXF — round trip to a solid', () => {
     });
   });
 
+  it('imports an edge-based HATCH of lines and arcs as one plate with a slot and round holes', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const profiles = await api.lib.fromDXF('examples/interoperability/dxf-hatch/hatch-edge-bracket.dxf');
+    expect(profiles).toHaveLength(1);
+
+    const backend = await lower(session, profiles[0].extrude(3).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // 60 x 30 plate with r5 corners, minus a 20 x 6 slot with r3 ends and two r4 holes, 3 mm thick.
+    expect(backend.volume()).toBeCloseTo((1700 + 25 * Math.PI - (120 + 9 * Math.PI) - 32 * Math.PI) * 3, 4);
+    // Outer: 4 flats and 4 corner cylinders; slot: 2 flats and 2 half cylinders;
+    // two bores of two half cylinders each; top and bottom.
+    expect(shape.faces.length).toBe(8 + 4 + 4 + 2);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(30, 6), expect.closeTo(3, 6)],
+    });
+  });
+
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });
