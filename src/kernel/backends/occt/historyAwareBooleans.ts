@@ -79,7 +79,7 @@ function shapeHash(_oc: ReturnType<typeof getOC>, shape: unknown): string {
  * Enumerate faces (or edges) of a shape in TopExp_Explorer order, returning
  * their hashes and subshape handles.
  */
-function collectSubshapeHashes(
+export function collectSubshapeHashes(
   oc: ReturnType<typeof getOC>,
   shape: unknown,
   shapeType: 'face' | 'edge',

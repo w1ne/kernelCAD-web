@@ -4,7 +4,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
 import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import type { BackendTarget } from '../../shared/types/backendTarget';
-import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
+import { LoweringPassScope, type FeatureLowerer, type LoweringPass, type ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { DependencyGraph } from './dependencyGraph';
@@ -510,9 +510,10 @@ export class RecomputeEngine {
       selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       opts: RecomputeOptions | undefined;
+      pass: LoweringPass;
     },
   ): Promise<number> {
-    const { idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts } = ctx;
+    const { idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts, pass } = ctx;
     const r = idToRecord.get(id);
     if (!r) return 0;
     const prepared = this.prepareRecord(id, r, opts, health);
@@ -540,7 +541,7 @@ export class RecomputeEngine {
 
     // Lower
     return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
-      predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable: opts?.paramTable,
+      predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable: opts?.paramTable, pass,
     });
   }
 
@@ -560,6 +561,7 @@ export class RecomputeEngine {
       selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       paramTable: ParamTable | undefined;
+      pass?: LoweringPass;
     },
   ): Promise<number> {
     const { predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable } = ctx;
@@ -569,6 +571,7 @@ export class RecomputeEngine {
     try {
       const res = await this.lowerer.lower(recordForLower, {
         byKey, records, resolveRecord, ...(paramTable !== undefined ? { paramTable } : {}),
+        ...(ctx.pass ? { pass: ctx.pass } : {}),
       });
       diagnostics.push(...res.diagnostics);
       if (res.selections) selections.push(...res.selections);
@@ -613,12 +616,17 @@ export class RecomputeEngine {
     const { order, predecessorsOf, idToRecord } = buildRecomputeGraph(records);
     let emittedCount = 0;
     const yields = new MacrotaskYield();
+    const pass = new LoweringPassScope();
 
-    for (const id of order) {
-      await yields.tick();
-      emittedCount += await this.processRecord(id, records, {
-        idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts,
-      });
+    try {
+      for (const id of order) {
+        await yields.tick();
+        emittedCount += await this.processRecord(id, records, {
+          idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts, pass,
+        });
+      }
+    } finally {
+      pass.end();
     }
 
     if (onEvent) {

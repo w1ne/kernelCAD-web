@@ -19,6 +19,13 @@ import { built, type LowerContext, type LowerOutcome } from './context';
 import { stampSolid } from '../../../../kernel/naming/operationLineage';
 import { mergeEdges } from '../../../../kernel/backends/occt/edgeLineage';
 import type { EdgeHistoryMap, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
+import {
+  captureBooleanReplay,
+  releaseBooleanReplay,
+  replayBoolean,
+  type BooleanReplay,
+} from '../../../../kernel/backends/occt/booleanReuse';
+import { createContentKeyResolver } from '../../../compute/contentKey';
 
 export { mergeEdges } from '../../../../kernel/backends/occt/edgeLineage';
 
@@ -130,7 +137,7 @@ function runManyToolBoolean(
   r: FeatureRecord,
   ctx: LowerContext,
 ): OcctBackend {
-  const result = opKind === 'cut' ? cutManyWithHistory(acc, cutters) : fuseManyWithHistory(acc, cutters);
+  const result = reusableBoolean(ctx, r, opKind, acc, cutters);
   const recovered = booleanRecoveryDiagnostic(r.id, `boolean ${op}`, result);
   if (recovered) ctx.diagnostics.push(recovered);
   const newMap = mergeBooleanHistoryMany(
@@ -146,6 +153,45 @@ function runManyToolBoolean(
     stampMemberOrigin(out, [base, ...tools], result, r.id);
   }
   return out;
+}
+
+/**
+ * Run the boolean, or replay the same boolean already built this pass from
+ * operands with the same content (a helper called twice captures two
+ * identical record chains). Content keys come from the records, never from
+ * measured geometry; a replay whose operand topology does not line up falls
+ * back to building.
+ */
+function reusableBoolean(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  opKind: 'cut' | 'fuse',
+  acc: OcctBackend,
+  cutters: readonly OcctBackend[],
+): BooleanHistoryResult {
+  const build = (): BooleanHistoryResult =>
+    opKind === 'cut' ? cutManyWithHistory(acc, cutters) : fuseManyWithHistory(acc, cutters);
+  const { pass, records, resolveRecord } = ctx.inputs;
+  if (!pass || !records) return build();
+  const keys = pass.memo('contentKeys', () => createContentKeyResolver(
+    records,
+    resolveRecord ?? ((record) => record),
+    (record) => ctx.importedGeometry.has(record.id),
+  ));
+  const operandIds = [refIdOf(r, 'base'), ...cutterKeys(ctx).map((k) => refIdOf(r, k))];
+  if (operandIds.some((id) => id === undefined)) return build();
+  const key = `${opKind}|${operandIds.map((id) => keys.keyOf(id!)).join('|')}`;
+  const replays = pass.memo('booleanReplays', () => new Map<string, BooleanReplay>(), (m) => {
+    for (const replay of m.values()) releaseBooleanReplay(replay);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const operands = [acc, ...cutters].map((b) => (b.getReplicadShape() as any).wrapped as unknown);
+  const known = replays.get(key);
+  const replayed = known ? replayBoolean(known, operands) : undefined;
+  if (replayed) return replayed;
+  const result = build();
+  if (!known) replays.set(key, captureBooleanReplay(result, operands));
+  return result;
 }
 
 function refIdOf(r: FeatureRecord, key: string): string | undefined {
