@@ -53,6 +53,9 @@ export function filterEdgesByMinLength(
   const minLenStr = minLength.toFixed(2);
   const hint = HINT_TEMPLATES['feature.edge-feature.short-edges-skipped'].template;
   if (kept.length === 0) {
+    // Called only after the kernel rejected the whole selection. Nothing was
+    // rounded, and edge length is not the limit: a 12 mm corner edge takes a
+    // 34.8 mm fillet. The partial-success template says otherwise.
     return {
       kept,
       diagnostic: {
@@ -60,8 +63,8 @@ export function filterEdgesByMinLength(
         code: 'feature.edge-feature.short-edges-skipped',
         featureId: ctx.featureId,
         severity: 'error',
-        message: `${ctx.op} skipped: all ${skipped} target edges are shorter than 2 × ${ctx.paramName} = ${minLenStr} mm`,
-        hint,
+        message: `${ctx.op} refused: the kernel rejected the ${ctx.paramName} on the selection, and all ${skipped} target edges are shorter than 2 × ${ctx.paramName} = ${minLenStr} mm`,
+        hint: `No edge was ${ctx.op === 'fillet' ? 'filleted' : 'chamfered'}. Edge length alone does not set the limit: reduce the ${ctx.paramName}, scope the ${ctx.op} to fewer edges, or change the upstream geometry.`,
       },
     };
   }

@@ -1,5 +1,17 @@
 # Unreleased
 
+- A fillet or chamfer that the kernel refuses on every selected edge, where
+  every edge is also shorter than 2 × the size, no longer reads as a partial
+  success. Before, the error said `fillet skipped` and its hint said the
+  short edges "got skipped so the rest could chamfer", and that the blend
+  solver rejects sizes above half the edge length. On the drafting-review
+  mounting plate, `fillet(40)` on the 12 mm corner edges builds nothing, and
+  the kernel probe in the same refusal builds 34.8 mm on those edges. The
+  error now reads `fillet refused: the kernel rejected the radius on the
+  selection, ...` and the hint starts `No edge was filleted.` The code
+  (`feature.edge-feature.short-edges-skipped`), the probe size and the
+  partial-success warning are unchanged.
+
 - `mechanism.tendon-body-intersect` now reads tendon anchors, via points and
   wrap geoms on a part in no mate (for example a legacy-joint participant) at
   the part's `at` placement. Before, it read them as if the part were at the
