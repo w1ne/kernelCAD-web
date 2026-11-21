@@ -1,0 +1,7 @@
+$ npx tsx scripts/buildAssetCatalog.ts
+Full catalog generation completed; catalog/index.json refreshed at 2026-11-17T00:09:13Z.
+
+$ python3 artifacts/catalog-demos/industrial-plant-steam-header-manifold-material-review-20261116/verify_asset_index.py
+verified 2402 catalog rows; one target row updated and all preview references remain present
+
+Changed row fields: sourceSha256 and palette. Five branch parts moved from safetyPaint to steel; catalog IDs and count unchanged.

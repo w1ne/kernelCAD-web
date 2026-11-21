@@ -1,0 +1,12 @@
+     ✓ colours the busbar as copper and the terminal studs as stainless steel  367ms
+ ✓ tests/integration/catalog/electricChainHoistMaterials.test.ts (1 test) 708ms
+ ✓ tests/integration/catalog/portableCoreDrillStandMaterial.test.ts (1 test) 729ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 788883ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  788454ms
+
+ Test Files  178 passed (178)
+      Tests  248 passed (248)
+   Start at  01:42:38
+   Duration  796.80s (transform 30.69s, setup 4.18s, import 259.90s, tests 1043.15s, environment 24ms)
+
+exit 0

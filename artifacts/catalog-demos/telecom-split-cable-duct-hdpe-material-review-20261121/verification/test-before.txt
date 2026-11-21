@@ -1,0 +1,1 @@
+before (original source): FAIL - no powder-coated steel base or lid slab may form the duct: expected [ 'base-a', 'base-b', 'lid-a', …(3) ] to not include 'base-a'

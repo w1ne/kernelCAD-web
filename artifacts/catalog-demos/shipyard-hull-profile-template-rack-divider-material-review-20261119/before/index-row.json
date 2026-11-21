@@ -1,0 +1,103 @@
+{
+  "id": "hull-profile-template-rack",
+  "kit": "shipyard",
+  "title": "Hull profile template rack",
+  "description": "A-frame storage rack for reusable hull-section templates with separated bays, base rails, and end stops. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "hull",
+    "profile",
+    "template",
+    "rack"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/hull-profile-template-rack.kcad.ts",
+  "preview": "/assets/shipyard-hull-profile-template-rack.png",
+  "sourceSha256": "9912af07b57a636501b5304ece8b8945e59a8ed3de59c8ae44feeed509292eaa",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#8f795e",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#a3917b",
+      "structuralSteel": "#d0d7d8"
+    },
+    "weathered-yard": {
+      "yardPaint": "#77644e",
+      "structuralSteel": "#828d91"
+    }
+  },
+  "stats": {
+    "triangles": 364,
+    "sizeM": [
+      1.995,
+      2.15,
+      1.18
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#8f795e",
+      "parts": [
+        "base-runner-0",
+        "base-runner-1",
+        "divider-0"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "divider-1",
+        "divider-2",
+        "divider-3",
+        "divider-4",
+        "template-0",
+        "template-1",
+        "template-2",
+        "template-3",
+        "top-restraint",
+        "end-stop"
+      ],
+      "param": "structuralSteel"
+    }
+  ]
+}

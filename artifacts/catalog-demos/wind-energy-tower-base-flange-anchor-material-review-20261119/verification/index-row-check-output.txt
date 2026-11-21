@@ -1,0 +1,26 @@
+{
+  "asset": "tower-base-flange",
+  "sourceSha256": "c99d92b1523eb30e802361caa3f25fb343ce16659b17895fc46051721b2c0ff3",
+  "preview": "/assets/wind-energy-tower-base-flange.png",
+  "changedIndexRows": [
+    "tower-base-flange"
+  ],
+  "triangleCount": 792,
+  "boundsM": [
+    0.62,
+    0.63,
+    0.62
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountMatchesStudsAndNuts": true,
+    "triangleCountWithinBudget": true,
+    "boundsUnchanged": true,
+    "colorControlsReplaced": true,
+    "descriptionNamesGalvanizedAnchors": true
+  },
+  "passed": true
+}

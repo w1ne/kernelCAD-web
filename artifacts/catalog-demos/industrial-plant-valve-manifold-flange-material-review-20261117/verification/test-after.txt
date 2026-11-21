@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/valveManifoldFlangeFinish.test.ts (1 test) 543ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:29:32
+   Duration  6.54s (transform 4.73s, setup 77ms, import 5.77s, tests 543ms, environment 0ms)

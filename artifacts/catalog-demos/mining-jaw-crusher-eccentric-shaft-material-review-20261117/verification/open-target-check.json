@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-17",
+  "snapshot": "Before this round's source changes and push",
+  "precondition": {
+    "pr": 1258,
+    "state": "MERGED",
+    "reportedCiChecks": "all 17 successful",
+    "submittedReview": false
+  },
+  "currentOpenCatalogPullRequests": [
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "catalogAssetPaths": ["catalog/kits/city-street/mailbox.kcad.ts"]
+    },
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "catalogKit": "industrial-plant",
+      "selectedMiningAssetsOverlap": false
+    }
+  ],
+  "openIssueSearch": {
+    "query": "jaw-crusher-module",
+    "results": []
+  },
+  "selectedAssets": [
+    "mining/cone-crusher-module",
+    "mining/jaw-crusher-module",
+    "mining/ball-mill",
+    "mining/mine-locomotive",
+    "mining/mine-ventilation-fan"
+  ],
+  "result": "No selected asset was targeted by an open issue or pull request."
+}

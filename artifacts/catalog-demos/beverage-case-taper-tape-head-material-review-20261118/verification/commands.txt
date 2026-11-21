@@ -1,0 +1,23 @@
+# Catalog preview/material audit and verification
+
+# Branch/PR state checked before editing:
+gh pr view 1258 --json number,state,reviewDecision,reviews,statusCheckRollup
+gh pr view 1507 --json number,state,headRefOid,reviewDecision,reviews,statusCheckRollup
+gh issue list --state open --json number,title,body,url
+gh pr list --state open --json number,title,body,url,headRefName --limit 100
+
+# Regression first asserted the intended metal color against the unchanged source;
+# expected baseline result was one failure at tape-head.
+npx vitest run tests/integration/catalog/caseTaperTapeRollMaterial.test.ts
+
+# After source correction:
+npx vitest run tests/integration/catalog/caseTaperTapeRollMaterial.test.ts
+npx tsx scripts/renderCatalogPreviews.ts case-taper
+npx tsx scripts/buildAssetCatalog.ts
+npx eslint catalog/kits/beverage-bottling-line/ tests/integration/catalog/caseTaperTapeRollMaterial.test.ts
+python3 scripts/checkCatalogQuality.py --kit beverage-bottling-line
+python3 scripts/checkCatalogQuality.py
+npx vitest run tests/integration/catalog/
+
+# Demo source and invocation:
+python3 artifacts/catalog-demos/beverage-case-taper-tape-head-material-review-20261118/make_demo.py

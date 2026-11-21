@@ -1,0 +1,29 @@
+{
+  "changedRows": [
+    "industrial-plant/rooftop-air-handler"
+  ],
+  "sourceSha256": "a73db4bb9f898f22d95aadc176db905fb48ab420f0a2c2324d3c786abc7f6361",
+  "indexSourceSha256": "a73db4bb9f898f22d95aadc176db905fb48ab420f0a2c2324d3c786abc7f6361",
+  "preview": "/assets/industrial-plant-rooftop-air-handler.png",
+  "controls": [
+    "steel",
+    "safetyPaint",
+    "fanHardware"
+  ],
+  "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint, fan hardware.",
+  "trianglesBefore": 320,
+  "trianglesAfter": 320,
+  "triangleBudgetBefore": 1400,
+  "triangleBudgetAfter": 1400,
+  "boundsBeforeM": [
+    0.84,
+    0.4097,
+    0.48
+  ],
+  "boundsAfterM": [
+    0.84,
+    0.4097,
+    0.48
+  ],
+  "catalogAssets": 2402
+}

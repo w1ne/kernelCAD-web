@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/leakDetectionPuckMaterial.test.ts (1 test) 808ms
+     ✓ moulds the floor sensor puck in polymer, not painted steel  337ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  06:03:54
+   Duration  15.06s (transform 11.57s, setup 247ms, import 13.79s, tests 808ms, environment 0ms)
+
+rc=0

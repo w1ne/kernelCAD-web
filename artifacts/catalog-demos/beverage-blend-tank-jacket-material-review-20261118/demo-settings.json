@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-18",
+  "video": "beverage-blend-tank-jacket-material-review.mp4",
+  "durationSeconds": 15,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts beverage-blend-tank",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "focusedTestInvocation": "npx vitest run tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts --reporter=verbose",
+  "fullCatalogTestInvocation": "npx vitest run tests/integration/catalog/ --reporter=verbose",
+  "reviewSamples": [
+    "beverage-bottling-line/bottle-unscrambler",
+    "beverage-bottling-line/beverage-blend-tank",
+    "beverage-bottling-line/flash-pasteurizer",
+    "beverage-bottling-line/filler-valve-head",
+    "beverage-bottling-line/bottle-accumulation-table"
+  ],
+  "claims": "Local software-rendered previews and an exported-GLB material regression only; no deployment, process simulation, treatment performance, or hardware acceptance is shown."
+}

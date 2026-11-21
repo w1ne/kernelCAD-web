@@ -1,0 +1,25 @@
+{
+  "asset": "pressure-reducing-valve-assembly",
+  "sourceSha256": "e670dfcda13774787f13b5c0bbf0584a6ffe8dd893fd901bfd9e5b27b78fe689",
+  "preview": "/assets/water-treatment-pressure-reducing-valve-assembly.png",
+  "changedIndexRows": [
+    "pressure-reducing-valve-assembly"
+  ],
+  "triangleCount": 532,
+  "boundsM": [
+    0.34,
+    0.735,
+    0.38
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsMatchPipeAxisLayout": true,
+    "colorControlsUnchanged": true,
+    "descriptionNamesStainlessStem": true
+  },
+  "passed": true
+}

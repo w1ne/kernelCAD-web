@@ -1,0 +1,64 @@
+diff --git a/catalog/index.json b/catalog/index.json
+index 60fa9c538..566f2050f 100644
+--- a/catalog/index.json
++++ b/catalog/index.json
+@@ -124989,7 +124989,7 @@
+       "id": "substation-transformer-radiator-bank",
+       "kit": "grid-substation",
+       "title": "Transformer radiator bank",
+-      "description": "Fin bank with header rails and end manifolds for a transformer cooling scene. Material controls: transformer enamel, stainless steel, copper; finish presets: weathered and maintenance.",
++      "description": "Fin bank with header rails and steel oil manifolds for a transformer cooling scene. Material controls: transformer enamel and stainless steel; finish presets: weathered and maintenance.",
+       "category": "prop",
+       "origin": "base",
+       "tags": [
+@@ -125008,7 +125008,7 @@
+       "license": "CC0-1.0",
+       "source": "catalog/kits/grid-substation/substation-transformer-radiator-bank.kcad.ts",
+       "preview": "/assets/grid-substation-substation-transformer-radiator-bank.png",
+-      "sourceSha256": "b51f82efbc8bb27b3f8096920873976bdee55c948868f1f47229effa05321e62",
++      "sourceSha256": "011932316644e8ff0a0ebfb40b8f81de0661bb600a12ced2b50ca43a2ec53eec",
+       "triangleBudget": 1800,
+       "params": [
+         {
+@@ -125031,19 +125031,12 @@
+           "type": "color",
+           "default": "#b5c0c0",
+           "label": "Stainless steel"
+-        },
+-        {
+-          "name": "copper",
+-          "type": "color",
+-          "default": "#b87545",
+-          "label": "Copper"
+         }
+       ],
+       "presets": {
+         "weathered": {
+           "transformerEnamel": "#5a6c53",
+-          "stainlessSteel": "#9da4a0",
+-          "copper": "#9f704a"
++          "stainlessSteel": "#9da4a0"
+         },
+         "maintenance": {
+           "transformerEnamel": "#9a7040"
+@@ -125082,18 +125075,11 @@
+             "radiator-fin-7",
+             "radiator-fin-8",
+             "radiator-fin-9",
+-            "radiator-fin-10"
+-          ],
+-          "param": "stainlessSteel"
+-        },
+-        {
+-          "name": "copper",
+-          "color": "#b87545",
+-          "parts": [
++            "radiator-fin-10",
+             "inlet-manifold",
+             "outlet-manifold"
+           ],
+-          "param": "copper"
++          "param": "stainlessSteel"
+         }
+       ]
+     },

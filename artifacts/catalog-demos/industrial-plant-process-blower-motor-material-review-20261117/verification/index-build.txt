@@ -1,0 +1,3 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Result: wrote catalog/index.json
+Exit status: 0

@@ -1,0 +1,4 @@
+Command: npx vitest run tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts
+Result: PASS — 1 test, 1 file.
+Duration: 55.16 s including transform/import; test body 617 ms.
+Assertion: fixed-height description, no adjustable-height claim, original 4 controls, 592 triangles, original envelope.

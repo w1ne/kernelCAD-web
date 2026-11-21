@@ -5,7 +5,7 @@ meta({
   name: "pet-blow-molder",
   license: 'CC0-1.0',
   title: "PET stretch blow molder",
-  description: "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+  description: "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the light-gray machine enclosure.",
   tags: ['beverage bottling', 'packaging line', 'food manufacturing', 'low poly', 'CC0'],
   kit: 'beverage-bottling-line',
   category: 'structure',
@@ -17,15 +17,18 @@ meta({
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.3, step: 0.05 });
 const stainlessSteel = param('stainlessSteel', '#aebdc1', { label: 'Stainless steel' });
 const powderCoat = param('powderCoat', '#397e91', { label: 'Powder-coated steel' });
+const enclosureCoat = param('enclosureCoat', '#d2dfe1', { label: 'Light-gray enclosure coating' });
 
 presets({
   sanitaryLine: {
     stainlessSteel: '#d2dfe1',
     powderCoat: '#4b95a4',
+    enclosureCoat: '#e1e8ea',
   },
   legacyPlant: {
     stainlessSteel: '#858f91',
     powderCoat: '#315b70',
+    enclosureCoat: '#a4abad',
   },
 });
 const boxPart = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
@@ -34,6 +37,7 @@ const cylinderPart = (x:number,y:number,z:number,h:number,r:number,n=10) => cyli
 const p = assembly("pet-blow-molder");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
+  if (/machine-body|service-door|heating-tunnel/i.test(component)) return shape.color(enclosureCoat);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);
 };

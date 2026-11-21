@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-11-18",
+  "assets": [
+    "coating-mix-cabinet",
+    "optical-measurement-station",
+    "pipe-spool-saddle-stand",
+    "plate-roller-conveyor",
+    "temporary-work-light-mast"
+  ],
+  "openIssueCount": 7,
+  "openIssues": [
+    {
+      "number": 1568,
+      "title": "Define and implement open-curve projection onto a selected face",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1568"
+    },
+    {
+      "number": 1321,
+      "title": "Physics verification breaks coupled 12:48 spur-gear drive (47.61\u00b0 angular residual)",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1321"
+    },
+    {
+      "number": 1295,
+      "title": "P1 verify Studio deployment path; DEPLOY.md references missing Cloudflare workflow",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1295"
+    },
+    {
+      "number": 1272,
+      "title": "Tracking: honest kinematics/physics checks and the verification-stack plan",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1272"
+    },
+    {
+      "number": 1271,
+      "title": "Verification-stack architecture: kinematics, collision, physics, mass, and fit engines",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1271"
+    },
+    {
+      "number": 1259,
+      "title": "Distribution: update official MCP Registry and confirm public ChatGPT / Claude listings",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1259"
+    },
+    {
+      "number": 1227,
+      "title": "P0: Frozen manufacturing CAD benchmark \u2014 enclosure, mount and assembly edits",
+      "url": "https://github.com/w1ne/kernelCAD-web/issues/1227"
+    }
+  ],
+  "openPrCount": 6,
+  "openPrs": [
+    {
+      "number": 1569,
+      "title": "feat: project open curves onto selected faces (#1568)",
+      "headRefName": "feat/project-curve-open-face-20261118",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1569"
+    },
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "headRefName": "feat/catalog-2000",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1507"
+    },
+    {
+      "number": 1400,
+      "title": "fix(examples): seat the meta-glasses parts without interpenetration",
+      "headRefName": "fix/meta-glasses-interpenetration-350-20261114",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1400"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "headRefName": "feat/desktop-arm-rebuild-20261110",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1309"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "headRefName": "feat/asset-funnel",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1253"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "headRefName": "perf/ring-gear-annular-extrude",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1094"
+    }
+  ],
+  "issueMatches": [],
+  "prMatches": [],
+  "changedFileCountByOpenPr": {
+    "1569": 32,
+    "1507": 1622,
+    "1400": 3,
+    "1309": 4,
+    "1253": 13,
+    "1094": 6
+  },
+  "result": "no exact selected asset ID in open issue or PR titles, bodies, comments, reviews, or changed file paths"
+}

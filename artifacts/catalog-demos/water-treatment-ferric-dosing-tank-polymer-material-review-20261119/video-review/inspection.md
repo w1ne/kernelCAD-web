@@ -1,0 +1,6 @@
+# MP4 visual inspection
+
+- Probe: H.264, 1280 × 720, 24 fps, 16.04 seconds; full output is in `ffprobe.json`.
+- Opened a contact sheet of frames extracted at 2, 6, 10 and 14 seconds, and the 10-second frame at full resolution. `inspect_video.py` regenerates these frames; they are not retained in the bundle.
+- The first frame shows the five named rendered assets and marks the selected ferric dosing tank. The second frame shows the before state (an all-teal tank and slab, a teal bar that stands away from the tank, an upright grey stub at the tank foot) beside the after state (a cream tank and lid on a blue-grey bund, a brown sight tube on the shell, a grey horizontal outlet stub and a grey vent). The third frame lists the two removed steel controls, the four plastic controls with their parts, the placement changes and the noted limits. The last frame shows the local verification and limits claims to source, software preview and GLB regression.
+- Headings, part labels and captions are legible at full video resolution; no visible text clipping. The asset thumbnails on the first frame are small; the caption names the selected mismatch. In the after preview the left faces of the cream tank are in shade and read as khaki; the lid top shows the true value. The closing frame states the branch is not deployed and makes no simulation, safety or compliance claim.

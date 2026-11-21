@@ -1,0 +1,25 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ × tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts > beverage-bottling-line/beverage-blend-tank jacket material > keeps the sanitary vessel and jacket stainless while the legs stay powder-coated 252ms
+   → expected [ 'vessel-shell', 'top-head', …(8) ] to include 'jacket-band'
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts > beverage-bottling-line/beverage-blend-tank jacket material > keeps the sanitary vessel and jacket stainless while the legs stay powder-coated
+AssertionError: expected [ 'vessel-shell', 'top-head', …(8) ] to include 'jacket-band'
+ ❯ tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts:31:35
+     29|     const powderCoat = asset.palette.find((zone) => zone.name === 'pow…
+     30|     expect(stainlessSteel?.parts).toContain('vessel-shell');
+     31|     expect(stainlessSteel?.parts).toContain('jacket-band');
+       |                                   ^
+     32|     expect(powderCoat?.parts).toContain('leg-0');
+     33|     expect(powderCoat?.parts).not.toContain('jacket-band');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:53:43
+   Duration  10.99s (transform 7.14s, setup 165ms, import 9.33s, tests 1.33s, environment 3ms)

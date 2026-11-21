@@ -1,0 +1,92 @@
+{
+  "id": "emergency-power-off-station",
+  "kit": "data-center-infrastructure",
+  "title": "Emergency power-off station",
+  "description": "Wall-mounted protected control station with actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "data center",
+    "critical infrastructure",
+    "IT equipment",
+    "power",
+    "cooling",
+    "scene prop"
+  ],
+  "compat": [
+    "data-center",
+    "infrastructure",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/data-center-infrastructure/emergency-power-off-station.kcad.ts",
+  "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
+  "sourceSha256": "3070d3bf8b68ab9171cbfbf9e43dd35feccba7f345256d6a12fa656101fcc512",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#b43b31",
+      "label": "Painted steel"
+    },
+    {
+      "name": "polymer",
+      "type": "color",
+      "default": "#f0c330",
+      "label": "Engineering polymer"
+    }
+  ],
+  "presets": {
+    "facilityStandard": {
+      "steel": "#b43b31",
+      "polymer": "#f0c330"
+    },
+    "highVisibility": {
+      "steel": "#d99b22",
+      "polymer": "#263e48"
+    }
+  },
+  "stats": {
+    "triangles": 136,
+    "sizeM": [
+      0.32,
+      0.42,
+      0.2895
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "steel",
+      "color": "#b43b31",
+      "parts": [
+        "back-plate",
+        "guard-hood",
+        "actuator-base",
+        "label-panel"
+      ],
+      "param": "steel"
+    },
+    {
+      "name": "polymer",
+      "color": "#f0c330",
+      "parts": [
+        "control-body",
+        "push-button"
+      ],
+      "param": "polymer"
+    }
+  ]
+}

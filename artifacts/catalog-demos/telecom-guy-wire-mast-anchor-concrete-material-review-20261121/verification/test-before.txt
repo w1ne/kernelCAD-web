@@ -1,0 +1,1 @@
+before (original source): FAIL - no galvanized steel slab may stand in for a guy anchor: expected [ 'mast', 'base', 'anchor-a', …(6) ] to not include 'anchor-a'

@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/highPowerChargeDispenserBezelMaterial.test.ts (1 test) 1244ms
+     ✓ frames the status screen in a black polymer bezel, not in display glass  602ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  04:20:19
+   Duration  14.70s (transform 10.87s, setup 194ms, import 13.03s, tests 1.24s, environment 0ms)
+

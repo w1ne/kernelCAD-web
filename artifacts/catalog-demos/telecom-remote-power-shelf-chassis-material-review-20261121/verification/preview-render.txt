@@ -1,0 +1,1 @@
+telecom-infrastructure/remote-power-shelf: 688 tris

@@ -1,0 +1,12 @@
+Checked: 2026-11-17 UTC before local source change
+
+GET https://kernelcad.com/catalog/industrial-plant/cable-tray-bridge/
+HTTP 200; downloaded 17,215 bytes
+
+GET https://kernelcad.com/assets/industrial-plant-cable-tray-bridge.png
+HTTP 200; downloaded 26,613 bytes
+Live preview SHA-256: d1a8c2da22b7386b290e8db624917e2f4d5a05d238635513bb6f2697bb432ef3
+Checked-in baseline preview SHA-256: d1a8c2da22b7386b290e8db624917e2f4d5a05d238635513bb6f2697bb432ef3
+
+The remote and local baseline preview matched. The feature branch was not
+deployed during this audit, so no after-change live result is claimed.

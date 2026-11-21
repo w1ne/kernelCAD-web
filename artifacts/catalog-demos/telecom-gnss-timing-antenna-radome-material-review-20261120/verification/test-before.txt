@@ -1,0 +1,1 @@
+before (original source): FAIL - no powder-coated steel cap may sit over the antenna element: expected [ 'base', 'pole', 'puck', 'cap', '' ] to not include 'cap'

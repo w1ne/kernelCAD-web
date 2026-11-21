@@ -1,0 +1,2 @@
+wrote /data/worktrees/legacy-migrated/kernelcad-catalog-2000/catalog/index.json
+exit 0

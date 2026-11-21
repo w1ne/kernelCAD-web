@@ -22,12 +22,12 @@ presets({
 });
 const p = assembly('process-reactor-vessel');
 p.part('shell', cylinder(1025, 250, 10).translate(0, 0, 55).scale(scale).color(steel));
-p.part('roof-lip', cylinder(24, 265, 10).translate(0, 0, 1056).scale(scale).color(safetyPaint));
+p.part('roof-lip', cylinder(24, 265, 10).translate(0, 0, 1056).scale(scale).color(steel));
 p.part('roof-cap', cylinder(36, 200, 10).translate(0, 0, 1080).scale(scale).color(steel));
 p.part('top-nozzle', cylinder(108, 35, 10).translate(0, 0, 1108).scale(scale).color(safetyPaint));
-p.part('stiffener-0', cylinder(14, 260, 10).translate(0, 0, 311.2).scale(scale).color(safetyPaint));
-p.part('stiffener-1', cylinder(14, 260, 10).translate(0, 0, 567.5).scale(scale).color(safetyPaint));
-p.part('stiffener-2', cylinder(14, 260, 10).translate(0, 0, 823.8).scale(scale).color(safetyPaint));
+p.part('stiffener-0', cylinder(14, 260, 10).translate(0, 0, 311.2).scale(scale).color(steel));
+p.part('stiffener-1', cylinder(14, 260, 10).translate(0, 0, 567.5).scale(scale).color(steel));
+p.part('stiffener-2', cylinder(14, 260, 10).translate(0, 0, 823.8).scale(scale).color(steel));
 p.part('support-leg-0', box(28, 28, 55, true).translate(180, 0, 27.5).scale(scale).color(safetyPaint));
 p.part('foot-0', box(70, 56, 16, true).translate(180, 0, 8).scale(scale).color(steel));
 p.part('support-leg-1', box(28, 28, 55, true).translate(0, 180, 27.5).scale(scale).color(safetyPaint));

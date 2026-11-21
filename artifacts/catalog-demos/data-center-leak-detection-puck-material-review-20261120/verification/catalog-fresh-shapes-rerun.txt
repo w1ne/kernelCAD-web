@@ -1,0 +1,6 @@
+ ✓ tests/integration/catalog/catalogFreshShapes.test.ts (1 test) 48161ms
+   ✓ no catalogue model derives several copies from one shape handle  48160ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  65.99s (transform 15.64s, setup 387ms, import 17.06s, tests 48.16s, environment 0ms)
+rc=0

@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: CC0-1.0
 // Rack KVM console: Pull-out console tray with display housing, keyboard surface, and rack ears.
+// The display housing is a painted-steel shell; only the screen set into its
+// front face is glass.
 
 meta({
   name: "rack-kvm-console",
   license: 'CC0-1.0',
   title: "Rack KVM console",
-  description: "Pull-out console tray with display housing, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
+  description: "Pull-out console tray with a painted-steel display housing and glass screen, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
   tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
   kit: 'data-center-infrastructure',
   category: 'prop',
@@ -41,7 +43,8 @@ p.part("left-mounting-ear", b(-244.0, 0, 0, 32, 620, 80).color(steel));
 p.part("right-mounting-ear", b(244.0, 0, 0, 32, 620, 80).color(steel));
 p.part("slide-rail-left", hx(0, -210.8, 35, 560, 12, 8).color(steel));
 p.part("slide-rail-right", hx(0, 210.8, 35, 560, 12, 8).color(steel));
-p.part("display-housing", b(0, -111.6, 95, 387.2, 210.8, 300).color(glass));
+p.part("display-housing", b(0, -111.6, 95, 387.2, 210.8, 300).color(steel));
+p.part("display-screen", b(0, -218.5, 120, 350, 4, 255).color(glass));
 p.part("keyboard-tray", b(0, -260.4, 18, 378.4, 155.0, 24).color(steel));
 p.part("hinge-left", c(-167.2, -167.4, 70, 28, 18, 8).color(steel));
 p.part("hinge-right", c(167.2, -167.4, 70, 28, 18, 8).color(steel));

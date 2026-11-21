@@ -1,0 +1,4 @@
+Command: npx vitest run tests/integration/catalog/portableCoreDrillStandMaterial.test.ts
+Baseline source: unchanged portable-core-drill-stand.kcad.ts (sourceSha256 287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a)
+Result: expected failure, 1 test failed. The GLB build reproduced the mismatch: asset.palette.structuralSteelColor.parts was ["drill-carriage", "feed-handle"] and did not include "core-bit".
+Duration: 28.14 s.

@@ -1,0 +1,1 @@
+ev-charging-infrastructure/charger-status-display-post: 264 tris (rendered with PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright npx tsx scripts/renderCatalogPreviews.ts charger-status-display-post)

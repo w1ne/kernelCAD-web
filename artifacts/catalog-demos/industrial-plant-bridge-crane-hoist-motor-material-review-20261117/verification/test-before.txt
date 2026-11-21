@@ -1,0 +1,8 @@
+Command: npx vitest run tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts
+Result on the baseline source (before changing hoist-motor from girder to hoist): 1 test failed.
+
+Failure:
+AssertionError: expected [ 'wheel--1350--1', …(23) ] to include 'hoist-motor'
+  at tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts:23
+
+The baseline export placed hoist-motor in the girder palette, so the new regression failed before the source correction.

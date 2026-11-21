@@ -1,0 +1,5 @@
+PW_CDP_URL=http://127.0.0.1:9222 npx tsx src/agent/cli/index.ts render inspect catalog/kits/industrial-plant/valve-manifold-station.kcad.ts artifacts/catalog-demos/industrial-plant-valve-manifold-flange-material-review-20261117/render-inspection --base-url https://app.kernelcad.com --width 640 --height 640 --channels rgb,mask --views front,right,top,iso --screenshot-timeout 60000
+
+The command required the existing CDP session. Playwright connected to the
+WebSocket endpoint but timed out during its handshake. No fallback Chromium was
+launched. The user Chrome process remains running.

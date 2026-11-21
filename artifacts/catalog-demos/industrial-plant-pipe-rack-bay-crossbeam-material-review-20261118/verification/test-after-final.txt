@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts > industrial-plant/pipe-rack-bay materials > keeps the structural frame steel while retaining safety paint on the marked utility line 519ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  17:47:17
+   Duration  15.97s (transform 12.39s, setup 270ms, import 14.21s, tests 1.09s, environment 0ms)

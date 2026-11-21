@@ -1,0 +1,16 @@
+Command:
+
+  npx tsx artifacts/catalog-demos/recycling-glass-breaker-flails-material-review-20261118/render_flail_detail.ts
+
+Result:
+
+  beforeTriangles=2988
+  afterTriangles=2988
+  rotorTrianglesBefore=412
+  rotorTrianglesAfter=412
+  renderedParts=21 (shaft, four discs and sixteen flails)
+  outputs=previews/rotor-detail/before-former-dark-flails.png, previews/rotor-detail/after-editable-wear-steel.png
+
+The script rebuilds the exported GLBs from retained before and current source,
+then renders the same rotor parts, geometry and view with the local software
+rasterizer. It does not use the hosted renderer or a browser.

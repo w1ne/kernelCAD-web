@@ -1,0 +1,98 @@
+{
+  "id": "substation-transformer-radiator-bank",
+  "kit": "grid-substation",
+  "title": "Transformer radiator bank",
+  "description": "Fin bank with header rails and steel oil manifolds for a transformer cooling scene. Material controls: transformer enamel and stainless steel; finish presets: weathered and maintenance.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "grid substation",
+    "electrical infrastructure",
+    "utility yard",
+    "low poly",
+    "CC0",
+    "transformer bay and auxiliaries"
+  ],
+  "compat": [
+    "grid-substation",
+    "utility-substation",
+    "electrical-infrastructure"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/grid-substation/substation-transformer-radiator-bank.kcad.ts",
+  "preview": "/assets/grid-substation-substation-transformer-radiator-bank.png",
+  "sourceSha256": "011932316644e8ff0a0ebfb40b8f81de0661bb600a12ced2b50ca43a2ec53eec",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "transformerEnamel",
+      "type": "color",
+      "default": "#557052",
+      "label": "Transformer enamel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c0",
+      "label": "Stainless steel"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "transformerEnamel": "#5a6c53",
+      "stainlessSteel": "#9da4a0"
+    },
+    "maintenance": {
+      "transformerEnamel": "#9a7040"
+    }
+  },
+  "stats": {
+    "triangles": 200,
+    "sizeM": [
+      3.9931,
+      2.27,
+      2.801
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "transformerEnamel",
+      "color": "#557052",
+      "parts": [
+        "lower-header",
+        "upper-header"
+      ],
+      "param": "transformerEnamel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c0",
+      "parts": [
+        "radiator-fin-1",
+        "radiator-fin-2",
+        "radiator-fin-3",
+        "radiator-fin-4",
+        "radiator-fin-5",
+        "radiator-fin-6",
+        "radiator-fin-7",
+        "radiator-fin-8",
+        "radiator-fin-9",
+        "radiator-fin-10",
+        "inlet-manifold",
+        "outlet-manifold"
+      ],
+      "param": "stainlessSteel"
+    }
+  ]
+}

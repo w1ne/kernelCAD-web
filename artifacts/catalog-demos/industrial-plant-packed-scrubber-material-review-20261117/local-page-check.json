@@ -1,0 +1,16 @@
+{
+  "mode": "local generated page; not a deployment check",
+  "page": "/tmp/kernelcad-packed-scrubber-pages/catalog/industrial-plant/packed-scrubber-column/index.html",
+  "sourceSha256": "73a5d84961c19b3c34311b7f92633d42fb50a4f5a961d18fc9975791f0da12f1",
+  "previewSha256": "dbd4f996cd0339272d2b5764cdcda33746223a16adf3be1382b0c5f7545fa22a",
+  "checks": {
+    "pageExists": true,
+    "titlePresent": true,
+    "steelControlPresent": true,
+    "safetyPaintControlPresent": true,
+    "weatheredPresetPresent": true,
+    "highVisibilityPresetPresent": true,
+    "previewMatchesRenderedSource": true
+  },
+  "allChecksPass": true
+}

@@ -1,0 +1,1 @@
+before (original source): FAIL - the pedestal should have no galvanized body finish: expected [ 'galvanizedSteel', 'powderCoat' ] to deeply equal [ 'concrete', 'polymer', ...(2) ]

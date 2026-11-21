@@ -1,0 +1,26 @@
+{
+  "asset": "wind-site-bollard",
+  "sourceSha256": "c1b9dec8cd154b928ac63b2e24e4bb7baa8c9d8e57f3143389a58d607907f34b",
+  "preview": "/assets/wind-energy-wind-site-bollard.png",
+  "changedIndexRows": [
+    "wind-site-bollard"
+  ],
+  "triangleCount": 188,
+  "boundsM": [
+    0.22,
+    0.79,
+    0.22
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "triangleCountWithinBudget": true,
+    "boundsUnchanged": true,
+    "colorControlsReplaced": true,
+    "descriptionNamesReflectiveSheeting": true
+  },
+  "passed": true
+}

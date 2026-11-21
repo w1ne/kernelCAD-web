@@ -1,0 +1,6 @@
+Workflow: CI run 44434710569 (workflow_dispatch, head db70b474ed29450fe10a82d23ed8c04ca34759ce)
+Failed job: test-shard (3/8)
+Failed test: tests/unit/scripts/qualityRatchet.test.ts > quality ratchet (real tree) > src/** has no complexity/size findings beyond scripts/lib/qualityBaseline.json
+Failure: NEW src/modeling/capture/proxy.ts (file), max-lines=820; split it or reduce below threshold.
+Result: 7/8 test shards passed; all other workflow jobs passed; aggregate test job failed.
+Scope check: src/modeling/capture/proxy.ts is unchanged by this round. Catalog-index freshness and changed-source preview gate passed.

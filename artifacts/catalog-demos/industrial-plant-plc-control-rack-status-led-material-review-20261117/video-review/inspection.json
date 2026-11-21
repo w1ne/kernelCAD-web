@@ -1,0 +1,37 @@
+{
+  "video": "industrial-plant-plc-control-rack-status-led-material-review.mp4",
+  "sha256": "5ab000741238e1820bf0a8e36be33556512311497eb71a4f2bf1556760888aeb",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "25/1",
+  "durationSeconds": 14.0,
+  "samples": [
+    {
+      "seconds": 0.5,
+      "path": "frame-0.png",
+      "sha256": "a5ff1c7a9e66a626874e7c0f29ecba5089aea98f75a146cbbc2c94ca4645be76"
+    },
+    {
+      "seconds": 3.3,
+      "path": "frame-1.png",
+      "sha256": "c4009c048ae11d09c509c9d916b29d9b648e58a496f9987832ae5aa5c87310ab"
+    },
+    {
+      "seconds": 6.1,
+      "path": "frame-2.png",
+      "sha256": "5cfd2078436dea6e317a3b8ca8a440ab64f52f621b663db4a3869badae00084b"
+    },
+    {
+      "seconds": 8.9,
+      "path": "frame-3.png",
+      "sha256": "4f1995da971e4bce0795ddee1909b27732525d9688d05dfe090b89ac1385fb1c"
+    },
+    {
+      "seconds": 11.7,
+      "path": "frame-4.png",
+      "sha256": "afda73caba475942689e7912bf7097593e187d4333c30d93f0896ef4f5748630"
+    }
+  ],
+  "visualReview": "Manually inspected all five extracted frames: contact sheet and labels are readable, before/after comparison is clear, status colors are visible, and no frame is clipped."
+}

@@ -1,0 +1,14 @@
+{
+  "sourceBeforeSha256": "f79c676a04604d2b7bdbb53bb3d60dd2575d5bac190cc948970db0fedbbdd280",
+  "sourceAfterSha256": "8d4ac57d598ecc1f4be6b2f637066a9144a95928240758c04317a29fd18c8fe7",
+  "previewBeforeSha256": "ae1a15586c242a14886d6caaa37d48d037c692908bef309288c98ec00adabb9e",
+  "previewAfterSha256": "b650b4bf813720a6a98fd02db5d39f876e9b5042e8bec3d4ed98c05c79f49f52",
+  "triangleCountBefore": 3456,
+  "triangleCountAfter": 3456,
+  "triangleBudget": 4200,
+  "geometryChanged": false,
+  "newColorParameters": 0,
+  "newPresets": 0,
+  "newAssets": 0,
+  "rollerPartsRemapped": 46
+}

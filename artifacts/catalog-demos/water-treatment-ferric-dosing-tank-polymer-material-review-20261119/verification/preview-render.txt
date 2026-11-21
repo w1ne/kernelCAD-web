@@ -1,0 +1,2 @@
+{"id":"ferric-dosing-tank","triangles":360,"budget":2200,"sizeM":[0.65,0.845,0.52],"minUpM":0,"materials":1,"knobs":["scale:number","tankPolymer:color","bundPolymer:color","pipePvc:color","sightTube:color"],"palette":["bundPolymer=#5f7f95","tankPolymer=#e6dfc4","pipePvc=#8b9499","sightTube=#9a5a2a"]}
+water-treatment/ferric-dosing-tank: 360 tris

@@ -1,0 +1,2 @@
+Candidate source files checked against open PR #1507 diff: no matches.
+All five candidate IDs returned zero open issue and zero open PR search results.

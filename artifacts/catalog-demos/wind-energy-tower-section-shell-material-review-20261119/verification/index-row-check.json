@@ -1,0 +1,25 @@
+{
+  "asset": "tower-section",
+  "sourceSha256": "5ce2024e62485c0371df85f687a36a41452a6cd9ac06af5520d003c71b6e1a6b",
+  "preview": "/assets/wind-energy-tower-section.png",
+  "changedIndexRows": [
+    "tower-section"
+  ],
+  "triangleCount": 144,
+  "boundsM": [
+    0.36,
+    1.75,
+    0.36
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true,
+    "falseStainlessControlRemoved": true,
+    "shellControlsListed": true
+  },
+  "passed": true
+}

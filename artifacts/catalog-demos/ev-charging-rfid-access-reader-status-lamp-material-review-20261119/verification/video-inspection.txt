@@ -1,0 +1,11 @@
+{
+  "durationSeconds": 20.0,
+  "width": 1280,
+  "height": 720,
+  "sampleTimesSeconds": [
+    2.0,
+    6.0,
+    10.0,
+    14.0
+  ]
+}

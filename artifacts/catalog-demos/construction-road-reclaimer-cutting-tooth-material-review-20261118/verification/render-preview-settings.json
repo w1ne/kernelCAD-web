@@ -1,0 +1,42 @@
+{
+  "tool": "kernelCAD render_preview",
+  "serverBuild": "0.1.0+57581243f726@2026-11-18T05:44:54.960Z",
+  "renderSource": "static-player",
+  "views": ["iso"],
+  "focus": [
+    "cutter-drum",
+    "cutting-tooth-0",
+    "cutting-tooth-1",
+    "cutting-tooth-2",
+    "cutting-tooth-3",
+    "cutting-tooth-4",
+    "cutting-tooth-5",
+    "cutting-tooth-6"
+  ],
+  "width": 800,
+  "height": 800,
+  "autosave": false,
+  "no_mechanism_check": true,
+  "beforeSource": "before/road-reclaimer.kcad.ts",
+  "beforeSourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+  "afterSource": "../../../../catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
+  "afterSourceSha256": "336a4a1d5269c0fe9417bbb9408156dc6f3cc0b49a1c973768578ba660db946e",
+  "beforeImage": "render-inspect-before/channels/rgb/iso.png",
+  "afterImage": "render-inspect-after/channels/rgb/iso.png",
+  "boundsMm": {
+    "min": [-718, -610.5, 0.02777976170182228],
+    "max": [823.5, 478.5, 1004]
+  },
+  "sceneSummary": {
+    "valid": true,
+    "volumeMm3": 551766026.2745941,
+    "faceCount": 123,
+    "sizeMm": [1541.5, 1089, 1003.972220237587]
+  },
+  "mechanism": "unverified",
+  "mechanismCheck": "skipped; these are static software renders",
+  "renderMs": {
+    "before": 7655,
+    "after": 7438
+  }
+}

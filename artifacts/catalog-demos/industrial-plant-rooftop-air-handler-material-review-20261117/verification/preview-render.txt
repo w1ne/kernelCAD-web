@@ -1,0 +1,3 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts rooftop-air-handler
+Result: industrial-plant/rooftop-air-handler: 320 tris
+Preview visually inspected after render.

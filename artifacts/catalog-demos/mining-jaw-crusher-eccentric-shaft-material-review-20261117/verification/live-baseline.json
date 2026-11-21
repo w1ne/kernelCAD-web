@@ -1,0 +1,34 @@
+{
+  "mode": "public baseline capture only; local branch is not deployed",
+  "pageUrl": "https://kernelcad.com/catalog/mining/jaw-crusher-module/",
+  "previewUrl": "https://kernelcad.com/catalog/mining/jaw-crusher-module/preview.png",
+  "pageHttp": 200,
+  "previewHttp": 200,
+  "publicPreview": {
+    "size": [
+      512,
+      512
+    ],
+    "fileSha256": "f1ef8dfd62326c0ff484e7e3e18393afe82fb5c27262d984de73ade50b913188",
+    "rgbaSha256": "03e2bdd0762bed2655acb63d2e62a4da194b5d458897d27e2221760135adc790"
+  },
+  "checkedInBaselinePreview": {
+    "size": [
+      512,
+      512
+    ],
+    "fileSha256": "f1ef8dfd62326c0ff484e7e3e18393afe82fb5c27262d984de73ade50b913188",
+    "rgbaSha256": "03e2bdd0762bed2655acb63d2e62a4da194b5d458897d27e2221760135adc790"
+  },
+  "localAfterPreview": {
+    "size": [
+      512,
+      512
+    ],
+    "fileSha256": "beffdad4393c146b5864cef737e4f2018a783752a1773a2f54cd7596ecc6cb5b",
+    "rgbaSha256": "bda0a46148bef60892be3c49111eb8394e13b52579df87325ee62fafeeceb7a8"
+  },
+  "publicPreviewMatchesBaseline": true,
+  "publicPreviewMatchesLocalAfter": false,
+  "visualReview": "The public page and preview are available. The public preview matches the saved pre-change preview byte-for-byte and differs from the regenerated local preview. This branch is not deployed."
+}

@@ -1,9 +1,9 @@
-// Mobile hull access platform: Low rolling work deck with adjustable-height posts, guard rails, end stops, and a central access step. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
+// Mobile hull access platform: Low rolling work deck on fixed-height support posts, with guard rails, end stops, and a central access step. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
 meta({
   name: "mobile-hull-access-platform",
   license: 'CC0-1.0',
   title: "Mobile hull access platform",
-  description: "Low rolling work deck with adjustable-height posts, guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  description: "Low rolling work deck on fixed-height support posts, with guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "mobile", "hull", "access", "platform"],
   kit: 'shipyard',
   category: 'prop',

@@ -1,0 +1,12 @@
+From the repository root:
+
+```sh
+python3 artifacts/catalog-demos/recycling-facility-five-preview-audit-20261118/make_demo.py
+ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,pix_fmt,r_frame_rate -of json artifacts/catalog-demos/recycling-facility-five-preview-audit-20261118/review-demo.mp4
+```
+
+The demo script writes the six captioned frames, contact sheet, and MP4. It uses
+the five retained local preview PNGs and encodes an 18-second H.264 video at
+1280 × 720, 12 fps, yuv420p. The five `kernelcad.com` detail pages and preview
+files were fetched separately with Python `urllib`; their HTTP statuses and
+SHA-256 results are retained in `live-site-check.json`.

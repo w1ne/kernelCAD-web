@@ -1,0 +1,24 @@
+{
+  "changedIndexRows": [
+    "industrial-plant/scissor-lift-table"
+  ],
+  "changedRowCount": 1,
+  "targetRow": "industrial-plant/scissor-lift-table",
+  "source": "catalog/kits/industrial-plant/scissor-lift-table.kcad.ts",
+  "sourceSha256": "07675a3d4b169afe8486eba00b3acb8c9d42149d1a976c1f93e3c9e433839201",
+  "actualSourceSha256": "07675a3d4b169afe8486eba00b3acb8c9d42149d1a976c1f93e3c9e433839201",
+  "sourceShaMatches": true,
+  "preview": "/assets/industrial-plant-scissor-lift-table.png",
+  "previewExists": true,
+  "triangleBudget": 1400,
+  "indexedParams": [
+    "scale",
+    "steel",
+    "safetyPaint",
+    "rubber"
+  ],
+  "indexedPresets": [
+    "weathered",
+    "highVisibility"
+  ]
+}

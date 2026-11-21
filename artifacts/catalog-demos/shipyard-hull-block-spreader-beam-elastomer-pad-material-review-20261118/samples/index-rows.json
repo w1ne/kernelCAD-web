@@ -1,0 +1,546 @@
+{
+  "assetCount": 5,
+  "rows": [
+    {
+      "id": "hull-block-spreader-beam",
+      "kit": "shipyard",
+      "title": "Hull block spreader beam",
+      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and end shoes with elastomer contact pads. Material controls: yard paint, structural steel, and elastomer pads; includes fresh-coat and weathered-yard presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "hull",
+        "block",
+        "spreader",
+        "beam"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-block-spreader-beam.kcad.ts",
+      "preview": "/assets/shipyard-hull-block-spreader-beam.png",
+      "sourceSha256": "fc3d0e795c81616872e29d6a6d9b2c2496cbc8702cf1f25de03389a3a1f0c264",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "yardPaint",
+          "type": "color",
+          "default": "#78827a",
+          "label": "Yard finish"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#b6c1c4",
+          "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Soft-contact pads (elastomer)"
+        }
+      ],
+      "presets": {
+        "fresh-coat": {
+          "yardPaint": "#909892",
+          "structuralSteel": "#d0d7d8",
+          "elastomer": "#3a4245"
+        },
+        "weathered-yard": {
+          "yardPaint": "#646c65",
+          "structuralSteel": "#828d91",
+          "elastomer": "#252b2d"
+        }
+      },
+      "stats": {
+        "triangles": 380,
+        "sizeM": [
+          3.14,
+          1.71,
+          1.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "yardPaint",
+          "color": "#78827a",
+          "parts": [
+            "main-beam",
+            "lifting-lug-0",
+            "lifting-lug-1",
+            "drop-link-0",
+            "drop-link-1",
+            "drop-link-2",
+            "drop-link-3"
+          ],
+          "param": "yardPaint"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383b",
+          "parts": [
+            "contact-shoe-0",
+            "contact-shoe-1",
+            "contact-shoe-2",
+            "contact-shoe-3"
+          ],
+          "param": "elastomer"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "shackle-pin-0",
+            "shackle-pin-1"
+          ],
+          "param": "structuralSteel"
+        }
+      ]
+    },
+    {
+      "id": "plate-pack-transfer-cart",
+      "kit": "shipyard",
+      "title": "Plate pack transfer cart",
+      "description": "Shop cart for short plate packs with fork-shaped deck rails, end stops, push bar, and four large wheels. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate",
+        "pack",
+        "transfer",
+        "cart"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/plate-pack-transfer-cart.kcad.ts",
+      "preview": "/assets/shipyard-plate-pack-transfer-cart.png",
+      "sourceSha256": "e72a02618e227189a249a6112189a2d7707ffb2bccb612ff9a3934a36f58987d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "yardPaint",
+          "type": "color",
+          "default": "#8a765d",
+          "label": "Yard finish"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#b6c1c4",
+          "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Elastomer"
+        }
+      ],
+      "presets": {
+        "fresh-coat": {
+          "yardPaint": "#9f8f7a",
+          "structuralSteel": "#d0d7d8",
+          "elastomer": "#3a4245"
+        },
+        "weathered-yard": {
+          "yardPaint": "#73624d",
+          "structuralSteel": "#828d91",
+          "elastomer": "#252b2d"
+        }
+      },
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          1.91,
+          1.54,
+          1.085
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "yardPaint",
+          "color": "#8a765d",
+          "parts": [
+            "cart-deck"
+          ],
+          "param": "yardPaint"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "deck-rail-0",
+            "deck-rail-1",
+            "end-stop-0",
+            "end-stop-1",
+            "push-bar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383b",
+          "parts": [
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "handle-grip"
+          ],
+          "param": "elastomer"
+        }
+      ]
+    },
+    {
+      "id": "pipe-rack-fork-pocket",
+      "kit": "shipyard",
+      "title": "Pipe rack with fork pockets",
+      "description": "Stackable pipe storage rack with upright dividers, fork pockets, a retaining rail, and a removable end stop. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "pipe",
+        "rack",
+        "with",
+        "fork",
+        "pockets"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/pipe-rack-fork-pocket.kcad.ts",
+      "preview": "/assets/shipyard-pipe-rack-fork-pocket.png",
+      "sourceSha256": "2d9d9487a03f8f5fc0fb3e79579c23e26ab332dc02a2e6db384bc9b92c19c64e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "yardPaint",
+          "type": "color",
+          "default": "#70827b",
+          "label": "Yard finish"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#b6c1c4",
+          "label": "Structural steel"
+        }
+      ],
+      "presets": {
+        "fresh-coat": {
+          "yardPaint": "#8a9893",
+          "structuralSteel": "#d0d7d8"
+        },
+        "weathered-yard": {
+          "yardPaint": "#5d6c66",
+          "structuralSteel": "#828d91"
+        }
+      },
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          2.735,
+          1.005,
+          1.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "base-skid-0",
+            "base-skid-1",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4",
+            "fork-pocket-0",
+            "fork-pocket-1",
+            "retaining-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "yardPaint",
+          "color": "#70827b",
+          "parts": [
+            "removable-stop"
+          ],
+          "param": "yardPaint"
+        }
+      ]
+    },
+    {
+      "id": "weld-consumable-issue-cage",
+      "kit": "shipyard",
+      "title": "Weld consumable issue cage",
+      "description": "Lockable mesh-style store with framed walls, two shelves, a half-height counter, and a roof panel. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "weld",
+        "consumable",
+        "issue",
+        "cage"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/weld-consumable-issue-cage.kcad.ts",
+      "preview": "/assets/shipyard-weld-consumable-issue-cage.png",
+      "sourceSha256": "2259df65a99cb714f7d89a1a9b203770968b3f3573b807fbc0e05337b95230e9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "yardPaint",
+          "type": "color",
+          "default": "#7a8580",
+          "label": "Yard finish"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#b6c1c4",
+          "label": "Structural steel"
+        }
+      ],
+      "presets": {
+        "fresh-coat": {
+          "yardPaint": "#929b97",
+          "structuralSteel": "#d0d7d8"
+        },
+        "weathered-yard": {
+          "yardPaint": "#656e6a",
+          "structuralSteel": "#828d91"
+        }
+      },
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          2.05,
+          1.87,
+          1.175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "corner-post-0",
+            "corner-post-1",
+            "corner-post-2",
+            "corner-post-3",
+            "storage-shelf-0",
+            "storage-shelf-1",
+            "wall-rail-0",
+            "wall-rail-1",
+            "wall-rail-2",
+            "wall-rail-3",
+            "lockable-door"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "yardPaint",
+          "color": "#7a8580",
+          "parts": [
+            "roof",
+            "counter"
+          ],
+          "param": "yardPaint"
+        }
+      ]
+    },
+    {
+      "id": "shipfitter-tool-cabinet",
+      "kit": "shipyard",
+      "title": "Shipfitter tool cabinet",
+      "description": "Steel shop cabinet with paired doors, shallow drawer bank, top work surface, and a side-hung tool rail. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "shipfitter",
+        "tool",
+        "cabinet"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/shipfitter-tool-cabinet.kcad.ts",
+      "preview": "/assets/shipyard-shipfitter-tool-cabinet.png",
+      "sourceSha256": "6ca47396fae161b1383f83a98d5ca352aa83f0cbe2a790f7795189e5dc63573a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "yardPaint",
+          "type": "color",
+          "default": "#947656",
+          "label": "Yard finish"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#b6c1c4",
+          "label": "Structural steel"
+        }
+      ],
+      "presets": {
+        "fresh-coat": {
+          "yardPaint": "#a78f74",
+          "structuralSteel": "#d0d7d8"
+        },
+        "weathered-yard": {
+          "yardPaint": "#7b6247",
+          "structuralSteel": "#828d91"
+        }
+      },
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          1.445,
+          1.55,
+          0.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "yardPaint",
+          "color": "#947656",
+          "parts": [
+            "cabinet-body",
+            "toe-kick",
+            "worktop",
+            "door-0",
+            "door-1",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2"
+          ],
+          "param": "yardPaint"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#b6c1c4",
+          "parts": [
+            "side-tool-rail",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "structuralSteel"
+        }
+      ]
+    }
+  ]
+}

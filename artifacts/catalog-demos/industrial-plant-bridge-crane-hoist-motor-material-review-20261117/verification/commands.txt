@@ -1,0 +1,19 @@
+PR review and target search:
+  gh pr view 1258 --json number,title,state,reviewDecision,reviews,statusCheckRollup,url
+  python3 artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/check_open_targets.py
+
+Asset update and generated artifacts:
+  npx tsx scripts/renderCatalogPreviews.ts bridge-crane
+  npx tsx scripts/buildAssetCatalog.ts
+  python3 artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/summarize_index.py
+
+Verification:
+  npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts
+  npx vitest run tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts
+  npx vitest run tests/integration/catalog/
+  python3 scripts/checkCatalogQuality.py
+
+Demo generation:
+  python3 artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/make_review_assets.py
+  bash artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/make_demo.sh
+  ffprobe -v error -show_format -show_streams -of json artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/industrial-plant-bridge-crane-hoist-motor-material-review.mp4

@@ -52,6 +52,7 @@ p.part("cross-rung-12", b(1080, 0, 8, 60, 455, 38).color(steel));
 p.part("hanger-left", b(-850, 0, 55, 80, 620, 300).color(steel));
 p.part("hanger-right", b(850, 0, 55, 80, 620, 300).color(steel));
 p.part("hanger-cap-left", c(-850, 0, 355, 55, 50, 8).color(polymer));
-p.part("hanger-cap-right", c(850, 0, 355, 55, 50, 8).color(steel));
+// Both hanger caps are the same polymer end fitting, so they share the polymer control.
+p.part("hanger-cap-right", c(850, 0, 355, 55, 50, 8).color(polymer));
 
 return p.model();

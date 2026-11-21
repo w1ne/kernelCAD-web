@@ -1,0 +1,23 @@
+{
+  "asset": "hull-profile-template-rack",
+  "sourceSha256": "6b98d08f2e9cfe9fa0619d0722a78ca803b90347e2d93faa7ca53c5a487f968c",
+  "preview": "/assets/shipyard-hull-profile-template-rack.png",
+  "changedIndexRows": [
+    "hull-profile-template-rack"
+  ],
+  "triangleCount": 364,
+  "boundsM": [
+    1.995,
+    2.15,
+    1.18
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true
+  },
+  "passed": true
+}

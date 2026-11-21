@@ -1,0 +1,6 @@
+# MP4 visual inspection
+
+- Probe: H.264, 1280 × 720, 24 fps, 16.04 seconds; full output is in `ffprobe.json`.
+- Opened a contact sheet of frames extracted at 2, 6, 10 and 14 seconds, and the 10-second frame at full resolution. `inspect_video.py` regenerates these frames; they are not retained in the bundle.
+- The first frame shows the five named rendered assets and marks the selected tower section. The second frame shows the before state (a straight grey column) beside the after state (a column that narrows towards the top, with darker rings at the base and the top and a white top cap). The third frame labels the changed parts, the unchanged part and the noted limits. The last frame shows the local verification and limits claims to source, software preview and GLB regression.
+- Headings, part labels and captions are legible at full video resolution; no visible text clipping. The asset thumbnails on the first frame are small; the caption names the selected mismatch. In the after preview the visible side of the pale shell is in shade and reads as mid-grey, so the colour change is less prominent than the taper; the top cap shows the pale tower paint. The closing frame states the branch is not deployed and makes no simulation, safety or compliance claim.

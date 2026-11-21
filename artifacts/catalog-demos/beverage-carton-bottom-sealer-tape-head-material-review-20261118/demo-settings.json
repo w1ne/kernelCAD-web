@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-18",
+  "video": "beverage-carton-bottom-sealer-tape-head-material-review.mp4",
+  "durationSeconds": 15,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts carton-bottom-sealer",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "focusedTestInvocation": "npx vitest run tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts --reporter=verbose",
+  "fullCatalogTestInvocation": "npx vitest run tests/integration/catalog/ --reporter=verbose",
+  "reviewSamples": [
+    "beverage-bottling-line/cap-feed-hopper",
+    "beverage-bottling-line/slip-sheet-dispenser",
+    "beverage-bottling-line/stretch-wrapper",
+    "beverage-bottling-line/wraparound-labeler",
+    "beverage-bottling-line/carton-bottom-sealer"
+  ],
+  "claims": "Local software-rendered previews and an exported-GLB material regression only; no simulation, deployed behavior, or hardware acceptance is shown."
+}

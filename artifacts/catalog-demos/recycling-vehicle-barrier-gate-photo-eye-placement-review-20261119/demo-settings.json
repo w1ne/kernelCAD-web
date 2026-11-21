@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-19",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered recycling-facility site equipment previews",
+    "Before and after vehicle-barrier-gate previews",
+    "Photo-eye placement plan view",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/vehicle-barrier-gate.png",
+    "after/vehicle-barrier-gate.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-vehicle-barrier-gate-photo-eye-placement-review-20261119/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-vehicle-barrier-gate-photo-eye-placement-review-20261119/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB bounds regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}

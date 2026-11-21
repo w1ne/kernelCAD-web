@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-18",
+  "scope": "five existing construction-equipment previews and one source-to-preview material correction",
+  "assetOrder": [
+    "articulated-dump-truck",
+    "asphalt-transfer-conveyor",
+    "ride-on-concrete-saw",
+    "road-reclaimer",
+    "water-tanker-truck"
+  ],
+  "canvas": "1280x720",
+  "slideCount": 5,
+  "secondsPerSlide": 3,
+  "frameRate": 12,
+  "frameCount": 180,
+  "videoCodec": "H.264 / libx264",
+  "encoderPreset": "medium",
+  "crf": 24,
+  "pixelFormat": "yuv420p",
+  "faststart": true,
+  "invocation": "python3 <bundle>/make_demo.py",
+  "svgRasterizer": "rsvg-convert",
+  "videoEncoder": "ffmpeg",
+  "source": "make_demo.py plus retained source snapshots, catalog previews and focused render-preview PNGs",
+  "provenance": "Local software preview, exported-GLB regression and catalog checks only; no simulation, deployment or hardware acceptance."
+}

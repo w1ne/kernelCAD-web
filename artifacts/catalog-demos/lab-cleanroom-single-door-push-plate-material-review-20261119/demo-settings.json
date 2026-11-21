@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-19",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered laboratory infrastructure previews",
+    "Before and after cleanroom-single-door-module previews",
+    "Push plate material mapping and placement",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/cleanroom-single-door-module.png",
+    "after/cleanroom-single-door-module.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/lab-cleanroom-single-door-push-plate-material-review-20261119/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/lab-cleanroom-single-door-push-plate-material-review-20261119/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB material and bounds regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}

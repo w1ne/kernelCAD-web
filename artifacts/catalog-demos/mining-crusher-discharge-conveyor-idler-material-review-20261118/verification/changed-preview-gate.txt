@@ -1,0 +1,3 @@
+catalog preview gate: 1 touched asset(s) against HEAD
+  ok   crusher-discharge-conveyor: preview matches a fresh render (mean |d| 0.000/255, 0.00 % pixels changed)
+catalog preview gate: 2.6 s

@@ -1,0 +1,5 @@
+ccs-combo-1-connector issues=0 prs=0 inPRdiff=0
+chademo-connector issues=0 prs=0 inPRdiff=0
+j1772-ac-connector issues=0 prs=0 inPRdiff=0
+overhead-cable-balance-arm issues=0 prs=0 inPRdiff=0
+charger-status-display-post issues=0 prs=0 inPRdiff=0

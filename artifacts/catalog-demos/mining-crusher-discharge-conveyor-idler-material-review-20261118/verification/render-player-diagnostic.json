@@ -1,0 +1,23 @@
+{
+  "cdpUrl": "http://127.0.0.1:9222",
+  "renderBase": "http://127.0.0.1:40587",
+  "status": 200,
+  "ready": false,
+  "pageState": {
+    "title": "kernelCAD headless player",
+    "url": "http://127.0.0.1:40587/demo-player?headless=1",
+    "bodyText": "",
+    "ready": false,
+    "canvasCount": 0,
+    "rootHtml": ""
+  },
+  "events": [
+    "console.error: THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0x1013, DEVICE = 0x00b8, GL_VENDOR = Google Inc. (Mesa), GL_RENDERER = ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4), GL_VERSION = 25.2.8, Sandboxed = no, Optimus = no, AMD switchable = no, Reset notification strategy = 0x8261, ErrorMessage = BindToCurrentSequence failed: .",
+    "console.error: THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0x1013, DEVICE = 0x00b8, GL_VENDOR = Google Inc. (Mesa), GL_RENDERER = ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4), GL_VERSION = 25.2.8, Sandboxed = no, Optimus = no, AMD switchable = no, Reset notification strategy = 0x8261, ErrorMessage = BindToCurrentSequence failed: .",
+    "console.error: THREE.WebGLRenderer: Error creating WebGL context.",
+    "pageerror: Error: Error creating WebGL context.\n    at new ZR (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:4112:24478)\n    at http://127.0.0.1:40587/assets/index-DmbaeSKC.js:4210:5805\n    at No (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:93096)\n    at pg (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:108400)\n    at Fi (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:108284)\n    at pg (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:109166)\n    at Fi (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:108284)\n    at pg (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:108380)\n    at Fi (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:108284)\n    at pg (http://127.0.0.1:40587/assets/index-DmbaeSKC.js:8:109166)",
+    "console.warning: No available adapters.",
+    "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "ready timeout: page.waitForFunction: Timeout 30000ms exceeded."
+  ]
+}

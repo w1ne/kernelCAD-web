@@ -1,0 +1,9 @@
+checked_before_branch_deployment=true
+detail_http_status=200
+detail_title=Scissor lift table - free low-poly vehicle model (CC0) | kernelCAD
+preview_url=https://kernelcad.com/catalog/industrial-plant/scissor-lift-table/preview.png
+preview_http_status=200
+public_preview_sha256=c4b6a6bc9a04a127d00fbea8c1de5504d381ea677ab8cbbdbf86e60b5027bd22
+baseline_preview_sha256=c4b6a6bc9a04a127d00fbea8c1de5504d381ea677ab8cbbdbf86e60b5027bd22
+public_matches_baseline=true
+public_matches_after=false

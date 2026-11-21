@@ -1,0 +1,1 @@
+telecom-infrastructure/pedestal-fiber-terminal: 580 tris

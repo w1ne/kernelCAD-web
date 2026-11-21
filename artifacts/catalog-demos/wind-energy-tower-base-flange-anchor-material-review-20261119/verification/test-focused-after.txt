@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/windTowerBaseFlangeAnchorMaterial.test.ts (1 test) 1671ms
+     ✓ draws galvanized anchor studs and nuts that stand on the flange around the shell  450ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:25:52
+   Duration  19.12s (transform 13.82s, setup 569ms, import 16.19s, tests 1.67s, environment 0ms)
+

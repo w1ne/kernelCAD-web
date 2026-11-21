@@ -1,0 +1,1457 @@
+[
+  {
+    "asset": "mining/assay-sample-divider",
+    "pageUrl": "https://kernelcad.com/catalog/mining/assay-sample-divider/",
+    "previewUrl": "https://kernelcad.com/catalog/mining/assay-sample-divider/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/mining-assay-sample-divider.kcad.ts",
+    "pageHttp": 200,
+    "pageTitle": "Assay sample divider - free low-poly prop model (CC0) | kernelCAD",
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+    "publicSourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+    "sourceMatchesLocalBaseline": true,
+    "localPreviewSha256": "1f4f0d2b8f5a20d5cd8c324464045973a030af88d9dbe620f58d33d26b1a29d8",
+    "publicPreviewSha256": "1f4f0d2b8f5a20d5cd8c324464045973a030af88d9dbe620f58d33d26b1a29d8",
+    "previewMatchesLocalBaseline": true,
+    "indexSourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+    "indexPreview": "/assets/mining-assay-sample-divider.png",
+    "indexRow": {
+      "id": "assay-sample-divider",
+      "kit": "mining",
+      "title": "Assay sample divider",
+      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open sample jars partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Jar count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel, sample ore and jar plastic. weathered, labWhite and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mining",
+        "laboratory",
+        "assay",
+        "sample preparation",
+        "sample divider",
+        "riffle splitter",
+        "drill core"
+      ],
+      "compat": [
+        "mining",
+        "mineral-processing",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/mining/assay-sample-divider.kcad.ts",
+      "preview": "/assets/mining-assay-sample-divider.png",
+      "sourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+      "triangleBudget": 4200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "housingPaint",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Housing paint"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b9c1c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "sampleOre",
+          "type": "color",
+          "default": "#8a6a4c",
+          "label": "Sample ore"
+        },
+        {
+          "name": "jarPlastic",
+          "type": "color",
+          "default": "#e4e1d4",
+          "label": "Jar plastic"
+        },
+        {
+          "name": "divider",
+          "type": "choice",
+          "default": "rotary",
+          "label": "Divider type",
+          "choices": [
+            "rotary",
+            "riffle"
+          ]
+        },
+        {
+          "name": "jars",
+          "type": "choice",
+          "default": "eight",
+          "label": "Sample jars (rotary)",
+          "choices": [
+            "eight",
+            "twelve"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "housingPaint": "#4f6577",
+          "stainlessSteel": "#979d9c",
+          "sampleOre": "#6f5a46",
+          "jarPlastic": "#c9c3ae"
+        },
+        "labWhite": {
+          "housingPaint": "#e6e6e0",
+          "stainlessSteel": "#c3cacc",
+          "sampleOre": "#5d5b57",
+          "jarPlastic": "#3d6fa8"
+        },
+        "highVisibility": {
+          "housingPaint": "#e48a1e",
+          "stainlessSteel": "#c5ccca",
+          "sampleOre": "#9b5a3a",
+          "jarPlastic": "#f2efe2"
+        }
+      },
+      "stats": {
+        "triangles": 2032,
+        "sizeM": [
+          0.69,
+          0.82,
+          0.504868
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "foot-0",
+          "color": "#1f2224",
+          "parts": [
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3",
+            "speed-knob",
+            "vibrator-spring"
+          ]
+        },
+        {
+          "name": "housingPaint",
+          "color": "#2f6fa8",
+          "parts": [
+            "drive-base",
+            "vibrator"
+          ],
+          "param": "housingPaint"
+        },
+        {
+          "name": "panel-face",
+          "color": "#d6d8d4",
+          "parts": [
+            "panel-face"
+          ]
+        },
+        {
+          "name": "display",
+          "color": "#1d2f3a",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "start-button",
+          "color": "#3fae4a",
+          "parts": [
+            "start-button"
+          ]
+        },
+        {
+          "name": "stop-button",
+          "color": "#d23a2a",
+          "parts": [
+            "stop-button"
+          ]
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b9c1c4",
+          "parts": [
+            "turntable-hub",
+            "turntable",
+            "column",
+            "hopper-arm",
+            "hopper",
+            "feeder-trough"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "jarPlastic",
+          "color": "#e4e1d4",
+          "parts": [
+            "jar-0",
+            "jar-1",
+            "jar-2",
+            "jar-3",
+            "jar-4",
+            "jar-5",
+            "jar-6",
+            "jar-7"
+          ],
+          "param": "jarPlastic"
+        },
+        {
+          "name": "sampleOre",
+          "color": "#8a6a4c",
+          "parts": [
+            "jar-ore-0",
+            "jar-ore-1",
+            "jar-ore-2",
+            "jar-ore-3",
+            "jar-ore-4",
+            "jar-ore-5",
+            "jar-ore-6",
+            "jar-ore-7",
+            "hopper-ore",
+            "feeder-ore"
+          ],
+          "param": "sampleOre"
+        }
+      ]
+    }
+  },
+  {
+    "asset": "mining/core-tray-rack",
+    "pageUrl": "https://kernelcad.com/catalog/mining/core-tray-rack/",
+    "previewUrl": "https://kernelcad.com/catalog/mining/core-tray-rack/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/mining-core-tray-rack.kcad.ts",
+    "pageHttp": 200,
+    "pageTitle": "Exploration core tray rack - free low-poly prop model (CC0) | kernelCAD",
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+    "publicSourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+    "sourceMatchesLocalBaseline": true,
+    "localPreviewSha256": "016261caa5628685ecf9d95830e783980460cb8f8df52416913d6e4288623545",
+    "publicPreviewSha256": "016261caa5628685ecf9d95830e783980460cb8f8df52416913d6e4288623545",
+    "previewMatchesLocalBaseline": true,
+    "indexSourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+    "indexPreview": "/assets/mining-core-tray-rack.png",
+    "indexRow": {
+      "id": "core-tray-rack",
+      "kit": "mining",
+      "title": "Exploration core tray rack",
+      "description": "Core shed storage rack at about real size: bolted steel uprights with side and back bracing, orange load beams on four levels and six five-channel core trays per level, each tray filled with pieces of 48 mm round drill core with oxidised intervals, end-of-run depth blocks and a hole-and-depth tag on the tray end. Tray choice (pulled, stowed) pulls one tray half out for logging. Material controls: rack steel, load beam paint, core tray plastic and core rock. weathered, galvanised and darkVolcanic presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mining",
+        "exploration",
+        "drill core",
+        "core tray",
+        "core shed",
+        "geology",
+        "storage rack"
+      ],
+      "compat": [
+        "mining",
+        "mineral-processing",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/mining/core-tray-rack.kcad.ts",
+      "preview": "/assets/mining-core-tray-rack.png",
+      "sourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+      "triangleBudget": 7000,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "tray",
+          "type": "choice",
+          "default": "pulled",
+          "label": "Front tray",
+          "choices": [
+            "pulled",
+            "stowed"
+          ]
+        },
+        {
+          "name": "rackSteel",
+          "type": "color",
+          "default": "#2f5d8a",
+          "label": "Rack upright steel"
+        },
+        {
+          "name": "beamPaint",
+          "type": "color",
+          "default": "#e36d1e",
+          "label": "Load beam paint"
+        },
+        {
+          "name": "trayPlastic",
+          "type": "color",
+          "default": "#2b2d2f",
+          "label": "Core tray plastic"
+        },
+        {
+          "name": "coreRock",
+          "type": "color",
+          "default": "#8d9294",
+          "label": "Core rock"
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "rackSteel": "#56636c",
+          "beamPaint": "#a8664a",
+          "trayPlastic": "#3c3d3c",
+          "coreRock": "#8a867e"
+        },
+        "galvanised": {
+          "rackSteel": "#a9b0b2",
+          "beamPaint": "#9aa2a6",
+          "trayPlastic": "#c9ccc8",
+          "coreRock": "#7c8286"
+        },
+        "darkVolcanic": {
+          "rackSteel": "#3c4a3e",
+          "beamPaint": "#d9a82a",
+          "trayPlastic": "#8a8d88",
+          "coreRock": "#3b3d40"
+        }
+      },
+      "stats": {
+        "triangles": 6432,
+        "sizeM": [
+          2.34,
+          1.62,
+          1.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rackSteel",
+          "color": "#2f5d8a",
+          "parts": [
+            "upright-0-0",
+            "foot-plate-0-0",
+            "upright-0-1",
+            "foot-plate-0-1",
+            "side-brace-0-0",
+            "side-brace-0-1",
+            "side-brace-0-2",
+            "side-brace-0-3",
+            "side-tie-0",
+            "upright-1-0",
+            "foot-plate-1-0",
+            "upright-1-1",
+            "foot-plate-1-1",
+            "side-brace-1-0",
+            "side-brace-1-1",
+            "side-brace-1-2",
+            "side-brace-1-3",
+            "side-tie-1",
+            "back-brace-0",
+            "back-brace-1"
+          ],
+          "param": "rackSteel"
+        },
+        {
+          "name": "beamPaint",
+          "color": "#e36d1e",
+          "parts": [
+            "beam-0-0",
+            "beam-0-1",
+            "beam-1-0",
+            "beam-1-1",
+            "beam-2-0",
+            "beam-2-1",
+            "beam-3-0",
+            "beam-3-1"
+          ],
+          "param": "beamPaint"
+        },
+        {
+          "name": "trayPlastic",
+          "color": "#2b2d2f",
+          "parts": [
+            "tray-0-0-body",
+            "tray-0-1-body",
+            "tray-0-2-body",
+            "tray-0-3-body",
+            "tray-0-4-body",
+            "tray-0-5-body",
+            "tray-1-0-body",
+            "tray-1-1-body",
+            "tray-1-2-body",
+            "tray-1-3-body",
+            "tray-1-4-body",
+            "tray-1-5-body",
+            "tray-2-0-body",
+            "tray-2-1-body",
+            "tray-2-2-body",
+            "tray-2-3-body",
+            "tray-2-4-body",
+            "tray-2-5-body",
+            "tray-3-0-body",
+            "tray-3-1-body",
+            "tray-3-2-body",
+            "tray-3-3-body",
+            "tray-3-4-body",
+            "tray-3-5-body"
+          ],
+          "param": "trayPlastic"
+        },
+        {
+          "name": "tray-0-0-tag",
+          "color": "#eeeee6",
+          "parts": [
+            "tray-0-0-tag",
+            "tray-0-1-tag",
+            "tray-0-2-tag",
+            "tray-0-3-tag",
+            "tray-0-4-tag",
+            "tray-0-5-tag",
+            "tray-1-0-tag",
+            "tray-1-1-tag",
+            "tray-1-2-tag",
+            "tray-1-3-tag",
+            "tray-1-4-tag",
+            "tray-1-5-tag",
+            "tray-2-0-tag",
+            "tray-2-1-tag",
+            "tray-2-2-tag",
+            "tray-2-3-tag",
+            "tray-2-4-tag",
+            "tray-2-5-tag",
+            "tray-3-0-tag",
+            "tray-3-1-tag",
+            "tray-3-2-tag",
+            "tray-3-3-tag",
+            "tray-3-4-tag",
+            "tray-3-5-tag"
+          ]
+        },
+        {
+          "name": "coreRock",
+          "color": "#8d9294",
+          "parts": [
+            "tray-0-0-core-0",
+            "tray-0-1-core-0",
+            "tray-0-1-core-1",
+            "tray-0-1-core-2",
+            "tray-0-1-core-4",
+            "tray-0-2-core-1",
+            "tray-0-2-core-2",
+            "tray-0-2-core-4",
+            "tray-0-3-core-0",
+            "tray-0-3-core-1",
+            "tray-0-3-core-2",
+            "tray-0-3-core-4",
+            "tray-0-4-core-0",
+            "tray-0-4-core-1",
+            "tray-0-4-core-2",
+            "tray-0-4-core-3",
+            "tray-0-4-core-4",
+            "tray-0-5-core-0",
+            "tray-0-5-core-1",
+            "tray-0-5-core-2",
+            "tray-0-5-core-3",
+            "tray-0-5-core-4",
+            "tray-1-0-core-0",
+            "tray-1-0-core-1",
+            "tray-1-0-core-2",
+            "tray-1-0-core-3",
+            "tray-1-1-core-0",
+            "tray-1-1-core-1",
+            "tray-1-1-core-2",
+            "tray-1-1-core-4",
+            "tray-1-2-core-0-piece-1",
+            "tray-1-2-core-1-piece-0",
+            "tray-1-2-core-1-piece-2",
+            "tray-1-2-core-2-piece-1",
+            "tray-1-2-core-3-piece-0",
+            "tray-1-2-core-4-piece-0",
+            "tray-1-2-core-4-piece-1",
+            "tray-1-2-core-4-piece-2",
+            "tray-1-3-core-1",
+            "tray-1-3-core-3",
+            "tray-1-3-core-4",
+            "tray-1-4-core-0",
+            "tray-1-4-core-1",
+            "tray-1-4-core-2",
+            "tray-1-5-core-0",
+            "tray-1-5-core-4",
+            "tray-2-0-core-0",
+            "tray-2-0-core-1",
+            "tray-2-0-core-2",
+            "tray-2-0-core-4",
+            "tray-2-1-core-0",
+            "tray-2-1-core-1",
+            "tray-2-1-core-2",
+            "tray-2-1-core-4",
+            "tray-2-2-core-0",
+            "tray-2-2-core-1",
+            "tray-2-2-core-2",
+            "tray-2-2-core-3",
+            "tray-2-2-core-4",
+            "tray-2-3-core-1",
+            "tray-2-3-core-3",
+            "tray-2-3-core-4",
+            "tray-2-4-core-0",
+            "tray-2-4-core-1",
+            "tray-2-4-core-4",
+            "tray-2-5-core-2",
+            "tray-2-5-core-3",
+            "tray-3-0-core-0-piece-2",
+            "tray-3-0-core-1-piece-0",
+            "tray-3-0-core-1-piece-1",
+            "tray-3-0-core-1-piece-2",
+            "tray-3-0-core-2-piece-0",
+            "tray-3-0-core-2-piece-1",
+            "tray-3-0-core-2-piece-2",
+            "tray-3-0-core-3-piece-1",
+            "tray-3-0-core-4-piece-0",
+            "tray-3-1-core-0-piece-1",
+            "tray-3-1-core-0-piece-2",
+            "tray-3-1-core-1-piece-0",
+            "tray-3-1-core-1-piece-1",
+            "tray-3-1-core-1-piece-2",
+            "tray-3-1-core-2-piece-0",
+            "tray-3-1-core-2-piece-1",
+            "tray-3-1-core-2-piece-2",
+            "tray-3-1-core-3-piece-0",
+            "tray-3-1-core-3-piece-2",
+            "tray-3-1-core-4-piece-1",
+            "tray-3-2-core-0-piece-0",
+            "tray-3-2-core-0-piece-2",
+            "tray-3-2-core-1-piece-1",
+            "tray-3-2-core-1-piece-2",
+            "tray-3-2-core-2-piece-0",
+            "tray-3-2-core-2-piece-1",
+            "tray-3-2-core-3-piece-1",
+            "tray-3-2-core-3-piece-3",
+            "tray-3-2-core-4-piece-0",
+            "tray-3-2-core-4-piece-1",
+            "tray-3-2-core-4-piece-2",
+            "tray-3-3-core-0-piece-0",
+            "tray-3-3-core-0-piece-1",
+            "tray-3-3-core-0-piece-2",
+            "tray-3-3-core-1-piece-0",
+            "tray-3-3-core-1-piece-1",
+            "tray-3-3-core-1-piece-2",
+            "tray-3-3-core-2-piece-1",
+            "tray-3-3-core-2-piece-2",
+            "tray-3-3-core-3-piece-1",
+            "tray-3-3-core-3-piece-2",
+            "tray-3-3-core-4-piece-1",
+            "tray-3-4-core-0-piece-0",
+            "tray-3-4-core-0-piece-1",
+            "tray-3-4-core-0-piece-2",
+            "tray-3-4-core-1-piece-0",
+            "tray-3-4-core-1-piece-2",
+            "tray-3-4-core-2-piece-0",
+            "tray-3-4-core-2-piece-1",
+            "tray-3-4-core-3-piece-0",
+            "tray-3-4-core-3-piece-1",
+            "tray-3-4-core-3-piece-2",
+            "tray-3-5-core-0-piece-0",
+            "tray-3-5-core-0-piece-1",
+            "tray-3-5-core-0-piece-2",
+            "tray-3-5-core-1-piece-1",
+            "tray-3-5-core-1-piece-2",
+            "tray-3-5-core-2-piece-1",
+            "tray-3-5-core-2-piece-2",
+            "tray-3-5-core-3-piece-1",
+            "tray-3-5-core-3-piece-2",
+            "tray-3-5-core-4-piece-0",
+            "tray-3-5-core-4-piece-1",
+            "tray-3-5-core-4-piece-2"
+          ],
+          "param": "coreRock"
+        },
+        {
+          "name": "tray-0-0-core-1",
+          "color": "#9a5a36",
+          "parts": [
+            "tray-0-0-core-1",
+            "tray-0-0-core-2",
+            "tray-0-0-core-3",
+            "tray-0-0-core-4",
+            "tray-0-1-core-3",
+            "tray-0-2-core-0",
+            "tray-0-2-core-3",
+            "tray-0-3-core-3",
+            "tray-1-0-core-4",
+            "tray-1-1-core-3",
+            "tray-1-2-core-0-piece-0",
+            "tray-1-2-core-0-piece-2",
+            "tray-1-2-core-1-piece-1",
+            "tray-1-2-core-2-piece-0",
+            "tray-1-2-core-3-piece-1",
+            "tray-1-3-core-0",
+            "tray-1-3-core-2",
+            "tray-1-4-core-3",
+            "tray-1-4-core-4",
+            "tray-1-5-core-1",
+            "tray-1-5-core-2",
+            "tray-1-5-core-3",
+            "tray-2-0-core-3",
+            "tray-2-1-core-3",
+            "tray-2-3-core-0",
+            "tray-2-3-core-2",
+            "tray-2-4-core-2",
+            "tray-2-4-core-3",
+            "tray-2-5-core-0",
+            "tray-2-5-core-1",
+            "tray-2-5-core-4",
+            "tray-3-0-core-0-piece-0",
+            "tray-3-0-core-0-piece-1",
+            "tray-3-0-core-3-piece-0",
+            "tray-3-0-core-4-piece-1",
+            "tray-3-1-core-0-piece-0",
+            "tray-3-1-core-3-piece-1",
+            "tray-3-1-core-3-piece-3",
+            "tray-3-1-core-4-piece-0",
+            "tray-3-1-core-4-piece-2",
+            "tray-3-2-core-0-piece-1",
+            "tray-3-2-core-1-piece-0",
+            "tray-3-2-core-2-piece-2",
+            "tray-3-2-core-3-piece-0",
+            "tray-3-2-core-3-piece-2",
+            "tray-3-2-core-4-piece-3",
+            "tray-3-3-core-2-piece-0",
+            "tray-3-3-core-3-piece-0",
+            "tray-3-3-core-4-piece-0",
+            "tray-3-3-core-4-piece-2",
+            "tray-3-4-core-1-piece-1",
+            "tray-3-4-core-2-piece-2",
+            "tray-3-4-core-4-piece-0",
+            "tray-3-4-core-4-piece-1",
+            "tray-3-5-core-1-piece-0",
+            "tray-3-5-core-1-piece-3",
+            "tray-3-5-core-2-piece-0",
+            "tray-3-5-core-3-piece-0"
+          ]
+        },
+        {
+          "name": "tray-1-2-depth-block-0",
+          "color": "#e8c21e",
+          "parts": [
+            "tray-1-2-depth-block-0",
+            "tray-1-2-depth-block-1",
+            "tray-1-2-depth-block-2",
+            "tray-1-2-depth-block-3",
+            "tray-1-2-depth-block-4",
+            "tray-3-0-depth-block-0",
+            "tray-3-0-depth-block-1",
+            "tray-3-0-depth-block-2",
+            "tray-3-0-depth-block-3",
+            "tray-3-0-depth-block-4",
+            "tray-3-1-depth-block-0",
+            "tray-3-1-depth-block-1",
+            "tray-3-1-depth-block-2",
+            "tray-3-1-depth-block-3",
+            "tray-3-1-depth-block-4",
+            "tray-3-2-depth-block-0",
+            "tray-3-2-depth-block-1",
+            "tray-3-2-depth-block-2",
+            "tray-3-2-depth-block-3",
+            "tray-3-2-depth-block-4",
+            "tray-3-3-depth-block-0",
+            "tray-3-3-depth-block-1",
+            "tray-3-3-depth-block-2",
+            "tray-3-3-depth-block-3",
+            "tray-3-3-depth-block-4",
+            "tray-3-4-depth-block-0",
+            "tray-3-4-depth-block-1",
+            "tray-3-4-depth-block-2",
+            "tray-3-4-depth-block-3",
+            "tray-3-4-depth-block-4",
+            "tray-3-5-depth-block-0",
+            "tray-3-5-depth-block-1",
+            "tray-3-5-depth-block-2",
+            "tray-3-5-depth-block-3",
+            "tray-3-5-depth-block-4"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "mining/mine-refuge-chamber",
+    "pageUrl": "https://kernelcad.com/catalog/mining/mine-refuge-chamber/",
+    "previewUrl": "https://kernelcad.com/catalog/mining/mine-refuge-chamber/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/mining-mine-refuge-chamber.kcad.ts",
+    "pageHttp": 200,
+    "pageTitle": "Mine refuge chamber - free low-poly prop model (CC0) | kernelCAD",
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+    "publicSourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+    "sourceMatchesLocalBaseline": true,
+    "localPreviewSha256": "6b0ff1fbe1e12b111074b308ab195c072a185f4c6b163e50ea4155b988a9f019",
+    "publicPreviewSha256": "6b0ff1fbe1e12b111074b308ab195c072a185f4c6b163e50ea4155b988a9f019",
+    "previewMatchesLocalBaseline": true,
+    "indexSourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+    "indexPreview": "/assets/mining-mine-refuge-chamber.png",
+    "indexRow": {
+      "id": "mine-refuge-chamber",
+      "kit": "mining",
+      "title": "Mine refuge chamber",
+      "description": "Portable underground refuge chamber at about real size: chamfered steel shell with stiffener ribs on a sled skid with upturned runners and tow eyes, pressure door with porthole, locking wheel and hinges (closed or open showing the dark airlock), side portholes, reflective bands, green REFUGE sign, breathing-air cylinder rack, roof air conditioning and scrubber unit with fan, strobe beacon, aerial and lifting lugs, and a compressed-air and phone connection panel. Size choice: eight-person (4.2 m) or twenty-person (7.2 m). Material controls: shell paint, skid steel, air cylinder paint and window glass. weathered, mineGreen and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mining",
+        "underground",
+        "mine safety",
+        "refuge chamber",
+        "rescue",
+        "breathing air",
+        "shelter"
+      ],
+      "compat": [
+        "mining",
+        "mineral-processing",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/mining/mine-refuge-chamber.kcad.ts",
+      "preview": "/assets/mining-mine-refuge-chamber.png",
+      "sourceSha256": "6205f180fbd4debd0fd0cbf8ad94638d92c39c5021485f97362d6f507c8f4c77",
+      "triangleBudget": 4400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "shellPaint",
+          "type": "color",
+          "default": "#e8781e",
+          "label": "Shell paint"
+        },
+        {
+          "name": "skidSteel",
+          "type": "color",
+          "default": "#4d5459",
+          "label": "Skid steel"
+        },
+        {
+          "name": "airCylinder",
+          "type": "color",
+          "default": "#3b3f44",
+          "label": "Air cylinder paint"
+        },
+        {
+          "name": "windowGlass",
+          "type": "color",
+          "default": "#6fa6b8",
+          "label": "Window glass"
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "eightPerson",
+          "label": "Size",
+          "choices": [
+            "eightPerson",
+            "twentyPerson"
+          ]
+        },
+        {
+          "name": "door",
+          "type": "choice",
+          "default": "closed",
+          "label": "Door",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "shellPaint": "#a8683a",
+          "skidSteel": "#5a554e",
+          "airCylinder": "#4a4740",
+          "windowGlass": "#5d7c80"
+        },
+        "mineGreen": {
+          "shellPaint": "#3f8a4c",
+          "skidSteel": "#3f464b",
+          "airCylinder": "#2f3438",
+          "windowGlass": "#6fa6b8"
+        },
+        "highVisibility": {
+          "shellPaint": "#f2c21a",
+          "skidSteel": "#2f363b",
+          "airCylinder": "#2a6fb0",
+          "windowGlass": "#7cc0d2"
+        }
+      },
+      "stats": {
+        "triangles": 3468,
+        "sizeM": [
+          5.637268,
+          3.2,
+          2.683988
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "skidSteel",
+          "color": "#4d5459",
+          "parts": [
+            "runner-0",
+            "runner-1",
+            "cross-member-0",
+            "cross-member-1",
+            "cross-member-2",
+            "cross-member-3",
+            "tow-eye-0",
+            "tow-eye-1",
+            "porthole-rim-0",
+            "porthole-rim-1",
+            "door-frame",
+            "door-1",
+            "hinge-0",
+            "hinge-1",
+            "rack-base",
+            "rack-top-rail",
+            "rack-post-0",
+            "rack-post-1",
+            "aircon-grille",
+            "lifting-lug-0-0",
+            "lifting-lug-0-1",
+            "lifting-lug-1-0",
+            "lifting-lug-1-1",
+            "service-panel"
+          ],
+          "param": "skidSteel"
+        },
+        {
+          "name": "shellPaint",
+          "color": "#e8781e",
+          "parts": [
+            "shell",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "door-0"
+          ],
+          "param": "shellPaint"
+        },
+        {
+          "name": "reflective-band-0",
+          "color": "#e9e9de",
+          "parts": [
+            "reflective-band-0",
+            "reflective-band-low-0",
+            "reflective-band-1",
+            "reflective-band-low-1",
+            "sign-cross-v",
+            "sign-cross-h",
+            "aircon-unit"
+          ]
+        },
+        {
+          "name": "windowGlass",
+          "color": "#6fa6b8",
+          "parts": [
+            "porthole-0",
+            "porthole-1",
+            "door-2"
+          ],
+          "param": "windowGlass"
+        },
+        {
+          "name": "doorway",
+          "color": "#16191b",
+          "parts": [
+            "doorway",
+            "door-3",
+            "door-4",
+            "aircon-fan",
+            "beacon-base",
+            "aerial"
+          ]
+        },
+        {
+          "name": "refuge-sign",
+          "color": "#1f8a4c",
+          "parts": [
+            "refuge-sign"
+          ]
+        },
+        {
+          "name": "airCylinder",
+          "color": "#3b3f44",
+          "parts": [
+            "air-cylinder-0",
+            "air-cylinder-1",
+            "air-cylinder-2",
+            "air-cylinder-3",
+            "air-cylinder-4"
+          ],
+          "param": "airCylinder"
+        },
+        {
+          "name": "cylinder-valve-0",
+          "color": "#b8a64a",
+          "parts": [
+            "cylinder-valve-0",
+            "cylinder-valve-1",
+            "cylinder-valve-2",
+            "cylinder-valve-3",
+            "cylinder-valve-4",
+            "air-manifold"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f2a516",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "coupler-0",
+          "color": "#c9b13a",
+          "parts": [
+            "coupler-0",
+            "coupler-1"
+          ]
+        },
+        {
+          "name": "coupler-2",
+          "color": "#2b6fd0",
+          "parts": [
+            "coupler-2"
+          ]
+        },
+        {
+          "name": "air-hose",
+          "color": "#2a2d30",
+          "parts": [
+            "air-hose"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "mining/mine-survey-tripod",
+    "pageUrl": "https://kernelcad.com/catalog/mining/mine-survey-tripod/",
+    "previewUrl": "https://kernelcad.com/catalog/mining/mine-survey-tripod/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/mining-mine-survey-tripod.kcad.ts",
+    "pageHttp": 200,
+    "pageTitle": "Mine survey tripod - free low-poly prop model (CC0) | kernelCAD",
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "ce3d8d3ab62fc54ba07e01bc8310d8eb1500da6ea42cae554ad3f70aa9ff13cc",
+    "publicSourceSha256": "ce3d8d3ab62fc54ba07e01bc8310d8eb1500da6ea42cae554ad3f70aa9ff13cc",
+    "sourceMatchesLocalBaseline": true,
+    "localPreviewSha256": "c4fd6f778894814c028329d03bfc0a960020df252a3de7251ccc7195f679b216",
+    "publicPreviewSha256": "c4fd6f778894814c028329d03bfc0a960020df252a3de7251ccc7195f679b216",
+    "previewMatchesLocalBaseline": true,
+    "indexSourceSha256": "ce3d8d3ab62fc54ba07e01bc8310d8eb1500da6ea42cae554ad3f70aa9ff13cc",
+    "indexPreview": "/assets/mining-mine-survey-tripod.png",
+    "indexRow": {
+      "id": "mine-survey-tripod",
+      "kit": "mining",
+      "title": "Mine survey tripod",
+      "description": "Mine survey set-up at real size: surveying tripod with three splayed twin-bar legs, aluminium sliding extensions with clamp blocks and screws, steel shoes with spikes and kick spurs, triangular head plate and centring screw, tribrach with three levelling screws, and an instrument choice. Total station: base with circular level, two standards, telescope with objective and eyepiece on the trunnion axis, screen and keypad, side drive knobs and carry handle. Laser scanner: box body with screen, two uprights and a mirror drum. A prism pole with circular prism, red and white bands and a bipod, and a hard carry case with handle and latches stand beside it. Material controls: tripod legs, leg metal, instrument housing and instrument trim. weathered, timberTripod and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mining",
+        "underground",
+        "surveying",
+        "total station",
+        "laser scanner",
+        "tripod",
+        "prism pole"
+      ],
+      "compat": [
+        "mining",
+        "mineral-processing",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/mining/mine-survey-tripod.kcad.ts",
+      "preview": "/assets/mining-mine-survey-tripod.png",
+      "sourceSha256": "ce3d8d3ab62fc54ba07e01bc8310d8eb1500da6ea42cae554ad3f70aa9ff13cc",
+      "triangleBudget": 1900,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "tripodLegs",
+          "type": "color",
+          "default": "#e2a72a",
+          "label": "Tripod legs"
+        },
+        {
+          "name": "legMetal",
+          "type": "color",
+          "default": "#b9bfc3",
+          "label": "Leg metal"
+        },
+        {
+          "name": "instrumentHousing",
+          "type": "color",
+          "default": "#ebe8de",
+          "label": "Instrument housing"
+        },
+        {
+          "name": "instrumentTrim",
+          "type": "color",
+          "default": "#c8352b",
+          "label": "Instrument trim"
+        },
+        {
+          "name": "instrument",
+          "type": "choice",
+          "default": "totalStation",
+          "label": "Instrument",
+          "choices": [
+            "totalStation",
+            "laserScanner"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "tripodLegs": "#a88a4e",
+          "legMetal": "#8e9294",
+          "instrumentHousing": "#c9c4b6",
+          "instrumentTrim": "#8a4a3a"
+        },
+        "timberTripod": {
+          "tripodLegs": "#a8723f",
+          "legMetal": "#9aa1a5",
+          "instrumentHousing": "#e4e6e8",
+          "instrumentTrim": "#2f5fa8"
+        },
+        "highVisibility": {
+          "tripodLegs": "#f08a1c",
+          "legMetal": "#c5ccca",
+          "instrumentHousing": "#f2f0e8",
+          "instrumentTrim": "#2a2d2f"
+        }
+      },
+      "stats": {
+        "triangles": 1464,
+        "sizeM": [
+          2.955438,
+          1.92,
+          1.602
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "legMetal",
+          "color": "#b9bfc3",
+          "parts": [
+            "head-plate",
+            "centring-screw",
+            "leg-0-hinge",
+            "leg-0-clamp",
+            "leg-0-extension",
+            "leg-1-hinge",
+            "leg-1-clamp",
+            "leg-1-extension",
+            "leg-2-hinge",
+            "leg-2-clamp",
+            "leg-2-extension",
+            "pole-top",
+            "bipod-leg-0",
+            "bipod-leg-1",
+            "case-latch-0",
+            "case-latch-1"
+          ],
+          "param": "legMetal"
+        },
+        {
+          "name": "tripodLegs",
+          "color": "#e2a72a",
+          "parts": [
+            "leg-0-bar-0",
+            "leg-0-bar-1",
+            "leg-1-bar-0",
+            "leg-1-bar-1",
+            "leg-2-bar-0",
+            "leg-2-bar-1"
+          ],
+          "param": "tripodLegs"
+        },
+        {
+          "name": "leg-0-clamp-screw",
+          "color": "#1f2224",
+          "parts": [
+            "leg-0-clamp-screw",
+            "leg-1-clamp-screw",
+            "leg-2-clamp-screw",
+            "tribrach-base",
+            "levelling-screw-0",
+            "levelling-screw-1",
+            "levelling-screw-2",
+            "tribrach-plate",
+            "screen-face",
+            "eyepiece",
+            "prism-holder",
+            "pole-bubble",
+            "case-lid-seam",
+            "case-handle"
+          ]
+        },
+        {
+          "name": "leg-0-shoe",
+          "color": "#6d7377",
+          "parts": [
+            "leg-0-shoe",
+            "leg-0-spike",
+            "leg-0-kick-spur",
+            "leg-1-shoe",
+            "leg-1-spike",
+            "leg-1-kick-spur",
+            "leg-2-shoe",
+            "leg-2-spike",
+            "leg-2-kick-spur",
+            "pole-tip"
+          ]
+        },
+        {
+          "name": "instrumentHousing",
+          "color": "#ebe8de",
+          "parts": [
+            "station-base",
+            "station-body",
+            "standard-0",
+            "standard-1",
+            "telescope"
+          ],
+          "param": "instrumentHousing"
+        },
+        {
+          "name": "circular-level",
+          "color": "#3d5f78",
+          "parts": [
+            "circular-level",
+            "screen",
+            "objective-glass",
+            "prism-glass"
+          ]
+        },
+        {
+          "name": "instrumentTrim",
+          "color": "#c8352b",
+          "parts": [
+            "trunnion-knob",
+            "vertical-drive",
+            "objective",
+            "handle",
+            "handle-post-0",
+            "handle-post-1",
+            "handle-grip",
+            "prism",
+            "case-shell"
+          ],
+          "param": "instrumentTrim"
+        },
+        {
+          "name": "pole-band-0",
+          "color": "#d23a2a",
+          "parts": [
+            "pole-band-0",
+            "pole-band-2",
+            "pole-band-4"
+          ]
+        },
+        {
+          "name": "pole-band-1",
+          "color": "#f2f2ee",
+          "parts": [
+            "pole-band-1",
+            "pole-band-3",
+            "pole-band-5"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "mining/mine-ventilation-fan",
+    "pageUrl": "https://kernelcad.com/catalog/mining/mine-ventilation-fan/",
+    "previewUrl": "https://kernelcad.com/catalog/mining/mine-ventilation-fan/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/mining-mine-ventilation-fan.kcad.ts",
+    "pageHttp": 200,
+    "pageTitle": "Mine ventilation fan station - free low-poly prop model (CC0) | kernelCAD",
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+    "publicSourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+    "sourceMatchesLocalBaseline": true,
+    "localPreviewSha256": "7b431480dd58b700df2412e91b21bc24bd1ff13bf0b95f58c605732e002bc393",
+    "publicPreviewSha256": "7b431480dd58b700df2412e91b21bc24bd1ff13bf0b95f58c605732e002bc393",
+    "previewMatchesLocalBaseline": true,
+    "indexSourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+    "indexPreview": "/assets/mining-mine-ventilation-fan.png",
+    "indexRow": {
+      "id": "mine-ventilation-fan",
+      "kit": "mining",
+      "title": "Mine ventilation fan station",
+      "description": "Surface main ventilation fan station at about real size: 3 m axial fan casing with flanges and stiffening rings, square inlet box with isolation damper and actuator, inlet duct rising out of a concrete upcast shaft collar, evase diffuser bending into a vertical discharge stack with a flared mouth, in-line drive motor on a pedestal with coupling guard and shaft, cable tray to an electrical house with VSD, door and air-conditioner. Material controls: fan and duct coating, structural steel, shaft-collar concrete, E-house cladding, plus a fan arrangement choice (single, twin duty/standby). weathered, highVisibility and greyPlant presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mining",
+        "underground",
+        "ventilation",
+        "main fan",
+        "axial fan",
+        "upcast shaft",
+        "evase",
+        "mine services"
+      ],
+      "compat": [
+        "mining",
+        "mineral-processing",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/mining/mine-ventilation-fan.kcad.ts",
+      "preview": "/assets/mining-mine-ventilation-fan.png",
+      "sourceSha256": "3103bca7604e80698d20c6efc3cdc9edc2dab8d26478a9d89700a8e32e4341e5",
+      "triangleBudget": 6600,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "coatedSteel",
+          "type": "color",
+          "default": "#3f8a5a",
+          "label": "Fan and duct coating"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#4f5b62",
+          "label": "Structural steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a19d94",
+          "label": "Shaft collar concrete"
+        },
+        {
+          "name": "cladding",
+          "type": "color",
+          "default": "#d9d4c7",
+          "label": "E-house cladding"
+        },
+        {
+          "name": "arrangement",
+          "type": "choice",
+          "default": "single",
+          "label": "Fan arrangement",
+          "choices": [
+            "single",
+            "twin"
+          ]
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#61705f",
+          "structuralSteel": "#666a66",
+          "concrete": "#8b8579",
+          "cladding": "#b4aea0"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "concrete": "#b3afa6",
+          "cladding": "#f0ede4"
+        },
+        "greyPlant": {
+          "coatedSteel": "#b9bec0",
+          "structuralSteel": "#2f5a8a",
+          "concrete": "#a8a49b",
+          "cladding": "#2f5a8a"
+        }
+      },
+      "stats": {
+        "triangles": 3236,
+        "sizeM": [
+          16.2,
+          10.4,
+          13.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "concrete",
+          "color": "#a19d94",
+          "parts": [
+            "slab",
+            "shaft-collar",
+            "collar-cap",
+            "stack-plinth-0",
+            "motor-pedestal-0"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3f8a5a",
+          "parts": [
+            "collar-riser",
+            "inlet-header",
+            "inlet-box-0",
+            "fan-casing-0",
+            "casing-ring-0--1200",
+            "casing-ring-0--400",
+            "casing-ring-0-400",
+            "casing-ring-0-1100",
+            "evase-0",
+            "bend-0-0",
+            "bend-0-1",
+            "bend-0-2",
+            "bend-0-3",
+            "discharge-stack-0",
+            "stack-mouth-0"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#4f5b62",
+          "parts": [
+            "header-end-flange--900",
+            "header-end-flange-6600",
+            "header-stiffener-0",
+            "header-stiffener-1600",
+            "header-stiffener-3200",
+            "header-stiffener-4800",
+            "header-support-0",
+            "header-support-1",
+            "damper-frame-0",
+            "inlet-box-base-0",
+            "casing-saddle-0",
+            "inspection-door-0",
+            "bend-flange-0-0",
+            "bend-flange-0-1",
+            "bend-flange-0-2",
+            "bend-flange-0-3",
+            "stack-ring-0-6000",
+            "stack-ring-0-8000",
+            "stack-stay-0--1--1",
+            "stack-stay-0--1-1",
+            "stack-stay-0-1--1",
+            "stack-stay-0-1-1",
+            "motor-0",
+            "motor-fin-0-4150",
+            "motor-fin-0-4370",
+            "motor-fin-0-4590",
+            "motor-fin-0-4810",
+            "motor-fin-0-5030",
+            "motor-fin-0-5250",
+            "motor-fin-0-5470",
+            "motor-fin-0-5690",
+            "motor-terminal-box-0",
+            "e-house-roof",
+            "e-house-skid",
+            "e-house-door",
+            "cable-tray"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "damper-actuator-0",
+          "color": "#e8c21e",
+          "parts": [
+            "damper-actuator-0",
+            "coupling-guard-0"
+          ]
+        },
+        {
+          "name": "door-handle-0",
+          "color": "#1e2123",
+          "parts": [
+            "door-handle-0",
+            "stack-throat-0",
+            "motor-fan-cowl-0",
+            "aircon-grille",
+            "cable-drop-0"
+          ]
+        },
+        {
+          "name": "drive-shaft-0",
+          "color": "#b5c0c0",
+          "parts": [
+            "drive-shaft-0"
+          ]
+        },
+        {
+          "name": "cladding",
+          "color": "#d9d4c7",
+          "parts": [
+            "e-house",
+            "e-house-aircon"
+          ],
+          "param": "cladding"
+        }
+      ]
+    }
+  }
+]

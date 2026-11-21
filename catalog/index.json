@@ -38798,7 +38798,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/beverage-blend-tank.kcad.ts",
       "preview": "/assets/beverage-bottling-line-beverage-blend-tank.png",
-      "sourceSha256": "734726728395b032ae36bc3624cf8d58ef5f6073ee5509c99f04e6f59ca74293",
+      "sourceSha256": "7432a6b58158f0ce53f3fdd086799426b3b42a9a7cc66ce44d5a7815e4b15f5c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -38859,6 +38859,7 @@
             "vessel-shell",
             "top-head",
             "bottom-head",
+            "jacket-band",
             "manway",
             "shaft",
             "impeller-a",
@@ -38873,7 +38874,6 @@
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
-            "jacket-band",
             "agitator-drive",
             "leg-0",
             "leg-1",
@@ -40565,7 +40565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-bottom-sealer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
-      "sourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
+      "sourceSha256": "bc900b35694f9dee94b1981b4a0b0e7f56d8fadc4ae0fea13f1a66c96fd79ea5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -40635,7 +40635,8 @@
             "infeed-bed",
             "outfeed-bed",
             "tower-left",
-            "tower-right"
+            "tower-right",
+            "tape-head"
           ],
           "param": "stainlessSteel"
         },
@@ -40643,7 +40644,6 @@
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "tape-head",
             "tape-roll",
             "guide-0",
             "guide-1",
@@ -41286,7 +41286,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-taper.png",
-      "sourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
+      "sourceSha256": "e2d04293ed7b555c55bd2a0d8b3079dbba24617b5c665e822ca6a53e17d6586c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -41362,8 +41362,7 @@
           "color": "#3999a1",
           "parts": [
             "infeed-belt",
-            "outfeed-belt",
-            "tape-head"
+            "outfeed-belt"
           ],
           "param": "foodPolymer"
         },
@@ -41374,6 +41373,7 @@
             "upright-front",
             "upright-back",
             "bridge",
+            "tape-head",
             "adjuster-front",
             "adjuster-back",
             "hmi"
@@ -42495,7 +42495,7 @@
       "id": "pet-blow-molder",
       "kit": "beverage-bottling-line",
       "title": "PET stretch blow molder",
-      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and the light-gray machine enclosure.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -42514,7 +42514,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pet-blow-molder.png",
-      "sourceSha256": "b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb",
+      "sourceSha256": "3264a72debdcd31f4fec39e465d97736612fdd76565d939307ed45a4bfdcffb0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -42537,16 +42537,24 @@
           "type": "color",
           "default": "#397e91",
           "label": "Powder-coated steel"
+        },
+        {
+          "name": "enclosureCoat",
+          "type": "color",
+          "default": "#d2dfe1",
+          "label": "Light-gray enclosure coating"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "enclosureCoat": "#e1e8ea"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "enclosureCoat": "#a4abad"
         }
       },
       "stats": {
@@ -42571,13 +42579,20 @@
           "param": "powderCoat"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "enclosureCoat",
+          "color": "#d2dfe1",
           "parts": [
             "machine-body",
             "service-door-left",
             "service-door-right",
-            "heating-tunnel",
+            "heating-tunnel"
+          ],
+          "param": "enclosureCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
             "mold-column-0",
             "mold-column-1",
             "mold-column-2",
@@ -65827,7 +65842,7 @@
       "id": "portable-core-drill-stand",
       "kit": "construction-equipment",
       "title": "Portable core drill stand",
-      "description": "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel for the stand, exposed structural steel for the carriage, feed handle and metal core-bit barrel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65846,7 +65861,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-core-drill-stand.kcad.ts",
       "preview": "/assets/construction-equipment-portable-core-drill-stand.png",
-      "sourceSha256": "287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a",
+      "sourceSha256": "65523ecd8560ed4cd256b1613e77c52e516a60399617b20cb574292f48fda633",
       "triangleBudget": 2200,
       "params": [
         {
@@ -65897,8 +65912,7 @@
           "color": "#e1a31b",
           "parts": [
             "drill-base",
-            "guide-column",
-            "core-bit"
+            "guide-column"
           ],
           "param": "equipmentPaintColor"
         },
@@ -65907,6 +65921,7 @@
           "color": "#89969a",
           "parts": [
             "drill-carriage",
+            "core-bit",
             "feed-handle"
           ],
           "param": "structuralSteelColor"
@@ -67401,7 +67416,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
       "preview": "/assets/construction-equipment-road-reclaimer.png",
-      "sourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+      "sourceSha256": "336a4a1d5269c0fe9417bbb9408156dc6f3cc0b49a1c973768578ba660db946e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -67481,7 +67496,14 @@
             "main-frame",
             "cutter-drum",
             "cutter-drum-hub--1",
-            "cutter-drum-hub-1"
+            "cutter-drum-hub-1",
+            "cutting-tooth-0",
+            "cutting-tooth-1",
+            "cutting-tooth-2",
+            "cutting-tooth-3",
+            "cutting-tooth-4",
+            "cutting-tooth-5",
+            "cutting-tooth-6"
           ],
           "param": "structuralSteelColor"
         },
@@ -67493,14 +67515,7 @@
             "operator-deck",
             "canopy-posts",
             "canopy",
-            "milling-hood",
-            "cutting-tooth-0",
-            "cutting-tooth-1",
-            "cutting-tooth-2",
-            "cutting-tooth-3",
-            "cutting-tooth-4",
-            "cutting-tooth-5",
-            "cutting-tooth-6"
+            "milling-hood"
           ],
           "param": "equipmentPaintColor"
         }
@@ -73823,7 +73838,7 @@
       "id": "distribution-panelboard",
       "kit": "data-center-infrastructure",
       "title": "Distribution panelboard",
-      "description": "Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+      "description": "Painted steel panelboard enclosure with hinged door, four rows of moulded polymer breakers, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -73843,7 +73858,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/distribution-panelboard.kcad.ts",
       "preview": "/assets/data-center-infrastructure-distribution-panelboard.png",
-      "sourceSha256": "9782409b729136b70401d515f9fda326ecfe45e0c610df06e44e9996af2c5c5b",
+      "sourceSha256": "7af2bb2401bf0a7e878c00b50114f37978ea8e13994d97d682959bde85c9ed56",
       "triangleBudget": 2200,
       "params": [
         {
@@ -73903,13 +73918,21 @@
           "parts": [
             "wall-enclosure",
             "door",
-            "interior-deadfront",
+            "interior-deadfront"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
             "breaker-row-0",
             "breaker-row-1",
             "breaker-row-2",
-            "breaker-row-3"
+            "breaker-row-3",
+            "door-latch"
           ],
-          "param": "steel"
+          "param": "polymer"
         },
         {
           "name": "rubber",
@@ -73918,14 +73941,6 @@
             "cable-entry"
           ],
           "param": "rubber"
-        },
-        {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "door-latch"
-          ],
-          "param": "polymer"
         }
       ]
     },
@@ -74197,7 +74212,7 @@
       "id": "emergency-power-off-station",
       "kit": "data-center-infrastructure",
       "title": "Emergency power-off station",
-      "description": "Wall-mounted protected control station with actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Wall-mounted protected control station with a red mushroom actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer, actuator polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -74217,7 +74232,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/emergency-power-off-station.kcad.ts",
       "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
-      "sourceSha256": "3070d3bf8b68ab9171cbfbf9e43dd35feccba7f345256d6a12fa656101fcc512",
+      "sourceSha256": "a7c1ddd8ad61e695da3cb28f9805134cdccc74793d180addbc7cc4ce5c40e61d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -74240,16 +74255,24 @@
           "type": "color",
           "default": "#f0c330",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "actuatorPolymer",
+          "type": "color",
+          "default": "#d42a20",
+          "label": "Actuator polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#b43b31",
-          "polymer": "#f0c330"
+          "polymer": "#f0c330",
+          "actuatorPolymer": "#d42a20"
         },
         "highVisibility": {
           "steel": "#d99b22",
-          "polymer": "#263e48"
+          "polymer": "#263e48",
+          "actuatorPolymer": "#e02a1c"
         }
       },
       "stats": {
@@ -74257,7 +74280,7 @@
         "sizeM": [
           0.32,
           0.42,
-          0.2895
+          0.2675
         ],
         "minUpM": 0,
         "materials": 1
@@ -74269,7 +74292,6 @@
           "parts": [
             "back-plate",
             "guard-hood",
-            "actuator-base",
             "label-panel"
           ],
           "param": "steel"
@@ -74279,9 +74301,17 @@
           "color": "#f0c330",
           "parts": [
             "control-body",
-            "push-button"
+            "actuator-base"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "actuatorPolymer",
+          "color": "#d42a20",
+          "parts": [
+            "push-button"
+          ],
+          "param": "actuatorPolymer"
         }
       ]
     },
@@ -74906,7 +74936,7 @@
       "id": "hot-aisle-containment-door",
       "kit": "data-center-infrastructure",
       "title": "Hot-aisle containment door",
-      "description": "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Aisle-end door assembly with uprights, two painted-steel door frames with clear polycarbonate panels, and pull handle. Knobs: overall scale; painted steel, clear polycarbonate glazing, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -74926,7 +74956,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/hot-aisle-containment-door.kcad.ts",
       "preview": "/assets/data-center-infrastructure-hot-aisle-containment-door.png",
-      "sourceSha256": "5c7e71cc89ae6975b12bf7328a7ee076fad24f672b977f7b14c330fd6a8e90df",
+      "sourceSha256": "736d3412a4de1c2b5d340f4e78dde6a70be125c413b8022cd71ed3c0ff76ae59",
       "triangleBudget": 2200,
       "params": [
         {
@@ -74945,6 +74975,12 @@
           "label": "Painted steel"
         },
         {
+          "name": "glazing",
+          "type": "color",
+          "default": "#9fd3dc",
+          "label": "Clear polycarbonate glazing"
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#c99b35",
@@ -74954,15 +74990,17 @@
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
+          "glazing": "#9fd3dc",
           "polymer": "#c99b35"
         },
         "highVisibility": {
           "steel": "#d99b22",
+          "glazing": "#c4e8ee",
           "polymer": "#263e48"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 212,
         "sizeM": [
           1.32,
           2.25,
@@ -74979,11 +75017,26 @@
             "left-jamb",
             "right-jamb",
             "header",
-            "door-panel-left",
-            "door-panel-right",
+            "door-stile-left-outer",
+            "door-stile-left-inner",
+            "door-rail-left-bottom",
+            "door-rail-left-top",
+            "door-stile-right-outer",
+            "door-stile-right-inner",
+            "door-rail-right-bottom",
+            "door-rail-right-top",
             "hinge-top"
           ],
           "param": "steel"
+        },
+        {
+          "name": "glazing",
+          "color": "#9fd3dc",
+          "parts": [
+            "door-glazing-left",
+            "door-glazing-right"
+          ],
+          "param": "glazing"
         },
         {
           "name": "polymer",
@@ -75101,7 +75154,7 @@
       "id": "leak-detection-module",
       "kit": "data-center-infrastructure",
       "title": "Leak detection module",
-      "description": "Water-leak monitor enclosure with probe terminals and floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+      "description": "Water-leak monitor enclosure with probe terminals and a moulded polymer floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75121,7 +75174,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/leak-detection-module.kcad.ts",
       "preview": "/assets/data-center-infrastructure-leak-detection-module.png",
-      "sourceSha256": "091628b97e4c7cb484671a99ebfb8aa9ecfba1f0aa492c14461ad68504cb1f64",
+      "sourceSha256": "d0b2d7ffec72fa28fcc2b575873233d9626f7b173aa67f6e3491cf8f8441c255",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75181,8 +75234,7 @@
           "parts": [
             "monitor-box",
             "probe-terminal-left",
-            "probe-terminal-right",
-            "floor-sensor-puck"
+            "probe-terminal-right"
           ],
           "param": "steel"
         },
@@ -75190,7 +75242,8 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "control-face"
+            "control-face",
+            "floor-sensor-puck"
           ],
           "param": "polymer"
         },
@@ -75208,7 +75261,7 @@
       "id": "liquid-cooling-manifold",
       "kit": "data-center-infrastructure",
       "title": "Liquid-cooling manifold",
-      "description": "Supply and return headers with evenly spaced branch outlets and support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Supply and return headers on two painted-steel support saddles, with five branch drops whose ball valves carry polymer lever grips. Knobs: overall scale; painted steel, valve lever polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75228,7 +75281,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/liquid-cooling-manifold.kcad.ts",
       "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
-      "sourceSha256": "678d7898e0b3bfad6dc7466e2642a39807e74495dd762420ab8baba7382587e8",
+      "sourceSha256": "79ba41e922abf5f693e51c134f4cdc147122636ba58e26d40c1082e2837ba342",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75250,7 +75303,7 @@
           "name": "polymer",
           "type": "color",
           "default": "#c99b35",
-          "label": "Engineering polymer"
+          "label": "Valve lever grips (engineering polymer)"
         }
       ],
       "presets": {
@@ -75264,7 +75317,7 @@
         }
       },
       "stats": {
-        "triangles": 552,
+        "triangles": 612,
         "sizeM": [
           1.7,
           0.74,
@@ -75275,17 +75328,10 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "support-base-left"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
+            "support-base-left",
             "support-base-right",
             "supply-header",
             "return-header",
@@ -75301,6 +75347,18 @@
             "branch-valve-4"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -75828,7 +75886,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-cable-ladder.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-cable-ladder.png",
-      "sourceSha256": "27899286652b62fb1b00930c4516de9cd65cead2602b4b8e217f5871438129a6",
+      "sourceSha256": "767d863b34595cf9f69c6311be9dd5389affe2f64b9d513810e5ecf4652fec70",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75894,8 +75952,7 @@
             "cross-rung-11",
             "cross-rung-12",
             "hanger-left",
-            "hanger-right",
-            "hanger-cap-right"
+            "hanger-right"
           ],
           "param": "steel"
         },
@@ -75903,7 +75960,8 @@
           "name": "polymer",
           "color": "#c99b35",
           "parts": [
-            "hanger-cap-left"
+            "hanger-cap-left",
+            "hanger-cap-right"
           ],
           "param": "polymer"
         }
@@ -75913,7 +75971,7 @@
       "id": "overhead-coolant-header",
       "kit": "data-center-infrastructure",
       "title": "Overhead coolant header",
-      "description": "Suspended supply and return pipes with branch drops and hanger brackets. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Suspended supply and return pipes with branch drops, polymer-grip isolation valve levers, and painted-steel hanger brackets at both ends. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -75933,7 +75991,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-coolant-header.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
-      "sourceSha256": "9252d10b8b18ee52062bcbfbbe5c8136eb496493826845e7f91d6e6d600f5d53",
+      "sourceSha256": "130fb6085de1b5867e379ca114ec0c4073bf40659c11f8e2c4da92c065f58335",
       "triangleBudget": 2200,
       "params": [
         {
@@ -75969,7 +76027,7 @@
         }
       },
       "stats": {
-        "triangles": 392,
+        "triangles": 452,
         "sizeM": [
           1.9,
           0.45,
@@ -75980,17 +76038,10 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "hanger-left"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
+            "hanger-left",
             "hanger-right",
             "supply-main",
             "return-main",
@@ -76006,6 +76057,18 @@
             "pipe-clamp-4"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c99b35",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -76013,7 +76076,7 @@
       "id": "overhead-power-busway",
       "kit": "data-center-infrastructure",
       "title": "Overhead power busway",
-      "description": "Enclosed busway segment with joined covers, hanger brackets, and end caps. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Enclosed steel busway segment with four matching sheet-steel joint covers, hanger bracket, and end caps. Knobs: overall scale; housing steel and joint-cover steel. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76033,7 +76096,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/overhead-power-busway.kcad.ts",
       "preview": "/assets/data-center-infrastructure-overhead-power-busway.png",
-      "sourceSha256": "4a301e802883fa8bcbd889cedb4e77db6443808f7c1b99629f3ef2efa5c00973",
+      "sourceSha256": "75e57a498475868e00725d4d70edcf868aa7f923927980641d39f0088c74e68b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76046,26 +76109,26 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "housingSteel",
           "type": "color",
           "default": "#4f7485",
-          "label": "Painted steel"
+          "label": "Painted steel housing and fittings"
         },
         {
-          "name": "polymer",
+          "name": "jointCoverSteel",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#4f7485",
+          "label": "Sheet-steel joint covers"
         }
       ],
       "presets": {
         "facilityStandard": {
-          "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "housingSteel": "#4f7485",
+          "jointCoverSteel": "#4f7485"
         },
         "highVisibility": {
-          "steel": "#d99b22",
-          "polymer": "#263e48"
+          "housingSteel": "#d99b22",
+          "jointCoverSteel": "#263e48"
         }
       },
       "stats": {
@@ -76080,10 +76143,11 @@
       },
       "palette": [
         {
-          "name": "steel",
+          "name": "housingSteel",
           "color": "#4f7485",
           "parts": [
             "busway-housing",
+            "cover-joint-0",
             "cover-joint-1",
             "cover-joint-2",
             "cover-joint-3",
@@ -76092,15 +76156,7 @@
             "hanger",
             "hanger-bolt"
           ],
-          "param": "steel"
-        },
-        {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "cover-joint-0"
-          ],
-          "param": "polymer"
+          "param": "housingSteel"
         }
       ]
     },
@@ -76108,7 +76164,7 @@
       "id": "perforated-floor-tile",
       "kit": "data-center-infrastructure",
       "title": "Perforated floor tile",
-      "description": "Airflow floor panel with a dense low-relief grille and four support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Perforated raised-floor tile: a painted-steel airflow panel with low-relief grille bars and polymer edge trim, carried 150 mm above the slab on four steel pedestals. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76128,7 +76184,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/perforated-floor-tile.kcad.ts",
       "preview": "/assets/data-center-infrastructure-perforated-floor-tile.png",
-      "sourceSha256": "576d768991933adcffd5286eb93bbfb0ab50a50e8ff86b3bdf30cdfeca045fb4",
+      "sourceSha256": "364db77d8995303c2a06092ed162674bdb2ce482f52b0bff54d55b27acd7c09b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76149,14 +76205,14 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#c99b35",
+          "default": "#2f3438",
           "label": "Engineering polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "polymer": "#2f3438"
         },
         "highVisibility": {
           "steel": "#d99b22",
@@ -76164,10 +76220,10 @@
         }
       },
       "stats": {
-        "triangles": 340,
+        "triangles": 376,
         "sizeM": [
           0.6,
-          0.15,
+          0.193,
           0.6
         ],
         "minUpM": 0,
@@ -76175,22 +76231,14 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "tile-panel"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
-            "edge-frame",
             "pedestal-0",
             "pedestal-1",
             "pedestal-2",
             "pedestal-3",
+            "tile-panel",
             "air-slot-bar-0",
             "air-slot-bar-1",
             "air-slot-bar-2",
@@ -76202,6 +76250,17 @@
             "lift-ring"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#2f3438",
+          "parts": [
+            "edge-trim-front",
+            "edge-trim-rear",
+            "edge-trim-left",
+            "edge-trim-right"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -76517,7 +76576,7 @@
       "id": "rack-kvm-console",
       "kit": "data-center-infrastructure",
       "title": "Rack KVM console",
-      "description": "Pull-out console tray with display housing, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
+      "description": "Pull-out console tray with a painted-steel display housing and glass screen, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76537,7 +76596,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/rack-kvm-console.kcad.ts",
       "preview": "/assets/data-center-infrastructure-rack-kvm-console.png",
-      "sourceSha256": "9d83918ebfb14b86f7c4bdadf558c52b0d9b819287e1e1e5d42f793cd4ec88ef",
+      "sourceSha256": "2e8cd61498f47f48aafd22f69f089a777b5138a80fb02d4ce68442ba1c352f4f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76573,7 +76632,7 @@
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 260,
         "sizeM": [
           0.56,
           0.395,
@@ -76593,6 +76652,7 @@
             "right-mounting-ear",
             "slide-rail-left",
             "slide-rail-right",
+            "display-housing",
             "keyboard-tray",
             "hinge-left",
             "hinge-right"
@@ -76603,7 +76663,7 @@
           "name": "glass",
           "color": "#42bac9",
           "parts": [
-            "display-housing"
+            "display-screen"
           ],
           "param": "glass"
         }
@@ -76844,7 +76904,7 @@
       "id": "raised-floor-tile",
       "kit": "data-center-infrastructure",
       "title": "Raised floor tile",
-      "description": "Square access-floor panel with support pedestals and edge stringers. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Square access-floor panel: a painted-steel tile with polymer edge trim and corner hold-down screws, carried 150 mm above the slab on four steel pedestals joined by stringers under its edges. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -76864,7 +76924,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/raised-floor-tile.kcad.ts",
       "preview": "/assets/data-center-infrastructure-raised-floor-tile.png",
-      "sourceSha256": "bd9f6d395619f2fff73014c8c1761513e43c9d72475e2f4ff2625e97851d1ced",
+      "sourceSha256": "2051977f161a7e18152a4f9c32fce1fd70b0692f8cba2f50584a264dcfd031a4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -76885,14 +76945,14 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#c99b35",
+          "default": "#2f3438",
           "label": "Engineering polymer"
         }
       ],
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
-          "polymer": "#c99b35"
+          "polymer": "#2f3438"
         },
         "highVisibility": {
           "steel": "#d99b22",
@@ -76900,10 +76960,10 @@
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 460,
         "sizeM": [
           0.6,
-          0.173,
+          0.188,
           0.6
         ],
         "minUpM": 0,
@@ -76911,27 +76971,35 @@
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#c99b35",
-          "parts": [
-            "tile-panel"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "steel",
           "color": "#4f7485",
           "parts": [
-            "edge-frame",
             "pedestal-0",
             "pedestal-1",
             "pedestal-2",
             "pedestal-3",
-            "stringer-x",
-            "stringer-y",
-            "corner-fastener"
+            "stringer-front",
+            "stringer-rear",
+            "stringer-left",
+            "stringer-right",
+            "tile-panel",
+            "corner-fastener-0",
+            "corner-fastener-1",
+            "corner-fastener-2",
+            "corner-fastener-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#2f3438",
+          "parts": [
+            "edge-trim-front",
+            "edge-trim-rear",
+            "edge-trim-left",
+            "edge-trim-right"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -77905,7 +77973,7 @@
       "id": "wall-mount-network-cabinet",
       "kit": "data-center-infrastructure",
       "title": "Wall-mount network cabinet",
-      "description": "Compact wall cabinet with framed door, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+      "description": "Compact wall cabinet with a painted-steel framed door with a tempered glass panel, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, tempered glass, rubber and elastomer. Presets: facilityStandard and highVisibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -77925,7 +77993,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/wall-mount-network-cabinet.kcad.ts",
       "preview": "/assets/data-center-infrastructure-wall-mount-network-cabinet.png",
-      "sourceSha256": "129c4a90d9d348f12cb4f67e46e6e518b9d1193fb47168ffc41f15450c22ef66",
+      "sourceSha256": "607265803ff450e0f3ae6f3832149e1cbe34dccb73b441ae271138ac5a17ffe5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -77944,6 +78012,12 @@
           "label": "Painted steel"
         },
         {
+          "name": "glass",
+          "type": "color",
+          "default": "#8fb8c4",
+          "label": "Tempered glass"
+        },
+        {
           "name": "rubber",
           "type": "color",
           "default": "#252a2d",
@@ -77953,15 +78027,17 @@
       "presets": {
         "facilityStandard": {
           "steel": "#4f7485",
+          "glass": "#8fb8c4",
           "rubber": "#252a2d"
         },
         "highVisibility": {
           "steel": "#d99b22",
+          "glass": "#c4e8ee",
           "rubber": "#2a3033"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 336,
         "sizeM": [
           0.72,
           0.943,
@@ -77985,7 +78061,10 @@
             "front-rail-right",
             "rear-crossbar",
             "rear-mounting-plate",
-            "front-door",
+            "door-stile-left",
+            "door-stile-right",
+            "door-rail-bottom",
+            "door-rail-top",
             "left-mounting-ear",
             "right-mounting-ear",
             "door-lock"
@@ -78000,6 +78079,14 @@
             "leveling-foot-front-right"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#8fb8c4",
+          "parts": [
+            "door-glass"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -81115,7 +81202,7 @@
       "id": "charger-status-display-post",
       "kit": "ev-charging-infrastructure",
       "title": "Charger status display post",
-      "description": "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
+      "description": "Wayfinding-height display post with a status screen in a black polymer screen bezel on the column head, a lower service cabinet and a slim base. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -81136,7 +81223,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-status-display-post.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
-      "sourceSha256": "20daadc1ccc16469e8dda6d16ce1b18afbd2c7458156d009b39abaff56e0e206",
+      "sourceSha256": "f8d76ff966d7bb4e51dd710b932ef90ccfee05129406aee0090f2740dccf5fa2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -81161,6 +81248,12 @@
           "label": "Display glass"
         },
         {
+          "name": "bezelPolymer",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Screen bezel (black polymer)"
+        },
+        {
           "name": "safetyPolymer",
           "type": "color",
           "default": "#f0b13c",
@@ -81177,22 +81270,24 @@
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
+          "bezelPolymer": "#18201e",
           "safetyPolymer": "#f3bd2f",
           "engineeringPolymer": "#263a36"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
+          "bezelPolymer": "#111618",
           "safetyPolymer": "#ffbf24",
           "engineeringPolymer": "#222d32"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 264,
         "sizeM": [
           0.5022,
           1.785,
-          0.32
+          0.321
         ],
         "minUpM": 0,
         "materials": 1
@@ -81209,18 +81304,10 @@
             "front-door",
             "vent-slot-1",
             "vent-slot-2",
-            "head-cap"
+            "head-cap",
+            "display-housing"
           ],
           "param": "powderCoat"
-        },
-        {
-          "name": "displayGlass",
-          "color": "#79cfda",
-          "parts": [
-            "display-bezel",
-            "display-window"
-          ],
-          "param": "displayGlass"
         },
         {
           "name": "safetyPolymer",
@@ -81229,6 +81316,22 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "bezelPolymer",
+          "color": "#1f2427",
+          "parts": [
+            "display-bezel"
+          ],
+          "param": "bezelPolymer"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-window"
+          ],
+          "param": "displayGlass"
         },
         {
           "name": "engineeringPolymer",
@@ -81683,7 +81786,7 @@
       "id": "compact-dc-fast-charger",
       "kit": "ev-charging-infrastructure",
       "title": "Compact DC fast charger",
-      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and plug handle polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -81704,7 +81807,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/compact-dc-fast-charger.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
-      "sourceSha256": "8a7cf0bca7503dd7e9b9daa6cfefedf5d0a08bf90d956749171078bc0a6cc997",
+      "sourceSha256": "8758927f921e04fb9f578366aae2d6847c4201d627429406f893c92cf122105b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -81739,6 +81842,12 @@
           "type": "color",
           "default": "#f0b13c",
           "label": "Safety-colored polymer"
+        },
+        {
+          "name": "connectorPolymer",
+          "type": "color",
+          "default": "#2a3033",
+          "label": "Plug handle and contact collar (moulded polymer)"
         }
       ],
       "presets": {
@@ -81746,13 +81855,15 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "cableElastomer": "#1a2522",
-          "safetyPolymer": "#f3bd2f"
+          "safetyPolymer": "#f3bd2f",
+          "connectorPolymer": "#262c2b"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "cableElastomer": "#111719",
-          "safetyPolymer": "#ffbf24"
+          "safetyPolymer": "#ffbf24",
+          "connectorPolymer": "#1c2124"
         }
       },
       "stats": {
@@ -81781,11 +81892,7 @@
             "vent-slot-5",
             "roof-visor",
             "left-connector-cradle",
-            "right-connector-cradle",
-            "left-connector-handle",
-            "right-connector-handle",
-            "left-contact-collar",
-            "right-contact-collar"
+            "right-connector-cradle"
           ],
           "param": "powderCoat"
         },
@@ -81814,6 +81921,17 @@
             "right-charging-cable"
           ],
           "param": "cableElastomer"
+        },
+        {
+          "name": "connectorPolymer",
+          "color": "#2a3033",
+          "parts": [
+            "left-connector-handle",
+            "right-connector-handle",
+            "left-contact-collar",
+            "right-contact-collar"
+          ],
+          "param": "connectorPolymer"
         }
       ]
     },
@@ -83429,7 +83547,7 @@
       "id": "fleet-depot-dc-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "Fleet depot DC dispenser",
-      "description": "Fleet charger post with twin high-reach cables, overhead cable guides, and a reinforced foot. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Fleet charger post with twin high-reach cables, overhead cable guides, a reinforced foot and a status screen in a black polymer bezel. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -83450,7 +83568,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/fleet-depot-dc-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-fleet-depot-dc-dispenser.png",
-      "sourceSha256": "5fe86f83e39627c658f933a030b946cb1dea7212dd740bcf244909cfff6121b7",
+      "sourceSha256": "e237cd5c701725d325253e2f7cc3d6d9acab40a7fcef8b9e9b4915ba538531bf",
       "triangleBudget": 2400,
       "params": [
         {
@@ -83475,6 +83593,12 @@
           "label": "Display glass"
         },
         {
+          "name": "bezelPolymer",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Screen bezel (black polymer)"
+        },
+        {
           "name": "cableElastomer",
           "type": "color",
           "default": "#1b2427",
@@ -83491,12 +83615,14 @@
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
+          "bezelPolymer": "#18201e",
           "cableElastomer": "#1a2522",
           "safetyPolymer": "#f3bd2f"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
+          "bezelPolymer": "#111618",
           "cableElastomer": "#111719",
           "safetyPolymer": "#ffbf24"
         }
@@ -83532,10 +83658,17 @@
           "param": "powderCoat"
         },
         {
+          "name": "bezelPolymer",
+          "color": "#1f2427",
+          "parts": [
+            "display-bezel"
+          ],
+          "param": "bezelPolymer"
+        },
+        {
           "name": "displayGlass",
           "color": "#79cfda",
           "parts": [
-            "display-bezel",
             "display-window"
           ],
           "param": "displayGlass"
@@ -83563,7 +83696,7 @@
       "id": "high-power-charge-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "High-power charge dispenser",
-      "description": "Tall high-power dispenser with a broad screen, paired cable outlets, and service plinth. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Tall high-power dispenser with a broad screen in a black polymer bezel, paired cable outlets, and service plinth. Knobs: overall scale and powder-coated metal, display glass, screen bezel polymer, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -83584,7 +83717,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/high-power-charge-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
-      "sourceSha256": "ac819ef56edb43bcea64a9c840bdf8dbe5a6926b56f25f35becce35aad0d5e2b",
+      "sourceSha256": "2432b4059bde79c83b69b9c1dfa0741d7a5a4e372b669c3b71090467d8822874",
       "triangleBudget": 2400,
       "params": [
         {
@@ -83609,6 +83742,12 @@
           "label": "Display glass"
         },
         {
+          "name": "bezelPolymer",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Screen bezel (black polymer)"
+        },
+        {
           "name": "cableElastomer",
           "type": "color",
           "default": "#1b2427",
@@ -83625,12 +83764,14 @@
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
+          "bezelPolymer": "#18201e",
           "cableElastomer": "#1a2522",
           "safetyPolymer": "#f3bd2f"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
+          "bezelPolymer": "#111618",
           "cableElastomer": "#111719",
           "safetyPolymer": "#ffbf24"
         }
@@ -83667,10 +83808,17 @@
           "param": "powderCoat"
         },
         {
+          "name": "bezelPolymer",
+          "color": "#1f2427",
+          "parts": [
+            "display-bezel"
+          ],
+          "param": "bezelPolymer"
+        },
+        {
           "name": "displayGlass",
           "color": "#79cfda",
           "parts": [
-            "display-bezel",
             "display-window"
           ],
           "param": "displayGlass"
@@ -84092,7 +84240,7 @@
       "id": "mobile-fast-charge-cart",
       "kit": "ev-charging-infrastructure",
       "title": "Mobile fast-charge cart",
-      "description": "Portable charging cart with a compact power enclosure, cable reel, handle, and casters. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+      "description": "Portable charging cart with a compact power enclosure on a low chassis, four rubber-tyred wheels on painted hubs, a push handle, and a cable reel. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and wheel tyre rubber color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -84113,7 +84261,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/mobile-fast-charge-cart.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
-      "sourceSha256": "bd45d11c537cfab8b99002db6d40d62c74c74ad8b7b74e5afc411747cc54600d",
+      "sourceSha256": "4a69a1e32b2214f00f51e122dcaf253673afade8a4b197ba846f2c5fdcff791b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84148,6 +84296,12 @@
           "type": "color",
           "default": "#f0b13c",
           "label": "Safety-colored polymer"
+        },
+        {
+          "name": "tyreRubber",
+          "type": "color",
+          "default": "#23282b",
+          "label": "Wheel tyre rubber"
         }
       ],
       "presets": {
@@ -84155,21 +84309,23 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "cableElastomer": "#1a2522",
-          "safetyPolymer": "#f3bd2f"
+          "safetyPolymer": "#f3bd2f",
+          "tyreRubber": "#1c2421"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "cableElastomer": "#111719",
-          "safetyPolymer": "#ffbf24"
+          "safetyPolymer": "#ffbf24",
+          "tyreRubber": "#3a4044"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 672,
         "sizeM": [
-          0.82,
+          0.956,
           1.182,
-          1.178
+          1.05
         ],
         "minUpM": 0,
         "materials": 1
@@ -84187,8 +84343,12 @@
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
-            "left-wheel",
-            "right-wheel",
+            "left-wheel-hub",
+            "right-wheel-hub",
+            "rear-left-wheel-hub",
+            "rear-right-wheel-hub",
+            "handle-bracket-left",
+            "handle-bracket-right",
             "push-handle",
             "cable-reel"
           ],
@@ -84210,6 +84370,17 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "tyreRubber",
+          "color": "#23282b",
+          "parts": [
+            "left-wheel",
+            "right-wheel",
+            "rear-left-wheel",
+            "rear-right-wheel"
+          ],
+          "param": "tyreRubber"
         },
         {
           "name": "cableElastomer",
@@ -84952,7 +85123,7 @@
       "id": "parking-cable-protection-ramp",
       "kit": "ev-charging-infrastructure",
       "title": "Parking cable protection ramp",
-      "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
+      "description": "Moulded rubber drive-over cable bridge with sloped flanks, two high-visibility polymer lids, sloped end caps, and bolt-down ground anchors. Knobs: overall scale and moulded rubber, polymer lid and anchor steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -84973,7 +85144,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/parking-cable-protection-ramp.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
-      "sourceSha256": "a8da51f1170bbe77c0aa17309e60fb343104e53b5f7a8655d3b4a907db809bc0",
+      "sourceSha256": "48c4b63ae6144fafada81dbc9fd359bba1f68a7b3991f0695003882f2db2006c",
       "triangleBudget": 2400,
       "params": [
         {
@@ -84986,60 +85157,77 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "rampElastomer",
           "type": "color",
-          "default": "#397f90",
-          "label": "Powder-coated metal"
+          "default": "#474b50",
+          "label": "Moulded rubber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "coverPolymer",
+          "type": "color",
+          "default": "#f2b824",
+          "label": "High-visibility polymer lid"
+        },
+        {
+          "name": "anchorSteel",
           "type": "color",
           "default": "#b5c0c2",
-          "label": "Stainless steel"
+          "label": "Galvanized anchor steel"
         }
       ],
       "presets": {
         "fleetReady": {
-          "powderCoat": "#28765f",
-          "stainlessSteel": "#c2c9c8"
+          "rampElastomer": "#3f4a45",
+          "coverPolymer": "#f07a1a",
+          "anchorSteel": "#c2c9c8"
         },
         "nightService": {
-          "powderCoat": "#3f5059",
-          "stainlessSteel": "#c8cecd"
+          "rampElastomer": "#52565c",
+          "coverPolymer": "#e3e23c",
+          "anchorSteel": "#c8cecd"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 240,
         "sizeM": [
-          1.33,
-          0.15,
-          0.36
+          1.24,
+          0.078,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c2",
+          "name": "rampElastomer",
+          "color": "#474b50",
           "parts": [
             "ramp-base",
-            "anchor-left",
-            "anchor-right"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#397f90",
-          "parts": [
-            "cover-left",
-            "cover-right",
             "center-divider",
             "end-slope-left",
             "end-slope-right"
           ],
-          "param": "powderCoat"
+          "param": "rampElastomer"
+        },
+        {
+          "name": "coverPolymer",
+          "color": "#f2b824",
+          "parts": [
+            "cover-left",
+            "cover-right"
+          ],
+          "param": "coverPolymer"
+        },
+        {
+          "name": "anchorSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "anchor-left",
+            "anchor-right",
+            "anchor-left-rear",
+            "anchor-right-rear"
+          ],
+          "param": "anchorSteel"
         }
       ]
     },
@@ -85254,7 +85442,7 @@
       "id": "rfid-access-reader-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "RFID access reader pedestal",
-      "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and powder-coated metal, display glass and stainless steel color controls.",
+      "description": "Short access pedestal with a reader face, a green status lamp below it, and a floor plate. Knobs: overall scale and powder-coated metal, display glass, stainless steel and indicator polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -85275,7 +85463,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/rfid-access-reader-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
-      "sourceSha256": "6451c365b43c2d3b30e670b8783789ed70b8054c6edfae6a3590f060d2ac0221",
+      "sourceSha256": "ecf66af57248163d7a068d6845e7ee01ea0a128ece659de040dc906f3ce82609",
       "triangleBudget": 2400,
       "params": [
         {
@@ -85304,18 +85492,26 @@
           "type": "color",
           "default": "#b5c0c2",
           "label": "Stainless steel"
+        },
+        {
+          "name": "indicatorPolymer",
+          "type": "color",
+          "default": "#48b866",
+          "label": "Indicator polymer"
         }
       ],
       "presets": {
         "fleetReady": {
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
-          "stainlessSteel": "#c2c9c8"
+          "stainlessSteel": "#c2c9c8",
+          "indicatorPolymer": "#4fc06a"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
-          "stainlessSteel": "#c8cecd"
+          "stainlessSteel": "#c8cecd",
+          "indicatorPolymer": "#3ddc84"
         }
       },
       "stats": {
@@ -85343,7 +85539,6 @@
           "color": "#397f90",
           "parts": [
             "reader-face",
-            "status-lamp",
             "cap"
           ],
           "param": "powderCoat"
@@ -85355,6 +85550,14 @@
             "reader-window"
           ],
           "param": "displayGlass"
+        },
+        {
+          "name": "indicatorPolymer",
+          "color": "#48b866",
+          "parts": [
+            "status-lamp"
+          ],
+          "param": "indicatorPolymer"
         }
       ]
     },
@@ -85362,7 +85565,7 @@
       "id": "site-energy-management-controller",
       "kit": "ev-charging-infrastructure",
       "title": "Site energy management controller",
-      "description": "Wall enclosure with a control screen, antenna pair, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
+      "description": "Wall enclosure on a rear mounting plate, with a control screen, a pair of polymer-sheathed antennas on steel connectors, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer, stainless steel and antenna radome polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -85383,7 +85586,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/site-energy-management-controller.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
-      "sourceSha256": "2861706f6da1a1ccd2acb06c5366a0bf9943d34ea50ac0569442622ebd64dfb6",
+      "sourceSha256": "5d106e1902589ade776cfe428791710c061e9e00a21f55094fa18f5024b27d93",
       "triangleBudget": 2400,
       "params": [
         {
@@ -85418,6 +85621,12 @@
           "type": "color",
           "default": "#b5c0c2",
           "label": "Stainless steel"
+        },
+        {
+          "name": "antennaPolymer",
+          "type": "color",
+          "default": "#2b3236",
+          "label": "Antenna radome polymer"
         }
       ],
       "presets": {
@@ -85425,21 +85634,23 @@
           "powderCoat": "#28765f",
           "displayGlass": "#46b8c4",
           "safetyPolymer": "#f3bd2f",
-          "stainlessSteel": "#c2c9c8"
+          "stainlessSteel": "#c2c9c8",
+          "antennaPolymer": "#1f2a27"
         },
         "nightService": {
           "powderCoat": "#3f5059",
           "displayGlass": "#11bfd0",
           "safetyPolymer": "#ffbf24",
-          "stainlessSteel": "#c8cecd"
+          "stainlessSteel": "#c8cecd",
+          "antennaPolymer": "#e6e9e6"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 328,
         "sizeM": [
           0.56,
-          1.1,
-          0.352
+          1.082,
+          0.3585
         ],
         "minUpM": 0,
         "materials": 1
@@ -85451,7 +85662,9 @@
           "parts": [
             "mounting-plate",
             "vent-slot-1",
-            "vent-slot-2"
+            "vent-slot-2",
+            "antenna-mount-left",
+            "antenna-mount-right"
           ],
           "param": "stainlessSteel"
         },
@@ -85462,8 +85675,6 @@
             "main-enclosure",
             "top-cap",
             "front-door",
-            "antenna-left",
-            "antenna-right",
             "cable-gland-strip"
           ],
           "param": "powderCoat"
@@ -85484,6 +85695,15 @@
             "status-button"
           ],
           "param": "safetyPolymer"
+        },
+        {
+          "name": "antennaPolymer",
+          "color": "#2b3236",
+          "parts": [
+            "antenna-left",
+            "antenna-right"
+          ],
+          "param": "antennaPolymer"
         }
       ]
     },
@@ -125012,7 +125232,7 @@
       "id": "substation-transformer-radiator-bank",
       "kit": "grid-substation",
       "title": "Transformer radiator bank",
-      "description": "Fin bank with header rails and end manifolds for a transformer cooling scene. Material controls: transformer enamel, stainless steel, copper; finish presets: weathered and maintenance.",
+      "description": "Fin bank with header rails and steel oil manifolds for a transformer cooling scene. Material controls: transformer enamel and stainless steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -125031,7 +125251,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-transformer-radiator-bank.kcad.ts",
       "preview": "/assets/grid-substation-substation-transformer-radiator-bank.png",
-      "sourceSha256": "b51f82efbc8bb27b3f8096920873976bdee55c948868f1f47229effa05321e62",
+      "sourceSha256": "011932316644e8ff0a0ebfb40b8f81de0661bb600a12ced2b50ca43a2ec53eec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -125054,19 +125274,12 @@
           "type": "color",
           "default": "#b5c0c0",
           "label": "Stainless steel"
-        },
-        {
-          "name": "copper",
-          "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
         }
       ],
       "presets": {
         "weathered": {
           "transformerEnamel": "#5a6c53",
-          "stainlessSteel": "#9da4a0",
-          "copper": "#9f704a"
+          "stainlessSteel": "#9da4a0"
         },
         "maintenance": {
           "transformerEnamel": "#9a7040"
@@ -125105,18 +125318,11 @@
             "radiator-fin-7",
             "radiator-fin-8",
             "radiator-fin-9",
-            "radiator-fin-10"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "copper",
-          "color": "#b87545",
-          "parts": [
+            "radiator-fin-10",
             "inlet-manifold",
             "outlet-manifold"
           ],
-          "param": "copper"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -125503,7 +125709,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-yard-barrier-section.kcad.ts",
       "preview": "/assets/grid-substation-substation-yard-barrier-section.png",
-      "sourceSha256": "a68df861a788242b9ef5c1beadc21d1b080ad6d7bd473e69482752ef6d7d0427",
+      "sourceSha256": "3522a8e37a142cb5585dea87b7fe83a007d1e43ac6cd9e86243bef19ec21acbd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -125564,7 +125770,6 @@
             "upright-2",
             "upright-3",
             "upright-4",
-            "foot-2",
             "diagonal-safety-brace"
           ],
           "param": "galvanizedSteel"
@@ -125581,7 +125786,8 @@
           "name": "concrete",
           "color": "#92938b",
           "parts": [
-            "foot"
+            "foot",
+            "foot-2"
           ],
           "param": "concrete"
         }
@@ -140544,7 +140750,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
       "preview": "/assets/industrial-plant-air-compressor.png",
-      "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+      "sourceSha256": "552252cf26ea0ffcf5ca21654da2544a24481fdaf229ea733c61477b0d8bd098",
       "triangleBudget": 5200,
       "params": [
         {
@@ -140692,20 +140898,8 @@
             "motor-cooling-fin-6",
             "motor-cooling-fin-7",
             "motor-cooling-fin-8",
-            "pump-fin-0-0",
-            "pump-fin-0-1",
-            "pump-fin-0-2",
-            "pump-fin-0-3",
-            "pump-fin-0-4",
-            "pump-fin-0-5",
             "head-bolt-0--28",
             "head-bolt-0-28",
-            "pump-fin-1-0",
-            "pump-fin-1-1",
-            "pump-fin-1-2",
-            "pump-fin-1-3",
-            "pump-fin-1-4",
-            "pump-fin-1-5",
             "head-bolt-1--28",
             "head-bolt-1-28",
             "intake-neck",
@@ -140727,9 +140921,21 @@
             "pump-crankcase",
             "pump-crankcase-end",
             "pump-barrel-0",
+            "pump-fin-0-0",
+            "pump-fin-0-1",
+            "pump-fin-0-2",
+            "pump-fin-0-3",
+            "pump-fin-0-4",
+            "pump-fin-0-5",
             "pump-head-0",
             "head-cap-0",
             "pump-barrel-1",
+            "pump-fin-1-0",
+            "pump-fin-1-1",
+            "pump-fin-1-2",
+            "pump-fin-1-3",
+            "pump-fin-1-4",
+            "pump-fin-1-5",
             "pump-head-1",
             "head-cap-1",
             "motor-pulley",
@@ -141183,7 +141389,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bridge-crane.kcad.ts",
       "preview": "/assets/industrial-plant-bridge-crane.png",
-      "sourceSha256": "202720f34b14125a5a9da0b4694653a4deddad8cbb4d402177bf067abe6d5c29",
+      "sourceSha256": "3c1f349d038b6300b3620175cca8fbef308463d986758aa8db8daf064308c238",
       "triangleBudget": 6000,
       "params": [
         {
@@ -141343,7 +141549,6 @@
             "walkway-bracket--400",
             "walkway-bracket-1200",
             "walkway-bracket-2800",
-            "hoist-motor",
             "pendant-box"
           ],
           "param": "girder"
@@ -141373,6 +141578,7 @@
             "drum-bearing--700",
             "drum-bearing-700",
             "hoist-gearbox",
+            "hoist-motor",
             "trolley-cover",
             "hook-crosshead",
             "hook-nut"
@@ -141806,7 +142012,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cable-tray-bridge.kcad.ts",
       "preview": "/assets/industrial-plant-cable-tray-bridge.png",
-      "sourceSha256": "9b95bfd52a0b606f1ae22f7cd0cbddcdedae6a8b692e1b8f66e54d636a117471",
+      "sourceSha256": "02d071de5a7c93767cc34ff7f5725fcb2c730ab1dc44bacd20bca1164705d318",
       "triangleBudget": 1400,
       "params": [
         {
@@ -141852,21 +142058,12 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#dda743",
-          "parts": [
-            "side-rail--1",
-            "foot--1",
-            "side-rail-1",
-            "foot-1"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "steel",
           "color": "#718087",
           "parts": [
+            "side-rail--1",
             "support-upright--1",
+            "side-rail-1",
             "support-upright-1",
             "tray-rung-0",
             "tray-rung-1",
@@ -141878,6 +142075,15 @@
             "tray-rung-7"
           ],
           "param": "steel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#dda743",
+          "parts": [
+            "foot--1",
+            "foot-1"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -143457,7 +143663,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electrical-control-cabinet.kcad.ts",
       "preview": "/assets/industrial-plant-electrical-control-cabinet.png",
-      "sourceSha256": "df37db08ab726175b408ce8d39cdb5549274e26715aa8e7b0db738d15d83d142",
+      "sourceSha256": "801c352d1d34fb4fe314f3d92409341ec53d78b5ac915be6972ab51ed4f81e5c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -143514,7 +143720,6 @@
           "color": "#dfa746",
           "parts": [
             "plinth",
-            "door-0",
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
@@ -143527,6 +143732,7 @@
           "color": "#687a83",
           "parts": [
             "enclosure",
+            "door-0",
             "handle-0",
             "door-1",
             "handle-1",
@@ -144939,7 +145145,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
       "preview": "/assets/industrial-plant-inline-flow-meter.png",
-      "sourceSha256": "c1c311175d44589d70131bae3682f1474b41c56b5b48261837ab451bd5dbfa76",
+      "sourceSha256": "df4482742120e34e45f69c56077655515eb91b0b4f7dcb56ed059ffd3cd6d8fc",
       "triangleBudget": 1400,
       "params": [
         {
@@ -144996,6 +145202,8 @@
           "color": "#6e7e84",
           "parts": [
             "pipe-run",
+            "flange--1",
+            "flange-1",
             "cable-gland",
             "instrument-neck"
           ],
@@ -145005,8 +145213,6 @@
           "name": "safetyPaint",
           "color": "#e1aa48",
           "parts": [
-            "flange--1",
-            "flange-1",
             "meter-housing"
           ],
           "param": "safetyPaint"
@@ -145456,7 +145662,7 @@
       "id": "motor-control-center",
       "kit": "industrial-plant",
       "title": "Motor control center",
-      "description": "Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
+      "description": "Motor-control-center lineup with three matching steel cabinet sections, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -145475,7 +145681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/motor-control-center.kcad.ts",
       "preview": "/assets/industrial-plant-motor-control-center.png",
-      "sourceSha256": "0439eda8121bc80b33676da3fe199da9285b7d719d5d2ea5ff2ba9848433e3c7",
+      "sourceSha256": "ce31e560fe5d397f3d1b3189f0617b3cf99216962f344bd8b726b19aa67ec242",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145526,7 +145732,6 @@
           "parts": [
             "shared-plinth",
             "operator-panel-0",
-            "bay-1",
             "operator-panel-1",
             "operator-panel-2",
             "top-cable-duct"
@@ -145541,6 +145746,7 @@
             "bay-door-0",
             "pushbutton-0-0",
             "pushbutton-0-1",
+            "bay-1",
             "bay-door-1",
             "pushbutton-1-0",
             "pushbutton-1-1",
@@ -145576,7 +145782,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
       "preview": "/assets/industrial-plant-packed-scrubber-column.png",
-      "sourceSha256": "e23c17496117618fe7bdfc2e74c51b4d31b89addea0d5171aa81fd4b0e8189f0",
+      "sourceSha256": "73a5d84961c19b3c34311b7f92633d42fb50a4f5a961d18fc9975791f0da12f1",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145627,12 +145833,15 @@
           "parts": [
             "shell",
             "roof-cap",
+            "top-nozzle",
             "deck-post-0",
             "deck-post-1",
+            "sump",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3",
+            "side-nozzle",
             "side-flange",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -145648,15 +145857,12 @@
           "color": "#dca84a",
           "parts": [
             "roof-lip",
-            "top-nozzle",
             "service-deck-0",
             "service-deck-1",
-            "sump",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
             "support-leg-3",
-            "side-nozzle",
             "ladder-left-rail",
             "ladder-right-rail"
           ],
@@ -145767,7 +145973,7 @@
       "id": "palletizer-robot-cell",
       "kit": "industrial-plant",
       "title": "Palletizer robot cell",
-      "description": "Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, steel, safety paint.",
+      "description": "Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, concrete, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -145786,7 +145992,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
       "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
-      "sourceSha256": "7a7a33dd0ecc04f58ddad77029a7ed00a38200c760bdfbc0aaea632437e5eb18",
+      "sourceSha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145809,14 +146015,22 @@
           "type": "color",
           "default": "#e9a43b",
           "label": "Safety paint"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8a8e89",
+          "label": "Concrete floor"
         }
       ],
       "presets": {
         "weathered": {
+          "concrete": "#777a75",
           "steel": "#575851",
           "safetyPaint": "#9e722f"
         },
         "highVisibility": {
+          "concrete": "#b5b8b3",
           "safetyPaint": "#f5c640"
         }
       },
@@ -145832,18 +146046,12 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e9a43b",
+          "name": "concrete",
+          "color": "#8a8e89",
           "parts": [
-            "cell-floor",
-            "fence-post--1",
-            "fence-post-1",
-            "robot-pedestal",
-            "robot-upper-arm",
-            "robot-forearm",
-            "gate-leaf"
+            "cell-floor"
           ],
-          "param": "safetyPaint"
+          "param": "concrete"
         },
         {
           "name": "steel",
@@ -145857,6 +146065,19 @@
             "gripper"
           ],
           "param": "steel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e9a43b",
+          "parts": [
+            "fence-post--1",
+            "fence-post-1",
+            "robot-pedestal",
+            "robot-upper-arm",
+            "robot-forearm",
+            "gate-leaf"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -145883,7 +146104,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts",
       "preview": "/assets/industrial-plant-pipe-rack-bay.png",
-      "sourceSha256": "d52709db84181ed4d8ee563bb15bdf5cb79d1b967cbc1466e56b2c8da7cf21cc",
+      "sourceSha256": "707c86165fd48eff9fb8dd1ce9fbb9e8882f6128ef47b868c4f409a918f892cc",
       "triangleBudget": 1400,
       "params": [
         {
@@ -145933,8 +146154,12 @@
           "color": "#707d84",
           "parts": [
             "support-column--1",
+            "baseplate--1",
+            "crossbeam--1",
             "brace--1",
             "support-column-1",
+            "baseplate-1",
+            "crossbeam-1",
             "brace-1",
             "pipe-run-0",
             "pipe-run-2"
@@ -145945,10 +146170,6 @@
           "name": "safetyPaint",
           "color": "#e2a844",
           "parts": [
-            "baseplate--1",
-            "crossbeam--1",
-            "baseplate-1",
-            "crossbeam-1",
             "pipe-flange-0",
             "pipe-run-1",
             "pipe-flange-1",
@@ -146089,7 +146310,7 @@
       "id": "plc-control-rack",
       "kit": "industrial-plant",
       "title": "PLC control rack",
-      "description": "Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. Controls: overall scale, steel, safety paint.",
+      "description": "Open PLC rack with modular I/O cards, green channel and RUN indicators, red ERROR indicators, steel side rails and wire duct. Controls: overall scale, steel, channel LED, RUN LED and ERROR LED colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146108,7 +146329,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plc-control-rack.kcad.ts",
       "preview": "/assets/industrial-plant-plc-control-rack.png",
-      "sourceSha256": "9057fee69824c4770e30388643dd5409dee0fc036437b89f12b7298db5745f1b",
+      "sourceSha256": "2681dc24139979918ff90d6a2a710b8fda2b5f00f615d09041f9447d671dda73",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146127,19 +146348,35 @@
           "label": "Structural steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "channelLed",
           "type": "color",
-          "default": "#dfa844",
-          "label": "Safety paint"
+          "default": "#4faf6e",
+          "label": "Channel status LED lens"
+        },
+        {
+          "name": "runLed",
+          "type": "color",
+          "default": "#4faf6e",
+          "label": "RUN status LED lens"
+        },
+        {
+          "name": "errorLed",
+          "type": "color",
+          "default": "#8a4449",
+          "label": "ERROR status LED lens"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "channelLed": "#438f5c",
+          "runLed": "#438f5c",
+          "errorLed": "#763e43"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "channelLed": "#55cf78",
+          "runLed": "#55cf78",
+          "errorLed": "#c44e52"
         }
       },
       "stats": {
@@ -146154,41 +146391,13 @@
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#dfa844",
-          "parts": [
-            "rack-base",
-            "top-crossbar",
-            "io-card-0",
-            "card-led-0-0",
-            "card-led-0-1",
-            "card-led-0-2",
-            "card-led-1-0",
-            "card-led-1-1",
-            "card-led-1-2",
-            "card-led-2-0",
-            "card-led-2-1",
-            "card-led-2-2",
-            "card-led-3-0",
-            "card-led-3-1",
-            "card-led-3-2",
-            "card-led-4-0",
-            "card-led-4-1",
-            "card-led-4-2",
-            "card-led-5-0",
-            "card-led-5-1",
-            "card-led-5-2",
-            "card-led-6-0",
-            "card-led-6-1",
-            "card-led-6-2"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "steel",
           "color": "#667984",
           "parts": [
+            "rack-base",
             "backplane",
+            "top-crossbar",
+            "io-card-0",
             "io-card-1",
             "io-card-2",
             "io-card-3",
@@ -146198,6 +146407,41 @@
             "wire-duct"
           ],
           "param": "steel"
+        },
+        {
+          "name": "channelLed",
+          "color": "#4faf6e",
+          "parts": [
+            "channel-led-0",
+            "run-led-0",
+            "channel-led-1",
+            "run-led-1",
+            "channel-led-2",
+            "run-led-2",
+            "channel-led-3",
+            "run-led-3",
+            "channel-led-4",
+            "run-led-4",
+            "channel-led-5",
+            "run-led-5",
+            "channel-led-6",
+            "run-led-6"
+          ],
+          "param": "channelLed"
+        },
+        {
+          "name": "errorLed",
+          "color": "#8a4449",
+          "parts": [
+            "error-led-0",
+            "error-led-1",
+            "error-led-2",
+            "error-led-3",
+            "error-led-4",
+            "error-led-5",
+            "error-led-6"
+          ],
+          "param": "errorLed"
         }
       ]
     },
@@ -146450,7 +146694,7 @@
       "id": "process-blower",
       "kit": "industrial-plant",
       "title": "Process blower",
-      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint.",
+      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint, motor enamel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146469,7 +146713,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-blower.kcad.ts",
       "preview": "/assets/industrial-plant-process-blower.png",
-      "sourceSha256": "e69029a4fdf281874072e57b61e98c12305c677642c74934868f379006221723",
+      "sourceSha256": "c79414a575c05a8465e1fb83641daf5af90c6497c77c8160965ce5c60a2ec0d2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146492,15 +146736,23 @@
           "type": "color",
           "default": "#dfa744",
           "label": "Safety paint"
+        },
+        {
+          "name": "motorEnamel",
+          "type": "color",
+          "default": "#315f7d",
+          "label": "Motor enamel"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "motorEnamel": "#4a5155"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "safetyPaint": "#f5c640",
+          "motorEnamel": "#315f7d"
         }
       },
       "stats": {
@@ -146520,8 +146772,7 @@
           "parts": [
             "base",
             "inlet-flange",
-            "outlet-stack",
-            "drive-motor"
+            "outlet-stack"
           ],
           "param": "safetyPaint"
         },
@@ -146538,6 +146789,14 @@
             "anchor-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "motorEnamel",
+          "color": "#315f7d",
+          "parts": [
+            "drive-motor"
+          ],
+          "param": "motorEnamel"
         }
       ]
     },
@@ -146564,7 +146823,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts",
       "preview": "/assets/industrial-plant-process-reactor-vessel.png",
-      "sourceSha256": "b80a6a83670cdb4587db403f314a0f5cc01c0938407a112546760d1c40eda571",
+      "sourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146614,7 +146873,11 @@
           "color": "#71848b",
           "parts": [
             "shell",
+            "roof-lip",
             "roof-cap",
+            "stiffener-0",
+            "stiffener-1",
+            "stiffener-2",
             "foot-0",
             "foot-1",
             "foot-2",
@@ -146634,11 +146897,7 @@
           "name": "safetyPaint",
           "color": "#db9e3f",
           "parts": [
-            "roof-lip",
             "top-nozzle",
-            "stiffener-0",
-            "stiffener-1",
-            "stiffener-2",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
@@ -146675,7 +146934,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-water-silo.kcad.ts",
       "preview": "/assets/industrial-plant-process-water-silo.png",
-      "sourceSha256": "42eba30a29db787f04ffa5dddf0ced37f8a313e1ff06dd86ee3b741d26221d4a",
+      "sourceSha256": "d00b465b4ea0497fa43260a000e222cdb559d02fb567256eaba8ffd5fe9a616e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146726,11 +146985,14 @@
           "parts": [
             "shell",
             "roof-cap",
+            "top-nozzle",
+            "discharge-transition",
             "discharge-neck",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3",
+            "side-nozzle",
             "side-flange",
             "ladder-rung-0",
             "ladder-rung-1",
@@ -146746,14 +147008,11 @@
           "color": "#d9a343",
           "parts": [
             "roof-lip",
-            "top-nozzle",
-            "discharge-transition",
             "stiffener-0",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
             "support-leg-3",
-            "side-nozzle",
             "ladder-left-rail",
             "ladder-right-rail"
           ],
@@ -146886,7 +147145,7 @@
       "id": "rooftop-air-handler",
       "kit": "industrial-plant",
       "title": "Rooftop air handler",
-      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint.",
+      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint, fan hardware.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146905,7 +147164,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
       "preview": "/assets/industrial-plant-rooftop-air-handler.png",
-      "sourceSha256": "da0c19e71230fcbab0de32b4f29fd32a5a17bfd239656d7e96ee246234102b12",
+      "sourceSha256": "a73db4bb9f898f22d95aadc176db905fb48ab420f0a2c2324d3c786abc7f6361",
       "triangleBudget": 1400,
       "params": [
         {
@@ -146928,12 +147187,19 @@
           "type": "color",
           "default": "#dfa843",
           "label": "Safety paint"
+        },
+        {
+          "name": "fanHardware",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Fan hardware"
         }
       ],
       "presets": {
         "weathered": {
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "fanHardware": "#252a2d"
         },
         "highVisibility": {
           "safetyPaint": "#f5c640"
@@ -146955,13 +147221,6 @@
           "color": "#dfa843",
           "parts": [
             "base-frame",
-            "inspection-door-0",
-            "service-section-1",
-            "inspection-door-1",
-            "inspection-door-2",
-            "exhaust-fan-0",
-            "exhaust-fan-1",
-            "exhaust-fan-2",
             "pipe-header"
           ],
           "param": "safetyPaint"
@@ -146972,13 +147231,27 @@
           "parts": [
             "main-casing",
             "service-section-0",
+            "inspection-door-0",
+            "service-section-1",
+            "inspection-door-1",
             "service-section-2",
+            "inspection-door-2",
             "support-foot-0",
             "support-foot-1",
             "support-foot-2",
             "support-foot-3"
           ],
           "param": "steel"
+        },
+        {
+          "name": "fanHardware",
+          "color": "#30363a",
+          "parts": [
+            "exhaust-fan-0",
+            "exhaust-fan-1",
+            "exhaust-fan-2"
+          ],
+          "param": "fanHardware"
         }
       ]
     },
@@ -147005,7 +147278,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/scissor-lift-table.kcad.ts",
       "preview": "/assets/industrial-plant-scissor-lift-table.png",
-      "sourceSha256": "6a6c19a23fa4c59c591e1eddad96accd4c2c3be97894a85a0ded4771cc2c3b36",
+      "sourceSha256": "07675a3d4b169afe8486eba00b3acb8c9d42149d1a976c1f93e3c9e433839201",
       "triangleBudget": 1400,
       "params": [
         {
@@ -147063,7 +147336,9 @@
           "parts": [
             "base",
             "scissor-arm-a--1",
+            "scissor-arm-b--1",
             "scissor-arm-a-1",
+            "scissor-arm-b-1",
             "control-box",
             "safety-rail--1",
             "safety-rail-1"
@@ -147074,9 +147349,7 @@
           "name": "safetyPaint",
           "color": "#e6a33e",
           "parts": [
-            "platform-deck",
-            "scissor-arm-b--1",
-            "scissor-arm-b-1"
+            "platform-deck"
           ],
           "param": "safetyPaint"
         },
@@ -147303,7 +147576,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
       "preview": "/assets/industrial-plant-steam-header-manifold.png",
-      "sourceSha256": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8",
+      "sourceSha256": "bd40a6cbfb0a7c7e9de39c78708f74f2a19b66cd1d3659eb64e7de7a9a49ef95",
       "triangleBudget": 1400,
       "params": [
         {
@@ -147360,15 +147633,10 @@
           "color": "#dfa945",
           "parts": [
             "support-skid",
-            "branch-0",
             "valve-handle-0",
-            "branch-1",
             "valve-handle-1",
-            "branch-2",
             "valve-handle-2",
-            "branch-3",
             "valve-handle-3",
-            "branch-4",
             "valve-handle-4"
           ],
           "param": "safetyPaint"
@@ -147378,14 +147646,19 @@
           "color": "#6e7d84",
           "parts": [
             "main-header",
+            "branch-0",
             "branch-flange-0",
             "valve-body-0",
+            "branch-1",
             "branch-flange-1",
             "valve-body-1",
+            "branch-2",
             "branch-flange-2",
             "valve-body-2",
+            "branch-3",
             "branch-flange-3",
             "valve-body-3",
+            "branch-4",
             "branch-flange-4",
             "valve-body-4"
           ],
@@ -147629,7 +147902,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
       "preview": "/assets/industrial-plant-valve-manifold-station.png",
-      "sourceSha256": "8d3cc6f66761e99ede3f761f0a8d7505f2e16b8d89659724327bb4ca6622cb60",
+      "sourceSha256": "260375ff4ca05e6b88bc8fc6c4c9f43844cf54a89c0095ef75d578575f2cdb06",
       "triangleBudget": 1400,
       "params": [
         {
@@ -147681,13 +147954,10 @@
             "support-frame",
             "riser-0",
             "handwheel-0",
-            "flange-0",
             "riser-1",
             "handwheel-1",
-            "flange-1",
             "riser-2",
-            "handwheel-2",
-            "flange-2"
+            "handwheel-2"
           ],
           "param": "safetyPaint"
         },
@@ -147698,10 +147968,13 @@
             "header",
             "valve-0",
             "branch-outlet-0",
+            "flange-0",
             "valve-1",
             "branch-outlet-1",
+            "flange-1",
             "valve-2",
             "branch-outlet-2",
+            "flange-2",
             "stand--1",
             "stand-1"
           ],
@@ -159818,7 +160091,7 @@
       "id": "cleanroom-single-door-module",
       "kit": "lab-infrastructure",
       "title": "Cleanroom single-door module",
-      "description": "Cleanroom doorway assembly with a flush door leaf, side frame and overhead header. Editable material controls: enamel coating, tinted safety glass, structural steel; presets: cleanroom and high visibility.",
+      "description": "Cleanroom doorway assembly with a flush door leaf, vision panel, stainless push plate, side frame and overhead header. Editable material controls: enamel coating, tinted safety glass, stainless steel, structural steel; presets: cleanroom and high visibility.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -159837,7 +160110,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cleanroom-single-door-module.kcad.ts",
       "preview": "/assets/lab-infrastructure-cleanroom-single-door-module.png",
-      "sourceSha256": "ab7198be1c138a7bbba024b458f912e308a0c61a5920e1fc164d378974c861ec",
+      "sourceSha256": "c56ca7279a43a4a9dbf44ca5f53fab44a0e195c0e135ff56dcfd64e2233f6bcb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159862,6 +160135,12 @@
           "label": "Tinted safety glass"
         },
         {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c7ca",
+          "label": "Stainless steel"
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#53666e",
@@ -159872,11 +160151,13 @@
         "cleanroom": {
           "enamel": "#e7f0ed",
           "glass": "#8bd4dc",
+          "stainless": "#d0d9d8",
           "steel": "#75888d"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
           "glass": "#44d3e2",
+          "stainless": "#6f8488",
           "steel": "#33464d"
         }
       },
@@ -159885,7 +160166,7 @@
         "sizeM": [
           1.3,
           2.48,
-          0.1284
+          0.1266
         ],
         "minUpM": 0,
         "materials": 1
@@ -159905,8 +160186,7 @@
           "color": "#c9dedc",
           "parts": [
             "header",
-            "door-leaf",
-            "door-push-plate"
+            "door-leaf"
           ],
           "param": "enamel"
         },
@@ -159917,6 +160197,14 @@
             "door-vision-panel"
           ],
           "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c7ca",
+          "parts": [
+            "door-push-plate"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -176671,7 +176959,7 @@
       "id": "assay-sample-divider",
       "kit": "mining",
       "title": "Assay sample divider",
-      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open sample jars partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Jar count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel, sample ore and jar plastic. weathered, labWhite and highVisibility presets.",
+      "description": "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open stainless sample buckets partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Bucket count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel and sample ore. weathered, labWhite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -176692,7 +176980,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/assay-sample-divider.kcad.ts",
       "preview": "/assets/mining-assay-sample-divider.png",
-      "sourceSha256": "09f22b9f77082f557b090a3b5e553a08833db612de735bb5db18d943c258c1b0",
+      "sourceSha256": "7a7474b3ef9c0b8b6a26a8b93976a1ddc7a45c88dc82b60a7d0a1a2ef4407335",
       "triangleBudget": 4200,
       "params": [
         {
@@ -176723,12 +177011,6 @@
           "label": "Sample ore"
         },
         {
-          "name": "jarPlastic",
-          "type": "color",
-          "default": "#e4e1d4",
-          "label": "Jar plastic"
-        },
-        {
           "name": "divider",
           "type": "choice",
           "default": "rotary",
@@ -176753,20 +177035,17 @@
         "weathered": {
           "housingPaint": "#4f6577",
           "stainlessSteel": "#979d9c",
-          "sampleOre": "#6f5a46",
-          "jarPlastic": "#c9c3ae"
+          "sampleOre": "#6f5a46"
         },
         "labWhite": {
           "housingPaint": "#e6e6e0",
           "stainlessSteel": "#c3cacc",
-          "sampleOre": "#5d5b57",
-          "jarPlastic": "#3d6fa8"
+          "sampleOre": "#5d5b57"
         },
         "highVisibility": {
           "housingPaint": "#e48a1e",
           "stainlessSteel": "#c5ccca",
-          "sampleOre": "#9b5a3a",
-          "jarPlastic": "#f2efe2"
+          "sampleOre": "#9b5a3a"
         }
       },
       "stats": {
@@ -176835,6 +177114,14 @@
           "parts": [
             "turntable-hub",
             "turntable",
+            "sample-bucket-0",
+            "sample-bucket-1",
+            "sample-bucket-2",
+            "sample-bucket-3",
+            "sample-bucket-4",
+            "sample-bucket-5",
+            "sample-bucket-6",
+            "sample-bucket-7",
             "column",
             "hopper-arm",
             "hopper",
@@ -176843,32 +177130,17 @@
           "param": "stainlessSteel"
         },
         {
-          "name": "jarPlastic",
-          "color": "#e4e1d4",
-          "parts": [
-            "jar-0",
-            "jar-1",
-            "jar-2",
-            "jar-3",
-            "jar-4",
-            "jar-5",
-            "jar-6",
-            "jar-7"
-          ],
-          "param": "jarPlastic"
-        },
-        {
           "name": "sampleOre",
           "color": "#8a6a4c",
           "parts": [
-            "jar-ore-0",
-            "jar-ore-1",
-            "jar-ore-2",
-            "jar-ore-3",
-            "jar-ore-4",
-            "jar-ore-5",
-            "jar-ore-6",
-            "jar-ore-7",
+            "sample-bucket-ore-0",
+            "sample-bucket-ore-1",
+            "sample-bucket-ore-2",
+            "sample-bucket-ore-3",
+            "sample-bucket-ore-4",
+            "sample-bucket-ore-5",
+            "sample-bucket-ore-6",
+            "sample-bucket-ore-7",
             "hopper-ore",
             "feeder-ore"
           ],
@@ -179079,7 +179351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/crusher-discharge-conveyor.kcad.ts",
       "preview": "/assets/mining-crusher-discharge-conveyor.png",
-      "sourceSha256": "f79c676a04604d2b7bdbb53bb3d60dd2575d5bac190cc948970db0fedbbdd280",
+      "sourceSha256": "8d4ac57d598ecc1f4be6b2f637066a9144a95928240758c04317a29fd18c8fe7",
       "triangleBudget": 4200,
       "params": [
         {
@@ -179173,26 +179445,72 @@
           "parts": [
             "stringer-0",
             "stringer-1",
+            "impact-idler-0-centre",
+            "impact-idler-0-wing-0",
+            "impact-idler-0-wing-1",
             "impact-idler-0-frame",
+            "impact-idler-1-centre",
+            "impact-idler-1-wing-0",
+            "impact-idler-1-wing-1",
             "impact-idler-1-frame",
+            "impact-idler-2-centre",
+            "impact-idler-2-wing-0",
+            "impact-idler-2-wing-1",
             "impact-idler-2-frame",
+            "impact-idler-3-centre",
+            "impact-idler-3-wing-0",
+            "impact-idler-3-wing-1",
             "impact-idler-3-frame",
+            "impact-idler-4-centre",
+            "impact-idler-4-wing-0",
+            "impact-idler-4-wing-1",
             "impact-idler-4-frame",
+            "impact-idler-5-centre",
+            "impact-idler-5-wing-0",
+            "impact-idler-5-wing-1",
             "impact-idler-5-frame",
+            "carry-idler-0-centre",
+            "carry-idler-0-wing-0",
+            "carry-idler-0-wing-1",
             "carry-idler-0-frame",
+            "carry-idler-1-centre",
+            "carry-idler-1-wing-0",
+            "carry-idler-1-wing-1",
             "carry-idler-1-frame",
+            "carry-idler-2-centre",
+            "carry-idler-2-wing-0",
+            "carry-idler-2-wing-1",
             "carry-idler-2-frame",
+            "carry-idler-3-centre",
+            "carry-idler-3-wing-0",
+            "carry-idler-3-wing-1",
             "carry-idler-3-frame",
+            "carry-idler-4-centre",
+            "carry-idler-4-wing-0",
+            "carry-idler-4-wing-1",
             "carry-idler-4-frame",
+            "carry-idler-5-centre",
+            "carry-idler-5-wing-0",
+            "carry-idler-5-wing-1",
             "carry-idler-5-frame",
+            "carry-idler-6-centre",
+            "carry-idler-6-wing-0",
+            "carry-idler-6-wing-1",
             "carry-idler-6-frame",
+            "carry-idler-7-centre",
+            "carry-idler-7-wing-0",
+            "carry-idler-7-wing-1",
             "carry-idler-7-frame",
+            "return-idler-0",
             "return-hanger-0-0",
             "return-hanger-0-1",
+            "return-idler-1",
             "return-hanger-1-0",
             "return-hanger-1-1",
+            "return-idler-2",
             "return-hanger-2-0",
             "return-hanger-2-1",
+            "return-idler-3",
             "return-hanger-3-0",
             "return-hanger-3-1",
             "skirt-clamp-0-0",
@@ -179251,52 +179569,6 @@
             "tail-bearing-1",
             "head-bearing-0",
             "head-bearing-1",
-            "impact-idler-0-centre",
-            "impact-idler-0-wing-0",
-            "impact-idler-0-wing-1",
-            "impact-idler-1-centre",
-            "impact-idler-1-wing-0",
-            "impact-idler-1-wing-1",
-            "impact-idler-2-centre",
-            "impact-idler-2-wing-0",
-            "impact-idler-2-wing-1",
-            "impact-idler-3-centre",
-            "impact-idler-3-wing-0",
-            "impact-idler-3-wing-1",
-            "impact-idler-4-centre",
-            "impact-idler-4-wing-0",
-            "impact-idler-4-wing-1",
-            "impact-idler-5-centre",
-            "impact-idler-5-wing-0",
-            "impact-idler-5-wing-1",
-            "carry-idler-0-centre",
-            "carry-idler-0-wing-0",
-            "carry-idler-0-wing-1",
-            "carry-idler-1-centre",
-            "carry-idler-1-wing-0",
-            "carry-idler-1-wing-1",
-            "carry-idler-2-centre",
-            "carry-idler-2-wing-0",
-            "carry-idler-2-wing-1",
-            "carry-idler-3-centre",
-            "carry-idler-3-wing-0",
-            "carry-idler-3-wing-1",
-            "carry-idler-4-centre",
-            "carry-idler-4-wing-0",
-            "carry-idler-4-wing-1",
-            "carry-idler-5-centre",
-            "carry-idler-5-wing-0",
-            "carry-idler-5-wing-1",
-            "carry-idler-6-centre",
-            "carry-idler-6-wing-0",
-            "carry-idler-6-wing-1",
-            "carry-idler-7-centre",
-            "carry-idler-7-wing-0",
-            "carry-idler-7-wing-1",
-            "return-idler-0",
-            "return-idler-1",
-            "return-idler-2",
-            "return-idler-3",
             "skirt-board-0",
             "skirt-board-1",
             "skirt-cover",
@@ -181949,7 +182221,7 @@
       "id": "jaw-crusher-module",
       "kit": "mining",
       "title": "Jaw crusher module",
-      "description": "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, stand and drive steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
+      "description": "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, forged-steel eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, structural steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -181971,7 +182243,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/jaw-crusher-module.kcad.ts",
       "preview": "/assets/mining-jaw-crusher-module.png",
-      "sourceSha256": "792128892ba550ebe55451d890f90d9a97e7793fe9c664246b7600d3ca341df5",
+      "sourceSha256": "326fbd9459b9dbc1dd5a0e681cc43230752863a4cc67bb8fd161aa7fcc96efe1",
       "triangleBudget": 4500,
       "params": [
         {
@@ -182062,6 +182334,7 @@
             "motor-platform",
             "stand-brace--1",
             "stand-brace-1",
+            "eccentric-shaft",
             "pillow-block--1",
             "pillow-block-1",
             "motor-base-plate",
@@ -182160,7 +182433,6 @@
             "swing-jaw-ridge-3",
             "swing-jaw-ridge-4",
             "swing-jaw-ridge-5",
-            "eccentric-shaft",
             "belt-tension-screw",
             "toggle-rod--500",
             "toggle-rod-500",
@@ -189420,7 +189692,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/tailings-stack-conveyor.kcad.ts",
       "preview": "/assets/mining-tailings-stack-conveyor.png",
-      "sourceSha256": "f69ef7d71f976babdfaa9397672ebcbc817eca1fd0b5b31e8463ce321ba266d1",
+      "sourceSha256": "698b5d0c099438386b880d2397f5b9ce7d399177a1626acaa4d47861a0c9ec9f",
       "triangleBudget": 5000,
       "params": [
         {
@@ -189608,27 +189880,7 @@
           "color": "#25282a",
           "parts": [
             "belt-carry",
-            "head-pulley",
-            "track-0",
-            "grouser-0-0",
-            "grouser-0-1",
-            "grouser-0-2",
-            "grouser-0-3",
-            "grouser-0-4",
-            "grouser-0-5",
-            "grouser-0-6",
-            "grouser-0-7",
-            "grouser-0-8",
-            "track-1",
-            "grouser-1-0",
-            "grouser-1-1",
-            "grouser-1-2",
-            "grouser-1-3",
-            "grouser-1-4",
-            "grouser-1-5",
-            "grouser-1-6",
-            "grouser-1-7",
-            "grouser-1-8"
+            "head-pulley"
           ],
           "param": "beltRubber"
         },
@@ -189652,10 +189904,30 @@
             "gearbox",
             "walkway",
             "tail-skid",
+            "track-0",
             "track-frame-0",
             "sprocket-0",
+            "grouser-0-0",
+            "grouser-0-1",
+            "grouser-0-2",
+            "grouser-0-3",
+            "grouser-0-4",
+            "grouser-0-5",
+            "grouser-0-6",
+            "grouser-0-7",
+            "grouser-0-8",
+            "track-1",
             "track-frame-1",
             "sprocket-1",
+            "grouser-1-0",
+            "grouser-1-1",
+            "grouser-1-2",
+            "grouser-1-3",
+            "grouser-1-4",
+            "grouser-1-5",
+            "grouser-1-6",
+            "grouser-1-7",
+            "grouser-1-8",
             "power-pack-grille",
             "exhaust-stack",
             "luffing-ram-barrel"
@@ -190074,7 +190346,7 @@
       "id": "trommel-screen",
       "kit": "mining",
       "title": "Rotary trommel screen",
-      "description": "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, spray-water bar with drop nozzles, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
+      "description": "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, galvanized spray-water bar with drop nozzles fed by a valved riser, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -190096,7 +190368,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/trommel-screen.kcad.ts",
       "preview": "/assets/mining-trommel-screen.png",
-      "sourceSha256": "acec3569dc0ef8ffa8532cd4a9ba577ebda92920ab836006ee6ddfcaa7123c5f",
+      "sourceSha256": "87c85535cf6da22fe7e8cfd27e812390a39be5212e3784ea4d86becda94aa7cd",
       "triangleBudget": 3200,
       "params": [
         {
@@ -190164,7 +190436,7 @@
         }
       },
       "stats": {
-        "triangles": 2160,
+        "triangles": 2352,
         "sizeM": [
           14.5,
           5.608729,
@@ -190205,14 +190477,7 @@
           "name": "stainlessSteel",
           "color": "#7c8589",
           "parts": [
-            "screen-panels",
-            "spray-bar",
-            "spray-nozzle--2200",
-            "spray-nozzle--1200",
-            "spray-nozzle--200",
-            "spray-nozzle-800",
-            "spray-nozzle-1800",
-            "spray-nozzle-2800"
+            "screen-panels"
           ],
           "param": "stainlessSteel"
         },
@@ -190262,10 +190527,35 @@
           ]
         },
         {
-          "name": "spray-supply",
-          "color": "#9fc6d8",
+          "name": "spray-bar",
+          "color": "#a7afb1",
           "parts": [
-            "spray-supply"
+            "spray-bar",
+            "spray-nozzle--2200",
+            "spray-nozzle--1200",
+            "spray-nozzle--200",
+            "spray-nozzle-800",
+            "spray-nozzle-1800",
+            "spray-nozzle-2800",
+            "spray-supply",
+            "spray-elbow",
+            "spray-riser",
+            "spray-riser-flange"
+          ]
+        },
+        {
+          "name": "spray-valve",
+          "color": "#3c4144",
+          "parts": [
+            "spray-valve",
+            "spray-valve-stem"
+          ]
+        },
+        {
+          "name": "spray-valve-handwheel",
+          "color": "#c8322b",
+          "parts": [
+            "spray-valve-handwheel"
           ]
         },
         {
@@ -228975,7 +229265,7 @@
       "id": "hopper-wagon",
       "kit": "railway",
       "title": "Hopper wagon",
-      "description": "Open-top hopper wagon with sloped discharge bays, top rails and four paired wheels. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
+      "description": "Open-top two-bay hopper wagon: painted side sheets with posts and top chords, end slope sheets that feed two V-shaped discharge pockets with galvanized bottom gates, two freight bogies with wheels on both rails, stub sills, couplers, end ladders and a hand brake wheel. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228996,8 +229286,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/hopper-wagon.kcad.ts",
       "preview": "/assets/railway-hopper-wagon.png",
-      "sourceSha256": "581cf3e4655e162f5ad25372d910f41d6239935a22145d5133c7f6d7c49d8e08",
-      "triangleBudget": 1800,
+      "sourceSha256": "0be5383600066259721651f09355288c2b62177e374874c7168404c8eb1718bd",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -229011,19 +229301,19 @@
         {
           "name": "railSteel",
           "type": "color",
-          "default": "#626b70",
+          "default": "#3c4245",
           "label": "Rail and running gear steel"
         },
         {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#4a5358",
+          "default": "#7a3a2c",
           "label": "Painted steel"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#929da0",
+          "default": "#a3acae",
           "label": "Galvanized steel"
         }
       ],
@@ -229040,48 +229330,126 @@
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 1976,
         "sizeM": [
-          1.38,
-          0.584,
-          0.367
+          1.6,
+          0.596,
+          0.358
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "railSteel",
-          "color": "#626b70",
-          "parts": [
-            "underframe",
-            "wheel-left-a",
-            "wheel-left-b",
-            "wheel-right-a",
-            "wheel-right-b"
-          ],
-          "param": "railSteel"
-        },
-        {
           "name": "paintedSteel",
-          "color": "#4a5358",
+          "color": "#7a3a2c",
           "parts": [
-            "hopper-body",
-            "left-slope",
-            "right-slope"
+            "side-sheet-front",
+            "top-chord-front",
+            "side-post-front--620",
+            "side-post-front--420",
+            "side-post-front--200",
+            "side-post-front-200",
+            "side-post-front-420",
+            "side-post-front-620",
+            "side-sheet-back",
+            "top-chord-back",
+            "side-post-back--620",
+            "side-post-back--420",
+            "side-post-back--200",
+            "side-post-back-200",
+            "side-post-back-420",
+            "side-post-back-620",
+            "hopper-floor",
+            "end-sheet-a",
+            "top-chord-end-a",
+            "end-sheet-b",
+            "top-chord-end-b",
+            "body-bolster-a",
+            "stub-sill-a",
+            "end-sill-a",
+            "body-bolster-b",
+            "stub-sill-b",
+            "end-sill-b"
           ],
           "param": "paintedSteel"
         },
         {
           "name": "galvanizedSteel",
-          "color": "#929da0",
+          "color": "#a3acae",
           "parts": [
-            "top-rail-front",
-            "top-rail-back",
-            "outlet-left",
-            "outlet-right"
+            "gate-frame-a",
+            "gate-door-a",
+            "gate-shaft-a",
+            "gate-drive-a-front",
+            "gate-drive-a-back",
+            "gate-frame-b",
+            "gate-door-b",
+            "gate-shaft-b",
+            "gate-drive-b-front",
+            "gate-drive-b-back",
+            "ladder-rail-a-80",
+            "ladder-rail-a-130",
+            "ladder-rung-a-280",
+            "ladder-rung-a-350",
+            "ladder-rung-a-420",
+            "ladder-rung-a-490",
+            "ladder-rail-b-80",
+            "ladder-rail-b-130",
+            "ladder-rung-b-280",
+            "ladder-rung-b-350",
+            "ladder-rung-b-420",
+            "ladder-rung-b-490"
           ],
           "param": "galvanizedSteel"
+        },
+        {
+          "name": "railSteel",
+          "color": "#3c4245",
+          "parts": [
+            "coupler-shank-a",
+            "coupler-knuckle-a",
+            "coupler-shank-b",
+            "coupler-knuckle-b",
+            "axle-a--85",
+            "wheel-a--85-front",
+            "flange-a--85-front",
+            "journal-box-a--85-front",
+            "wheel-a--85-back",
+            "flange-a--85-back",
+            "journal-box-a--85-back",
+            "axle-a-85",
+            "wheel-a-85-front",
+            "flange-a-85-front",
+            "journal-box-a-85-front",
+            "wheel-a-85-back",
+            "flange-a-85-back",
+            "journal-box-a-85-back",
+            "side-frame-a-front",
+            "side-frame-a-back",
+            "bogie-bolster-a",
+            "axle-b--85",
+            "wheel-b--85-front",
+            "flange-b--85-front",
+            "journal-box-b--85-front",
+            "wheel-b--85-back",
+            "flange-b--85-back",
+            "journal-box-b--85-back",
+            "axle-b-85",
+            "wheel-b-85-front",
+            "flange-b-85-front",
+            "journal-box-b-85-front",
+            "wheel-b-85-back",
+            "flange-b-85-back",
+            "journal-box-b-85-back",
+            "side-frame-b-front",
+            "side-frame-b-back",
+            "bogie-bolster-b",
+            "brake-staff",
+            "brake-wheel",
+            "brake-wheel-hub"
+          ],
+          "param": "railSteel"
         }
       ]
     },
@@ -241210,7 +241578,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/conveyor-transfer-tower.kcad.ts",
       "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
-      "sourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+      "sourceSha256": "6a13c36fc6a56b433d8d46a01ad88f99a6ce04d8e7358ac94b06ac19f896fa5b",
       "triangleBudget": 4400,
       "params": [
         {
@@ -241307,8 +241675,10 @@
             "rib-side-7",
             "rib-front-8",
             "rib-side-8",
+            "roof",
             "roof-vent",
-            "tail-house"
+            "tail-house",
+            "tail-house-roof"
           ],
           "param": "cladding"
         },
@@ -241322,7 +241692,6 @@
             "column-rb",
             "girt-2000",
             "girt-4000",
-            "roof",
             "roof-vent-cap",
             "roof-vent-stay-a",
             "roof-vent-stay-b",
@@ -241336,7 +241705,6 @@
             "gallery-frame-5",
             "gallery-frame-6",
             "gallery-collar",
-            "tail-house-roof",
             "trestle-leg-f-a",
             "trestle-leg-f-b",
             "trestle-leg-b-a",
@@ -248257,7 +248625,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-breaker-screen.kcad.ts",
       "preview": "/assets/recycling-facility-glass-breaker-screen.png",
-      "sourceSha256": "e87fc5ce20949b4eee3e26cdd9f2da70ed0c4584f8a0179493fc935b2c834cc2",
+      "sourceSha256": "1cd893c65cdf5616d88bc54c1006bbef22dd115e3e5e3c4fde8d4bf5c291e5f9",
       "triangleBudget": 3600,
       "params": [
         {
@@ -248387,22 +248755,6 @@
           "color": "#26292b",
           "parts": [
             "window-frame",
-            "flail-0-0",
-            "flail-0-1",
-            "flail-0-2",
-            "flail-0-3",
-            "flail-1-0",
-            "flail-1-1",
-            "flail-1-2",
-            "flail-1-3",
-            "flail-2-0",
-            "flail-2-1",
-            "flail-2-2",
-            "flail-2-3",
-            "flail-3-0",
-            "flail-3-1",
-            "flail-3-2",
-            "flail-3-3",
             "drive-motor",
             "infeed-belt",
             "mesh-bar-1",
@@ -248422,9 +248774,25 @@
           "parts": [
             "rotor-shaft",
             "rotor-disc-0",
+            "flail-0-0",
+            "flail-0-1",
+            "flail-0-2",
+            "flail-0-3",
             "rotor-disc-1",
+            "flail-1-0",
+            "flail-1-1",
+            "flail-1-2",
+            "flail-1-3",
             "rotor-disc-2",
+            "flail-2-0",
+            "flail-2-1",
+            "flail-2-2",
+            "flail-2-3",
             "rotor-disc-3",
+            "flail-3-0",
+            "flail-3-1",
+            "flail-3-2",
+            "flail-3-3",
             "infeed-tail",
             "screen-mesh"
           ],
@@ -270184,7 +270552,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/vehicle-barrier-gate.kcad.ts",
       "preview": "/assets/recycling-facility-vehicle-barrier-gate.png",
-      "sourceSha256": "77290924b6b973c777dcbcd123b0f6aeabfc975215d7e5584859ebaebe53a6a3",
+      "sourceSha256": "eaa2427e4365ee20843a20e4120cb43b29d21da01117b04fb512e3b60760d288",
       "triangleBudget": 2400,
       "params": [
         {
@@ -270263,7 +270631,7 @@
         "sizeM": [
           4.52,
           1.266,
-          1.31
+          0.595
         ],
         "minUpM": 0,
         "materials": 1
@@ -287490,7 +287858,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
       "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
-      "sourceSha256": "e4d3d432792e12261845b41bd049c34c6d975698a8897542361852cf3013da00",
+      "sourceSha256": "cd1288b2f879af9b6e5460da8409db50eec9f19eaf2a563b274ee47b0d22400e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287548,7 +287916,8 @@
           "name": "yardPaint",
           "color": "#657c78",
           "parts": [
-            "base-rail-0"
+            "base-rail-0",
+            "base-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -287556,7 +287925,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "base-rail-1",
             "cross-rail-0",
             "cross-rail-1",
             "cross-rail-2",
@@ -287688,7 +288056,7 @@
       "id": "hull-block-spreader-beam",
       "kit": "shipyard",
       "title": "Hull block spreader beam",
-      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and soft-contact end shoes. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and end shoes with elastomer contact pads. Material controls: yard paint, structural steel, and elastomer pads; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -287712,7 +288080,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-block-spreader-beam.kcad.ts",
       "preview": "/assets/shipyard-hull-block-spreader-beam.png",
-      "sourceSha256": "afd3f0e89e0f1eb7c0b320b1547616d04e2c910a6a663036978975129cfd21c2",
+      "sourceSha256": "fc3d0e795c81616872e29d6a6d9b2c2496cbc8702cf1f25de03389a3a1f0c264",
       "triangleBudget": 1800,
       "params": [
         {
@@ -287735,16 +288103,24 @@
           "type": "color",
           "default": "#b6c1c4",
           "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Soft-contact pads (elastomer)"
         }
       ],
       "presets": {
         "fresh-coat": {
           "yardPaint": "#909892",
-          "structuralSteel": "#d0d7d8"
+          "structuralSteel": "#d0d7d8",
+          "elastomer": "#3a4245"
         },
         "weathered-yard": {
           "yardPaint": "#646c65",
-          "structuralSteel": "#828d91"
+          "structuralSteel": "#828d91",
+          "elastomer": "#252b2d"
         }
       },
       "stats": {
@@ -287768,13 +288144,20 @@
             "drop-link-0",
             "drop-link-1",
             "drop-link-2",
-            "drop-link-3",
+            "drop-link-3"
+          ],
+          "param": "yardPaint"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383b",
+          "parts": [
             "contact-shoe-0",
             "contact-shoe-1",
             "contact-shoe-2",
             "contact-shoe-3"
           ],
-          "param": "yardPaint"
+          "param": "elastomer"
         },
         {
           "name": "structuralSteel",
@@ -288025,7 +288408,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-profile-template-rack.kcad.ts",
       "preview": "/assets/shipyard-hull-profile-template-rack.png",
-      "sourceSha256": "9912af07b57a636501b5304ece8b8945e59a8ed3de59c8ae44feeed509292eaa",
+      "sourceSha256": "6b98d08f2e9cfe9fa0619d0722a78ca803b90347e2d93faa7ca53c5a487f968c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -288076,8 +288459,7 @@
           "color": "#8f795e",
           "parts": [
             "base-runner-0",
-            "base-runner-1",
-            "divider-0"
+            "base-runner-1"
           ],
           "param": "yardPaint"
         },
@@ -288085,6 +288467,7 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "divider-0",
             "divider-1",
             "divider-2",
             "divider-3",
@@ -288639,7 +289022,7 @@
       "id": "mobile-hull-access-platform",
       "kit": "shipyard",
       "title": "Mobile hull access platform",
-      "description": "Low rolling work deck with adjustable-height posts, guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Low rolling work deck on fixed-height support posts, with guard rails, end stops, and a central access step. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -288663,7 +289046,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/mobile-hull-access-platform.kcad.ts",
       "preview": "/assets/shipyard-mobile-hull-access-platform.png",
-      "sourceSha256": "f59ad65d23f8c82da8ad4d9c5346fcd1d0614fff4120064186eda78210bb4d55",
+      "sourceSha256": "f61709ba28d6957256bacda3c7519d7ccc185492789a41417ca1461360988109",
       "triangleBudget": 1800,
       "params": [
         {
@@ -289327,7 +289710,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/panel-line-strongback.kcad.ts",
       "preview": "/assets/shipyard-panel-line-strongback.png",
-      "sourceSha256": "50211fb7ab220dc1e2e0fcd52587a3bcbe3b85742ba49dc9a99f39b6706119a9",
+      "sourceSha256": "9263498d7a434758237e79eccda7259b291a71ee93523d42b10fdc10972089d4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -289385,7 +289768,8 @@
           "name": "yardPaint",
           "color": "#78867d",
           "parts": [
-            "longitudinal-rail-0"
+            "longitudinal-rail-0",
+            "longitudinal-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -289393,7 +289777,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "longitudinal-rail-1",
             "cross-rail-0",
             "cross-rail-1",
             "cross-rail-2",
@@ -290428,7 +290811,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/plate-roller-conveyor.kcad.ts",
       "preview": "/assets/shipyard-plate-roller-conveyor.png",
-      "sourceSha256": "4a4f4ab9755c23b5f98c4bef43e797995aee5c5b917aad5eb7edf74ffd5b0f1f",
+      "sourceSha256": "94b253163ea5ad023865617f53c52832892e15c2b0f3b02f1000be5aa7c6d615",
       "triangleBudget": 1800,
       "params": [
         {
@@ -290478,7 +290861,8 @@
           "name": "yardPaint",
           "color": "#78847e",
           "parts": [
-            "side-frame-0"
+            "side-frame-0",
+            "side-frame-1"
           ],
           "param": "yardPaint"
         },
@@ -290486,7 +290870,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "side-frame-1",
             "feed-roller-0",
             "feed-roller-1",
             "feed-roller-2",
@@ -291070,7 +291453,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
       "preview": "/assets/shipyard-ship-lift-cradle.png",
-      "sourceSha256": "4a05b8d44f7bc47c87144b57d0af57416e7b28c909d38c81f54ccf415597b2c8",
+      "sourceSha256": "c5157d4e1a5be382976afd7ea9f953f1970c700bc2c005d7e4450cc8d8e50aea",
       "triangleBudget": 1800,
       "params": [
         {
@@ -291128,7 +291511,8 @@
           "name": "yardPaint",
           "color": "#76847b",
           "parts": [
-            "side-rail-0"
+            "side-rail-0",
+            "side-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -291136,7 +291520,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "side-rail-1",
             "cross-tie-0",
             "cross-tie-1",
             "cross-tie-2",
@@ -315034,7 +315417,7 @@
       "id": "antenna-sector-frame",
       "kit": "telecom-infrastructure",
       "title": "Sector antenna frame",
-      "description": "Triangular sector panel support frame with three vertical rails and top and bottom braces. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Triangular sector antenna frame: three galvanized mounting pipes at the corners of a triangle, joined by galvanized top and bottom braces and a rear mid-brace, with polymer pipe caps, a stand-off arm and a stainless pole clamp. Knobs: overall scale; galvanized steel, stainless steel clamp, polymer pipe caps.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -315053,7 +315436,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/antenna-sector-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-antenna-sector-frame.png",
-      "sourceSha256": "443b0461855285faa572e9c131343d7a5d34031d4aa3a2baff28545ea7bbe1c0",
+      "sourceSha256": "251f500390bc28136a4f0251d4199c4b633d8a63770db01b2d0fec0d2a9f711b",
       "triangleBudget": 900,
       "params": [
         {
@@ -315069,39 +315452,39 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Galvanized steel frame"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "Stainless steel pole clamp"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22282b",
+          "label": "Polymer pipe caps"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 372,
         "sizeM": [
-          0.5,
-          1.15,
-          0.465
+          0.534333,
+          1.114,
+          0.802
         ],
         "minUpM": 0,
         "materials": 1
@@ -315114,18 +315497,26 @@
             "rail-a",
             "rail-b",
             "rail-c",
-            "bottom",
+            "top-brace-ab",
+            "bottom-brace-ab",
+            "top-brace-bc",
+            "bottom-brace-bc",
+            "top-brace-ca",
+            "bottom-brace-ca",
+            "mid-brace-bc",
             "mount-arm"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "polymer",
+          "color": "#22282b",
           "parts": [
-            "top"
+            "pipe-cap-a",
+            "pipe-cap-b",
+            "pipe-cap-c"
           ],
-          "param": "powderCoat"
+          "param": "polymer"
         },
         {
           "name": "stainlessSteel",
@@ -315958,7 +316349,7 @@
       "id": "conduit-riser-frame",
       "kit": "telecom-infrastructure",
       "title": "Conduit riser frame",
-      "description": "Wall-mounted riser frame with three vertical conduits, stand-off brackets and top bridge. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Galvanized strut-channel riser frame: two wall rails on anchor bolts and two strut bridges that hold three rigid galvanized conduits with stainless strut pipe clamps, and polymer end bushings with cables at the conduit tops. Knobs: overall scale; galvanized steel, stainless steel, polymer bushings and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -315977,8 +316368,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/conduit-riser-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-conduit-riser-frame.png",
-      "sourceSha256": "c9a468da21cfd2a40270db55d075d0d1ddd6f739ad5f3e57c66245a7b853976b",
-      "triangleBudget": 900,
+      "sourceSha256": "ff4d58aa67e93f94f721612b6660944f2395a7598471471b308d8f8d42c76581",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -315993,39 +316384,39 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
+          "label": "Strut frame and conduits (galvanized steel)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Pipe clamps and bolts (stainless steel)"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#22292d",
+          "label": "End bushings and cable jacket (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 2044,
         "sizeM": [
-          0.7,
-          1.3,
-          0.195
+          0.74,
+          1.428,
+          0.166
         ],
         "minUpM": 0,
         "materials": 1
@@ -316035,30 +316426,61 @@
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
+            "rail-left",
+            "rail-right",
+            "bridge-bottom",
+            "bridge-top",
             "conduit-0",
             "conduit-1",
-            "conduit-2",
-            "bridge-bottom",
-            "stand-off-a",
-            "stand-off-b"
+            "conduit-2"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "bridge-top"
+            "anchor-bolt-left-0",
+            "anchor-bolt-left-1",
+            "anchor-bolt-left-2",
+            "anchor-bolt-right-0",
+            "anchor-bolt-right-1",
+            "anchor-bolt-right-2",
+            "frame-bolt-bottom-0",
+            "frame-bolt-bottom-1",
+            "clamp-bottom-0",
+            "clamp-bolt-bottom-0-0",
+            "clamp-bolt-bottom-0-1",
+            "clamp-bottom-1",
+            "clamp-bolt-bottom-1-0",
+            "clamp-bolt-bottom-1-1",
+            "clamp-bottom-2",
+            "clamp-bolt-bottom-2-0",
+            "clamp-bolt-bottom-2-1",
+            "frame-bolt-top-0",
+            "frame-bolt-top-1",
+            "clamp-top-0",
+            "clamp-bolt-top-0-0",
+            "clamp-bolt-top-0-1",
+            "clamp-top-1",
+            "clamp-bolt-top-1-0",
+            "clamp-bolt-top-1-1",
+            "clamp-top-2",
+            "clamp-bolt-top-2-0",
+            "clamp-bolt-top-2-1"
           ],
-          "param": "powderCoat"
+          "param": "stainlessSteel"
         },
         {
           "name": "polymer",
-          "color": "#315267",
+          "color": "#22292d",
           "parts": [
-            "cable-band-0",
-            "cable-band-1",
-            "cable-band-2"
+            "bushing-0",
+            "cable-0",
+            "bushing-1",
+            "cable-1",
+            "bushing-2",
+            "cable-2"
           ],
           "param": "polymer"
         }
@@ -316678,7 +317100,7 @@
       "id": "fiber-drop-terminal",
       "kit": "telecom-infrastructure",
       "title": "Fiber drop terminal",
-      "description": "Small multiport drop terminal with six connector caps and a shallow rain hood. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Pole-mounted fiber drop terminal (multiport service terminal): a moulded polymer housing with a lid seam and stainless lid screws, six hardened drop ports with black dust caps on the front, a black tether stub cable from a gland under the housing, and a stainless mounting bracket with two band straps round a wood pole section. Knobs: overall scale; polymer housing, black polymer caps and cable, stainless steel, pole wood.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316697,8 +317119,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-drop-terminal.png",
-      "sourceSha256": "4f70afacf9d09cccb489113e5bba6a7150ef3c0ea98a5ab6c405f9b3aac368be",
-      "triangleBudget": 900,
+      "sourceSha256": "40a8848a3a4ce8753d9ce7aecd4f93c6203952255d29c5375a37359ccb0d889c",
+      "triangleBudget": 1100,
       "params": [
         {
           "name": "scale",
@@ -316710,59 +317132,104 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "housing",
           "type": "color",
-          "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
+          "default": "#3d4347",
+          "label": "Housing and port bosses (moulded polymer)"
         },
         {
-          "name": "powderCoat",
+          "name": "polymer",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#15191c",
+          "label": "Dust caps, lid seam, gland and tether cable (black polymer)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Bracket, band straps and lid screws (stainless steel)"
+        },
+        {
+          "name": "poleWood",
+          "type": "color",
+          "default": "#7a5b3e",
+          "label": "Pole section (treated wood)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "housing": "#5d6660",
+          "polymer": "#1f2421",
+          "stainlessSteel": "#c8d0cf",
+          "poleWood": "#5f4a36"
         },
         "highVisibility": {
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "housing": "#e0aa18",
+          "polymer": "#1b1f22",
+          "stainlessSteel": "#e4e9e6",
+          "poleWood": "#8a6a4a"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 976,
         "sizeM": [
-          0.47,
-          0.265,
-          0.251
+          0.402,
+          1.1,
+          0.418
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "poleWood",
+          "color": "#7a5b3e",
           "parts": [
-            "case",
-            "hood",
-            "face"
+            "pole"
           ],
-          "param": "powderCoat"
+          "param": "poleWood"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "band-strap-0",
+            "band-strap-1",
+            "bracket",
+            "lid-screw-0",
+            "lid-screw-1",
+            "lid-screw-2",
+            "lid-screw-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "housing",
+          "color": "#3d4347",
+          "parts": [
+            "housing",
+            "port-boss-0",
+            "port-boss-1",
+            "port-boss-2",
+            "port-boss-3",
+            "port-boss-4",
+            "port-boss-5"
+          ],
+          "param": "housing"
         },
         {
           "name": "polymer",
-          "color": "#315267",
+          "color": "#15191c",
           "parts": [
-            "port-0",
-            "port-1",
-            "port-2",
-            "port-3",
-            "port-4",
-            "port-5"
+            "lid-seam",
+            "port-cap-0",
+            "port-cap-1",
+            "port-cap-2",
+            "port-cap-3",
+            "port-cap-4",
+            "port-cap-5",
+            "tether-gland",
+            "tether-cable"
           ],
           "param": "polymer"
         }
@@ -317404,7 +317871,7 @@
       "id": "gnss-timing-antenna",
       "kit": "telecom-infrastructure",
       "title": "GNSS timing antenna",
-      "description": "Compact timing antenna puck on a short pole with a broad weather cap. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Pole-mounted GNSS timing antenna: a white polymer radome on a dark polymer base skirt and threaded bush, with no metal above the antenna element, on a galvanized mast pipe with a side coax gland and drop, standing on a powder-coated base plate with four galvanized bolts. Knobs: overall scale; polymer radome, galvanized steel, dark polymer and cable jacket, powder-coated steel plate.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -317423,7 +317890,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/gnss-timing-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-gnss-timing-antenna.png",
-      "sourceSha256": "8d084a19bc8ea97dadc06dab3831d3caec7ed89661a2af42cb036c11cf436892",
+      "sourceSha256": "a8600b5e34d5694e54b9e9a3e7d6fcdfdaca6b1ba05392f32147694259771f1b",
       "triangleBudget": 900,
       "params": [
         {
@@ -317436,6 +317903,12 @@
           "step": 0.05
         },
         {
+          "name": "radome",
+          "type": "color",
+          "default": "#eceee9",
+          "label": "Radome (UV-stabilised polymer)"
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
@@ -317444,34 +317917,36 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
+          "default": "#22282b",
+          "label": "Dark polymer base and cable jacket"
         },
         {
           "name": "powderCoat",
           "type": "color",
           "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Powder-coated steel base plate"
         }
       ],
       "presets": {
         "fieldSite": {
+          "radome": "#d9dcd2",
           "galvanizedSteel": "#8f9b9b",
           "polymer": "#263a37",
           "powderCoat": "#52756b"
         },
         "highVisibility": {
+          "radome": "#f4f4f0",
           "galvanizedSteel": "#3a4b51",
           "polymer": "#27363c",
           "powderCoat": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 594,
         "sizeM": [
-          0.31,
-          0.49,
-          0.31
+          0.202,
+          0.461,
+          0.18
         ],
         "minUpM": 0,
         "materials": 1
@@ -317481,8 +317956,7 @@
           "name": "powderCoat",
           "color": "#318b96",
           "parts": [
-            "base",
-            "cap"
+            "base"
           ],
           "param": "powderCoat"
         },
@@ -317490,17 +317964,33 @@
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
+            "bolt-0",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3",
             "pole"
           ],
           "param": "galvanizedSteel"
         },
         {
           "name": "polymer",
-          "color": "#315267",
+          "color": "#22282b",
           "parts": [
-            "puck"
+            "bush",
+            "base-skirt",
+            "cable-gland",
+            "cable-run",
+            "cable-drop"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "radome",
+          "color": "#eceee9",
+          "parts": [
+            "radome"
+          ],
+          "param": "radome"
         }
       ]
     },
@@ -317709,7 +318199,7 @@
       "id": "guy-wire-mast-anchor",
       "kit": "telecom-infrastructure",
       "title": "Guyed mast anchor set",
-      "description": "Three-point guy-wire anchor layout with a central mast stub and ground cleat blocks. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Three-point guyed mast set: a galvanized mast stub on a concrete pier, with three galvanized guy wires that run from the mast-head band through turnbuckles to anchor rods set in concrete deadman blocks, and yellow guy guards. Knobs: overall scale; galvanized steel, concrete, guy guard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -317728,7 +318218,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/guy-wire-mast-anchor.kcad.ts",
       "preview": "/assets/telecom-infrastructure-guy-wire-mast-anchor.png",
-      "sourceSha256": "aa0dcff01769ede78ad3cdb54ee2d09bf52f6c992f343789dbcb46a72ca9f5c1",
+      "sourceSha256": "25ae3150f9055800b9ca8d96cb8bc09f2275733dd183d47fc53055d7c452bd5b",
       "triangleBudget": 900,
       "params": [
         {
@@ -317744,57 +318234,84 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
+          "label": "Mast, guys, turnbuckles and anchor rods (galvanized steel)"
         },
         {
-          "name": "powderCoat",
+          "name": "concrete",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#a5a29a",
+          "label": "Pier and deadman blocks (cast concrete)"
+        },
+        {
+          "name": "guyGuard",
+          "type": "color",
+          "default": "#e3b21b",
+          "label": "Guy guard sleeves (yellow polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "concrete": "#8c887e",
+          "guyGuard": "#d9a21a"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "concrete": "#c4c0b5",
+          "guyGuard": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 752,
         "sizeM": [
-          1.5,
-          0.824342,
-          1.32
+          1.56,
+          0.912,
+          1.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "concrete",
+          "color": "#a5a29a",
+          "parts": [
+            "pier",
+            "deadman-a",
+            "deadman-b",
+            "deadman-c"
+          ],
+          "param": "concrete"
+        },
+        {
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
+            "base-plate",
             "mast",
-            "anchor-a",
-            "anchor-b",
-            "anchor-c",
+            "mast-cap",
+            "guy-band",
+            "anchor-rod-a",
+            "turnbuckle-a",
             "guy-a",
+            "anchor-rod-b",
+            "turnbuckle-b",
             "guy-b",
+            "anchor-rod-c",
+            "turnbuckle-c",
             "guy-c"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "guyGuard",
+          "color": "#e3b21b",
           "parts": [
-            "base"
+            "guy-guard-a",
+            "guy-guard-b",
+            "guy-guard-c"
           ],
-          "param": "powderCoat"
+          "param": "guyGuard"
         }
       ]
     },
@@ -319226,7 +319743,7 @@
       "id": "pedestal-fiber-terminal",
       "kit": "telecom-infrastructure",
       "title": "Pedestal fiber terminal",
-      "description": "Slim ground pedestal with removable cap, service door and two conduit entries. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Slim fiber access pedestal on a concrete pad: one powder-coated steel body on a bolted base flange with stainless anchor bolts, a removable powder-coated gable cover that slides over the body top, a front service door in a polymer gasket seam with stainless hinges and a penta-head lock, polymer louvre vents and two HDPE ducts that rise through the pad. Knobs: overall scale; powder-coated steel, concrete, stainless steel, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319245,7 +319762,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/pedestal-fiber-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-pedestal-fiber-terminal.png",
-      "sourceSha256": "0454381ae0f879b8ed9e020b3c832060d51ddefb8490fc11e0b27bbe4d325ccf",
+      "sourceSha256": "0af22686914f56386bb2b500f821a5570e4b63cd824823b65ee0382c1bdea946",
       "triangleBudget": 900,
       "params": [
         {
@@ -319258,58 +319775,106 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#4f6e57",
+          "label": "Body, cover, door and base flange (powder-coated steel)"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a9a69d",
+          "label": "Mounting pad (concrete)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Hinges, lock and anchor bolts (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#1d2326",
+          "label": "Door seal, vents and ducts (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "powderCoat": "#8a8f7a",
+          "concrete": "#9b968a",
+          "stainlessSteel": "#c8d0cf",
+          "polymer": "#2b2f2c"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "powderCoat": "#e0aa18",
+          "concrete": "#b8b5ad",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#1b1f22"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 580,
         "sizeM": [
-          0.43,
-          0.83,
-          0.36
+          0.52,
+          0.85,
+          0.44
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "concrete",
+          "color": "#a9a69d",
           "parts": [
-            "base",
-            "cap",
+            "pad"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "polymer",
+          "color": "#1d2326",
+          "parts": [
+            "duct-0",
+            "duct-1",
+            "door-seal",
+            "vent-left-0",
+            "vent-left-1",
+            "vent-left-2",
+            "vent-left-3",
+            "vent-right-0",
+            "vent-right-1",
+            "vent-right-2",
+            "vent-right-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#4f6e57",
+          "parts": [
+            "base-flange",
+            "body",
+            "cover-skirt",
+            "cover-roof",
             "door"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "pedestal",
-            "conduit-a",
-            "conduit-b"
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3",
+            "hinge-0",
+            "hinge-1",
+            "lock"
           ],
-          "param": "galvanizedSteel"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -319423,7 +319988,7 @@
       "id": "radome-cylinder",
       "kit": "telecom-infrastructure",
       "title": "Cylindrical antenna radome",
-      "description": "Smooth cylindrical radome with rounded-looking cap rings and a narrow mounting foot. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Cylindrical antenna radome: a white fibreglass tube with a domed top over the antenna, held by a stainless clamp band on a galvanized flange, a narrow pipe foot and a bolted base plate, with a black coax gland and drop. No metal covers the radome above its base band. Material controls: fibreglass radome, galvanized steel, stainless steel, black polymer. Field-site and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319442,7 +320007,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/radome-cylinder.kcad.ts",
       "preview": "/assets/telecom-infrastructure-radome-cylinder.png",
-      "sourceSha256": "e4f4158f58ee3b866980695408ddc3a03f6aee4a5ab6d37769445b4150fee830",
+      "sourceSha256": "269a3bcc19d0576c55cacfa16d5af82215235fc15f0d1a840ac95851dd1a808a",
       "triangleBudget": 900,
       "params": [
         {
@@ -319455,42 +320020,50 @@
           "step": 0.05
         },
         {
+          "name": "radome",
+          "type": "color",
+          "default": "#eeede6",
+          "label": "Radome (fibreglass)"
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Foot, flange and base plate (galvanized steel)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "Clamp band (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Coax gland and cable (black polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
+          "radome": "#d9dbd0",
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
+          "radome": "#f4f4ef",
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 634,
         "sizeM": [
-          0.24,
-          1.19,
-          0.24
+          0.26,
+          1.25,
+          0.26
         ],
         "minUpM": 0,
         "materials": 1
@@ -319500,26 +320073,42 @@
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
-            "foot"
+            "base",
+            "bolt-0",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3",
+            "foot",
+            "flange"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "radome",
+          "color": "#eeede6",
           "parts": [
-            "shell",
-            "cap"
+            "radome"
           ],
-          "param": "powderCoat"
+          "param": "radome"
         },
         {
           "name": "stainlessSteel",
           "color": "#d2dbdc",
           "parts": [
-            "collar"
+            "clamp-band",
+            "band-screw"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "cable-gland",
+            "cable-run",
+            "cable-drop"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -319527,7 +320116,7 @@
       "id": "remote-power-shelf",
       "kit": "telecom-infrastructure",
       "title": "Remote power shelf",
-      "description": "Rack power shelf with two module faces, handles and a raised top lip. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "19-inch 3U rack DC power shelf: one powder-coated steel chassis with L-shaped rack ears and stainless rack screws, a controller with display and ports, four hot-swap rectifier modules with aluminium faces, vent slots and polymer pull handles, and a rear terminal cover. Knobs: overall scale; powder-coated steel, aluminium, stainless steel, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319546,8 +320135,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/remote-power-shelf.kcad.ts",
       "preview": "/assets/telecom-infrastructure-remote-power-shelf.png",
-      "sourceSha256": "fb678df1beeae081e2a33e079b29a28b473ee28bc96592a7ce6c933dc98599e0",
-      "triangleBudget": 900,
+      "sourceSha256": "1ba31e195ad1226c47e4d0ea52c1308df50c320200b3c7ce8dbaf7388fdd27fc",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -319559,58 +320148,122 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#353c41",
+          "label": "Chassis and rack ears (powder-coated steel)"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b4bcbf",
+          "label": "Module faces (aluminium)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Rack screws (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#1c2124",
+          "label": "Handles, vents, display and terminal cover (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "powderCoat": "#52756b",
+          "aluminium": "#a9b1ad",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "powderCoat": "#e6e8e4",
+          "aluminium": "#c3c9cb",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 688,
         "sizeM": [
-          0.7,
-          0.34,
-          0.425
+          0.483,
+          0.133,
+          0.382
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
-          "parts": [
-            "shelf"
-          ],
-          "param": "galvanizedSteel"
-        },
-        {
           "name": "powderCoat",
-          "color": "#318b96",
+          "color": "#353c41",
           "parts": [
-            "top",
-            "module-left",
-            "module-right",
-            "handle-left",
-            "handle-right"
+            "chassis",
+            "ear-left",
+            "ear-right"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "rack-screw-left-0",
+            "rack-screw-left-1",
+            "rack-screw-right-0",
+            "rack-screw-right-1"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b4bcbf",
+          "parts": [
+            "controller",
+            "rectifier-0",
+            "rectifier-1",
+            "rectifier-2",
+            "rectifier-3"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "polymer",
+          "color": "#1c2124",
+          "parts": [
+            "display",
+            "port-0",
+            "port-1",
+            "handle-0",
+            "vent-0-0",
+            "vent-0-1",
+            "vent-0-2",
+            "vent-0-3",
+            "vent-0-4",
+            "handle-1",
+            "vent-1-0",
+            "vent-1-1",
+            "vent-1-2",
+            "vent-1-3",
+            "vent-1-4",
+            "handle-2",
+            "vent-2-0",
+            "vent-2-1",
+            "vent-2-2",
+            "vent-2-3",
+            "vent-2-4",
+            "handle-3",
+            "vent-3-0",
+            "vent-3-1",
+            "vent-3-2",
+            "vent-3-3",
+            "vent-3-4",
+            "terminal-cover"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -320597,7 +321250,7 @@
       "id": "split-cable-duct",
       "kit": "telecom-infrastructure",
       "title": "Split cable duct",
-      "description": "Low split-duct cable cover with two channel shells and a bridging lid strip. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Split cable duct: a 150 mm HDPE conduit split lengthwise into upper and lower half shells that close around existing cables. The halves meet on flat side flanges held by six stainless bolts and nuts; three black cables run through the bore and out of both ends. Material controls: HDPE duct, stainless steel, black polymer cable. Field-site and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -320616,8 +321269,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/split-cable-duct.kcad.ts",
       "preview": "/assets/telecom-infrastructure-split-cable-duct.png",
-      "sourceSha256": "1a32c5ae97a276fac8c9870e5fe2e7535b11f09b4073a41d81998e30f7183bdd",
-      "triangleBudget": 900,
+      "sourceSha256": "f2828806363efbea3199aa06d9aa26a4001a012255a046f66a86d4950369773a",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -320629,57 +321282,84 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
+          "name": "duct",
           "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
+          "default": "#e07a1f",
+          "label": "Split duct (HDPE)"
         },
         {
-          "name": "powderCoat",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#d2dbdc",
+          "label": "Flange bolts and nuts (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Cables (black polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "duct": "#2e3331",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#3b4a3f"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "duct": "#e8c21a",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#1d2224"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 892,
         "sizeM": [
-          0.55,
-          0.11,
-          0.5
+          0.198,
+          0.15,
+          0.62
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "duct",
+          "color": "#e07a1f",
           "parts": [
-            "base-a",
-            "base-b",
-            "lid-a",
-            "lid-b"
+            "shell-upper",
+            "shell-lower"
           ],
-          "param": "powderCoat"
+          "param": "duct"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "center-join"
+            "bolt-0",
+            "nut-0",
+            "bolt-1",
+            "nut-1",
+            "bolt-2",
+            "nut-2",
+            "bolt-3",
+            "nut-3",
+            "bolt-4",
+            "nut-4",
+            "bolt-5",
+            "nut-5"
           ],
-          "param": "galvanizedSteel"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "cable-0",
+            "cable-1",
+            "cable-2"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -321238,7 +321918,7 @@
       "id": "wall-mast-bracket",
       "kit": "telecom-infrastructure",
       "title": "Wall mast stand-off bracket",
-      "description": "Wall stand-off bracket with backplate, two arms, mast clamps and bolt heads. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Galvanized wall stand-off bracket: a wall plate on four anchor bolts, two gusseted arms and end saddles that clamp a mast pipe with stainless U-bolts and nuts, and polymer pipe end caps. Knobs: overall scale; galvanized steel, stainless steel, polymer caps.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -321257,8 +321937,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/wall-mast-bracket.kcad.ts",
       "preview": "/assets/telecom-infrastructure-wall-mast-bracket.png",
-      "sourceSha256": "b94226b51fe0d545139e502bb60cf209fc08c290e5927fed72a4443478b01257",
-      "triangleBudget": 900,
+      "sourceSha256": "f13ccc3b4dfe55771e93ded56578924167decadea20255fee406a06f6d7aafc3",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -321273,60 +321953,56 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Bracket and mast (galvanized steel)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "U-bolts, nuts and anchors (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Pipe end caps (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#2f3a33"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e8c21a"
         }
       },
       "stats": {
-        "triangles": 148,
+        "triangles": 1072,
         "sizeM": [
           0.3,
-          1,
-          0.51
+          1.064,
+          0.478
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
-          "parts": [
-            "backplate"
-          ],
-          "param": "powderCoat"
-        },
-        {
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
-            "arm-upper",
+            "backplate",
             "arm-lower",
-            "gusset-a",
-            "gusset-b"
+            "gusset-lower",
+            "saddle-lower",
+            "arm-upper",
+            "gusset-upper",
+            "saddle-upper",
+            "mast"
           ],
           "param": "galvanizedSteel"
         },
@@ -321334,10 +322010,33 @@
           "name": "stainlessSteel",
           "color": "#d2dbdc",
           "parts": [
-            "clamp-upper",
-            "clamp-lower"
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3",
+            "u-bolt-lower-0",
+            "nut-lower-0-0",
+            "nut-lower-0-1",
+            "u-bolt-lower-1",
+            "nut-lower-1-0",
+            "nut-lower-1-1",
+            "u-bolt-upper-0",
+            "nut-upper-0-0",
+            "nut-upper-0-1",
+            "u-bolt-upper-1",
+            "nut-upper-1-0",
+            "nut-upper-1-1"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "mast-cap-top",
+            "mast-cap-bottom"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -349953,7 +350652,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/equalization-basin.kcad.ts",
       "preview": "/assets/water-treatment-equalization-basin.png",
-      "sourceSha256": "87ee2cf5410f7ac8acb1d75e0153ac4c4891ab01f379f7c2601ea00042321a09",
+      "sourceSha256": "741aeb1461b0870311bd23bdead0b49c599ad7291627c827b87d466ffcbd5a2f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -350000,26 +350699,26 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
-          "parts": [
-            "floor"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "concrete",
           "color": "#b8b1a1",
           "parts": [
+            "floor",
             "wall-front",
             "wall-back",
             "wall-left",
-            "wall-right",
+            "wall-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "mixer-pedestal",
             "mixer-arm",
             "mixer-hub"
           ],
-          "param": "concrete"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -350027,7 +350726,7 @@
       "id": "ferric-dosing-tank",
       "kit": "water-treatment",
       "title": "Ferric coagulant day tank",
-      "description": "Small chemical day tank with bund base, level column, vent and dosing outlet. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Small polyethylene chemical day tank with bund base, level sight tube, PVC vent and PVC dosing outlet. Parameters: overall scale and tank polyethylene, bund polyethylene, PVC pipework, level sight tube; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -350046,7 +350745,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/ferric-dosing-tank.kcad.ts",
       "preview": "/assets/water-treatment-ferric-dosing-tank.png",
-      "sourceSha256": "e20214efa0bcd4a2ee168743e385f8908776f2023c13243af4f9d1d579383c82",
+      "sourceSha256": "68a1653334a108b960d8bec79e52cc05661bd0db5ea063e613834156e52addb3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -350059,26 +350758,42 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
+          "name": "tankPolymer",
           "type": "color",
-          "default": "#3d8589",
-          "label": "Coated equipment steel"
+          "default": "#e6dfc4",
+          "label": "Tank polyethylene"
         },
         {
-          "name": "stainlessSteel",
+          "name": "bundPolymer",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#5f7f95",
+          "label": "Bund polyethylene"
+        },
+        {
+          "name": "pipePvc",
+          "type": "color",
+          "default": "#8b9499",
+          "label": "PVC pipework"
+        },
+        {
+          "name": "sightTube",
+          "type": "color",
+          "default": "#9a5a2a",
+          "label": "Level sight tube"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#687b78",
-          "stainlessSteel": "#9ca7a6"
+          "tankPolymer": "#c9c2a4",
+          "bundPolymer": "#5d6b74",
+          "pipePvc": "#7b8386",
+          "sightTube": "#7d4a26"
         },
         "highVisibility": {
-          "coatedSteel": "#e5682d",
-          "stainlessSteel": "#e1ddd0"
+          "tankPolymer": "#f2ead0",
+          "bundPolymer": "#e2b423",
+          "pipePvc": "#a7b0b4",
+          "sightTube": "#b8621f"
         }
       },
       "stats": {
@@ -350093,24 +350808,38 @@
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#3d8589",
+          "name": "bundPolymer",
+          "color": "#5f7f95",
           "parts": [
-            "bund",
-            "tank",
-            "lid",
-            "level-column"
+            "bund"
           ],
-          "param": "coatedSteel"
+          "param": "bundPolymer"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "tankPolymer",
+          "color": "#e6dfc4",
+          "parts": [
+            "tank",
+            "lid"
+          ],
+          "param": "tankPolymer"
+        },
+        {
+          "name": "pipePvc",
+          "color": "#8b9499",
           "parts": [
             "vent",
             "outlet"
           ],
-          "param": "stainlessSteel"
+          "param": "pipePvc"
+        },
+        {
+          "name": "sightTube",
+          "color": "#9a5a2a",
+          "parts": [
+            "level-column"
+          ],
+          "param": "sightTube"
         }
       ]
     },
@@ -351037,7 +351766,7 @@
       "id": "knife-gate-valve-assembly",
       "kit": "water-treatment",
       "title": "Knife gate valve assembly",
-      "description": "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
+      "description": "Process valve with a coated square gate body, a stainless rising stem, a handwheel and two stainless pipe stubs on the pipe run axis. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351056,7 +351785,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/knife-gate-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-knife-gate-valve-assembly.png",
-      "sourceSha256": "692cbf948bcfa69a459e18b8ed029f92902899cc9c4a3e79d6db45f0c5939d36",
+      "sourceSha256": "7c7c67683acb031952687a97d36b2eb4d94b657dff14d6153629623addbdab0b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -351123,8 +351852,7 @@
           "color": "#3d8589",
           "parts": [
             "gate-body",
-            "bonnet",
-            "stem"
+            "bonnet"
           ],
           "param": "coatedSteel"
         },
@@ -351133,7 +351861,8 @@
           "color": "#b5c0c0",
           "parts": [
             "pipe-left",
-            "pipe-right"
+            "pipe-right",
+            "stem"
           ],
           "param": "stainlessSteel"
         },
@@ -351474,7 +352203,7 @@
       "id": "pressure-reducing-valve-assembly",
       "kit": "water-treatment",
       "title": "Pressure reducing valve assembly",
-      "description": "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
+      "description": "Horizontal valve body between two pipe flanges, with a bonnet, actuator, stainless adjusting stem and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -351493,7 +352222,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-reducing-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-pressure-reducing-valve-assembly.png",
-      "sourceSha256": "e1ed6f460253f0d6590dc2e1e3fb2e3f94beacb08cbaf71afda506516d5b35d7",
+      "sourceSha256": "e670dfcda13774787f13b5c0bbf0584a6ffe8dd893fd901bfd9e5b27b78fe689",
       "triangleBudget": 2200,
       "params": [
         {
@@ -351539,7 +352268,7 @@
       "stats": {
         "triangles": 532,
         "sizeM": [
-          0.38,
+          0.34,
           0.735,
           0.38
         ],
@@ -351553,8 +352282,7 @@
           "parts": [
             "body",
             "bonnet",
-            "actuator",
-            "stem"
+            "actuator"
           ],
           "param": "coatedSteel"
         },
@@ -351563,7 +352291,8 @@
           "color": "#b5c0c0",
           "parts": [
             "flange-left",
-            "flange-right"
+            "flange-right",
+            "stem"
           ],
           "param": "stainlessSteel"
         },
@@ -357672,7 +358401,7 @@
       "id": "tower-base-flange",
       "kit": "wind-energy",
       "title": "Tower base flange",
-      "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
+      "description": "Circular tower base flange with a raised shell stub and eight galvanized anchor studs with nuts on the bolt circle. Controls: scale and structural steel, galvanized anchor steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -357691,8 +358420,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-base-flange.kcad.ts",
       "preview": "/assets/wind-energy-tower-base-flange.png",
-      "sourceSha256": "24f909a3410721c9843b2c59b7437e408ff41aad0aec4e001170d927d6b0a3e2",
-      "triangleBudget": 900,
+      "sourceSha256": "c99d92b1523eb30e802361caa3f25fb343ce16659b17895fc46051721b2c0ff3",
+      "triangleBudget": 1100,
       "params": [
         {
           "name": "scale",
@@ -357710,23 +358439,23 @@
           "label": "Structural steel"
         },
         {
-          "name": "stainlessSteel",
+          "name": "anchorSteel",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#a9b6b7",
+          "label": "Galvanized anchor steel"
         }
       ],
       "presets": {
         "weathered": {
           "structuralSteel": "#425258",
-          "stainlessSteel": "#c7d2d5"
+          "anchorSteel": "#8c9896"
         },
         "highVisibility": {
           "structuralSteel": "#d8a62b"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 792,
         "sizeM": [
           0.62,
           0.63,
@@ -357746,19 +358475,27 @@
           "param": "structuralSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "anchorSteel",
+          "color": "#a9b6b7",
           "parts": [
             "anchor-0",
+            "anchor-nut-0",
             "anchor-1",
+            "anchor-nut-1",
             "anchor-2",
+            "anchor-nut-2",
             "anchor-3",
+            "anchor-nut-3",
             "anchor-4",
+            "anchor-nut-4",
             "anchor-5",
+            "anchor-nut-5",
             "anchor-6",
-            "anchor-7"
+            "anchor-nut-6",
+            "anchor-7",
+            "anchor-nut-7"
           ],
-          "param": "stainlessSteel"
+          "param": "anchorSteel"
         }
       ]
     },
@@ -357863,7 +358600,7 @@
       "id": "tower-section",
       "kit": "wind-energy",
       "title": "Tapered tower section",
-      "description": "Single steel tower segment with a flared lower collar and upper joint band. Controls: scale and painted steel, stainless steel; weathered and high-visibility presets.",
+      "description": "Single tapered steel tower segment with a painted shell, a flared lower flange collar, an upper joint band and an access door panel. Controls: scale and tower paint, flange steel, painted steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -357882,7 +358619,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-section.kcad.ts",
       "preview": "/assets/wind-energy-tower-section.png",
-      "sourceSha256": "af8e0476ffd4889602dde2b081e59147b13ab6f4f2e58caafe75bdd0ea425890",
+      "sourceSha256": "5ce2024e62485c0371df85f687a36a41452a6cd9ac06af5520d003c71b6e1a6b",
       "triangleBudget": 300,
       "params": [
         {
@@ -357895,22 +358632,29 @@
           "step": 0.05
         },
         {
+          "name": "towerPaint",
+          "type": "color",
+          "default": "#e2e5e3",
+          "label": "Tower paint"
+        },
+        {
+          "name": "flangeSteel",
+          "type": "color",
+          "default": "#7f8b8e",
+          "label": "Flange steel"
+        },
+        {
           "name": "paintedSteel",
           "type": "color",
           "default": "#53727c",
           "label": "Painted steel"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "stainlessSteel": "#c7d2d5"
+          "towerPaint": "#c8ccc7",
+          "flangeSteel": "#6f6a62",
+          "paintedSteel": "#415961"
         },
         "highVisibility": {
           "paintedSteel": "#d8a62b"
@@ -357928,14 +358672,21 @@
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "towerPaint",
+          "color": "#e2e5e3",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "towerPaint"
+        },
+        {
+          "name": "flangeSteel",
+          "color": "#7f8b8e",
+          "parts": [
             "lower-collar",
             "upper-band"
           ],
-          "param": "stainlessSteel"
+          "param": "flangeSteel"
         },
         {
           "name": "paintedSteel",
@@ -359868,7 +360619,7 @@
       "id": "wind-site-bollard",
       "kit": "wind-energy",
       "title": "Wind site bollard",
-      "description": "Low site bollard with a rounded cap, square foot and two raised reflector bands. Controls: scale and safety paint, stainless steel, concrete; weathered and high-visibility presets.",
+      "description": "Low painted site bollard with a round cap, square concrete foot and two reflective sheeting bands. Controls: scale and safety paint, reflective sheeting, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -359887,7 +360638,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-site-bollard.kcad.ts",
       "preview": "/assets/wind-energy-wind-site-bollard.png",
-      "sourceSha256": "d35b5df53b9f2ab07a5d321a9efd8c8c2735bc88ca7f299dc124457c1a401984",
+      "sourceSha256": "c1b9dec8cd154b928ac63b2e24e4bb7baa8c9d8e57f3143389a58d607907f34b",
       "triangleBudget": 400,
       "params": [
         {
@@ -359906,10 +360657,10 @@
           "label": "Safety paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "reflectiveBand",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#d5322c",
+          "label": "Reflective sheeting"
         },
         {
           "name": "concrete",
@@ -359921,7 +360672,7 @@
       "presets": {
         "weathered": {
           "safetyPaint": "#ba8d27",
-          "stainlessSteel": "#c7d2d5"
+          "reflectiveBand": "#b04a41"
         },
         "highVisibility": {
           "safetyPaint": "#d29f2c"
@@ -359956,13 +360707,13 @@
           "param": "safetyPaint"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "reflectiveBand",
+          "color": "#d5322c",
           "parts": [
             "band-low",
             "band-high"
           ],
-          "param": "stainlessSteel"
+          "param": "reflectiveBand"
         }
       ]
     },

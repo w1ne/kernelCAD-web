@@ -1,0 +1,5 @@
+{
+  "command": "./node_modules/.bin/eslint catalog/kits/grid-substation/ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts",
+  "exitCode": 0,
+  "result": "passed with no diagnostics"
+}

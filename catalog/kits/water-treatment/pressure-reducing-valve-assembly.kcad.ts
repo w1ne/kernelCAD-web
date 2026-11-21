@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Pressure reducing valve assembly: Valve body with wide flanges, bonnet, actuator column and manual handwheel. Low-poly visualization geometry in millimetres, Z up.
+// Pressure reducing valve assembly: Horizontal valve body between two pipe flanges, with a bonnet, actuator, stainless adjusting stem and manual handwheel. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "pressure-reducing-valve-assembly",
   license: 'CC0-1.0',
   title: "Pressure reducing valve assembly",
-  description: "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
+  description: "Horizontal valve body between two pipe flanges, with a bonnet, actuator, stainless adjusting stem and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -43,12 +43,14 @@ const loftCylinder = (height:number, radius:number, sides:number) => {
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z).scale(scale);
 
 const p=assembly("pressure-reducing-valve-assembly");
-p.part("body",c(0,0,40,260,150,12).color(coatedSteel));
-p.part("flange-left",c(0,0,0,40,190,12).color(stainlessSteel));
-p.part("flange-right",c(0,0,300,40,190,12).color(stainlessSteel));
-p.part("bonnet",c(0,0,300,150,78,10).color(coatedSteel));
+// The pipe run is the X axis; the flange rims rest on the ground.
+const alongPipe=(x:number,length:number,r:number,n=12)=>loftCylinder(length,r,n).rotateY(90).translate(x,0,190).scale(scale);
+p.part("body",alongPipe(-130,260,150).color(coatedSteel));
+p.part("flange-left",alongPipe(-170,40,190).color(stainlessSteel));
+p.part("flange-right",alongPipe(130,40,190).color(stainlessSteel));
+p.part("bonnet",c(0,0,320,130,78,10).color(coatedSteel));
 p.part("actuator",b(0,0,450,170,170,150).color(coatedSteel));
-p.part("stem",c(0,0,600,100,32,10).color(coatedSteel));
+p.part("stem",c(0,0,600,100,32,10).color(stainlessSteel));
 p.part("handwheel",c(0,0,700,35,110,12).color(warningAmber));
 
 return p.model();

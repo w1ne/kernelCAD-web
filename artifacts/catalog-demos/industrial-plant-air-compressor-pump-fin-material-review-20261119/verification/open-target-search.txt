@@ -1,0 +1,7 @@
+Checked 5 assets against 8 open issues.
+Checked 5 open PRs and known fix PRs [1298, 1305, 1307, 1308].
+CLEAR industrial-plant/air-compressor: no exact open issue/PR path overlap or known-fix overlap
+CLEAR industrial-plant/baghouse-dust-collector: no exact open issue/PR path overlap or known-fix overlap
+CLEAR industrial-plant/bucket-elevator: no exact open issue/PR path overlap or known-fix overlap
+CLEAR industrial-plant/forklift-truck: no exact open issue/PR path overlap or known-fix overlap
+CLEAR industrial-plant/weigh-hopper: no exact open issue/PR path overlap or known-fix overlap

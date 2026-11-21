@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-17",
+  "output": "industrial-plant-process-blower-motor-material-review.mp4",
+  "durationSeconds": 14,
+  "frames": [
+    "preview-review-five-assets.png",
+    "previews/before/process-blower.png",
+    "previews/after/process-blower.png",
+    "verification-card.png",
+    "previews/after/process-blower.png"
+  ],
+  "frameSeconds": 2.8,
+  "resolution": "1280x720",
+  "fps": 25,
+  "videoCodec": "H.264 / libx264",
+  "crf": 22,
+  "pixelFormat": "yuv420p",
+  "audio": "none",
+  "claims": "Local preview rendering and exported-GLB software regression only; not simulation, deployment verification, or hardware acceptance."
+}

@@ -1,0 +1,108 @@
+{
+  "id": "rfid-access-reader-pedestal",
+  "kit": "ev-charging-infrastructure",
+  "title": "RFID access reader pedestal",
+  "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and powder-coated metal, display glass and stainless steel color controls.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "EV charging",
+    "electric vehicle",
+    "charging station",
+    "low poly",
+    "scene prop",
+    "CC0"
+  ],
+  "compat": [
+    "ev-charging",
+    "parking",
+    "fleet",
+    "electric-vehicle",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/ev-charging-infrastructure/rfid-access-reader-pedestal.kcad.ts",
+  "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
+  "sourceSha256": "6451c365b43c2d3b30e670b8783789ed70b8054c6edfae6a3590f060d2ac0221",
+  "triangleBudget": 2400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "powderCoat",
+      "type": "color",
+      "default": "#397f90",
+      "label": "Powder-coated metal"
+    },
+    {
+      "name": "displayGlass",
+      "type": "color",
+      "default": "#79cfda",
+      "label": "Display glass"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c2",
+      "label": "Stainless steel"
+    }
+  ],
+  "presets": {
+    "fleetReady": {
+      "powderCoat": "#28765f",
+      "displayGlass": "#46b8c4",
+      "stainlessSteel": "#c2c9c8"
+    },
+    "nightService": {
+      "powderCoat": "#3f5059",
+      "displayGlass": "#11bfd0",
+      "stainlessSteel": "#c8cecd"
+    }
+  },
+  "stats": {
+    "triangles": 104,
+    "sizeM": [
+      0.36,
+      0.98,
+      0.36
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c2",
+      "parts": [
+        "base-plate",
+        "post"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "powderCoat",
+      "color": "#397f90",
+      "parts": [
+        "reader-face",
+        "status-lamp",
+        "cap"
+      ],
+      "param": "powderCoat"
+    },
+    {
+      "name": "displayGlass",
+      "color": "#79cfda",
+      "parts": [
+        "reader-window"
+      ],
+      "param": "displayGlass"
+    }
+  ]
+}

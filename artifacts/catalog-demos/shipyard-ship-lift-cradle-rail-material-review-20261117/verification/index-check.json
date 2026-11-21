@@ -1,0 +1,35 @@
+{
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "assetCountUnchanged": true,
+  "sourceHashMatches": true,
+  "sourceHashChangedFromBaseline": true,
+  "previewPath": "/assets/shipyard-ship-lift-cradle.png",
+  "previewExists": true,
+  "triangleCountUnchanged": true,
+  "dimensionsUnchanged": true,
+  "presetsUnchanged": true,
+  "parametersUnchanged": true,
+  "palettePartsCorrect": true,
+  "paletteParts": {
+    "yardPaint": [
+      "side-rail-0",
+      "side-rail-1"
+    ],
+    "structuralSteel": [
+      "cross-tie-0",
+      "cross-tie-1",
+      "cross-tie-2",
+      "guide-roller-0",
+      "guide-roller-1",
+      "guide-roller-2",
+      "guide-roller-3"
+    ],
+    "elastomer": [
+      "hull-pad-0",
+      "hull-pad-1",
+      "hull-pad-2",
+      "hull-pad-3"
+    ]
+  }
+}

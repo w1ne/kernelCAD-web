@@ -1,0 +1,16 @@
+Candidate and PR review:
+  gh pr view 1258 --json number,title,state,updatedAt,reviews,statusCheckRollup
+  gh pr view 1507 --json number,title,state,updatedAt,reviews,statusCheckRollup
+  python3 artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/verification/check_open_targets.py
+
+Asset review and change:
+  npx tsx scripts/renderCatalogPreviews.ts pet-blow-molder
+  python3 scripts/checkCatalogQuality.py --kit beverage-bottling-line
+  python3 scripts/checkCatalogQuality.py --top 1
+  npx eslint catalog/kits/beverage-bottling-line/ tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts
+  npx tsx scripts/buildAssetCatalog.ts
+  npx vitest run tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts
+  npx vitest run tests/integration/catalog/
+
+Demo:
+  artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/make_demo.sh

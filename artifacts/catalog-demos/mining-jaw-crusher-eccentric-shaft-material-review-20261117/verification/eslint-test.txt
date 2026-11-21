@@ -1,0 +1,3 @@
+Command: npx eslint tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts
+
+Exit status: 0. No diagnostics.

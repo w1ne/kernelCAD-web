@@ -1,0 +1,1 @@
+before (original source): FAIL - backplate should use the galvanized finish of the welded bracket: expected false to be true

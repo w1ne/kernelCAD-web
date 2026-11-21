@@ -1,0 +1,23 @@
+{
+  "asset": "substation-yard-barrier-section",
+  "sourceSha256": "3522a8e37a142cb5585dea87b7fe83a007d1e43ac6cd9e86243bef19ec21acbd",
+  "preview": "/assets/grid-substation-substation-yard-barrier-section.png",
+  "changedIndexRows": [
+    "substation-yard-barrier-section"
+  ],
+  "triangleCount": 124,
+  "boundsM": [
+    2.6,
+    0.943,
+    0.42
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true
+  },
+  "passed": true
+}

@@ -53,7 +53,8 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
 
 p.part("base-runner-0", b("base-runner-0", [1950, 180, 160], [0, -500, 80]).color(yardPaint));
 p.part("base-runner-1", b("base-runner-1", [1950, 180, 160], [0, 500, 80]).color(yardPaint));
-p.part("divider-0", b("divider-0", [125, 1100, 1660], [-800, 0, 830]).color(yardPaint));
+// The five bay dividers are identical uprights, so they share the structural steel finish.
+p.part("divider-0", b("divider-0", [125, 1100, 1660], [-800, 0, 830]).color(structuralSteel));
 p.part("divider-1", b("divider-1", [125, 1100, 1660], [-400, 0, 830]).color(structuralSteel));
 p.part("divider-2", b("divider-2", [125, 1100, 1660], [0, 0, 830]).color(structuralSteel));
 p.part("divider-3", b("divider-3", [125, 1100, 1660], [400, 0, 830]).color(structuralSteel));

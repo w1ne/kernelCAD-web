@@ -1,0 +1,37 @@
+{
+  "video": "industrial-plant-motor-control-center-material-review.mp4",
+  "sha256": "3ced9ae482c6f3253de7ff133be5bbafec5f09f54a5a5e848f6ea6ce953d2edf",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "25/1",
+  "durationSeconds": 14.0,
+  "samples": [
+    {
+      "seconds": 0.5,
+      "path": "frame-0.png",
+      "sha256": "2743c81aabd30d954d2550a3dbf1a4460a6e312e6973b82830167c0de6e985fc"
+    },
+    {
+      "seconds": 3.3,
+      "path": "frame-1.png",
+      "sha256": "a8460267ad599d150843a1b115b951620694948f34e80aeaf5567fb896ad7195"
+    },
+    {
+      "seconds": 6.1,
+      "path": "frame-2.png",
+      "sha256": "89d78d71f3db58fe9ce0485c0f5b5ddde30c5dafe881cba8b919f2a2c6aa2ed3"
+    },
+    {
+      "seconds": 8.9,
+      "path": "frame-3.png",
+      "sha256": "7d910157ca9368e1a50fa2020ce902c9574765cebeb2174f04133965d2a3cab7"
+    },
+    {
+      "seconds": 11.7,
+      "path": "frame-4.png",
+      "sha256": "6a214848ecf3cb1640b1ab68bd3a786f862fc1c7238d397b91b75c8845ec7be4"
+    }
+  ],
+  "visualReview": "Manually inspected all five extracted frames. The contact sheet labels and all five objects are readable; before and after views clearly distinguish the center-bay finish; the verification card is legible; all captions fit within the frame and the final slide states local preview only, with no simulation or hardware acceptance."
+}

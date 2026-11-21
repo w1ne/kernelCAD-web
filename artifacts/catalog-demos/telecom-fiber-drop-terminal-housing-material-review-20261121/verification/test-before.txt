@@ -1,0 +1,1 @@
+before (original source): FAIL - the terminal should have no powder-coated steel finish: expected [ 'polymer', 'powderCoat' ] to deeply equal [ 'housing', 'poleWood', …(2) ]

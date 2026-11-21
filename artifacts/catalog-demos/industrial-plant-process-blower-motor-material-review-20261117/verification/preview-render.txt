@@ -1,0 +1,3 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts process-blower
+Result: industrial-plant/process-blower: 292 tris
+Exit status: 0

@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-17",
+  "asset": "beverage-bottling-line/pet-blow-molder",
+  "localPreviewCommand": "npx tsx scripts/renderCatalogPreviews.ts pet-blow-molder",
+  "localIndexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "regressionCommand": "npx vitest run tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts",
+  "auditedPreviewIds": [
+    "pet-blow-molder",
+    "rotary-filler",
+    "case-layer-palletizer",
+    "bottle-rinser-carousel",
+    "case-erector"
+  ],
+  "materialControls": {
+    "stainlessSteel": "#aebdc1",
+    "powderCoat": "#397e91",
+    "enclosureCoat": "#d2dfe1"
+  },
+  "presets": ["sanitaryLine", "legacyPlant"],
+  "triangleBudget": 2200,
+  "triangles": 364,
+  "video": {
+    "resolution": "1280x720",
+    "fps": 25,
+    "codec": "H.264",
+    "crf": 23,
+    "audio": false,
+    "source": "make_demo.sh"
+  },
+  "claimScope": "Local software-rendered preview and GLB regression only; not a simulation, deployment check, or hardware acceptance."
+}

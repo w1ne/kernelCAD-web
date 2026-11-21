@@ -1,0 +1,25 @@
+{
+  "asset": "cleanroom-single-door-module",
+  "sourceSha256": "c56ca7279a43a4a9dbf44ca5f53fab44a0e195c0e135ff56dcfd64e2233f6bcb",
+  "preview": "/assets/lab-infrastructure-cleanroom-single-door-module.png",
+  "changedIndexRows": [
+    "cleanroom-single-door-module"
+  ],
+  "triangleCount": 72,
+  "boundsM": [
+    1.3,
+    2.48,
+    0.1266
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "widthAndHeightUnchanged": true,
+    "depthFollowsVisionPanel": true,
+    "stainlessControlListed": true
+  },
+  "passed": true
+}

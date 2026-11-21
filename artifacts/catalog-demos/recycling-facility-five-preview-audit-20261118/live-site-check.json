@@ -1,0 +1,67 @@
+{
+  "checkedAtUtc": "2026-11-18T04:51:37.360121+00:00",
+  "checks": [
+    {
+      "id": "green-waste-shredder",
+      "detailUrl": "https://kernelcad.com/catalog/recycling-facility/green-waste-shredder/",
+      "previewUrl": "https://kernelcad.com/assets/recycling-facility-green-waste-shredder.png",
+      "localPreviewSha256": "0d9ee2177f31baf40cb85c4b8672257549018b061addbed879c6af287fbe1731",
+      "detailStatus": 200,
+      "detailBytes": 29684,
+      "previewStatus": 200,
+      "previewBytes": 43375,
+      "publicPreviewSha256": "0d9ee2177f31baf40cb85c4b8672257549018b061addbed879c6af287fbe1731",
+      "previewMatchesLocal": true
+    },
+    {
+      "id": "plastic-film-compactor",
+      "detailUrl": "https://kernelcad.com/catalog/recycling-facility/plastic-film-compactor/",
+      "previewUrl": "https://kernelcad.com/assets/recycling-facility-plastic-film-compactor.png",
+      "localPreviewSha256": "85e2d0c4656faf6e2242d0a00dc954a53dbb635e33dd0363a6cfda7d0fba2b74",
+      "detailStatus": 200,
+      "detailBytes": 29682,
+      "previewStatus": 200,
+      "previewBytes": 58205,
+      "publicPreviewSha256": "85e2d0c4656faf6e2242d0a00dc954a53dbb635e33dd0363a6cfda7d0fba2b74",
+      "previewMatchesLocal": true
+    },
+    {
+      "id": "plastic-flake-silo",
+      "detailUrl": "https://kernelcad.com/catalog/recycling-facility/plastic-flake-silo/",
+      "previewUrl": "https://kernelcad.com/assets/recycling-facility-plastic-flake-silo.png",
+      "localPreviewSha256": "67708b34436213106608d7208143811469f5612a3d5849b4d336716b57288465",
+      "detailStatus": 200,
+      "detailBytes": 29415,
+      "previewStatus": 200,
+      "previewBytes": 32431,
+      "publicPreviewSha256": "67708b34436213106608d7208143811469f5612a3d5849b4d336716b57288465",
+      "previewMatchesLocal": true
+    },
+    {
+      "id": "recovered-plastic-bagger",
+      "detailUrl": "https://kernelcad.com/catalog/recycling-facility/recovered-plastic-bagger/",
+      "previewUrl": "https://kernelcad.com/assets/recycling-facility-recovered-plastic-bagger.png",
+      "localPreviewSha256": "58f7bb48abd4f2ab344090c7bf6f796fe3237067c12cddd8ff51586110ce7e70",
+      "detailStatus": 200,
+      "detailBytes": 29296,
+      "previewStatus": 200,
+      "previewBytes": 56707,
+      "publicPreviewSha256": "58f7bb48abd4f2ab344090c7bf6f796fe3237067c12cddd8ff51586110ce7e70",
+      "previewMatchesLocal": true
+    },
+    {
+      "id": "product-pelletizer",
+      "detailUrl": "https://kernelcad.com/catalog/recycling-facility/product-pelletizer/",
+      "previewUrl": "https://kernelcad.com/assets/recycling-facility-product-pelletizer.png",
+      "localPreviewSha256": "969f5be8f6773e38c311fda1c3f492c2a0dd680219834cbe2c93d851c94c429b",
+      "detailStatus": 200,
+      "detailBytes": 29273,
+      "previewStatus": 200,
+      "previewBytes": 39565,
+      "publicPreviewSha256": "969f5be8f6773e38c311fda1c3f492c2a0dd680219834cbe2c93d851c94c429b",
+      "previewMatchesLocal": true
+    }
+  ],
+  "allDetailPages200": true,
+  "allPreviews200AndMatch": true
+}

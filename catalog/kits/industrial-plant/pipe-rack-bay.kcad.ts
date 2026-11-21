@@ -22,12 +22,12 @@ presets({
 });
 const p = assembly('pipe-rack-bay');
 p.part('support-column--1', box(48, 48, 740, true).translate(0, -226.8, 370).scale(scale).color(steel));
-p.part('baseplate--1', box(125, 125, 22, true).translate(0, -226.8, 11).scale(scale).color(safetyPaint));
-p.part('crossbeam--1', box(880, 44, 46, true).translate(0, -226.8, 606.8).scale(scale).color(safetyPaint));
+p.part('baseplate--1', box(125, 125, 22, true).translate(0, -226.8, 11).scale(scale).color(steel));
+p.part('crossbeam--1', box(880, 44, 46, true).translate(0, -226.8, 606.8).scale(scale).color(steel));
 p.part('brace--1', box(651.2, 28, 25, true).rotate([0, 1, 0], -12).translate(0, -226.8, 318.2).scale(scale).color(steel));
 p.part('support-column-1', box(48, 48, 740, true).translate(0, 226.8, 370).scale(scale).color(steel));
-p.part('baseplate-1', box(125, 125, 22, true).translate(0, 226.8, 11).scale(scale).color(safetyPaint));
-p.part('crossbeam-1', box(880, 44, 46, true).translate(0, 226.8, 606.8).scale(scale).color(safetyPaint));
+p.part('baseplate-1', box(125, 125, 22, true).translate(0, 226.8, 11).scale(scale).color(steel));
+p.part('crossbeam-1', box(880, 44, 46, true).translate(0, 226.8, 606.8).scale(scale).color(steel));
 p.part('brace-1', box(651.2, 28, 25, true).rotate([0, 1, 0], 12).translate(0, 226.8, 318.2).scale(scale).color(steel));
 p.part('pipe-run-0', cylinder(932.8, 34, 10).rotate([0, 1, 0], 90).translate(-466.4, -151.2, 636.4).scale(scale).color(steel));
 p.part('pipe-flange-0', cylinder(18, 55, 10).rotate([0, 1, 0], 90).translate(334.2, -151.2, 636.4).scale(scale).color(safetyPaint));

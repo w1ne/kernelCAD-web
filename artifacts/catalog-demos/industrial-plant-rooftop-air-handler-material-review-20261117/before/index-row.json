@@ -1,0 +1,100 @@
+{
+  "id": "rooftop-air-handler",
+  "kit": "industrial-plant",
+  "title": "Rooftop air handler",
+  "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
+  "preview": "/assets/industrial-plant-rooftop-air-handler.png",
+  "sourceSha256": "da0c19e71230fcbab0de32b4f29fd32a5a17bfd239656d7e96ee246234102b12",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#70818a",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#dfa843",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 320,
+    "sizeM": [
+      0.84,
+      0.4097,
+      0.48
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "safetyPaint",
+      "color": "#dfa843",
+      "parts": [
+        "base-frame",
+        "inspection-door-0",
+        "service-section-1",
+        "inspection-door-1",
+        "inspection-door-2",
+        "exhaust-fan-0",
+        "exhaust-fan-1",
+        "exhaust-fan-2",
+        "pipe-header"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "steel",
+      "color": "#70818a",
+      "parts": [
+        "main-casing",
+        "service-section-0",
+        "service-section-2",
+        "support-foot-0",
+        "support-foot-1",
+        "support-foot-2",
+        "support-foot-3"
+      ],
+      "param": "steel"
+    }
+  ]
+}

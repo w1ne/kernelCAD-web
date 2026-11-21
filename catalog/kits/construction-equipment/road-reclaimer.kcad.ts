@@ -44,12 +44,12 @@ add('milling-hood', box(412.5, 902, 250, true).translate(594, 0, 165), equipment
 add('cutter-drum', cylinder(825, 120, 12).rotateX(90).translate(643.5, 412.5, 120), structuralSteelColor);
 add('cutter-drum-hub--1', cylinder(132, 45.6, 10).rotateX(90).translate(643.5, -478.5, 120), structuralSteelColor);
 add('cutter-drum-hub-1', cylinder(132, 45.6, 10).rotateX(90).translate(643.5, 478.5, 120), structuralSteelColor);
-add('cutting-tooth-0', box(30, 814, 30, true).translate(462, 0, 57), equipmentPaintColor);
-add('cutting-tooth-1', box(30, 814, 30, true).translate(519.75, 0, 57), equipmentPaintColor);
-add('cutting-tooth-2', box(30, 814, 30, true).translate(577.5, 0, 57), equipmentPaintColor);
-add('cutting-tooth-3', box(30, 814, 30, true).translate(635.25, 0, 57), equipmentPaintColor);
-add('cutting-tooth-4', box(30, 814, 30, true).translate(693, 0, 57), equipmentPaintColor);
-add('cutting-tooth-5', box(30, 814, 30, true).translate(750.75, 0, 57), equipmentPaintColor);
-add('cutting-tooth-6', box(30, 814, 30, true).translate(808.5, 0, 57), equipmentPaintColor);
+add('cutting-tooth-0', box(30, 814, 30, true).translate(462, 0, 57), structuralSteelColor);
+add('cutting-tooth-1', box(30, 814, 30, true).translate(519.75, 0, 57), structuralSteelColor);
+add('cutting-tooth-2', box(30, 814, 30, true).translate(577.5, 0, 57), structuralSteelColor);
+add('cutting-tooth-3', box(30, 814, 30, true).translate(635.25, 0, 57), structuralSteelColor);
+add('cutting-tooth-4', box(30, 814, 30, true).translate(693, 0, 57), structuralSteelColor);
+add('cutting-tooth-5', box(30, 814, 30, true).translate(750.75, 0, 57), structuralSteelColor);
+add('cutting-tooth-6', box(30, 814, 30, true).translate(808.5, 0, 57), structuralSteelColor);
 
 return p.model();

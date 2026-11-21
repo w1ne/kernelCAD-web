@@ -1,0 +1,17 @@
+{
+  "checkedDate": "2026-11-18",
+  "browser": "Existing Chrome profile/CDP session on 127.0.0.1:9222; no browser was launched.",
+  "detailPage": "https://kernelcad.com/catalog/beverage-bottling-line/case-taper/",
+  "detailHttpStatus": 200,
+  "previewUrl": "https://kernelcad.com/assets/beverage-bottling-line-case-taper.png",
+  "previewHttpStatus": 200,
+  "previewSha256": "e99741bbf416bf2374e11a210d7aea509d336d3e10597eaec78cca3af77f3d5a",
+  "publicSourceUrl": "https://kernelcad.com/assets/beverage-bottling-line-case-taper.kcad.ts",
+  "publicSourceHttpStatus": 200,
+  "publicSourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
+  "preFixBranchSourceSha256": "b5db38f064c62eee7ea5c800f8e84346e599d6b367d399eb1f2553a6cee65c07",
+  "localPreFixPreviewSha256": "e99741bbf416bf2374e11a210d7aea509d336d3e10597eaec78cca3af77f3d5a",
+  "localAfterPreviewSha256": "d2b7b645bfaea80406c257cdf2bf3cf4e9de9e64654cfe2f1cce5863a6b4fa28",
+  "visualObservation": "The public detail page and preview show the prior teal tape head and tan tape roll. Public source matches the pre-fix source, and the public preview matches the saved local pre-fix preview byte-for-byte.",
+  "deploymentStatus": "This feature branch has not been deployed; these values record the published baseline before the change."
+}
