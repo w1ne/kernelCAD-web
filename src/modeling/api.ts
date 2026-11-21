@@ -136,8 +136,9 @@ export interface PartsLib {
    * islands are not flattened.
    * Full and partial planar ellipses and supported splines are exact rational
    * NURBS geometry; periodic and unclamped knot vectors are clamped exactly.
-   * An open cubic SPLINE with fit points only is interpolated through its fit
-   * points and end tangents. Nonplanar ellipses, closed fit-point-only,
+   * A cubic SPLINE with fit points only is interpolated through its fit
+   * points and end tangents; a closed one without end tangents becomes a C2
+   * periodic cubic. Nonplanar ellipses, non-cubic fit-point-only,
    * discontinuous and nonplanar splines are refused with an entity and line
    * diagnostic.
    * INSERT block references (nested, and MINSERT grids) are expanded with

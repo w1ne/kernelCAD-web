@@ -260,6 +260,67 @@ describe('importDxfText — entities', () => {
     expect(my).toBeCloseTo(10, 9);
   });
 
+  it('interpolates a closed fit-point-only SPLINE as a C2 periodic cubic through every fit point', () => {
+    // Eight fit points on a 10 mm circle; AutoCAD and ezdxf do not repeat the first one.
+    const fit = Array.from({ length: 8 }, (_, k): readonly [number, number] => [
+      10 * Math.cos((k * Math.PI) / 4), 10 * Math.sin((k * Math.PI) / 4),
+    ]);
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, fit.length],
+      ...fit.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y], [31, 0]]),
+    ));
+    expect(r.regions).toHaveLength(1);
+    const nurbs = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toHaveLength(1);
+    expect(nurbs[0].degree.evaluated).toBe(3);
+    const { knots, controls } = orientedNet(nurbs[0], fit[0]);
+    expect(knots.slice(0, 4)).toEqual([0, 0, 0, 0]);
+    expect(knots.slice(-4)).toEqual([1, 1, 1, 1]);
+    // Equal chords give the parameters k / 8; the curve passes through each fit point there.
+    for (let k = 0; k <= 8; k++) {
+      const [x, y] = deBoor(3, knots, controls, undefined, k / 8);
+      expect(Math.min(...fit.map(([fx, fy]) => Math.hypot(x - fx, y - fy)))).toBeLessThan(1e-9);
+    }
+    // Periodic, so the seam is smooth: equal first derivatives at both ends of the clamped net.
+    const n = controls.length - 1;
+    const start = [0, 1].map(i => (3 * (controls[1][i] - controls[0][i])) / knots[4]);
+    const end = [0, 1].map(i => (3 * (controls[n][i] - controls[n - 1][i])) / (1 - knots[n]));
+    expect(start[0]).toBeCloseTo(end[0], 9);
+    expect(start[1]).toBeCloseTo(end[1], 9);
+    // The interpolant lies within 0.2 % of the circle area (100 pi mm²).
+    expect(Math.abs(r.regions[0].areaMm2 / (100 * Math.PI) - 1)).toBeLessThan(2e-3);
+  });
+
+  it('accepts a closed fit-point SPLINE that repeats its first fit point at the end', () => {
+    const fit = Array.from({ length: 8 }, (_, k): readonly [number, number] => [
+      10 * Math.cos((k * Math.PI) / 4), 10 * Math.sin((k * Math.PI) / 4),
+    ]);
+    const area = (points: ReadonlyArray<readonly [number, number]>) => importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, points.length],
+      ...points.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y]]),
+    )).regions[0].areaMm2;
+    expect(area([...fit, fit[0]])).toBeCloseTo(area(fit), 9);
+  });
+
+  it('closes a fit-point SPLINE with explicit end tangents through its first fit point', () => {
+    // A 20 mm square of fit points, with both end tangents along +Y at (10, 0).
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 4],
+      [12, 0], [22, 1], [32, 0], [13, 0], [23, 1], [33, 0],
+      [11, 10], [21, 0], [11, 0], [21, 10], [11, -10], [21, 0], [11, 0], [21, -10],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const { controls } = orientedNet(nurbs, [10, 0]);
+    const n = controls.length - 1;
+    expect(controls[n]).toEqual(controls[0]);
+    // Both ends leave (10, 0) along the Y axis, so the seam has no corner.
+    expect(controls[1][0]).toBeCloseTo(10, 12);
+    expect(controls[n - 1][0]).toBeCloseTo(10, 12);
+    expect(Math.sign(controls[1][1] - controls[0][1])).toBe(-Math.sign(controls[n - 1][1] - controls[n][1]));
+    expect(r.regions[0].areaMm2).toBeGreaterThan(200);
+  });
+
   it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
     const r = importDxfText(entities(
       [0, 'ELLIPSE'], [10, 40], [20, 30], [11, 20], [21, 0], [40, 0.5], [41, 0], [42, 2 * Math.PI],
@@ -775,13 +836,13 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/closed flag is set but the curve endpoints do not meet/);
   });
 
-  it('refuses a closed fit-point-only SPLINE instead of guessing its periodic interpolation', () => {
+  it('refuses a closed fit-point SPLINE with fewer than three distinct fit points', () => {
     const e = failure(() => importDxfText(entities(
-      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 4],
-      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y]]),
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 3],
+      [11, 0], [21, 0], [11, 10], [21, 0], [11, 0], [21, 0],
     )));
-    expect(e.reason).toBe('unsupported-entity');
-    expect(e.message).toMatch(/^SPLINE at line \d+: closed fit-point-only splines are not supported/);
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/^SPLINE at line \d+: a closed fit-point spline needs at least 3 distinct fit points, found 2/);
   });
 
   it('refuses a fit-point SPLINE with repeated consecutive fit points as malformed', () => {
