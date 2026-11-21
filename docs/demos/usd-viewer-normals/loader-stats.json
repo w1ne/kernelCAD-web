@@ -1,0 +1,20 @@
+[
+  {
+    "url": "/before.usda",
+    "meshes": 0,
+    "corners": 0,
+    "diagonal": 1
+  },
+  {
+    "url": "/braces-only.usda",
+    "meshes": 1,
+    "corners": 109104,
+    "diagonal": 0.07810249675906655
+  },
+  {
+    "url": "/after.usda",
+    "meshes": 1,
+    "corners": 109104,
+    "diagonal": 0.07810249675906655
+  }
+]

@@ -1,5 +1,15 @@
 # Unreleased
 
+- USD export (`format: 'usd'`) now loads in the three.js `USDLoader` and keeps
+  sharp CAD edges sharp. Before, the loader found 0 meshes because the stage
+  opened `def Xform "Model" {` on one line; the writer now puts each brace on
+  its own line, as `usdcat` does. The stage also had no normals, so readers
+  averaged them across the shared vertices at every B-rep edge: a box corner
+  shaded as (±0.58, ±0.58, ±0.58) and a bore as a dome. Each mesh now authors
+  face-varying `primvars:normals` with indices, split at edges sharper than
+  30° (the PLY writer's crease split). Points and faces are unchanged; the
+  ASCII file grows 71% on the demo bracket.
+
 - Automatic drawing annotations no longer change once a part is meshed.
   The recogniser read each planar face box from the triangulation when one
   existed, which pulled a circular cap's box inside its circle; without a
