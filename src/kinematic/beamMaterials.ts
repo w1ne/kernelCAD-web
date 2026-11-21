@@ -51,7 +51,7 @@ export type ResolveMaterialResult =
  * Resolve a per-part `MaterialDeclarationEntry` to its numeric SI props.
  *
  * - Any accepted material name — an engineering grade (`mild-steel`,
- *   `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`) or one of its bulk aliases
+ *   `aluminum-6061`, `pla`, `petg`, `abs`, `asa`, `nylon`) or one of its bulk aliases
  *   (`steel`, `aluminum`, `aluminium`, `pet`) — resolves through the single
  *   registry in `engineeringMaterials.ts`, the same one mass and FEA use.
  *   Optional inline overrides on the same entry (`yieldStressMPa`,
