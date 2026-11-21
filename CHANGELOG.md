@@ -1,5 +1,14 @@
 # Unreleased
 
+- `lib.fromDXF` now imports a block whose INSERT has a non-uniform scale and
+  contains arcs. Before, it refused the file: `non-uniform scale (2, 1) turns
+  the arcs of block "HOLE" into ellipses`. Each arc, circle and polyline bulge
+  in the block now becomes rational quadratic NURBS pieces of at most 90°, and
+  the block's affine map moves their control points. The result is the exact
+  ellipse. A r = 5 hole block inserted at scale (2, 1) and rotation 90° extrudes
+  4 mm to 200π mm³ and has a 10 x 20 mm bounding box. Uniform-scale and
+  mirrored inserts still keep circular bulge arcs.
+
 - The partial-success `feature.edge-feature.short-edges-skipped` warning now
   has a true hint. Before, it said the short edges "got skipped so the rest
   could chamfer", also on a fillet, and that the blend solver rejects every
