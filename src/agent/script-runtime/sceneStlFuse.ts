@@ -17,6 +17,7 @@
 // fuse gives for parts that only touch or sit with clearance, and a union
 // that every slicer computes itself for parts that overlap.
 
+import { geometryBox } from '../../kernel/backends/occt/backendBounds';
 import { exportMeshDeflection, meshShapeForExport, type ExportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
 import { encodeBinaryStlShellsBytes, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
@@ -127,7 +128,10 @@ function freeformFaceBoxes(p: WorldFramePart): Box[] {
     }
     if (!FREEFORM_SURFACES.has(type)) continue;
     try {
-      const [min, max] = face.boundingBox.bounds;
+      // The geometry box, not `face.boundingBox`: that one reads the
+      // triangulation once the part is meshed, so the price would depend on
+      // whether the Scene was rendered before the export.
+      const { min, max } = geometryBox(face.wrapped);
       out.push([min, max]);
     } catch {
       // A face without a box cannot be priced; skip it.

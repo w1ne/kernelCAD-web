@@ -1,0 +1,12 @@
+{
+  "part": "docs/demos/usd-viewer-normals/bracket.kcad.ts",
+  "export": "runAndExport({ format: 'usd' })",
+  "reader": "three.js USDLoader (node_modules/three/examples/jsm/loaders/USDLoader.js), headless Chromium",
+  "files": {
+    "before.usda": { "source": "origin/develop dd64b538f", "bytes": 2094374, "sha256_16": "f46d047586736ab6", "point_and_normal_tuples": 18184, "loaded_meshes": 0 },
+    "braces-only.usda": { "source": "before.usda with the two prim braces moved to their own lines (sed); no normals", "bytes": 2094378, "sha256_16": "4b45a72992dbeb70", "loaded_meshes": 1, "triangle_corners": 109104 },
+    "after.usda": { "source": "this branch", "bytes": 3588532, "sha256_16": "4eacdd809a8c1e6e", "points": 18184, "distinct_normals": 17769, "loaded_meshes": 1, "triangle_corners": 109104 }
+  },
+  "size_change": "+71% (ASCII text; the cost of one normal index per face vertex)",
+  "usda_files_committed": false
+}
