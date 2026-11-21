@@ -120,7 +120,8 @@ function registerRegions(
  * discontinuous and nonplanar SPLINE entities are REFUSED
  * with an entity and line diagnostic rather than dropped. INSERT block
  * references are expanded exactly, including nested blocks and MINSERT grids;
- * external-reference blocks and arcs under a non-uniform scale are refused.
+ * an arc under a non-uniform scale becomes an exact rational elliptical arc.
+ * External-reference blocks are refused.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as

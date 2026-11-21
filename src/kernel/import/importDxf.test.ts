@@ -517,13 +517,45 @@ describe('importDxfText — INSERT block references', () => {
     expect(r.regions[0].areaMm2).toBeCloseTo(150, 9);
   });
 
-  it('refuses a non-uniform scale on a block arc instead of keeping a circular arc', () => {
-    const e = failure(() => importDxfText(drawing(
+  it('turns a block circle under a non-uniform scale into an exact rational ellipse', () => {
+    // r = 2 at (0, 0), scaled (3, 1), rotated 30°, inserted at (10, 5): an
+    // ellipse with semi-axes 6 and 2 whose major axis points along 30°.
+    const r = importDxfText(drawing(
       block('C', [0, 0], [0, 'CIRCLE'], [10, 0], [20, 0], [40, 2]),
-      [[0, 'INSERT'], [2, 'C'], [10, 0], [20, 0], [41, 2], [42, 1]],
-    )));
-    expect(e.reason).toBe('unsupported-entity');
-    expect(e.message).toMatch(/^INSERT at line \d+: non-uniform scale \(2, 1\) turns the arcs of block "C" into ellipses/);
+      [[0, 'INSERT'], [2, 'C'], [10, 10], [20, 5], [41, 3], [42, 1], [50, 30]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const nurbs = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toHaveLength(4);
+    expect(r.regions[0].commands.some(c => c.kind === 'bulgeArc')).toBe(false);
+    const c = Math.cos(Math.PI / 6), s = Math.sin(Math.PI / 6);
+    for (const cmd of nurbs) {
+      const controls = cmd.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+      const weights = cmd.weights!.map(w => w.evaluated);
+      const knots = cmd.knots!.map(k => k.evaluated);
+      for (let i = 0; i <= 8; i++) {
+        const [x, y] = deBoor(2, knots, controls, weights, i / 8);
+        const u = (x - 10) * c + (y - 5) * s;
+        const v = -(x - 10) * s + (y - 5) * c;
+        expect((u / 6) ** 2 + (v / 2) ** 2).toBeCloseTo(1, 12);
+      }
+    }
+    expect(r.regions[0].areaMm2).toBeCloseTo(12 * Math.PI, 2);
+  });
+
+  it('keeps a bulge arc on the stretched circle under a mirrored non-uniform scale', () => {
+    // BULGED_SQUARE scaled (-2, 3): the square becomes 20 x 30 and the bulge
+    // segment area scales by |det| = 6. A lost mirror flip bows it inward.
+    const r = importDxfText(drawing(
+      block('B', [0, 0], ...BULGED_SQUARE),
+      [[0, 'INSERT'], [2, 'B'], [10, 0], [20, 0], [41, -2], [42, 3]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(nurbsCommands(r.regions[0].commands).length).toBeGreaterThan(0);
+    expect(r.regions[0].areaMm2).toBeCloseTo(600 + 6 * BULGE_SEGMENT_AREA, 2);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(0, 9);
   });
 
   it('keeps exact NURBS geometry when a block is rotated', () => {
