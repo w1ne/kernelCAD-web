@@ -316158,7 +316158,7 @@
       "id": "conduit-riser-frame",
       "kit": "telecom-infrastructure",
       "title": "Conduit riser frame",
-      "description": "Wall-mounted riser frame with three vertical conduits, stand-off brackets and top bridge. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
+      "description": "Galvanized strut-channel riser frame: two wall rails on anchor bolts and two strut bridges that hold three rigid galvanized conduits with stainless strut pipe clamps, and polymer end bushings with cables at the conduit tops. Knobs: overall scale; galvanized steel, stainless steel, polymer bushings and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -316177,8 +316177,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/conduit-riser-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-conduit-riser-frame.png",
-      "sourceSha256": "c9a468da21cfd2a40270db55d075d0d1ddd6f739ad5f3e57c66245a7b853976b",
-      "triangleBudget": 900,
+      "sourceSha256": "ff4d58aa67e93f94f721612b6660944f2395a7598471471b308d8f8d42c76581",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -316193,39 +316193,39 @@
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
+          "label": "Strut frame and conduits (galvanized steel)"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Pipe clamps and bolts (stainless steel)"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#315267",
-          "label": "Engineering polymer and cable jacket"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#22292d",
+          "label": "End bushings and cable jacket (polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
           "galvanizedSteel": "#8f9b9b",
-          "polymer": "#263a37",
-          "powderCoat": "#52756b"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
           "galvanizedSteel": "#3a4b51",
-          "polymer": "#27363c",
-          "powderCoat": "#e0aa18"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 2044,
         "sizeM": [
-          0.7,
-          1.3,
-          0.195
+          0.74,
+          1.428,
+          0.166
         ],
         "minUpM": 0,
         "materials": 1
@@ -316235,30 +316235,61 @@
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
+            "rail-left",
+            "rail-right",
+            "bridge-bottom",
+            "bridge-top",
             "conduit-0",
             "conduit-1",
-            "conduit-2",
-            "bridge-bottom",
-            "stand-off-a",
-            "stand-off-b"
+            "conduit-2"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "bridge-top"
+            "anchor-bolt-left-0",
+            "anchor-bolt-left-1",
+            "anchor-bolt-left-2",
+            "anchor-bolt-right-0",
+            "anchor-bolt-right-1",
+            "anchor-bolt-right-2",
+            "frame-bolt-bottom-0",
+            "frame-bolt-bottom-1",
+            "clamp-bottom-0",
+            "clamp-bolt-bottom-0-0",
+            "clamp-bolt-bottom-0-1",
+            "clamp-bottom-1",
+            "clamp-bolt-bottom-1-0",
+            "clamp-bolt-bottom-1-1",
+            "clamp-bottom-2",
+            "clamp-bolt-bottom-2-0",
+            "clamp-bolt-bottom-2-1",
+            "frame-bolt-top-0",
+            "frame-bolt-top-1",
+            "clamp-top-0",
+            "clamp-bolt-top-0-0",
+            "clamp-bolt-top-0-1",
+            "clamp-top-1",
+            "clamp-bolt-top-1-0",
+            "clamp-bolt-top-1-1",
+            "clamp-top-2",
+            "clamp-bolt-top-2-0",
+            "clamp-bolt-top-2-1"
           ],
-          "param": "powderCoat"
+          "param": "stainlessSteel"
         },
         {
           "name": "polymer",
-          "color": "#315267",
+          "color": "#22292d",
           "parts": [
-            "cable-band-0",
-            "cable-band-1",
-            "cable-band-2"
+            "bushing-0",
+            "cable-0",
+            "bushing-1",
+            "cable-1",
+            "bushing-2",
+            "cable-2"
           ],
           "param": "polymer"
         }
