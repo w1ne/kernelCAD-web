@@ -7,6 +7,12 @@
   shared face, and the mate limits (-10° to 20°) keep the link tip above the
   plate. In MuJoCo the single base hull still contacts the link between the
   rods, and the four declared pieces give no contact.
+- The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
+  `evaluate_script` with `ok: true`; before, it had one
+  `mechanism.interpenetration` error (`mechanism: broken`): the corners of
+  the 30 mm square avionics bay (21.2 mm half-diagonal) cut 192 mm³ out of
+  the wall of the body tube (20.3 mm bore radius). The bay is 28 mm square.
+  The mass and the flight results are unchanged.
 - `catalog/kits/nature/pine-tree.kcad.ts` now passes `evaluate_script`
   with `ok: true` for every tier choice. The trunk was extruded to 30 % of
   the tree height, so it ran 450 mm (default 4.5 m tree) into the lowest
