@@ -1,5 +1,13 @@
 # Unreleased
 
+- The STL fuse-cost gate for a multi-part Scene no longer changes its price
+  once the parts are meshed, for example by a render before the export. It
+  read each free-form face box from the triangulation when one existed: two
+  interpenetrating twisted sweeps counted 283 overlapping face pairs before
+  meshing and 291 after, so a Scene near the 64-pair budget could fuse or
+  ship as separate shells depending on call order. The gate now reads the
+  face geometry in every call order.
+
 - USD export (`format: 'usd'`) now loads in the three.js `USDLoader` and keeps
   sharp CAD edges sharp. Before, the loader found 0 meshes because the stage
   opened `def Xform "Model" {` on one line; the writer now puts each brace on
