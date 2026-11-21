@@ -124,6 +124,20 @@ const PERIODIC_SPLINE_CUTOUT_DXF = [
   0, 'ENDSEC', 0, 'EOF',
 ].join('\n') + '\n';
 
+/**
+ * A 40 mm arch written the way ezdxf `add_spline(fit_points)` writes it: a
+ * cubic SPLINE with five fit points (group codes 11/21/31) and no control
+ * net, closed by a LINE along the X axis. The polygon through the fit points
+ * encloses 260 mm²; the smooth arch through them encloses slightly more.
+ */
+const FIT_POINT_ARCH_DXF = [
+  0, 'SECTION', 2, 'ENTITIES',
+  0, 'SPLINE', 8, '0', 210, 0, 220, 0, 230, 1, 70, 8, 71, 3, 72, 0, 73, 0, 74, 5,
+  ...[[0, 0], [10, 8], [20, 10], [30, 8], [40, 0]].flatMap(([x, y]) => [11, x, 21, y, 31, 0]),
+  0, 'LINE', 8, '0', 10, 40, 20, 0, 11, 0, 21, 0,
+  0, 'ENDSEC', 0, 'EOF',
+].join('\n') + '\n';
+
 /** The asymmetric L from the parser tests, at true millimetre scale. */
 const L_SVG = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="40mm" viewBox="0 0 100 40">
@@ -147,6 +161,7 @@ beforeAll(async () => {
   writeFileSync(join(tmpDir, 'mirrored-hole.dxf'), MIRRORED_HOLE_DXF);
   writeFileSync(join(tmpDir, 'block-holes.dxf'), BLOCK_HOLES_DXF);
   writeFileSync(join(tmpDir, 'periodic-spline-cutout.dxf'), PERIODIC_SPLINE_CUTOUT_DXF);
+  writeFileSync(join(tmpDir, 'fit-point-arch.dxf'), FIT_POINT_ARCH_DXF);
   writeFileSync(
     join(tmpDir, 'spline-profile.dxf'),
     readFileSync(join(process.cwd(), 'examples/interoperability/dxf-spline/spline-profile.dxf'), 'utf8'),
@@ -339,6 +354,24 @@ describe('lib.fromDXF — round trip to a solid', () => {
     const box = (await lower(session, cutout.extrude(1).id)).boundingBox();
     expect((box.min[0] + box.max[0]) / 2).toBeCloseTo(30, 6);
     expect((box.min[1] + box.max[1]) / 2).toBeCloseTo(20, 6);
+  });
+
+  it('extrudes a fit-point-only DXF SPLINE arch into a valid solid through its fit points', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    const [arch] = await api.lib.fromDXF('fit-point-arch.dxf');
+    const backend = await lower(session, arch.extrude(3).id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // The arch bulges just outside the 260 mm² fit-point polygon.
+    expect(backend.volume() / 3).toBeGreaterThan(260);
+    expect(backend.volume() / 3).toBeLessThan(290);
+    // The curve is symmetric about x = 20 and passes through (20, 10), so its
+    // apex is that fit point: the box tops out at y = 10 and spans x 0..40.
+    const box = backend.boundingBox();
+    expect(box.min[0]).toBeCloseTo(0, 6);
+    expect(box.max[0]).toBeCloseTo(40, 6);
+    expect(box.min[1]).toBeCloseTo(0, 6);
+    expect(box.max[1]).toBeCloseTo(10, 5);
   });
 
   it('expands an MINSERT block of holes into four cuts at the grid points', async () => {

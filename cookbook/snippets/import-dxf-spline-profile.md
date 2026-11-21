@@ -8,6 +8,7 @@ keywords:
   - exact spline extrusion
   - clamped continuous planar control-point spline
   - periodic closed dxf spline
+  - fit-point dxf spline
 when_to_use: A DXF profile contains a planar control-point spline that must stay exact when extruded.
 example: examples/interoperability/dxf-spline/spline-profile.kcad.ts
 ---
@@ -23,9 +24,14 @@ const [profile] = await lib.fromDXF('spline-profile.dxf');
 return profile.extrude(3);
 ```
 
-Fit-point-only, discontinuous and nonplanar SPLINE entities remain explicit errors,
+An open cubic SPLINE that stores only fit points, as ezdxf `add_spline(fit_points)`
+writes it, is interpolated through every fit point and its end tangents with
+chord-length parameters. The fit points are exact; the shape between them can
+differ slightly from the source tool's curve.
+
+Closed fit-point-only, discontinuous and nonplanar SPLINE entities remain explicit errors,
 and so does a closed SPLINE whose control net does not repeat its first `degree`
-points; export control points and knots as a continuous XY spline first. Full planar
+points; export control points and knots as a continuous XY spline first.
 Full and partial planar DXF `ELLIPSE` entities are also preserved exactly as
 rational NURBS; nonplanar ellipses are refused rather than omitted. Block
 `INSERT` references are expanded in place.
