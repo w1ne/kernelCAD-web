@@ -712,7 +712,9 @@ export interface KernelCadApi {
    *   - Keyframe tracks: `{ name?, tracks, fps? }` — several params on one
    *     shared timeline, each track a list of `{ atMs, value, ease? }` keys.
    *     `ease` applies to the segment ENDING at that key (default 'linear');
-   *     outside the keyed span the value holds.
+   *     outside the keyed span the value holds. A track may instead be an
+   *     appearance track `{ target, channel: 'color' | 'emissive', keys }`
+   *     with `#rrggbb` key values (stored in `appearanceTracks`).
    *
    * Either way the stored metadata is normalized to the track shape
    * (`AnimationViewMetadata`): keys sorted by atMs, ease defaulted, and

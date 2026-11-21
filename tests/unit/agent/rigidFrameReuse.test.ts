@@ -31,6 +31,16 @@ describe('canReuseLoadedMeshes', () => {
     expect(canReuseLoadedMeshes([link('a', POS)], [link('a', [0, 0, 0, 10, 0, 0, 0, 11, 0])])).toBe(false);
   });
 
+  it('rejects a changed colour or material, even when buffers and transform match', () => {
+    const red = { ...link('a', POS), color: '#ff0000' };
+    const blue = { ...link('a', POS), color: '#0000ff' };
+    expect(canReuseLoadedMeshes([red], [blue])).toBe(false);
+    const matA = { ...link('a', POS), material: { baseColor: '#111111' } };
+    const matB = { ...link('a', POS), material: { baseColor: '#222222' } };
+    expect(canReuseLoadedMeshes([matA], [matB])).toBe(false);
+    expect(canReuseLoadedMeshes([matA], [{ ...link('a', POS), material: { baseColor: '#111111' } }])).toBe(true);
+  });
+
   it('rejects a feature with no transform', () => {
     const untransformed: ReusableFeature = { featureId: 'a', featureKind: 'solvedAssembly', faces: [], mesh: TRI(POS) };
     expect(canReuseLoadedMeshes([link('a', POS)], [untransformed])).toBe(false);
