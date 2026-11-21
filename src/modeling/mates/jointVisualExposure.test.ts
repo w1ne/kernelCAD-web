@@ -37,6 +37,8 @@ interface SyntheticHingeOpts {
   readonly pinLen: number;
   /** Pin radius. Default 3.5 mm. */
   readonly pinR?: number;
+  /** Pin facet count. Default 32 (a planar prism); `'exact'` builds a true cylinder. */
+  readonly pinSegments?: number | 'exact';
   /** Optional retaining-head radius. When present, heads overlap the shaft. */
   readonly pinCapR?: number;
   /** Retaining-head axial thickness. Required with pinCapR. */
@@ -84,7 +86,8 @@ function buildSyntheticHinge(opts: SyntheticHingeOpts): { arm: Assembly; session
   // +Z → +Y (the rotation sends (x, y, z) → (x, z, -y)) so the cylinder
   // ends up at Y=[0, h]. Translate -pinLen/2 along Y to centre on the
   // joint origin.
-  let pin = kcad.cylinder(pinLen, pinR, 32)
+  const pinSegments = opts.pinSegments ?? 32;
+  let pin = (pinSegments === 'exact' ? kcad.cylinder(pinLen, pinR) : kcad.cylinder(pinLen, pinR, pinSegments))
     .rotate([1, 0, 0], -90)
     .translate(0, -pinLen / 2, 0);
   if (opts.pinCapR !== undefined && opts.pinCapThickness !== undefined) {
@@ -156,6 +159,33 @@ describe('validateJointVisualExposure (Gate 4)', () => {
     });
     const diags = await runGate4(arm);
     expect(diags).toEqual([]);
+  });
+
+  it('accepts a pin stickout exactly equal to the pin radius', async () => {
+    // stickout = (31 - 18 - 2 * 3) / 2 = 3.5 = pinR. Before the fix the
+    // hint read "pin stickout is 3.50 mm ... (need >= 3.50 mm)".
+    const { arm } = buildSyntheticHinge({ forkGapY: 18, tongueY: 6, pinLen: 31, pinSegments: 'exact' });
+    expect(await runGate4(arm)).toEqual([]);
+  });
+
+  it('gives the same verdict before and after the parts are meshed', async () => {
+    // A true cylinder pin: meshing it used to move its face box out by
+    // about 0.01 mm, which flipped the pin-stickout verdict at the
+    // boundary (stickout 20 = pinR 20). The gap still fails both times.
+    const { arm } = buildSyntheticHinge({
+      forkGapY: 18, tongueY: 6, pinLen: 64, pinR: 20, pinSegments: 'exact',
+      forkPlateX: 160, forkPlateZ: 160,
+    });
+    const cache = await validateJointAxisBindingWithCache(arm);
+    const run = () => validateJointVisualExposure({
+      arm, loweredShapes: cache.worldShapes, worldTransforms: cache.worldTransforms,
+    });
+    const before = await run();
+    for (const shape of cache.worldShapes.values()) shape.getMesh();
+    const after = await run();
+    expect(after).toEqual(before);
+    expect(before).toHaveLength(1);
+    expect(before[0].hint).toMatch(/pin stickout 20\.00 mm is OK/);
   });
 
   it('keeps a compact visible hinge valid after translation away from the world origin', async () => {

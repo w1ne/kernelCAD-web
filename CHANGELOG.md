@@ -11,6 +11,14 @@
   (1920 - 36π) x 2 = 3,613.81 mm³. Crossing or touching paths and edge-based
   paths are still refused.
 
+- The hinge-visibility check (`exposure: 'exposed'` revolute mates) now
+  gives the same result before and after the parts are meshed, and accepts a
+  pin stickout equal to the pin radius. It read face boxes from the mesh once
+  one existed, so a 3.5 mm pin face read 3.5098 mm. A 20 mm pin that stuck
+  out exactly 20 mm failed with "pin stickout is 20.00 mm (need >= 20.00 mm)"
+  before meshing and passed after it. The check now reads the face geometry,
+  and the stickout floor is inclusive, as the gap floor already was.
+
 - `lib.fromDXF` now imports a block whose INSERT has a non-uniform scale and
   contains arcs. Before, it refused the file: `non-uniform scale (2, 1) turns
   the arcs of block "HOLE" into ellipses`. Each arc, circle and polyline bulge
