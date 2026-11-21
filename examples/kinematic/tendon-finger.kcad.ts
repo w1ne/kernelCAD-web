@@ -27,42 +27,55 @@ const BRAID_TEXTURE =
 const mPalm = { baseColor: '#3f4651', metalness: 0.45, roughness: 0.55 };
 const mBone = { baseColor: '#d9d2bd', metalness: 0.15, roughness: 0.6 };
 
-// Phalanx cross-section (Y width x Z thickness) and lengths along +X.
-const W = 16;
+// Phalanx thickness (Z) and lengths along +X. Each phalanx is 4 mm narrower
+// (Y) than the one that carries it: a fork is 2 mm narrower than its own
+// phalanx, so the fork plates are sunk 1 mm into each side face, and the next
+// phalanx runs between the plates with 1 mm of clearance per side.
 const T = 10;
+const W_PROX = 16;
+const W_MID = 12;
+const W_DIST = 8;
 const L_PROX = 40;
 const L_MID = 28;
 const L_DIST = 24;
+const PALM_T = T + 2;
 const PULLEY_Z = T / 2 + 2;     // pulley loops stand 2 mm off the palmar / dorsal face
+const PALM_PULLEY_Z = PALM_T / 2 + 2;
 
-const style = {
+// A fork 2 mm wider than the phalanx it holds; the tongue leaves 2 mm of
+// daylight to each plate.
+const forkFor = (childW: number) => ({
   knuckleR: 6,
-  forkGapY: W,
-  tongueY: W - 4,
+  forkGapY: childW + 2,
+  tongueY: childW - 2,
   plateT: 3,
   pinR: 2,
   pinCapR: 3,
   pinCapThickness: 4,
-};
+});
 
 const arm = assembly('tendon-finger');
 
-const palmBody = box(40, 30, 22, true).translate(-20, 0, 0).material(mPalm);
-const proxBody = box(L_PROX - 6, W, T, true).translate(3 + (L_PROX - 6) / 2, 0, 0).material(mBone);
-const midBody = box(L_MID - 6, W, T, true).translate(3 + (L_MID - 6) / 2, 0, 0).material(mBone);
-const distBody = box(L_DIST - 3, W, T, true).translate(3 + (L_DIST - 3) / 2, 0, 0).material(mBone);
+// A carrying body reaches its fork pin; `joint.clevis` cuts the slot for the
+// next phalanx between the plates. A carried body starts 3 mm past its pin.
+const palmBody = box(40, 30, PALM_T, true).translate(-20, 0, 0).material(mPalm);
+const proxBody = box(L_PROX - 3, W_PROX, T, true).translate(3 + (L_PROX - 3) / 2, 0, 0).material(mBone);
+const midBody = box(L_MID - 3, W_MID, T, true).translate(3 + (L_MID - 3) / 2, 0, 0).material(mBone);
+const distBody = box(L_DIST - 3, W_DIST, T, true).translate(3 + (L_DIST - 3) / 2, 0, 0).material(mBone);
 
+// Every pin is on the finger centre line (`liftPivot: false`), so the straight
+// finger is one line and it curls under the palm.
 const mcp = joint.clevis({
   parentBody: palmBody, childBody: proxBody, axis: [0, 1, 0],
-  pivotParent: [0, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 85], liftPivot: true, style,
+  pivotParent: [0, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 85], liftPivot: false, style: forkFor(W_PROX),
 });
 const pip = joint.clevis({
   parentBody: mcp.childGeometry, childBody: midBody, axis: [0, 1, 0],
-  pivotParent: [L_PROX, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 100], liftPivot: true, style,
+  pivotParent: [L_PROX, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 100], liftPivot: false, style: forkFor(W_MID),
 });
 const dip = joint.clevis({
   parentBody: pip.childGeometry, childBody: distBody, axis: [0, 1, 0],
-  pivotParent: [L_MID, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 70], liftPivot: true, style,
+  pivotParent: [L_MID, 0, 0], pivotChild: [0, 0, 0], limitsDeg: [0, 70], liftPivot: false, style: forkFor(W_DIST),
 });
 
 const axisConnector = (j: { origin: [number, number, number]; axis: [number, number, number]; clearanceRadius?: number }) => ({
@@ -75,8 +88,9 @@ const point = (value: [number, number, number]) => ({ type: 'frame' as const, or
 
 arm.part('palm', mcp.parentGeometry, { density: 2700 })
   .connector('mcpAxis', axisConnector(mcp.parentConnector))
-  .connector('flexorIn', point([-24, 0, -PULLEY_Z]))
-  .connector('extensorIn', point([-24, 0, PULLEY_Z]));
+  // 2 mm off the palmar / dorsal palm face, like the phalanx loops.
+  .connector('flexorIn', point([-24, 0, -PALM_PULLEY_Z]))
+  .connector('extensorIn', point([-24, 0, PALM_PULLEY_Z]));
 
 arm.part('prox', pip.parentGeometry, { density: 1200 })
   .connector('mcpAxis', axisConnector(mcp.childConnector))

@@ -1,5 +1,12 @@
 # Unreleased
 
+- `examples/kinematic/tendon-finger.kcad.ts` now passes `evaluate_script`
+  with `ok: true` and `mechanism: real`; before, it returned 5 errors. Each
+  phalanx is 2 mm narrower than the fork that holds it, the three pins are on
+  the finger centre line, and the two strap anchors are 2 mm off the palm
+  faces instead of inside the palm. The finger also stays collision-free with
+  all three joints at their flexed limits together.
+
 - Canonical face names (`top`, `bottom`, `left` and the others) on a solid
   without a primitive kind no longer stop resolving once the solid is
   meshed. The box rule compared each planar face with a box read from the
@@ -339,7 +346,6 @@
   a Query DSL value. Before, the type allowed only a FaceRef, so
   `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
   check with TS2353 although it runs. Runtime behaviour is unchanged.
-
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³
