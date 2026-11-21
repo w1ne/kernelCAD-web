@@ -200,15 +200,26 @@ lib.from3MF(path: string, opts?: {
 
 // ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
 // area so the caller can choose which regions are outlines, holes or parts.
-// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and one closed,
-// planar polyline boundary from a DXF HATCH are supported. Pattern styling is
-// ignored; multi-path, edge-based, and out-of-plane hatches are refused so
-// hole/island intent remains explicit.
+// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and closed,
+// planar DXF HATCH boundaries (polyline paths, or edge paths of lines and
+// circular arcs) are supported. A multi-path HATCH returns each filled area as
+// one sketch with its inner paths as holes. Pattern styling is ignored;
+// elliptic-arc and spline edges, crossing and out-of-plane hatches are refused.
 // Full ellipses use four exact rational NURBS segments; partial elliptical arcs
 // retain exact rational NURBS geometry and can join other profile edges.
-// Clamped, continuous, planar XY SPLINE entities retain their control points,
-// knots and rational weights. Nonplanar ellipses, periodic, fit-point-only,
-// discontinuous and nonplanar SPLINE, plus INSERT entities, fail with a named diagnostic.
+// Continuous, planar XY SPLINE entities retain their control points, knots and
+// rational weights; periodic and unclamped knot vectors are clamped by exact
+// knot insertion. A cubic SPLINE with fit points only is interpolated through
+// its fit points and end tangents (chord-length parameters); a closed one
+// without end tangents becomes a smooth (C2) periodic cubic. Nonplanar
+// ellipses, non-cubic fit-point-only, discontinuous and nonplanar SPLINE, and
+// closed SPLINE whose control net does not wrap, fail with a named diagnostic.
+// INSERT block references (nested, MINSERT grids) are placed with their base
+// point, insertion point, rotation and scale; an arc under a non-uniform
+// block scale becomes an exact rational elliptical arc. External-reference
+// blocks fail with a named diagnostic.
+// ARC, CIRCLE, LWPOLYLINE and POLYLINE with extrusion direction (0, 0, -1) are
+// mirrored from their object coordinates into world X; other directions fail.
 const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
 const [outline, ...holes] = profiles;
 let plate = outline.extrude(3);
@@ -657,8 +668,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing stacks sections on XY planes at z = 0, spacing, 2*spacing, ...;
 // of the rotation controls only twistDeg/twistCenter apply there (per-plane
 // rotationDeg requires opts.planes). opts.planes overrides with explicit
-// per-section placement and each entry may add rotationDeg. Unknown option
-// keys (top-level or per-plane) throw feature.invalid-args.
+// per-section placement and each entry may add rotationDeg. Every entry
+// needs plane ('XY' | 'YZ' | 'XZ', upper case unlike mirror's 'xy') and an
+// [x, y, z] origin. Unknown option keys (top-level or per-plane), a missing or
+// lower-case plane, and a missing origin throw feature.invalid-args.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: Editable<number>;
   planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>]; rotationDeg?: Editable<number> }[];

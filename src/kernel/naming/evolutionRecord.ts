@@ -77,6 +77,9 @@ export interface EdgeLineage {
    *  enables `kc.q.edge(kc.q.geometryType('LINE'))` when combined with
    *  surface-type heuristics. */
   featureKind?: import('../../shared/intent/types').FeatureKind;
+  /** 1-based ordinal among unnamed features of the same kind. Mirrors
+   *  `FaceLineage.featureOrdinal`; enables `hole1.entry-rim`. */
+  featureOrdinal?: number;
   /** Feature ids whose output geometry this edge descends from, earliest first. */
   descendsFrom?: readonly string[];
 }

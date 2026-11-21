@@ -34,12 +34,43 @@ plate.fillet(0.2, { face: 'pilotHole.floor' });
 ```
 
 Slots written by `hole`: `wall`, `floor`, `wall-back`, `counterbore-wall`,
-`counterbore-floor`, `countersink-cone`, `entry-rim`, `floor-rim`,
-`wall-back-rim`. Slots written by `cutout`: see `cutoutClassifier`.
+`counterbore-floor`, `countersink-cone`. Slots written by `cutout`: see
+`cutoutClassifier`.
+
+`hole` and `holes` also name the rim edges they create:
+
+- `entry-rim`: where the outermost hole face (bore wall, counterbore wall or
+  countersink cone) meets the entry face.
+- `exit-rim`: where a through bore leaves the body.
+- `floor-rim`: where the bore wall meets a flat blind floor.
+
+```typescript
+plate.hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thru' })
+  .chamfer(0.5, { face: 'thru.entry-rim' }); // breaks the top edge only
+```
+
+`kc.q.edge(kc.q.derivedFrom(part.id)).and(kc.q.withLabel('entry-rim'))`
+selects every entry rim on `part`, from all its holes;
+`kc.q.edge(kc.q.withLabel('entry-rim'))` selects them on the whole body.
+Filters inside `q.edge(...)` select edges, so
+`q.edge(q.withFeatureName(id), q.withLabel('corner'))` works too, and so do
+`q.edge(q.closestTo([x, y, z]))` (nearest edge midpoint) and
+`q.edge(q.geometryType('CIRCLE'), q.closestTo(p))` (nearest circular edge).
+`q.face(q.closestTo(p))` and `q.face(q.geometryType('PLANE'))` select faces on
+any body, including plain `box(...)` and `cylinder(...)`. A later `fillet` or
+`chamfer` keeps the labels of the edges it leaves alone, so
+`.chamfer(0.5, { face: 'thru.entry-rim' }).chamfer(0.3, { face: 'thru.exit-rim' })`
+breaks the two rims by different amounts. `cutout`
+has no rim refs yet; select its edges by query, for example
+`{ atZ: 20 }` on a 20 mm plate. A slot the feature never
+wrote (`pilotHole.rim`, a typo) fails with
+`feature.face-ref.not-resolvable`; the hint lists the face and edge refs
+that feature does carry.
 
 When an upstream op rewrites enough topology that the slot-by-name lookup
 loses the face, the resolver falls back to a geometry-snapshot match
-(centroid + normal + area + surfaceType from the create-time fingerprint).
+(centroid + normal + area + surfaceType from the create-time fingerprint of
+that same slot; never the fingerprint of another face of the feature).
 Successful fallback emits `feature.created-ref.fallback-used` (warning,
 not error) — the downstream feature still resolves. Lock the ref against
 future edits by naming the upstream feature with `.name()` and addressing

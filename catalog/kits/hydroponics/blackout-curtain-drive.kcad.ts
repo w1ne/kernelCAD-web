@@ -4,7 +4,7 @@
 // short-day crops) or to keep heat in at night.
 // What makes it a screen drive: a gearmotor with a finned motor and a
 // limit-switch box sitting on a long drive shaft along the truss line,
-// the shaft running through bearing blocks on the columns and turning a
+// the shaft running through bearing blocks hung from the truss and turning a
 // pinion in each gearbox, toothed racks sliding through those gearboxes
 // and pushing the aluminium leading-edge profile of the screen, and the
 // screen itself running out over support wires from a folded package at
@@ -47,6 +47,7 @@ const cylX = (x: number, y: number, z: number, len: number, r: number, seg = 12)
 const cylY = (x: number, y: number, z: number, len: number, r: number, seg = 12) => cylinder(len, r, seg).rotateX(90).translate(x, y, z);
 
 const CX = 900, TZ = 2200, SZ = 1700, Y0 = -900, Y1 = 900;
+const TRUSS_Y = Y1 - 60, TRUSS_BOTTOM_Z = SZ + 280;
 // Columns with base plates, a lattice truss beam across the top.
 for (const x of [-CX, CX]) {
   add(`base-${x}`, blk(x, 0, 0, 240, 240, 12).color(structure));
@@ -54,7 +55,7 @@ for (const x of [-CX, CX]) {
   add(`gutter-${x}`, blk(x, 0, TZ, 160, Y1 - Y0, 70).color(structure));
 }
 add("truss-top", blk(0, Y1 - 60, TZ - 50, 2 * CX, 50, 50).color(structure));
-add("truss-bottom", blk(0, Y1 - 60, SZ + 280, 2 * CX, 50, 50).color(structure));
+add("truss-bottom", blk(0, TRUSS_Y, TRUSS_BOTTOM_Z, 2 * CX, 50, 50).color(structure));
 for (let k = 0; k < 6; k++) {
   const x0 = -CX + 50 + k * 300, x1 = x0 + 300, up = k % 2 === 0;
   const a = up ? SZ + 305 : TZ - 25, b = up ? TZ - 25 : SZ + 305;
@@ -62,16 +63,18 @@ for (let k = 0; k < 6; k++) {
   add(`truss-web-${k}`, box(len, 20, 20, true).rotateY(-ang).translate((x0 + x1) / 2, Y1 - 60, (a + b) / 2).color(structure));
 }
 
-// Drive shaft along the truss line, through bearing blocks on the columns.
+// Drive shaft below the truss, with bearing arms and hangers reaching it.
 const DY = Y1 - 160, DZ = SZ + 160;
 add("drive-shaft", cylX(-CX - 80, DY, DZ, 2 * CX + 160, 16, 10).color(structure));
 for (const x of [-CX + 70, CX - 70]) {
   add(`bearing-${x}`, blk(x, DY, DZ - 50, 60, 90, 100).color('#3b3f42'));
-  add(`bearing-arm-${x}`, blk(x + Math.sign(x) * 40, DY, DZ - 20, 60, 40, 40).color(structure));
+  add(`bearing-arm-${x}`, blk(x, (DY + TRUSS_Y) / 2, DZ - 20, 60, TRUSS_Y - DY + 40, 40).color(structure));
+  add(`bearing-hanger-${x}`, blk(x, TRUSS_Y, DZ - 20, 60, 40, TRUSS_BOTTOM_Z - DZ + 40).color(structure));
 }
 
 // Gearmotor at mid-span: gearbox on the shaft, finned motor, limit switches.
 add("gearbox", blk(0, DY, DZ - 110, 180, 170, 220).color(motor));
+add("gearbox-mount", blk(0, TRUSS_Y, DZ + 80, 120, 100, TRUSS_BOTTOM_Z - DZ - 60).color(structure));
 add("gearbox-flange", cylY(0, DY - 85, DZ, 20, 80, 16).color(motor));
 add("motor", cylY(0, DY - 105, DZ - 40, 300, 75, 16).color(motor));
 for (let k = 0; k < 6; k++) add(`motor-fin-${k}`, cylY(0, DY - 130 - k * 45, DZ - 40, 12, 82, 16).color(motor));
@@ -83,11 +86,13 @@ add("motor-cable", cylZ(-60, DY - 250, DZ + 100, TZ - DZ - 100, 7, 6).color('#1f
 
 // Racks along Y through pinion gearboxes on the shaft, teeth on top.
 const LE = position.value === 'open' ? Y1 - 300 : position.value === 'closed' ? Y0 + 80 : -100; // leading edge
-const RL = 1300;
+// A fixed rack length spans the complete pinion box even at the closed stop.
+const RL = DY - (Y0 + 80) + 120;
+const TOOTH_PITCH = 70, TOOTH_COUNT = Math.floor((RL - 80) / TOOTH_PITCH) + 1;
 for (const x of [-500, 500]) {
   add(`pinion-box-${x}`, blk(x, DY, DZ - 70, 110, 140, 140).color('#3b3f42'));
   add(`rack-${x}`, blk(x, LE + RL / 2, DZ - 30, 30, RL, 30).color(structure));
-  for (let k = 0; k < 18; k++) add(`tooth-${x}-${k}`, blk(x, LE + 40 + k * 70, DZ - 2, 26, 20, 14).color(structure));
+  for (let k = 0; k < TOOTH_COUNT; k++) add(`tooth-${x}-${k}`, blk(x, LE + 40 + k * TOOTH_PITCH, DZ - 2, 26, 20, 14).color(structure));
   add(`rack-clamp-${x}`, blk(x, LE, DZ - 70, 60, 50, 110).color(structure));
   add(`push-rod-${x}`, blk(x, LE, SZ, 20, 20, DZ - 70 - SZ).color(structure));
 }

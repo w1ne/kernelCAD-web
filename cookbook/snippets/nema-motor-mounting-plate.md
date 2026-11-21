@@ -42,7 +42,7 @@ offs.forEach(([u, v], i) => {
 // assets/parts (or remote catalog) is available in the agent runtime.
 const motorBody = box(42, 42, 40, true)
   .union(cylinder(22, 2.5).translate(0, 0, 20));
-const motor = arm.part('motor', motorBody.translate(0, 0, 25).color('actuator'));
+const motor = arm.part('motor', motorBody.translate(0, 0, 25).color('servo'));
 offs.forEach(([u, v], i) => {
   motor.connector(`bolt-holes-${i + 1}`, {
     type: 'frame',

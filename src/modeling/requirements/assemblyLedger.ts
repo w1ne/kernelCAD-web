@@ -7,6 +7,7 @@
 // ledger as `not-evaluated`, never as a forged pass.
 
 import type { AssemblyPathReport } from '../runtime/assemblyPath';
+import type { ClearanceRangeReport, ClearanceRangeRow } from '../mates/clearanceRange';
 import type { RequirementLedgerEntry } from '../../shared/intent/requirementRecord';
 
 /** Convert assembly-path tool reach and forced-fit findings into ledger
@@ -43,4 +44,39 @@ export function assemblyRequirementEntries(report: AssemblyPathReport): Requirem
         });
     }
     return entries;
+}
+
+/** Convert a clearance-range report into ledger entries: one per pair and
+ *  pose set (rest, range). An unknown row is `not-evaluated`, never a pass. */
+export function clearanceRangeRequirementEntries(report: ClearanceRangeReport): RequirementLedgerEntry[] {
+    return report.rows.map(clearanceRangeEntry);
+}
+
+function clearanceRangeEntry(row: ClearanceRangeRow): RequirementLedgerEntry {
+    const name = `assembly.clearance.${row.at}.${row.a}~${row.b}`;
+    const where = row.worstSample !== undefined ? ` at ${row.worstSample}` : '';
+    if (row.status === 'unknown' || row.actual === null) {
+        return {
+            name,
+            source: 'assembly',
+            status: 'not-evaluated',
+            measured: row.actual,
+            limit: row.planned,
+            margin: null,
+            selections: [],
+            message: `${name}: ${row.reason ?? `${row.measuredSamples} of ${row.totalSamples} samples measured`}.`,
+        };
+    }
+    return {
+        name,
+        source: 'assembly',
+        status: row.status,
+        measured: row.actual,
+        limit: row.planned,
+        margin: row.actual - row.planned,
+        selections: [],
+        ...(row.status === 'fail'
+            ? { message: `${name} failed: '${row.a}' and '${row.b}' are ${row.actual.toFixed(3)} mm apart${where}, need ${row.planned} mm.` }
+            : {}),
+    };
 }
