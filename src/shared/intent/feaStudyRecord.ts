@@ -88,7 +88,7 @@ export interface FeaLoadsFromMotionSpec {
 
 export interface FeaStudySpec {
   /** A named material (`mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`,
-   *  `nylon`) or explicit `{ E, nu, yield }`. */
+   *  `asa`, `nylon`) or explicit `{ E, nu, yield }`. */
   material: string | FeaMaterialProps;
   /** Faces held fully fixed (all three translations zeroed). */
   fixed: FeaFaceSelectorInput;
