@@ -209,7 +209,9 @@ function toBezierKnots(
   for (const t of targets) {
     let mult = U.filter((k) => k === t).length;
     while (mult < degree) {
-      const k = lastIndexAtOrBelow(U, t);
+      // On an unclamped end knot, the span after `t` has no poles; insert
+      // through the last span that ends at `t` instead.
+      const k = Math.min(lastIndexAtOrBelow(U, t), U.length - degree - 2);
       cs = cs.map((c) => insertOnce(c, U, degree, t, k));
       U = [...U.slice(0, k + 1), t, ...U.slice(k + 1)];
       mult++;
@@ -228,8 +230,8 @@ function lastIndexAtOrBelow(U: number[], t: number): number {
   return k;
 }
 
-/** Boehm single knot insertion of `t` (with `U[k] <= t < U[k+1]`, or
- *  `U[k] === t`) into one homogeneous curve. */
+/** Boehm single knot insertion of `t` (with `U[k] <= t <= U[k+1]`) into
+ *  one homogeneous curve. */
 function insertOnce(P: HPoint[], U: number[], p: number, t: number, k: number): HPoint[] {
   const Q: HPoint[] = [];
   for (let i = 0; i <= k - p; i++) Q.push(P[i]);
@@ -242,4 +244,48 @@ function insertOnce(P: HPoint[], U: number[], p: number, t: number, k: number): 
   }
   for (let i = k; i < P.length; i++) Q.push(P[i]);
   return Q;
+}
+
+/** Flat knots and pole indices of one periodic direction, unwrapped so its
+ *  span `[knots[degree], knots[knots.length - 1 - degree]]` covers
+ *  `[t1, t2]`. `period` is OCCT's periodic flat knot sequence
+ *  (`UKnotSequence`): pole `j` of the unwrapped curve is pole `j mod nPoles`.
+ *  Undefined when the sequence is not periodic or `[t1, t2]` spans more than
+ *  `MAX_PERIODS` periods. */
+export function unwrapPeriodic(
+  period: number[],
+  nPoles: number,
+  degree: number,
+  t1: number,
+  t2: number,
+): { knots: number[]; poleIndex: number[] } | undefined {
+  const n = nPoles;
+  if (n < 1 || period.length < n + degree + 1) return undefined;
+  const T = period[n] - period[0];
+  if (!(T > 0)) return undefined;
+  for (let i = 0; i + n < period.length; i++) {
+    if (Math.abs(period[i + n] - period[i] - T) > 1e-9 * Math.max(1, T)) return undefined;
+  }
+  const knot = (i: number) => period[mod(i, n)] + Math.floor(i / n) * T;
+  let lo = 0;
+  let hi = period.length - 1;
+  for (let k = 0; knot(lo + degree) > t1; k++) {
+    if (k >= MAX_PERIODS) return undefined;
+    lo -= n;
+  }
+  for (let k = 0; knot(hi - degree) < t2; k++) {
+    if (k >= MAX_PERIODS) return undefined;
+    hi += n;
+  }
+  const knots: number[] = [];
+  for (let i = lo; i <= hi; i++) knots.push(knot(i));
+  const poleIndex: number[] = [];
+  for (let j = lo; j <= hi - degree - 1; j++) poleIndex.push(mod(j, n));
+  return { knots, poleIndex };
+}
+
+const MAX_PERIODS = 8;
+
+function mod(i: number, n: number): number {
+  return ((i % n) + n) % n;
 }

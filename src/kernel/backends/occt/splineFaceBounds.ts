@@ -9,12 +9,13 @@
 
 import { getOC } from 'replicad';
 import type { Vec3 } from '../../../shared/intent/types';
-import { toleranceInclusiveBounds } from './backendBounds';
+import { offsetFaceBounds, rationalFaceBounds, toleranceInclusiveBounds } from './backendBounds';
 import {
   emptyBox,
   exceeds,
   splineSurfaceBounds,
   unionBox,
+  unwrapPeriodic,
   type Box6,
   type HPoint,
   type SplineSurface,
@@ -25,6 +26,16 @@ import {
 const REFINE_TOL = 1e-3;
 /** Bezier patch splits per call; past it, leaves keep their pole box. */
 const SPLIT_BUDGET = 20_000;
+
+/** AABB of the raw `TopoDS_Shape` `shape` when it has a strongly rational
+ *  B-spline face (exact box) or an offset face (offset-aware box, then
+ *  B-spline refinement); otherwise undefined. */
+export function curvedFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
+  const rational = rationalFaceBounds(shape);
+  if (rational) return rational;
+  const offset = offsetFaceBounds(shape);
+  return offset && withSplineFaceBounds(shape, offset);
+}
 
 /** `box` shrunk to the B-spline-aware bounds of the raw `TopoDS_Shape`
  *  `shape`, per side. Both are outer bounds, so their overlap is one too. */
@@ -161,7 +172,7 @@ function refinedFaceBox(
   };
   const handle = adaptor.BSpline();
   try {
-    const surface = readSurface(handle.get());
+    const surface = readSurface(handle.get(), range);
     if (!surface) return undefined;
     const box = splineSurfaceBounds(surface, range, inner, REFINE_TOL, budget);
     if (!box) return undefined;
@@ -176,10 +187,19 @@ function refinedFaceBox(
   }
 }
 
+/** Non-periodic copy of the B-spline surface `s` over `range`. A periodic
+ *  direction is unwrapped from its periodic flat knots, so the copy can
+ *  repeat poles; `s` itself is not modified. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function readSurface(s: any): SplineSurface | undefined {
-  if (s.IsUPeriodic() || s.IsVPeriodic()) return undefined;
-  const poles: HPoint[][] = [];
+function readSurface(s: any, range: { u1: number; u2: number; v1: number; v2: number }): SplineSurface | undefined {
+  const u = axis(s.IsUPeriodic(), s.NbUPoles(), s.UDegree(), range.u1, range.u2, () => s.UKnotSequence_2(), () =>
+    flatKnots(s.NbUKnots(), (k) => s.UKnot(k), (k) => s.UMultiplicity(k)),
+  );
+  const v = axis(s.IsVPeriodic(), s.NbVPoles(), s.VDegree(), range.v1, range.v2, () => s.VKnotSequence_2(), () =>
+    flatKnots(s.NbVKnots(), (k) => s.VKnot(k), (k) => s.VMultiplicity(k)),
+  );
+  if (!u || !v) return undefined;
+  const net: HPoint[][] = [];
   for (let i = 1; i <= s.NbUPoles(); i++) {
     const row: HPoint[] = [];
     for (let j = 1; j <= s.NbVPoles(); j++) {
@@ -188,15 +208,37 @@ function readSurface(s: any): SplineSurface | undefined {
       row.push([p.X() * w, p.Y() * w, p.Z() * w, w]);
       p.delete();
     }
-    poles.push(row);
+    net.push(row);
   }
   return {
     uDegree: s.UDegree(),
     vDegree: s.VDegree(),
-    uKnots: flatKnots(s.NbUKnots(), (k) => s.UKnot(k), (k) => s.UMultiplicity(k)),
-    vKnots: flatKnots(s.NbVKnots(), (k) => s.VKnot(k), (k) => s.VMultiplicity(k)),
-    poles,
+    uKnots: u.knots,
+    vKnots: v.knots,
+    poles: u.poleIndex.map((i) => v.poleIndex.map((j) => net[i][j])),
   };
+}
+
+/** Flat knots and pole indices of one surface direction. */
+function axis(
+  periodic: boolean,
+  nPoles: number,
+  degree: number,
+  t1: number,
+  t2: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  periodicSequence: () => any,
+  flat: () => number[],
+): { knots: number[]; poleIndex: number[] } | undefined {
+  if (!periodic) return { knots: flat(), poleIndex: Array.from({ length: nPoles }, (_, i) => i) };
+  const seq = periodicSequence();
+  try {
+    const period: number[] = [];
+    for (let k = seq.Lower(); k <= seq.Upper(); k++) period.push(seq.Value(k));
+    return unwrapPeriodic(period, nPoles, degree, t1, t2);
+  } finally {
+    seq.delete();
+  }
 }
 
 function flatKnots(n: number, knot: (k: number) => number, mult: (k: number) => number): number[] {

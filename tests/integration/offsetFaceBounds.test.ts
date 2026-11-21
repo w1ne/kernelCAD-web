@@ -59,8 +59,8 @@ beforeAll(async () => {
 
 const TOL = 1e-6;
 
-/** The box must contain the exact box. Non-offset B-spline faces keep their
- *  pole hull (up to `slack` mm per side) until they are refined. */
+/** The box must contain the exact box and stay within `slack` mm of it per
+ *  side. */
 function expectContains(shape: OcctBackend, slack: number) {
   const { min, max } = shape.boundingBox();
   const exact = exactBox(shape);
@@ -107,6 +107,15 @@ describe('boundingBox on thickened curved surfaces', () => {
     expectContains(crystal, 1);
   });
 
+  it('refines the periodic dome face of the crystal', async () => {
+    const crystal = await lower(CRYSTAL);
+    // The dome is periodic in v. Its pole hull read 46.20 mm across
+    // (exact 44.33 mm): periodic faces and offset shapes skipped refinement.
+    expectContains(crystal, 2e-3);
+    const solid = await lower(CRYSTAL.replace('thicken(0.4)', 'thicken(2)'));
+    expectContains(solid, 2e-3);
+  });
+
   it('contains a thickened bump after a translation', async () => {
     const bump = await lower(`
       return nurbsSurface({
@@ -119,7 +128,7 @@ describe('boundingBox on thickened curved surfaces', () => {
       }).thicken(1.5).translate(5, -3, 2);`);
     expect(hasOffsetFace(bump)).toBe(true);
     // The bump face's pole hull reaches z 10 (exact 5.6).
-    expectContains(bump, 5);
+    expectContains(bump, 2e-3);
   });
 
   it('keeps integral bounds on a thickened flat sheet', async () => {

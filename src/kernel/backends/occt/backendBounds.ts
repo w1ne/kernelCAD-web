@@ -30,7 +30,7 @@ export function toleranceInclusiveBounds(shape: unknown): { min: Vec3; max: Vec3
  *  1.1 s there; splineFaceBounds.ts tightens them instead. */
 export function rationalFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
   try {
-    return hasStronglyRationalFace(shape) ? toleranceInclusiveBounds(shape) : offsetFaceBounds(shape);
+    return hasStronglyRationalFace(shape) ? toleranceInclusiveBounds(shape) : undefined;
   } catch {
     return undefined;
   }
@@ -42,8 +42,17 @@ export function rationalFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | u
  *  distance as the box gap, which the caller removes as tolerance: the
  *  pocket-watch crystal, thickened by 0.4 mm, read z max 3.2 instead of 3.6.
  *  Offset faces use their exact box; other faces their gap-free default box,
- *  whose union is the caller's box. */
-function offsetFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
+ *  whose union is the caller's box. B-spline faces keep their pole hull;
+ *  splineFaceBounds.ts tightens them. */
+export function offsetFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
+  try {
+    return readOffsetFaceBounds(shape);
+  } catch {
+    return undefined;
+  }
+}
+
+function readOffsetFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const offsetType = oc.GeomAbs_SurfaceType.GeomAbs_OffsetSurface;
