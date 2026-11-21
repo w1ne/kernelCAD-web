@@ -252,6 +252,23 @@ function captureThrowFailure(
   };
 }
 
+/** A timeline with no param tracks never moves a part (appearance-only), so
+ *  there is no pose to verify. */
+function skipVerifyWithoutPoses(
+  metadata: AnimationViewMetadata,
+  alreadySkipped: boolean,
+  onProgress: (msg: string) => void,
+): boolean {
+  if (alreadySkipped || metadata.tracks.length > 0) return alreadySkipped;
+  onProgress('verify: skipped (no param tracks, nothing moves)');
+  return true;
+}
+
+/** Frame schedule over param and appearance tracks (shared sampler). */
+function scheduleFrames(metadata: AnimationViewMetadata, fps: number): ReturnType<typeof sampleTracks> {
+  return sampleTracks(metadata.tracks, fps, metadata.appearanceTracks ?? []);
+}
+
 /**
  * Capture the script's animationView timeline.
  *
@@ -314,17 +331,14 @@ export async function captureAnimation(
   // them.
   const stashedWarns = animResult.stashedWarns;
 
-  if (metadata.tracks.length === 0 && !verifySkipped) {
-    verifySkipped = true;
-    onProgress('verify: skipped (no param tracks, nothing moves)');
-  }
+  verifySkipped = skipVerifyWithoutPoses(metadata, verifySkipped, onProgress);
 
   const fpsResult = resolveFps(opts, metadata, stashedWarns, verifyFields);
   if ('failure' in fpsResult) return fpsResult.failure;
   const fps = fpsResult.fps;
 
   // 4. Frame schedule from the shared sampler.
-  const { frames, durationMs } = sampleTracks(metadata.tracks, fps, metadata.appearanceTracks ?? []);
+  const { frames, durationMs } = scheduleFrames(metadata, fps);
   onProgress(`${frames.length} frames scheduled @ ${fps} fps (durationMs=${durationMs})`);
 
   // 4b. Animation-pose interference verification — BEFORE the browser/ffmpeg

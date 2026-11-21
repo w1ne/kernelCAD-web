@@ -666,6 +666,13 @@ async function lockedFramingBounds(params: {
   return padBounds(union, FRAME_LOCK_PAD);
 }
 
+/** Features the page bootstrap already holds that frame 0 may reuse: the
+ *  cold mesh, but only for a timeline with no param values. */
+function preloadedFeatures(frames: FrameList, staticMeshing: MeshResult | undefined): MeshResult['features'] | undefined {
+  if (staticMeshing === undefined || frames.length === 0) return undefined;
+  return Object.keys(frames[0].values).length === 0 ? staticMeshing.features : undefined;
+}
+
 export async function runFrameLoopPhase(params: {
   frames: FrameList;
   model: BuiltModel;
@@ -709,10 +716,7 @@ export async function runFrameLoopPhase(params: {
   // only needs a transform update (see rigidFrameReuse.ts).
   // The page bootstrap already loaded the cold mesh. A timeline with no param
   // tracks reuses that mesh on every frame, so nothing is ever re-sent.
-  let loadedFeatures: MeshResult['features'] | undefined =
-    staticMeshing !== undefined && Object.keys(frames[0]?.values ?? {}).length === 0
-      ? staticMeshing.features
-      : undefined;
+  let loadedFeatures = preloadedFeatures(frames, staticMeshing);
   for (let i = 0; i < frames.length; i += 1) {
     const frame = frames[i];
     const meshResult = await updateFrameModelPhase({

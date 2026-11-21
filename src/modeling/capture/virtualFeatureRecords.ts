@@ -528,23 +528,33 @@ function validateAppearanceTrack(
   }
   const seenAtMs = new Set<number>();
   for (let j = 0; j < track.keys.length; j += 1) {
-    const key = track.keys[j];
-    if (typeof key !== 'object' || key === null) {
-      badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
-    }
-    if (!Number.isFinite(key.atMs) || key.atMs < 0) {
-      badKeys(`tracks[${i}].keys[${j}] atMs must be a finite number >= 0; got ${key.atMs}`);
-    }
-    if (normalizeHexColor(key.value) === null) {
-      badKeys(`tracks[${i}].keys[${j}] value must be a '#rrggbb' or '#rgb' colour; got ${JSON.stringify(key.value)}`);
-    }
-    if (seenAtMs.has(key.atMs)) {
-      badKeys(`tracks[${i}] ('${track.target}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
-    }
-    seenAtMs.add(key.atMs);
-    if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
-      badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
-    }
+    validateColorKey(track.keys[j], i, j, track.target, seenAtMs, badKeys);
+  }
+}
+
+function validateColorKey(
+  key: AnimationAppearanceTrack['keys'][number],
+  i: number,
+  j: number,
+  target: string,
+  seenAtMs: Set<number>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof key !== 'object' || key === null) {
+    badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
+  }
+  if (!Number.isFinite(key.atMs) || key.atMs < 0) {
+    badKeys(`tracks[${i}].keys[${j}] atMs must be a finite number >= 0; got ${key.atMs}`);
+  }
+  if (normalizeHexColor(key.value) === null) {
+    badKeys(`tracks[${i}].keys[${j}] value must be a '#rrggbb' or '#rgb' colour; got ${JSON.stringify(key.value)}`);
+  }
+  if (seenAtMs.has(key.atMs)) {
+    badKeys(`tracks[${i}] ('${target}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
+  }
+  seenAtMs.add(key.atMs);
+  if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
+    badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
   }
 }
 
