@@ -247,6 +247,20 @@ describe('resolveFaceQuery — v0.2-finish polish keys', () => {
     expect(n.z).toBeCloseTo(-1, 1);
   });
 
+  it('boundingBoxIn: meshing the shape does not change the matched faces', () => {
+    // replicad's face box reads the triangulation once one exists: after
+    // getMesh() the side face of cylinder(10, 5) read z -0.01398..10.01398
+    // and dropped out of a region with a 0.005 mm margin.
+    const region = { xMin: -5.005, xMax: 5.005, yMin: -5.005, yMax: 5.005, zMin: -0.005, zMax: 10.005 };
+    const fresh = OcctBackend.cylinder(10, 5);
+    const meshed = OcctBackend.cylinder(10, 5);
+    meshed.getMesh();
+    expect(resolveFaceQuery(fresh, { boundingBoxIn: region })).toHaveLength(3);
+    expect(resolveFaceQuery(meshed, { boundingBoxIn: region })).toHaveLength(3);
+    // The cap at z = 10 stays selectable after meshing.
+    expect(resolveFaceQuery(meshed, { boundingBoxIn: { zMin: 9.995, zMax: 10.005 } })).toHaveLength(1);
+  });
+
   it('boundingBoxIn: rejects faces partially outside the region', () => {
     // { zMin: 3, zMax: 7 } — no face on a 10mm cube has its bbox fully inside this z range
     const box = OcctBackend.box(10, 10, 10);
