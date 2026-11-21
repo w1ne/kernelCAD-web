@@ -8,6 +8,14 @@
   the 0.01 mm tolerance, so `top` returned no canonical face. The rule now
   reads the geometry box in every call order.
 
+- Automatic drawing annotations no longer change once a part is meshed.
+  The recogniser read each planar face box from the triangulation when one
+  existed, which pulled a circular cap's box inside its circle; without a
+  mesh it read the padded box. A 30 mm diameter, 10 mm high disc got datum A
+  and `⏥ 0.2` in the front view before a mesh, and `⏥ 0.1` in the left view
+  after it. The recogniser now reads the unpadded face geometry in every call
+  order: `⏥ 0.1` (ISO 2768-2 K, up to 30 mm) in the front view.
+
 - `lib.fromDXF` now imports a HATCH with more than one boundary path. Before,
   it refused the file: `HATCH at line 19: 6 boundary paths are not supported`.
   The HATCH states which loops are holes, so each filled area now comes back
