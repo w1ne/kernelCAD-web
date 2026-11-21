@@ -319646,7 +319646,7 @@
       "id": "radome-cylinder",
       "kit": "telecom-infrastructure",
       "title": "Cylindrical antenna radome",
-      "description": "Smooth cylindrical radome with rounded-looking cap rings and a narrow mounting foot. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
+      "description": "Cylindrical antenna radome: a white fibreglass tube with a domed top over the antenna, held by a stainless clamp band on a galvanized flange, a narrow pipe foot and a bolted base plate, with a black coax gland and drop. No metal covers the radome above its base band. Material controls: fibreglass radome, galvanized steel, stainless steel, black polymer. Field-site and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -319665,7 +319665,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/radome-cylinder.kcad.ts",
       "preview": "/assets/telecom-infrastructure-radome-cylinder.png",
-      "sourceSha256": "e4f4158f58ee3b866980695408ddc3a03f6aee4a5ab6d37769445b4150fee830",
+      "sourceSha256": "269a3bcc19d0576c55cacfa16d5af82215235fc15f0d1a840ac95851dd1a808a",
       "triangleBudget": 900,
       "params": [
         {
@@ -319678,42 +319678,50 @@
           "step": 0.05
         },
         {
+          "name": "radome",
+          "type": "color",
+          "default": "#eeede6",
+          "label": "Radome (fibreglass)"
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#77868d",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "label": "Foot, flange and base plate (galvanized steel)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#d2dbdc",
-          "label": "Stainless steel"
+          "label": "Clamp band (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Coax gland and cable (black polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
+          "radome": "#d9dbd0",
           "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b",
-          "stainlessSteel": "#d0d9d6"
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#263a37"
         },
         "highVisibility": {
+          "radome": "#f4f4ef",
           "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18",
-          "stainlessSteel": "#e4e9e6"
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#e0aa18"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 634,
         "sizeM": [
-          0.24,
-          1.19,
-          0.24
+          0.26,
+          1.25,
+          0.26
         ],
         "minUpM": 0,
         "materials": 1
@@ -319723,26 +319731,42 @@
           "name": "galvanizedSteel",
           "color": "#77868d",
           "parts": [
-            "foot"
+            "base",
+            "bolt-0",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3",
+            "foot",
+            "flange"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "radome",
+          "color": "#eeede6",
           "parts": [
-            "shell",
-            "cap"
+            "radome"
           ],
-          "param": "powderCoat"
+          "param": "radome"
         },
         {
           "name": "stainlessSteel",
           "color": "#d2dbdc",
           "parts": [
-            "collar"
+            "clamp-band",
+            "band-screw"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "cable-gland",
+            "cable-run",
+            "cable-drop"
+          ],
+          "param": "polymer"
         }
       ]
     },

@@ -1,0 +1,11 @@
+{
+  "created": "2026-11-20",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "sourceImages": ["samples/*.png", "before/radome-cylinder.png", "after/radome-cylinder.png"],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/telecom-radome-cylinder-shell-material-review-20261120/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/telecom-radome-cylinder-shell-material-review-20261120/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB colour regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}
