@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-10-29T18:45:10.920Z",
+  "checkedAt": "2026-11-20T01:58:36.603Z",
   "source": "examples/assemblies/glb-rig-hinge.kcad.ts",
   "exporter": "runAndExport(format=\"glb\")",
-  "glbBytes": 3284,
-  "glbSha256": "c27936b3209511acad46331481506bc715b878ec20f15e775a618a30f5f40e28",
+  "glbBytes": 3716,
+  "glbSha256": "d3245cf148039dde15f6f9e7d8d2a651551fae8b359c82efab0457c73a453442",
   "nodes": [
     {
       "name": "lid",
