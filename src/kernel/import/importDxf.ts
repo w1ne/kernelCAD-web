@@ -19,7 +19,9 @@
 //   CIRCLE      -> two exact 180° bulge arcs
 //   LWPOLYLINE  vertices with optional per-vertex BULGE (group code 42)
 //   POLYLINE    the pre-R13 form: a header entity plus VERTEX children
-//   HATCH       one closed, planar polyline boundary path; pattern styling is ignored
+//   HATCH       closed planar polyline boundary paths; nested paths become holes
+//               and islands per the hatch style (dxfHatch.ts); pattern styling
+//               is ignored
 //   SPLINE      planar, continuous control-point B-splines, kept as exact
 //               rational/non-rational NURBS sketch commands; unclamped and
 //               periodic knot vectors are clamped exactly (dxfSplineClamp.ts);
@@ -44,8 +46,8 @@
 // Non-XY ELLIPSE, external-reference blocks, 3DFACE, SOLID and anything
 // unrecognised are refused: each carries profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. HATCH is
-// accepted only with one planar closed polyline path; multi-path hatches are
-// refused because this importer does not preserve hole/island relationships.
+// accepted only with planar closed polyline paths; edge-based paths and
+// crossing paths are refused.
 // SPLINE is accepted only when its planar control points and knots define a
 // continuous curve, or when it is a cubic with fit points only.
 // Non-cubic fit-point-only, nonplanar and discontinuous SPLINE entities, and
@@ -58,6 +60,7 @@
 import {
   assembleRegions,
   ContourError,
+  type ImportFace,
   type ImportSegment,
   type ImportedRegion,
 } from './contourAssembly';
@@ -66,7 +69,8 @@ import { clampSpline, type PlanarSpline } from './dxfSplineClamp';
 import { fitPointSpline, validateSplinePlanarity } from './dxfSplineFit';
 import { mirrorSegments, ocsSign } from './dxfOcs';
 import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
-import { DxfParseError, entityVector, get, num, require, values, type EntityBlock, type Pair } from './dxfPairs';
+import { hatchSegments } from './dxfHatch';
+import { DxfParseError, get, num, polylineSegments, require, values, type EntityBlock, type Pair, type PolyVertex } from './dxfPairs';
 
 export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
@@ -535,32 +539,6 @@ function ellipseSegments(b: EntityBlock, scale: number): { closed: ImportSegment
   return span.full ? { closed: [segments], open: [] } : { closed: [], open: segments };
 }
 
-interface PolyVertex { x: number; y: number; bulge: number }
-
-function polylineSegments(
-  vertices: readonly PolyVertex[],
-  closed: boolean,
-  src: string,
-  line: number,
-): ImportSegment[] {
-  if (vertices.length < 2) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `${src}: needs at least 2 vertices, found ${vertices.length}.`,
-    );
-  }
-  const out: ImportSegment[] = [];
-  const n = vertices.length;
-  const last = closed ? n : n - 1;
-  for (let i = 0; i < last; i++) {
-    const a = vertices[i];
-    const b = vertices[(i + 1) % n];
-    // The bulge lives on the vertex that STARTS the segment.
-    out.push({ x0: a.x, y0: a.y, x1: b.x, y1: b.y, bulge: a.bulge, source: `${src} (line ${line})` });
-  }
-  return out;
-}
-
 function lwpolylineVertices(body: readonly Pair[], line: number, s: number): PolyVertex[] {
   const verts: PolyVertex[] = [];
   for (const p of body) {
@@ -587,147 +565,6 @@ function lwpolylineVertices(body: readonly Pair[], line: number, s: number): Pol
   return verts;
 }
 
-function hatchPathCountIndex(b: EntityBlock): number {
-  const pathCountIndex = b.body.findIndex(pair => pair.code === 91);
-  const pathCountPair = pathCountIndex < 0 ? undefined : b.body[pathCountIndex];
-  if (!pathCountPair) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: required group code 91 is missing.`);
-  }
-  const pathCount = num(pathCountPair, 'HATCH', 91);
-  if (!Number.isInteger(pathCount) || pathCount < 1) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 91 must be a positive integer.`);
-  }
-  if (pathCount !== 1) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `HATCH at line ${b.line}: ${pathCount} boundary paths are not supported; only one path can be returned ` +
-        'as a Sketch without losing hole or island relationships.',
-    );
-  }
-  return pathCountIndex;
-}
-
-function validateHatchPlane(b: EntityBlock, pathCountIndex: number): void {
-  const header = b.body.slice(0, pathCountIndex);
-  const elevation = entityVector(header, 'HATCH', [10, 20, 30], [0, 0, 0]);
-  const extrusion = entityVector(header, 'HATCH', [210, 220, 230], [0, 0, 1]);
-  const zeroVector = (vector: number[]) => vector.every(value => Math.abs(value) <= 1e-9);
-  const positiveZ = Math.abs(extrusion[0]) <= 1e-9 && Math.abs(extrusion[1]) <= 1e-9 &&
-    Math.abs(extrusion[2] - 1) <= 1e-9;
-  if (!zeroVector(elevation) || !positiveZ) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `HATCH at line ${b.line}: only a zero-elevation XY boundary with extrusion direction +Z can become a 2D Sketch.`,
-    );
-  }
-}
-
-type HatchPolylinePath = { pairs: Pair[]; vertexCount: number; hasBulges: number };
-
-function hatchPolylinePath(b: EntityBlock, pathCountIndex: number): HatchPolylinePath {
-  const pathFlagPair = b.body[pathCountIndex + 1];
-  if (!pathFlagPair || pathFlagPair.code !== 92) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: boundary path data must start with group code 92.`);
-  }
-  const pathFlags = num(pathFlagPair, 'HATCH', 92);
-  if (!Number.isInteger(pathFlags) || pathFlags < 0) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: boundary path flags must be a non-negative integer.`);
-  }
-  if ((pathFlags & 2) === 0) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `HATCH at line ${b.line}: edge-based boundary paths are not supported; re-export the boundary as a closed polyline.`,
-    );
-  }
-
-  const pathEndIndex = b.body.findIndex((pair, index) => index > pathCountIndex + 1 && pair.code === 97);
-  if (pathEndIndex < 0) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: required group code 97 is missing after the boundary path.`);
-  }
-  const path = b.body.slice(pathCountIndex + 2, pathEndIndex);
-  const closedPair = get(path, 73);
-  const closedFlag = closedPair ? num(closedPair, 'HATCH', 73) : Number.NaN;
-  if (closedFlag !== 1) {
-    throw new DxfParseError(
-      'unsupported-entity',
-      `HATCH at line ${b.line}: a polyline boundary path must have the closed flag (group code 73) set to 1.`,
-    );
-  }
-  const bulgePair = get(path, 72);
-  const hasBulges = bulgePair ? num(bulgePair, 'HATCH', 72) : Number.NaN;
-  if (hasBulges !== 0 && hasBulges !== 1) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 72 must be 0 or 1.`);
-  }
-  const vertexCountPair = get(path, 93);
-  if (!vertexCountPair) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: required group code 93 is missing.`);
-  }
-  const vertexCount = num(vertexCountPair, 'HATCH', 93);
-  if (!Number.isInteger(vertexCount) || vertexCount < 2) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 93 must declare at least 2 vertices.`);
-  }
-  return { pairs: path, vertexCount, hasBulges };
-}
-
-function hatchPolylineVertices(b: EntityBlock, path: readonly Pair[], scale: number): { vertices: PolyVertex[]; hasBulgeValue: boolean } {
-  const vertices: PolyVertex[] = [];
-  let hasBulgeValue = false;
-  for (let i = 0; i < path.length;) {
-    const pair = path[i];
-    if (pair.code === 20 || pair.code === 42) {
-      throw new DxfParseError(
-        'malformed-entity',
-        `HATCH at line ${b.line}: group code ${pair.code} at line ${pair.line} has no preceding vertex X coordinate.`,
-      );
-    }
-    if (pair.code !== 10) {
-      i++;
-      continue;
-    }
-    const yPair = path[i + 1];
-    if (!yPair || yPair.code !== 20) {
-      throw new DxfParseError(
-        'malformed-entity',
-        `HATCH at line ${b.line}: vertex X at line ${pair.line} must be followed by group code 20 (vertex Y).`,
-      );
-    }
-    const x = num(pair, 'HATCH', 10) * scale;
-    const y = num(yPair, 'HATCH', 20) * scale;
-    const bulge = path[i + 2]?.code === 42 ? num(path[i + 2], 'HATCH', 42) : 0;
-    if (path[i + 2]?.code === 42) hasBulgeValue = true;
-    vertices.push({ x, y, bulge });
-    i += path[i + 2]?.code === 42 ? 3 : 2;
-  }
-  return { vertices, hasBulgeValue };
-}
-
-function validateHatchVertices(
-  b: EntityBlock,
-  vertices: readonly PolyVertex[],
-  vertexCount: number,
-  hasBulges: number,
-  hasBulgeValue: boolean,
-): void {
-  if (vertices.length !== vertexCount) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `HATCH at line ${b.line}: group code 93 declares ${vertexCount} vertices, but ${vertices.length} were found.`,
-    );
-  }
-  if (hasBulges === 0 && hasBulgeValue) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: group code 72 says there are no bulges, but group code 42 is present.`);
-  }
-}
-
-/** Import a HATCH only when its fill boundary is one closed planar polyline. */
-function hatchPolylineSegments(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } {
-  const pathCountIndex = hatchPathCountIndex(b);
-  validateHatchPlane(b, pathCountIndex);
-  const { pairs, vertexCount, hasBulges } = hatchPolylinePath(b, pathCountIndex);
-  const { vertices, hasBulgeValue } = hatchPolylineVertices(b, pairs, scale);
-  validateHatchVertices(b, vertices, vertexCount, hasBulges, hasBulgeValue);
-  return { closed: [polylineSegments(vertices, true, 'HATCH', b.line)], open: [] };
-}
 
 /**
  * Parse DXF text into closed regions.
@@ -741,7 +578,7 @@ function segmentsForSimpleEntity(
   b: EntityBlock,
   scale: number,
   tolerance: number,
-): { closed: ImportSegment[][]; open: ImportSegment[] } | null {
+): { closed: ImportSegment[][]; open: ImportSegment[]; faces?: ImportFace[] } | null {
   switch (b.type) {
     case 'SPLINE':
       return splineSegments(b, scale, tolerance);
@@ -759,7 +596,7 @@ function segmentsForSimpleEntity(
     case 'ELLIPSE':
       return ellipseSegments(b, scale);
     case 'HATCH':
-      return hatchPolylineSegments(b, scale);
+      return hatchSegments(b, scale);
     case 'LWPOLYLINE': {
       const verts = lwpolylineVertices(b.body, b.line, scale);
       const flags = get(b.body, 70);
@@ -813,7 +650,7 @@ function throwUnsupportedEntity(b: EntityBlock): never {
       throw new DxfParseError(
         'unsupported-entity',
     `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, planar ELLIPSE, ` +
-          'LWPOLYLINE, POLYLINE, INSERT, one closed polyline HATCH boundary, and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
+          'LWPOLYLINE, POLYLINE, INSERT, closed polyline HATCH boundaries, and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
           'because a dropped entity leaves a hole in the profile with no indication.',
       );
   }
@@ -830,18 +667,20 @@ interface ReadContext {
 interface Collected {
   closed: ImportSegment[][];
   open: ImportSegment[];
+  faces: ImportFace[];
   ignoredEntities: string[];
 }
 
 /** Read a list of entities into segments. `note` labels skipped annotation inside a block. */
 function collectEntities(blocks: readonly EntityBlock[], ctx: ReadContext, note: string): Collected {
-  const out: Collected = { closed: [], open: [], ignoredEntities: [] };
+  const out: Collected = { closed: [], open: [], faces: [], ignoredEntities: [] };
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
     const simple = segmentsForSimpleEntity(b, ctx.scale, ctx.tolerance);
     if (simple) {
       out.closed.push(...simple.closed);
       out.open.push(...simple.open);
+      out.faces.push(...(simple.faces ?? []));
       continue;
     }
     if (b.type === 'POLYLINE') {
@@ -876,6 +715,7 @@ function consumeInsert(blocks: readonly EntityBlock[], i: number, ctx: ReadConte
   const placed = placeInsert(b, def, inner, ctx.scale);
   out.closed.push(...placed.closed);
   out.open.push(...placed.open);
+  out.faces.push(...placed.faces);
   out.ignoredEntities.push(...inner.ignoredEntities);
   return skipAttributes(blocks, i, out.ignoredEntities, note);
 }
@@ -897,12 +737,12 @@ export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImp
     definitions: blockDefinitions(sectionBlocks(pairs, 'BLOCKS')),
     stack: [],
   };
-  const { closed, open, ignoredEntities } = collectEntities(entityBlocks(pairs), ctx, '');
+  const { closed, open, faces, ignoredEntities } = collectEntities(entityBlocks(pairs), ctx, '');
 
   let assembled;
   try {
     assembled = assembleRegions(
-      { closed, open },
+      { closed, open, faces },
       { tolerance: opts.tolerance ?? DEFAULT_DXF_TOLERANCE },
     );
   } catch (e) {
