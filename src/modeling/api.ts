@@ -129,11 +129,12 @@ export interface PartsLib {
    * file says which loop is which. Chain `.extrude(d)` on the one you want:
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
-   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
-   * planar polyline HATCH boundary, and clamped continuous planar SPLINE
+   * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, closed
+   * planar polyline HATCH boundaries, and clamped continuous planar SPLINE
    * entities with control points and knots. HATCH bulges map to exact arcs;
-   * multi-path, edge-based, and out-of-plane hatches are refused so holes and
-   * islands are not flattened.
+   * a multi-path HATCH keeps its declared holes, so each filled area is ONE
+   * sketch with its inner paths as holes. Edge-based, crossing and
+   * out-of-plane hatches are refused.
    * Full and partial planar ellipses and supported splines are exact rational
    * NURBS geometry; periodic and unclamped knot vectors are clamped exactly.
    * A cubic SPLINE with fit points only is interpolated through its fit
