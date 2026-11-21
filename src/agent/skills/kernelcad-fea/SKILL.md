@@ -128,6 +128,7 @@ Honesty limits:
 | `pla` | 3500 | 0.36 | 50 |
 | `petg` | 2700 | 0.40 | 55 |
 | `abs` | 2300 | 0.35 | 40 |
+| `asa` | 2120 | 0.35 | 37 |
 | `nylon` | 1700 | 0.39 | 45 |
 
 `fea_summary({})` returns this table live. These are the same grade names

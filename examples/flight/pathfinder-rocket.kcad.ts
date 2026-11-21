@@ -49,7 +49,8 @@ const fins = sleeve.union(fin).union(fin.rotate([0, 0, 1], 120)).union(fin.rotat
 
 const motor = cylinder(70, 12).translate(0, 0, 2);
 const chute = cylinder(60, 17).translate(0, 0, 250);
-const avionics = box(30, 30, 60, true).translate(0, 0, 180);
+// The bay is 28 mm square: its 19.8 mm half-diagonal clears the 20.3 mm tube bore.
+const avionics = box(28, 28, 60, true).translate(0, 0, 180);
 
 arm.part('body-tube', tube, { material: 'pla' });
 arm.part('ogive-nose-cone', noseCone, { material: 'pla' });

@@ -12,6 +12,21 @@
   16 LED segments). Rigid frame reuse now also compares colour and material,
   so a frame whose colour changed reloads its meshes.
 
+- `examples/assets/pine-tree.kcad.ts` now passes `evaluate_script` with
+  `ok: true`. The trunk was extruded to 30 % of the tree height, so it ran
+  450 mm (default 4.5 m tree) into the lowest foliage tier and gave one
+  `mechanism.interpenetration` error (39.9e6 mm³). The trunk now stops on
+  the base of the lowest tier; the visible tree is unchanged. Regression:
+  `tests/integration/examples/pineTreeExampleReal.test.ts` (defaults and
+  2, 4, 5 tiers). Not changed: the catalog copy
+  `catalog/kits/nature/pine-tree.kcad.ts` has the same overlap; fixing it
+  needs a catalog index, preview and asset-module demo refresh.
+- The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
+  `evaluate_script` with `ok: true`; before, it had one
+  `mechanism.interpenetration` error (`mechanism: broken`): the corners of
+  the 30 mm square avionics bay (21.2 mm half-diagonal) cut 192 mm³ out of
+  the wall of the body tube (20.3 mm bore radius). The bay is 28 mm square.
+  The mass and the flight results are unchanged.
 - `catalog/kits/nature/pine-tree.kcad.ts` now passes `evaluate_script`
   with `ok: true` for every tier choice. The trunk was extruded to 30 % of
   the tree height, so it ran 450 mm (default 4.5 m tree) into the lowest
@@ -360,7 +375,6 @@
   a Query DSL value. Before, the type allowed only a FaceRef, so
   `examples/cookbook-parity/ledge-height-slot-block.kcad.ts` failed the type
   check with TS2353 although it runs. Runtime behaviour is unchanged.
-
 - A blind `Shape.cutout(profile, { depth })` now stops at exactly `depth`.
   Before, the prism tool ran 0.01 mm past the requested depth (0.02 mm with
   `depthMode: 'symmetric'`), so a 12 × 8 × 5 mm pocket removed 480.96 mm³

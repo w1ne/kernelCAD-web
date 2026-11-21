@@ -104,7 +104,7 @@ path instead of silently creating an unbounded joint.
 
 ### Per-part material and density
 
-Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
+Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `asa`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
 
 ```typescript
 arm.part('shoulder-bracket', bracketShape, { material: 'aluminum-6061' }); // 2700 kg/m³ + aluminium finish
@@ -158,7 +158,7 @@ interface Assembly {
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
     /** Named material grade: seeds the density default AND a default finish.
-     *  mild-steel | aluminum-6061 | pla | petg | abs | nylon
+     *  mild-steel | aluminum-6061 | pla | petg | abs | asa | nylon
      *  (aliases steel, aluminum, aluminium, pet). */
     material?: string;
     /** Raw material density in kg/m^3. Default 1000 (water). Overrides the
