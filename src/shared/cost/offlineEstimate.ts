@@ -29,6 +29,7 @@ export const OFFLINE_COST_RATES = {
     pla: 22,
     petg: 28,
     abs: 25,
+    asa: 30,
     nylon: 40,
   },
   defaultMaterial: {

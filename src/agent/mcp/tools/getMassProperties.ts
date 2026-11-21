@@ -30,7 +30,7 @@ export interface GetMassPropertiesInput {
   /**
    * Named engineering material used INSTEAD of a raw `density` — say
    * `material: 'steel'` rather than `density: 7850`. Resolves to the catalog
-   * density. Valid: `steel`, `aluminum` (alias `aluminium`), `pla`, `abs`,
+   * density. Valid: `steel`, `aluminum` (alias `aluminium`), `pla`, `abs`, `asa`,
    * `pet`. An unknown name is rejected naming the valid materials; it never
    * silently falls back to water. Passing both `density` and `material` is an
    * error (they both set the density).
