@@ -27,7 +27,8 @@
 //               their fit points and end tangents (dxfSplineFit.ts)
 //   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
 //   INSERT      block references, including nested blocks and MINSERT grids,
-//               placed by an exact affine map (dxfInsert.ts)
+//               placed by an exact affine map (dxfInsert.ts); arcs under a
+//               non-uniform scale become exact rational elliptical arcs
 //
 // ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the Object
 // Coordinate System of their extrusion direction: -Z is mirrored into world
@@ -40,9 +41,8 @@
 //
 // WHAT WE REFUSE, AND WHY IT IS A REFUSAL
 // ---------------------------------------
-// Non-XY ELLIPSE, external-reference blocks, arcs under a non-uniform block
-// scale, 3DFACE, SOLID and anything unrecognised are refused: each carries
-// profile geometry, so skipping it
+// Non-XY ELLIPSE, external-reference blocks, 3DFACE, SOLID and anything
+// unrecognised are refused: each carries profile geometry, so skipping it
 // would hand back a profile missing a piece with no indication. HATCH is
 // accepted only with one planar closed polyline path; multi-path hatches are
 // refused because this importer does not preserve hole/island relationships.
