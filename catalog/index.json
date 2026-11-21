@@ -320844,7 +320844,7 @@
       "id": "split-cable-duct",
       "kit": "telecom-infrastructure",
       "title": "Split cable duct",
-      "description": "Low split-duct cable cover with two channel shells and a bridging lid strip. Knobs: overall scale; galvanized steel, powder-coated steel.",
+      "description": "Split cable duct: a 150 mm HDPE conduit split lengthwise into upper and lower half shells that close around existing cables. The halves meet on flat side flanges held by six stainless bolts and nuts; three black cables run through the bore and out of both ends. Material controls: HDPE duct, stainless steel, black polymer cable. Field-site and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -320863,8 +320863,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/split-cable-duct.kcad.ts",
       "preview": "/assets/telecom-infrastructure-split-cable-duct.png",
-      "sourceSha256": "1a32c5ae97a276fac8c9870e5fe2e7535b11f09b4073a41d81998e30f7183bdd",
-      "triangleBudget": 900,
+      "sourceSha256": "f2828806363efbea3199aa06d9aa26a4001a012255a046f66a86d4950369773a",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -320876,57 +320876,84 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
+          "name": "duct",
           "type": "color",
-          "default": "#77868d",
-          "label": "Galvanized steel"
+          "default": "#e07a1f",
+          "label": "Split duct (HDPE)"
         },
         {
-          "name": "powderCoat",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#318b96",
-          "label": "Powder-coated steel"
+          "default": "#d2dbdc",
+          "label": "Flange bolts and nuts (stainless steel)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#22292d",
+          "label": "Cables (black polymer)"
         }
       ],
       "presets": {
         "fieldSite": {
-          "galvanizedSteel": "#8f9b9b",
-          "powderCoat": "#52756b"
+          "duct": "#2e3331",
+          "stainlessSteel": "#d0d9d6",
+          "polymer": "#3b4a3f"
         },
         "highVisibility": {
-          "galvanizedSteel": "#3a4b51",
-          "powderCoat": "#e0aa18"
+          "duct": "#e8c21a",
+          "stainlessSteel": "#e4e9e6",
+          "polymer": "#1d2224"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 892,
         "sizeM": [
-          0.55,
-          0.11,
-          0.5
+          0.198,
+          0.15,
+          0.62
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#318b96",
+          "name": "duct",
+          "color": "#e07a1f",
           "parts": [
-            "base-a",
-            "base-b",
-            "lid-a",
-            "lid-b"
+            "shell-upper",
+            "shell-lower"
           ],
-          "param": "powderCoat"
+          "param": "duct"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#77868d",
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
           "parts": [
-            "center-join"
+            "bolt-0",
+            "nut-0",
+            "bolt-1",
+            "nut-1",
+            "bolt-2",
+            "nut-2",
+            "bolt-3",
+            "nut-3",
+            "bolt-4",
+            "nut-4",
+            "bolt-5",
+            "nut-5"
           ],
-          "param": "galvanizedSteel"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#22292d",
+          "parts": [
+            "cable-0",
+            "cable-1",
+            "cable-2"
+          ],
+          "param": "polymer"
         }
       ]
     },
