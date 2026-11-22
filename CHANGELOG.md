@@ -6,6 +6,14 @@
   the finger centre line, and the two strap anchors are 2 mm off the palm
   faces instead of inside the palm. The finger also stays collision-free with
   all three joints at their flexed limits together.
+- The GLB rig example (`examples/assemblies/glb-rig-hinge.kcad.ts`) now passes
+  `evaluate_script` with `ok: true` and `mechanism: real`; before, it had 4
+  errors (`mechanism: broken`): the hinge axis was 9.0 mm away from the lid,
+  the lid was 6.24 mm away from the base at the 35° rest pose, and it cut
+  1.4 mm into the base at 0°. The base has a hinge ear, the end face of the
+  lid bears on the ear, and the closed lid is 2 mm above the base. The rig
+  export is unchanged (`rotate`, range [-35, 75]). The demo in
+  `docs/demos/glb-rig/` is recaptured from the new geometry.
 - `lib.fromDXF` now imports elliptic-arc (type 3) and spline (type 4) edges in
   edge-based HATCH boundary paths. Before, the importer refused the file:
   `elliptic-arc boundary edges are not supported`. Elliptic-arc edges become
