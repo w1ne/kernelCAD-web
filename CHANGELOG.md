@@ -1,5 +1,12 @@
 # Unreleased
 
+- `examples/kinematic/collision-shapes.kcad.ts` and cookbook snippet
+  `part-collision-convex-pieces` now pass `evaluate_script` with `ok: true`
+  and `mechanism: real`; before, they returned 6 errors. The base has a hinge
+  ear, the ear, post and link lap in adjacent slabs with each pivot on the
+  shared face, and the mate limits (-10° to 20°) keep the link tip above the
+  plate. In MuJoCo the single base hull still contacts the link between the
+  rods, and the four declared pieces give no contact.
 - The GLB rig example (`examples/assemblies/glb-rig-hinge.kcad.ts`) now passes
   `evaluate_script` with `ok: true` and `mechanism: real`; before, it had 4
   errors (`mechanism: broken`): the hinge axis was 9.0 mm away from the lid,
@@ -46,8 +53,7 @@
   the base of the lowest tier; the visible tree is unchanged. Regression:
   `tests/integration/examples/pineTreeExampleReal.test.ts` (defaults and
   2, 4, 5 tiers). Not changed: the catalog copy
-  `catalog/kits/nature/pine-tree.kcad.ts` has the same overlap; fixing it
-  needs a catalog index, preview and asset-module demo refresh.
+  `catalog/kits/nature/pine-tree.kcad.ts` was fixed separately (below).
 - The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
   `evaluate_script` with `ok: true`; before, it had one
   `mechanism.interpenetration` error (`mechanism: broken`): the corners of
