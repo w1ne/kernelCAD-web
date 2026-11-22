@@ -5,7 +5,6 @@ import type { StockSpec } from '../../shared/stock';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
-import type { VirtualJointRecord } from './assemblyTypes';
 
 export interface AssemblyFeatureSpec {
   kind: FeatureKind;
@@ -15,12 +14,20 @@ export interface AssemblyFeatureSpec {
 }
 
 export interface SolvedAssemblyMateMetadata {
-  readonly virtualJoints?: readonly VirtualJointRecord[];
+  readonly virtualJoints?: readonly EncodedVirtualJointRecord[];
   readonly connectorsByPartId: Record<FeatureId, readonly EncodedConnectorRecord[]>;
   readonly mates: readonly EncodedMateRecord[];
   readonly couplings?: readonly MateCouplingRecord[];
   /** `loopMode(...)` branch pins for closed loops. */
   readonly loopModes?: readonly { readonly loop: string; readonly joint: string; readonly sign: '+' | '-' }[];
+}
+
+/** Serializable joint intent; record construction stays independent of capture handles. */
+export interface EncodedVirtualJointRecord {
+  readonly name: string;
+  readonly type: 'fixed' | 'floating' | 'planar';
+  readonly parentFrame: string;
+  readonly childLink: string;
 }
 
 export interface EncodedConnectorRecord {
