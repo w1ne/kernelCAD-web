@@ -21,7 +21,7 @@ The second command builds a short MP4 from the verified GLB metadata.
 
 ## Provenance and scope
 
-- Geometry is original kernelCAD box geometry from the linked `.kcad.ts` source.
+- Geometry is original kernelCAD box geometry (base with a hinge ear, and lid) from the linked `.kcad.ts` source.
 - No Polyfork downloads, external meshes, or mesh decimation are involved.
 - The MP4 uses a labelled side-view math schematic of the native box geometry,
   the 35° rest pose and the [-35°, 75°] relative range. It is **not** a three.js render or a simulation
