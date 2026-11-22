@@ -946,3 +946,20 @@ Runnable repair example: `examples/fastener-installation/l-bracket-mount.kcad.ts
 Generate its four catalog envelopes with `npx tsx
 scripts/generateFastenerInstallationCatalog.ts assets/parts`, audit both screw
 stations, then change `liftedHeadMm` from 1.5 to 0 and repeat the same audit.
+
+The bore check is local to the screw station. A separate edge notch does not
+invalidate an intact target bore. The selected cylindrical wall must cover the
+full circle over its measured depth; coverage uses trimmed BREP surface area, so
+a narrow slot or a pocket through only part of the depth remains unknown.
+Coplanar trimmed faces can jointly support the head. Faces at different heights
+cannot supply one bearing plane, and a closer unsupported face prevents a farther
+face from reporting a false seated gap. Support still uses four radial locations;
+it does not establish contact pressure or full bearing area.
+
+Runnable local-feature example:
+`examples/fastener-installation/local-feature-mount.kcad.ts`. With the same catalog
+preparation, audit `{ part: 'screw', against: ['plate'] }`. The split bearing is
+seated at `liftedHeadMm = 0` and fails the gap check at 1.5 mm. The
+`remote-notch` case keeps its intact target measurable; `narrow-breach` remains
+unknown. Local measured demo:
+`docs/demos/fastener-local-features-20261122/demo.mp4`.

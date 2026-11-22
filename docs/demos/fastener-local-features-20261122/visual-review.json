@@ -1,0 +1,31 @@
+{
+  "reviewedOn": "2026-11-22",
+  "method": "Decoded the final H.264 video at 2, 6, 10 and 14 seconds; inspected all four images and the narrow-breach front/right canonical views.",
+  "frames": [
+    {
+      "file": "decoded/frame-1.png",
+      "sha256": "40d190f8db3851213c0e784d743f54c76915903c9a27ab4e96c4f68d8897cf0b"
+    },
+    {
+      "file": "decoded/frame-2.png",
+      "sha256": "61bfa2eec4bb34a4ba4ee460704e0c47c1e89cf3ad3781cbebb518c4eb42ccc3"
+    },
+    {
+      "file": "decoded/frame-3.png",
+      "sha256": "2d652ffcfc3d5ea860f3a529d5f7d04e9043515433491254b38e5c65a6b28cff"
+    },
+    {
+      "file": "decoded/frame-4.png",
+      "sha256": "502d6324bb9c160a9fcfe0225a437778521357e48b49bf497a8cb35c0c19eb61"
+    }
+  ],
+  "observations": [
+    "All four titles, measured values and scope captions are legible and unclipped.",
+    "The remote edge notch is separate from the seated catalog screw.",
+    "The split bearing fixture shows the upper relief and seated head; the lifted variant shows exposed shank and the measured 1.500 mm gap.",
+    "The partial-depth 0.4 mm slot is small in the isometric video view. The front canonical view shows its opening at the left edge; the right view remains closed.",
+    "Pass, fail and partial results match the source-bound local MCP reports."
+  ],
+  "accepted": true,
+  "scope": "Visual review of local geometric validation; no hosted deployment or physical acceptance claim."
+}

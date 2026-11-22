@@ -34,6 +34,7 @@
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { untracked } from './occtFinalizers';
+import { integrateArea } from './volumeIntegration';
 
 export interface CylindricalHole {
   /** Hole-mouth center for blind holes; t_min end for through holes. */
@@ -276,7 +277,8 @@ export interface ConcaveCylFace {
   /** Unit axis direction (sign as OCCT reports it for this face). */
   dir: Vec3;
   radiusMm: number;
-  /** Angular UV extent (rad). */
+  /** Mean angular coverage over the axial bounds (rad). BREP collection uses
+   * trimmed surface area / (radius × depth), not the enclosing UV rectangle. */
   du: number;
   /** Axial UV bounds (mm along `dir` from `loc`). */
   v1: number;
@@ -569,7 +571,11 @@ function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'):
           const w = sub(point, axisPoint);
           const concave = dot(n, w) < 0;
           if (concave === (want === 'concave')) {
-            out.push({ loc, dir, radiusMm, du: u2 - u1, v1, v2 });
+            // A side pocket can trim only part of the bore depth while its UV
+            // bounds still span a full circle. Measure the actual wall area.
+            const du = integrateArea(face) / (radiusMm * Math.abs(v2-v1));
+            if (!Number.isFinite(du) || du < 0) throw new Error('Cylindrical wall coverage could not be measured');
+            out.push({ loc, dir, radiusMm, du, v1, v2 });
           }
         }
       } finally {

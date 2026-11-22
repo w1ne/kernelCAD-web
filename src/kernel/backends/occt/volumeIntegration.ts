@@ -99,7 +99,9 @@ export function hasStronglyRationalFace(shape: unknown): boolean {
   const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     for (; exp.More(); exp.Next()) {
-      const surface = new oc.BRepAdaptor_Surface_2(oc.TopoDS.Face_1(exp.Current()), false);
+      const raw = exp.Current();
+      const face = oc.TopoDS.Face_1(raw);
+      const surface = new oc.BRepAdaptor_Surface_2(face, false);
       try {
         if (surface.GetType() !== spline || !(surface.IsURational() || surface.IsVRational())) continue;
         const handle = surface.BSpline();
@@ -110,6 +112,8 @@ export function hasStronglyRationalFace(shape: unknown): boolean {
         }
       } finally {
         surface.delete();
+        face.delete();
+        raw.delete();
       }
     }
   } finally {
