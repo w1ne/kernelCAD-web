@@ -1,0 +1,235 @@
+{
+  "checkedAt": "2026-11-22T17:12:11.895Z",
+  "invocation": "npx tsx docs/demos/fixed-world-root-20261122/capture-demo.mts",
+  "sourceSha256": "61137063f0f11f2a0587370bef5150f8736c09b013dc02a58d4ef2cf7e94cdd6",
+  "generatorSha256": "042d0d0269d6435cc19cd0d9845b7a4cf7ff20072b010a649bd71f03e7f4be01",
+  "implementationHashes": {
+    "mates/solverRoot.ts": "a6ed9955dc81b9f2d560e10a7a2afcf8030a2a396a5865cb9eb483c5e1f7679c",
+    "mates/jointTopology.ts": "eb35b12aaaf15a70737e126d15b55acdf6b24d6bd0a99ea3820dcec5d1493602",
+    "mates/solver.ts": "a3547828e2860d05e6afcf3c165f18e9fceb8cb5c42a5940d9126427c2869a90",
+    "mates/loopAdapter.ts": "ccbdd024738f43e2f8d1afa2e4e7d6e8322265696bb52d24d8dc22c952f4824c",
+    "capture/assemblyModel.ts": "090f92e725242a84a7b378356c39a78788d286dd985fdb4fc8026164eae6d8b7",
+    "capture/assemblySolve.ts": "6e5d736aa82987b45db9e78b6ea2b965af9278d89a09dd4d0544e140f612854c",
+    "capture/assemblyFeatureRecords.ts": "0591a664747741fa7c916db54ced7578508b40cb92a0a3557a034b3a2f10add1",
+    "backends/occt/lowerers/assembly.ts": "05f173c32b4c671d3e4c7298243de655f372945f393afe0d40eca9c7fe0f03dc"
+  },
+  "toleranceMm": 0.000001,
+  "undeclared": {
+    "travelMm": 5,
+    "solveStatus": "solved",
+    "diagnosticCodes": [
+      "assembly.connectivity.assumed-root"
+    ],
+    "positions": {
+      "slide": [
+        0,
+        0,
+        4
+      ],
+      "base": [
+        5,
+        0,
+        0
+      ]
+    },
+    "bounds": {
+      "slide": {
+        "min": [
+          0,
+          0,
+          4
+        ],
+        "max": [
+          7.999999999999999,
+          7.999999999999999,
+          7.999999999999999
+        ]
+      },
+      "base": {
+        "min": [
+          5,
+          0,
+          0
+        ],
+        "max": [
+          35,
+          12,
+          4
+        ]
+      }
+    }
+  },
+  "declared": [
+    {
+      "travelMm": 0,
+      "solveStatus": "solved",
+      "diagnosticCodes": [],
+      "positions": {
+        "base": [
+          20,
+          0,
+          0
+        ],
+        "slide": [
+          20,
+          0,
+          4
+        ]
+      },
+      "bounds": {
+        "slide": {
+          "min": [
+            20,
+            0,
+            4
+          ],
+          "max": [
+            28,
+            7.999999999999999,
+            7.999999999999999
+          ]
+        },
+        "base": {
+          "min": [
+            20,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            12,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "travelMm": 5,
+      "solveStatus": "solved",
+      "diagnosticCodes": [],
+      "positions": {
+        "base": [
+          20,
+          0,
+          0
+        ],
+        "slide": [
+          25,
+          0,
+          4
+        ]
+      },
+      "bounds": {
+        "slide": {
+          "min": [
+            25,
+            0,
+            4
+          ],
+          "max": [
+            33,
+            7.999999999999999,
+            7.999999999999999
+          ]
+        },
+        "base": {
+          "min": [
+            20,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            12,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "travelMm": 15,
+      "solveStatus": "solved",
+      "diagnosticCodes": [],
+      "positions": {
+        "base": [
+          20,
+          0,
+          0
+        ],
+        "slide": [
+          35,
+          0,
+          4
+        ]
+      },
+      "bounds": {
+        "slide": {
+          "min": [
+            35,
+            0,
+            4
+          ],
+          "max": [
+            43,
+            7.999999999999999,
+            7.999999999999999
+          ]
+        },
+        "base": {
+          "min": [
+            20,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            12,
+            4
+          ]
+        }
+      }
+    }
+  ],
+  "video": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "r_frame_rate": "20/1",
+    "duration": "12.000000",
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "slides.txt",
+      "-t",
+      "12",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ]
+  },
+  "checks": {
+    "localScriptBuild": true,
+    "fixedNonFirstBase": true,
+    "solverMatchesOcct": true,
+    "undeclaredWarningRetained": true,
+    "physicalGuideDesign": false,
+    "loadQualification": false,
+    "physicsSimulation": false,
+    "deployedRuntime": false,
+    "hardwareAcceptance": false
+  }
+}

@@ -5,6 +5,7 @@ import type { StockSpec } from '../../shared/stock';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
+import type { VirtualJointRecord } from './assemblyTypes';
 
 export interface AssemblyFeatureSpec {
   kind: FeatureKind;
@@ -14,6 +15,7 @@ export interface AssemblyFeatureSpec {
 }
 
 export interface SolvedAssemblyMateMetadata {
+  readonly virtualJoints?: readonly VirtualJointRecord[];
   readonly connectorsByPartId: Record<FeatureId, readonly EncodedConnectorRecord[]>;
   readonly mates: readonly EncodedMateRecord[];
   readonly couplings?: readonly MateCouplingRecord[];
@@ -401,6 +403,7 @@ function mateMetadataPayload(mateMetadata?: SolvedAssemblyMateMetadata): Record<
   return {
     mates: mateMetadata.mates,
     couplings: mateMetadata.couplings ?? [],
+    ...(mateMetadata.virtualJoints?.length ? { virtualJoints: mateMetadata.virtualJoints } : {}),
     connectorsByPartId: mateMetadata.connectorsByPartId,
     ...(mateMetadata.loopModes !== undefined && mateMetadata.loopModes.length > 0 ? { loopModes: mateMetadata.loopModes } : {}),
   };

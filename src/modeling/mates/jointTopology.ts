@@ -11,7 +11,7 @@ import { expandCoupledPoses } from './coupledPoses';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
 import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
 import { collectFreePassiveMates } from './passiveJoints';
-import { solverGroundedPart } from './solverRoot';
+import { fixedWorldParts, solverGroundedPart } from './solverRoot';
 
 export type JointTopologyDiagnosticCode =
   | 'assembly.connectivity.floating-moving-part'
@@ -113,7 +113,7 @@ function assumedRootNote(partName: string): JointTopologyDiagnostic {
     partName,
     stableParts: [partName],
     message: `No stable root is declared; assuming the first part '${partName}' is grounded (the mate solver holds it still).`,
-    hint: `connectivity.assumed-root — if '${partName}' is the fixed base this is fine; otherwise list the base first in arm.add(...) order or declare arm.physicalUseCase(..., { stableParts: ['<base part>'] }).`,
+    hint: `connectivity.assumed-root — if '${partName}' is the fixed base this is fine; otherwise declare arm.virtualJoint('world-base', { type: 'fixed', parentFrame: 'world', childLink: '<base part>' }), or supply the actual physical use case and its stableParts.`,
   };
 }
 
@@ -480,7 +480,7 @@ function collectStableRoots(
   arm: Assembly,
   partsByName: ReadonlyMap<string, unknown>,
 ): Set<string> {
-  const roots = new Set<string>();
+  const roots = new Set(fixedWorldParts(arm.__parts(), arm.__virtualJoints()).map(part => part.name));
   for (const useCase of arm.__physicalUseCases()) {
     for (const stablePart of useCase.stableParts) {
       if (partsByName.has(stablePart)) roots.add(stablePart);
