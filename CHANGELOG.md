@@ -7,6 +7,45 @@
   shared face, and the mate limits (-10° to 20°) keep the link tip above the
   plate. In MuJoCo the single base hull still contacts the link between the
   rods, and the four declared pieces give no contact.
+- `lib.fromDXF` now imports elliptic-arc (type 3) and spline (type 4) edges in
+  edge-based HATCH boundary paths. Before, the importer refused the file:
+  `elliptic-arc boundary edges are not supported`. Elliptic-arc edges become
+  exact rational NURBS arcs, as for ELLIPSE; spline edges keep their control
+  points, knots and weights, and are clamped as for SPLINE. R2010 fit data
+  and end tangents on a spline edge are skipped. ezdxf and netDxf read
+  elliptic-arc angles as angles from the major axis, but libdxfrw reads them as
+  ellipse parameters; an elliptic-arc edge is therefore accepted only where
+  both readings agree (a circle, or ends on the ellipse axes) and refused
+  otherwise. Fit-point-only spline edges are refused. A 60 x 20 mm plate with
+  a cubic spline edge, a 20 x 8 mm elliptic hole and a half-ellipse D-hole,
+  written by ezdxf 1.4.5 as R2010, extrudes 3 mm to one valid solid of
+  (1650 - 44π) x 3 = 4,535.3 mm³ (relative error below 1e-4) with 13 faces.
+- Extruding or revolving a sketch that contains a NURBS segment now cuts all
+  of its holes. Before, only the first `moveTo … close` loop was built and the
+  holes were dropped without an error: a 20 x 20 mm profile with a parabolic
+  edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
+  Loft, sweep and surface operations, which take one wire, now refuse such a
+  holed profile instead of dropping the holes.
+- `animationView` tracks can now key a part's colour. A track names a
+  `target` (part, feature or display name, with `*` / `?` wildcards) and a
+  `channel` (`color` or `emissive`) in place of a `param`, with `#rrggbb`
+  keys that use the same ease and hold rules. `capture_animation` /
+  `kernelcad animate` apply them as material overrides on every frame. A
+  timeline with no param tracks never re-solves the model and loads its
+  meshes once. An unknown target refuses the capture with
+  `animation.target.unknown`. Example:
+  `examples/animation/led-strip-chase.kcad.ts` (a light pulse running along
+  16 LED segments). Rigid frame reuse now also compares colour and material,
+  so a frame whose colour changed reloads its meshes.
+
+- `examples/assets/pine-tree.kcad.ts` now passes `evaluate_script` with
+  `ok: true`. The trunk was extruded to 30 % of the tree height, so it ran
+  450 mm (default 4.5 m tree) into the lowest foliage tier and gave one
+  `mechanism.interpenetration` error (39.9e6 mm³). The trunk now stops on
+  the base of the lowest tier; the visible tree is unchanged. Regression:
+  `tests/integration/examples/pineTreeExampleReal.test.ts` (defaults and
+  2, 4, 5 tiers). Not changed: the catalog copy
+  `catalog/kits/nature/pine-tree.kcad.ts` was fixed separately (below).
 - The flight example (`examples/flight/pathfinder-rocket.kcad.ts`) now passes
   `evaluate_script` with `ok: true`; before, it had one
   `mechanism.interpenetration` error (`mechanism: broken`): the corners of
@@ -1268,6 +1307,26 @@ npm run dev
 
 
 # Unreleased
+
+- `lib.fromDXF` now imports elliptic-arc (type 3) and spline (type 4) edges in
+  edge-based HATCH boundary paths. Before, the importer refused the file:
+  `elliptic-arc boundary edges are not supported`. Elliptic-arc edges become
+  exact rational NURBS arcs, as for ELLIPSE; spline edges keep their control
+  points, knots and weights, and are clamped as for SPLINE. R2010 fit data
+  and end tangents on a spline edge are skipped. ezdxf and netDxf read
+  elliptic-arc angles as angles from the major axis, but libdxfrw reads them as
+  ellipse parameters; an elliptic-arc edge is therefore accepted only where
+  both readings agree (a circle, or ends on the ellipse axes) and refused
+  otherwise. Fit-point-only spline edges are refused. A 60 x 20 mm plate with
+  a cubic spline edge, a 20 x 8 mm elliptic hole and a half-ellipse D-hole,
+  written by ezdxf 1.4.5 as R2010, extrudes 3 mm to one valid solid of
+  (1650 - 44π) x 3 = 4,535.3 mm³ (relative error below 1e-4) with 13 faces.
+- Extruding or revolving a sketch that contains a NURBS segment now cuts all
+  of its holes. Before, only the first `moveTo … close` loop was built and the
+  holes were dropped without an error: a 20 x 20 mm profile with a parabolic
+  edge and a 10 x 10 mm hole extruded 2 mm to 933.3 mm³ instead of 733.3 mm³.
+  Loft, sweep and surface operations, which take one wire, now refuse such a
+  holed profile instead of dropping the holes.
 
 ## Added
 

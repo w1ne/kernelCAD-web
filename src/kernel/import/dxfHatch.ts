@@ -15,19 +15,31 @@
 //   2 ignore  only the outermost loops are filled; inner loops are not holes
 //
 // Nesting depth is decided geometrically with an exact point-in-loop test
-// for line and bulge-arc boundaries.
+// for line and bulge-arc boundaries; NURBS edges are sampled for this test
+// only.
 //
-// A boundary path is a polyline (path flag bit 2) or a chain of edges. Line
-// and circular-arc edges are read exactly: an arc edge becomes a bulge
-// segment. A clockwise arc edge (group code 73 = 0) stores its angles as
-// complementary angles (360 - angle), so it runs clockwise from -50 to -51.
+// A boundary path is a polyline (path flag bit 2) or a chain of edges. All
+// four edge types are read exactly:
+//   1 line          a line segment
+//   2 circular arc  a bulge segment
+//   3 elliptic arc  rational quadratic NURBS arcs, as for ELLIPSE
+//   4 spline        one NURBS segment from the control net, clamped as for
+//                   SPLINE; R2010 fit data and end tangents are skipped
+// A clockwise arc or elliptic-arc edge (group code 73 = 0) stores its angles
+// as complementary angles (360 - angle), so it runs clockwise from -50 to
+// -51. For an elliptic-arc edge, ezdxf and netDxf read 50/51 as angles from
+// the major axis, but libdxfrw reads them as ellipse parameters. The two
+// readings agree only for a circle or at multiples of 90 degrees, so other
+// elliptic-arc edges are refused instead of guessed.
 // Writers do not all emit each edge in the direction of travel, so an edge
 // whose end, not its start, meets the previous edge is reversed. Edges that
-// do not join, elliptic-arc and spline edges, and out-of-plane hatches are
+// do not join, fit-point-only spline edges and out-of-plane hatches are
 // refused.
 
-import type { ImportFace, ImportSegment } from './contourAssembly';
+import { reverseSegment, sampleNurbs, type ImportFace, type ImportSegment } from './contourAssembly';
+import { ellipseArcSegments } from './dxfEllipse';
 import { DxfParseError, entityVector, get, num, polylineSegments, type EntityBlock, type Pair, type PolyVertex } from './dxfPairs';
+import { clampSpline, validateKnotDomain, validateKnotOrder, validateSplineContinuity } from './dxfSplineClamp';
 
 export interface HatchSegments {
   closed: ImportSegment[][];
@@ -123,8 +135,6 @@ function skipSourceHandles(b: EntityBlock, index: number): number {
 /** Endpoint mismatch allowed between consecutive edges, in millimetres. */
 const EDGE_JOIN_TOLERANCE = 1e-6;
 
-const UNSUPPORTED_EDGE: Record<number, string> = { 3: 'elliptic-arc', 4: 'spline' };
-
 /** Read edges in their fixed DXF group-code order; every code is required. */
 function edgeReader(b: EntityBlock, start: number) {
   let index = start;
@@ -141,27 +151,42 @@ function edgeReader(b: EntityBlock, start: number) {
       index++;
       return num(pair, 'HATCH', code);
     },
+    /** The group code of the next pair, if any. */
+    peek(offset = 0): number | undefined { return b.body[index + offset]?.code; },
     get index() { return index; },
   };
 }
 
-/** One line or circular-arc edge as a segment in millimetres. */
-function hatchEdge(b: EntityBlock, read: ReturnType<typeof edgeReader>, scale: number): ImportSegment[] {
+type EdgeReader = ReturnType<typeof edgeReader>;
+
+/** One boundary edge as segments in millimetres. */
+function hatchEdge(b: EntityBlock, read: EdgeReader, scale: number): ImportSegment[] {
   const type = read.take(72);
   const source = `HATCH (line ${b.line})`;
   if (type === 1) {
     const [x0, y0, x1, y1] = [read.take(10), read.take(20), read.take(11), read.take(21)].map(v => v * scale);
     return [{ x0, y0, x1, y1, source }];
   }
-  if (type !== 2) {
-    const name = UNSUPPORTED_EDGE[type];
-    throw new DxfParseError(
-      name ? 'unsupported-entity' : 'malformed-entity',
-      name
-        ? `HATCH at line ${b.line}: ${name} boundary edges are not supported; re-export the boundary as a closed polyline.`
-        : `HATCH at line ${b.line}: boundary edge type (group code 72) must be 1, 2, 3 or 4, found ${type}.`,
-    );
+  if (type === 2) return arcEdge(b, read, scale, source);
+  if (type === 3) return ellipseEdge(b, read, scale, source);
+  if (type === 4) return splineEdge(b, read, scale, source);
+  throw new DxfParseError(
+    'malformed-entity',
+    `HATCH at line ${b.line}: boundary edge type (group code 72) must be 1, 2, 3 or 4, found ${type}.`,
+  );
+}
+
+/** Counter-clockwise sweep in degrees from `start` to `end`: 360 for a full turn. */
+function edgeSpan(b: EntityBlock, startAngle: number, endAngle: number, kind: string): number {
+  const raw = endAngle - startAngle;
+  const span = Math.abs(Math.abs(raw) - 360) <= 1e-9 ? 360 : ((raw % 360) + 360) % 360;
+  if (span <= 1e-9) {
+    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: an ${kind} edge has zero angular span.`);
   }
+  return span;
+}
+
+function arcEdge(b: EntityBlock, read: EdgeReader, scale: number, source: string): ImportSegment[] {
   const cx = read.take(10) * scale, cy = read.take(20) * scale, radius = read.take(40) * scale;
   const startAngle = read.take(50), endAngle = read.take(51), ccw = read.take(73);
   if (!(radius > 0) || (ccw !== 0 && ccw !== 1)) {
@@ -170,11 +195,7 @@ function hatchEdge(b: EntityBlock, read: ReturnType<typeof edgeReader>, scale: n
       `HATCH at line ${b.line}: an arc edge needs a positive radius (40) and a direction flag (73) of 0 or 1.`,
     );
   }
-  const raw = endAngle - startAngle;
-  const span = Math.abs(Math.abs(raw) - 360) <= 1e-9 ? 360 : ((raw % 360) + 360) % 360;
-  if (span <= 1e-9) {
-    throw new DxfParseError('malformed-entity', `HATCH at line ${b.line}: an arc edge has zero angular span.`);
-  }
+  const span = edgeSpan(b, startAngle, endAngle, 'arc');
   // A clockwise edge stores 360 - angle: it runs clockwise from -start to -end.
   const sign = ccw === 1 ? 1 : -1;
   const at = (deg: number): [number, number] => {
@@ -187,6 +208,107 @@ function hatchEdge(b: EntityBlock, read: ReturnType<typeof edgeReader>, scale: n
     const [x0, y0] = at(from), [x1, y1] = at(to);
     return { x0, y0, x1, y1, bulge: sign * Math.tan(((to - from) * Math.PI) / 720), source };
   });
+}
+
+function ellipseEdge(b: EntityBlock, read: EdgeReader, scale: number, source: string): ImportSegment[] {
+  const center = [read.take(10), read.take(20)] as const;
+  const majorAxis = [read.take(11), read.take(21)] as const;
+  const ratio = read.take(40), startAngle = read.take(50), endAngle = read.take(51), ccw = read.take(73);
+  if (!(Math.hypot(...majorAxis) > 0) || !(ratio > 0 && ratio <= 1) || (ccw !== 0 && ccw !== 1)) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `HATCH at line ${b.line}: an elliptic-arc edge needs a non-zero major axis (11, 21), ` +
+        'a minor/major ratio (40) in (0, 1] and a direction flag (73) of 0 or 1.',
+    );
+  }
+  const onAxis = (deg: number) => Math.abs(deg / 90 - Math.round(deg / 90)) <= 1e-9;
+  if (Math.abs(ratio - 1) > 1e-12 && !(onAxis(startAngle) && onAxis(endAngle))) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `HATCH at line ${b.line}: elliptic-arc boundary edge from ${startAngle} to ${endAngle} degrees is ambiguous: ` +
+        'DXF readers disagree whether these are angles or ellipse parameters, and only multiples of 90 degrees ' +
+        'give the same curve. Re-export the boundary as a closed polyline or with ELLIPSE entities.',
+    );
+  }
+  const span = edgeSpan(b, startAngle, endAngle, 'elliptic-arc');
+  // Clockwise: the same complementary angles as an arc edge, traversed back.
+  const from = ccw === 1 ? startAngle : -endAngle;
+  const segments = ellipseArcSegments({
+    center,
+    majorAxis,
+    axisRatio: ratio,
+    startParameter: (from * Math.PI) / 180,
+    endParameter: ((from + span) * Math.PI) / 180,
+    normalZ: 1,
+    scale,
+    source,
+  });
+  return ccw === 1 ? segments : reversed(segments);
+}
+
+function splineEdge(b: EntityBlock, read: EdgeReader, scale: number, source: string): ImportSegment[] {
+  const where = `HATCH at line ${b.line}: spline boundary edge`;
+  const degree = read.take(94), rational = read.take(73);
+  read.take(74); // periodic: the stored control net already wraps, and clamping keeps the curve
+  const knotCount = read.take(95), controlCount = read.take(96);
+  if (!Number.isInteger(degree) || degree < 1 || !Number.isInteger(knotCount) || !Number.isInteger(controlCount) ||
+      (rational !== 0 && rational !== 1)) {
+    throw new DxfParseError('malformed-entity', `${where} needs an integer degree (94) >= 1, integer counts (95, 96) and a rational flag (73) of 0 or 1.`);
+  }
+  if (controlCount === 0) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `${where} has no control points, only fit data; re-export the hatch with spline control points or as a closed polyline.`,
+    );
+  }
+  if (controlCount < degree + 1 || knotCount !== controlCount + degree + 1) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `${where} of degree ${degree} with ${controlCount} control points needs ${controlCount + degree + 1} knots, found ${knotCount}.`,
+    );
+  }
+  const knots = Array.from({ length: knotCount }, () => read.take(40));
+  const controlPoints: Array<readonly [number, number]> = [];
+  const weights: number[] = [];
+  for (let i = 0; i < controlCount; i++) {
+    controlPoints.push([read.take(10) * scale, read.take(20) * scale]);
+    if (rational === 1) weights.push(read.take(42));
+  }
+  if (weights.some(weight => !(weight > 0))) {
+    throw new DxfParseError('malformed-entity', `${where}: control-point weights must be positive.`);
+  }
+  skipSplineFitData(read);
+  validateKnotOrder(knots, where);
+  validateKnotDomain(knots, degree, controlCount, where);
+  const spline = clampSpline({ degree, controlPoints, knots, weights });
+  validateSplineContinuity(spline.knots, degree, spline.controlPoints.length, where);
+  const first = spline.controlPoints[0];
+  const last = spline.controlPoints[spline.controlPoints.length - 1];
+  return [{
+    x0: first[0], y0: first[1], x1: last[0], y1: last[1], source,
+    nurbs: {
+      degree,
+      controlPoints: spline.controlPoints,
+      knots: spline.knots,
+      ...(spline.weights.length === 0 ? {} : { weights: spline.weights }),
+    },
+  }];
+}
+
+/**
+ * Skip R2010 fit data: a 97 fit-point count, its 11/21 points and optional
+ * 12/22 and 13/23 end tangents. The path itself also ends with a 97 (the
+ * source-object count), but that one is followed by 330 handles or by the
+ * next path or hatch data, never by fit data, another 97 or another edge.
+ */
+function skipSplineFitData(read: EdgeReader): void {
+  if (read.peek() === 97 && [11, 12, 13, 72, 97].includes(read.peek(1) ?? -1)) {
+    const fitCount = read.take(97);
+    for (let i = 0; i < fitCount; i++) { read.take(11); read.take(21); }
+  }
+  for (const code of [12, 13]) {
+    if (read.peek() === code) { read.take(code); read.take(code + 10); }
+  }
 }
 
 /** Read the edge path that starts with group code 92 at `start` as one closed loop. */
@@ -220,9 +342,9 @@ function meets(previous: ImportSegment, next: ImportSegment): boolean {
   return Math.hypot(next.x0 - previous.x1, next.y0 - previous.y1) <= EDGE_JOIN_TOLERANCE;
 }
 
-/** The same edge traversed the other way: a bulge arc keeps its points with the sign flipped. */
+/** The same edge traversed the other way. */
 function reversed(edge: readonly ImportSegment[]): ImportSegment[] {
-  return edge.map(seg => ({ ...seg, x0: seg.x1, y0: seg.y1, x1: seg.x0, y1: seg.y0, bulge: seg.bulge ? -seg.bulge : seg.bulge })).reverse();
+  return edge.map(reverseSegment).reverse();
 }
 
 /** Require `next` to start where `previous` ends, then make the join exact. */
@@ -237,6 +359,9 @@ function joinEdges(b: EntityBlock, previous: ImportSegment, next: ImportSegment,
   }
   next.x0 = previous.x1;
   next.y0 = previous.y1;
+  if (next.nurbs) {
+    next.nurbs = { ...next.nurbs, controlPoints: [[previous.x1, previous.y1], ...next.nurbs.controlPoints.slice(1)] };
+  }
 }
 
 function hatchPolylineVertices(b: EntityBlock, path: readonly Pair[], scale: number): { vertices: PolyVertex[]; hasBulgeValue: boolean } {
@@ -345,8 +470,21 @@ function probePoints(loop: readonly ImportSegment[]): Array<[number, number]> {
   });
 }
 
+/**
+ * The loop with each NURBS segment replaced by chords through its samples.
+ * Only the nesting test uses this; the emitted profile keeps the exact curve.
+ */
+function nestingProxy(loop: readonly ImportSegment[]): ImportSegment[] {
+  return loop.flatMap(seg => {
+    if (!seg.nurbs) return [seg];
+    const points = sampleNurbs(seg.nurbs);
+    return points.slice(1).map(([x1, y1], i) => ({ x0: points[i][0], y0: points[i][1], x1, y1, source: seg.source }));
+  });
+}
+
 /** `inside[a][c]` is true when path `a` lies inside path `c`; crossing paths are refused. */
-function containment(b: EntityBlock, loops: readonly ImportSegment[][]): boolean[][] {
+function containment(b: EntityBlock, exactLoops: readonly ImportSegment[][]): boolean[][] {
+  const loops = exactLoops.map(nestingProxy);
   const inside = loops.map(() => loops.map(() => false));
   for (let a = 0; a < loops.length; a++) {
     for (let c = 0; c < loops.length; c++) {
@@ -385,7 +523,7 @@ function hatchFaces(b: EntityBlock, loops: readonly ImportSegment[][], style: 0 
   });
 }
 
-/** Import a HATCH whose boundary paths are closed planar polylines or line and arc edges. */
+/** Import a HATCH whose boundary paths are closed planar polylines or edge chains. */
 export function hatchSegments(b: EntityBlock, scale: number): HatchSegments {
   const { pathCountIndex, pathCount } = hatchPathCount(b);
   validateHatchPlane(b, pathCountIndex);

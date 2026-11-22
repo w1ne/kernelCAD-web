@@ -41,7 +41,29 @@ function polylinePath(vertices: Array<[number, number] | [number, number, number
 type HatchEdge =
   | { line: [number, number, number, number] }
   | { arc: [cx: number, cy: number, r: number, start: number, end: number, ccw: 0 | 1] }
+  | { ellipse: [cx: number, cy: number, mx: number, my: number, ratio: number, start: number, end: number, ccw: 0 | 1] }
+  | { spline: Array<[number, string | number]> }
   | { type: number };
+
+/** Group codes of a HATCH spline edge after its 72 = 4 type code. */
+function splineEdge(opts: {
+  degree: number;
+  knots: number[];
+  points: Array<[number, number]>;
+  weights?: number[];
+  tail?: Array<[number, string | number]>;
+}): HatchEdge {
+  const { degree, knots, points, weights, tail = [] } = opts;
+  return {
+    spline: [
+      [94, degree], [73, weights ? 1 : 0], [74, 0], [95, knots.length], [96, points.length],
+      ...knots.map((k): [number, number] => [40, k]),
+      ...points.flatMap(([x, y], i): Array<[number, number]> =>
+        weights ? [[10, x], [20, y], [42, weights[i]]] : [[10, x], [20, y]]),
+      ...tail,
+    ],
+  };
+}
 
 /** One edge-based boundary path (group code 92 without the polyline bit). */
 function edgePath(edges: HatchEdge[]): Array<[number, string | number]> {
@@ -56,6 +78,11 @@ function edgePath(edges: HatchEdge[]): Array<[number, string | number]> {
         const [cx, cy, r, start, end, ccw] = edge.arc;
         return [[72, 2], [10, cx], [20, cy], [40, r], [50, start], [51, end], [73, ccw]];
       }
+      if ('ellipse' in edge) {
+        const [cx, cy, mx, my, ratio, start, end, ccw] = edge.ellipse;
+        return [[72, 3], [10, cx], [20, cy], [11, mx], [21, my], [40, ratio], [50, start], [51, end], [73, ccw]];
+      }
+      if ('spline' in edge) return [[72, 4], ...edge.spline];
       return [[72, edge.type]];
     }),
     [97, 0],
@@ -135,6 +162,23 @@ function deBoor(
     }
   }
   return [d[degree][0] / d[degree][2], d[degree][1] / d[degree][2]];
+}
+
+/**
+ * Points of a NURBS command at evenly spaced parameters, for on-curve checks.
+ * NURBS region areas are sampled for ranking, so they are checked to 1e-4.
+ */
+function nurbsSamples(nurbs: Extract<SketchCommand, { kind: 'nurbsSegment' }>, count = 9): Array<[number, number]> {
+  const knots = nurbs.knots!.map(k => k.evaluated);
+  const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+  const weights = nurbs.weights?.map(w => w.evaluated);
+  const degree = nurbs.degree.evaluated;
+  const [lo, hi] = [knots[degree], knots[controls.length]];
+  return Array.from({ length: count }, (_, i) => deBoor(degree, knots, controls, weights, lo + ((hi - lo) * i) / (count - 1)));
+}
+
+function expectArea(actual: number, expected: number): void {
+  expect(Math.abs(actual - expected) / expected).toBeLessThan(1e-4);
 }
 
 /**
@@ -526,11 +570,121 @@ describe('importDxfText — entities', () => {
     ))).toThrow(/edge 2 does not join edge 1: edge 1 ends at \(10, 0\)/);
   });
 
-  it('refuses elliptic-arc and spline HATCH edges until their exact geometry is supported', () => {
-    expect(() => importDxfText(hatch([91, 1], ...edgePath([{ type: 3 }]), [75, 0])))
-      .toThrow(/elliptic-arc boundary edges are not supported/);
-    expect(() => importDxfText(hatch([91, 1], ...edgePath([{ type: 4 }]), [75, 0])))
-      .toThrow(/spline boundary edges are not supported/);
+  /** Four line edges around an axis-aligned rectangle. */
+  const rectangle = (x0: number, y0: number, x1: number, y1: number): HatchEdge[] => [
+    { line: [x0, y0, x1, y0] }, { line: [x1, y0, x1, y1] }, { line: [x1, y1, x0, y1] }, { line: [x0, y1, x0, y0] },
+  ];
+
+  it('reads a full elliptic-arc HATCH edge as an exact rational NURBS hole', () => {
+    // Semi-axes 8 and 4 (major axis (8, 0), ratio 0.5) inside a 40 x 20 plate.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath(rectangle(0, 0, 40, 20)),
+      ...edgePath([{ ellipse: [20, 10, 8, 0, 0.5, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+    expectArea(r.regions[0].areaMm2, 800 - Math.PI * 8 * 4);
+    const arcs = nurbsCommands(r.regions[0].commands);
+    expect(arcs).toHaveLength(4);
+    expect(arcs.every(arc => arc.degree.evaluated === 2 && arc.weights?.length === 3)).toBe(true);
+    for (const [x, y] of arcs.flatMap(arc => nurbsSamples(arc))) {
+      expect(((x - 20) / 8) ** 2 + ((y - 10) / 4) ** 2).toBeCloseTo(1, 12);
+    }
+  });
+
+  it('reads a clockwise elliptic-arc HATCH edge with complementary angles', () => {
+    // 50 = 180, 51 = 360, 73 = 0 is the upper half (parameters 0 to 180).
+    // Read counter-clockwise it would be the lower half and cross y = -1.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath(rectangle(-15, -1, 15, 15)),
+      ...edgePath([{ ellipse: [0, 0, 10, 0, 0.5, 180, 360, 0] }, { line: [-10, 0, 10, 0] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 480 - (Math.PI * 10 * 5) / 2);
+    const points = nurbsCommands(r.regions[0].commands).flatMap(arc => nurbsSamples(arc));
+    expect(points.every(([x, y]) => y >= -1e-12 && Math.abs((x / 10) ** 2 + (y / 5) ** 2 - 1) < 1e-12)).toBe(true);
+  });
+
+  it('decides HATCH nesting from the elliptic curve, not its chords', () => {
+    // The r = 1 hole at (12, 6) lies inside the 20 x 10 ellipse but outside
+    // the diamond through its four quadrant points.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([{ ellipse: [0, 0, 20, 0, 0.5, 0, 360, 1] }]),
+      ...edgePath([{ arc: [12, 6, 1, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+    expectArea(r.regions[0].areaMm2, Math.PI * 20 * 10 - Math.PI);
+  });
+
+  it('refuses an elliptic-arc HATCH edge whose end angles are not on an axis', () => {
+    // Readers disagree whether 50/51 are angles or ellipse parameters; the
+    // two readings give different curves here, so the edge is refused.
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([{ ellipse: [0, 0, 10, 0, 0.5, 30, 180, 1] }, { line: [-10, 0, 10, 0] }]),
+      [75, 0],
+    ))).toThrow(/elliptic-arc boundary edge from 30 to 180 degrees/);
+  });
+
+  it('reads a HATCH spline edge as an exact NURBS segment', () => {
+    // Quadratic Bezier (20, 0) -> (20, 20) -> (0, 20) closed by two lines:
+    // the triangle under the chord (200) plus 2/3 of the control triangle.
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        splineEdge({ degree: 2, knots: [0, 0, 0, 1, 1, 1], points: [[20, 0], [20, 20], [0, 20]] }),
+        { line: [0, 20, 0, 0] },
+      ]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 200 + (2 / 3) * 200);
+    const [curve] = nurbsCommands(r.regions[0].commands);
+    expect(curve.degree.evaluated).toBe(2);
+    expect(curve.controlPoints.map(p => [p.x.evaluated, p.y.evaluated]).sort()).toEqual([[0, 20], [20, 0], [20, 20]].sort());
+  });
+
+  it('reads a rational HATCH spline edge, fit data and a reversed edge exactly', () => {
+    // A quarter circle of radius 20 as a rational quadratic, written from
+    // (0, 20) to (20, 0) against the direction of travel, with R2010 fit data
+    // (97 = fit count) that the next edge must not be confused with.
+    const w = Math.SQRT1_2;
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        splineEdge({
+          degree: 2, knots: [0, 0, 0, 1, 1, 1], points: [[0, 20], [20, 20], [20, 0]], weights: [1, w, 1],
+          tail: [[97, 2], [11, 0], [21, 20], [11, 20], [21, 0], [12, 1], [22, 0], [13, 0], [23, -1]],
+        }),
+        { line: [0, 20, 0, 0] },
+      ]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 100 * Math.PI);
+    const [curve] = nurbsCommands(r.regions[0].commands);
+    expect(curve.weights?.map(weight => weight.evaluated)).toEqual([1, w, 1]);
+    for (const [x, y] of nurbsSamples(curve)) expect(Math.hypot(x, y)).toBeCloseTo(20, 12);
+  });
+
+  it('refuses fit-point-only HATCH spline edges', () => {
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        { spline: [[94, 3], [73, 0], [74, 0], [95, 0], [96, 0], [97, 2], [11, 20], [21, 0], [11, 0], [21, 0]] },
+      ]),
+      [75, 0],
+    ))).toThrow(/spline boundary edge has no control points/);
   });
 
   it('refuses HATCH paths outside the XY plane', () => {
