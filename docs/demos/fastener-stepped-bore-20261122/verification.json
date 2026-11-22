@@ -1,0 +1,777 @@
+{
+  "checkedAt": "2026-11-22T19:59:54.920Z",
+  "invocation": "npx tsx docs/demos/fastener-stepped-bore-20261122/capture-demo.mts",
+  "exampleSha256": "f35a2223c16cc3594e5d288aa1d665f53dc4dc56edbd0116f968dc8fc0a8981c",
+  "generatorSha256": "83edee635b523f5296698fab43c4e5a76e4d82f7e2d9c96694f37c53ffcf9dba",
+  "implementationHashes": {
+    "src/modeling/runtime/fastenerInstallation.ts": "3aeb54143956008f0c6cb6a70783841670fd41929c385334838a2f066905b140",
+    "src/kernel/backends/occt/holeDetection.ts": "9d23267173d0b7b64d0de0f6b9ce456ebf10d521e61cbfb7005b646f77424f27",
+    "src/agent/render/headlessRender.ts": "bdf5d35e820f19e9f071c6e08053728608f44ba502b27185043a89918ae6dff7",
+    "src/agent/render/playerServer.ts": "7eff3f66abb9d26c764049fa5ca353eb0c407079bd250dbae89c75aba6fb0558"
+  },
+  "evidence": [
+    {
+      "name": "straight",
+      "expected": "pass",
+      "title": "A straight through-bore is measurable",
+      "note": "One full cylindrical wall establishes the 6.4 mm clearance path.",
+      "file": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/straight.kcad.ts",
+      "sourceSha256": "f018f9c5b1edb746168b95091b5e3f23291e1162d9aa1bccd6aa21ffe4b67ab5",
+      "report": {
+        "ok": true,
+        "source": "local",
+        "assembly": "stepped-through-bore",
+        "status": "pass",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "pass",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "Distance of screw bearing center to measured bore axis.",
+                "repairHint": null
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "deg",
+                "limit": 1,
+                "basis": "Angle between measured bore axis and catalog bearing-to-tip axis.",
+                "repairHint": null
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "pass",
+                "value": 3.5,
+                "unit": "mm",
+                "limit": 3,
+                "basis": "Minimum BREP path diameter and conservative shank envelope at shaft-clipped path endpoint planes, including tilt accumulated from the bearing.",
+                "repairHint": null
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "pass",
+                "value": 6.4,
+                "unit": "mm",
+                "limit": 0,
+                "basis": "Axial interval overlap of the measured continuous bore path with catalog shank.",
+                "repairHint": null
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-stepped-bore-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/straight.kcad.ts",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/straight-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/straight.kcad.ts",
+          "generatedAt": "2026-11-22T19:59:20.515Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -3
+            ],
+            "max": [
+              20,
+              20,
+              10
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "stepped",
+      "expected": "pass",
+      "title": "A full coaxial step keeps one open path",
+      "note": "The limiting diameter remains 3.500 mm across the full 6.4 mm span.",
+      "file": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/stepped.kcad.ts",
+      "sourceSha256": "f35a2223c16cc3594e5d288aa1d665f53dc4dc56edbd0116f968dc8fc0a8981c",
+      "report": {
+        "ok": true,
+        "source": "local",
+        "assembly": "stepped-through-bore",
+        "status": "pass",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "pass",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "Distance of screw bearing center to measured bore axis.",
+                "repairHint": null
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "deg",
+                "limit": 1,
+                "basis": "Angle between measured bore axis and catalog bearing-to-tip axis.",
+                "repairHint": null
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "pass",
+                "value": 3.5,
+                "unit": "mm",
+                "limit": 3,
+                "basis": "Minimum BREP path diameter and conservative shank envelope at shaft-clipped path endpoint planes, including tilt accumulated from the bearing.",
+                "repairHint": null
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "pass",
+                "value": 6.4,
+                "unit": "mm",
+                "limit": 0,
+                "basis": "Axial interval overlap of the measured continuous bore path with catalog shank.",
+                "repairHint": null
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-stepped-bore-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/stepped.kcad.ts",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/stepped-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/stepped.kcad.ts",
+          "generatedAt": "2026-11-22T19:59:31.136Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -3
+            ],
+            "max": [
+              20,
+              20,
+              10
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "web",
+      "expected": "partial",
+      "title": "A solid web prevents path acceptance",
+      "note": "Two blind coaxial holes leave a 0.2 mm web; the bore remains unknown.",
+      "file": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/web.kcad.ts",
+      "sourceSha256": "acac625a845ffc897c82e0606cd6ef86fac6fdb5ea756adab26d64f124ce4bc3",
+      "report": {
+        "ok": false,
+        "source": "local",
+        "assembly": "stepped-through-bore",
+        "status": "partial",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 0,
+          "failed": 0,
+          "unknown": 1
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "partial",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "deg",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 8.248678804639675e-32,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-stepped-bore-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/web.kcad.ts",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/web-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/web.kcad.ts",
+          "generatedAt": "2026-11-22T19:59:41.243Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -3
+            ],
+            "max": [
+              20,
+              20,
+              10
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "narrow-breach",
+      "expected": "partial",
+      "title": "A breached step remains unverified",
+      "note": "The 0.4 mm side pocket removes actual cylindrical wall coverage.",
+      "file": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/narrow-breach.kcad.ts",
+      "sourceSha256": "cd9912e24f0ba42b66b06406e99a44874a8af9005ea390ef26afa96e36504141",
+      "report": {
+        "ok": false,
+        "source": "local",
+        "assembly": "stepped-through-bore",
+        "status": "partial",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 0,
+          "failed": 0,
+          "unknown": 1
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "partial",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "deg",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-stepped-bore-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/narrow-breach.kcad.ts",
+          "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/narrow-breach-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/narrow-breach.kcad.ts",
+          "generatedAt": "2026-11-22T19:59:52.385Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -3
+            ],
+            "max": [
+              20,
+              20,
+              10
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "video": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "r_frame_rate": "20/1",
+    "duration": "16.000000",
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "slides.txt",
+      "-t",
+      "16",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ]
+  },
+  "scope": {
+    "localMcpHandler": true,
+    "actualOcct": true,
+    "canonicalViews": true,
+    "ownedHeadlessCapture": true,
+    "deployedRuntime": false,
+    "physicalQualification": false
+  }
+}

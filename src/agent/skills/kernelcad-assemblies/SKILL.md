@@ -977,3 +977,19 @@ seated at `liftedHeadMm = 0` and fails the gap check at 1.5 mm. The
 `remote-notch` case keeps its intact target measurable; `narrow-breach` remains
 unknown. Local measured demo:
 `docs/demos/fastener-local-features-20261122/demo.mp4`.
+
+A counterbore or stepped clearance can be measured as one path only when every
+wall has full trimmed circular coverage, all axes coincide at kernel precision,
+and consecutive axial intervals meet without overlap or a material web. The
+outer ends must be open and the common minimum-radius core must contain no
+material. Clearance uses the smallest diameter over the entire path, including
+its full span for the conservative tilted-shank envelope. Installation tolerance
+does not merge separate axes or bridge gaps. Blind holes, breached steps, partial
+continuations, and competing axes remain unknown.
+
+Runnable stepped-path example:
+`examples/fastener-installation/stepped-through-bore.kcad.ts`. After the same
+catalog preparation, audit `{ part: 'screw', against: ['plate'] }`. Both `straight`
+and `stepped` measure a 3.5 mm minimum diameter through 6.4 mm of plate. The `web`
+and `narrow-breach` cases remain partial. Source-bound local demo:
+`docs/demos/fastener-stepped-bore-20261122/demo.mp4`.
