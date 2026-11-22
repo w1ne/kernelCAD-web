@@ -14,6 +14,8 @@
 // Rational splines are clamped in homogeneous coordinates, so the result is
 // the same curve at the same parameters, not an approximation.
 
+import { DxfParseError } from './dxfPairs';
+
 export interface PlanarSpline {
   degree: number;
   controlPoints: Array<readonly [number, number]>;
@@ -87,4 +89,34 @@ export function clampSpline(spline: PlanarSpline): PlanarSpline {
     knots: clampedKnots,
     weights: rational ? kept.map(([, , w]) => w) : [],
   };
+}
+
+// `where` names the entity in the error, for example `SPLINE at line 12`.
+
+export function validateKnotOrder(knots: number[], where: string): void {
+  for (let i = 1; i < knots.length; i++) {
+    if (knots[i] < knots[i - 1]) {
+      throw new DxfParseError('malformed-entity', `${where}: knot values must be non-decreasing.`);
+    }
+  }
+}
+
+export function validateKnotDomain(knots: number[], degree: number, controlCount: number, where: string): void {
+  if (knots[degree] >= knots[controlCount]) {
+    throw new DxfParseError('malformed-entity', `${where}: knot vector has an empty parameter domain.`);
+  }
+}
+
+export function validateSplineContinuity(knots: number[], degree: number, controlCount: number, where: string): void {
+  for (let i = degree + 1; i < controlCount; i++) {
+    let multiplicity = 1;
+    while (i + multiplicity < controlCount && knots[i + multiplicity] === knots[i]) multiplicity++;
+    if (multiplicity > degree) {
+      throw new DxfParseError(
+        'unsupported-entity',
+        `${where}: knot multiplicity ${multiplicity} makes the curve discontinuous; use a continuous clamped spline.`,
+      );
+    }
+    i += multiplicity - 1;
+  }
 }
