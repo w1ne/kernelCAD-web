@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "partId": "nema-17",
+  "family": "stepper-motor",
+  "connectors": [
+    {
+      "name": "mounting-face",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        40
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "output-shaft",
+      "type": "axis",
+      "origin": [
+        0,
+        0,
+        40
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "back-face",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "name": "bolt-holes-1",
+      "type": "frame",
+      "origin": [
+        -15.5,
+        -15.5,
+        40
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "bolt-holes-2",
+      "type": "frame",
+      "origin": [
+        15.5,
+        -15.5,
+        40
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "bolt-holes-3",
+      "type": "frame",
+      "origin": [
+        -15.5,
+        15.5,
+        40
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "bolt-holes-4",
+      "type": "frame",
+      "origin": [
+        15.5,
+        15.5,
+        40
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "license": "MIT",
+  "attribution": null,
+  "generatedAt": "2026-10-25T09:27:19.809Z"
+}
