@@ -18,7 +18,7 @@ import { CatalogIndexSchema } from '../src/shared/assets/catalogSchema';
 import { glbTriangles, renderTrianglesPng } from './lib/glbSoftwareRender';
 import { renderManufacturingCatalogPreview } from './lib/manufacturingCatalogPreview';
 import {
-  exceptionApplies, pixelDiff, pixelSha256, previewMatches, previewPathFor, sha256, touchedAssets,
+  exceptionApplies, pixelDiff, pixelSha256, previewMatches, previewPathFor, sha256, shardPreviewAssets, touchedAssets,
   type PreviewExceptions, type RgbaImage,
 } from './lib/catalogPreviewGate';
 
@@ -50,8 +50,10 @@ const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'c
 const exceptions: PreviewExceptions = existsSync(join(repoRoot, EXCEPTIONS_FILE))
   ? JSON.parse(readFileSync(join(repoRoot, EXCEPTIONS_FILE), 'utf8'))
   : {};
-const touched = touchedAssets(changed, index.assets).filter((t) => existsSync(join(repoRoot, t.row.source)));
-console.log(`catalog preview gate: ${touched.length} touched asset(s) against ${base}`);
+const candidates = touchedAssets(changed, index.assets).filter((t) => existsSync(join(repoRoot, t.row.source)));
+const shard = process.env.KCAD_CATALOG_PREVIEW_SHARD;
+const touched = shardPreviewAssets(candidates, shard);
+console.log(`catalog preview gate: ${touched.length}/${candidates.length} touched asset(s) against ${base}` + (shard ? ` (shard ${shard})` : ''));
 
 const started = Date.now();
 let initialized = false;
