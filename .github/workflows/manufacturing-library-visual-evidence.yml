@@ -1,0 +1,36 @@
+name: Manufacturing asset library visual evidence
+
+# This acceptance workflow is opt-in: do not add live-production browser traffic
+# to the required CAD kernel test and merge gates.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium runner
+        run: |
+          npm --prefix "$RUNNER_TEMP/asset-library-capture" install --no-save --no-audit --no-fund playwright@1.58.0
+          "$RUNNER_TEMP/asset-library-capture/node_modules/.bin/playwright" install --with-deps chromium --only-shell
+      - name: Capture production manufacturing cards at mobile and desktop widths
+        env:
+          NODE_PATH: ${{ runner.temp }}/asset-library-capture/node_modules
+          OUTPUT_DIR: artifacts/manufacturing-library
+        run: node scripts/captureManufacturingLibraryEvidence.cjs
+      - name: Preserve 12 screenshots and exact source URLs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manufacturing-library-visual-evidence
+          path: artifacts/manufacturing-library/
+          if-no-files-found: error
+          retention-days: 30
